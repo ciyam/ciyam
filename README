@@ -1,4 +1,10 @@
 COSP - CIYAM's Open Source Project
 ----------------------------------
 
-www.ciyam.com
+The following environment variables need to be set:
+
+Name   Description                 Sample Value
+-----  -----------------           ------------
+CPPENV C++ Compiler (Windows only) vc80
+WEBDIR Web Document Root path      /srv/www/htdocs
+WEBSVC www service name            apache2
