@@ -1,0 +1,138 @@
+// Copyright (c) 2007
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifndef SQL_DB_H
+#  define SQL_DB_H
+
+#  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <map>
+#     include <string>
+#     include <iosfwd>
+#     include <stdexcept>
+#  endif
+
+#  include "progress.h"
+
+#  define RDBMS_MYSQL
+
+#  ifndef RDBMS_MYSQL
+#     define RDBMS_SQLITE
+#  endif
+
+#  ifdef RDBMS_SQLITE
+struct sqlite3;
+struct sqlite3_stmt;
+#  else
+typedef char** MYSQL_ROW;
+
+struct st_mysql;
+struct st_mysql_res;
+typedef struct st_mysql MYSQL;
+typedef struct st_mysql_res MYSQL_RES;
+#  endif
+
+class sql_dataset;
+
+class sql_db
+{
+   friend class sql_dataset;
+
+   public:
+   sql_db( const std::string& name );
+   sql_db( const std::string& name, const std::string& uid );
+   sql_db( const std::string& name, const std::string& uid, const std::string& pwd );
+   ~sql_db( );
+
+   private:
+   void init_database_connection( const std::string& name, const std::string& uid, const std::string& pwd );
+
+#  ifdef RDBMS_SQLITE
+   sqlite3* p_db;
+   sqlite3* get_db_ptr( ) { return p_db; }
+#  else
+   MYSQL* p_db;
+   MYSQL* get_db_ptr( ) { return p_db; }
+#  endif
+};
+
+void exec_sql( sql_db& db, const std::string& sql );
+
+void exec_sql_from_file( sql_db& db,
+ const std::string& sql_file, progress* p_progress = 0, bool unescape = false );
+
+class sql_dataset
+{
+   private:
+#  ifdef RDBMS_SQLITE
+   sqlite3* p_db;
+   sqlite3_stmt* p_stmt;
+#  else
+   MYSQL* p_db;
+   MYSQL_RES* p_stmt;
+   MYSQL_ROW* p_rowset;
+#  endif
+
+   protected:
+   std::map< std::string, int > params;
+   std::map< std::string, int > fields;
+
+   void get_params( );
+   void get_fields( );
+
+   int fieldcount;
+    
+   public:
+   sql_dataset( ) : p_db( 0 ), p_stmt( 0 ), fieldcount( 0 ) { }
+
+#  ifdef RDBMS_SQLITE
+   sql_dataset( sql_db& db ) : p_db( db.get_db_ptr( ) ), p_stmt( 0 ), fieldcount( 0 ) { }
+#  else
+   sql_dataset( sql_db& db ) : p_db( db.get_db_ptr( ) ), p_stmt( 0 ), p_rowset( 0 ), fieldcount( 0 ) { }
+#  endif
+   sql_dataset( sql_db& db, const std::string& sql );
+
+   virtual ~sql_dataset( );
+
+   void set_sql( const std::string& sql );
+   void exec_sql( const std::string& sql );
+
+   bool next( );
+
+   void set_param( const std::string&, const std::string& );
+   void set_param( const std::string&, int );
+   void set_param( int, const std::string& );
+   void set_param( int, int );
+
+   int get_fieldcount( ) const { return fieldcount; }
+
+   int as_int( const std::string& ) const;
+   int as_int( int ) const;
+   std::string as_string( const std::string& ) const;
+   std::string as_string( int ) const;
+};
+
+class sql_exception : public std::runtime_error
+{
+   public:
+   sql_exception( const std::string& m ) : runtime_error( m.c_str( ) ) { }
+
+#  ifdef RDBMS_SQLITE
+   sql_exception( sqlite3* );
+#  else
+   sql_exception( MYSQL* );
+#  endif
+};
+
+#endif
+

@@ -1,0 +1,221 @@
+// Copyright (c) 2010
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+//#define DEBUG
+
+#include "ssl_socket.h"
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstdio>
+#  include <iostream>
+#  include <stdexcept>
+#  ifdef __GNUG__
+#     include <csignal>
+#  endif
+#endif
+
+using namespace std;
+
+namespace
+{
+
+SSL_CTX* p_ctx = 0;
+const char* p_pass = 0;
+
+#ifdef __GNUG__
+void sigpipe_handle( int x ) { }
+#endif
+
+int password_cb( char* buf, int num, int rwflag, void* userdata )
+{
+   if( num < strlen( p_pass ) + 1 )
+      return 0;
+
+   strcpy( buf, p_pass );
+   return strlen( p_pass );
+}
+
+#ifdef DEBUG
+void print_cert_info( SSL* p_ssl )
+{
+   X509* p_cert = 0;
+   X509_NAME* p_sub = 0;
+   X509_NAME* p_issuer = 0;
+
+   char buf[ 8192 ];
+
+   cout << "Cipher: " << SSL_get_cipher( p_ssl ) << endl;
+
+   cout << "Certificate information:\n";
+   p_cert = SSL_get_peer_certificate( p_ssl );
+
+   if( !p_cert )
+   {
+      cout << "No peer certificate found\n";
+      return;
+   }
+
+   p_sub = X509_get_subject_name( p_cert );
+   if( !p_sub )
+      cout << "Could not find subject name in certificate" << endl;
+   else
+   {
+      X509_NAME_oneline( p_sub, buf, sizeof( buf ) - 1 );
+      cout << "Subject: " << buf << endl;
+   }
+
+   p_issuer = X509_get_issuer_name( p_cert );
+   if( !p_issuer )
+      cout << "Could not find issuer name in certificate" << endl;
+   else
+   {
+      X509_NAME_oneline( p_issuer, buf, sizeof( buf ) - 1 );
+      cout << "Issuer: " << buf << endl;
+   }
+}
+#endif
+
+}
+
+static int g_server_session_id_context = 1;
+
+void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_List )
+{
+   if( p_ctx )
+      throw runtime_error( "init_ssl has already been called" );
+
+   SSL_library_init( );
+   SSL_load_error_strings( );
+
+#ifdef __GNUG__
+   signal( SIGPIPE, sigpipe_handle );
+#endif
+
+   /* Create our context*/
+   const SSL_METHOD* p_meth( SSLv23_method( ) );
+   p_ctx = SSL_CTX_new( p_meth );
+
+   /* Load our keys and certificates*/
+   if( !( SSL_CTX_use_certificate_chain_file( p_ctx, p_keyfile ) ) )
+      throw runtime_error( "init_ssl: can't read certificate file" );
+
+   p_pass = p_password;
+   SSL_CTX_set_default_passwd_cb( p_ctx, password_cb );
+
+   if( !( SSL_CTX_use_PrivateKey_file( p_ctx, p_keyfile, SSL_FILETYPE_PEM ) ) )
+      throw runtime_error( "init_ssl: can't read key file" );
+
+   /* Load the CAs we trust*/
+   if( p_CA_List && !( SSL_CTX_load_verify_locations( p_ctx, p_CA_List, 0 ) ) )
+      throw runtime_error( "init_ssl: can't read CA list" );
+
+#if( OPENSSL_VERSION_NUMBER < 0x00905100L )
+   SSL_CTX_set_verify_depth( p_ctx, 1 );
+#endif
+
+   SSL_CTX_set_session_id_context( p_ctx,
+    ( const unsigned char* )&g_server_session_id_context, sizeof( g_server_session_id_context ) );
+}
+
+void term_ssl( )
+{
+   SSL_CTX_free( p_ctx );
+}
+
+ssl_socket::ssl_socket( )
+ : tcp_socket( ),
+ p_ssl( 0 ),
+ secure( false )
+{
+   p_ssl = SSL_new( p_ctx );
+}
+
+ssl_socket::ssl_socket( SOCKET socket )
+ : tcp_socket( socket ),
+ p_ssl( 0 ),
+ secure( false )
+{
+   p_ssl = SSL_new( p_ctx );
+}
+
+ssl_socket::~ssl_socket( )
+{
+   if( p_ssl )
+      SSL_free( p_ssl );
+}
+
+void ssl_socket::ssl_connect( )
+{
+   if( secure )
+      throw runtime_error( "SSL connect has already performed" );
+
+   SSL_set_fd( p_ssl, get_socket( ) );
+
+   if( SSL_connect( p_ssl ) <= 0 )
+      throw runtime_error( "SSL connect failure" );
+
+   secure = true;
+#ifdef DEBUG
+   print_cert_info( p_ssl );
+#endif
+}
+
+int ssl_socket::recv( unsigned char* buf, int buflen, size_t timeout )
+{
+   if( !secure )
+      return tcp_socket::recv( buf, buflen, timeout );
+
+   bool okay = true;
+
+   timed_out = false;
+
+   // NOTE: Need to test whether the SSL buffer is empty before testing the socket.
+   if( timeout )
+      okay = SSL_pending( p_ssl ) || has_input( timeout );
+
+   int n = 0;
+   if( !okay )
+      timed_out = true;
+   else
+      n = SSL_read( p_ssl, ( char* )buf, buflen );
+
+   return n;
+}
+
+int ssl_socket::send( const unsigned char* buf, int buflen, size_t timeout )
+{
+   if( !secure )
+      return tcp_socket::send( buf, buflen, timeout );
+
+   bool okay = true;
+
+   timed_out = false;
+
+   if( timeout )
+      okay = can_output( timeout );
+
+   int n = 0;
+   if( !okay )
+      timed_out = true;
+   else
+      n = SSL_write( p_ssl, ( const char* )buf, buflen );
+
+   return n;
+}
+
