@@ -1,0 +1,16 @@
+if [ -f ./xrep ]; then
+ ./xrep @makefile.sio.xrep modules=@modules.lst >makefile.sio
+ if [ -f ./xvars ]; then
+  ./xvars >makefile.vars.xrep
+  if [ $? -eq 0 ]; then
+   ./xrep @makefile.xrep >makefile.new
+   if [ $? -eq 0 ]; then
+    ./update makefile makefile.new
+   fi
+  fi
+ else
+  echo File 'xvars' was not found.
+  fi
+else
+ echo File 'xrep' was not found.
+fi

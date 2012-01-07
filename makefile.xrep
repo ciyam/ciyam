@@ -1,0 +1,188 @@
+`{`#makefile.vars.xrep @`}
+`{`;Set up some extra variables from those already provided`}
+`{`[`$all_targets`,`{`(`?`$\$_ismt`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_isrd`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_ossl`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_fcgi`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_haru`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_icnv`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_msql`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_libs`)`$\$_link`=`'`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_ismt`)`$\$_link`=`$\$_link`+`'$(THREAD_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_isrd`)`$\$_link`=`$\$_link`+`'$(READLINE_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_fcgi`)`$\$_link`=`$\$_link`+`'$(LIBFCGI_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_haru`)`$\$_link`=`$\$_link`+`'$(LIBHARU_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_icnv`)`$\$_link`=`$\$_link`+`'$(LIBICONV_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_ossl`)`$\$_link`=`$\$_link`+`'$(OPENSSL_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_msql`)`$\$_link`=`$\$_link`+`'$(MYSQL_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_zlib`)`$\$_link`=`$\$_link`+`'$(ZLIB_LIBS)`'`}`]`}
+`{`[`$all_targets`,`{`(`?`$\$_libs`)`$\$_link`=`$\$_link`+`'-L.`'`}`]`}
+`{`[`$all_targets`,`{`?`$\$_libs`[`$\$_libs`,`{`$\$_link`=`$\$_link`+`'-l\\$`'`}`]`}`]`}
+##
+## Usage:
+##  make [<target1> [<target2>] [...]]
+##
+##  where:
+##  <target>   is:                  to:
+##             all                  make all targets
+##             dtm                  creates make.dtm
+##             clean                clean all targets
+##             usage                display this output
+##
+`{`[`$libs`;20`,##             \? make lib\$.a target`+\n`]`}
+`{`[`$dyn_libs`;20`,##             \? make \$.so target`+\n`]`}
+`{`[`$executables`;20`,##             \? make \$ target`+\n`]`}
+##
+
+# Tools
+CPP = g++
+BIND = ar
+LINK = $(CPP)
+
+# Compiler flags
+CPPFLAGS = -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include
+
+# Implicit rules (and override for simple builtins)
+%: %.o
+
+%: %.cpp
+
+%.o: %.cpp
+	@./compile.sh $@ $< $(file_opts_$@)
+
+%.cmh: %.cms
+	@./generate_commands $<
+
+%.compile:
+#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >compile.sh
+	@echo echo \$$2 >compile.sh
+	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >>compile.sh;chmod a+x compile.sh
+
+# Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
+# and for target specific options use "target_opts_XXX.so = <opts>" (where XXX.so is the name of the target).
+
+BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
+
+LINK_NORMAL = @echo Linking $@...;$(LINK) -o $@
+LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -o $@
+
+LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -o $@
+
+THREAD_LIBS = -lpthread
+READLINE_LIBS = -lreadline
+#READLINE_LIBS = -lreadline -ltermcap
+
+OPENSSL_LIBS = -L/usr/local/ssl/lib -lssl -lcrypto -ldl
+
+LIBFCGI_LIBS = -lfcgi
+
+LIBHARU_LIBS = -lhpdf
+
+LIBICONV_LIBS = -Liconv
+
+MYSQL_LIBS = -lmysqlclient
+
+ZLIB_LIBS = -lz
+
+# Targets
+`{`[`$libs`,TARGET_\^ = lib\$.a`+\n`]`}
+`{`[`$dyn_libs`,TARGET_\^ = \$.so`+\n`]`}
+`{`[`$executables`,TARGET_\^ = \$`+\n`]`}
+`{`[`$dlink_targets`,TARGET_\^ = \$.so`+\n`]`}
+
+# Source and object files
+`{`[`$libs`,\
+TARGET_\^_CPPS = `{`[`$\$_cpps`,\\$`+\\\\\\n `]`}
+TARGET_\^_OBJS = $(TARGET_\^_CPPS:.cpp=.o)\n`+
+`]`}
+`{`[`$dyn_libs`,\
+target_opts_\$.so = -fpic
+TARGET_\^_CPPS = `{`[`$\$_cpps`,\\$`+\\\\\\n `]`}
+TARGET_\^_OBJS = $(TARGET_\^_CPPS:.cpp=.o)\n`{`?`$\$_cmss`[`$\$_cmss`/.cms`/.cmh`'TARGET_\^_CMHS = `'\\?`+\\\\\\n `]\n`}`+
+`]`}
+`{`[`$executables`,\
+TARGET_\^_CPPS = `{`[`$\$_cpps`,\\$`+\\\\\\n `]`}
+TARGET_\^_OBJS = $(TARGET_\^_CPPS:.cpp=.o)\n`{`?`$\$_cmss`[`$\$_cmss`/.cms`/.cmh`'TARGET_\^_CMHS = `'\\?`+\\\\\\n `]\n`}`+
+`]`}
+ALL_TARGETS =\
+`{`[`$all_targets`, $(TARGET_\^)`+\\
+`]`}
+
+ALL_CPP_FILES =\
+`{`[`$all_targets`, $(TARGET_\^_CPPS)`+\\
+`]`}
+
+ALL_OBJ_FILES =\
+`{`[`$all_targets`, $(TARGET_\^_OBJS)`+\\
+`]`}
+
+`{`$all_cms_targets`=`'`'`}
+`{`[`$all_targets`,`{`(`?`$\$_cmss`)`$all_cms_targets`=`$all_cms_targets`+`'\$`'`}`]`}
+ALL_CMH_FILES =\
+`{`[`$all_cms_targets`, $(TARGET_\^_CMHS)`+\\
+`]`}
+
+ALL_DEP_FILES = $(ALL_CPP_FILES:.cpp=.d)
+
+# Targets
+usage: make_usage
+
+`{`[`$libs`,\
+\$: $(TARGET_\^)\n`+
+`]`}
+`{`[`$dyn_libs`,\
+\$: $(TARGET_\^)\n`+
+`]`}
+all:\
+`{`[`$all_targets`, $(TARGET_\^)`+\\
+`]`}
+
+dtm:
+	@echo ``date``>make.dtm
+
+make_usage:
+	@grep ^## makefile
+
+`{`[`$libs`,\
+$(TARGET_\^):: $(TARGET_\^).compile
+
+$(TARGET_\^):: $(TARGET_\^_OBJS)
+	$(BIND_NORMAL) $(TARGET_\^_OBJS)
+`+
+`]`}
+`{`[`$dyn_libs`,\
+$(TARGET_\^)::\
+`{`?`$\$_libs`[`$\$_libs`, $(TARGET_\\^)`]`}\
+`{`?`$\$_dylk`[`$\$_dylk`, $(TARGET_\\^)`]`}\
+`{`(`?`$\$_cmss`) $(TARGET_GENERATE_COMMANDS) $(TARGET_\^_CMHS)`} $(TARGET_\^).compile
+
+$(TARGET_\^):: $(TARGET_\^_OBJS)\
+`{`?`$\$_libs`[`$\$_libs`, $(TARGET_\\^)`]`}\
+`{`?`$\$_dylk`[`$\$_dylk`, $(TARGET_\\^)`]`}
+	$(LINK_DYNAMIC) $(TARGET_\^_OBJS)\
+`{`(`?`$\$_link`)`[`$\$_link`! \\$`]`}\
+`{`(`?`$\$_dylk`)`[`$\$_dylk`' -ldl -Wl,-rpath,.`' $(TARGET_\\^)`]`}
+`+
+`]`}
+`{`[`$executables`,\
+$(TARGET_\^)::\
+`{`?`$\$_libs`[`$\$_libs`, $(TARGET_\\^)`]`}\
+`{`?`$\$_dylk`[`$\$_dylk`, $(TARGET_\\^)`]`}\
+`{`(`?`$\$_cmss`) $(TARGET_GENERATE_COMMANDS) $(TARGET_\^_CMHS)`} $(TARGET_\^).compile
+
+$(TARGET_\^):: $(TARGET_\^_OBJS)\
+`{`?`$\$_libs`[`$\$_libs`, $(TARGET_\\^)`]`}\
+`{`?`$\$_dylk`[`$\$_dylk`, $(TARGET_\\^)`]`}
+	$(LINK_NORMAL`{`(`?`$\$_dyld`)_DYN_USER`}) $(TARGET_\^_OBJS)\
+`{`(`?`$\$_link`)`[`$\$_link`! \\$`]`}\
+`{`(`?`$\$_dylk`)`[`$\$_dylk`' -ldl -Wl,-rpath,.`' $(TARGET_\\^)`]`}\
+`{`(`?`$\$_gext`)`[`$\$_gext`!
+	@rm -f *.\\$`]`}
+`+
+`]`}
+clean:
+	@rm -f compile.sh $(ALL_CMH_FILES) $(ALL_OBJ_FILES) $(ALL_DEP_FILES) $(ALL_TARGETS)
+
+# Dependency include
+-include $(ALL_DEP_FILES)
+

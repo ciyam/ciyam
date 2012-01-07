@@ -1,0 +1,16 @@
+if [ $# -ne 2 ]; then
+ echo Usage: update [dest file] [temp file]
+else
+ if [ -f $1 ]; then
+  cmp -s $1 $2
+  if [ $? -eq 1 ]; then
+   mv $2 $1
+   echo Updated $1
+  else
+   rm $2
+  fi
+ else
+  mv $2 $1
+  echo Created $1
+ fi
+fi
