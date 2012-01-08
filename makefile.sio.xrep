@@ -52,7 +52,7 @@
    <dyn_lib/>
     <name>cat_base
     <sockets>true
-    <openssl>true
+    <openssl>false
     <libharu>true
     <libicnv>true
     <mysqldb>true
@@ -169,7 +169,7 @@
     <gen_ext>
     <threads>true
     <sockets>true
-    <openssl>true
+    <openssl>false
     <libfcgi>false
     <libharu>true
     <libicnv>true
@@ -317,28 +317,6 @@
      <filename>test.cpp
     </cpp_files>
     <cms_files/>
-    </cms_files>
-   </executable>
-   <executable/>
-    <name>test_btree
-    <gen_ext>
-    <threads>false
-    <sockets>false
-    <openssl>false
-    <libfcgi>false
-    <libharu>false
-    <libicnv>false
-    <mysqldb>false
-    <zlibuse>false
-    <dynamic>false
-    <readline>true
-    <link_libs>base
-    <dlink_libs>
-    <cpp_files/>
-     <filename>test_btree.cpp
-    </cpp_files>
-    <cms_files/>
-     <filename>test_btree.cms
     </cms_files>
    </executable>
    <executable/>

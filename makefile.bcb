@@ -23,7 +23,6 @@
 ##             dump                 make dump.exe target
 ##             generate_commands    make generate_commands.exe target
 ##             test                 make test.exe target
-##             test_btree           make test_btree.exe target
 ##             test_cache           make test_cache.exe target
 ##             test_fcgi            make test_fcgi.exe target
 ##             test_numeric         make test_numeric.exe target
@@ -357,10 +356,6 @@ TARGET_GENERATE_COMMANDS_OBJECTS=generate_commands.obj
 TARGET_TEST=test.exe
 TARGET_TEST_OBJECTS=test.obj
 
-TARGET_TEST_BTREE=test_btree.exe
-TARGET_TEST_BTREE_OBJECTS=test_btree.obj
-TARGET_TEST_BTREE_COMMANDS=test_btree.cmh
-
 TARGET_TEST_CACHE=test_cache.exe
 TARGET_TEST_CACHE_OBJECTS=test_cache.obj
 TARGET_TEST_CACHE_COMMANDS=test_cache.cmh
@@ -413,7 +408,6 @@ ALL_TARGETS=\
  $(TARGET_DUMP)\
  $(TARGET_GENERATE_COMMANDS)\
  $(TARGET_TEST)\
- $(TARGET_TEST_BTREE)\
  $(TARGET_TEST_CACHE)\
  $(TARGET_TEST_FCGI)\
  $(TARGET_TEST_NUMERIC)\
@@ -445,7 +439,6 @@ ALL_OBJECTS=\
  $(TARGET_DUMP_OBJECTS)\
  $(TARGET_GENERATE_COMMANDS_OBJECTS)\
  $(TARGET_TEST_OBJECTS)\
- $(TARGET_TEST_BTREE_OBJECTS)\
  $(TARGET_TEST_CACHE_OBJECTS)\
  $(TARGET_TEST_FCGI_OBJECTS)\
  $(TARGET_TEST_NUMERIC_OBJECTS)\
@@ -463,7 +456,6 @@ ALL_COMMANDS=\
  $(TARGET_META_COMMANDS)\
  $(TARGET_CAT_SERVER_COMMANDS)\
  $(TARGET_MODELLER_COMMANDS)\
- $(TARGET_TEST_BTREE_COMMANDS)\
  $(TARGET_TEST_CACHE_COMMANDS)\
  $(TARGET_TEST_NUMERIC_COMMANDS)\
  $(TARGET_TEST_ODS_COMMANDS)\
@@ -487,7 +479,6 @@ modeller: $(TARGET_MODELLER)
 dump: $(TARGET_DUMP)
 generate_commands: $(TARGET_GENERATE_COMMANDS)
 test: $(TARGET_TEST)
-test_btree: $(TARGET_TEST_BTREE)
 test_cache: $(TARGET_TEST_CACHE)
 test_fcgi: $(TARGET_TEST_FCGI)
 test_numeric: $(TARGET_TEST_NUMERIC)
@@ -539,7 +530,7 @@ $(TARGET_CAT_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_BAS
 
 $(TARGET_CAT_BASE):: $(TARGET_CAT_BASE_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
- $(LINK_DYNAMIC) $(WINSOCK_LIBS) $(OPENSSL_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(MYSQL_LIBS)
+ $(LINK_DYNAMIC) $(WINSOCK_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(MYSQL_LIBS)
 !
  $(EXPORT) $(EXPORTFLAGS) $(TARGET_CAT_BASE:.dll=.lib) $(TARGET_CAT_BASE) >$(TARGET_CAT_BASE_ERRFILE)
  @filter -r "^$" "^Borland Implib" <$(TARGET_CAT_BASE_ERRFILE)
@@ -595,7 +586,7 @@ $(TARGET_CAT_SERVER):: $(TARGET_BASE) $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMA
 
 $(TARGET_CAT_SERVER):: $(TARGET_CAT_SERVER_OBJECTS) $(TARGET_BASE) $(TARGET_CAT_BASE:.dll=.lib)
  $(LINK) @&&!
- $(LINK_NORMAL) $(WINSOCK_LIBS) $(OPENSSL_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS)
+ $(LINK_NORMAL) $(WINSOCK_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS)
 !
 
 $(TARGET_CONSTRUCT:.exe=.compile):
@@ -655,16 +646,6 @@ $(TARGET_TEST:.exe=.compile):
 $(TARGET_TEST):: $(TARGET_BASE) $(TARGET_TEST:.exe=.compile)
 
 $(TARGET_TEST):: $(TARGET_TEST_OBJECTS) $(TARGET_BASE)
- $(LINK) @&&!
- $(LINK_NORMAL)
-!
-
-$(TARGET_TEST_BTREE:.exe=.compile):
- @echo $(CPP_NORMAL) %* >compile.bat
-
-$(TARGET_TEST_BTREE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_TEST_BTREE_COMMANDS) $(TARGET_TEST_BTREE:.exe=.compile)
-
-$(TARGET_TEST_BTREE):: $(TARGET_TEST_BTREE_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL)
 !
