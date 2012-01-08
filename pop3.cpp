@@ -24,10 +24,9 @@
 #  include <stdexcept>
 #endif
 
-#define SSL_SUPPORT
-
 #include "pop3.h"
 
+#include "config.h"
 #include "sockets.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"

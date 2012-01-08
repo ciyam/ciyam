@@ -34,8 +34,6 @@
 
 #define CAT_BASE_IMPL
 
-#define SSL_SUPPORT
-
 #include "cat_base.h"
 
 #include "md5.h"
@@ -44,6 +42,7 @@
 #include "sha1.h"
 #include "base64.h"
 #include "sql_db.h"
+#include "config.h"
 #include "format.h"
 #include "threads.h"
 #include "pointers.h"
