@@ -1,0 +1,13 @@
+list "list child folders"
+in "enter child folder" <val//name>
+out "return to parent folder"
+add "add child folder [use name*n to add 'n' folders]" <val//name>
+del "del child folder [use name*n to del 'n' folders]" <val//name>
+trans "begin transaction"
+commit "commit transaction"
+rollback "rollback transaction"
+trans_id "get the current transaction id"
+trans_level "get the current transaction level"
+compress "move free data to end of store"
+abort "force an immediate exit"
+exit "exit program"

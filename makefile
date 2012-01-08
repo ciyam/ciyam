@@ -11,12 +11,12 @@
 ##
 ##             base                 make libbase.a target
 ##             commands             make libcommands.a target
-##             cosp_base            make cosp_base.so target
+##             cat_base             make cat_base.so target
 ##             Meta                 make Meta.so target
 ##             bundle               make bundle target
-##             cosp_client          make cosp_client target
-##             cosp_interface       make cosp_interface target
-##             cosp_server          make cosp_server target
+##             cat_client           make cat_client target
+##             cat_interface        make cat_interface target
+##             cat_server           make cat_server target
 ##             construct            make construct target
 ##             extract              make extract target
 ##             modeller             make modeller target
@@ -90,12 +90,12 @@ ZLIB_LIBS = -lz
 # Targets
 TARGET_BASE = libbase.a
 TARGET_COMMANDS = libcommands.a
-TARGET_COSP_BASE = cosp_base.so
+TARGET_CAT_BASE = cat_base.so
 TARGET_META = Meta.so
 TARGET_BUNDLE = bundle
-TARGET_COSP_CLIENT = cosp_client
-TARGET_COSP_INTERFACE = cosp_interface
-TARGET_COSP_SERVER = cosp_server
+TARGET_CAT_CLIENT = cat_client
+TARGET_CAT_INTERFACE = cat_interface
+TARGET_CAT_SERVER = cat_server
 TARGET_CONSTRUCT = construct
 TARGET_EXTRACT = extract
 TARGET_MODELLER = modeller
@@ -155,20 +155,20 @@ TARGET_COMMANDS_CPPS = command_parser.cpp\
  utilities.cpp
 TARGET_COMMANDS_OBJS = $(TARGET_COMMANDS_CPPS:.cpp=.o)
 
-target_opts_cosp_base.so = -fpic
-TARGET_COSP_BASE_CPPS = cosp_base.cpp\
- cosp_base_command_handler.cpp\
- cosp_base_date_time.cpp\
- cosp_base_file_buffer.cpp\
- cosp_base_numeric.cpp\
- cosp_base_ods.cpp\
+target_opts_cat_base.so = -fpic
+TARGET_CAT_BASE_CPPS = cat_base.cpp\
+ cat_base_command_handler.cpp\
+ cat_base_date_time.cpp\
+ cat_base_file_buffer.cpp\
+ cat_base_numeric.cpp\
+ cat_base_ods.cpp\
  class_base.cpp\
  commands_date_time.cpp\
  commands_numeric.cpp\
  mail_source.cpp\
  module_management.cpp
-TARGET_COSP_BASE_OBJS = $(TARGET_COSP_BASE_CPPS:.cpp=.o)
-TARGET_COSP_BASE_CMHS = date_time.cmh\
+TARGET_CAT_BASE_OBJS = $(TARGET_CAT_BASE_CPPS:.cpp=.o)
+TARGET_CAT_BASE_CMHS = date_time.cmh\
  numeric.cmh
 
 target_opts_Meta.so = -fpic
@@ -251,23 +251,23 @@ TARGET_META_CMHS = Meta.cmh\
 TARGET_BUNDLE_CPPS = bundle.cpp
 TARGET_BUNDLE_OBJS = $(TARGET_BUNDLE_CPPS:.cpp=.o)
 
-TARGET_COSP_CLIENT_CPPS = cosp_client.cpp
-TARGET_COSP_CLIENT_OBJS = $(TARGET_COSP_CLIENT_CPPS:.cpp=.o)
+TARGET_CAT_CLIENT_CPPS = CAT_client.cpp
+TARGET_CAT_CLIENT_OBJS = $(TARGET_CAT_CLIENT_CPPS:.cpp=.o)
 
-TARGET_COSP_INTERFACE_CPPS = cosp_interface.cpp\
+TARGET_CAT_INTERFACE_CPPS = cat_interface.cpp\
  fcgi_cmds.cpp\
  fcgi_info.cpp\
  fcgi_list.cpp\
  fcgi_parser.cpp\
  fcgi_utils.cpp\
  fcgi_view.cpp
-TARGET_COSP_INTERFACE_OBJS = $(TARGET_COSP_INTERFACE_CPPS:.cpp=.o)
+TARGET_CAT_INTERFACE_OBJS = $(TARGET_CAT_INTERFACE_CPPS:.cpp=.o)
 
-TARGET_COSP_SERVER_CPPS = auto_script.cpp\
- cosp_server.cpp\
- cosp_session.cpp
-TARGET_COSP_SERVER_OBJS = $(TARGET_COSP_SERVER_CPPS:.cpp=.o)
-TARGET_COSP_SERVER_CMHS = cosp_session.cmh
+TARGET_CAT_SERVER_CPPS = auto_script.cpp\
+ cat_server.cpp\
+ cat_session.cpp
+TARGET_CAT_SERVER_OBJS = $(TARGET_CAT_SERVER_CPPS:.cpp=.o)
+TARGET_CAT_SERVER_CMHS = cat_session.cmh
 
 TARGET_CONSTRUCT_CPPS = construct.cpp
 TARGET_CONSTRUCT_OBJS = $(TARGET_CONSTRUCT_CPPS:.cpp=.o)
@@ -336,12 +336,12 @@ TARGET_XVARS_OBJS = $(TARGET_XVARS_CPPS:.cpp=.o)
 ALL_TARGETS =\
  $(TARGET_BASE)\
  $(TARGET_COMMANDS)\
- $(TARGET_COSP_BASE)\
+ $(TARGET_CAT_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
- $(TARGET_COSP_CLIENT)\
- $(TARGET_COSP_INTERFACE)\
- $(TARGET_COSP_SERVER)\
+ $(TARGET_CAT_CLIENT)\
+ $(TARGET_CAT_INTERFACE)\
+ $(TARGET_CAT_SERVER)\
  $(TARGET_CONSTRUCT)\
  $(TARGET_EXTRACT)\
  $(TARGET_MODELLER)\
@@ -364,12 +364,12 @@ ALL_TARGETS =\
 ALL_CPP_FILES =\
  $(TARGET_BASE_CPPS)\
  $(TARGET_COMMANDS_CPPS)\
- $(TARGET_COSP_BASE_CPPS)\
+ $(TARGET_CAT_BASE_CPPS)\
  $(TARGET_META_CPPS)\
  $(TARGET_BUNDLE_CPPS)\
- $(TARGET_COSP_CLIENT_CPPS)\
- $(TARGET_COSP_INTERFACE_CPPS)\
- $(TARGET_COSP_SERVER_CPPS)\
+ $(TARGET_CAT_CLIENT_CPPS)\
+ $(TARGET_CAT_INTERFACE_CPPS)\
+ $(TARGET_CAT_SERVER_CPPS)\
  $(TARGET_CONSTRUCT_CPPS)\
  $(TARGET_EXTRACT_CPPS)\
  $(TARGET_MODELLER_CPPS)\
@@ -392,12 +392,12 @@ ALL_CPP_FILES =\
 ALL_OBJ_FILES =\
  $(TARGET_BASE_OBJS)\
  $(TARGET_COMMANDS_OBJS)\
- $(TARGET_COSP_BASE_OBJS)\
+ $(TARGET_CAT_BASE_OBJS)\
  $(TARGET_META_OBJS)\
  $(TARGET_BUNDLE_OBJS)\
- $(TARGET_COSP_CLIENT_OBJS)\
- $(TARGET_COSP_INTERFACE_OBJS)\
- $(TARGET_COSP_SERVER_OBJS)\
+ $(TARGET_CAT_CLIENT_OBJS)\
+ $(TARGET_CAT_INTERFACE_OBJS)\
+ $(TARGET_CAT_SERVER_OBJS)\
  $(TARGET_CONSTRUCT_OBJS)\
  $(TARGET_EXTRACT_OBJS)\
  $(TARGET_MODELLER_OBJS)\
@@ -418,9 +418,9 @@ ALL_OBJ_FILES =\
  $(TARGET_XVARS_OBJS)
 
 ALL_CMH_FILES =\
- $(TARGET_COSP_BASE_CMHS)\
+ $(TARGET_CAT_BASE_CMHS)\
  $(TARGET_META_CMHS)\
- $(TARGET_COSP_SERVER_CMHS)\
+ $(TARGET_CAT_SERVER_CMHS)\
  $(TARGET_MODELLER_CMHS)\
  $(TARGET_TEST_BTREE_CMHS)\
  $(TARGET_TEST_CACHE_CMHS)\
@@ -437,19 +437,19 @@ base: $(TARGET_BASE)
 
 commands: $(TARGET_COMMANDS)
 
-cosp_base: $(TARGET_COSP_BASE)
+cat_base: $(TARGET_CAT_BASE)
 
 Meta: $(TARGET_META)
 
 all:\
  $(TARGET_BASE)\
  $(TARGET_COMMANDS)\
- $(TARGET_COSP_BASE)\
+ $(TARGET_CAT_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
- $(TARGET_COSP_CLIENT)\
- $(TARGET_COSP_INTERFACE)\
- $(TARGET_COSP_SERVER)\
+ $(TARGET_CAT_CLIENT)\
+ $(TARGET_CAT_INTERFACE)\
+ $(TARGET_CAT_SERVER)\
  $(TARGET_CONSTRUCT)\
  $(TARGET_EXTRACT)\
  $(TARGET_MODELLER)\
@@ -485,35 +485,35 @@ $(TARGET_COMMANDS):: $(TARGET_COMMANDS).compile
 $(TARGET_COMMANDS):: $(TARGET_COMMANDS_OBJS)
 	$(BIND_NORMAL) $(TARGET_COMMANDS_OBJS)
 
-$(TARGET_COSP_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_COSP_BASE_CMHS) $(TARGET_COSP_BASE).compile
+$(TARGET_CAT_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_BASE_CMHS) $(TARGET_CAT_BASE).compile
 
-$(TARGET_COSP_BASE):: $(TARGET_COSP_BASE_OBJS) $(TARGET_BASE)
-	$(LINK_DYNAMIC) $(TARGET_COSP_BASE_OBJS) $(READLINE_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(OPENSSL_LIBS) $(MYSQL_LIBS) -L. -lbase
+$(TARGET_CAT_BASE):: $(TARGET_CAT_BASE_OBJS) $(TARGET_BASE)
+	$(LINK_DYNAMIC) $(TARGET_CAT_BASE_OBJS) $(READLINE_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(OPENSSL_LIBS) $(MYSQL_LIBS) -L. -lbase
 
-$(TARGET_META):: $(TARGET_COSP_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_META_CMHS) $(TARGET_META).compile
+$(TARGET_META):: $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_META_CMHS) $(TARGET_META).compile
 
-$(TARGET_META):: $(TARGET_META_OBJS) $(TARGET_COSP_BASE)
-	$(LINK_DYNAMIC) $(TARGET_META_OBJS) -ldl -Wl,-rpath,. $(TARGET_COSP_BASE)
+$(TARGET_META):: $(TARGET_META_OBJS) $(TARGET_CAT_BASE)
+	$(LINK_DYNAMIC) $(TARGET_META_OBJS) -ldl -Wl,-rpath,. $(TARGET_CAT_BASE)
 
 $(TARGET_BUNDLE):: $(TARGET_BASE) $(TARGET_BUNDLE).compile
 
 $(TARGET_BUNDLE):: $(TARGET_BUNDLE_OBJS) $(TARGET_BASE)
 	$(LINK_NORMAL) $(TARGET_BUNDLE_OBJS) $(ZLIB_LIBS) -L. -lbase
 
-$(TARGET_COSP_CLIENT):: $(TARGET_BASE) $(TARGET_COSP_CLIENT).compile
+$(TARGET_CAT_CLIENT):: $(TARGET_BASE) $(TARGET_CAT_CLIENT).compile
 
-$(TARGET_COSP_CLIENT):: $(TARGET_COSP_CLIENT_OBJS) $(TARGET_BASE)
-	$(LINK_NORMAL) $(TARGET_COSP_CLIENT_OBJS) $(READLINE_LIBS) -L. -lbase
+$(TARGET_CAT_CLIENT):: $(TARGET_CAT_CLIENT_OBJS) $(TARGET_BASE)
+	$(LINK_NORMAL) $(TARGET_CAT_CLIENT_OBJS) $(READLINE_LIBS) -L. -lbase
 
-$(TARGET_COSP_INTERFACE):: $(TARGET_BASE) $(TARGET_COSP_INTERFACE).compile
+$(TARGET_CAT_INTERFACE):: $(TARGET_BASE) $(TARGET_CAT_INTERFACE).compile
 
-$(TARGET_COSP_INTERFACE):: $(TARGET_COSP_INTERFACE_OBJS) $(TARGET_BASE)
-	$(LINK_NORMAL) $(TARGET_COSP_INTERFACE_OBJS) $(THREAD_LIBS) $(READLINE_LIBS) $(LIBFCGI_LIBS) -L. -lbase
+$(TARGET_CAT_INTERFACE):: $(TARGET_CAT_INTERFACE_OBJS) $(TARGET_BASE)
+	$(LINK_NORMAL) $(TARGET_CAT_INTERFACE_OBJS) $(THREAD_LIBS) $(READLINE_LIBS) $(LIBFCGI_LIBS) -L. -lbase
 
-$(TARGET_COSP_SERVER):: $(TARGET_BASE) $(TARGET_COSP_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_COSP_SERVER_CMHS) $(TARGET_COSP_SERVER).compile
+$(TARGET_CAT_SERVER):: $(TARGET_BASE) $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_SERVER_CMHS) $(TARGET_CAT_SERVER).compile
 
-$(TARGET_COSP_SERVER):: $(TARGET_COSP_SERVER_OBJS) $(TARGET_BASE) $(TARGET_COSP_BASE)
-	$(LINK_NORMAL) $(TARGET_COSP_SERVER_OBJS) $(THREAD_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(OPENSSL_LIBS) -L. -lbase -ldl -Wl,-rpath,. $(TARGET_COSP_BASE)
+$(TARGET_CAT_SERVER):: $(TARGET_CAT_SERVER_OBJS) $(TARGET_BASE) $(TARGET_CAT_BASE)
+	$(LINK_NORMAL) $(TARGET_CAT_SERVER_OBJS) $(THREAD_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(OPENSSL_LIBS) -L. -lbase -ldl -Wl,-rpath,. $(TARGET_CAT_BASE)
 
 $(TARGET_CONSTRUCT):: $(TARGET_BASE) $(TARGET_CONSTRUCT).compile
 

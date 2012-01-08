@@ -1,0 +1,2345 @@
+// Copyright (c) 2008
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
+#  include <fstream>
+#  include <iostream>
+#  include <algorithm>
+#  include <stdexcept>
+#endif
+
+#define CAT_BASE_LIB
+#define MODULE_META_IMPL
+
+// [<start macros>]
+// [<finish macros>]
+
+#include "Meta_List_Field_Type.h"
+
+#include "Meta_List_Field.h"
+
+#include "cat_base.h"
+#include "class_domains.h"
+#include "module_strings.h"
+#include "class_utilities.h"
+#include "command_handler.h"
+#include "module_interface.h"
+
+// [<start includes>]
+// [<finish includes>]
+
+using namespace std;
+
+// [<start namespaces>]
+// [<finish namespaces>]
+
+inline int system( const string& cmd ) { return exec_system( cmd ); }
+
+namespace
+{
+
+#include "Meta_List_Field_Type.cmh"
+
+const int32_t c_version = 1;
+
+const char* const c_okay = "okay";
+
+const char* const c_field_id_Allow_Child_Rel_Select_Specifics = "123113";
+const char* const c_field_id_Allow_Exclude_In_Use_FK = "123106";
+const char* const c_field_id_Allow_Link_Restriction = "123112";
+const char* const c_field_id_Allow_Link_Type = "123107";
+const char* const c_field_id_Allow_Procedure = "123108";
+const char* const c_field_id_Allow_Restriction_Field = "123116";
+const char* const c_field_id_Allow_Restriction_Spec = "123103";
+const char* const c_field_id_Allow_Restriction_Value = "123104";
+const char* const c_field_id_Allow_Search_Option_Limit = "123115";
+const char* const c_field_id_Allow_Select_Specifics = "123111";
+const char* const c_field_id_Is_Restrict_Search = "123118";
+const char* const c_field_id_List_Field_Name = "123102";
+const char* const c_field_id_Name = "123101";
+const char* const c_field_id_Needs_Restriction_Field = "123117";
+const char* const c_field_id_Needs_Source = "123114";
+const char* const c_field_id_Needs_Switch_Type = "123105";
+const char* const c_field_id_Non_Simple_Field = "123109";
+const char* const c_field_id_Trivial_Field_Only = "123110";
+
+const char* const c_field_name_Allow_Child_Rel_Select_Specifics = "Allow_Child_Rel_Select_Specifics";
+const char* const c_field_name_Allow_Exclude_In_Use_FK = "Allow_Exclude_In_Use_FK";
+const char* const c_field_name_Allow_Link_Restriction = "Allow_Link_Restriction";
+const char* const c_field_name_Allow_Link_Type = "Allow_Link_Type";
+const char* const c_field_name_Allow_Procedure = "Allow_Procedure";
+const char* const c_field_name_Allow_Restriction_Field = "Allow_Restriction_Field";
+const char* const c_field_name_Allow_Restriction_Spec = "Allow_Restriction_Spec";
+const char* const c_field_name_Allow_Restriction_Value = "Allow_Restriction_Value";
+const char* const c_field_name_Allow_Search_Option_Limit = "Allow_Search_Option_Limit";
+const char* const c_field_name_Allow_Select_Specifics = "Allow_Select_Specifics";
+const char* const c_field_name_Is_Restrict_Search = "Is_Restrict_Search";
+const char* const c_field_name_List_Field_Name = "List_Field_Name";
+const char* const c_field_name_Name = "Name";
+const char* const c_field_name_Needs_Restriction_Field = "Needs_Restriction_Field";
+const char* const c_field_name_Needs_Source = "Needs_Source";
+const char* const c_field_name_Needs_Switch_Type = "Needs_Switch_Type";
+const char* const c_field_name_Non_Simple_Field = "Non_Simple_Field";
+const char* const c_field_name_Trivial_Field_Only = "Trivial_Field_Only";
+
+const char* const c_field_display_name_Allow_Child_Rel_Select_Specifics = "field_list_field_type_allow_child_rel_select_specifics";
+const char* const c_field_display_name_Allow_Exclude_In_Use_FK = "field_list_field_type_allow_exclude_in_use_fk";
+const char* const c_field_display_name_Allow_Link_Restriction = "field_list_field_type_allow_link_restriction";
+const char* const c_field_display_name_Allow_Link_Type = "field_list_field_type_allow_link_type";
+const char* const c_field_display_name_Allow_Procedure = "field_list_field_type_allow_procedure";
+const char* const c_field_display_name_Allow_Restriction_Field = "field_list_field_type_allow_restriction_field";
+const char* const c_field_display_name_Allow_Restriction_Spec = "field_list_field_type_allow_restriction_spec";
+const char* const c_field_display_name_Allow_Restriction_Value = "field_list_field_type_allow_restriction_value";
+const char* const c_field_display_name_Allow_Search_Option_Limit = "field_list_field_type_allow_search_option_limit";
+const char* const c_field_display_name_Allow_Select_Specifics = "field_list_field_type_allow_select_specifics";
+const char* const c_field_display_name_Is_Restrict_Search = "field_list_field_type_is_restrict_search";
+const char* const c_field_display_name_List_Field_Name = "field_list_field_type_list_field_name";
+const char* const c_field_display_name_Name = "field_list_field_type_name";
+const char* const c_field_display_name_Needs_Restriction_Field = "field_list_field_type_needs_restriction_field";
+const char* const c_field_display_name_Needs_Source = "field_list_field_type_needs_source";
+const char* const c_field_display_name_Needs_Switch_Type = "field_list_field_type_needs_switch_type";
+const char* const c_field_display_name_Non_Simple_Field = "field_list_field_type_non_simple_field";
+const char* const c_field_display_name_Trivial_Field_Only = "field_list_field_type_trivial_field_only";
+
+const int c_num_fields = 18;
+
+const char* const c_all_sorted_field_ids[ ] =
+{
+   "123101",
+   "123102",
+   "123103",
+   "123104",
+   "123105",
+   "123106",
+   "123107",
+   "123108",
+   "123109",
+   "123110",
+   "123111",
+   "123112",
+   "123113",
+   "123114",
+   "123115",
+   "123116",
+   "123117",
+   "123118"
+};
+
+const char* const c_all_sorted_field_names[ ] =
+{
+   "Allow_Child_Rel_Select_Specifics",
+   "Allow_Exclude_In_Use_FK",
+   "Allow_Link_Restriction",
+   "Allow_Link_Type",
+   "Allow_Procedure",
+   "Allow_Restriction_Field",
+   "Allow_Restriction_Spec",
+   "Allow_Restriction_Value",
+   "Allow_Search_Option_Limit",
+   "Allow_Select_Specifics",
+   "Is_Restrict_Search",
+   "List_Field_Name",
+   "Name",
+   "Needs_Restriction_Field",
+   "Needs_Source",
+   "Needs_Switch_Type",
+   "Non_Simple_Field",
+   "Trivial_Field_Only"
+};
+
+inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
+
+inline bool has_field( const string& field )
+{
+   return binary_search( c_all_sorted_field_ids, c_all_sorted_field_ids + c_num_fields, field.c_str( ), compare )
+    || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
+}
+
+const int c_num_transient_fields = 0;
+
+bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
+
+domain_string_max_size< 100 > g_List_Field_Name_domain;
+domain_string_max_size< 30 > g_Name_domain;
+
+set< string > g_derivations;
+
+typedef map< string, Meta_List_Field_Type* > external_aliases_container;
+typedef external_aliases_container::const_iterator external_aliases_const_iterator;
+typedef external_aliases_container::value_type external_aliases_value_type;
+
+typedef map< size_t, Meta_List_Field_Type* > external_aliases_lookup_container;
+typedef external_aliases_lookup_container::const_iterator external_aliases_lookup_const_iterator;
+
+external_aliases_container g_external_aliases;
+external_aliases_lookup_container g_external_aliases_lookup;
+
+bool gv_default_Allow_Child_Rel_Select_Specifics = bool( 0 );
+bool gv_default_Allow_Exclude_In_Use_FK = bool( 0 );
+bool gv_default_Allow_Link_Restriction = bool( 0 );
+bool gv_default_Allow_Link_Type = bool( 0 );
+bool gv_default_Allow_Procedure = bool( 0 );
+bool gv_default_Allow_Restriction_Field = bool( 0 );
+bool gv_default_Allow_Restriction_Spec = bool( 0 );
+bool gv_default_Allow_Restriction_Value = bool( 0 );
+bool gv_default_Allow_Search_Option_Limit = bool( 0 );
+bool gv_default_Allow_Select_Specifics = bool( 0 );
+bool gv_default_Is_Restrict_Search = bool( 0 );
+string gv_default_List_Field_Name = string( );
+string gv_default_Name = string( );
+bool gv_default_Needs_Restriction_Field = bool( 0 );
+bool gv_default_Needs_Source = bool( 0 );
+bool gv_default_Needs_Switch_Type = bool( 0 );
+bool gv_default_Non_Simple_Field = bool( 0 );
+bool gv_default_Trivial_Field_Only = bool( 0 );
+
+// [<start anonymous>]
+// [<finish anonymous>]
+
+}
+
+registration< Meta_List_Field_Type > List_Field_Type_registration( get_class_registry( ), "123100" );
+
+class Meta_List_Field_Type_command_functor;
+
+class Meta_List_Field_Type_command_handler : public command_handler
+{
+   friend class Meta_List_Field_Type_command_functor;
+
+   public:
+   Meta_List_Field_Type_command_handler( ) : p_Meta_List_Field_Type( 0 ) { }
+
+   void set_Meta_List_Field_Type( Meta_List_Field_Type* p_new_Meta_List_Field_Type ) { p_Meta_List_Field_Type = p_new_Meta_List_Field_Type; }
+
+   void handle_unknown_command( const string& command )
+   {
+      throw runtime_error( "unknown command '" + command + "'" );
+   }
+
+   void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )
+   {
+      throw runtime_error( "invalid command usage '" + cmd_and_args + "'" );
+   }
+
+   private:
+   Meta_List_Field_Type* p_Meta_List_Field_Type;
+
+   protected:
+   string retval;
+};
+
+class Meta_List_Field_Type_command_functor : public command_functor
+{
+   public:
+   Meta_List_Field_Type_command_functor( Meta_List_Field_Type_command_handler& handler )
+    : command_functor( handler ),
+    cmd_handler( handler )
+   {
+   }
+
+   void operator ( )( const string& command, const parameter_info& parameters );
+
+   private:
+   Meta_List_Field_Type_command_handler& cmd_handler;
+};
+
+command_functor* Meta_List_Field_Type_command_functor_factory( const string& /*name*/, command_handler& handler )
+{
+   return new Meta_List_Field_Type_command_functor( dynamic_cast< Meta_List_Field_Type_command_handler& >( handler ) );
+}
+
+void Meta_List_Field_Type_command_functor::operator ( )( const string& command, const parameter_info& parameters )
+{
+   if( command == c_cmd_Meta_List_Field_Type_key )
+   {
+      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_List_Field_Type_key_fixed ) );
+
+      if( !want_fixed )
+         cmd_handler.retval = cmd_handler.p_Meta_List_Field_Type->get_key( );
+      else
+         cmd_handler.retval = cmd_handler.p_Meta_List_Field_Type->get_fixed_key( );
+   }
+   else if( command == c_cmd_Meta_List_Field_Type_ver )
+   {
+      string ver_rev( to_string( cmd_handler.p_Meta_List_Field_Type->get_version( ) ) );
+      ver_rev += "." + to_string( cmd_handler.p_Meta_List_Field_Type->get_revision( ) );
+
+      cmd_handler.retval = ver_rev;
+   }
+   else if( command == c_cmd_Meta_List_Field_Type_get )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_Type_get_field_name ) );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Allow_Child_Rel_Select_Specifics || field_name == c_field_name_Allow_Child_Rel_Select_Specifics )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Child_Rel_Select_Specifics( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Exclude_In_Use_FK || field_name == c_field_name_Allow_Exclude_In_Use_FK )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Exclude_In_Use_FK( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Link_Restriction || field_name == c_field_name_Allow_Link_Restriction )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Link_Restriction( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Link_Type || field_name == c_field_name_Allow_Link_Type )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Link_Type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Procedure || field_name == c_field_name_Allow_Procedure )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Restriction_Field || field_name == c_field_name_Allow_Restriction_Field )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Restriction_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Restriction_Spec || field_name == c_field_name_Allow_Restriction_Spec )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Restriction_Spec( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Restriction_Value || field_name == c_field_name_Allow_Restriction_Value )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Restriction_Value( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Search_Option_Limit || field_name == c_field_name_Allow_Search_Option_Limit )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Search_Option_Limit( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Select_Specifics || field_name == c_field_name_Allow_Select_Specifics )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Select_Specifics( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_Restrict_Search || field_name == c_field_name_Is_Restrict_Search )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Is_Restrict_Search( ), cmd_handler.retval );
+      else if( field_name == c_field_id_List_Field_Name || field_name == c_field_name_List_Field_Name )
+         string_getter< string >( cmd_handler.p_Meta_List_Field_Type->List_Field_Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+         string_getter< string >( cmd_handler.p_Meta_List_Field_Type->Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Restriction_Field || field_name == c_field_name_Needs_Restriction_Field )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Needs_Restriction_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Source || field_name == c_field_name_Needs_Source )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Needs_Source( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Switch_Type || field_name == c_field_name_Needs_Switch_Type )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Needs_Switch_Type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Non_Simple_Field || field_name == c_field_name_Non_Simple_Field )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Non_Simple_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Trivial_Field_Only || field_name == c_field_name_Trivial_Field_Only )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Trivial_Field_Only( ), cmd_handler.retval );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
+   }
+   else if( command == c_cmd_Meta_List_Field_Type_set )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_Type_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_Type_set_field_value ) );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Allow_Child_Rel_Select_Specifics || field_name == c_field_name_Allow_Child_Rel_Select_Specifics )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Child_Rel_Select_Specifics, field_value );
+      else if( field_name == c_field_id_Allow_Exclude_In_Use_FK || field_name == c_field_name_Allow_Exclude_In_Use_FK )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Exclude_In_Use_FK, field_value );
+      else if( field_name == c_field_id_Allow_Link_Restriction || field_name == c_field_name_Allow_Link_Restriction )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Link_Restriction, field_value );
+      else if( field_name == c_field_id_Allow_Link_Type || field_name == c_field_name_Allow_Link_Type )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Link_Type, field_value );
+      else if( field_name == c_field_id_Allow_Procedure || field_name == c_field_name_Allow_Procedure )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Procedure, field_value );
+      else if( field_name == c_field_id_Allow_Restriction_Field || field_name == c_field_name_Allow_Restriction_Field )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Restriction_Field, field_value );
+      else if( field_name == c_field_id_Allow_Restriction_Spec || field_name == c_field_name_Allow_Restriction_Spec )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Restriction_Spec, field_value );
+      else if( field_name == c_field_id_Allow_Restriction_Value || field_name == c_field_name_Allow_Restriction_Value )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Restriction_Value, field_value );
+      else if( field_name == c_field_id_Allow_Search_Option_Limit || field_name == c_field_name_Allow_Search_Option_Limit )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Search_Option_Limit, field_value );
+      else if( field_name == c_field_id_Allow_Select_Specifics || field_name == c_field_name_Allow_Select_Specifics )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Select_Specifics, field_value );
+      else if( field_name == c_field_id_Is_Restrict_Search || field_name == c_field_name_Is_Restrict_Search )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Is_Restrict_Search, field_value );
+      else if( field_name == c_field_id_List_Field_Name || field_name == c_field_name_List_Field_Name )
+         func_string_setter< Meta_List_Field_Type, string >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::List_Field_Name, field_value );
+      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+         func_string_setter< Meta_List_Field_Type, string >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Name, field_value );
+      else if( field_name == c_field_id_Needs_Restriction_Field || field_name == c_field_name_Needs_Restriction_Field )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Needs_Restriction_Field, field_value );
+      else if( field_name == c_field_id_Needs_Source || field_name == c_field_name_Needs_Source )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Needs_Source, field_value );
+      else if( field_name == c_field_id_Needs_Switch_Type || field_name == c_field_name_Needs_Switch_Type )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Needs_Switch_Type, field_value );
+      else if( field_name == c_field_id_Non_Simple_Field || field_name == c_field_name_Non_Simple_Field )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Non_Simple_Field, field_value );
+      else if( field_name == c_field_id_Trivial_Field_Only || field_name == c_field_name_Trivial_Field_Only )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Trivial_Field_Only, field_value );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
+
+      cmd_handler.retval = c_okay;
+   }
+   else if( command == c_cmd_Meta_List_Field_Type_cmd )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_Type_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_Type_cmd_cmd_and_args ) );
+
+      cmd_handler.retval.erase( );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for command call" );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for command call" );
+   }
+}
+
+struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
+{
+   impl( Meta_List_Field_Type& o )
+    :
+    cp_obj( &o ),
+    total_child_relationships( 0 )
+   {
+      p_obj = &o;
+      set_Meta_List_Field_Type( &o );
+
+      add_commands( 0, Meta_List_Field_Type_command_functor_factory,
+       ARRAY_PTR_AND_SIZE( Meta_List_Field_Type_command_definitions ) );
+   }
+
+   Meta_List_Field_Type& get_obj( ) const
+   {
+      return *cp_obj;
+   }
+
+   bool impl_Allow_Child_Rel_Select_Specifics( ) const { return lazy_fetch( p_obj ), v_Allow_Child_Rel_Select_Specifics; }
+   void impl_Allow_Child_Rel_Select_Specifics( bool Allow_Child_Rel_Select_Specifics ) { v_Allow_Child_Rel_Select_Specifics = Allow_Child_Rel_Select_Specifics; }
+
+   bool impl_Allow_Exclude_In_Use_FK( ) const { return lazy_fetch( p_obj ), v_Allow_Exclude_In_Use_FK; }
+   void impl_Allow_Exclude_In_Use_FK( bool Allow_Exclude_In_Use_FK ) { v_Allow_Exclude_In_Use_FK = Allow_Exclude_In_Use_FK; }
+
+   bool impl_Allow_Link_Restriction( ) const { return lazy_fetch( p_obj ), v_Allow_Link_Restriction; }
+   void impl_Allow_Link_Restriction( bool Allow_Link_Restriction ) { v_Allow_Link_Restriction = Allow_Link_Restriction; }
+
+   bool impl_Allow_Link_Type( ) const { return lazy_fetch( p_obj ), v_Allow_Link_Type; }
+   void impl_Allow_Link_Type( bool Allow_Link_Type ) { v_Allow_Link_Type = Allow_Link_Type; }
+
+   bool impl_Allow_Procedure( ) const { return lazy_fetch( p_obj ), v_Allow_Procedure; }
+   void impl_Allow_Procedure( bool Allow_Procedure ) { v_Allow_Procedure = Allow_Procedure; }
+
+   bool impl_Allow_Restriction_Field( ) const { return lazy_fetch( p_obj ), v_Allow_Restriction_Field; }
+   void impl_Allow_Restriction_Field( bool Allow_Restriction_Field ) { v_Allow_Restriction_Field = Allow_Restriction_Field; }
+
+   bool impl_Allow_Restriction_Spec( ) const { return lazy_fetch( p_obj ), v_Allow_Restriction_Spec; }
+   void impl_Allow_Restriction_Spec( bool Allow_Restriction_Spec ) { v_Allow_Restriction_Spec = Allow_Restriction_Spec; }
+
+   bool impl_Allow_Restriction_Value( ) const { return lazy_fetch( p_obj ), v_Allow_Restriction_Value; }
+   void impl_Allow_Restriction_Value( bool Allow_Restriction_Value ) { v_Allow_Restriction_Value = Allow_Restriction_Value; }
+
+   bool impl_Allow_Search_Option_Limit( ) const { return lazy_fetch( p_obj ), v_Allow_Search_Option_Limit; }
+   void impl_Allow_Search_Option_Limit( bool Allow_Search_Option_Limit ) { v_Allow_Search_Option_Limit = Allow_Search_Option_Limit; }
+
+   bool impl_Allow_Select_Specifics( ) const { return lazy_fetch( p_obj ), v_Allow_Select_Specifics; }
+   void impl_Allow_Select_Specifics( bool Allow_Select_Specifics ) { v_Allow_Select_Specifics = Allow_Select_Specifics; }
+
+   bool impl_Is_Restrict_Search( ) const { return lazy_fetch( p_obj ), v_Is_Restrict_Search; }
+   void impl_Is_Restrict_Search( bool Is_Restrict_Search ) { v_Is_Restrict_Search = Is_Restrict_Search; }
+
+   const string& impl_List_Field_Name( ) const { return lazy_fetch( p_obj ), v_List_Field_Name; }
+   void impl_List_Field_Name( const string& List_Field_Name ) { v_List_Field_Name = List_Field_Name; }
+
+   const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
+   void impl_Name( const string& Name ) { v_Name = Name; }
+
+   bool impl_Needs_Restriction_Field( ) const { return lazy_fetch( p_obj ), v_Needs_Restriction_Field; }
+   void impl_Needs_Restriction_Field( bool Needs_Restriction_Field ) { v_Needs_Restriction_Field = Needs_Restriction_Field; }
+
+   bool impl_Needs_Source( ) const { return lazy_fetch( p_obj ), v_Needs_Source; }
+   void impl_Needs_Source( bool Needs_Source ) { v_Needs_Source = Needs_Source; }
+
+   bool impl_Needs_Switch_Type( ) const { return lazy_fetch( p_obj ), v_Needs_Switch_Type; }
+   void impl_Needs_Switch_Type( bool Needs_Switch_Type ) { v_Needs_Switch_Type = Needs_Switch_Type; }
+
+   bool impl_Non_Simple_Field( ) const { return lazy_fetch( p_obj ), v_Non_Simple_Field; }
+   void impl_Non_Simple_Field( bool Non_Simple_Field ) { v_Non_Simple_Field = Non_Simple_Field; }
+
+   bool impl_Trivial_Field_Only( ) const { return lazy_fetch( p_obj ), v_Trivial_Field_Only; }
+   void impl_Trivial_Field_Only( bool Trivial_Field_Only ) { v_Trivial_Field_Only = Trivial_Field_Only; }
+
+   Meta_List_Field& impl_child_List_Field_Type( )
+   {
+      if( !cp_child_List_Field_Type )
+      {
+         cp_child_List_Field_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Field_Type, "302120" );
+      }
+      return *cp_child_List_Field_Type;
+   }
+
+   const Meta_List_Field& impl_child_List_Field_Type( ) const
+   {
+      if( !cp_child_List_Field_Type )
+      {
+         cp_child_List_Field_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Field_Type, "302120" );
+      }
+      return *cp_child_List_Field_Type;
+   }
+
+   string get_field_value( int field ) const;
+   void set_field_value( int field, const string& value );
+
+   uint64_t get_state( ) const;
+
+   const string& execute( const string& cmd_and_args );
+
+   void clear_foreign_key( const string& field );
+
+   void set_foreign_key_value( const string& field, const string& value );
+
+   const string& get_foreign_key_value( const string& field );
+
+   void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
+
+   void clear( );
+
+   bool value_will_be_provided( const string& field_name );
+
+   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+
+   void after_fetch( );
+   void finalise_fetch( );
+
+   void at_create( );
+
+   void to_store( bool is_create, bool is_internal );
+   void for_store( bool is_create, bool is_internal );
+   void after_store( bool is_create, bool is_internal );
+
+   bool can_destroy( bool is_internal );
+   void for_destroy( bool is_internal );
+   void after_destroy( bool is_internal );
+
+   void set_default_values( );
+
+   bool is_filtered( const set< string >& filters ) const;
+
+   Meta_List_Field_Type* p_obj;
+   class_pointer< Meta_List_Field_Type > cp_obj;
+
+   // [<start members>]
+   // [<finish members>]
+
+   size_t total_child_relationships;
+
+   bool v_Allow_Child_Rel_Select_Specifics;
+   bool v_Allow_Exclude_In_Use_FK;
+   bool v_Allow_Link_Restriction;
+   bool v_Allow_Link_Type;
+   bool v_Allow_Procedure;
+   bool v_Allow_Restriction_Field;
+   bool v_Allow_Restriction_Spec;
+   bool v_Allow_Restriction_Value;
+   bool v_Allow_Search_Option_Limit;
+   bool v_Allow_Select_Specifics;
+   bool v_Is_Restrict_Search;
+   string v_List_Field_Name;
+   string v_Name;
+   bool v_Needs_Restriction_Field;
+   bool v_Needs_Source;
+   bool v_Needs_Switch_Type;
+   bool v_Non_Simple_Field;
+   bool v_Trivial_Field_Only;
+
+   mutable class_pointer< Meta_List_Field > cp_child_List_Field_Type;
+};
+
+string Meta_List_Field_Type::impl::get_field_value( int field ) const
+{
+   string retval;
+
+   switch( field )
+   {
+      case 0:
+      retval = to_string( impl_Allow_Child_Rel_Select_Specifics( ) );
+      break;
+
+      case 1:
+      retval = to_string( impl_Allow_Exclude_In_Use_FK( ) );
+      break;
+
+      case 2:
+      retval = to_string( impl_Allow_Link_Restriction( ) );
+      break;
+
+      case 3:
+      retval = to_string( impl_Allow_Link_Type( ) );
+      break;
+
+      case 4:
+      retval = to_string( impl_Allow_Procedure( ) );
+      break;
+
+      case 5:
+      retval = to_string( impl_Allow_Restriction_Field( ) );
+      break;
+
+      case 6:
+      retval = to_string( impl_Allow_Restriction_Spec( ) );
+      break;
+
+      case 7:
+      retval = to_string( impl_Allow_Restriction_Value( ) );
+      break;
+
+      case 8:
+      retval = to_string( impl_Allow_Search_Option_Limit( ) );
+      break;
+
+      case 9:
+      retval = to_string( impl_Allow_Select_Specifics( ) );
+      break;
+
+      case 10:
+      retval = to_string( impl_Is_Restrict_Search( ) );
+      break;
+
+      case 11:
+      retval = to_string( impl_List_Field_Name( ) );
+      break;
+
+      case 12:
+      retval = to_string( impl_Name( ) );
+      break;
+
+      case 13:
+      retval = to_string( impl_Needs_Restriction_Field( ) );
+      break;
+
+      case 14:
+      retval = to_string( impl_Needs_Source( ) );
+      break;
+
+      case 15:
+      retval = to_string( impl_Needs_Switch_Type( ) );
+      break;
+
+      case 16:
+      retval = to_string( impl_Non_Simple_Field( ) );
+      break;
+
+      case 17:
+      retval = to_string( impl_Trivial_Field_Only( ) );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+   }
+
+   return retval;
+}
+
+void Meta_List_Field_Type::impl::set_field_value( int field, const string& value )
+{
+   switch( field )
+   {
+      case 0:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Child_Rel_Select_Specifics, value );
+      break;
+
+      case 1:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Exclude_In_Use_FK, value );
+      break;
+
+      case 2:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Restriction, value );
+      break;
+
+      case 3:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Type, value );
+      break;
+
+      case 4:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Procedure, value );
+      break;
+
+      case 5:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Field, value );
+      break;
+
+      case 6:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Spec, value );
+      break;
+
+      case 7:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Value, value );
+      break;
+
+      case 8:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Search_Option_Limit, value );
+      break;
+
+      case 9:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Select_Specifics, value );
+      break;
+
+      case 10:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Is_Restrict_Search, value );
+      break;
+
+      case 11:
+      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_List_Field_Name, value );
+      break;
+
+      case 12:
+      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_Name, value );
+      break;
+
+      case 13:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Restriction_Field, value );
+      break;
+
+      case 14:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Source, value );
+      break;
+
+      case 15:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Switch_Type, value );
+      break;
+
+      case 16:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Non_Simple_Field, value );
+      break;
+
+      case 17:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Trivial_Field_Only, value );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+   }
+}
+
+uint64_t Meta_List_Field_Type::impl::get_state( ) const
+{
+   uint64_t state = 0;
+
+   // [<start get_state>]
+   // [<finish get_state>]
+
+   return state;
+}
+
+const string& Meta_List_Field_Type::impl::execute( const string& cmd_and_args )
+{
+   execute_command( cmd_and_args );
+   return retval;
+}
+
+void Meta_List_Field_Type::impl::clear_foreign_key( const string& field )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id" );
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+void Meta_List_Field_Type::impl::set_foreign_key_value( const string& field, const string& value )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+const string& Meta_List_Field_Type::impl::get_foreign_key_value( const string& field )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id" );
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+void Meta_List_Field_Type::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
+{
+   ( void )foreign_key_values;
+}
+
+void Meta_List_Field_Type::impl::clear( )
+{
+   v_Allow_Child_Rel_Select_Specifics = gv_default_Allow_Child_Rel_Select_Specifics;
+   v_Allow_Exclude_In_Use_FK = gv_default_Allow_Exclude_In_Use_FK;
+   v_Allow_Link_Restriction = gv_default_Allow_Link_Restriction;
+   v_Allow_Link_Type = gv_default_Allow_Link_Type;
+   v_Allow_Procedure = gv_default_Allow_Procedure;
+   v_Allow_Restriction_Field = gv_default_Allow_Restriction_Field;
+   v_Allow_Restriction_Spec = gv_default_Allow_Restriction_Spec;
+   v_Allow_Restriction_Value = gv_default_Allow_Restriction_Value;
+   v_Allow_Search_Option_Limit = gv_default_Allow_Search_Option_Limit;
+   v_Allow_Select_Specifics = gv_default_Allow_Select_Specifics;
+   v_Is_Restrict_Search = gv_default_Is_Restrict_Search;
+   v_List_Field_Name = gv_default_List_Field_Name;
+   v_Name = gv_default_Name;
+   v_Needs_Restriction_Field = gv_default_Needs_Restriction_Field;
+   v_Needs_Source = gv_default_Needs_Source;
+   v_Needs_Switch_Type = gv_default_Needs_Switch_Type;
+   v_Non_Simple_Field = gv_default_Non_Simple_Field;
+   v_Trivial_Field_Only = gv_default_Trivial_Field_Only;
+}
+
+bool Meta_List_Field_Type::impl::value_will_be_provided( const string& field_name )
+{
+   ( void )field_name;
+
+   // [<start value_will_be_provided>]
+   // [<finish value_will_be_provided>]
+
+   return false;
+}
+
+void Meta_List_Field_Type::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+{
+   ( void )state;
+   ( void )is_internal;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   if( is_null( v_List_Field_Name ) && !value_will_be_provided( c_field_name_List_Field_Name ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_List_Field_Name,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_List_Field_Name ) ) ) ) );
+
+   if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+
+   string error_message;
+   if( !is_null( v_List_Field_Name )
+    && ( v_List_Field_Name != gv_default_List_Field_Name
+    || !value_will_be_provided( c_field_name_List_Field_Name ) )
+    && !g_List_Field_Name_domain.is_valid( v_List_Field_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_List_Field_Name,
+       get_module_string( c_field_display_name_List_Field_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( v_Name != gv_default_Name
+    || !value_will_be_provided( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   // [<start validate>]
+   // [<finish validate>]
+}
+
+void Meta_List_Field_Type::impl::after_fetch( )
+{
+   set< string > required_transients;
+
+   p_obj->get_required_field_names( required_transients, true );
+
+   // [<start after_fetch>]
+   // [<finish after_fetch>]
+}
+
+void Meta_List_Field_Type::impl::finalise_fetch( )
+{
+   set< string > required_transients;
+
+   p_obj->get_required_field_names( required_transients, true );
+
+   // [<start finalise_fetch>]
+   // [<finish finalise_fetch>]
+}
+
+void Meta_List_Field_Type::impl::at_create( )
+{
+   // [<start at_create>]
+   // [<finish at_create>]
+}
+
+void Meta_List_Field_Type::impl::to_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start to_store>]
+   // [<finish to_store>]
+}
+
+void Meta_List_Field_Type::impl::for_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   // [<start for_store>]
+   // [<finish for_store>]
+}
+
+void Meta_List_Field_Type::impl::after_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   // [<start after_store>]
+   // [<finish after_store>]
+}
+
+bool Meta_List_Field_Type::impl::can_destroy( bool is_internal )
+{
+   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+
+   // [<start can_destroy>]
+   // [<finish can_destroy>]
+
+   return retval;
+}
+
+void Meta_List_Field_Type::impl::for_destroy( bool is_internal )
+{
+   ( void )is_internal;
+
+   // [<start for_destroy>]
+   // [<finish for_destroy>]
+}
+
+void Meta_List_Field_Type::impl::after_destroy( bool is_internal )
+{
+   ( void )is_internal;
+
+   // [<start after_destroy>]
+   // [<finish after_destroy>]
+}
+
+void Meta_List_Field_Type::impl::set_default_values( )
+{
+   clear( );
+}
+
+bool Meta_List_Field_Type::impl::is_filtered( const set< string >& filters ) const
+{
+   ( void )filters;
+
+   // [<start is_filtered>]
+   // [<finish is_filtered>]
+
+   return false;
+}
+
+#undef MODULE_TRACE
+#define MODULE_TRACE( x ) trace( x )
+
+Meta_List_Field_Type::Meta_List_Field_Type( )
+{
+   set_version( c_version );
+
+   p_impl = new impl( *this );
+}
+
+Meta_List_Field_Type::~Meta_List_Field_Type( )
+{
+   cleanup( );
+   delete p_impl;
+}
+
+bool Meta_List_Field_Type::Allow_Child_Rel_Select_Specifics( ) const
+{
+   return p_impl->impl_Allow_Child_Rel_Select_Specifics( );
+}
+
+void Meta_List_Field_Type::Allow_Child_Rel_Select_Specifics( bool Allow_Child_Rel_Select_Specifics )
+{
+   p_impl->impl_Allow_Child_Rel_Select_Specifics( Allow_Child_Rel_Select_Specifics );
+}
+
+bool Meta_List_Field_Type::Allow_Exclude_In_Use_FK( ) const
+{
+   return p_impl->impl_Allow_Exclude_In_Use_FK( );
+}
+
+void Meta_List_Field_Type::Allow_Exclude_In_Use_FK( bool Allow_Exclude_In_Use_FK )
+{
+   p_impl->impl_Allow_Exclude_In_Use_FK( Allow_Exclude_In_Use_FK );
+}
+
+bool Meta_List_Field_Type::Allow_Link_Restriction( ) const
+{
+   return p_impl->impl_Allow_Link_Restriction( );
+}
+
+void Meta_List_Field_Type::Allow_Link_Restriction( bool Allow_Link_Restriction )
+{
+   p_impl->impl_Allow_Link_Restriction( Allow_Link_Restriction );
+}
+
+bool Meta_List_Field_Type::Allow_Link_Type( ) const
+{
+   return p_impl->impl_Allow_Link_Type( );
+}
+
+void Meta_List_Field_Type::Allow_Link_Type( bool Allow_Link_Type )
+{
+   p_impl->impl_Allow_Link_Type( Allow_Link_Type );
+}
+
+bool Meta_List_Field_Type::Allow_Procedure( ) const
+{
+   return p_impl->impl_Allow_Procedure( );
+}
+
+void Meta_List_Field_Type::Allow_Procedure( bool Allow_Procedure )
+{
+   p_impl->impl_Allow_Procedure( Allow_Procedure );
+}
+
+bool Meta_List_Field_Type::Allow_Restriction_Field( ) const
+{
+   return p_impl->impl_Allow_Restriction_Field( );
+}
+
+void Meta_List_Field_Type::Allow_Restriction_Field( bool Allow_Restriction_Field )
+{
+   p_impl->impl_Allow_Restriction_Field( Allow_Restriction_Field );
+}
+
+bool Meta_List_Field_Type::Allow_Restriction_Spec( ) const
+{
+   return p_impl->impl_Allow_Restriction_Spec( );
+}
+
+void Meta_List_Field_Type::Allow_Restriction_Spec( bool Allow_Restriction_Spec )
+{
+   p_impl->impl_Allow_Restriction_Spec( Allow_Restriction_Spec );
+}
+
+bool Meta_List_Field_Type::Allow_Restriction_Value( ) const
+{
+   return p_impl->impl_Allow_Restriction_Value( );
+}
+
+void Meta_List_Field_Type::Allow_Restriction_Value( bool Allow_Restriction_Value )
+{
+   p_impl->impl_Allow_Restriction_Value( Allow_Restriction_Value );
+}
+
+bool Meta_List_Field_Type::Allow_Search_Option_Limit( ) const
+{
+   return p_impl->impl_Allow_Search_Option_Limit( );
+}
+
+void Meta_List_Field_Type::Allow_Search_Option_Limit( bool Allow_Search_Option_Limit )
+{
+   p_impl->impl_Allow_Search_Option_Limit( Allow_Search_Option_Limit );
+}
+
+bool Meta_List_Field_Type::Allow_Select_Specifics( ) const
+{
+   return p_impl->impl_Allow_Select_Specifics( );
+}
+
+void Meta_List_Field_Type::Allow_Select_Specifics( bool Allow_Select_Specifics )
+{
+   p_impl->impl_Allow_Select_Specifics( Allow_Select_Specifics );
+}
+
+bool Meta_List_Field_Type::Is_Restrict_Search( ) const
+{
+   return p_impl->impl_Is_Restrict_Search( );
+}
+
+void Meta_List_Field_Type::Is_Restrict_Search( bool Is_Restrict_Search )
+{
+   p_impl->impl_Is_Restrict_Search( Is_Restrict_Search );
+}
+
+const string& Meta_List_Field_Type::List_Field_Name( ) const
+{
+   return p_impl->impl_List_Field_Name( );
+}
+
+void Meta_List_Field_Type::List_Field_Name( const string& List_Field_Name )
+{
+   p_impl->impl_List_Field_Name( List_Field_Name );
+}
+
+const string& Meta_List_Field_Type::Name( ) const
+{
+   return p_impl->impl_Name( );
+}
+
+void Meta_List_Field_Type::Name( const string& Name )
+{
+   p_impl->impl_Name( Name );
+}
+
+bool Meta_List_Field_Type::Needs_Restriction_Field( ) const
+{
+   return p_impl->impl_Needs_Restriction_Field( );
+}
+
+void Meta_List_Field_Type::Needs_Restriction_Field( bool Needs_Restriction_Field )
+{
+   p_impl->impl_Needs_Restriction_Field( Needs_Restriction_Field );
+}
+
+bool Meta_List_Field_Type::Needs_Source( ) const
+{
+   return p_impl->impl_Needs_Source( );
+}
+
+void Meta_List_Field_Type::Needs_Source( bool Needs_Source )
+{
+   p_impl->impl_Needs_Source( Needs_Source );
+}
+
+bool Meta_List_Field_Type::Needs_Switch_Type( ) const
+{
+   return p_impl->impl_Needs_Switch_Type( );
+}
+
+void Meta_List_Field_Type::Needs_Switch_Type( bool Needs_Switch_Type )
+{
+   p_impl->impl_Needs_Switch_Type( Needs_Switch_Type );
+}
+
+bool Meta_List_Field_Type::Non_Simple_Field( ) const
+{
+   return p_impl->impl_Non_Simple_Field( );
+}
+
+void Meta_List_Field_Type::Non_Simple_Field( bool Non_Simple_Field )
+{
+   p_impl->impl_Non_Simple_Field( Non_Simple_Field );
+}
+
+bool Meta_List_Field_Type::Trivial_Field_Only( ) const
+{
+   return p_impl->impl_Trivial_Field_Only( );
+}
+
+void Meta_List_Field_Type::Trivial_Field_Only( bool Trivial_Field_Only )
+{
+   p_impl->impl_Trivial_Field_Only( Trivial_Field_Only );
+}
+
+Meta_List_Field& Meta_List_Field_Type::child_List_Field_Type( )
+{
+   return p_impl->impl_child_List_Field_Type( );
+}
+
+const Meta_List_Field& Meta_List_Field_Type::child_List_Field_Type( ) const
+{
+   return p_impl->impl_child_List_Field_Type( );
+}
+
+string Meta_List_Field_Type::get_field_value( int field ) const
+{
+   return p_impl->get_field_value( field );
+}
+
+void Meta_List_Field_Type::set_field_value( int field, const string& value )
+{
+   p_impl->set_field_value( field, value );
+}
+
+bool Meta_List_Field_Type::is_field_transient( int field ) const
+{
+   return static_is_field_transient( ( field_id )( field + 1 ) );
+}
+
+string Meta_List_Field_Type::get_field_name( int field ) const
+{
+   return static_get_field_name( ( field_id )( field + 1 ) );
+}
+
+int Meta_List_Field_Type::get_field_num( const string& field ) const
+{
+   int rc = static_get_field_num( field );
+
+   if( rc < 0 )
+      throw runtime_error( "unknown field name/id '" + field + "' in get_field_num( )" );
+
+   return rc;
+}
+
+bool Meta_List_Field_Type::has_field_changed( const string& field ) const
+{
+   return class_base::has_field_changed( get_field_num( field ) );
+}
+
+uint64_t Meta_List_Field_Type::get_state( ) const
+{
+   uint64_t state = 0;
+
+   state |= p_impl->get_state( );
+
+   return state;
+}
+
+const string& Meta_List_Field_Type::execute( const string& cmd_and_args )
+{
+   return p_impl->execute( cmd_and_args );
+}
+
+void Meta_List_Field_Type::clear( )
+{
+   p_impl->clear( );
+}
+
+void Meta_List_Field_Type::validate( unsigned state, bool is_internal )
+{
+   p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_List_Field_Type::after_fetch( )
+{
+   p_impl->after_fetch( );
+}
+
+void Meta_List_Field_Type::finalise_fetch( )
+{
+   p_impl->finalise_fetch( );
+}
+
+void Meta_List_Field_Type::at_create( )
+{
+   p_impl->at_create( );
+}
+
+void Meta_List_Field_Type::to_store( bool is_create, bool is_internal )
+{
+   p_impl->to_store( is_create, is_internal );
+}
+
+void Meta_List_Field_Type::for_store( bool is_create, bool is_internal )
+{
+   p_impl->for_store( is_create, is_internal );
+}
+
+void Meta_List_Field_Type::after_store( bool is_create, bool is_internal )
+{
+   p_impl->after_store( is_create, is_internal );
+}
+
+bool Meta_List_Field_Type::can_destroy( bool is_internal )
+{
+   return p_impl->can_destroy( is_internal );
+}
+
+void Meta_List_Field_Type::for_destroy( bool is_internal )
+{
+   p_impl->for_destroy( is_internal );
+}
+
+void Meta_List_Field_Type::after_destroy( bool is_internal )
+{
+   p_impl->after_destroy( is_internal );
+}
+
+void Meta_List_Field_Type::set_default_values( )
+{
+   p_impl->set_default_values( );
+}
+
+bool Meta_List_Field_Type::is_filtered( const set< string >& filters ) const
+{
+   return p_impl->is_filtered( filters );
+}
+
+const char* Meta_List_Field_Type::get_field_id(
+ const string& name, bool* p_sql_numeric, string* p_type_name ) const
+{
+   const char* p_id( 0 );
+
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Allow_Child_Rel_Select_Specifics )
+   {
+      p_id = c_field_id_Allow_Child_Rel_Select_Specifics;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Exclude_In_Use_FK )
+   {
+      p_id = c_field_id_Allow_Exclude_In_Use_FK;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Link_Restriction )
+   {
+      p_id = c_field_id_Allow_Link_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Link_Type )
+   {
+      p_id = c_field_id_Allow_Link_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Procedure )
+   {
+      p_id = c_field_id_Allow_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Restriction_Field )
+   {
+      p_id = c_field_id_Allow_Restriction_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Restriction_Spec )
+   {
+      p_id = c_field_id_Allow_Restriction_Spec;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Restriction_Value )
+   {
+      p_id = c_field_id_Allow_Restriction_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Search_Option_Limit )
+   {
+      p_id = c_field_id_Allow_Search_Option_Limit;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Select_Specifics )
+   {
+      p_id = c_field_id_Allow_Select_Specifics;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Is_Restrict_Search )
+   {
+      p_id = c_field_id_Is_Restrict_Search;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_List_Field_Name )
+   {
+      p_id = c_field_id_List_Field_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Name )
+   {
+      p_id = c_field_id_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Needs_Restriction_Field )
+   {
+      p_id = c_field_id_Needs_Restriction_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Source )
+   {
+      p_id = c_field_id_Needs_Source;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Switch_Type )
+   {
+      p_id = c_field_id_Needs_Switch_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Non_Simple_Field )
+   {
+      p_id = c_field_id_Non_Simple_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Trivial_Field_Only )
+   {
+      p_id = c_field_id_Trivial_Field_Only;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+
+   return p_id;
+}
+
+const char* Meta_List_Field_Type::get_field_name(
+ const string& id, bool* p_sql_numeric, string* p_type_name ) const
+{
+   const char* p_name( 0 );
+
+   if( id.empty( ) )
+      throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Allow_Child_Rel_Select_Specifics )
+   {
+      p_name = c_field_name_Allow_Child_Rel_Select_Specifics;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Exclude_In_Use_FK )
+   {
+      p_name = c_field_name_Allow_Exclude_In_Use_FK;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Link_Restriction )
+   {
+      p_name = c_field_name_Allow_Link_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Link_Type )
+   {
+      p_name = c_field_name_Allow_Link_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Procedure )
+   {
+      p_name = c_field_name_Allow_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Restriction_Field )
+   {
+      p_name = c_field_name_Allow_Restriction_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Restriction_Spec )
+   {
+      p_name = c_field_name_Allow_Restriction_Spec;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Restriction_Value )
+   {
+      p_name = c_field_name_Allow_Restriction_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Search_Option_Limit )
+   {
+      p_name = c_field_name_Allow_Search_Option_Limit;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Select_Specifics )
+   {
+      p_name = c_field_name_Allow_Select_Specifics;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Is_Restrict_Search )
+   {
+      p_name = c_field_name_Is_Restrict_Search;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_List_Field_Name )
+   {
+      p_name = c_field_name_List_Field_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Name )
+   {
+      p_name = c_field_name_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Needs_Restriction_Field )
+   {
+      p_name = c_field_name_Needs_Restriction_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Source )
+   {
+      p_name = c_field_name_Needs_Source;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Switch_Type )
+   {
+      p_name = c_field_name_Needs_Switch_Type;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Non_Simple_Field )
+   {
+      p_name = c_field_name_Non_Simple_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Trivial_Field_Only )
+   {
+      p_name = c_field_name_Trivial_Field_Only;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+
+   return p_name;
+}
+
+string Meta_List_Field_Type::get_field_display_name( const string& id ) const
+{
+   string display_name;
+
+   if( id.empty( ) )
+      throw runtime_error( "unexpected empty field id for get_field_display_name" );
+   else if( id == c_field_id_Allow_Child_Rel_Select_Specifics )
+      display_name = get_module_string( c_field_display_name_Allow_Child_Rel_Select_Specifics );
+   else if( id == c_field_id_Allow_Exclude_In_Use_FK )
+      display_name = get_module_string( c_field_display_name_Allow_Exclude_In_Use_FK );
+   else if( id == c_field_id_Allow_Link_Restriction )
+      display_name = get_module_string( c_field_display_name_Allow_Link_Restriction );
+   else if( id == c_field_id_Allow_Link_Type )
+      display_name = get_module_string( c_field_display_name_Allow_Link_Type );
+   else if( id == c_field_id_Allow_Procedure )
+      display_name = get_module_string( c_field_display_name_Allow_Procedure );
+   else if( id == c_field_id_Allow_Restriction_Field )
+      display_name = get_module_string( c_field_display_name_Allow_Restriction_Field );
+   else if( id == c_field_id_Allow_Restriction_Spec )
+      display_name = get_module_string( c_field_display_name_Allow_Restriction_Spec );
+   else if( id == c_field_id_Allow_Restriction_Value )
+      display_name = get_module_string( c_field_display_name_Allow_Restriction_Value );
+   else if( id == c_field_id_Allow_Search_Option_Limit )
+      display_name = get_module_string( c_field_display_name_Allow_Search_Option_Limit );
+   else if( id == c_field_id_Allow_Select_Specifics )
+      display_name = get_module_string( c_field_display_name_Allow_Select_Specifics );
+   else if( id == c_field_id_Is_Restrict_Search )
+      display_name = get_module_string( c_field_display_name_Is_Restrict_Search );
+   else if( id == c_field_id_List_Field_Name )
+      display_name = get_module_string( c_field_display_name_List_Field_Name );
+   else if( id == c_field_id_Name )
+      display_name = get_module_string( c_field_display_name_Name );
+   else if( id == c_field_id_Needs_Restriction_Field )
+      display_name = get_module_string( c_field_display_name_Needs_Restriction_Field );
+   else if( id == c_field_id_Needs_Source )
+      display_name = get_module_string( c_field_display_name_Needs_Source );
+   else if( id == c_field_id_Needs_Switch_Type )
+      display_name = get_module_string( c_field_display_name_Needs_Switch_Type );
+   else if( id == c_field_id_Non_Simple_Field )
+      display_name = get_module_string( c_field_display_name_Non_Simple_Field );
+   else if( id == c_field_id_Trivial_Field_Only )
+      display_name = get_module_string( c_field_display_name_Trivial_Field_Only );
+
+   return display_name;
+}
+
+void Meta_List_Field_Type::clear_foreign_key( const string& field )
+{
+   p_impl->clear_foreign_key( field );
+}
+
+void Meta_List_Field_Type::set_foreign_key_value( const string& field, const string& value )
+{
+   p_impl->set_foreign_key_value( field, value );
+}
+
+const string& Meta_List_Field_Type::get_foreign_key_value( const string& field )
+{
+   return p_impl->get_foreign_key_value( field );
+}
+
+void Meta_List_Field_Type::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
+{
+   p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_List_Field_Type::setup_graph_parent( Meta_List_Field& o, const string& foreign_key_field )
+{
+   static_cast< Meta_List_Field& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+size_t Meta_List_Field_Type::get_total_child_relationships( ) const
+{
+   return p_impl->total_child_relationships;
+}
+
+void Meta_List_Field_Type::set_total_child_relationships( size_t new_total_child_relationships ) const
+{
+   p_impl->total_child_relationships = new_total_child_relationships;
+}
+
+size_t Meta_List_Field_Type::get_num_foreign_key_children( bool is_internal ) const
+{
+   size_t rc = 1;
+
+   if( !is_internal )
+   {
+      g_external_aliases_lookup.clear( );
+
+      for( external_aliases_const_iterator
+       eaci = g_external_aliases.begin( ), end = g_external_aliases.end( ); eaci != end; ++eaci )
+      {
+         size_t num_extra = eaci->second->get_num_foreign_key_children( true );
+
+         if( num_extra )
+         {
+            eaci->second->set_key( get_key( ) );
+            eaci->second->copy_all_field_values( *this );
+
+            g_external_aliases_lookup.insert( make_pair( rc, eaci->second ) );
+
+            rc += num_extra;
+         }
+      }
+   }
+
+   set_total_child_relationships( rc );
+
+   return rc;
+}
+
+class_base* Meta_List_Field_Type::get_next_foreign_key_child(
+ size_t child_num, string& next_child_field, cascade_op op, bool is_internal )
+{
+   class_base* p_class_base = 0;
+
+   if( child_num >= 1 )
+   {
+      external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
+      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+         --ealci;
+
+      p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
+   }
+   else
+   {
+      switch( child_num )
+      {
+         case 0:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "302120";
+            p_class_base = &child_List_Field_Type( );
+         }
+         break;
+      }
+   }
+
+   return p_class_base;
+}
+
+const char* Meta_List_Field_Type::class_id( ) const
+{
+   return static_class_id( );
+}
+
+const char* Meta_List_Field_Type::class_name( ) const
+{
+   return static_class_name( );
+}
+
+const char* Meta_List_Field_Type::plural_name( ) const
+{
+   return static_plural_name( );
+}
+
+const char* Meta_List_Field_Type::module_id( ) const
+{
+   return static_module_id( );
+}
+
+const char* Meta_List_Field_Type::module_name( ) const
+{
+   return static_module_name( );
+}
+
+string Meta_List_Field_Type::get_display_name( bool plural ) const
+{
+   string key( plural ? "plural_" : "class_" );
+   key += "list_field_type";
+
+   return get_module_string( key );
+}
+
+bool Meta_List_Field_Type::get_is_alias( ) const
+{
+   return false;
+}
+
+void Meta_List_Field_Type::get_alias_base_info( pair< string, string >& alias_base_info ) const
+{
+   ( void )alias_base_info;
+}
+
+void Meta_List_Field_Type::get_base_class_info( vector< pair< string, string > >& base_class_info ) const
+{
+   ( void )base_class_info;
+}
+
+class_base& Meta_List_Field_Type::get_or_create_graph_child( const string& context )
+{
+   class_base* p_class_base( 0 );
+
+   string::size_type pos = context.find( '.' );
+   string sub_context( context.substr( 0, pos ) );
+
+   if( sub_context.empty( ) )
+      throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_302120" || sub_context == "child_List_Field_Type" )
+      p_class_base = &child_List_Field_Type( );
+
+   if( !p_class_base )
+      throw runtime_error( "unknown sub-context '" + sub_context + "'" );
+
+   if( pos != string::npos )
+      p_class_base = &p_class_base->get_or_create_graph_child( context.substr( pos + 1 ) );
+
+   return *p_class_base;
+}
+
+void Meta_List_Field_Type::get_sql_column_names(
+ vector< string >& names, bool* p_done, const string* p_class_name ) const
+{
+   if( p_done && *p_done )
+      return;
+
+   names.push_back( "C_Allow_Child_Rel_Select_Specifics" );
+   names.push_back( "C_Allow_Exclude_In_Use_FK" );
+   names.push_back( "C_Allow_Link_Restriction" );
+   names.push_back( "C_Allow_Link_Type" );
+   names.push_back( "C_Allow_Procedure" );
+   names.push_back( "C_Allow_Restriction_Field" );
+   names.push_back( "C_Allow_Restriction_Spec" );
+   names.push_back( "C_Allow_Restriction_Value" );
+   names.push_back( "C_Allow_Search_Option_Limit" );
+   names.push_back( "C_Allow_Select_Specifics" );
+   names.push_back( "C_Is_Restrict_Search" );
+   names.push_back( "C_List_Field_Name" );
+   names.push_back( "C_Name" );
+   names.push_back( "C_Needs_Restriction_Field" );
+   names.push_back( "C_Needs_Source" );
+   names.push_back( "C_Needs_Switch_Type" );
+   names.push_back( "C_Non_Simple_Field" );
+   names.push_back( "C_Trivial_Field_Only" );
+
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+}
+
+void Meta_List_Field_Type::get_sql_column_values(
+ vector< string >& values, bool* p_done, const string* p_class_name ) const
+{
+   if( p_done && *p_done )
+      return;
+
+   values.push_back( to_string( Allow_Child_Rel_Select_Specifics( ) ) );
+   values.push_back( to_string( Allow_Exclude_In_Use_FK( ) ) );
+   values.push_back( to_string( Allow_Link_Restriction( ) ) );
+   values.push_back( to_string( Allow_Link_Type( ) ) );
+   values.push_back( to_string( Allow_Procedure( ) ) );
+   values.push_back( to_string( Allow_Restriction_Field( ) ) );
+   values.push_back( to_string( Allow_Restriction_Spec( ) ) );
+   values.push_back( to_string( Allow_Restriction_Value( ) ) );
+   values.push_back( to_string( Allow_Search_Option_Limit( ) ) );
+   values.push_back( to_string( Allow_Select_Specifics( ) ) );
+   values.push_back( to_string( Is_Restrict_Search( ) ) );
+   values.push_back( sql_quote( to_string( List_Field_Name( ) ) ) );
+   values.push_back( sql_quote( to_string( Name( ) ) ) );
+   values.push_back( to_string( Needs_Restriction_Field( ) ) );
+   values.push_back( to_string( Needs_Source( ) ) );
+   values.push_back( to_string( Needs_Switch_Type( ) ) );
+   values.push_back( to_string( Non_Simple_Field( ) ) );
+   values.push_back( to_string( Trivial_Field_Only( ) ) );
+
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+}
+
+void Meta_List_Field_Type::get_required_field_names(
+ set< string >& names, bool required_transients, set< string >* p_dependents ) const
+{
+   set< string > local_dependents;
+   set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
+
+   get_always_required_field_names( names, required_transients, dependents );
+
+   // [<start get_required_field_names>]
+   // [<finish get_required_field_names>]
+}
+
+void Meta_List_Field_Type::get_always_required_field_names(
+ set< string >& names, bool required_transients, set< string >& dependents ) const
+{
+   ( void )names;
+   ( void )dependents;
+   ( void )required_transients;
+
+   // [<start get_always_required_field_names>]
+   // [<finish get_always_required_field_names>]
+}
+
+void Meta_List_Field_Type::get_transient_replacement_field_names( const string& name, vector< string >& names ) const
+{
+   ( void )name;
+   ( void )names;
+
+   // [<start get_transient_replacement_field_names>]
+   // [<finish get_transient_replacement_field_names>]
+}
+
+void Meta_List_Field_Type::do_generate_sql( generate_sql_type type, vector< string >& sql_stmts ) const
+{
+   generate_sql( static_class_name( ), type, sql_stmts );
+}
+
+const char* Meta_List_Field_Type::static_resolved_module_id( )
+{
+   return static_module_id( );
+}
+
+const char* Meta_List_Field_Type::static_resolved_module_name( )
+{
+   return static_module_name( );
+}
+
+const char* Meta_List_Field_Type::static_lock_class_id( )
+{
+   return "123100";
+}
+
+const char* Meta_List_Field_Type::static_check_class_name( )
+{
+   return "List_Field_Type";
+}
+
+bool Meta_List_Field_Type::static_has_derivations( )
+{
+   return !g_derivations.empty( );
+}
+
+void Meta_List_Field_Type::static_get_class_info( class_info_container& class_info )
+{
+   class_info.push_back( "100.123100" );
+}
+
+void Meta_List_Field_Type::static_get_field_info( field_info_container& all_field_info )
+{
+   all_field_info.push_back( field_info( "123113", "Allow_Child_Rel_Select_Specifics", "bool", false ) );
+   all_field_info.push_back( field_info( "123106", "Allow_Exclude_In_Use_FK", "bool", false ) );
+   all_field_info.push_back( field_info( "123112", "Allow_Link_Restriction", "bool", false ) );
+   all_field_info.push_back( field_info( "123107", "Allow_Link_Type", "bool", false ) );
+   all_field_info.push_back( field_info( "123108", "Allow_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "123116", "Allow_Restriction_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "123103", "Allow_Restriction_Spec", "bool", false ) );
+   all_field_info.push_back( field_info( "123104", "Allow_Restriction_Value", "bool", false ) );
+   all_field_info.push_back( field_info( "123115", "Allow_Search_Option_Limit", "bool", false ) );
+   all_field_info.push_back( field_info( "123111", "Allow_Select_Specifics", "bool", false ) );
+   all_field_info.push_back( field_info( "123118", "Is_Restrict_Search", "bool", false ) );
+   all_field_info.push_back( field_info( "123102", "List_Field_Name", "string", false ) );
+   all_field_info.push_back( field_info( "123101", "Name", "string", false ) );
+   all_field_info.push_back( field_info( "123117", "Needs_Restriction_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "123114", "Needs_Source", "bool", false ) );
+   all_field_info.push_back( field_info( "123105", "Needs_Switch_Type", "bool", false ) );
+   all_field_info.push_back( field_info( "123109", "Non_Simple_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "123110", "Trivial_Field_Only", "bool", false ) );
+}
+
+void Meta_List_Field_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
+{
+   ( void )foreign_key_info;
+}
+
+int Meta_List_Field_Type::static_get_num_fields( bool* p_done, const string* p_class_name )
+{
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+
+   return c_num_fields;
+}
+
+bool Meta_List_Field_Type::static_is_field_transient( field_id id )
+{
+   return is_transient_field( static_get_field_id( id ) );
+}
+
+const char* Meta_List_Field_Type::static_get_field_id( field_id id )
+{
+   const char* p_id = 0;
+
+   switch( id )
+   {
+      case 1:
+      p_id = "123113";
+      break;
+
+      case 2:
+      p_id = "123106";
+      break;
+
+      case 3:
+      p_id = "123112";
+      break;
+
+      case 4:
+      p_id = "123107";
+      break;
+
+      case 5:
+      p_id = "123108";
+      break;
+
+      case 6:
+      p_id = "123116";
+      break;
+
+      case 7:
+      p_id = "123103";
+      break;
+
+      case 8:
+      p_id = "123104";
+      break;
+
+      case 9:
+      p_id = "123115";
+      break;
+
+      case 10:
+      p_id = "123111";
+      break;
+
+      case 11:
+      p_id = "123118";
+      break;
+
+      case 12:
+      p_id = "123102";
+      break;
+
+      case 13:
+      p_id = "123101";
+      break;
+
+      case 14:
+      p_id = "123117";
+      break;
+
+      case 15:
+      p_id = "123114";
+      break;
+
+      case 16:
+      p_id = "123105";
+      break;
+
+      case 17:
+      p_id = "123109";
+      break;
+
+      case 18:
+      p_id = "123110";
+      break;
+   }
+
+   if( !p_id )
+      throw runtime_error( "unknown field id #" + to_string( id ) + " for class List_Field_Type" );
+
+   return p_id;
+}
+
+const char* Meta_List_Field_Type::static_get_field_name( field_id id )
+{
+   const char* p_id = 0;
+
+   switch( id )
+   {
+      case 1:
+      p_id = "Allow_Child_Rel_Select_Specifics";
+      break;
+
+      case 2:
+      p_id = "Allow_Exclude_In_Use_FK";
+      break;
+
+      case 3:
+      p_id = "Allow_Link_Restriction";
+      break;
+
+      case 4:
+      p_id = "Allow_Link_Type";
+      break;
+
+      case 5:
+      p_id = "Allow_Procedure";
+      break;
+
+      case 6:
+      p_id = "Allow_Restriction_Field";
+      break;
+
+      case 7:
+      p_id = "Allow_Restriction_Spec";
+      break;
+
+      case 8:
+      p_id = "Allow_Restriction_Value";
+      break;
+
+      case 9:
+      p_id = "Allow_Search_Option_Limit";
+      break;
+
+      case 10:
+      p_id = "Allow_Select_Specifics";
+      break;
+
+      case 11:
+      p_id = "Is_Restrict_Search";
+      break;
+
+      case 12:
+      p_id = "List_Field_Name";
+      break;
+
+      case 13:
+      p_id = "Name";
+      break;
+
+      case 14:
+      p_id = "Needs_Restriction_Field";
+      break;
+
+      case 15:
+      p_id = "Needs_Source";
+      break;
+
+      case 16:
+      p_id = "Needs_Switch_Type";
+      break;
+
+      case 17:
+      p_id = "Non_Simple_Field";
+      break;
+
+      case 18:
+      p_id = "Trivial_Field_Only";
+      break;
+   }
+
+   if( !p_id )
+      throw runtime_error( "unknown field id #" + to_string( id ) + " for class List_Field_Type" );
+
+   return p_id;
+}
+
+int Meta_List_Field_Type::static_get_field_num( const string& field )
+{
+   int rc = 0;
+
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
+   else if( field == c_field_id_Allow_Child_Rel_Select_Specifics || field == c_field_name_Allow_Child_Rel_Select_Specifics )
+      rc += 1;
+   else if( field == c_field_id_Allow_Exclude_In_Use_FK || field == c_field_name_Allow_Exclude_In_Use_FK )
+      rc += 2;
+   else if( field == c_field_id_Allow_Link_Restriction || field == c_field_name_Allow_Link_Restriction )
+      rc += 3;
+   else if( field == c_field_id_Allow_Link_Type || field == c_field_name_Allow_Link_Type )
+      rc += 4;
+   else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
+      rc += 5;
+   else if( field == c_field_id_Allow_Restriction_Field || field == c_field_name_Allow_Restriction_Field )
+      rc += 6;
+   else if( field == c_field_id_Allow_Restriction_Spec || field == c_field_name_Allow_Restriction_Spec )
+      rc += 7;
+   else if( field == c_field_id_Allow_Restriction_Value || field == c_field_name_Allow_Restriction_Value )
+      rc += 8;
+   else if( field == c_field_id_Allow_Search_Option_Limit || field == c_field_name_Allow_Search_Option_Limit )
+      rc += 9;
+   else if( field == c_field_id_Allow_Select_Specifics || field == c_field_name_Allow_Select_Specifics )
+      rc += 10;
+   else if( field == c_field_id_Is_Restrict_Search || field == c_field_name_Is_Restrict_Search )
+      rc += 11;
+   else if( field == c_field_id_List_Field_Name || field == c_field_name_List_Field_Name )
+      rc += 12;
+   else if( field == c_field_id_Name || field == c_field_name_Name )
+      rc += 13;
+   else if( field == c_field_id_Needs_Restriction_Field || field == c_field_name_Needs_Restriction_Field )
+      rc += 14;
+   else if( field == c_field_id_Needs_Source || field == c_field_name_Needs_Source )
+      rc += 15;
+   else if( field == c_field_id_Needs_Switch_Type || field == c_field_name_Needs_Switch_Type )
+      rc += 16;
+   else if( field == c_field_id_Non_Simple_Field || field == c_field_name_Non_Simple_Field )
+      rc += 17;
+   else if( field == c_field_id_Trivial_Field_Only || field == c_field_name_Trivial_Field_Only )
+      rc += 18;
+
+   return rc - 1;
+}
+
+procedure_info_container& Meta_List_Field_Type::static_get_procedure_info( )
+{
+   static procedure_info_container procedures;
+
+   return procedures;
+}
+
+string Meta_List_Field_Type::static_get_sql_columns( )
+{
+   string sql_columns;
+
+   sql_columns += 
+    "C_Key_ VARCHAR(64),"
+    "C_Ver_ INTEGER NOT NULL,"
+    "C_Rev_ INTEGER NOT NULL,"
+    "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Allow_Child_Rel_Select_Specifics INTEGER NOT NULL,"
+    "C_Allow_Exclude_In_Use_FK INTEGER NOT NULL,"
+    "C_Allow_Link_Restriction INTEGER NOT NULL,"
+    "C_Allow_Link_Type INTEGER NOT NULL,"
+    "C_Allow_Procedure INTEGER NOT NULL,"
+    "C_Allow_Restriction_Field INTEGER NOT NULL,"
+    "C_Allow_Restriction_Spec INTEGER NOT NULL,"
+    "C_Allow_Restriction_Value INTEGER NOT NULL,"
+    "C_Allow_Search_Option_Limit INTEGER NOT NULL,"
+    "C_Allow_Select_Specifics INTEGER NOT NULL,"
+    "C_Is_Restrict_Search INTEGER NOT NULL,"
+    "C_List_Field_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Needs_Restriction_Field INTEGER NOT NULL,"
+    "C_Needs_Source INTEGER NOT NULL,"
+    "C_Needs_Switch_Type INTEGER NOT NULL,"
+    "C_Non_Simple_Field INTEGER NOT NULL,"
+    "C_Trivial_Field_Only INTEGER NOT NULL,"
+    "PRIMARY KEY(C_Key_)";
+
+   return sql_columns;
+}
+
+void Meta_List_Field_Type::static_get_text_search_fields( vector< string >& fields )
+{
+   ( void )fields;
+}
+
+void Meta_List_Field_Type::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
+{
+   ( void )pairs;
+}
+
+void Meta_List_Field_Type::static_get_sql_indexes( vector< string >& indexes )
+{
+   indexes.push_back( "C_Name" );
+}
+
+void Meta_List_Field_Type::static_get_sql_unique_indexes( vector< string >& indexes )
+{
+   indexes.push_back( "C_Name" );
+}
+
+void Meta_List_Field_Type::static_insert_derivation( const string& module_and_class_id )
+{
+   g_derivations.insert( module_and_class_id );
+}
+
+void Meta_List_Field_Type::static_remove_derivation( const string& module_and_class_id )
+{
+   if( g_derivations.count( module_and_class_id ) )
+      g_derivations.erase( module_and_class_id );
+}
+
+void Meta_List_Field_Type::static_insert_external_alias( const string& module_and_class_id, Meta_List_Field_Type* p_instance )
+{
+   g_external_aliases.insert( external_aliases_value_type( module_and_class_id, p_instance ) );
+}
+
+void Meta_List_Field_Type::static_remove_external_alias( const string& module_and_class_id )
+{
+   if( g_external_aliases.count( module_and_class_id ) )
+   {
+      delete g_external_aliases[ module_and_class_id ];
+      g_external_aliases.erase( module_and_class_id );
+   }
+}
+
+void Meta_List_Field_Type::static_class_init( const char* p_module_name )
+{
+   if( !p_module_name )
+      throw runtime_error( "unexpected null module name pointer for init" );
+
+   // [<start static_class_init>]
+   // [<finish static_class_init>]
+}
+
+void Meta_List_Field_Type::static_class_term( const char* p_module_name )
+{
+   if( !p_module_name )
+      throw runtime_error( "unexpected null module name pointer for term" );
+
+   // [<start static_class_term>]
+   // [<finish static_class_term>]
+}
+

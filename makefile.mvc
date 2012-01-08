@@ -11,12 +11,12 @@
 ##
 ##             base                 make base.lib target
 ##             commands             make commands.lib target
-##             cosp_base            make cosp_base.dll target
+##             cat_base             make cat_base.dll target
 ##             Meta                 make Meta.dll target
 ##             bundle               make bundle.exe target
-##             cosp_client          make cosp_client.exe target
-##             cosp_interface       make cosp_interface.exe target
-##             cosp_server          make cosp_server.exe target
+##             cat_client           make cat_client.exe target
+##             cat_interface        make cat_interface.exe target
+##             cat_server           make cat_server.exe target
 ##             construct            make construct.exe target
 ##             extract              make extract.exe target
 ##             modeller             make modeller.exe target
@@ -178,20 +178,20 @@ TARGET_COMMANDS_INCLUDE=commands.inc
 TARGET_COMMANDS_OBJECTS=command_parser.obj\
  utilities.obj
 
-TARGET_COSP_BASE=cosp_base.dll
-TARGET_COSP_BASE_INCLUDE=cosp_base.inc
-TARGET_COSP_BASE_OBJECTS=cosp_base.obj\
- cosp_base_command_handler.obj\
- cosp_base_date_time.obj\
- cosp_base_file_buffer.obj\
- cosp_base_numeric.obj\
- cosp_base_ods.obj\
+TARGET_CAT_BASE=cat_base.dll
+TARGET_CAT_BASE_INCLUDE=cat_base.inc
+TARGET_CAT_BASE_OBJECTS=cat_base.obj\
+ cat_base_command_handler.obj\
+ cat_base_date_time.obj\
+ cat_base_file_buffer.obj\
+ cat_base_numeric.obj\
+ cat_base_ods.obj\
  class_base.obj\
  commands_date_time.obj\
  commands_numeric.obj\
  mail_source.obj\
  module_management.obj
-TARGET_COSP_BASE_COMMANDS=date_time.cmh\
+TARGET_CAT_BASE_COMMANDS=date_time.cmh\
  numeric.cmh
 
 TARGET_META=Meta.dll
@@ -275,13 +275,13 @@ TARGET_BUNDLE=bundle.exe
 TARGET_BUNDLE_INCLUDE=bundle.inc
 TARGET_BUNDLE_OBJECTS=bundle.obj
 
-TARGET_COSP_CLIENT=cosp_client.exe
-TARGET_COSP_CLIENT_INCLUDE=cosp_client.inc
-TARGET_COSP_CLIENT_OBJECTS=cosp_client.obj
+TARGET_CAT_CLIENT=cat_client.exe
+TARGET_CAT_CLIENT_INCLUDE=cat_client.inc
+TARGET_CAT_CLIENT_OBJECTS=cat_client.obj
 
-TARGET_COSP_INTERFACE=cosp_interface.exe
-TARGET_COSP_INTERFACE_INCLUDE=cosp_interface.inc
-TARGET_COSP_INTERFACE_OBJECTS=cosp_interface.obj\
+TARGET_CAT_INTERFACE=cat_interface.exe
+TARGET_CAT_INTERFACE_INCLUDE=cat_interface.inc
+TARGET_CAT_INTERFACE_OBJECTS=cat_interface.obj\
  fcgi_cmds.obj\
  fcgi_info.obj\
  fcgi_list.obj\
@@ -289,12 +289,12 @@ TARGET_COSP_INTERFACE_OBJECTS=cosp_interface.obj\
  fcgi_utils.obj\
  fcgi_view.obj
 
-TARGET_COSP_SERVER=cosp_server.exe
-TARGET_COSP_SERVER_INCLUDE=cosp_server.inc
-TARGET_COSP_SERVER_OBJECTS=auto_script.obj\
- cosp_server.obj\
- cosp_session.obj
-TARGET_COSP_SERVER_COMMANDS=cosp_session.cmh
+TARGET_CAT_SERVER=cat_server.exe
+TARGET_CAT_SERVER_INCLUDE=cat_server.inc
+TARGET_CAT_SERVER_OBJECTS=auto_script.obj\
+ cat_server.obj\
+ cat_session.obj
+TARGET_CAT_SERVER_COMMANDS=cat_session.cmh
 
 TARGET_CONSTRUCT=construct.exe
 TARGET_CONSTRUCT_INCLUDE=construct.inc
@@ -381,12 +381,12 @@ TARGET_XVARS_OBJECTS=xvars.obj
 ALL_TARGETS=\
  $(TARGET_BASE)\
  $(TARGET_COMMANDS)\
- $(TARGET_COSP_BASE)\
+ $(TARGET_CAT_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
- $(TARGET_COSP_CLIENT)\
- $(TARGET_COSP_INTERFACE)\
- $(TARGET_COSP_SERVER)\
+ $(TARGET_CAT_CLIENT)\
+ $(TARGET_CAT_INTERFACE)\
+ $(TARGET_CAT_SERVER)\
  $(TARGET_CONSTRUCT)\
  $(TARGET_EXTRACT)\
  $(TARGET_MODELLER)\
@@ -409,12 +409,12 @@ ALL_TARGETS=\
 ALL_INCLUDES=\
  $(TARGET_BASE_INCLUDE)\
  $(TARGET_COMMANDS_INCLUDE)\
- $(TARGET_COSP_BASE_INCLUDE)\
+ $(TARGET_CAT_BASE_INCLUDE)\
  $(TARGET_META_INCLUDE)\
  $(TARGET_BUNDLE_INCLUDE)\
- $(TARGET_COSP_CLIENT_INCLUDE)\
- $(TARGET_COSP_INTERFACE_INCLUDE)\
- $(TARGET_COSP_SERVER_INCLUDE)\
+ $(TARGET_CAT_CLIENT_INCLUDE)\
+ $(TARGET_CAT_INTERFACE_INCLUDE)\
+ $(TARGET_CAT_SERVER_INCLUDE)\
  $(TARGET_CONSTRUCT_INCLUDE)\
  $(TARGET_EXTRACT_INCLUDE)\
  $(TARGET_MODELLER_INCLUDE)\
@@ -437,12 +437,12 @@ ALL_INCLUDES=\
 ALL_OBJECTS=\
  $(TARGET_BASE_OBJECTS)\
  $(TARGET_COMMANDS_OBJECTS)\
- $(TARGET_COSP_BASE_OBJECTS)\
+ $(TARGET_CAT_BASE_OBJECTS)\
  $(TARGET_META_OBJECTS)\
  $(TARGET_BUNDLE_OBJECTS)\
- $(TARGET_COSP_CLIENT_OBJECTS)\
- $(TARGET_COSP_INTERFACE_OBJECTS)\
- $(TARGET_COSP_SERVER_OBJECTS)\
+ $(TARGET_CAT_CLIENT_OBJECTS)\
+ $(TARGET_CAT_INTERFACE_OBJECTS)\
+ $(TARGET_CAT_SERVER_OBJECTS)\
  $(TARGET_CONSTRUCT_OBJECTS)\
  $(TARGET_EXTRACT_OBJECTS)\
  $(TARGET_MODELLER_OBJECTS)\
@@ -463,9 +463,9 @@ ALL_OBJECTS=\
  $(TARGET_XVARS_OBJECTS)
 
 ALL_COMMANDS=\
- $(TARGET_COSP_BASE_COMMANDS)\
+ $(TARGET_CAT_BASE_COMMANDS)\
  $(TARGET_META_COMMANDS)\
- $(TARGET_COSP_SERVER_COMMANDS)\
+ $(TARGET_CAT_SERVER_COMMANDS)\
  $(TARGET_MODELLER_COMMANDS)\
  $(TARGET_TEST_BTREE_COMMANDS)\
  $(TARGET_TEST_CACHE_COMMANDS)\
@@ -479,12 +479,12 @@ all: $(ALL_TARGETS)
 
 base: $(TARGET_BASE)
 commands: $(TARGET_COMMANDS)
-cosp_base: $(TARGET_COSP_BASE)
+cat_base: $(TARGET_CAT_BASE)
 Meta: $(TARGET_META)
 bundle: $(TARGET_BUNDLE)
-cosp_client: $(TARGET_COSP_CLIENT)
-cosp_interface: $(TARGET_COSP_INTERFACE)
-cosp_server: $(TARGET_COSP_SERVER)
+cat_client: $(TARGET_CAT_CLIENT)
+cat_interface: $(TARGET_CAT_INTERFACE)
+cat_server: $(TARGET_CAT_SERVER)
 construct: $(TARGET_CONSTRUCT)
 extract: $(TARGET_EXTRACT)
 modeller: $(TARGET_MODELLER)
@@ -513,12 +513,12 @@ make_usage:
 touch_incs:
  @touch.bat base.inc
  @touch.bat commands.inc
- @touch.bat cosp_base.inc
+ @touch.bat cat_base.inc
  @touch.bat Meta.inc
  @touch.bat bundle.inc
- @touch.bat cosp_client.inc
- @touch.bat cosp_interface.inc
- @touch.bat cosp_server.inc
+ @touch.bat cat_client.inc
+ @touch.bat cat_interface.inc
+ @touch.bat cat_server.inc
  @touch.bat construct.inc
  @touch.bat extract.inc
  @touch.bat modeller.inc
@@ -573,23 +573,23 @@ $(TARGET_COMMANDS):: $(TARGET_COMMANDS_OBJECTS)
 <<
 
 !ifndef NO_INC_FILES
-! include $(TARGET_COSP_BASE_INCLUDE)
+! include $(TARGET_CAT_BASE_INCLUDE)
 !endif
 
-$(TARGET_COSP_BASE:.dll=.compile):
+$(TARGET_CAT_BASE:.dll=.compile):
  @echo @call gendeps.bat %* >compile.bat
  @echo $(CPP_DYNAMIC) %* >>compile.bat
- @geninc $(TARGET_COSP_BASE_OBJECTS:.obj=) >$(TARGET_COSP_BASE_INCLUDE)
+ @geninc $(TARGET_CAT_BASE_OBJECTS:.obj=) >$(TARGET_CAT_BASE_INCLUDE)
 
-$(TARGET_COSP_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_COSP_BASE_COMMANDS) $(TARGET_COSP_BASE:.dll=.compile)
+$(TARGET_CAT_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_BASE_COMMANDS) $(TARGET_CAT_BASE:.dll=.compile)
  @
 
-$(TARGET_COSP_BASE):: $(TARGET_COSP_BASE_OBJECTS) $(TARGET_BASE)
+$(TARGET_CAT_BASE):: $(TARGET_CAT_BASE_OBJECTS) $(TARGET_BASE)
  $(LINK) @<<
  $(LINK_DYNAMIC) $(COMMON_LIBS) $(WINSOCK_LIBS) $(OPENSSL_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(MYSQL_LIBS)
 <<
 !ifdef MANIFEST
- @$(MANIFEST) $(TARGET_COSP_BASE)
+ @$(MANIFEST) $(TARGET_CAT_BASE)
 !endif
 
 !ifndef NO_INC_FILES
@@ -633,63 +633,63 @@ $(TARGET_BUNDLE):: $(TARGET_BUNDLE_OBJECTS) $(TARGET_BASE)
 !endif
 
 !ifndef NO_INC_FILES
-! include $(TARGET_COSP_CLIENT_INCLUDE)
+! include $(TARGET_CAT_CLIENT_INCLUDE)
 !endif
 
-$(TARGET_COSP_CLIENT:.exe=.compile):
+$(TARGET_CAT_CLIENT:.exe=.compile):
  @echo @call gendeps.bat %* >compile.bat
  @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_COSP_CLIENT_OBJECTS:.obj=) >$(TARGET_COSP_CLIENT_INCLUDE)
+ @geninc $(TARGET_CAT_CLIENT_OBJECTS:.obj=) >$(TARGET_CAT_CLIENT_INCLUDE)
 
-$(TARGET_COSP_CLIENT):: $(TARGET_BASE) $(TARGET_COSP_CLIENT:.exe=.compile)
+$(TARGET_CAT_CLIENT):: $(TARGET_BASE) $(TARGET_CAT_CLIENT:.exe=.compile)
  @
 
-$(TARGET_COSP_CLIENT):: $(TARGET_COSP_CLIENT_OBJECTS) $(TARGET_BASE)
+$(TARGET_CAT_CLIENT):: $(TARGET_CAT_CLIENT_OBJECTS) $(TARGET_BASE)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS) $(WINSOCK_LIBS)
 <<
 !ifdef MANIFEST
- @$(MANIFEST) $(TARGET_COSP_CLIENT)
+ @$(MANIFEST) $(TARGET_CAT_CLIENT)
 !endif
 
 !ifndef NO_INC_FILES
-! include $(TARGET_COSP_INTERFACE_INCLUDE)
+! include $(TARGET_CAT_INTERFACE_INCLUDE)
 !endif
 
-$(TARGET_COSP_INTERFACE:.exe=.compile):
+$(TARGET_CAT_INTERFACE:.exe=.compile):
  @echo @call gendeps.bat %* >compile.bat
  @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_COSP_INTERFACE_OBJECTS:.obj=) >$(TARGET_COSP_INTERFACE_INCLUDE)
+ @geninc $(TARGET_CAT_INTERFACE_OBJECTS:.obj=) >$(TARGET_CAT_INTERFACE_INCLUDE)
 
-$(TARGET_COSP_INTERFACE):: $(TARGET_BASE) $(TARGET_COSP_INTERFACE:.exe=.compile)
+$(TARGET_CAT_INTERFACE):: $(TARGET_BASE) $(TARGET_CAT_INTERFACE:.exe=.compile)
  @
 
-$(TARGET_COSP_INTERFACE):: $(TARGET_COSP_INTERFACE_OBJECTS) $(TARGET_BASE)
+$(TARGET_CAT_INTERFACE):: $(TARGET_CAT_INTERFACE_OBJECTS) $(TARGET_BASE)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS) $(WINSOCK_LIBS) $(LIBFCGI_LIBS)
 <<
 !ifdef MANIFEST
- @$(MANIFEST) $(TARGET_COSP_INTERFACE)
+ @$(MANIFEST) $(TARGET_CAT_INTERFACE)
 !endif
 
 !ifndef NO_INC_FILES
-! include $(TARGET_COSP_SERVER_INCLUDE)
+! include $(TARGET_CAT_SERVER_INCLUDE)
 !endif
 
-$(TARGET_COSP_SERVER:.exe=.compile):
+$(TARGET_CAT_SERVER:.exe=.compile):
  @echo @call gendeps.bat %* >compile.bat
  @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_COSP_SERVER_OBJECTS:.obj=) >$(TARGET_COSP_SERVER_INCLUDE)
+ @geninc $(TARGET_CAT_SERVER_OBJECTS:.obj=) >$(TARGET_CAT_SERVER_INCLUDE)
 
-$(TARGET_COSP_SERVER):: $(TARGET_BASE) $(TARGET_COSP_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_COSP_SERVER_COMMANDS) $(TARGET_COSP_SERVER:.exe=.compile)
+$(TARGET_CAT_SERVER):: $(TARGET_BASE) $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_SERVER_COMMANDS) $(TARGET_CAT_SERVER:.exe=.compile)
  @
 
-$(TARGET_COSP_SERVER):: $(TARGET_COSP_SERVER_OBJECTS) $(TARGET_BASE) $(TARGET_COSP_BASE:.dll=.lib)
+$(TARGET_CAT_SERVER):: $(TARGET_CAT_SERVER_OBJECTS) $(TARGET_BASE) $(TARGET_CAT_BASE:.dll=.lib)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS) $(WINSOCK_LIBS) $(OPENSSL_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS)
 <<
 !ifdef MANIFEST
- @$(MANIFEST) $(TARGET_COSP_SERVER)
+ @$(MANIFEST) $(TARGET_CAT_SERVER)
 !endif
 
 !ifndef NO_INC_FILES

@@ -1,0 +1,22 @@
+inc "increment current value"
+dec "decrement current value"
+min "show minimum possible value"
+max "show maximum possible value"
+get "get current value"
+cmp "get comparable value"
+set "set numeric value" <val//num>
+add "add to numeric value" <val//num>
+sub "subtract from numeric value" <val//num>
+mul "multiply by numeric value" <val//num>
+div "divide by numeric value" <val//num>
+is_lt "is less than numeric value" <val//num>
+is_gt "is greater than numeric value" <val//num>
+is_eq "is equal to numeric value" <val//num>
+is_lteq "is less than or equal to numeric value" <val//num>
+is_gteq "is greater than or equal to numeric value" <val//num>
+frac "fractional component"
+trunc "whole number component"
+round "round numeric value" <val//decimals>[<opt/up>|<opt/down>|<opt/normal>|<opt/bankers>]
+round_table "display sample table of rounding values"
+format "format current value according to numeric mask" <val//mask>
+exit "exit program"
