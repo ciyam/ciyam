@@ -23,7 +23,6 @@
 ##             dump                 make dump.exe target
 ##             generate_commands    make generate_commands.exe target
 ##             test                 make test.exe target
-##             test_btree           make test_btree.exe target
 ##             test_cache           make test_cache.exe target
 ##             test_fcgi            make test_fcgi.exe target
 ##             test_numeric         make test_numeric.exe target
@@ -325,11 +324,6 @@ TARGET_TEST=test.exe
 TARGET_TEST_INCLUDE=test.inc
 TARGET_TEST_OBJECTS=test.obj
 
-TARGET_TEST_BTREE=test_btree.exe
-TARGET_TEST_BTREE_INCLUDE=test_btree.inc
-TARGET_TEST_BTREE_OBJECTS=test_btree.obj
-TARGET_TEST_BTREE_COMMANDS=test_btree.cmh
-
 TARGET_TEST_CACHE=test_cache.exe
 TARGET_TEST_CACHE_INCLUDE=test_cache.inc
 TARGET_TEST_CACHE_OBJECTS=test_cache.obj
@@ -393,7 +387,6 @@ ALL_TARGETS=\
  $(TARGET_DUMP)\
  $(TARGET_GENERATE_COMMANDS)\
  $(TARGET_TEST)\
- $(TARGET_TEST_BTREE)\
  $(TARGET_TEST_CACHE)\
  $(TARGET_TEST_FCGI)\
  $(TARGET_TEST_NUMERIC)\
@@ -421,7 +414,6 @@ ALL_INCLUDES=\
  $(TARGET_DUMP_INCLUDE)\
  $(TARGET_GENERATE_COMMANDS_INCLUDE)\
  $(TARGET_TEST_INCLUDE)\
- $(TARGET_TEST_BTREE_INCLUDE)\
  $(TARGET_TEST_CACHE_INCLUDE)\
  $(TARGET_TEST_FCGI_INCLUDE)\
  $(TARGET_TEST_NUMERIC_INCLUDE)\
@@ -449,7 +441,6 @@ ALL_OBJECTS=\
  $(TARGET_DUMP_OBJECTS)\
  $(TARGET_GENERATE_COMMANDS_OBJECTS)\
  $(TARGET_TEST_OBJECTS)\
- $(TARGET_TEST_BTREE_OBJECTS)\
  $(TARGET_TEST_CACHE_OBJECTS)\
  $(TARGET_TEST_FCGI_OBJECTS)\
  $(TARGET_TEST_NUMERIC_OBJECTS)\
@@ -467,7 +458,6 @@ ALL_COMMANDS=\
  $(TARGET_META_COMMANDS)\
  $(TARGET_CAT_SERVER_COMMANDS)\
  $(TARGET_MODELLER_COMMANDS)\
- $(TARGET_TEST_BTREE_COMMANDS)\
  $(TARGET_TEST_CACHE_COMMANDS)\
  $(TARGET_TEST_NUMERIC_COMMANDS)\
  $(TARGET_TEST_ODS_COMMANDS)\
@@ -491,7 +481,6 @@ modeller: $(TARGET_MODELLER)
 dump: $(TARGET_DUMP)
 generate_commands: $(TARGET_GENERATE_COMMANDS)
 test: $(TARGET_TEST)
-test_btree: $(TARGET_TEST_BTREE)
 test_cache: $(TARGET_TEST_CACHE)
 test_fcgi: $(TARGET_TEST_FCGI)
 test_numeric: $(TARGET_TEST_NUMERIC)
@@ -525,7 +514,6 @@ touch_incs:
  @touch.bat dump.inc
  @touch.bat generate_commands.inc
  @touch.bat test.inc
- @touch.bat test_btree.inc
  @touch.bat test_cache.inc
  @touch.bat test_fcgi.inc
  @touch.bat test_numeric.inc
@@ -811,26 +799,6 @@ $(TARGET_TEST):: $(TARGET_TEST_OBJECTS) $(TARGET_BASE)
 <<
 !ifdef MANIFEST
  @$(MANIFEST) $(TARGET_TEST)
-!endif
-
-!ifndef NO_INC_FILES
-! include $(TARGET_TEST_BTREE_INCLUDE)
-!endif
-
-$(TARGET_TEST_BTREE:.exe=.compile):
- @echo @call gendeps.bat %* >compile.bat
- @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_TEST_BTREE_OBJECTS:.obj=) >$(TARGET_TEST_BTREE_INCLUDE)
-
-$(TARGET_TEST_BTREE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_TEST_BTREE_COMMANDS) $(TARGET_TEST_BTREE:.exe=.compile)
- @
-
-$(TARGET_TEST_BTREE):: $(TARGET_TEST_BTREE_OBJECTS) $(TARGET_BASE)
- $(LINK) @<<
- $(LINK_NORMAL) $(COMMON_LIBS)
-<<
-!ifdef MANIFEST
- @$(MANIFEST) $(TARGET_TEST_BTREE)
 !endif
 
 !ifndef NO_INC_FILES
