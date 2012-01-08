@@ -118,6 +118,7 @@ const char* const c_attribute_web_type = "web_type";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
 const char* const c_attribute_max_sessions = "max_sessions";
+const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_sql_password = "sql_password";
 const char* const c_attribute_default_storage = "default_storage";
 const char* const c_attribute_script_reconfig = "script_reconfig";
@@ -134,6 +135,8 @@ const char* const c_expand_store = "%store%";
 const char* const c_uid_unknown = "<unknown>";
 
 const char* const c_dead_keys_ext = ".dead_keys.lst";
+
+const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
 
@@ -2498,6 +2501,7 @@ bool g_using_ssl = false;
 
 int g_max_user_limit = 1;
 
+string g_pem_password;
 string g_sql_password;
 
 string g_default_storage;
@@ -2610,6 +2614,7 @@ void read_server_configuration( )
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
 
+      g_pem_password = reader.read_opt_attribute( c_attribute_pem_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
@@ -3203,7 +3208,11 @@ void init_globals( )
 #ifdef SSL_SUPPORT
    if( file_exists( "cat_server.pem" ) )
    {
-      init_ssl( "cat_server.pem", "password" );
+      string password( c_default_pem_password );
+      if( !g_pem_password.empty( ) )
+         password = get_pem_password( );
+
+      init_ssl( "cat_server.pem", password.c_str( ) );
       g_using_ssl = true;
    }
 #endif
@@ -3944,6 +3953,13 @@ bool get_script_reconfig( )
 {
    guard g( g_mutex );
    return g_script_reconfig;
+}
+
+string get_pem_password( )
+{
+   guard g( g_mutex );
+
+   return decrypt_password( g_pem_password );
 }
 
 string get_sql_password( )

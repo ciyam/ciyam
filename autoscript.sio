@@ -1,0 +1,9 @@
+# NOTE: Session variables apart from @none and @storage cannot be used here.
+<sio/>
+# <script/>
+#  <name>Check and process any email scripts
+#  <time>06:00-20:00
+#  <cycle>1m
+#  <filename>checkmail
+# </script>
+</sio>
