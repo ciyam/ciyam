@@ -1,0 +1,89 @@
+<sio/>
+ <timezones/>
+  <timezone/>
+   <abbr>CST
+   <utc_offset>8
+   <description>Beijing, Chongqing, Hong Kong, Urumqi
+  </timezone>
+  <timezone/>
+   <abbr>AEST
+   <utc_offset>10
+   <description>Canberra, Melbourne, Sydney
+   <daylight_abbr>AEDT
+   <daylight_year_start>2007
+   <daylight_year_finish>2020
+   <daylight_start_month>10
+   <daylight_start_occurrence>1
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00:00
+   <daylight_finish_month>4
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>02:00:00
+   <daylight_utc_offset>11
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>1971
+     <year_finish>1971
+     <description>Initial DST Introduction
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00:00
+     <finish_month>1
+     <finish_occurrence>1
+     <finish_day_of_week>5
+     <finish_time>00:00:00
+     <utc_offset>11
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>1972
+     <year_finish>2006
+     <description>Initial DST Continuations
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>01:00:00
+     <finish_month>4
+     <finish_occurrence>1
+     <finish_day_of_week>7
+     <finish_time>02:00:00
+     <utc_offset>11
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2000
+     <description>Sydney Olympics Start
+     <start_month>8
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00:00
+     <finish_month>4
+     <finish_occurrence>1
+     <finish_day_of_week>7
+     <finish_time>02:00:00
+     <utc_offset>11
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2001
+     <year_finish>2001
+     <description>Sydney Olympics Finish
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00:00
+     <finish_month>3
+     <finish_occurrence>1
+     <finish_day_of_week>7
+     <finish_time>02:00:00
+     <utc_offset>11
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>GMT
+   <utc_offset>0
+   <description>Greenwich Mean Time
+  </timezone>
+ </timezones>
+</sio>
