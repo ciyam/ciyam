@@ -1,0 +1,79 @@
+if [ $# -lt 2 ]; then
+ echo Usage: genclass [[-rdbms]] [module name] [class name]
+else
+ export gen_class=0
+ export module=$1
+ export classnm=$2
+ export full_name=$1_$2
+ export user_vars="user_vars=$full_name.vars.xrep"
+
+ if [ ! "$1" = "-rdbms" ]; then
+  echo model_load $1>~genclass.tmp
+  echo generate $2>>~genclass.tmp
+
+  ./modeller -quiet -no_prompt <~genclass.tmp
+ else
+  export module=$2
+  export classnm=$3
+  export full_name=$2_$3
+  export user_vars="user_vars=$full_name.vars.xrep"
+ fi
+
+ if [ $? -eq 0 ]; then
+  if [ -f $full_name.cpp ]; then
+   ./extract $full_name.cpp >~genclass.tmp
+   if [ $? -eq 0 ]; then
+    ./update $full_name.cpp.xrep ~genclass.tmp >/dev/null
+   fi
+  fi
+
+  if [ -f $full_name.vars.xrep.sav ]; then
+   cmp -s $full_name.vars.xrep $full_name.vars.xrep.sav
+   if [ $? -eq 1 ]; then
+    export gen_class=1
+   fi
+  else
+   export gen_class=1
+  fi
+
+  if [ $gen_class -eq 1 ]; then
+   if [ -f $full_name.cpp.xrep ]; then
+    export user_vars="$user_vars user_source=$full_name.cpp.xrep"
+   fi
+
+   ./xrep @cat_class.h.xrep $user_vars >$full_name.h.new
+   if [ $? -eq 0 ]; then
+    ./update $full_name.h $full_name.h.new
+   fi
+
+   ./xrep @cat_class.cpp.xrep $user_vars >$full_name.cpp.new
+   if [ $? -eq 0 ]; then
+    ./update $full_name.cpp $full_name.cpp.new
+   fi
+
+   ./xrep @cat_class.cms.xrep $user_vars >$full_name.cms.new
+   if [ $? -eq 0 ]; then
+    ./update $full_name.cms $full_name.cms.new
+   fi
+
+   cp $full_name.vars.xrep $full_name.vars.xrep.sav
+  fi
+
+  if [ -f $full_name.csv.new ]; then
+   ./update $full_name.csv $full_name.csv.new
+  fi
+
+  ./genpdfs $module $classnm
+
+  if [ -f ~genclass.tmp ]; then
+   rm ~genclass.tmp
+  fi
+  if [ -f $full_name.cpp.xrep ]; then
+   rm $full_name.cpp.xrep
+  fi
+  if [ -f $full_name.vars.xrep ]; then
+   rm $full_name.vars.xrep
+  fi
+
+ fi
+fi

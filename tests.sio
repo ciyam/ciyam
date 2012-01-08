@@ -1,0 +1,226 @@
+<sio/>
+ <groups/>
+  <group/>
+   <name>test_cache
+   <tests/>
+    <test/>
+     <name>1
+     <description>Populate cache data and perform basic single region tests.
+     <kill>test_cache.dat
+     <test_step/>
+      <name>a
+      <exec>test_cache -quiet 5 10
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+    </test>
+    <test/>
+     <name>2
+     <description>Perform various tests using multiple regions.
+     <test_step/>
+      <name>a
+      <exec>test_cache -quiet 20 10 4
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+    </test>
+    <test/>
+     <name>3
+     <description>Perform various maximum limit tests.
+     <test_step/>
+      <name>a
+      <exec>test_cache -quiet 65536 65536
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+     <test_step/>
+      <name>f
+      <exec>
+      <input>false
+      <output>automatic
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
+   <name>test_ods
+   <tests/>
+    <test/>
+     <name>1
+     <description>Populate DB using nested transactions.
+     <kill>test_ods.dat
+     <kill>test_ods.idx
+     <kill>test_ods.hdr
+     <kill>test_ods.dat.lck
+     <kill>test_ods.idx.lck
+     <test_step/>
+      <name>a
+      <exec>test_ods -quiet -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>dump test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>dump all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>dump -d all test_ods
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+    <test/>
+     <name>2
+     <description>Test a couple of larger capacity transactions.
+     <kill>test_ods.dat
+     <kill>test_ods.idx
+     <kill>test_ods.hdr
+     <kill>test_ods.dat.lck
+     <kill>test_ods.idx.lck
+     <test_step/>
+      <name>a
+      <exec>test_ods -quiet -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>dump test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>dump -d 0 test_ods
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+    <test/>
+     <name>3
+     <description>Test DB compress operation.
+     <test_step/>
+      <name>a
+      <exec>test_ods -quiet -x
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>dump test_ods
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>dump -d 0 test_ods
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
+   <name>test_parser
+   <tests/>
+    <test/>
+     <name>1
+     <description>Perform command syntax and usage tests.
+     <test_step/>
+      <name>a
+      <exec>test_parser /test
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+ </groups>
+</sio>

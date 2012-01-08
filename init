@@ -1,0 +1,7 @@
+if [ $# -ne 1 ]; then
+ echo Usage: init [app name]
+else
+ export CAT_APPLICATION=$1
+ rm -f $1.modules.lst $1.log $1.dat $1.idx $1.hdr >/dev/null
+ ./cat_client -quiet -no_prompt < init.cin
+fi
