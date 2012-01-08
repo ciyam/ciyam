@@ -56,7 +56,7 @@ cp /usr/local/lib/libhpdf-2.1.0.so /usr/lib (depending upon distro)
 
 [Windows]
 
-unzip -j \tmp\libharu-2.1.0-vc8.zip lib_dll/libhpdf.lib lib_dll/libhpdf.dll lib_dll/libpng13.dll lib_dll/zlib.dll
+unzip -j \tmp\libharu-2.1.0-vc8.zip lib_dll/libhpdf.lib lib_dll/libhpdf.dll
 
 mkdir haru
 cd haru
