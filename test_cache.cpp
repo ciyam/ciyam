@@ -22,6 +22,7 @@
 #  include <sstream>
 #  include <fstream>
 #  include <iostream>
+#  include <stdexcept>
 #  ifdef __BORLANDC__
 #     include <cio>
 #     include <cfcntl>
@@ -87,7 +88,7 @@ int total_item_assop_calls;
 int total_item_strass_calls;
 #endif
 
-const char* const c_app_title = "cache";
+const char* const c_app_title = "test_cache";
 const char* const c_app_version = "0.1";
 
 bool g_application_title_called = false;
@@ -257,45 +258,37 @@ template< typename T > class test_cache : public cache_base< T >
    void open_file_normal( const char* p_name )
    {
       if( handle != -1 )
-         throw "error attempt to open file when already open";
+         throw runtime_error( "attempt to open file when already open" );
 
-#ifdef __GNUG__
       handle = _open( p_name, _O_CREAT | _O_RDWR | O_BINARY, S_IREAD | S_IWRITE );
-#else
-      handle = _open( p_name, _O_CREAT | _O_RDWR | O_BINARY );
-#endif
       if( handle < 0 )
-         throw "error opening cache file for read and write";
+         throw runtime_error( "opening cache file for read and write" );
    }
 
    void open_file_read_only( const char* p_name )
    {
       if( handle != -1 )
-         throw "error attempt to open file when already open";
+         throw runtime_error( "error attempt to open file when already open" );
 
       handle = _open( p_name, O_RDONLY | O_BINARY );
       if( handle < 0 )
-         throw "error opening cache file for read";
+         throw runtime_error( "opening cache file for read" );
    }
 
    void open_file_write_only( const char* p_name )
    {
       if( handle != -1 )
-         throw "error attempt to open file when already open";
+         throw runtime_error( "error attempt to open file when already open" );
 
-#ifdef __GNUG__
       handle = _open( p_name, _O_CREAT | _O_WRONLY | O_BINARY, S_IREAD | S_IWRITE );
-#else
-      handle = _open( p_name, _O_CREAT | _O_WRONLY | O_BINARY );
-#endif
       if( handle < 0 )
-         throw "error opening cache file for write";
+         throw runtime_error( "opening cache file for write" );
    }
 
    void close_file( )
    {
       if( handle >= 0 && _close( handle ) == -1 )
-         throw "unexpected file close error";
+         throw runtime_error( "unexpected file close error" );
       handle = c_npos;
    }
 
@@ -306,16 +299,16 @@ template< typename T > class test_cache : public cache_base< T >
          throw "fetch exception thrown";
 
       if( handle < 0 )
-         throw "error: fetch without file open";
+         throw runtime_error( "fetch without file open" );
 
       if( _lseek( handle, ( num * data.size( ) ), SEEK_SET ) == -1 )
-         throw "unexpected file seek error";
+         throw runtime_error( "unexpected file seek error" );
 #ifndef USE_NON_POD
       if( _read( handle, ( void* )data.buf, data.size( ) ) == -1 )
-         throw "unexpected file read error";
+         throw runtime_error( "unexpected file read error" );
 #else
       if( _read( handle, ( void* )data.buf.get( ), data.size( ) ) == -1 )
-         throw "unexpected file read error";
+         throw runtime_error( "unexpected file read error" );
 #endif
 
 #ifdef TEST_CACHE_DEBUG
@@ -330,16 +323,16 @@ template< typename T > class test_cache : public cache_base< T >
          throw "store exception thrown";
 
       if( handle < 0 )
-         throw "error: store without file open";
+         throw runtime_error( "store without file open" );
 
       if( _lseek( handle, ( num * data.size( ) ), SEEK_SET ) == -1 )
-         throw "unexpected file seek error";
+         throw runtime_error( "unexpected file seek error" );
 #ifndef USE_NON_POD
       if( _write( handle, ( void* )data.buf, data.size( ) ) == -1 )
-         throw "unexpected file write error";
+         throw runtime_error( "unexpected file write error" );
 #else
       if( _write( handle, ( void* )data.buf.get( ), data.size( ) ) == -1 )
-         throw "unexpected file write error";
+         throw runtime_error( "unexpected file write error" );
 #endif
 
 #ifdef TEST_CACHE_DEBUG
@@ -351,7 +344,7 @@ template< typename T > class test_cache : public cache_base< T >
    int handle;
 };
 
-const char* const c_cache_file_name = "cache.dat";
+const char* const c_cache_file_name = "test_cache.dat";
 
 const unsigned c_default_max_items = 5;
 const unsigned c_default_items_per_region = 10;
@@ -743,8 +736,5 @@ int main( int argc, char* argv[ ] )
       cerr << "error: unexpected exception occurred" << endl;
       return 2;
    }
-#ifdef TEST_CACHE_DEBUG
-   cout << "total_active_cache_objects = " << total_active_cache_objects << endl;
-#endif
 }
 

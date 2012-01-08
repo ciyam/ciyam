@@ -1,0 +1,74 @@
+if [ $# -lt 1 ]; then
+ echo Usage: genmodule [[-rdbms]] [module name] [[app dir]] [[module alias]]
+else
+ export app_dir=$2
+ export gen_fcgi=0
+ export mod_name=$1
+ export mod_alias=$3
+ export user_vars="user_vars=$1.spec.vars.xrep"
+
+ if [ ! "$1" = "-rdbms" ]; then
+  echo model_load $1>~genmodule.tmp
+  echo generate -cmd=./genclass>>~genmodule.tmp
+
+  ./modeller -quiet -no_prompt <~genmodule.tmp
+ else
+  export app_dir=$3
+  export mod_name=$2
+  export mod_alias=$4
+  export user_vars="user_vars=$2.spec.vars.xrep"
+  cat $2.classes.lst | xargs -n1 ./genclass -rdbms $2
+ fi
+
+ if [ $? -eq 0 ]; then
+  if [ -f $mod_name.cpp ]; then
+   ./extract $mod_name.cpp >$mod_name.user.xrep
+   ./extract $mod_name.cms >>$mod_name.user.xrep
+  fi
+
+  if [ -f $mod_name.user.xrep ]; then
+   export user_vars="$user_vars user_source=$mod_name.user.xrep"
+  fi
+
+  if [ -f $mod_name.txt.new ]; then
+   ./update $mod_name.txt $mod_name.txt.new
+  fi
+
+  ./xrep @cat_main.cpp.xrep $user_vars >$mod_name.cpp.new
+  if [ $? -eq 0 ]; then
+   ./update $mod_name.cpp $mod_name.cpp.new
+
+   ./xrep @cat_main.cms.xrep $user_vars >$mod_name.cms.new
+   if [ $? -eq 0 ]; then
+    ./update $mod_name.cms $mod_name.cms.new
+
+    if [ -f $mod_name.user.xrep ]; then
+     rm $mod_name.user.xrep
+    fi
+
+    if [ -f $mod_name.spec.vars.xrep.sav ]; then
+     cmp -s $mod_name.spec.vars.xrep $mod_name.spec.vars.xrep.sav
+     if [ $? -eq 1 ]; then
+      export gen_fcgi=1
+     fi
+    else
+     export gen_fcgi=1
+    fi
+
+    if [ $gen_fcgi -eq 1 ]; then
+     ./xrep @module.fcgi.sio.xrep include=$mod_name.spec.vars.xrep >~genmodule.tmp
+     if [ $? -eq 0 ]; then
+      ./update $mod_name.fcgi.sio ~genmodule.tmp
+      cp $mod_name.spec.vars.xrep $mod_name.spec.vars.xrep.sav
+     fi
+    fi
+
+    ./genmake
+    if [ ! "$app_dir" = "" ]; then
+     ./install $mod_name $app_dir $mod_alias
+    fi
+
+   fi
+  fi
+ fi
+fi
