@@ -1,0 +1,47 @@
+class_add "add a new class" [<val/-id=/id>]<val//class_name><val//plural_name>[<val/-fixed=/fixed_key_val>][<val/-x=/extra>][<val//base_class_name>]
+class_list "list classes"
+class_remove "remove an existing class" <val//class_name>
+class_rename "rename an existing class" <val//old_class_name><val//new_class_name>
+field_add "add a new class field" [<val/-id=/id>]<val//class_name><val//field_name><val//type_name><opt/opt>|<opt/mand>[<val/-e=/enum>][<val/-x=/extra>][<val/-def=/default>][<opt/-transient/transient>|<opt/-text_search/text_search>]
+field_list "list class fields" <val//class_name>
+field_remove "remove an existing class field" <val//class_name><val//field_name>
+field_rename "rename an existing class field" <val//class_name><val//old_field_name><val//new_field_name>
+index_add "add a new class index" [<val/-id=/id>]<val//class_name><list//field_list>[<opt/unique>]
+index_list "list class indexes" <val//class_name>
+index_remove "remove an existing class index" <val//class_name><list//field_list>
+modifier_add "add a new class modifier" [<val/-id=/id>]<val//class_name><val//modifier_name><list//field_info>
+modifier_list "list class modifiers" <val//class_name>
+modifier_remove "remove an existing class modifier" <val//class_name><val//modifier_name>
+modifier_rename "rename an existing class modifier" <val//class_name><val//old_modifier_name><val//new_modifier_name>
+procedure_add "add a new class procedure" [<val/-id=/id>]<val//class_name><val//procedure_name>
+procedure_list "list class procedures" <val//class_name>
+procedure_remove "remove an existing class procedure" <val//class_name><val//procedure_name>
+procedure_rename "rename an existing class procedure" <val//class_name><val//old_procedure_name><val//new_procedure_name>
+procedure_arg_add "add a new class procedure arg" [<val/-id=/id>]<val//class_name><val//procedure_name><val//arg_name><val//arg_type><opt/in>|<opt/out>
+procedure_arg_list "list class procedure args" <val//class_name><val//procedure_name>
+procedure_arg_remove "remove an existing class procedure arg" <val//class_name><val//procedure_name><val//arg_name>
+procedure_arg_rename "rename an existing class procedure arg" <val//class_name><val//procedure_name><val//old_arg_name><val//new_arg_name>
+relationship_add "add a new relationship" [<val/-id=/id>][<val/-fid=/fid>]<val//child_class_name><val//child_field_name><val//parent_class_name><opt/opt>|<opt/mand><opt/restrict>|<opt/unlink>|<opt/destroy>[<val/-x=/extra>]
+relationship_list "list relationships"
+relationship_list_parents "list parent relationships for a child" <val//child_class_name>
+relationship_list_children "list child relationships for a parent" <val//parent_class_name>
+relationship_remove "remove an existing relationship" <val//relationship_name>
+relationship_rename "rename an existing relationship" <val//old_relationship_name><val//new_relationship_name>
+specification_add "add a new specification" [<val/-id=/id>]<val//specification_name><val//specification_type>[<val//specification_args>]
+specification_list "list specifications"
+specification_remove "remove an existing specification" <val//specification_name>
+specification_rename "rename an existing specification" <val//old_specification_name><val//new_specification_name>
+user_defined_enum_add "add a new user defined enum" [<val/-id=/id>]<val//ude_name><val//type_name><list//key_values>
+user_defined_enum_list "list user defined enums"
+user_defined_enum_remove "remove an existing user defined enum" <val//ude_name>
+user_defined_enum_rename "rename an existing user defined enum" <val//old_ude_name><val//new_ude_name>
+user_defined_type_add "add a new user defined type" [<val/-id=/id>]<val//udt_name><val//type_name>[<val//type_domain_info>]
+user_defined_type_list "list user defined types"
+user_defined_type_remove "remove an existing user defined type" <val//udt_name>
+user_defined_type_rename "rename an existing user defined type" <val//old_udt_name><val//new_udt_name>
+model_info "get/set model information" [<val/-id=/new_id>][<val/-name=/new_name>][<val/-perm=/new_perm>][<val/-version=/new_version>][<val/-created=/new_created>]
+model_check "check whether model is valid"
+model_load "load model" <val//name>
+model_save "save model"
+generate "generate xrep vars" [<val/-cmd=/command>][<val//class_name>]
+exit "exit program"

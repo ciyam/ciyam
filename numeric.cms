@@ -1,0 +1,7 @@
+inc "increment current value"
+dec "decrement current value"
+add "add to numeric value" <val//num>
+sub "subtract from numeric value" <val//num>
+mul "multiply by numeric value" <val//num>
+div "divide by numeric value" <val//num>
+round "round numeric value" <val//decimals>[<opt/up>|<opt/down>|<opt/normal>|<opt/bankers>]

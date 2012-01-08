@@ -1,0 +1,10 @@
+set "set a variable value" <val//name><oval//value>
+clear "clear all variables"
+list "list all variable values"
+read_vars "read variables from a file" <val//filename>
+grid "set/clear page grid" {[<opt/-rev/reverse>]<opt/on>}|<opt/off>
+header "set/get page header size" [<val//size>]
+footer "set/get page footer size" [<val//size>]
+format "set the format file" <val//filename>
+generate "generate pdf file" <val//filename>
+exit "exit program"

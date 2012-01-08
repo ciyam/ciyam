@@ -50,7 +50,7 @@
   </libs>
   <dyn_libs/>
    <dyn_lib/>
-    <name>cosp_base
+    <name>cat_base
     <sockets>true
     <openssl>true
     <libharu>true
@@ -61,12 +61,12 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
-     <filename>cosp_base.cpp
-     <filename>cosp_base_command_handler.cpp
-     <filename>cosp_base_date_time.cpp
-     <filename>cosp_base_file_buffer.cpp
-     <filename>cosp_base_numeric.cpp
-     <filename>cosp_base_ods.cpp
+     <filename>cat_base.cpp
+     <filename>cat_base_command_handler.cpp
+     <filename>cat_base_date_time.cpp
+     <filename>cat_base_file_buffer.cpp
+     <filename>cat_base_numeric.cpp
+     <filename>cat_base_ods.cpp
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp
@@ -117,7 +117,7 @@
     </cms_files>
    </executable>
    <executable/>
-    <name>cosp_client
+    <name>cat_client
     <gen_ext>
     <threads>false
     <sockets>true
@@ -132,13 +132,13 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
-     <filename>cosp_client.cpp
+     <filename>cat_client.cpp
     </cpp_files>
     <cms_files/>
     </cms_files>
    </executable>
    <executable/>
-    <name>cosp_interface
+    <name>cat_interface
     <gen_ext>
     <threads>true
     <sockets>true
@@ -153,7 +153,7 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
-     <filename>cosp_interface.cpp
+     <filename>cat_interface.cpp
      <filename>fcgi_cmds.cpp
      <filename>fcgi_info.cpp
      <filename>fcgi_list.cpp
@@ -165,7 +165,7 @@
     </cms_files>
    </executable>
    <executable/>
-    <name>cosp_server
+    <name>cat_server
     <gen_ext>
     <threads>true
     <sockets>true
@@ -178,14 +178,14 @@
     <dynamic>false
     <readline>false
     <link_libs>base
-    <dlink_libs>cosp_base
+    <dlink_libs>cat_base
     <cpp_files/>
      <filename>auto_script.cpp
-     <filename>cosp_server.cpp
-     <filename>cosp_session.cpp
+     <filename>cat_server.cpp
+     <filename>cat_session.cpp
     </cpp_files>
     <cms_files/>
-     <filename>cosp_session.cms
+     <filename>cat_session.cms
     </cms_files>
    </executable>
    <executable/>

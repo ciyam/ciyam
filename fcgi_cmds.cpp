@@ -1,0 +1,2190 @@
+// Copyright (c) 2011
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <stdexcept>
+#endif
+
+#include "fcgi_cmds.h"
+
+#include "format.h"
+#include "sockets.h"
+#include "date_time.h"
+#include "utilities.h"
+#include "fcgi_utils.h"
+#include "crypt_stream.h"
+#include "cat_interface.h"
+
+using namespace std;
+
+namespace
+{
+
+const int c_initial_response_timeout = 60000;
+const int c_subsequent_response_timeout = 2500;
+
+const char* const c_order_reverse = "reverse";
+
+}
+
+void read_module_strings( module_info& info, tcp_socket& socket )
+{
+   string strings_cmd( "module_strings_list " );
+   strings_cmd += info.id;
+
+   if( socket.write_line( strings_cmd ) <= 0 )
+      throw runtime_error( "Unable to retrieve '" + info.name + "' module strings." );
+
+   info.strings.clear( );
+   int timeout = c_initial_response_timeout;
+   while( true )
+   {
+      string response;
+      if( socket.read_line( response, timeout ) <= 0 )
+      {
+         if( socket.had_timeout( ) )
+            throw runtime_error( "Timeout occurred reading module strings response." );
+         else
+            throw runtime_error( "Unexpected session closure during strings initialisation." );
+      }
+
+      if( response == c_response_okay )
+         break;
+
+      timeout = c_subsequent_response_timeout;
+
+      string::size_type pos = response.find( ' ' );
+      if( pos == string::npos )
+         throw runtime_error( "unexpected string format '" + response + "'" );
+
+      info.strings.insert( make_pair( response.substr( 0, pos ), response.substr( pos + 1 ) ) );
+   }
+
+   // NOTE: The list menus container is only constructed here as the model strings
+   // will affect the order of the menu items.
+   info.list_info.clear( );
+   info.list_menus.clear( );
+   for( size_t i = 0; i < info.lists.size( ); i++ )
+   {
+      info.lists[ i ].var_ids.clear( );
+      info.list_info.insert( make_pair( info.lists[ i ].id, &info.lists[ i ] ) );
+
+      if( !info.lists[ i ].pid.empty( ) )
+      {
+         if( !info.list_info.count( info.lists[ i ].pid ) )
+            throw runtime_error( "unexpected variation parent id '" + info.lists[ i ].pid + "' not found" );
+
+         info.list_info[ info.lists[ i ].pid ]->var_ids.push_back( info.lists[ i ].id );
+      }
+      else if( info.lists[ i ].type != c_list_type_child
+       && info.lists[ i ].type != c_list_type_user_child )
+         info.list_menus.insert( make_pair( info.get_string( info.lists[ i ].name ), &info.lists[ i ] ) );
+   }
+}
+
+bool simple_command( session_info& sess_info, const string& cmd, string* p_response )
+{
+   DEBUG_TRACE << cmd;
+
+   if( sess_info.p_socket->write_line( cmd ) <= 0 )
+   {
+      DEBUG_TRACE << "socket write failure";
+      return false;
+   }
+
+   string response;
+   if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
+   {
+      if( sess_info.p_socket->had_timeout( ) )
+         DEBUG_TRACE << "timeout awaiting initial response";
+      else
+         DEBUG_TRACE << "unexpected socket closure getting initial response";
+      return false;
+   }
+
+   if( p_response )
+   {
+      *p_response = response;
+      DEBUG_TRACE << response;
+
+      response.clear( );
+      if( sess_info.p_socket->read_line( response, c_subsequent_response_timeout ) <= 0 )
+      {
+         if( sess_info.p_socket->had_timeout( ) )
+            DEBUG_TRACE << "timeout awaiting subsequent response";
+         else
+            DEBUG_TRACE << "unexpected socket closure getting subsequent response";
+         return false;
+      }
+   }
+
+   if( response != c_response_okay )
+   {
+      DEBUG_TRACE << "unexpected server response '" + response + "'";
+      return false;
+   }
+
+   return true;
+}
+
+bool perform_update( const string& module, const string& class_id,
+ const string& key, const vector< pair< string, string > >& field_value_pairs,
+ tcp_socket& socket, const string& user_key, const string& tz_abbr )
+{
+   bool okay = true;
+
+   string field_values;
+   for( size_t i = 0; i < field_value_pairs.size( ); i++ )
+   {
+      if( i > 0 )
+         field_values += ',';
+      field_values += field_value_pairs[ i ].first;
+      field_values += "=";
+      field_values += escaped( field_value_pairs[ i ].second, ",\"" );
+   }
+
+   string cmd( "perform_update " + user_key + " "
+    + date_time::standard( ).as_string( ) + " " + module + " " + class_id );
+
+   if( !tz_abbr.empty( ) )
+      cmd += " -tz=" + tz_abbr;
+
+   cmd += " " + key + " \"" + field_values + "\"";
+
+   DEBUG_TRACE << cmd;
+
+   if( socket.write_line( cmd ) > 0 )
+   {
+      string response;
+      if( socket.read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+         okay = false;
+   }
+   else
+      okay = false;
+
+   return okay;
+}
+
+bool perform_update( const string& module,
+ const string& class_id, const string& key, const string& field,
+ const string& old_value, const string& new_value, tcp_socket& socket, const string& user_key, string& error )
+{
+   bool okay = true;
+
+   string cmd( "perform_update " + user_key + " "
+    + date_time::standard( ).as_string( ) + " " + module + " " + class_id + " " + key + " \"" + field
+    + "=" + escaped( new_value, ",\"" ) + "\" \"" + field + "=" + escaped( old_value, ",\"" ) + "\"" );
+
+   DEBUG_TRACE << cmd;
+
+   if( socket.write_line( cmd ) > 0 )
+   {
+      string response;
+      if( socket.read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+      {
+         okay = false;
+         if( !response.empty( ) )
+            error = response;
+         else
+            error = "server timeout occurred";
+      }
+   }
+   else
+      okay = false;
+
+   return okay;
+}
+
+bool perform_action( const string& module_name,
+ const string& class_id, const string& act, const string& app,
+ const string& field, const string& fieldlist, const string& exec,
+ const string& extra, row_error_container& row_errors, tcp_socket& socket,
+ const string& user_key, const string& tz_abbr, int gmt_offset )
+{
+   bool okay = true;
+
+   vector< string > code_and_versions;
+   if( !app.empty( ) )
+      split( app, code_and_versions );
+
+   const module_info& mod_info( *get_storage_info( ).modules_index.find( module_name )->second );
+
+   string view_id;
+   if( mod_info.view_cids.count( class_id ) )
+      view_id = mod_info.view_cids.find( class_id )->second;
+
+   string fields_and_values;
+
+   if( act == c_act_link )
+   {
+      fields_and_values = field;
+      fields_and_values += "=";
+      fields_and_values += escaped( extra, ",\"" );
+   }
+   else if( !fieldlist.empty( ) )
+   {
+      vector< string > field_ids;
+      vector< string > field_values;
+
+      split( fieldlist, field_ids );
+      split( extra, field_values );
+
+      if( field_ids.size( ) != field_values.size( ) )
+         throw runtime_error( "unexpected field_ids and field_values size mismatch in perform_action" );
+
+      for( size_t i = 0; i < field_ids.size( ); i++ )
+      {
+         if( !fields_and_values.empty( ) )
+            fields_and_values += ',';
+
+         fields_and_values += field_ids[ i ];
+         fields_and_values += "=";
+         fields_and_values += escaped( escaped( field_values[ i ], ",\"" ), "," );
+      }
+   }
+
+   date_time dt( date_time::standard( ) );
+
+   string current_dtm( dt.as_string( ) );
+   string current_local_dtm( ( dt + ( seconds )gmt_offset ).as_string( ) );
+
+   // NOTE: If a view is found for the class and it contains a "modified" date/time field then this field will be updated.
+   if( !view_id.empty( ) && act == c_act_link )
+   {
+      for( size_t i = 0; i < mod_info.view_info.find( view_id )->second->fields.size( ); i++ )
+      {
+         fld_info fld( mod_info.view_info.find( view_id )->second->fields[ i ] );
+
+         if( fld.field != c_key_field )
+         {
+            set< string > extras;
+            if( !fld.extra.empty( ) )
+               split( fld.extra, extras, '+' );
+
+            if( extras.count( c_view_field_extra_modify_datetime ) )
+            {
+               fields_and_values += ',';
+               fields_and_values += fld.field;
+               fields_and_values += '=';
+               fields_and_values += current_local_dtm;
+               break;
+            }
+         }
+      }
+   }
+
+   bool is_versioned = true;
+   string exec_info( exec );
+
+   // NOTE: If the method name has been prefixed with a '!' then it will be executed without version information.
+   if( !exec_info.empty( ) && exec_info[ 0 ] == '!' )
+   {
+      is_versioned = false;
+      exec_info.erase( 0, 1 );
+   }
+
+   // NOTE: If the method name has (also) been prefixed with a '^' then instance execution order will be reversed.
+   if( !exec_info.empty( ) && exec_info[ 0 ] == '^' )
+   {
+      exec_info.erase( 0, 1 );
+      reverse( code_and_versions.begin( ), code_and_versions.end( ) );
+   }
+
+   string key_list;
+   string ver_list;
+
+   if( act == c_act_exec )
+   {
+      if( app.empty( ) )
+      {
+         is_versioned = false;
+
+         key_list = "\" \"";
+         code_and_versions.push_back( "" );
+      }
+      else
+      {
+         for( size_t i = 0; i < code_and_versions.size( ); i++ )
+         {
+            string next_key( code_and_versions[ i ] );
+            string next_ver;
+
+            string::size_type pos = next_key.find( ' ' );
+            if( pos != string::npos )
+            {
+               next_ver = next_key.substr( pos + 2 ); // NOTE: Skip the '=' prefix.
+               next_key.erase( pos );
+            }
+
+            if( !key_list.empty( ) )
+               key_list += ',';
+            key_list += next_key;
+
+            if( is_versioned )
+            {
+               if( !ver_list.empty( ) )
+                  ver_list += ',';
+               ver_list += next_ver;
+            }
+         }
+      }
+   }
+
+   for( size_t i = 0; i < code_and_versions.size( ); i++ )
+   {
+      string act_cmd;
+
+      if( act == c_act_link )
+         act_cmd = "perform_update";
+      else if( act == c_act_del )
+         act_cmd = "perform_destroy";
+      else if( act == c_act_exec )
+         act_cmd = "perform_execute";
+      else
+         throw runtime_error( "Unknown list action '" + act + "'." );
+
+      if( !key_list.empty( ) )
+      {
+         act_cmd += " " + user_key + " " + current_dtm + " " + mod_info.id + " " + class_id;
+
+         if( !tz_abbr.empty( ) )
+            act_cmd += " -tz=" + tz_abbr;
+
+         if( !fieldlist.empty( ) )
+            act_cmd += " \"-v=" + fields_and_values + "\"";
+
+         act_cmd += " " + key_list;
+
+         if( is_versioned )
+            act_cmd += " =" + ver_list;
+      }
+      else
+      {
+         if( is_versioned )
+         {
+            act_cmd += " " + user_key + " " + current_dtm + " " + mod_info.id + " " + class_id;
+
+            if( !tz_abbr.empty( ) )
+               act_cmd += " -tz=" + tz_abbr;
+
+            if( !fieldlist.empty( ) )
+               act_cmd += " \"-v=" + fields_and_values + "\"";
+
+            act_cmd += " " + code_and_versions[ i ];
+         }
+         else
+         {
+            string next_code_and_version( code_and_versions[ i ] );
+            string::size_type pos = next_code_and_version.find( ' ' );
+            if( pos != string::npos )
+               next_code_and_version.erase( pos );
+
+            act_cmd += " " + user_key + " " + current_dtm + " " + mod_info.id + " " + class_id;
+
+            if( !tz_abbr.empty( ) )
+               act_cmd += " -tz=" + tz_abbr;
+
+            if( !fieldlist.empty( ) )
+               act_cmd += " \"-v=" + fields_and_values + "\"";
+
+            act_cmd += " " + next_code_and_version;
+         }
+      }
+
+      if( act == c_act_link )
+         act_cmd += " \"" + fields_and_values + "\"";
+      else if( act == c_act_exec )
+         act_cmd += " " + exec_args( exec_info );
+
+      DEBUG_TRACE << act_cmd;
+
+      if( socket.write_line( act_cmd ) <= 0 )
+      {
+         okay = false;
+         break;
+      }
+
+      // NOTE: For a multi-record "exec" a single command (with multiple keys) is issued to the server.
+      if( !key_list.empty( ) )
+         break;
+   }
+
+   int timeout = c_initial_response_timeout;
+   for( size_t i = 0; i < code_and_versions.size( ); i++ )
+   {
+      string output, response;
+      while( response.empty( ) || response[ 0 ] != '(' )
+      {
+         if( !response.empty( ) )
+            timeout = c_subsequent_response_timeout;
+         response.clear( );
+
+         if( socket.read_line( response, timeout ) <= 0 )
+         {
+            okay = false;
+            break;
+         }
+
+         // NOTE: For a multi-record "exec" the "c_response_okay_more" can occur for all but the last record.
+         if( response != c_response_okay && response != c_response_okay_more )
+            output += response;
+      }
+
+      if( !output.empty( ) )
+         row_errors.insert( make_pair( code_and_versions[ i ].substr( 0, code_and_versions[ i ].find( ' ' ) ), output ) );
+
+      response.erase( );
+   }
+
+   return okay;
+}
+
+bool fetch_item_info( const string& module,
+ const string& class_id, const string& item_key, const string& field_list,
+ const string& set_field_values, const session_info& sess_info, pair< string, string >& item_info,
+ const string& uinfo, const string* p_owner, const string* p_pdf_spec_name,
+ const string* p_pdf_title, const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+{
+   bool okay = true;
+
+   string fetch_cmd( "perform_fetch " + module + " " + class_id );
+
+   if( !uinfo.empty( ) )
+      fetch_cmd += " -u=" + uinfo;
+
+   if( !sess_info.tz_abbr.empty( ) )
+      fetch_cmd += " -tz=" + sess_info.tz_abbr;
+
+   // NOTE: If generating a PDF spec then need to pass the user permissions.
+   if( p_pdf_spec_name )
+   {
+      string perms;
+
+      if( sess_info.is_admin_user )
+         perms = "@admin";
+
+      if( p_owner && *p_owner == sess_info.user_key )
+      {
+         if( !perms.empty( ) )
+            perms += ",";
+         perms = "@owner";
+      }
+
+      map< string, string >::const_iterator i;
+      for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
+      {
+         if( !perms.empty( ) )
+            perms += ",";
+         perms += i->first;
+      }
+
+      if( !perms.empty( ) )
+         fetch_cmd += " -p=" + perms;
+   }
+
+   fetch_cmd += " \"" + item_key + "\" #1";
+
+   if( !set_field_values.empty( ) )
+      fetch_cmd += " \"-v=" + set_field_values + "\"";
+
+   if( !field_list.empty( ) )
+      fetch_cmd += " " + field_list;
+
+   if( p_pdf_spec_name )
+   {
+      fetch_cmd += " -pdf " + *p_pdf_spec_name + " \"";
+
+      string link_file_name;
+      if( p_pdf_link_filename )
+         link_file_name = *p_pdf_link_filename;
+
+      if( link_file_name.empty( ) )
+         link_file_name = uuid( ).as_string( );
+
+      string path( string( c_files_directory )
+       + "/" + string( c_tmp_directory ) + "/" + sess_info.session_id + "/" + link_file_name + ".pdf" );
+
+      if( p_pdf_view_file_name )
+         *p_pdf_view_file_name = path;
+
+      path = get_storage_info( ).web_root + "/" + path;
+
+      replace( path.begin( ), path.end( ), '\\', '/' );
+
+      fetch_cmd += path + "\"";
+
+      if( p_pdf_title && !p_pdf_title->empty( ) )
+         fetch_cmd += " \"" + *p_pdf_title + "\"";
+   }
+
+   DEBUG_TRACE << fetch_cmd;
+
+   if( sess_info.p_socket->write_line( fetch_cmd ) <= 0 )
+      okay = false;
+   else
+   {
+      string response;
+      int timeout = c_initial_response_timeout;
+      while( response.empty( ) || response[ 0 ] != '(' )
+      {
+         if( !response.empty( ) )
+            timeout = c_subsequent_response_timeout;
+         response.clear( );
+
+         if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
+         {
+            okay = false;
+            break;
+         }
+
+         if( response[ 0 ] != '(' )
+         {
+            size_t pos = response.find( "]" ); //i.e. skip over key and version information
+
+            if( pos == string::npos || pos < 2 )
+               throw runtime_error( "unexpected missing key/version information" );
+
+            string key_ver_rev_state_and_type_info = response.substr( 1, pos - 1 );
+
+            item_info = make_pair( key_ver_rev_state_and_type_info,
+             ( pos + 2 >= response.length( ) ) ? string( ) : response.substr( pos + 2 ) );
+         }
+         else if( response != c_response_okay )
+            throw runtime_error( "unexpected server response: " + response );
+      }
+   }
+
+   return okay;
+}
+
+bool fetch_list_info( const string& module,
+ const string& class_id, const string& uinfo, const session_info& sess_info,
+ bool is_reverse, int row_limit, const string& key_info, const string& field_list,
+ const string& filters, const string& search_text, const string& search_query,
+ tcp_socket& socket, data_container& rows, const string& exclude_key_info, bool* p_prev,
+ string* p_perms, const string* p_security_info, const string* p_extra_debug,
+ const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
+ const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+{
+   bool okay = true;
+
+   set< string > exclude_keys;
+   if( !exclude_key_info.empty( ) )
+      split( exclude_key_info, exclude_keys );
+
+   string fetch_cmd( "perform_fetch " + module + " " + class_id );
+
+   string extra_debug;
+   if( p_extra_debug )
+      extra_debug = *p_extra_debug;
+
+   if( p_prev && *p_prev )
+      is_reverse = !is_reverse;
+
+   if( is_reverse )
+      fetch_cmd += " -rev";
+
+   if( !uinfo.empty( ) )
+      fetch_cmd += " -u=" + uinfo;
+
+   if( !sess_info.tz_abbr.empty( ) )
+      fetch_cmd += " -tz=" + sess_info.tz_abbr;
+
+   if( !filters.empty( ) )
+      fetch_cmd += " -f=" + filters;
+
+   if( p_perms )
+      fetch_cmd += " -p=" + *p_perms;
+
+   if( p_security_info )
+      fetch_cmd += " -s=" + *p_security_info;
+
+   if( !search_text.empty( ) )
+      fetch_cmd += " \"-t=" + escaped( search_text, "\"" ) + "\"";
+
+   if( !search_query.empty( ) )
+      fetch_cmd += " \"-q=" + search_query + "\"";
+
+   fetch_cmd += " \"" + key_info + "\"";
+
+   if( row_limit > 0 )
+      fetch_cmd += " #" + to_string( row_limit + 1 + ( p_prev ? ( int )*p_prev : 0 ) );
+
+   if( !field_list.empty( ) )
+      fetch_cmd += " " + field_list;
+
+   if( p_pdf_spec_name )
+   {
+      fetch_cmd += " -pdf " + *p_pdf_spec_name + " \"";
+
+      string link_file_name;
+      if( p_pdf_link_filename )
+         link_file_name = *p_pdf_link_filename;
+
+      if( link_file_name.empty( ) )
+         link_file_name = uuid( ).as_string( );
+
+      string title( link_file_name );
+
+      string path( string( c_files_directory ) + "/" + string( c_tmp_directory )
+       + "/" + sess_info.session_id + "/" + valid_file_name( link_file_name ) + ".pdf" );
+
+      if( p_pdf_view_file_name )
+         *p_pdf_view_file_name = path;
+
+      path = get_storage_info( ).web_root + "/" + path;
+
+      replace( path.begin( ), path.end( ), '\\', '/' );
+
+      fetch_cmd += path + "\" \"" + title + "\"";
+   }
+
+   DEBUG_TRACE << extra_debug << fetch_cmd;
+
+   if( socket.write_line( fetch_cmd ) <= 0 )
+      okay = false;
+   else
+   {
+      string response;
+      int timeout = c_initial_response_timeout;
+      while( response.empty( ) || response[ 0 ] != '(' )
+      {
+         if( !response.empty( ) )
+            timeout = c_subsequent_response_timeout;
+         response.clear( );
+
+         if( socket.read_line( response, timeout ) <= 0 )
+         {
+            okay = false;
+            break;
+         }
+
+         if( response[ 0 ] != '(' )
+         {
+            size_t pos = response.find( field_list.empty( ) ? "]" : "] " ); //i.e. skip over key and version information
+
+            if( pos == string::npos || pos < 2 )
+               throw runtime_error( "unexpected missing key/version information" );
+
+            string key_ver_rev_state_and_type_info = response.substr( 1, pos - 1 );
+            string key( key_ver_rev_state_and_type_info.substr( 0, key_ver_rev_state_and_type_info.find( ' ' ) ) );
+
+            if( exclude_keys.count( key ) || ( p_exclude_keys && p_exclude_keys->count( key ) ) )
+               continue;
+
+            if( !p_prev || !*p_prev )
+               rows.push_back( make_pair( key_ver_rev_state_and_type_info,
+                field_list.empty( ) ? string( ) : response.substr( pos + 2 ) ) );
+            else
+               rows.push_front( make_pair( key_ver_rev_state_and_type_info,
+                field_list.empty( ) ? string( ) : response.substr( pos + 2 ) ) );
+         }
+         else if( response.length( ) > strlen( c_response_error )
+          && response.substr( 0, strlen( c_response_error ) ) == c_response_error )
+            throw runtime_error( response.substr( strlen( c_response_error ) ) );
+      }
+   }
+
+   if( p_prev )
+   {
+      if( *p_prev && row_limit && rows.size( ) > ( size_t )( row_limit + 1 ) )
+         rows.pop_front( );
+      else
+         *p_prev = false;
+   }
+
+   return okay;
+}
+
+bool fetch_parent_row_data( const string& module,
+ const string& record_key, const string& field_id, const string& pclass_id,
+ const string& parent_field, const string& parent_extras, const session_info& sess_info,
+ const string& parent_key, data_container& parent_row_data, tcp_socket& socket,
+ const values* p_key_values, const values* p_fkey_values, const values* p_skey_values,
+ bool *p_has_view_id, const set< string >* p_exclude_keys, string* p_skey_required )
+{
+   bool okay = true;
+   int num_fixed = 0;
+
+   string extra_debug( "[field_id: " + field_id + "] " );
+
+   string values, key_info, view_id_field;
+   string pfield( parent_field );
+
+   string filters;
+
+   string perms;
+   string* p_perms = 0;
+
+   string security_info;
+   string* p_security_info = 0;
+
+   string exclude_key_info;
+
+   if( p_has_view_id )
+      *p_has_view_id = false;
+
+   string user_other;
+
+   if( !sess_info.other_aliases.count( sess_info.user_other ) )
+      user_other = sess_info.user_other;
+   else
+      user_other = sess_info.other_aliases.find( sess_info.user_other )->second;
+
+   string user_slevel;
+
+   if( !sess_info.other_slevels.count( sess_info.user_other ) )
+      user_slevel = sess_info.user_slevel;
+   else
+      user_slevel = sess_info.other_slevels.find( sess_info.user_other )->second;
+
+   vector< string > extras;
+   if( !parent_extras.empty( ) )
+      split( parent_extras, extras, '+' );
+
+   bool sort_manually = false;
+   for( size_t i = 0; i < extras.size( ); i++ )
+   {
+      string::size_type pos = extras[ i ].find( '=' );
+      if( pos != string::npos )
+      {
+         ++num_fixed;
+
+         if( !key_info.empty( ) )
+         {
+            values += ",";
+            key_info += ",";
+         }
+
+         values += extras[ i ].substr( pos + 1 );
+         key_info += extras[ i ].substr( 0, pos );
+      }
+      else
+      {
+         pos = extras[ i ].find( ':' );
+         string key( extras[ i ].substr( 0, pos ) );
+
+         if( !key.empty( ) && ( key[ 0 ] == '@' || key[ 0 ] == '?' ) )
+         {
+            bool is_optional = false;
+            if( key[ 0 ] == '?' )
+            {
+               key.erase( 0, 1 );
+               is_optional = true;
+            }
+
+            string data;
+            if( pos != string::npos )
+               data = extras[ i ].substr( pos + 1 );
+
+            string value;
+            bool found_special = false;
+            if( key == c_parent_extra_key )
+            {
+               value = record_key;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_user )
+            {
+               value = sess_info.user_key;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key0 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value0;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key1 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value1;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key2 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value2;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key3 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value3;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key4 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value4;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key5 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value5;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key6 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value6;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key7 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value7;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key8 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value8;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_key9 )
+            {
+               if( p_key_values )
+                  value = p_key_values->value9;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey0 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value0;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey1 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value1;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey2 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value2;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey3 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value3;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey4 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value4;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey5 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value5;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey6 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value6;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey7 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value7;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey8 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value8;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_fkey9 )
+            {
+               if( p_fkey_values )
+                  value = p_fkey_values->value9;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey0 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value0;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey0;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey1 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value1;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey1;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey2 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value2;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey2;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey3 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value3;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey3;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey4 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value4;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey4;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey5 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value5;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey5;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey6 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value6;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey6;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey7 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value7;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey7;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey8 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value8;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey8;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_skey9 )
+            {
+               if( p_skey_values )
+                  value = p_skey_values->value9;
+               if( p_skey_required )
+                  *p_skey_required = c_parent_extra_skey9;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_group )
+            {
+               if( is_optional && sess_info.user_group.empty( ) )
+                  continue;
+
+               value = sess_info.user_group;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_other )
+            {
+               if( is_optional && user_other.empty( ) )
+                  continue;
+
+               value = user_other;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_parent )
+            {
+               // NOTE: If no field was explicitly provided then assume a self relationship.
+               if( data.empty( ) )
+                  data = field_id;
+
+               value = parent_key;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_slevel )
+            {
+               security_info = data;
+               security_info += ":";
+               security_info += user_slevel;
+
+               p_security_info = &security_info;
+               continue;
+            }
+            else if( key == c_parent_extra_xself )
+            {
+               exclude_key_info = sess_info.user_key;
+               continue;
+            }
+            else if( key == c_parent_extra_xparent )
+            {
+               exclude_key_info = parent_key;
+               continue;
+            }
+            else if( key == c_parent_extra_permission )
+            {
+               if( !filters.empty( ) )
+                  filters += ",";
+               filters += data;
+
+               map< string, string >::const_iterator i;
+               for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
+               {
+                  if( !perms.empty( ) )
+                     perms += ",";
+                  perms += i->first;
+               }
+               p_perms = &perms;
+
+               continue;
+            }
+            else if( key == c_parent_extra_xselfadmin )
+            {
+               exclude_key_info = sess_info.user_key + "," + to_string( c_admin_user_key );
+               continue;
+            }
+            else if( key == c_parent_extra_sort )
+            {
+               sort_manually = true;
+               continue;
+            }
+            else if( key == c_parent_extra_view )
+            {
+               if( p_has_view_id )
+                  *p_has_view_id = true;
+
+               view_id_field = data;
+               continue;
+            }
+
+            if( !found_special )
+               throw runtime_error( "unknown special parent extra '" + key + "'" );
+            else
+            {
+               ++num_fixed;
+
+               if( !key_info.empty( ) )
+               {
+                  values += ",";
+                  key_info += ",";
+               }
+
+               values += value;
+               key_info += data;
+            }
+         }
+         else
+         {
+            if( !key_info.empty( ) )
+               key_info += ",";
+            key_info += extras[ i ];
+         }
+      }
+   }
+
+   if( pfield == c_key_field )
+      pfield.erase( );
+   else if( !sort_manually )
+   {
+      if( !key_info.empty( ) )
+         key_info += ",";
+      key_info += pfield;
+   }
+
+   if( num_fixed )
+      key_info += "#" + string( 1, '0' + num_fixed );
+
+   if( !key_info.empty( ) )
+      key_info += " ";
+
+   key_info += values;
+
+   if( !view_id_field.empty( ) )
+   {
+      if( !pfield.empty( ) )
+         pfield += ",";
+      pfield += view_id_field;
+   }
+
+   string user_info( sess_info.user_key + ":" + sess_info.user_id );
+
+   okay = fetch_list_info( module, pclass_id, user_info, sess_info, false, 0, key_info, pfield, filters,
+    "", "", socket, parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
+
+   if( sort_manually )
+      sort_row_data_manually( parent_row_data );
+
+   return okay;
+}
+
+bool populate_list_info( list_source& list,
+ const map< string, string >& list_selections,
+ const map< string, string >& list_search_text,
+ const map< string, string >& list_search_values,
+ const string& listinfo, const string& listsort,
+ const string& parent_key, bool is_printable, const string& view_cid,
+ const string& view_pfield, const set< string >* p_specials, const session_info& sess_info,
+ const string* p_pdf_spec_name, const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+{
+   bool okay = true;
+
+   int row_limit( sess_info.row_limit );
+   tcp_socket& socket( *sess_info.p_socket );
+
+   if( is_printable )
+      row_limit = sess_info.print_limit;
+   else
+   {
+      if( ( list.lici->second )->extras.count( c_list_type_extra_limit ) )
+         row_limit = atoi( ( list.lici->second )->extras.find( c_list_type_extra_limit )->second.c_str( ) );
+      else if( ( list.lici->second )->extras.count( c_list_type_extra_no_limit )
+       || ( list.lici->second )->extras.count( c_list_type_extra_sort_no_limit ) )
+         row_limit = sess_info.print_limit; // NOTE: The maximum print limit is used as the upper limit.
+   }
+
+   bool sort_manually = false;
+   if( ( list.lici->second )->extras.count( c_list_type_extra_sort_no_limit ) )
+      sort_manually = true;
+
+   string search_query;
+
+   const module_info& mod_info( *get_storage_info( ).modules_index.find( list.module )->second );
+
+   // NOTE: If query search values were specified then construct a search query string from them.
+   if( !list_search_values.empty( ) )
+   {
+      map< string, string > query_values;
+      map< string, string >::const_iterator ci, end;
+
+      for( ci = list_search_values.begin( ), end = list_search_values.end( ); ci != end; ++ci )
+      {
+         string svname( ci->first );
+
+         string field_id( svname.substr( 1 ) );
+         string field_value( escaped( ci->second ) );
+
+         if( p_specials )
+         {
+            // NOTE: If an "skey" owner was changed then ignore any existing restrictions for
+            // the "skey" users (as these values are not applicable to the new "skey" owner).
+            bool found_special = false;
+            for( set< string >::const_iterator ci = p_specials->begin( ); ci != p_specials->end( ); ++ci )
+            {
+               for( size_t i = 0; i < ( list.lici->second )->parents.size( ); i++ )
+               {
+                  if( field_id == ( list.lici->second )->parents[ i ].field
+                   && ( list.lici->second )->parents[ i ].pextra.find( *ci ) != string::npos )
+                  {
+                     found_special = true;
+                     break;
+                  }
+               }
+
+               if( found_special )
+                  break;
+            }
+
+            if( found_special )
+               continue;
+         }
+
+         // NOTE: Value prefix 'L' is used for a "contains" search for a string field.
+         if( svname[ 0 ] == 'L' )
+            field_value = '*' + replaced( escaped( field_value, "\"" ), ",", "\\\\\\," ) + '*';
+
+         // NOTE: Value prefixes 'T' and 'U' are used for "datetime" values that require timezone adjustment.
+         if( svname[ 0 ] >= 'T' && svname[ 0 ] <= 'U' && !field_value.empty( ) )
+         {
+            date_time dt( field_value );
+            field_value = format_date_time( dt );
+         }
+
+         // NOTE: For optional selects "~" is being used to indicate null.
+         if( field_value == "~" && svname[ 0 ] >= 'A' && svname[ 0 ] <= 'G' )
+            field_value.erase( );
+
+         bool is_first = true;
+         if( query_values.count( field_id ) )
+         {
+            string query_value( query_values[ field_id ] );
+
+            if( svname[ 0 ] >= 'A' && svname[ 0 ] <= 'G' )
+               query_value += '|';
+            else if( svname[ 0 ] >= 'H' && svname[ 0 ] <= 'M' )
+               query_value += '&';
+            else
+               query_value += "..";
+
+            query_value += field_value;
+
+            query_values[ field_id ] = query_value;
+         }
+         else
+            query_values.insert( make_pair( field_id, field_value ) );
+      }
+
+      for( ci = query_values.begin( ), end = query_values.end( ); ci != end; ++ci )
+      {
+         if( !search_query.empty( ) )
+            search_query += ',';
+
+         search_query += ci->first + ":" + ci->second;
+      }
+   }
+
+   string search_text;
+   if( !list_search_text.empty( ) )
+   {
+      string name( list.id );
+      name += c_srch_suffix;
+
+      if( list_search_text.count( name ) )
+         search_text = list_search_text.find( name )->second;
+   }
+
+   bool is_reverse( list.lici->second->order == c_order_reverse );
+
+   string fixed_fields;
+   string fixed_key_values;
+   int num_fixed_key_values = 0;
+
+   // NOTE: A "user child" list needs to constrain the parent field as just another
+   // fixed field as the "user" context is needed as the parent context for the fetch.
+   string fixed_parent_field, fixed_parent_keyval;
+   if( !view_pfield.empty( ) && list.type == c_list_type_user_child )
+   {
+      fixed_parent_field = view_pfield;
+      fixed_parent_keyval = parent_key;
+   }
+
+   determine_fixed_query_info( fixed_fields, fixed_key_values, num_fixed_key_values,
+    is_reverse, list, fixed_parent_field, fixed_parent_keyval, list_selections, sess_info );
+
+   if( listsort.size( ) == 2 )
+   {
+      int sort_field = atoi( listsort.substr( 0, 1 ).c_str( ) );
+
+      if( sort_field > 0 && sort_field <= ( int )list.index_fields.size( ) )
+      {
+         if( listsort[ 1 ] == 'R' )
+            is_reverse = true;
+         else
+            is_reverse = false;
+
+         list.all_index_fields = list.index_fields[ sort_field - 1 ].first;
+
+         string::size_type pos = list.all_index_fields.find( ',' );
+
+         list.unique_index = list.index_fields[ sort_field - 1 ].second;
+         list.first_index_field = list.all_index_fields.substr( 0, pos );
+
+         list.sort_field = sort_field;
+      }
+      else
+         throw runtime_error( "unexpected out of range sort field" );
+   }
+   else
+   {
+      // NOTE: If ordered then assume that the first indexed column has been used
+      // (if "ordered" then no index field information exists so just use the field).
+      if( !list.first_index_field.empty( ) )
+      {
+         if( list.index_fields.empty( ) )
+            list.all_index_fields = list.first_index_field;
+         else
+            list.all_index_fields = list.index_fields[ 0 ].first;
+      }
+   }
+
+   list.is_reverse = is_reverse;
+
+   string key_prefix( list.all_index_fields );
+
+   // NOTE: If creating a printable version and any print summaries are present
+   // then make sure they are added to the key info for query ordering purposes.
+   if( is_printable )
+   {
+      key_prefix.erase( );
+
+      for( size_t i = 0; i < list.print_summary_field_ids.size( ); i++ )
+      {
+         if( i > 0 || !key_prefix.empty( ) )
+            key_prefix += ",";
+         key_prefix += list.print_summary_field_ids[ i ];
+      }
+
+      if( !key_prefix.empty( ) && !list.all_index_fields.empty( ) )
+         key_prefix += ",";
+      key_prefix += list.all_index_fields;
+   }
+
+   if( !fixed_fields.empty( ) )
+   {
+      if( key_prefix.empty( ) )
+         key_prefix = fixed_fields;
+      else
+         key_prefix = fixed_fields + "," + key_prefix;
+   }
+
+   if( num_fixed_key_values )
+   {
+      key_prefix += '#';
+      key_prefix += ( '0' + num_fixed_key_values );
+
+      key_prefix += " " + fixed_key_values;
+   }
+   else if( !list.first_index_field.empty( ) || ( is_printable && !list.print_summary_field_ids.empty( ) ) )
+      key_prefix += " ";
+
+   string key_info( key_prefix );
+   string class_info( list.cid );
+
+   if( !view_cid.empty( ) && list.type != c_list_type_user_child )
+   {
+      class_info = view_cid;
+      class_info += ":_" + list.new_pfield;
+
+      key_info = parent_key + ":" + key_info;
+   }
+
+   // NOTE: A "group" list is a parent qualified list where the parent is the nominated "group" class whilst a
+   // "user" list, along with its variants, are parent qualified lists where the parent is the nominated "user" class.
+   if( list.type == c_list_type_group || list.type == c_list_type_nongroup )
+   {
+      if( list.type == c_list_type_nongroup )
+         key_info = ":" + key_prefix;
+      else
+         key_info = sess_info.user_group + ":" + key_prefix;
+
+      class_info = ( list.lici->second )->pclass;
+      class_info += ":_" + ( list.lici->second )->pfield;
+   }
+   else if( list.type == c_list_type_user || list.type == c_list_type_nonuser || list.type == c_list_type_user_child )
+   {
+      if( list.type == c_list_type_nonuser )
+         key_info = ":" + key_prefix;
+      else
+         key_info = sess_info.user_key + ":" + key_prefix;
+
+      class_info = mod_info.user_class_id;
+      if( list.type != c_list_type_user_child )
+         class_info += ":_" + ( list.lici->second )->pfield;
+      else
+         class_info += ":_" + ( list.lici->second )->ufield;
+   }
+
+   string old_key_info( key_info );
+
+   bool next = false;
+   bool prev = false;
+   if( !listinfo.empty( ) )
+   {
+      if( listinfo[ 0 ] == 'N' )
+         next = true;
+      else if( listinfo[ 0 ] == 'P' )
+         prev = true;
+
+      if( next || prev )
+      {
+         if( num_fixed_key_values )
+            key_info += ",";
+
+         key_info += listinfo.substr( 1 );
+      }
+   }
+
+   bool was_prev = prev;
+
+   string filters( list.lici->second->filters );
+
+   // NOTE: If a "permission" field was included in the field list then the set of user
+   // perms is sent to the server as it assumed they will be required for record filtering.
+   string perms;
+   string* p_perms = 0;
+   if( !list.permission_field.empty( ) )
+   {
+      map< string, string >::const_iterator i;
+      for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
+      {
+         if( !perms.empty( ) )
+            perms += ",";
+         perms += i->first;
+      }
+      p_perms = &perms;
+   }
+
+   string user_info( sess_info.user_key + ":" + sess_info.user_id );
+
+   string security_info;
+   string* p_security_info = 0;
+   if( !list.security_level_field.empty( ) )
+   {
+      security_info = list.security_level_field;
+      security_info += ":";
+
+      // NOTE: If there are user other security level overrides then use them unless
+      // the list is a user or user child list (i.e. the user's own property).
+      if( !sess_info.other_slevels.count( sess_info.user_other )
+       || ( list.type == c_list_type_user && list.type == c_list_type_user_child ) )
+         security_info += sess_info.user_slevel;
+      else
+         security_info += sess_info.other_slevels.find( sess_info.user_other )->second;
+
+      p_security_info = &security_info;
+   }
+
+   list.print_limited = false;
+
+   if( !fetch_list_info( list.module_id, class_info, user_info, sess_info,
+    is_reverse, row_limit, key_info, is_printable ? list.pfield_list : list.field_list,
+    filters, search_text, search_query, socket, list.row_data, "", &prev, p_perms,
+    p_security_info, 0, 0, p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
+      okay = false;
+   else if( is_printable )
+   {
+      if( row_limit && list.row_data.size( ) == row_limit + 1 )
+      {
+         list.row_data.pop_back( );
+         list.print_limited = true;
+      }   
+   }
+   else
+   {
+      bool redo_fetch = false;
+
+      // NOTE: If we have just processed a "next" but found no rows then instead process
+      // as though it was a "prev" in order to make sure rows are displayed if possible.
+      if( !listinfo.empty( ) && listinfo[ 0 ] == 'N' && list.row_data.empty( ) )
+      {
+         prev = true;
+         next = false;
+         redo_fetch = true;
+      }
+
+      // NOTE: If we have just processed a "prev" but found only the limit or less rows
+      // then instead process as though it were a "first" so that the possibly the full
+      // limit number of rows and a "next" can be displayed.
+      if( was_prev && row_limit && list.row_data.size( ) <= ( size_t )row_limit )
+      {
+         prev = false;
+         redo_fetch = true;
+         list.row_data.clear( );
+         key_info = old_key_info;
+      }
+
+      string user_info( sess_info.user_key + ":" + sess_info.user_id );
+
+      if( redo_fetch && !fetch_list_info( list.module_id,
+       class_info, user_info, sess_info, is_reverse, row_limit, key_info,
+       list.field_list, filters, search_text, search_query, socket, list.row_data, "", &prev, p_perms ) )
+         okay = false;
+
+      size_t index_field = 0;
+      size_t index_count = 0;
+      for( size_t i = 0; i < list.field_ids.size( ); i++ )
+      {
+         if( list.field_ids[ i ] == list.first_index_field )
+         {
+            index_field = i + 1;
+
+            vector< string > all_index_fields;
+            index_count = split( list.all_index_fields, all_index_fields );
+
+            break;
+         }
+      }
+
+      if( okay )
+      {
+         // NOTE: If we have just processed a "next" or if "prev" was set true in "fetch_list_info"
+         // to indicate there are previous rows then store the first row's key/data for "prev" link.
+         if( row_limit && list.row_data.size( ) && !listinfo.empty( ) && ( next || prev ) )
+         {
+            string key_ver_and_state( list.row_data.front( ).first );
+            string key( key_ver_and_state.substr( 0, key_ver_and_state.find( ' ' ) ) );
+
+            if( !index_field )
+               list.prev_key_info = key;
+            else
+            {
+               vector< string > columns;
+               raw_split( list.row_data.front( ).second, columns );
+
+               list.prev_key_info.erase( );
+
+               // NOTE: Need to escape the "indexed" values twice due to commas being significant
+               // during the processing of the protocol command itself (i.e. as a list separator)
+               // as well as within the implementation of the fetch command.
+               for( size_t i = 0; i < index_count; i++ )
+               {
+                  if( i > 0 )
+                     list.prev_key_info += ",";
+                  list.prev_key_info += escaped( escaped( columns[ index_field - 1 + i ], "," ) );
+               }
+
+               if( !list.unique_index )
+                  list.prev_key_info += "," + key;
+            }
+         }
+
+         // NOTE: If one extra row was found then store the last row's key/data for "next" link.
+         if( row_limit && list.row_data.size( ) == row_limit + 1 )
+         {
+            string key_ver_and_state( list.row_data.back( ).first );
+            string key( key_ver_and_state.substr( 0, key_ver_and_state.find( ' ' ) ) );
+
+            if( !index_field )
+               list.next_key_info = key;
+            else
+            {
+               vector< string > columns;
+               raw_split( list.row_data.back( ).second, columns );
+
+               list.next_key_info.erase( );
+
+               // NOTE: Need to escape the "indexed" values twice due to commas being significant
+               // during the processing of the protocol command itself (i.e. as a list separator)
+               // as well as within the implementation of the fetch command.
+               for( size_t i = 0; i < index_count; i++ )
+               {
+                  if( i > 0 )
+                     list.next_key_info += ",";
+                  list.next_key_info += escaped( escaped( columns[ index_field - 1 + i ], "," ) );
+               }
+
+               if( !list.unique_index )
+                  list.next_key_info += "," + key;
+            }
+
+            list.row_data.pop_back( );
+         }
+
+         if( sort_manually )
+         {
+            map< string, string > sorted_items;
+            for( size_t i = 0; i < list.row_data.size( ); i++ )
+               sorted_items.insert( make_pair( list.row_data[ i ].second, list.row_data[ i ].first ) );
+
+            list.row_data.clear( );
+            for( map< string, string >::iterator i = sorted_items.begin( ), end = sorted_items.end( ); i != end; ++i )
+               list.row_data.push_back( make_pair( i->second, i->first ) );
+         }
+
+         if( !( list.lici->second )->dfield.empty( ) )
+         {
+            if( ( list.lici->second )->nclass.empty( ) )
+            {
+               if( ( list.lici->second )->dvalue.empty( ) )
+               {
+                  const enum_info& info( get_storage_info( ).enums.find( ( list.lici->second )->dfenum )->second );
+
+                  data_container new_record_list;
+                  for( size_t i = 0; i < info.values.size( ); i++ )
+                  {
+                     new_record_list.push_back( make_pair(
+                      info.values[ i ].first, get_display_string( info.values[ i ].second ) ) );
+                  }
+
+                  list.new_record_list = new_record_list;
+               }
+            }
+            else
+            {
+               data_container new_record_list;
+
+               if( !fetch_parent_row_data( list.module_id, "", "", ( list.lici->second )->nclass,
+                ( list.lici->second )->nfield, ( list.lici->second )->nextra, sess_info, "",
+                new_record_list, socket, 0, 0, 0, &list.new_record_list_has_view_id ) )
+                  okay = false;
+               else
+                  list.new_record_list = new_record_list;
+            }
+         }
+
+         if( okay )
+         {
+            values skey_values;
+
+            for( size_t i = 0; i < ( list.lici->second )->parents.size( ); i++ )
+            {
+               data_container parent_row_data;
+
+               if( !( list.lici->second )->parents[ i ].operations.count( c_operation_restricted ) )
+               {
+                  if( ( list.lici->second )->parents[ i ].operations.count( c_operation_select ) )
+                  {
+                     string suffix( ( list.lici->second )->parents[ i ].operations[ c_operation_select ] );
+
+                     string::size_type pos = suffix.find( '!' );
+                     string::size_type npos = suffix.substr( 0, pos ).find( '#' );
+
+                     if( npos != 0 && pos != string::npos )
+                     {
+                        string special( "@" + suffix.substr( 0, npos == string::npos ? pos : npos ) );
+
+                        string* p_value = 0;
+
+                        if( special == c_parent_extra_skey0 )
+                           p_value = &skey_values.value0;
+                        else if( special == c_parent_extra_skey1 )
+                           p_value = &skey_values.value1;
+                        else if( special == c_parent_extra_skey2 )
+                           p_value = &skey_values.value2;
+                        else if( special == c_parent_extra_skey3 )
+                           p_value = &skey_values.value3;
+                        else if( special == c_parent_extra_skey4 )
+                           p_value = &skey_values.value4;
+                        else if( special == c_parent_extra_skey5 )
+                           p_value = &skey_values.value5;
+                        else if( special == c_parent_extra_skey6 )
+                           p_value = &skey_values.value6;
+                        else if( special == c_parent_extra_skey7 )
+                           p_value = &skey_values.value7;
+                        else if( special == c_parent_extra_skey8 )
+                           p_value = &skey_values.value8;
+                        else if( special == c_parent_extra_skey9 )
+                           p_value = &skey_values.value9;
+                        else
+                           throw runtime_error( "unexpected select special '" + special.substr( 1 ) + "' found" );
+
+                        string svname( "A" );
+                        svname += ( list.lici->second )->parents[ i ].field;
+
+                        if( list_search_values.count( svname ) )
+                           *p_value = list_search_values.find( svname )->second;
+                        else
+                        {
+                           string sel_id( list.id );
+                           sel_id += c_prnt_suffix;
+                           sel_id += ( '0' + i );
+
+                           if( list_selections.count( sel_id ) )
+                              *p_value = list_selections.find( sel_id )->second;
+                        }
+                     }
+                  }
+
+                  if( !fetch_parent_row_data( list.module_id,
+                   "", ( list.lici->second )->parents[ i ].field,
+                   ( list.lici->second )->parents[ i ].pclass, ( list.lici->second )->parents[ i ].pfield,
+                   ( list.lici->second )->parents[ i ].pextra, sess_info, parent_key, parent_row_data,
+                   socket, 0, 0, &skey_values, 0, &( list.lici->second )->parents[ i ].exclude_keys,
+                   &( list.lici->second )->parents[ i ].skey ) )
+                  {
+                     okay = false;
+                     break;
+                  }
+               }
+
+               list.parent_lists.push_back( parent_row_data );
+            }
+         }
+      }
+   }
+
+   return okay;
+}
+
+void fetch_user_quick_links( const module_info& mod_info, session_info& sess_info )
+{
+   string key_info( mod_info.user_qlink_pfield_id );
+
+   if( !mod_info.user_qlink_test_field_id.empty( ) )
+      key_info += "," + mod_info.user_qlink_test_field_id;
+
+   key_info += "," + mod_info.user_qlink_order_field_id;
+
+   if( mod_info.user_qlink_test_field_id.empty( ) )
+      key_info += "#1 " + sess_info.user_key;
+   else
+      key_info += "#2 " + sess_info.user_key + "," + mod_info.user_qlink_test_field_val;
+
+   string field_list( mod_info.user_qlink_url_field_id );
+   field_list += "," + mod_info.user_qlink_name_field_id;
+   field_list += "," + mod_info.user_qlink_checksum_field_id;
+
+   sess_info.quick_link_data.clear( );
+
+   string user_info( sess_info.user_key + ":" + sess_info.user_id );
+
+   if( !fetch_list_info( mod_info.id, mod_info.user_qlink_class_id, user_info, sess_info, false,
+    sess_info.quick_link_limit, key_info, field_list, "", "", "", *sess_info.p_socket, sess_info.quick_link_data, "" ) )
+      throw runtime_error( "unexpected error occurred processing quick link info" );
+
+   // NOTE: Get rid of extra row put in for list scrolling purposes...
+   if( sess_info.quick_link_data.size( ) > sess_info.quick_link_limit )
+      sess_info.quick_link_data.pop_back( );
+}
+
+void add_quick_link( const string& module_ref,
+ const string& cmd, const string& data, const string& extra,
+ const string& listsrch, const string& listsort, const string& oident,
+ const string& uselect, string& error_message, bool& had_send_or_recv_error,
+ const module_info& mod_info, session_info& sess_info, const map< string, string >* p_list_selections )
+{
+   string URL( get_module_page_name( module_ref ) + "?cmd=" + cmd + "&ident=" + oident );
+
+   string prefix;
+   string suffix;
+
+   if( cmd == c_cmd_view )
+   {
+      prefix = data;
+      URL += "&data=" + data;
+   }
+   else if( cmd == c_cmd_list )
+   {
+      suffix = "+" + data + listsrch;
+      URL += "&listextra=find&findinfo=" + escape_specials( data );
+
+      if( !listsrch.empty( ) )
+         URL += "&listsrch=" + escape_specials( listsrch );
+
+      if( p_list_selections )
+      {
+         string name;
+         for( int i = 0; i < 10; i++ )
+         {
+            name = c_list_prefix;
+            name += c_prnt_suffix;
+            name += to_string( i );
+
+            if( p_list_selections->count( name ) )
+            {
+               suffix += p_list_selections->find( name )->second;
+               URL += "&" + name + "=" + escape_specials( p_list_selections->find( name )->second );
+            }
+
+            name = c_list_prefix;
+            name += c_rest_suffix;
+            name += to_string( i );
+
+            if( p_list_selections->count( name ) )
+            {
+               suffix += p_list_selections->find( name )->second;
+               URL += "&" + name + "=" + escape_specials( p_list_selections->find( name )->second );
+            }
+         }
+      }
+
+      if( !listsort.empty( ) )
+         URL += "&listsort=" + escape_specials( listsort );
+   }
+   else
+      throw runtime_error( "add_quick_link is not impemented for '" + cmd + "' commands" );
+
+   if( !uselect.empty( ) )
+      URL += "&uselect=" + uselect;
+
+   string qlink_cmd( "perform_create" );
+
+   qlink_cmd += " " + sess_info.user_key
+    + " " +  date_time::standard( ).as_string( )
+    + " " + mod_info.id + " " + mod_info.user_qlink_class_id + " \"\"";
+
+   escape( URL, "," );
+   string name( escaped( extra, "," ) );
+   string checksum( escaped( prefix + oident + suffix, "," ) );
+
+   // NOTE: Commas need to be escaped twice due to application server command parsing.
+   qlink_cmd += " \"" + mod_info.user_qlink_pfield_id + "=" + sess_info.user_key;
+   qlink_cmd += "," + mod_info.user_qlink_url_field_id + "=" + escaped( URL, ",\"" );
+   qlink_cmd += "," + mod_info.user_qlink_name_field_id + "=" + escaped( name, ",\"" );
+   qlink_cmd += "," + mod_info.user_qlink_checksum_field_id + "=" + escaped( checksum, ",\"" ) + "\"";;
+
+   if( sess_info.p_socket->write_line( qlink_cmd ) <= 0 )
+      had_send_or_recv_error = true;
+   else
+   {
+      string response;
+      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
+         had_send_or_recv_error = true;
+      else if( response != c_response_okay )
+      {
+         string extra_response;
+
+         if( !response.empty( ) && response[ 0 ] != '('
+          && ( sess_info.p_socket->read_line( extra_response, c_subsequent_response_timeout ) <= 0 ) )
+            had_send_or_recv_error = true;
+         else
+         {
+            if( extra_response == c_response_okay )
+               fetch_user_quick_links( mod_info, sess_info );
+            else
+               error_message = escape_markup( response + extra_response );
+         }
+      }
+      else
+         throw runtime_error( "unexpected okay response creating user quick link" );
+   }
+}
+
+void save_record( const string& module_id,
+ const string& flags, const string& app, const string& chk,
+ const string& field, const string& extra, const string& exec, const string& cont,
+ const string& extrafields, bool is_new_record, const map< string, string >& new_field_and_values,
+ const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view,
+ session_info& sess_info, string& act, string& data, string& new_key, string& error_message, bool& was_invalid, bool& had_send_or_recv_error )
+{
+   string key_info;
+   if( !is_new_record )
+      key_info = chk;
+   else
+      key_info = "\"" + data + "\"";
+
+   date_time dt( date_time::standard( ) );
+
+   string current_dtm( dt.as_string( ) );
+   string current_local_dtm( ( dt + ( seconds )sess_info.gmt_offset ).as_string( ) );
+   
+   string act_cmd;
+   if( is_new_record )
+      act_cmd = "perform_create";
+   else
+      act_cmd = "perform_update";
+
+   act_cmd += " " + sess_info.user_key
+    + " " + current_dtm + " " + view.module_id + " " + view.cid;
+
+   if( !sess_info.tz_abbr.empty( ) )
+      act_cmd += " -tz=" + sess_info.tz_abbr;
+
+   vector< string > values;
+   split( app, values );
+
+   size_t num = 0;
+   size_t used = 0;
+   string field_values;
+   bool found_field = false;
+   set< string > found_new_fields;
+
+   for( size_t i = 0; i < view.field_ids.size( ); i++ )
+   {
+      string field_id( view.field_ids[ i ] );
+      string value_id( view.value_ids[ i ] );
+
+      // FUTURE: The skipping of fields here repeats what is already being done in
+      // the output of the "view" itself. The "user_field_info" should probably be
+      // used here instead to avoid unnecessary repetition.
+
+      // NOTE: Fields that were included in the view but not editable must be skipped.
+      if( field_id == c_key_field )
+      {
+         if( is_new_record )
+            key_info = values.at( num++ );
+         continue;
+      }
+
+      // NOTE: Also need to skip fields that were protected or relegated by modifiers.
+      uint64_t state = from_string< uint64_t >( flags );
+
+      string modifier;
+      bool skip_field = false;
+      for( size_t j = 0; j < ARRAY_SIZE( state_modifiers ); j++ )
+      {
+         if( state & state_modifiers[ j ] )
+         {
+            if( view.vici->second->fields[ i ].modifiers.count( state_modifiers[ j ] ) )
+            {
+               modifier = view.vici->second->fields[ i ].modifiers.find( state_modifiers[ j ] )->second;
+               if( modifier == c_modifier_effect_relegate || modifier == c_modifier_effect_protect )
+                  skip_field = true;
+               break;
+            }
+         }
+      }
+
+      if( data == view.root_folder
+       && view.self_relationships.find( field_id ) != view.self_relationships.end( ) )
+         continue;
+
+      map< string, string > extra_data;
+      if( !view.vici->second->fields[ i ].extra.empty( ) )
+         parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
+
+      // NOTE: Skip file fields and any protected and hidden fields (unless
+      // they are to be provided with an explicit "new value" or a "defcurrent").
+      if( field_id == view.attached_file_field
+       || extra_data.count( c_field_extra_file )
+       || extra_data.count( c_field_extra_flink )
+       || ( ( skip_field
+       || view.hidden_fields.count( value_id )
+       || view.protected_fields.count( value_id ) )
+       && ( !is_new_record
+       || ( !view.defcurrent_fields.count( value_id )
+       && !view.new_field_values.count( field_id ) ) ) ) )
+         continue;
+
+      // NOTE: If the user has "level 0" security then the security level was not displayed.
+      if( extra_data.count( c_field_extra_security_level ) )
+      {
+         if( !view.enum_fields.count( value_id ) )
+            throw runtime_error( "security level enum not found for " + value_id );
+
+         const enum_info& info(
+          get_storage_info( ).enums.find( view.enum_fields.find( value_id )->second )->second );
+
+         if( info.values[ 0 ].first == sess_info.user_slevel )
+            continue;
+      }
+
+      string next;
+
+      if( field_id == view.create_user_key_field
+       || field_id == view.modify_user_key_field
+       || field_id == view.create_datetime_field
+       || field_id == view.modify_datetime_field )
+         continue;
+      else if( view.date_fields.count( value_id ) )
+      {
+         if( view.hidden_fields.count( value_id ) || view.protected_fields.count( value_id ) )
+         {
+            if( view.defcurrent_fields.count( value_id ) )
+            {
+               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+               next = dt.get_date( ).as_string( );
+            }
+         }
+         else
+            next = values.at( num++ );
+
+         if( !next.empty( ) )
+            next = format_date( udate( next ) );
+      }
+      else if( view.time_fields.count( value_id ) )
+      {
+         if( view.hidden_fields.count( value_id ) || view.protected_fields.count( value_id ) )
+         {
+            if( view.defcurrent_fields.count( value_id ) )
+            {
+               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+               next = dt.get_time( ).as_string( );
+            }
+         }
+         else
+            next = values.at( num++ );
+
+         if( !next.empty( ) )
+            next = format_time( mtime( next ) );
+      }
+      else if( view.datetime_fields.count( value_id ) )
+      {
+         if( view.hidden_fields.count( value_id ) || view.protected_fields.count( value_id ) )
+         {
+            if( view.defcurrent_fields.count( value_id ) )
+            {
+               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+               next = dt.as_string( );
+            }
+         }
+         else
+            next = values.at( num++ );
+
+         if( !next.empty( ) )
+         {
+            date_time dt( next );
+            next = format_date_time( dt );
+         }
+      }
+      else if( view.int_fields.count( value_id ) )
+      {
+         next = values.at( num++ );
+
+         if( extra_data.count( c_field_extra_int_type ) )
+         {
+            string int_type = extra_data[ c_field_extra_int_type ];
+
+            if( int_type == "bytes" )
+               next = to_string( unformat_bytes( next ) );
+            else if( int_type == "duration_dhm" || int_type == "duration_hms" )
+               next = to_string( unformat_duration( next ) );
+            else
+               throw runtime_error( "unsupported int_type '" + int_type + "'" );
+         }
+      }
+      else if( view.numeric_fields.count( value_id ) )
+      {
+         next = values.at( num++ );
+
+         if( extra_data.count( c_field_extra_numeric_type ) )
+         {
+            string numeric_type = extra_data[ c_field_extra_numeric_type ];
+
+            if( numeric_type == "bytes" )
+               next = to_string( unformat_bytes( next ) );
+            else
+               throw runtime_error( "unsupported numeric_type '" + numeric_type + "'" );
+         }
+      }
+      else if( view.password_fields.count( value_id )
+       || view.epassword_fields.count( value_id ) || view.hpassword_fields.count( value_id ) )
+         next = password_encrypt( values.at( num++ ), get_server_id( ) );
+      else
+      {
+         // NOTE: If the record is being created under a parent then the parent field
+         // value is fixed and if field has an explicit "new" value then is also fixed.
+         if( field_id == field )
+            next = escaped( extra, "," );
+         else if( new_field_and_values.count( field_id ) )
+            next = new_field_and_values.find( field_id )->second;
+         else if( view.new_field_values.count( field_id ) )
+         {
+            if( !skip_field
+             && !view.hidden_fields.count( value_id )
+             && !view.protected_fields.count( value_id ) )
+               next = escaped( values.at( num++ ), "," );
+
+            if( next.empty( ) )
+               next = view.new_field_values.find( field_id )->second;
+         }
+         else
+            next = escaped( values.at( num++ ), "," );
+
+         // NOTE: A fetch is required for manually provided foreign keys (where an
+         // alternate key has been provided rather than the actual foreign key itself).
+         fld_info fld( ( vici->second )->fields[ i ] );
+         string::size_type pos = fld.pfield.find( '+' );
+         if( pos != string::npos && fld.pfield.substr( pos + 1 ) != c_key_field )
+         {
+            pair< string, string > item_info;
+            string key_info( fld.pfield.substr( pos + 1 ) );
+            key_info += "#1 " + next;
+
+            if( !fetch_item_info( view.module_id,
+             fld.pclass, key_info, "", "", sess_info, item_info, "" ) )
+               throw runtime_error( "Unexpected error occurred processing save." );
+
+            if( !item_info.first.empty( ) )
+            {
+               pos = item_info.first.find( ' ' );
+               next = item_info.first.substr( 0, pos );
+            }
+         }
+      }
+
+      if( field_id == field )
+         found_field = true;
+
+      if( new_field_and_values.count( field_id ) )
+         found_new_fields.insert( field_id );
+
+      // NOTE: Due to the comma escaping above this will result in the escaping for commas
+      // (and for the escape character itself) to be doubled up. This is necessary because
+      // of the unescaping that is being performed by the server's command parser.
+      if( used++ > 0 )
+         field_values += ',';
+      field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
+   }
+
+   // NOTE: Add the parent value if not already handled as a field in the view.
+   if( !field.empty( ) && !found_field )
+   {
+      string value( escaped( extra, "," ) );
+
+      if( used++ > 0 )
+         field_values += ',';
+      field_values += field + '=' + escaped( value, ",\"" );
+
+      if( new_field_and_values.count( field ) )
+         found_new_fields.insert( field );
+   }
+
+   // NOTE: If fixed field values should be provided for a new record that were not already
+   // included as a field in the view itself then apppend the new field ids and values here.
+   if( !new_field_and_values.empty( ) )
+   {
+      map< string, string >::const_iterator i;
+      for( i = new_field_and_values.begin( ); i != new_field_and_values.end( ); ++i )
+      {
+         if( !found_new_fields.count( i->first ) )
+         {
+            if( used++ > 0 )
+               field_values += ',';
+            field_values += i->first + '=' + i->second;
+         }
+      }
+   }
+
+   if( !extrafields.empty( ) )
+   {
+      map< string, string >::const_iterator i;
+      for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )
+      {
+         field_values += ',';
+         field_values += i->first + '=' + escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+      }
+   }
+
+   act_cmd += " " + key_info + " \"" + field_values + "\"";
+
+   if( !exec.empty( ) )
+      act_cmd += " -x=" + exec;
+
+   DEBUG_TRACE << act_cmd;
+
+   if( sess_info.p_socket->write_line( act_cmd ) <= 0 )
+      had_send_or_recv_error = true;
+   else
+   {
+      string response;
+      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
+         had_send_or_recv_error = true;
+      else if( response != c_response_okay )
+      {
+         string extra_response;
+
+         if( !response.empty( ) && response[ 0 ] != '('
+          && ( sess_info.p_socket->read_line( extra_response, c_subsequent_response_timeout ) <= 0 ) )
+            had_send_or_recv_error = true;
+         else
+         {
+            if( extra_response == c_response_okay )
+               new_key = response;
+            else
+               error_message = escape_markup( response + extra_response );
+         }
+      }
+
+      if( cont != c_true && !new_key.empty( ) )
+      {
+         data = new_key;
+         is_new_record = false;
+      }
+
+      // NOTE: If an error has occurred then change the action to "edit" (so view remains in edit mode).
+      if( !error_message.empty( ) )
+      {
+         act = c_act_edit;
+         was_invalid = true;
+      }
+   }
+}
+

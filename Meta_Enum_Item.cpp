@@ -1,0 +1,1996 @@
+// Copyright (c) 2008
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
+#  include <fstream>
+#  include <iostream>
+#  include <algorithm>
+#  include <stdexcept>
+#endif
+
+#define CAT_BASE_LIB
+#define MODULE_META_IMPL
+
+// [<start macros>]
+// [<finish macros>]
+
+#include "Meta_Enum_Item.h"
+
+#include "Meta_Specification.h"
+#include "Meta_Enum.h"
+
+#include "cat_base.h"
+#include "class_domains.h"
+#include "module_strings.h"
+#include "class_utilities.h"
+#include "command_handler.h"
+#include "module_interface.h"
+
+// [<start includes>]
+// [<finish includes>]
+
+using namespace std;
+
+// [<start namespaces>]
+// [<finish namespaces>]
+
+template< > inline string to_string( const Meta_Enum& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Enum& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
+}
+
+inline int system( const string& cmd ) { return exec_system( cmd ); }
+
+namespace
+{
+
+#include "Meta_Enum_Item.cmh"
+
+const int32_t c_version = 1;
+
+const char* const c_okay = "okay";
+
+const char* const c_field_id_Enum = "300400";
+const char* const c_field_id_Internal = "104104";
+const char* const c_field_id_Label = "104101";
+const char* const c_field_id_Order = "104103";
+const char* const c_field_id_Value = "104102";
+
+const char* const c_field_name_Enum = "Enum";
+const char* const c_field_name_Internal = "Internal";
+const char* const c_field_name_Label = "Label";
+const char* const c_field_name_Order = "Order";
+const char* const c_field_name_Value = "Value";
+
+const char* const c_field_display_name_Enum = "field_enum_item_enum";
+const char* const c_field_display_name_Internal = "field_enum_item_internal";
+const char* const c_field_display_name_Label = "field_enum_item_label";
+const char* const c_field_display_name_Order = "field_enum_item_order";
+const char* const c_field_display_name_Value = "field_enum_item_value";
+
+const int c_num_fields = 5;
+
+const char* const c_all_sorted_field_ids[ ] =
+{
+   "104101",
+   "104102",
+   "104103",
+   "104104",
+   "300400"
+};
+
+const char* const c_all_sorted_field_names[ ] =
+{
+   "Enum",
+   "Internal",
+   "Label",
+   "Order",
+   "Value"
+};
+
+inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
+
+inline bool has_field( const string& field )
+{
+   return binary_search( c_all_sorted_field_ids, c_all_sorted_field_ids + c_num_fields, field.c_str( ), compare )
+    || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
+}
+
+const int c_num_transient_fields = 0;
+
+bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
+
+const char* const c_procedure_id_Move_Down = "104420";
+const char* const c_procedure_id_Move_Up = "104410";
+
+const uint64_t c_modifier_Is_Internal = UINT64_C( 0x100 );
+
+aggregate_domain< string,
+ domain_string_label_format,
+ domain_string_max_size< 30 > > g_Label_domain;
+domain_string_max_size< 30 > g_Value_domain;
+
+set< string > g_derivations;
+
+typedef map< string, Meta_Enum_Item* > external_aliases_container;
+typedef external_aliases_container::const_iterator external_aliases_const_iterator;
+typedef external_aliases_container::value_type external_aliases_value_type;
+
+typedef map< size_t, Meta_Enum_Item* > external_aliases_lookup_container;
+typedef external_aliases_lookup_container::const_iterator external_aliases_lookup_const_iterator;
+
+external_aliases_container g_external_aliases;
+external_aliases_lookup_container g_external_aliases_lookup;
+
+bool gv_default_Internal = bool( 0 );
+string gv_default_Label = string( );
+string gv_default_Order = string( );
+string gv_default_Value = string( );
+
+// [<start anonymous>]
+// [<finish anonymous>]
+
+}
+
+registration< Meta_Enum_Item > Enum_Item_registration( get_class_registry( ), "104100" );
+
+class Meta_Enum_Item_command_functor;
+
+class Meta_Enum_Item_command_handler : public command_handler
+{
+   friend class Meta_Enum_Item_command_functor;
+
+   public:
+   Meta_Enum_Item_command_handler( ) : p_Meta_Enum_Item( 0 ) { }
+
+   void set_Meta_Enum_Item( Meta_Enum_Item* p_new_Meta_Enum_Item ) { p_Meta_Enum_Item = p_new_Meta_Enum_Item; }
+
+   void handle_unknown_command( const string& command )
+   {
+      throw runtime_error( "unknown command '" + command + "'" );
+   }
+
+   void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )
+   {
+      throw runtime_error( "invalid command usage '" + cmd_and_args + "'" );
+   }
+
+   private:
+   Meta_Enum_Item* p_Meta_Enum_Item;
+
+   protected:
+   string retval;
+};
+
+class Meta_Enum_Item_command_functor : public command_functor
+{
+   public:
+   Meta_Enum_Item_command_functor( Meta_Enum_Item_command_handler& handler )
+    : command_functor( handler ),
+    cmd_handler( handler )
+   {
+   }
+
+   void operator ( )( const string& command, const parameter_info& parameters );
+
+   private:
+   Meta_Enum_Item_command_handler& cmd_handler;
+};
+
+command_functor* Meta_Enum_Item_command_functor_factory( const string& /*name*/, command_handler& handler )
+{
+   return new Meta_Enum_Item_command_functor( dynamic_cast< Meta_Enum_Item_command_handler& >( handler ) );
+}
+
+void Meta_Enum_Item_command_functor::operator ( )( const string& command, const parameter_info& parameters )
+{
+   if( command == c_cmd_Meta_Enum_Item_key )
+   {
+      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_Enum_Item_key_fixed ) );
+
+      if( !want_fixed )
+         cmd_handler.retval = cmd_handler.p_Meta_Enum_Item->get_key( );
+      else
+         cmd_handler.retval = cmd_handler.p_Meta_Enum_Item->get_fixed_key( );
+   }
+   else if( command == c_cmd_Meta_Enum_Item_ver )
+   {
+      string ver_rev( to_string( cmd_handler.p_Meta_Enum_Item->get_version( ) ) );
+      ver_rev += "." + to_string( cmd_handler.p_Meta_Enum_Item->get_revision( ) );
+
+      cmd_handler.retval = ver_rev;
+   }
+   else if( command == c_cmd_Meta_Enum_Item_get )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Enum_Item_get_field_name ) );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+         string_getter< Meta_Enum >( cmd_handler.p_Meta_Enum_Item->Enum( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+         string_getter< bool >( cmd_handler.p_Meta_Enum_Item->Internal( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Label || field_name == c_field_name_Label )
+         string_getter< string >( cmd_handler.p_Meta_Enum_Item->Label( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+         string_getter< string >( cmd_handler.p_Meta_Enum_Item->Order( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
+         string_getter< string >( cmd_handler.p_Meta_Enum_Item->Value( ), cmd_handler.retval );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
+   }
+   else if( command == c_cmd_Meta_Enum_Item_set )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Enum_Item_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Enum_Item_set_field_value ) );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+         func_string_setter< Meta_Enum_Item, Meta_Enum >(
+          *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Enum, field_value );
+      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+         func_string_setter< Meta_Enum_Item, bool >(
+          *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Internal, field_value );
+      else if( field_name == c_field_id_Label || field_name == c_field_name_Label )
+         func_string_setter< Meta_Enum_Item, string >(
+          *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Label, field_value );
+      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+         func_string_setter< Meta_Enum_Item, string >(
+          *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Order, field_value );
+      else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
+         func_string_setter< Meta_Enum_Item, string >(
+          *cmd_handler.p_Meta_Enum_Item, &Meta_Enum_Item::Value, field_value );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
+
+      cmd_handler.retval = c_okay;
+   }
+   else if( command == c_cmd_Meta_Enum_Item_cmd )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Enum_Item_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_Enum_Item_cmd_cmd_and_args ) );
+
+      cmd_handler.retval.erase( );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+         cmd_handler.retval = cmd_handler.p_Meta_Enum_Item->Enum( ).execute( cmd_and_args );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for command call" );
+   }
+   else if( command == c_cmd_Meta_Enum_Item_Move_Down )
+   {
+      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Enum_Item_Move_Down_Restrict_Fields ) );
+      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Enum_Item_Move_Down_Restrict_Values ) );
+      cmd_handler.p_Meta_Enum_Item->Move_Down( Restrict_Fields, Restrict_Values );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Enum_Item_Move_Up )
+   {
+      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Enum_Item_Move_Up_Restrict_Fields ) );
+      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Enum_Item_Move_Up_Restrict_Values ) );
+      cmd_handler.p_Meta_Enum_Item->Move_Up( Restrict_Fields, Restrict_Values );
+
+      cmd_handler.retval.erase( );
+   }
+}
+
+struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
+{
+   impl( Meta_Enum_Item& o )
+    :
+    cp_obj( &o ),
+    total_child_relationships( 0 )
+   {
+      p_obj = &o;
+      set_Meta_Enum_Item( &o );
+
+      add_commands( 0, Meta_Enum_Item_command_functor_factory,
+       ARRAY_PTR_AND_SIZE( Meta_Enum_Item_command_definitions ) );
+   }
+
+   Meta_Enum_Item& get_obj( ) const
+   {
+      return *cp_obj;
+   }
+
+   bool impl_Internal( ) const { return lazy_fetch( p_obj ), v_Internal; }
+   void impl_Internal( bool Internal ) { v_Internal = Internal; }
+
+   const string& impl_Label( ) const { return lazy_fetch( p_obj ), v_Label; }
+   void impl_Label( const string& Label ) { v_Label = Label; }
+
+   const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
+   void impl_Order( const string& Order ) { v_Order = Order; }
+
+   const string& impl_Value( ) const { return lazy_fetch( p_obj ), v_Value; }
+   void impl_Value( const string& Value ) { v_Value = Value; }
+
+   Meta_Enum& impl_Enum( )
+   {
+      if( !cp_Enum )
+      {
+         cp_Enum.init( );
+
+         p_obj->setup_graph_parent( *cp_Enum, c_field_id_Enum, v_Enum );
+      }
+      return *cp_Enum;
+   }
+
+   const Meta_Enum& impl_Enum( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Enum )
+      {
+         cp_Enum.init( );
+
+         p_obj->setup_graph_parent( *cp_Enum, c_field_id_Enum, v_Enum );
+      }
+      return *cp_Enum;
+   }
+
+   void impl_Enum( const string& key )
+   {
+      class_base_accessor cba( impl_Enum( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Specification& impl_child_Specification_Enum_Item_2( )
+   {
+      if( !cp_child_Specification_Enum_Item_2 )
+      {
+         cp_child_Specification_Enum_Item_2.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_2, "301471" );
+      }
+      return *cp_child_Specification_Enum_Item_2;
+   }
+
+   const Meta_Specification& impl_child_Specification_Enum_Item_2( ) const
+   {
+      if( !cp_child_Specification_Enum_Item_2 )
+      {
+         cp_child_Specification_Enum_Item_2.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_2, "301471" );
+      }
+      return *cp_child_Specification_Enum_Item_2;
+   }
+
+   Meta_Specification& impl_child_Specification_Enum_Item_3( )
+   {
+      if( !cp_child_Specification_Enum_Item_3 )
+      {
+         cp_child_Specification_Enum_Item_3.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_3, "301472" );
+      }
+      return *cp_child_Specification_Enum_Item_3;
+   }
+
+   const Meta_Specification& impl_child_Specification_Enum_Item_3( ) const
+   {
+      if( !cp_child_Specification_Enum_Item_3 )
+      {
+         cp_child_Specification_Enum_Item_3.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_3, "301472" );
+      }
+      return *cp_child_Specification_Enum_Item_3;
+   }
+
+   Meta_Specification& impl_child_Specification_Enum_Item_4( )
+   {
+      if( !cp_child_Specification_Enum_Item_4 )
+      {
+         cp_child_Specification_Enum_Item_4.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_4, "301473" );
+      }
+      return *cp_child_Specification_Enum_Item_4;
+   }
+
+   const Meta_Specification& impl_child_Specification_Enum_Item_4( ) const
+   {
+      if( !cp_child_Specification_Enum_Item_4 )
+      {
+         cp_child_Specification_Enum_Item_4.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_4, "301473" );
+      }
+      return *cp_child_Specification_Enum_Item_4;
+   }
+
+   Meta_Specification& impl_child_Specification_Enum_Item_5( )
+   {
+      if( !cp_child_Specification_Enum_Item_5 )
+      {
+         cp_child_Specification_Enum_Item_5.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_5, "301474" );
+      }
+      return *cp_child_Specification_Enum_Item_5;
+   }
+
+   const Meta_Specification& impl_child_Specification_Enum_Item_5( ) const
+   {
+      if( !cp_child_Specification_Enum_Item_5 )
+      {
+         cp_child_Specification_Enum_Item_5.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Enum_Item_5, "301474" );
+      }
+      return *cp_child_Specification_Enum_Item_5;
+   }
+
+   Meta_Specification& impl_child_Specification( )
+   {
+      if( !cp_child_Specification )
+      {
+         cp_child_Specification.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification, "301470" );
+      }
+      return *cp_child_Specification;
+   }
+
+   const Meta_Specification& impl_child_Specification( ) const
+   {
+      if( !cp_child_Specification )
+      {
+         cp_child_Specification.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification, "301470" );
+      }
+      return *cp_child_Specification;
+   }
+
+   void impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values );
+
+   void impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values );
+
+   string get_field_value( int field ) const;
+   void set_field_value( int field, const string& value );
+
+   uint64_t get_state( ) const;
+
+   const string& execute( const string& cmd_and_args );
+
+   void clear_foreign_key( const string& field );
+
+   void set_foreign_key_value( const string& field, const string& value );
+
+   const string& get_foreign_key_value( const string& field );
+
+   void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
+
+   void clear( );
+
+   bool value_will_be_provided( const string& field_name );
+
+   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+
+   void after_fetch( );
+   void finalise_fetch( );
+
+   void at_create( );
+
+   void to_store( bool is_create, bool is_internal );
+   void for_store( bool is_create, bool is_internal );
+   void after_store( bool is_create, bool is_internal );
+
+   bool can_destroy( bool is_internal );
+   void for_destroy( bool is_internal );
+   void after_destroy( bool is_internal );
+
+   void set_default_values( );
+
+   bool is_filtered( const set< string >& filters ) const;
+
+   Meta_Enum_Item* p_obj;
+   class_pointer< Meta_Enum_Item > cp_obj;
+
+   // [<start members>]
+   // [<finish members>]
+
+   size_t total_child_relationships;
+
+   bool v_Internal;
+   string v_Label;
+   string v_Order;
+   string v_Value;
+
+   string v_Enum;
+   mutable class_pointer< Meta_Enum > cp_Enum;
+
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Enum_Item_2;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Enum_Item_3;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Enum_Item_4;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Enum_Item_5;
+   mutable class_pointer< Meta_Specification > cp_child_Specification;
+};
+
+void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
+{
+   // [(start move_up_and_down)]
+   transaction_start( );
+   try
+   {
+      if( !Restrict_Fields.empty( ) )
+      {
+         get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
+
+         class_pointer< Meta_Enum_Item > cp_other( e_create_instance );
+
+         int num_fixed = 0;
+         if( !Restrict_Fields.empty( ) )
+            num_fixed = split_count( Restrict_Fields );
+
+         string key_info( Restrict_Fields );
+         if( num_fixed )
+            key_info += ',';
+         key_info += string( c_field_id_Order );
+
+         if( !num_fixed )
+            key_info += ' ' + get_obj( ).Order( );
+         else
+         {
+            key_info += '#' + to_string( num_fixed );
+            key_info += ' ' + Restrict_Values + ',' + get_obj( ).Order( );
+         }
+
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( cp_other->iterate_forwards( key_info, string( c_field_name_Order ), false, 1 ) )
+         {
+            string old_val( get_obj( ).Order( ) );
+            string new_val( cp_other->Order( ) );
+
+            get_obj( ).Order( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
+
+            cp_other->op_update( cp_other->get_key( ), c_field_name_Order );
+            cp_other->Order( old_val );
+            cp_other->op_apply( );
+
+            get_obj( ).Order( new_val );
+            get_obj( ).op_apply( );
+
+            cp_other->iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+      else
+      {
+         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
+         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
+         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
+         get_obj( ).op_update( get_obj( ).get_key( ) );
+
+         Meta_Enum parent;
+         parent.perform_fetch( get_obj( ).Enum( ) );
+
+         string key_info( c_field_id_Order );
+         key_info += ' ' + get_obj( ).Order( );
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( parent.child_Enum_Item( ).iterate_forwards( key_info, false, 1 ) )
+         {
+            string old_val( get_obj( ).Order( ) );
+            string new_val( parent.child_Enum_Item( ).Order( ) );
+
+            get_obj( ).Order( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( );
+
+            parent.child_Enum_Item( ).op_update( );
+            parent.child_Enum_Item( ).Order( old_val );
+            parent.child_Enum_Item( ).op_apply( );
+
+            get_obj( ).Order( new_val );
+            get_obj( ).op_apply( );
+
+            parent.child_Enum_Item( ).iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish move_up_and_down)]
+
+   // [<start Move_Down_impl>]
+   // [<finish Move_Down_impl>]
+}
+
+void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
+{
+   // [(start move_up_and_down)]
+   transaction_start( );
+   try
+   {
+      if( !Restrict_Fields.empty( ) )
+      {
+         get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
+
+         class_pointer< Meta_Enum_Item > cp_other( e_create_instance );
+
+         int num_fixed = 0;
+         if( !Restrict_Fields.empty( ) )
+            num_fixed = split_count( Restrict_Fields );
+
+         string key_info( Restrict_Fields );
+         if( num_fixed )
+            key_info += ',';
+         key_info += string( c_field_id_Order );
+
+         if( !num_fixed )
+            key_info += ' ' + get_obj( ).Order( );
+         else
+         {
+            key_info += '#' + to_string( num_fixed );
+            key_info += ' ' + Restrict_Values + ',' + get_obj( ).Order( );
+         }
+
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( cp_other->iterate_backwards( key_info, string( c_field_name_Order ), false, 1 ) )
+         {
+            string old_val( get_obj( ).Order( ) );
+            string new_val( cp_other->Order( ) );
+
+            get_obj( ).Order( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
+
+            cp_other->op_update( cp_other->get_key( ), c_field_name_Order );
+            cp_other->Order( old_val );
+            cp_other->op_apply( );
+
+            get_obj( ).Order( new_val );
+            get_obj( ).op_apply( );
+
+            cp_other->iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+      else
+      {
+         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
+         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
+         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
+         get_obj( ).op_update( get_obj( ).get_key( ) );
+
+         Meta_Enum parent;
+         parent.perform_fetch( get_obj( ).Enum( ) );
+
+         string key_info( c_field_id_Order );
+         key_info += ' ' + get_obj( ).Order( );
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( parent.child_Enum_Item( ).iterate_backwards( key_info, false, 1 ) )
+         {
+            string old_val( get_obj( ).Order( ) );
+            string new_val( parent.child_Enum_Item( ).Order( ) );
+
+            get_obj( ).Order( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( );
+
+            parent.child_Enum_Item( ).op_update( );
+            parent.child_Enum_Item( ).Order( old_val );
+            parent.child_Enum_Item( ).op_apply( );
+
+            get_obj( ).Order( new_val );
+            get_obj( ).op_apply( );
+
+            parent.child_Enum_Item( ).iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish move_up_and_down)]
+
+   // [<start Move_Up_impl>]
+   // [<finish Move_Up_impl>]
+}
+
+string Meta_Enum_Item::impl::get_field_value( int field ) const
+{
+   string retval;
+
+   switch( field )
+   {
+      case 0:
+      retval = to_string( impl_Enum( ) );
+      break;
+
+      case 1:
+      retval = to_string( impl_Internal( ) );
+      break;
+
+      case 2:
+      retval = to_string( impl_Label( ) );
+      break;
+
+      case 3:
+      retval = to_string( impl_Order( ) );
+      break;
+
+      case 4:
+      retval = to_string( impl_Value( ) );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+   }
+
+   return retval;
+}
+
+void Meta_Enum_Item::impl::set_field_value( int field, const string& value )
+{
+   switch( field )
+   {
+      case 0:
+      func_string_setter< Meta_Enum_Item::impl, Meta_Enum >( *this, &Meta_Enum_Item::impl::impl_Enum, value );
+      break;
+
+      case 1:
+      func_string_setter< Meta_Enum_Item::impl, bool >( *this, &Meta_Enum_Item::impl::impl_Internal, value );
+      break;
+
+      case 2:
+      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Label, value );
+      break;
+
+      case 3:
+      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Order, value );
+      break;
+
+      case 4:
+      func_string_setter< Meta_Enum_Item::impl, string >( *this, &Meta_Enum_Item::impl::impl_Value, value );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+   }
+}
+
+uint64_t Meta_Enum_Item::impl::get_state( ) const
+{
+   uint64_t state = 0;
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Internal( ) == true )
+      state |= c_modifier_Is_Internal;
+   // [(finish modifier_field_value)]
+
+   // [(start protect_equal)]
+   if( check_equal( get_obj( ).Internal( ), true ) )
+      state |= ( c_state_uneditable | c_state_undeletable );
+   // [(finish protect_equal)]
+
+   // [<start get_state>]
+   // [<finish get_state>]
+
+   return state;
+}
+
+const string& Meta_Enum_Item::impl::execute( const string& cmd_and_args )
+{
+   execute_command( cmd_and_args );
+   return retval;
+}
+
+void Meta_Enum_Item::impl::clear_foreign_key( const string& field )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+      impl_Enum( "" );
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+void Meta_Enum_Item::impl::set_foreign_key_value( const string& field, const string& value )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+      v_Enum = value;
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+const string& Meta_Enum_Item::impl::get_foreign_key_value( const string& field )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+      return v_Enum;
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+void Meta_Enum_Item::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
+{
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Enum, v_Enum ) );
+}
+
+void Meta_Enum_Item::impl::clear( )
+{
+   v_Internal = gv_default_Internal;
+   v_Label = gv_default_Label;
+   v_Order = gv_default_Order;
+   v_Value = gv_default_Value;
+
+   v_Enum = string( );
+   if( cp_Enum )
+      p_obj->setup_foreign_key( *cp_Enum, v_Enum );
+}
+
+bool Meta_Enum_Item::impl::value_will_be_provided( const string& field_name )
+{
+   ( void )field_name;
+
+   // [<start value_will_be_provided>]
+   // [<finish value_will_be_provided>]
+
+   return false;
+}
+
+void Meta_Enum_Item::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+{
+   ( void )state;
+   ( void )is_internal;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   if( is_null( v_Label ) && !value_will_be_provided( c_field_name_Label ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Label,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Label ) ) ) ) );
+
+   if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Order,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
+
+   if( is_null( v_Value ) && !value_will_be_provided( c_field_name_Value ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Value ) ) ) ) );
+
+   if( v_Enum.empty( ) && !value_will_be_provided( c_field_name_Enum ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Enum,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Enum ) ) ) ) );
+
+   string error_message;
+   if( !is_null( v_Label )
+    && ( v_Label != gv_default_Label
+    || !value_will_be_provided( c_field_name_Label ) )
+    && !g_Label_domain.is_valid( v_Label, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Label,
+       get_module_string( c_field_display_name_Label ) + " " + error_message ) );
+
+   if( !is_null( v_Value )
+    && ( v_Value != gv_default_Value
+    || !value_will_be_provided( c_field_name_Value ) )
+    && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+       get_module_string( c_field_display_name_Value ) + " " + error_message ) );
+
+   // [<start validate>]
+   // [<finish validate>]
+}
+
+void Meta_Enum_Item::impl::after_fetch( )
+{
+   set< string > required_transients;
+
+   p_obj->get_required_field_names( required_transients, true );
+
+   if( cp_Enum )
+      p_obj->setup_foreign_key( *cp_Enum, v_Enum );
+
+   // [<start after_fetch>]
+   // [<finish after_fetch>]
+}
+
+void Meta_Enum_Item::impl::finalise_fetch( )
+{
+   set< string > required_transients;
+
+   p_obj->get_required_field_names( required_transients, true );
+
+   // [<start finalise_fetch>]
+   // [<finish finalise_fetch>]
+}
+
+void Meta_Enum_Item::impl::at_create( )
+{
+   // [<start at_create>]
+   // [<finish at_create>]
+}
+
+void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [(start default_from_key)]
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
+      get_obj( ).Order( get_obj( ).get_key( ) );
+   // [(finish default_from_key)]
+
+   // [(start field_from_changed_fk)]
+   if( get_obj( ).Enum( ).has_changed( ) )
+      get_obj( ).Internal( get_obj( ).Enum( ).Internal( ) );
+   // [(finish field_from_changed_fk)]
+
+   // [<start to_store>]
+   // [<finish to_store>]
+}
+
+void Meta_Enum_Item::impl::for_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   // [<start for_store>]
+   // [<finish for_store>]
+}
+
+void Meta_Enum_Item::impl::after_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   // [(start update_children)]
+   if( !is_create
+    && get_obj( ).child_Specification( ).iterate_forwards( ) )
+   {
+      do
+      {
+         get_obj( ).child_Specification( ).op_update( );
+         get_obj( ).child_Specification( ).op_apply( );
+      } while( get_obj( ).child_Specification( ).iterate_next( ) );
+   }
+   // [(finish update_children)]
+
+   // [<start after_store>]
+   // [<finish after_store>]
+}
+
+bool Meta_Enum_Item::impl::can_destroy( bool is_internal )
+{
+   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+
+   // [<start can_destroy>]
+   // [<finish can_destroy>]
+
+   return retval;
+}
+
+void Meta_Enum_Item::impl::for_destroy( bool is_internal )
+{
+   ( void )is_internal;
+
+   // [<start for_destroy>]
+   // [<finish for_destroy>]
+}
+
+void Meta_Enum_Item::impl::after_destroy( bool is_internal )
+{
+   ( void )is_internal;
+
+   // [<start after_destroy>]
+   // [<finish after_destroy>]
+}
+
+void Meta_Enum_Item::impl::set_default_values( )
+{
+   clear( );
+}
+
+bool Meta_Enum_Item::impl::is_filtered( const set< string >& filters ) const
+{
+   ( void )filters;
+
+   // [<start is_filtered>]
+   // [<finish is_filtered>]
+
+   return false;
+}
+
+#undef MODULE_TRACE
+#define MODULE_TRACE( x ) trace( x )
+
+Meta_Enum_Item::Meta_Enum_Item( )
+{
+   set_version( c_version );
+
+   p_impl = new impl( *this );
+}
+
+Meta_Enum_Item::~Meta_Enum_Item( )
+{
+   cleanup( );
+   delete p_impl;
+}
+
+bool Meta_Enum_Item::Internal( ) const
+{
+   return p_impl->impl_Internal( );
+}
+
+void Meta_Enum_Item::Internal( bool Internal )
+{
+   p_impl->impl_Internal( Internal );
+}
+
+const string& Meta_Enum_Item::Label( ) const
+{
+   return p_impl->impl_Label( );
+}
+
+void Meta_Enum_Item::Label( const string& Label )
+{
+   p_impl->impl_Label( Label );
+}
+
+const string& Meta_Enum_Item::Order( ) const
+{
+   return p_impl->impl_Order( );
+}
+
+void Meta_Enum_Item::Order( const string& Order )
+{
+   p_impl->impl_Order( Order );
+}
+
+const string& Meta_Enum_Item::Value( ) const
+{
+   return p_impl->impl_Value( );
+}
+
+void Meta_Enum_Item::Value( const string& Value )
+{
+   p_impl->impl_Value( Value );
+}
+
+Meta_Enum& Meta_Enum_Item::Enum( )
+{
+   return p_impl->impl_Enum( );
+}
+
+const Meta_Enum& Meta_Enum_Item::Enum( ) const
+{
+   return p_impl->impl_Enum( );
+}
+
+void Meta_Enum_Item::Enum( const string& key )
+{
+   p_impl->impl_Enum( key );
+}
+
+Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_2( )
+{
+   return p_impl->impl_child_Specification_Enum_Item_2( );
+}
+
+const Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_2( ) const
+{
+   return p_impl->impl_child_Specification_Enum_Item_2( );
+}
+
+Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_3( )
+{
+   return p_impl->impl_child_Specification_Enum_Item_3( );
+}
+
+const Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_3( ) const
+{
+   return p_impl->impl_child_Specification_Enum_Item_3( );
+}
+
+Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_4( )
+{
+   return p_impl->impl_child_Specification_Enum_Item_4( );
+}
+
+const Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_4( ) const
+{
+   return p_impl->impl_child_Specification_Enum_Item_4( );
+}
+
+Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_5( )
+{
+   return p_impl->impl_child_Specification_Enum_Item_5( );
+}
+
+const Meta_Specification& Meta_Enum_Item::child_Specification_Enum_Item_5( ) const
+{
+   return p_impl->impl_child_Specification_Enum_Item_5( );
+}
+
+Meta_Specification& Meta_Enum_Item::child_Specification( )
+{
+   return p_impl->impl_child_Specification( );
+}
+
+const Meta_Specification& Meta_Enum_Item::child_Specification( ) const
+{
+   return p_impl->impl_child_Specification( );
+}
+
+void Meta_Enum_Item::Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
+{
+   p_impl->impl_Move_Down( Restrict_Fields, Restrict_Values );
+}
+
+void Meta_Enum_Item::Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
+{
+   p_impl->impl_Move_Up( Restrict_Fields, Restrict_Values );
+}
+
+string Meta_Enum_Item::get_field_value( int field ) const
+{
+   return p_impl->get_field_value( field );
+}
+
+void Meta_Enum_Item::set_field_value( int field, const string& value )
+{
+   p_impl->set_field_value( field, value );
+}
+
+bool Meta_Enum_Item::is_field_transient( int field ) const
+{
+   return static_is_field_transient( ( field_id )( field + 1 ) );
+}
+
+string Meta_Enum_Item::get_field_name( int field ) const
+{
+   return static_get_field_name( ( field_id )( field + 1 ) );
+}
+
+int Meta_Enum_Item::get_field_num( const string& field ) const
+{
+   int rc = static_get_field_num( field );
+
+   if( rc < 0 )
+      throw runtime_error( "unknown field name/id '" + field + "' in get_field_num( )" );
+
+   return rc;
+}
+
+bool Meta_Enum_Item::has_field_changed( const string& field ) const
+{
+   return class_base::has_field_changed( get_field_num( field ) );
+}
+
+uint64_t Meta_Enum_Item::get_state( ) const
+{
+   uint64_t state = 0;
+
+   state |= p_impl->get_state( );
+
+   return state;
+}
+
+const string& Meta_Enum_Item::execute( const string& cmd_and_args )
+{
+   return p_impl->execute( cmd_and_args );
+}
+
+void Meta_Enum_Item::clear( )
+{
+   p_impl->clear( );
+}
+
+void Meta_Enum_Item::validate( unsigned state, bool is_internal )
+{
+   p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Enum_Item::after_fetch( )
+{
+   p_impl->after_fetch( );
+}
+
+void Meta_Enum_Item::finalise_fetch( )
+{
+   p_impl->finalise_fetch( );
+}
+
+void Meta_Enum_Item::at_create( )
+{
+   p_impl->at_create( );
+}
+
+void Meta_Enum_Item::to_store( bool is_create, bool is_internal )
+{
+   p_impl->to_store( is_create, is_internal );
+}
+
+void Meta_Enum_Item::for_store( bool is_create, bool is_internal )
+{
+   p_impl->for_store( is_create, is_internal );
+}
+
+void Meta_Enum_Item::after_store( bool is_create, bool is_internal )
+{
+   p_impl->after_store( is_create, is_internal );
+}
+
+bool Meta_Enum_Item::can_destroy( bool is_internal )
+{
+   return p_impl->can_destroy( is_internal );
+}
+
+void Meta_Enum_Item::for_destroy( bool is_internal )
+{
+   p_impl->for_destroy( is_internal );
+}
+
+void Meta_Enum_Item::after_destroy( bool is_internal )
+{
+   p_impl->after_destroy( is_internal );
+}
+
+void Meta_Enum_Item::set_default_values( )
+{
+   p_impl->set_default_values( );
+}
+
+bool Meta_Enum_Item::is_filtered( const set< string >& filters ) const
+{
+   return p_impl->is_filtered( filters );
+}
+
+const char* Meta_Enum_Item::get_field_id(
+ const string& name, bool* p_sql_numeric, string* p_type_name ) const
+{
+   const char* p_id( 0 );
+
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Enum )
+   {
+      p_id = c_field_id_Enum;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Enum";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Internal )
+   {
+      p_id = c_field_id_Internal;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Label )
+   {
+      p_id = c_field_id_Label;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Order )
+   {
+      p_id = c_field_id_Order;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Value )
+   {
+      p_id = c_field_id_Value;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+
+   return p_id;
+}
+
+const char* Meta_Enum_Item::get_field_name(
+ const string& id, bool* p_sql_numeric, string* p_type_name ) const
+{
+   const char* p_name( 0 );
+
+   if( id.empty( ) )
+      throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Enum )
+   {
+      p_name = c_field_name_Enum;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Enum";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Internal )
+   {
+      p_name = c_field_name_Internal;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Label )
+   {
+      p_name = c_field_name_Label;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Order )
+   {
+      p_name = c_field_name_Order;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Value )
+   {
+      p_name = c_field_name_Value;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+
+   return p_name;
+}
+
+string Meta_Enum_Item::get_field_display_name( const string& id ) const
+{
+   string display_name;
+
+   if( id.empty( ) )
+      throw runtime_error( "unexpected empty field id for get_field_display_name" );
+   else if( id == c_field_id_Enum )
+      display_name = get_module_string( c_field_display_name_Enum );
+   else if( id == c_field_id_Internal )
+      display_name = get_module_string( c_field_display_name_Internal );
+   else if( id == c_field_id_Label )
+      display_name = get_module_string( c_field_display_name_Label );
+   else if( id == c_field_id_Order )
+      display_name = get_module_string( c_field_display_name_Order );
+   else if( id == c_field_id_Value )
+      display_name = get_module_string( c_field_display_name_Value );
+
+   return display_name;
+}
+
+void Meta_Enum_Item::clear_foreign_key( const string& field )
+{
+   p_impl->clear_foreign_key( field );
+}
+
+void Meta_Enum_Item::set_foreign_key_value( const string& field, const string& value )
+{
+   p_impl->set_foreign_key_value( field, value );
+}
+
+const string& Meta_Enum_Item::get_foreign_key_value( const string& field )
+{
+   return p_impl->get_foreign_key_value( field );
+}
+
+void Meta_Enum_Item::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
+{
+   p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_Enum_Item::setup_foreign_key( Meta_Enum& o, const string& value )
+{
+   static_cast< Meta_Enum& >( o ).set_key( value );
+}
+
+void Meta_Enum_Item::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Enum_Item::setup_graph_parent(
+ Meta_Enum& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Enum& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Enum& >( o ).set_key( init_value );
+}
+
+size_t Meta_Enum_Item::get_total_child_relationships( ) const
+{
+   return p_impl->total_child_relationships;
+}
+
+void Meta_Enum_Item::set_total_child_relationships( size_t new_total_child_relationships ) const
+{
+   p_impl->total_child_relationships = new_total_child_relationships;
+}
+
+size_t Meta_Enum_Item::get_num_foreign_key_children( bool is_internal ) const
+{
+   size_t rc = 5;
+
+   if( !is_internal )
+   {
+      g_external_aliases_lookup.clear( );
+
+      for( external_aliases_const_iterator
+       eaci = g_external_aliases.begin( ), end = g_external_aliases.end( ); eaci != end; ++eaci )
+      {
+         size_t num_extra = eaci->second->get_num_foreign_key_children( true );
+
+         if( num_extra )
+         {
+            eaci->second->set_key( get_key( ) );
+            eaci->second->copy_all_field_values( *this );
+
+            g_external_aliases_lookup.insert( make_pair( rc, eaci->second ) );
+
+            rc += num_extra;
+         }
+      }
+   }
+
+   set_total_child_relationships( rc );
+
+   return rc;
+}
+
+class_base* Meta_Enum_Item::get_next_foreign_key_child(
+ size_t child_num, string& next_child_field, cascade_op op, bool is_internal )
+{
+   class_base* p_class_base = 0;
+
+   if( child_num >= 5 )
+   {
+      external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
+      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+         --ealci;
+
+      p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
+   }
+   else
+   {
+      switch( child_num )
+      {
+         case 0:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301471";
+            p_class_base = &child_Specification_Enum_Item_2( );
+         }
+         break;
+
+         case 1:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301472";
+            p_class_base = &child_Specification_Enum_Item_3( );
+         }
+         break;
+
+         case 2:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301473";
+            p_class_base = &child_Specification_Enum_Item_4( );
+         }
+         break;
+
+         case 3:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301474";
+            p_class_base = &child_Specification_Enum_Item_5( );
+         }
+         break;
+
+         case 4:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301470";
+            p_class_base = &child_Specification( );
+         }
+         break;
+      }
+   }
+
+   return p_class_base;
+}
+
+const char* Meta_Enum_Item::class_id( ) const
+{
+   return static_class_id( );
+}
+
+const char* Meta_Enum_Item::class_name( ) const
+{
+   return static_class_name( );
+}
+
+const char* Meta_Enum_Item::plural_name( ) const
+{
+   return static_plural_name( );
+}
+
+const char* Meta_Enum_Item::module_id( ) const
+{
+   return static_module_id( );
+}
+
+const char* Meta_Enum_Item::module_name( ) const
+{
+   return static_module_name( );
+}
+
+string Meta_Enum_Item::get_display_name( bool plural ) const
+{
+   string key( plural ? "plural_" : "class_" );
+   key += "enum_item";
+
+   return get_module_string( key );
+}
+
+bool Meta_Enum_Item::get_is_alias( ) const
+{
+   return false;
+}
+
+void Meta_Enum_Item::get_alias_base_info( pair< string, string >& alias_base_info ) const
+{
+   ( void )alias_base_info;
+}
+
+void Meta_Enum_Item::get_base_class_info( vector< pair< string, string > >& base_class_info ) const
+{
+   ( void )base_class_info;
+}
+
+class_base& Meta_Enum_Item::get_or_create_graph_child( const string& context )
+{
+   class_base* p_class_base( 0 );
+
+   string::size_type pos = context.find( '.' );
+   string sub_context( context.substr( 0, pos ) );
+
+   if( sub_context.empty( ) )
+      throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_301471" || sub_context == "child_Specification_Enum_Item_2" )
+      p_class_base = &child_Specification_Enum_Item_2( );
+   else if( sub_context == "_301472" || sub_context == "child_Specification_Enum_Item_3" )
+      p_class_base = &child_Specification_Enum_Item_3( );
+   else if( sub_context == "_301473" || sub_context == "child_Specification_Enum_Item_4" )
+      p_class_base = &child_Specification_Enum_Item_4( );
+   else if( sub_context == "_301474" || sub_context == "child_Specification_Enum_Item_5" )
+      p_class_base = &child_Specification_Enum_Item_5( );
+   else if( sub_context == "_301470" || sub_context == "child_Specification" )
+      p_class_base = &child_Specification( );
+   else if( sub_context == c_field_id_Enum || sub_context == c_field_name_Enum )
+      p_class_base = &Enum( );
+
+   if( !p_class_base )
+      throw runtime_error( "unknown sub-context '" + sub_context + "'" );
+
+   if( pos != string::npos )
+      p_class_base = &p_class_base->get_or_create_graph_child( context.substr( pos + 1 ) );
+
+   return *p_class_base;
+}
+
+void Meta_Enum_Item::get_sql_column_names(
+ vector< string >& names, bool* p_done, const string* p_class_name ) const
+{
+   if( p_done && *p_done )
+      return;
+
+   names.push_back( "C_Enum" );
+   names.push_back( "C_Internal" );
+   names.push_back( "C_Label" );
+   names.push_back( "C_Order" );
+   names.push_back( "C_Value" );
+
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+}
+
+void Meta_Enum_Item::get_sql_column_values(
+ vector< string >& values, bool* p_done, const string* p_class_name ) const
+{
+   if( p_done && *p_done )
+      return;
+
+   values.push_back( sql_quote( to_string( Enum( ) ) ) );
+   values.push_back( to_string( Internal( ) ) );
+   values.push_back( sql_quote( to_string( Label( ) ) ) );
+   values.push_back( sql_quote( to_string( Order( ) ) ) );
+   values.push_back( sql_quote( to_string( Value( ) ) ) );
+
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+}
+
+void Meta_Enum_Item::get_required_field_names(
+ set< string >& names, bool required_transients, set< string >* p_dependents ) const
+{
+   set< string > local_dependents;
+   set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
+
+   get_always_required_field_names( names, required_transients, dependents );
+
+   // [<start get_required_field_names>]
+   // [<finish get_required_field_names>]
+}
+
+void Meta_Enum_Item::get_always_required_field_names(
+ set< string >& names, bool required_transients, set< string >& dependents ) const
+{
+   ( void )names;
+   ( void )dependents;
+   ( void )required_transients;
+
+   // [(start move_up_and_down)]
+   dependents.insert( "Order" );
+
+   if( ( required_transients && is_field_transient( e_field_id_Order ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Order ) ) )
+      names.insert( "Order" );
+   // [(finish move_up_and_down)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Internal" ); // (for Is_Internal modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Internal ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Internal ) ) )
+      names.insert( "Internal" );
+   // [(finish modifier_field_value)]
+
+   // [(start protect_equal)]
+   dependents.insert( "Internal" );
+
+   if( ( required_transients && is_field_transient( e_field_id_Internal ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Internal ) ) )
+      names.insert( "Internal" );
+   // [(finish protect_equal)]
+
+   // [<start get_always_required_field_names>]
+   // [<finish get_always_required_field_names>]
+}
+
+void Meta_Enum_Item::get_transient_replacement_field_names( const string& name, vector< string >& names ) const
+{
+   ( void )name;
+   ( void )names;
+
+   // [<start get_transient_replacement_field_names>]
+   // [<finish get_transient_replacement_field_names>]
+}
+
+void Meta_Enum_Item::do_generate_sql( generate_sql_type type, vector< string >& sql_stmts ) const
+{
+   generate_sql( static_class_name( ), type, sql_stmts );
+}
+
+const char* Meta_Enum_Item::static_resolved_module_id( )
+{
+   return static_module_id( );
+}
+
+const char* Meta_Enum_Item::static_resolved_module_name( )
+{
+   return static_module_name( );
+}
+
+const char* Meta_Enum_Item::static_lock_class_id( )
+{
+   return "104100";
+}
+
+const char* Meta_Enum_Item::static_check_class_name( )
+{
+   return "Enum_Item";
+}
+
+bool Meta_Enum_Item::static_has_derivations( )
+{
+   return !g_derivations.empty( );
+}
+
+void Meta_Enum_Item::static_get_class_info( class_info_container& class_info )
+{
+   class_info.push_back( "100.104100" );
+}
+
+void Meta_Enum_Item::static_get_field_info( field_info_container& all_field_info )
+{
+   all_field_info.push_back( field_info( "300400", "Enum", "Meta_Enum", true ) );
+   all_field_info.push_back( field_info( "104104", "Internal", "bool", false ) );
+   all_field_info.push_back( field_info( "104101", "Label", "string", false ) );
+   all_field_info.push_back( field_info( "104103", "Order", "string", false ) );
+   all_field_info.push_back( field_info( "104102", "Value", "string", false ) );
+}
+
+void Meta_Enum_Item::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
+{
+   ( void )foreign_key_info;
+
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Enum, make_pair( "Meta.104100", "Meta_Enum" ) ) );
+}
+
+int Meta_Enum_Item::static_get_num_fields( bool* p_done, const string* p_class_name )
+{
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+
+   return c_num_fields;
+}
+
+bool Meta_Enum_Item::static_is_field_transient( field_id id )
+{
+   return is_transient_field( static_get_field_id( id ) );
+}
+
+const char* Meta_Enum_Item::static_get_field_id( field_id id )
+{
+   const char* p_id = 0;
+
+   switch( id )
+   {
+      case 1:
+      p_id = "300400";
+      break;
+
+      case 2:
+      p_id = "104104";
+      break;
+
+      case 3:
+      p_id = "104101";
+      break;
+
+      case 4:
+      p_id = "104103";
+      break;
+
+      case 5:
+      p_id = "104102";
+      break;
+   }
+
+   if( !p_id )
+      throw runtime_error( "unknown field id #" + to_string( id ) + " for class Enum_Item" );
+
+   return p_id;
+}
+
+const char* Meta_Enum_Item::static_get_field_name( field_id id )
+{
+   const char* p_id = 0;
+
+   switch( id )
+   {
+      case 1:
+      p_id = "Enum";
+      break;
+
+      case 2:
+      p_id = "Internal";
+      break;
+
+      case 3:
+      p_id = "Label";
+      break;
+
+      case 4:
+      p_id = "Order";
+      break;
+
+      case 5:
+      p_id = "Value";
+      break;
+   }
+
+   if( !p_id )
+      throw runtime_error( "unknown field id #" + to_string( id ) + " for class Enum_Item" );
+
+   return p_id;
+}
+
+int Meta_Enum_Item::static_get_field_num( const string& field )
+{
+   int rc = 0;
+
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+      rc += 1;
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+      rc += 2;
+   else if( field == c_field_id_Label || field == c_field_name_Label )
+      rc += 3;
+   else if( field == c_field_id_Order || field == c_field_name_Order )
+      rc += 4;
+   else if( field == c_field_id_Value || field == c_field_name_Value )
+      rc += 5;
+
+   return rc - 1;
+}
+
+procedure_info_container& Meta_Enum_Item::static_get_procedure_info( )
+{
+   static bool initialised = false;
+   static procedure_info_container procedures;
+
+   if( !initialised )
+   {
+      initialised = true;
+      procedures.insert( make_pair( "104420", "Move_Down" ) );
+      procedures.insert( make_pair( "104410", "Move_Up" ) );
+   }
+
+   return procedures;
+}
+
+string Meta_Enum_Item::static_get_sql_columns( )
+{
+   string sql_columns;
+
+   sql_columns += 
+    "C_Key_ VARCHAR(64),"
+    "C_Ver_ INTEGER NOT NULL,"
+    "C_Rev_ INTEGER NOT NULL,"
+    "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Enum VARCHAR(64) NOT NULL,"
+    "C_Internal INTEGER NOT NULL,"
+    "C_Label VARCHAR(128) NOT NULL,"
+    "C_Order VARCHAR(128) NOT NULL,"
+    "C_Value VARCHAR(128) NOT NULL,"
+    "PRIMARY KEY(C_Key_)";
+
+   return sql_columns;
+}
+
+void Meta_Enum_Item::static_get_text_search_fields( vector< string >& fields )
+{
+   ( void )fields;
+}
+
+void Meta_Enum_Item::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
+{
+   ( void )pairs;
+}
+
+void Meta_Enum_Item::static_get_sql_indexes( vector< string >& indexes )
+{
+   indexes.push_back( "C_Enum,C_Order" );
+   indexes.push_back( "C_Enum,C_Value" );
+}
+
+void Meta_Enum_Item::static_get_sql_unique_indexes( vector< string >& indexes )
+{
+   indexes.push_back( "C_Enum,C_Order" );
+   indexes.push_back( "C_Enum,C_Value" );
+}
+
+void Meta_Enum_Item::static_insert_derivation( const string& module_and_class_id )
+{
+   g_derivations.insert( module_and_class_id );
+}
+
+void Meta_Enum_Item::static_remove_derivation( const string& module_and_class_id )
+{
+   if( g_derivations.count( module_and_class_id ) )
+      g_derivations.erase( module_and_class_id );
+}
+
+void Meta_Enum_Item::static_insert_external_alias( const string& module_and_class_id, Meta_Enum_Item* p_instance )
+{
+   g_external_aliases.insert( external_aliases_value_type( module_and_class_id, p_instance ) );
+}
+
+void Meta_Enum_Item::static_remove_external_alias( const string& module_and_class_id )
+{
+   if( g_external_aliases.count( module_and_class_id ) )
+   {
+      delete g_external_aliases[ module_and_class_id ];
+      g_external_aliases.erase( module_and_class_id );
+   }
+}
+
+void Meta_Enum_Item::static_class_init( const char* p_module_name )
+{
+   if( !p_module_name )
+      throw runtime_error( "unexpected null module name pointer for init" );
+
+   // [<start static_class_init>]
+   // [<finish static_class_init>]
+}
+
+void Meta_Enum_Item::static_class_term( const char* p_module_name )
+{
+   if( !p_module_name )
+      throw runtime_error( "unexpected null module name pointer for term" );
+
+   // [<start static_class_term>]
+   // [<finish static_class_term>]
+}
+

@@ -1,0 +1,65 @@
+license "display license info"
+module_list "list loaded modules"
+module_load "load an existing module" <val//module>
+module_unload "unload a loaded module" <val//module>
+module_class_list "list available classes for a loaded module" <val//module>
+module_class_field_list "list available fields for a loaded module's class" <val//module><val//class>
+module_strings_list "list all module strings" <val//module>
+object_list "list existing object instances"
+object_fetch "fetch a persistent instance" <val//handle>[<val/./context>]<val//key>
+object_create "create an object instance" [<opt/-dynamic/dynamic>]<val//module><val//mclass>[<val//handle>]
+object_destroy "destroy an existing object instance" <val//handle>
+object_execute "execute a method for an existing object instance" <val//handle>[<val/./context>]<val//method_name>[<val//args>]
+object_validate "validate an existing object instance" <val//handle>[<val/./context>]
+object_variable "get/set an object instance variable" <val//handle>[<val/./context>]<val//var_name>[<oval//new_value>]
+object_op_create "begin a create op on a persistent instance" <val//handle>[<val/./context>][<val//key>]
+object_op_update "begin an update op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
+object_op_destroy "begin a destroy op on a persistent instance" <val//handle>[<val/./context>][<val//key>][<val/=/ver_info>]
+object_op_apply "apply op for a persistent instance" <val//handle>[<val/./context>]
+object_op_cancel "cancel op for a persistent instance" <val//handle>[<val/./context>]
+object_review_begin "begin review on a persistent instance" <val//handle>[<val/./context>][<val//key>]
+object_review_finish "finish review on a persistent instance" <val//handle>[<val/./context>]
+object_iterate_forwards "iterate forwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
+object_iterate_backwards "iterate backwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
+object_iterate_next "next iteration on a persistent instance" <val//handle>[<val/./context>]
+object_iterate_stop "stop iteration on a persistent instance" <val//handle>[<val/./context>]
+perform_fetch "fetch persistent instances" <val//module><val//mclass>[<opt/-rev/reverse>][<val/-u=/uid>][<val/-tz=/tz_abbr>][<list/-f=/filters>][<list/-p=/perms>][<val/-s=/security_info>][<val/-t=/search_text>][<val/-q=/search_query>][<oval//key_info>][<val/#/limit>][<list/-v=/set_values>][<list//fields>][<opt/-min/minimal>|{<opt/-pdf/create_pdf><val//format_file><val//output_file>[<val//title_name>]}]
+perform_create "create a new persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<oval//key>[<list//field_values>]
+perform_update "update an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<val//key>[<val/=/ver_info>]<list//field_values>[<val/-x=/method_name>][<list//check_values>]
+perform_destroy "destroy an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>][<opt/-q/quiet>]<val//key>[<val/=/ver_info>]
+perform_execute "execute a method for a persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>][<list/-v=/set_values>]<list//keys>[<list/=/vers>]<val//method_name>[<val//args>]
+perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<val//filename>[<opt/-destroy/destroy_records>|<list/-export=/export_fields>[<val/-t=/search_text>][<val/-q=/search_query>]|<list//fixed_field_values>]
+perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
+perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
+session_list "list active sessions"
+session_kill "kill one or more sessions" {<opt/*/all>|<list//sess_ids>}[<val//seconds>]
+session_lock "capture/release one or more sessions" {<opt/-capture/capture>|<opt/-release/release>}<opt/*/all>|<list//sess_ids>
+session_timeout "get/set server session timeout" [<val//seconds>]
+session_variable "get/set a session variable" <val//var_name>[<oval//new_value>]
+storage_info "name and other information about the currently linked storage"
+storage_init "link to an existing or newly created storage" [<opt/-admin/admin>][<val/-prefix=/prefix>]<val//name>
+storage_term "unlink from the currently linked storage"
+storage_create "link to a newly created storage" [<opt/-admin/admin>][<val/-prefix=/prefix>]<val//name>
+storage_attach "link to an existing storage" [<opt/-admin/admin>]<val//name>
+storage_backup "create a storage backup" [<opt/-trunc/truncate>]<val//name>
+storage_restore "perform storage restore" [<val/-trace=/trace_info>][<opt/-rebuild/rebuild>|<opt/-partial/partial>][<opt/-quicker/quicker>][<val/-prefix=/prefix>]<val//name>
+storage_web_root "get/set web root path of currently linked storage" [<opt/-expand/expand>][<oval//new_root>]
+storage_log_slice "slice a storage log into individual module logs" <val//name>[<list//modules>]
+storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
+storage_dump_locks "dump storage lock information"
+storage_trans_start "start a transaction in the current storage"
+storage_trans_commit "commit a transaction in the current storage"
+storage_trans_rollback "rollback a transaction in the current storage"
+system_variable "get/set a system variable" <val//var_name>[<oval//new_value>]
+trace "get/set trace flags" [<val//flags>]
+trace_flags "view available trace flags"
+encrypt "encrypt a password" <val//password>
+sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_abbr>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
+schedule "display autoscript schedule"
+timezone "display timezone abbreviation"
+checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
+runscript "run an external script or program" [<val//script_name>]
+utc_offset "get UTC offset for a timezone" <val//tz_abbr><val//local_time>
+wait "wait for a number of milliseconds" [<val/-u=/uid>]<val//milliseconds>
+test "test command for prototyping"
+quit "terminate session"

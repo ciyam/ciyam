@@ -1,0 +1,9007 @@
+// Copyright (c) 2008
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
+#  include <fstream>
+#  include <iostream>
+#  include <algorithm>
+#  include <stdexcept>
+#endif
+
+#define CAT_BASE_LIB
+#define MODULE_META_IMPL
+
+// [<start macros>]
+// [<finish macros>]
+
+#include "Meta_Specification_Type.h"
+
+#include "Meta_Specification.h"
+#include "Meta_Specification_Type.h"
+
+#include "cat_base.h"
+#include "class_domains.h"
+#include "module_strings.h"
+#include "class_utilities.h"
+#include "command_handler.h"
+#include "module_interface.h"
+
+// [<start includes>]
+// [<finish includes>]
+
+using namespace std;
+
+// [<start namespaces>]
+// [<finish namespaces>]
+
+template< > inline string to_string( const Meta_Specification_Type& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Specification_Type& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
+}
+
+inline int system( const string& cmd ) { return exec_system( cmd ); }
+
+namespace
+{
+
+#include "Meta_Specification_Type.cmh"
+
+const int32_t c_version = 1;
+
+const char* const c_okay = "okay";
+
+const char* const c_field_id_Allow_Child_Relationship = "114191";
+const char* const c_field_id_Allow_FK_Source_Field_Choice = "114123";
+const char* const c_field_id_Allow_FK_Test_Field_Choice = "114142";
+const char* const c_field_id_Allow_Field = "114124";
+const char* const c_field_id_Allow_Options = "114117";
+const char* const c_field_id_Allow_Other_Class = "114192";
+const char* const c_field_id_Allow_Other_Field = "114174";
+const char* const c_field_id_Allow_Other_Field_2 = "114183";
+const char* const c_field_id_Allow_Permission = "114136";
+const char* const c_field_id_Allow_Procedure = "114171";
+const char* const c_field_id_Allow_Source_Child = "114121";
+const char* const c_field_id_Allow_Source_Child_2 = "114176";
+const char* const c_field_id_Allow_Source_Class = "114172";
+const char* const c_field_id_Allow_Source_Field = "114128";
+const char* const c_field_id_Allow_Source_Grandchild = "114178";
+const char* const c_field_id_Allow_Source_Parent = "114125";
+const char* const c_field_id_Allow_Test_Field = "114126";
+const char* const c_field_id_Allow_Test_Value = "114115";
+const char* const c_field_id_Allow_Value = "114135";
+const char* const c_field_id_Child_Prefix = "114164";
+const char* const c_field_id_Child_Rel_Grandparent_Match = "114157";
+const char* const c_field_id_Child_Rel_Parent_Match = "114156";
+const char* const c_field_id_Child_Relationship_Class_Match = "114155";
+const char* const c_field_id_Child_Specification_Type = "301710";
+const char* const c_field_id_Default_Child_Vars = "114165";
+const char* const c_field_id_Field_type = "114111";
+const char* const c_field_id_Has_Next_Specification_Info = "114149";
+const char* const c_field_id_Is_Child_Only = "114151";
+const char* const c_field_id_Is_Required_For_UI_Gen = "114163";
+const char* const c_field_id_Is_System = "114147";
+const char* const c_field_id_Name = "114101";
+const char* const c_field_id_Needs_Child_Relationship = "114138";
+const char* const c_field_id_Needs_Class = "114104";
+const char* const c_field_id_Needs_Enum = "114108";
+const char* const c_field_id_Needs_Enum_Item = "114109";
+const char* const c_field_id_Needs_Enum_Item_2 = "114182";
+const char* const c_field_id_Needs_Enum_Item_3 = "114185";
+const char* const c_field_id_Needs_Enum_Item_4 = "114186";
+const char* const c_field_id_Needs_Enum_Item_5 = "114189";
+const char* const c_field_id_Needs_Field = "114105";
+const char* const c_field_id_Needs_Modifier = "114107";
+const char* const c_field_id_Needs_Other_Class = "114193";
+const char* const c_field_id_Needs_Other_Field = "114175";
+const char* const c_field_id_Needs_Other_Field_2 = "114184";
+const char* const c_field_id_Needs_Other_Procedure = "114187";
+const char* const c_field_id_Needs_Other_Procedure_2 = "114188";
+const char* const c_field_id_Needs_Permission = "114180";
+const char* const c_field_id_Needs_Procedure = "114106";
+const char* const c_field_id_Needs_Procedure_Arg = "114132";
+const char* const c_field_id_Needs_Procedure_Arg_2 = "114194";
+const char* const c_field_id_Needs_Procedure_Arg_3 = "114195";
+const char* const c_field_id_Needs_Source_Child = "114122";
+const char* const c_field_id_Needs_Source_Child_2 = "114177";
+const char* const c_field_id_Needs_Source_Field = "114113";
+const char* const c_field_id_Needs_Source_Field_Or_Child = "114154";
+const char* const c_field_id_Needs_Source_Parent = "114112";
+const char* const c_field_id_Needs_Test_Field = "114114";
+const char* const c_field_id_Needs_Test_Value = "114116";
+const char* const c_field_id_Needs_Value = "114110";
+const char* const c_field_id_Next_Child_Specification_Type = "301720";
+const char* const c_field_id_Next_Protect_Child_Rel = "114169";
+const char* const c_field_id_Next_Protect_Procedure = "114161";
+const char* const c_field_id_Next_Protect_Source_Parent = "114153";
+const char* const c_field_id_Next_Specification_Actions = "114150";
+const char* const c_field_id_Notes = "114120";
+const char* const c_field_id_Parent_Specification_Type = "301700";
+const char* const c_field_id_Procedure_Arg_primitive = "114133";
+const char* const c_field_id_Procedure_Arg_type = "114134";
+const char* const c_field_id_Protect_Child_Rel_From_Update = "114145";
+const char* const c_field_id_Protect_Class_From_Edit = "114146";
+const char* const c_field_id_Protect_Class_From_Update = "114141";
+const char* const c_field_id_Protect_Procedure_From_Edit = "114160";
+const char* const c_field_id_Protect_Source_Parent = "114137";
+const char* const c_field_id_Set_Field_To_Source_Field_Or_Child = "114179";
+const char* const c_field_id_Source_Field_Needs_Test_Field = "114129";
+const char* const c_field_id_Source_Field_Type_Match = "114118";
+const char* const c_field_id_Source_Parent_type = "114119";
+const char* const c_field_id_Source_type = "114130";
+const char* const c_field_id_Specification_Actions = "114140";
+const char* const c_field_id_Specification_Name = "114102";
+const char* const c_field_id_Specification_Object = "114103";
+const char* const c_field_id_Specification_Strings = "114166";
+const char* const c_field_id_Specification_Vars = "114158";
+const char* const c_field_id_Test_Field_Type_Match = "114127";
+const char* const c_field_id_Test_Field_type = "114131";
+const char* const c_field_id_Use_Class_As_Source_Parent_Class = "114181";
+const char* const c_field_id_Use_Field_Enum = "114162";
+const char* const c_field_id_Use_Parent_Child_Rel_As_Source_Parent = "114168";
+const char* const c_field_id_Use_Parent_Child_Rel_For_Class = "114148";
+const char* const c_field_id_Use_Parent_Class = "114139";
+const char* const c_field_id_Use_Parent_Field_For_Class = "114167";
+const char* const c_field_id_Use_Parent_Other_Class_For_Class = "114196";
+const char* const c_field_id_Use_Parent_Procedure = "114159";
+const char* const c_field_id_Use_Parent_Source_Class = "114173";
+const char* const c_field_id_Use_Parent_Source_Field_For_Class = "114190";
+const char* const c_field_id_Use_Parent_Source_Parent = "114144";
+const char* const c_field_id_Use_Parent_Source_Parent_For_Class = "114152";
+const char* const c_field_id_View_Id = "114170";
+
+const char* const c_field_name_Allow_Child_Relationship = "Allow_Child_Relationship";
+const char* const c_field_name_Allow_FK_Source_Field_Choice = "Allow_FK_Source_Field_Choice";
+const char* const c_field_name_Allow_FK_Test_Field_Choice = "Allow_FK_Test_Field_Choice";
+const char* const c_field_name_Allow_Field = "Allow_Field";
+const char* const c_field_name_Allow_Options = "Allow_Options";
+const char* const c_field_name_Allow_Other_Class = "Allow_Other_Class";
+const char* const c_field_name_Allow_Other_Field = "Allow_Other_Field";
+const char* const c_field_name_Allow_Other_Field_2 = "Allow_Other_Field_2";
+const char* const c_field_name_Allow_Permission = "Allow_Permission";
+const char* const c_field_name_Allow_Procedure = "Allow_Procedure";
+const char* const c_field_name_Allow_Source_Child = "Allow_Source_Child";
+const char* const c_field_name_Allow_Source_Child_2 = "Allow_Source_Child_2";
+const char* const c_field_name_Allow_Source_Class = "Allow_Source_Class";
+const char* const c_field_name_Allow_Source_Field = "Allow_Source_Field";
+const char* const c_field_name_Allow_Source_Grandchild = "Allow_Source_Grandchild";
+const char* const c_field_name_Allow_Source_Parent = "Allow_Source_Parent";
+const char* const c_field_name_Allow_Test_Field = "Allow_Test_Field";
+const char* const c_field_name_Allow_Test_Value = "Allow_Test_Value";
+const char* const c_field_name_Allow_Value = "Allow_Value";
+const char* const c_field_name_Child_Prefix = "Child_Prefix";
+const char* const c_field_name_Child_Rel_Grandparent_Match = "Child_Rel_Grandparent_Match";
+const char* const c_field_name_Child_Rel_Parent_Match = "Child_Rel_Parent_Match";
+const char* const c_field_name_Child_Relationship_Class_Match = "Child_Relationship_Class_Match";
+const char* const c_field_name_Child_Specification_Type = "Child_Specification_Type";
+const char* const c_field_name_Default_Child_Vars = "Default_Child_Vars";
+const char* const c_field_name_Field_type = "Field_type";
+const char* const c_field_name_Has_Next_Specification_Info = "Has_Next_Specification_Info";
+const char* const c_field_name_Is_Child_Only = "Is_Child_Only";
+const char* const c_field_name_Is_Required_For_UI_Gen = "Is_Required_For_UI_Gen";
+const char* const c_field_name_Is_System = "Is_System";
+const char* const c_field_name_Name = "Name";
+const char* const c_field_name_Needs_Child_Relationship = "Needs_Child_Relationship";
+const char* const c_field_name_Needs_Class = "Needs_Class";
+const char* const c_field_name_Needs_Enum = "Needs_Enum";
+const char* const c_field_name_Needs_Enum_Item = "Needs_Enum_Item";
+const char* const c_field_name_Needs_Enum_Item_2 = "Needs_Enum_Item_2";
+const char* const c_field_name_Needs_Enum_Item_3 = "Needs_Enum_Item_3";
+const char* const c_field_name_Needs_Enum_Item_4 = "Needs_Enum_Item_4";
+const char* const c_field_name_Needs_Enum_Item_5 = "Needs_Enum_Item_5";
+const char* const c_field_name_Needs_Field = "Needs_Field";
+const char* const c_field_name_Needs_Modifier = "Needs_Modifier";
+const char* const c_field_name_Needs_Other_Class = "Needs_Other_Class";
+const char* const c_field_name_Needs_Other_Field = "Needs_Other_Field";
+const char* const c_field_name_Needs_Other_Field_2 = "Needs_Other_Field_2";
+const char* const c_field_name_Needs_Other_Procedure = "Needs_Other_Procedure";
+const char* const c_field_name_Needs_Other_Procedure_2 = "Needs_Other_Procedure_2";
+const char* const c_field_name_Needs_Permission = "Needs_Permission";
+const char* const c_field_name_Needs_Procedure = "Needs_Procedure";
+const char* const c_field_name_Needs_Procedure_Arg = "Needs_Procedure_Arg";
+const char* const c_field_name_Needs_Procedure_Arg_2 = "Needs_Procedure_Arg_2";
+const char* const c_field_name_Needs_Procedure_Arg_3 = "Needs_Procedure_Arg_3";
+const char* const c_field_name_Needs_Source_Child = "Needs_Source_Child";
+const char* const c_field_name_Needs_Source_Child_2 = "Needs_Source_Child_2";
+const char* const c_field_name_Needs_Source_Field = "Needs_Source_Field";
+const char* const c_field_name_Needs_Source_Field_Or_Child = "Needs_Source_Field_Or_Child";
+const char* const c_field_name_Needs_Source_Parent = "Needs_Source_Parent";
+const char* const c_field_name_Needs_Test_Field = "Needs_Test_Field";
+const char* const c_field_name_Needs_Test_Value = "Needs_Test_Value";
+const char* const c_field_name_Needs_Value = "Needs_Value";
+const char* const c_field_name_Next_Child_Specification_Type = "Next_Child_Specification_Type";
+const char* const c_field_name_Next_Protect_Child_Rel = "Next_Protect_Child_Rel";
+const char* const c_field_name_Next_Protect_Procedure = "Next_Protect_Procedure";
+const char* const c_field_name_Next_Protect_Source_Parent = "Next_Protect_Source_Parent";
+const char* const c_field_name_Next_Specification_Actions = "Next_Specification_Actions";
+const char* const c_field_name_Notes = "Notes";
+const char* const c_field_name_Parent_Specification_Type = "Parent_Specification_Type";
+const char* const c_field_name_Procedure_Arg_primitive = "Procedure_Arg_primitive";
+const char* const c_field_name_Procedure_Arg_type = "Procedure_Arg_type";
+const char* const c_field_name_Protect_Child_Rel_From_Update = "Protect_Child_Rel_From_Update";
+const char* const c_field_name_Protect_Class_From_Edit = "Protect_Class_From_Edit";
+const char* const c_field_name_Protect_Class_From_Update = "Protect_Class_From_Update";
+const char* const c_field_name_Protect_Procedure_From_Edit = "Protect_Procedure_From_Edit";
+const char* const c_field_name_Protect_Source_Parent = "Protect_Source_Parent";
+const char* const c_field_name_Set_Field_To_Source_Field_Or_Child = "Set_Field_To_Source_Field_Or_Child";
+const char* const c_field_name_Source_Field_Needs_Test_Field = "Source_Field_Needs_Test_Field";
+const char* const c_field_name_Source_Field_Type_Match = "Source_Field_Type_Match";
+const char* const c_field_name_Source_Parent_type = "Source_Parent_type";
+const char* const c_field_name_Source_type = "Source_type";
+const char* const c_field_name_Specification_Actions = "Specification_Actions";
+const char* const c_field_name_Specification_Name = "Specification_Name";
+const char* const c_field_name_Specification_Object = "Specification_Object";
+const char* const c_field_name_Specification_Strings = "Specification_Strings";
+const char* const c_field_name_Specification_Vars = "Specification_Vars";
+const char* const c_field_name_Test_Field_Type_Match = "Test_Field_Type_Match";
+const char* const c_field_name_Test_Field_type = "Test_Field_type";
+const char* const c_field_name_Use_Class_As_Source_Parent_Class = "Use_Class_As_Source_Parent_Class";
+const char* const c_field_name_Use_Field_Enum = "Use_Field_Enum";
+const char* const c_field_name_Use_Parent_Child_Rel_As_Source_Parent = "Use_Parent_Child_Rel_As_Source_Parent";
+const char* const c_field_name_Use_Parent_Child_Rel_For_Class = "Use_Parent_Child_Rel_For_Class";
+const char* const c_field_name_Use_Parent_Class = "Use_Parent_Class";
+const char* const c_field_name_Use_Parent_Field_For_Class = "Use_Parent_Field_For_Class";
+const char* const c_field_name_Use_Parent_Other_Class_For_Class = "Use_Parent_Other_Class_For_Class";
+const char* const c_field_name_Use_Parent_Procedure = "Use_Parent_Procedure";
+const char* const c_field_name_Use_Parent_Source_Class = "Use_Parent_Source_Class";
+const char* const c_field_name_Use_Parent_Source_Field_For_Class = "Use_Parent_Source_Field_For_Class";
+const char* const c_field_name_Use_Parent_Source_Parent = "Use_Parent_Source_Parent";
+const char* const c_field_name_Use_Parent_Source_Parent_For_Class = "Use_Parent_Source_Parent_For_Class";
+const char* const c_field_name_View_Id = "View_Id";
+
+const char* const c_field_display_name_Allow_Child_Relationship = "field_specification_type_allow_child_relationship";
+const char* const c_field_display_name_Allow_FK_Source_Field_Choice = "field_specification_type_allow_fk_source_field_choice";
+const char* const c_field_display_name_Allow_FK_Test_Field_Choice = "field_specification_type_allow_fk_test_field_choice";
+const char* const c_field_display_name_Allow_Field = "field_specification_type_allow_field";
+const char* const c_field_display_name_Allow_Options = "field_specification_type_allow_options";
+const char* const c_field_display_name_Allow_Other_Class = "field_specification_type_allow_other_class";
+const char* const c_field_display_name_Allow_Other_Field = "field_specification_type_allow_other_field";
+const char* const c_field_display_name_Allow_Other_Field_2 = "field_specification_type_allow_other_field_2";
+const char* const c_field_display_name_Allow_Permission = "field_specification_type_allow_permission";
+const char* const c_field_display_name_Allow_Procedure = "field_specification_type_allow_procedure";
+const char* const c_field_display_name_Allow_Source_Child = "field_specification_type_allow_source_child";
+const char* const c_field_display_name_Allow_Source_Child_2 = "field_specification_type_allow_source_child_2";
+const char* const c_field_display_name_Allow_Source_Class = "field_specification_type_allow_source_class";
+const char* const c_field_display_name_Allow_Source_Field = "field_specification_type_allow_source_field";
+const char* const c_field_display_name_Allow_Source_Grandchild = "field_specification_type_allow_source_grandchild";
+const char* const c_field_display_name_Allow_Source_Parent = "field_specification_type_allow_source_parent";
+const char* const c_field_display_name_Allow_Test_Field = "field_specification_type_allow_test_field";
+const char* const c_field_display_name_Allow_Test_Value = "field_specification_type_allow_test_value";
+const char* const c_field_display_name_Allow_Value = "field_specification_type_allow_value";
+const char* const c_field_display_name_Child_Prefix = "field_specification_type_child_prefix";
+const char* const c_field_display_name_Child_Rel_Grandparent_Match = "field_specification_type_child_rel_grandparent_match";
+const char* const c_field_display_name_Child_Rel_Parent_Match = "field_specification_type_child_rel_parent_match";
+const char* const c_field_display_name_Child_Relationship_Class_Match = "field_specification_type_child_relationship_class_match";
+const char* const c_field_display_name_Child_Specification_Type = "field_specification_type_child_specification_type";
+const char* const c_field_display_name_Default_Child_Vars = "field_specification_type_default_child_vars";
+const char* const c_field_display_name_Field_type = "field_specification_type_field_type";
+const char* const c_field_display_name_Has_Next_Specification_Info = "field_specification_type_has_next_specification_info";
+const char* const c_field_display_name_Is_Child_Only = "field_specification_type_is_child_only";
+const char* const c_field_display_name_Is_Required_For_UI_Gen = "field_specification_type_is_required_for_ui_gen";
+const char* const c_field_display_name_Is_System = "field_specification_type_is_system";
+const char* const c_field_display_name_Name = "field_specification_type_name";
+const char* const c_field_display_name_Needs_Child_Relationship = "field_specification_type_needs_child_relationship";
+const char* const c_field_display_name_Needs_Class = "field_specification_type_needs_class";
+const char* const c_field_display_name_Needs_Enum = "field_specification_type_needs_enum";
+const char* const c_field_display_name_Needs_Enum_Item = "field_specification_type_needs_enum_item";
+const char* const c_field_display_name_Needs_Enum_Item_2 = "field_specification_type_needs_enum_item_2";
+const char* const c_field_display_name_Needs_Enum_Item_3 = "field_specification_type_needs_enum_item_3";
+const char* const c_field_display_name_Needs_Enum_Item_4 = "field_specification_type_needs_enum_item_4";
+const char* const c_field_display_name_Needs_Enum_Item_5 = "field_specification_type_needs_enum_item_5";
+const char* const c_field_display_name_Needs_Field = "field_specification_type_needs_field";
+const char* const c_field_display_name_Needs_Modifier = "field_specification_type_needs_modifier";
+const char* const c_field_display_name_Needs_Other_Class = "field_specification_type_needs_other_class";
+const char* const c_field_display_name_Needs_Other_Field = "field_specification_type_needs_other_field";
+const char* const c_field_display_name_Needs_Other_Field_2 = "field_specification_type_needs_other_field_2";
+const char* const c_field_display_name_Needs_Other_Procedure = "field_specification_type_needs_other_procedure";
+const char* const c_field_display_name_Needs_Other_Procedure_2 = "field_specification_type_needs_other_procedure_2";
+const char* const c_field_display_name_Needs_Permission = "field_specification_type_needs_permission";
+const char* const c_field_display_name_Needs_Procedure = "field_specification_type_needs_procedure";
+const char* const c_field_display_name_Needs_Procedure_Arg = "field_specification_type_needs_procedure_arg";
+const char* const c_field_display_name_Needs_Procedure_Arg_2 = "field_specification_type_needs_procedure_arg_2";
+const char* const c_field_display_name_Needs_Procedure_Arg_3 = "field_specification_type_needs_procedure_arg_3";
+const char* const c_field_display_name_Needs_Source_Child = "field_specification_type_needs_source_child";
+const char* const c_field_display_name_Needs_Source_Child_2 = "field_specification_type_needs_source_child_2";
+const char* const c_field_display_name_Needs_Source_Field = "field_specification_type_needs_source_field";
+const char* const c_field_display_name_Needs_Source_Field_Or_Child = "field_specification_type_needs_source_field_or_child";
+const char* const c_field_display_name_Needs_Source_Parent = "field_specification_type_needs_source_parent";
+const char* const c_field_display_name_Needs_Test_Field = "field_specification_type_needs_test_field";
+const char* const c_field_display_name_Needs_Test_Value = "field_specification_type_needs_test_value";
+const char* const c_field_display_name_Needs_Value = "field_specification_type_needs_value";
+const char* const c_field_display_name_Next_Child_Specification_Type = "field_specification_type_next_child_specification_type";
+const char* const c_field_display_name_Next_Protect_Child_Rel = "field_specification_type_next_protect_child_rel";
+const char* const c_field_display_name_Next_Protect_Procedure = "field_specification_type_next_protect_procedure";
+const char* const c_field_display_name_Next_Protect_Source_Parent = "field_specification_type_next_protect_source_parent";
+const char* const c_field_display_name_Next_Specification_Actions = "field_specification_type_next_specification_actions";
+const char* const c_field_display_name_Notes = "field_specification_type_notes";
+const char* const c_field_display_name_Parent_Specification_Type = "field_specification_type_parent_specification_type";
+const char* const c_field_display_name_Procedure_Arg_primitive = "field_specification_type_procedure_arg_primitive";
+const char* const c_field_display_name_Procedure_Arg_type = "field_specification_type_procedure_arg_type";
+const char* const c_field_display_name_Protect_Child_Rel_From_Update = "field_specification_type_protect_child_rel_from_update";
+const char* const c_field_display_name_Protect_Class_From_Edit = "field_specification_type_protect_class_from_edit";
+const char* const c_field_display_name_Protect_Class_From_Update = "field_specification_type_protect_class_from_update";
+const char* const c_field_display_name_Protect_Procedure_From_Edit = "field_specification_type_protect_procedure_from_edit";
+const char* const c_field_display_name_Protect_Source_Parent = "field_specification_type_protect_source_parent";
+const char* const c_field_display_name_Set_Field_To_Source_Field_Or_Child = "field_specification_type_set_field_to_source_field_or_child";
+const char* const c_field_display_name_Source_Field_Needs_Test_Field = "field_specification_type_source_field_needs_test_field";
+const char* const c_field_display_name_Source_Field_Type_Match = "field_specification_type_source_field_type_match";
+const char* const c_field_display_name_Source_Parent_type = "field_specification_type_source_parent_type";
+const char* const c_field_display_name_Source_type = "field_specification_type_source_type";
+const char* const c_field_display_name_Specification_Actions = "field_specification_type_specification_actions";
+const char* const c_field_display_name_Specification_Name = "field_specification_type_specification_name";
+const char* const c_field_display_name_Specification_Object = "field_specification_type_specification_object";
+const char* const c_field_display_name_Specification_Strings = "field_specification_type_specification_strings";
+const char* const c_field_display_name_Specification_Vars = "field_specification_type_specification_vars";
+const char* const c_field_display_name_Test_Field_Type_Match = "field_specification_type_test_field_type_match";
+const char* const c_field_display_name_Test_Field_type = "field_specification_type_test_field_type";
+const char* const c_field_display_name_Use_Class_As_Source_Parent_Class = "field_specification_type_use_class_as_source_parent_class";
+const char* const c_field_display_name_Use_Field_Enum = "field_specification_type_use_field_enum";
+const char* const c_field_display_name_Use_Parent_Child_Rel_As_Source_Parent = "field_specification_type_use_parent_child_rel_as_source_parent";
+const char* const c_field_display_name_Use_Parent_Child_Rel_For_Class = "field_specification_type_use_parent_child_rel_for_class";
+const char* const c_field_display_name_Use_Parent_Class = "field_specification_type_use_parent_class";
+const char* const c_field_display_name_Use_Parent_Field_For_Class = "field_specification_type_use_parent_field_for_class";
+const char* const c_field_display_name_Use_Parent_Other_Class_For_Class = "field_specification_type_use_parent_other_class_for_class";
+const char* const c_field_display_name_Use_Parent_Procedure = "field_specification_type_use_parent_procedure";
+const char* const c_field_display_name_Use_Parent_Source_Class = "field_specification_type_use_parent_source_class";
+const char* const c_field_display_name_Use_Parent_Source_Field_For_Class = "field_specification_type_use_parent_source_field_for_class";
+const char* const c_field_display_name_Use_Parent_Source_Parent = "field_specification_type_use_parent_source_parent";
+const char* const c_field_display_name_Use_Parent_Source_Parent_For_Class = "field_specification_type_use_parent_source_parent_for_class";
+const char* const c_field_display_name_View_Id = "field_specification_type_view_id";
+
+const int c_num_fields = 98;
+
+const char* const c_all_sorted_field_ids[ ] =
+{
+   "114101",
+   "114102",
+   "114103",
+   "114104",
+   "114105",
+   "114106",
+   "114107",
+   "114108",
+   "114109",
+   "114110",
+   "114111",
+   "114112",
+   "114113",
+   "114114",
+   "114115",
+   "114116",
+   "114117",
+   "114118",
+   "114119",
+   "114120",
+   "114121",
+   "114122",
+   "114123",
+   "114124",
+   "114125",
+   "114126",
+   "114127",
+   "114128",
+   "114129",
+   "114130",
+   "114131",
+   "114132",
+   "114133",
+   "114134",
+   "114135",
+   "114136",
+   "114137",
+   "114138",
+   "114139",
+   "114140",
+   "114141",
+   "114142",
+   "114144",
+   "114145",
+   "114146",
+   "114147",
+   "114148",
+   "114149",
+   "114150",
+   "114151",
+   "114152",
+   "114153",
+   "114154",
+   "114155",
+   "114156",
+   "114157",
+   "114158",
+   "114159",
+   "114160",
+   "114161",
+   "114162",
+   "114163",
+   "114164",
+   "114165",
+   "114166",
+   "114167",
+   "114168",
+   "114169",
+   "114170",
+   "114171",
+   "114172",
+   "114173",
+   "114174",
+   "114175",
+   "114176",
+   "114177",
+   "114178",
+   "114179",
+   "114180",
+   "114181",
+   "114182",
+   "114183",
+   "114184",
+   "114185",
+   "114186",
+   "114187",
+   "114188",
+   "114189",
+   "114190",
+   "114191",
+   "114192",
+   "114193",
+   "114194",
+   "114195",
+   "114196",
+   "301700",
+   "301710",
+   "301720"
+};
+
+const char* const c_all_sorted_field_names[ ] =
+{
+   "Allow_Child_Relationship",
+   "Allow_FK_Source_Field_Choice",
+   "Allow_FK_Test_Field_Choice",
+   "Allow_Field",
+   "Allow_Options",
+   "Allow_Other_Class",
+   "Allow_Other_Field",
+   "Allow_Other_Field_2",
+   "Allow_Permission",
+   "Allow_Procedure",
+   "Allow_Source_Child",
+   "Allow_Source_Child_2",
+   "Allow_Source_Class",
+   "Allow_Source_Field",
+   "Allow_Source_Grandchild",
+   "Allow_Source_Parent",
+   "Allow_Test_Field",
+   "Allow_Test_Value",
+   "Allow_Value",
+   "Child_Prefix",
+   "Child_Rel_Grandparent_Match",
+   "Child_Rel_Parent_Match",
+   "Child_Relationship_Class_Match",
+   "Child_Specification_Type",
+   "Default_Child_Vars",
+   "Field_type",
+   "Has_Next_Specification_Info",
+   "Is_Child_Only",
+   "Is_Required_For_UI_Gen",
+   "Is_System",
+   "Name",
+   "Needs_Child_Relationship",
+   "Needs_Class",
+   "Needs_Enum",
+   "Needs_Enum_Item",
+   "Needs_Enum_Item_2",
+   "Needs_Enum_Item_3",
+   "Needs_Enum_Item_4",
+   "Needs_Enum_Item_5",
+   "Needs_Field",
+   "Needs_Modifier",
+   "Needs_Other_Class",
+   "Needs_Other_Field",
+   "Needs_Other_Field_2",
+   "Needs_Other_Procedure",
+   "Needs_Other_Procedure_2",
+   "Needs_Permission",
+   "Needs_Procedure",
+   "Needs_Procedure_Arg",
+   "Needs_Procedure_Arg_2",
+   "Needs_Procedure_Arg_3",
+   "Needs_Source_Child",
+   "Needs_Source_Child_2",
+   "Needs_Source_Field",
+   "Needs_Source_Field_Or_Child",
+   "Needs_Source_Parent",
+   "Needs_Test_Field",
+   "Needs_Test_Value",
+   "Needs_Value",
+   "Next_Child_Specification_Type",
+   "Next_Protect_Child_Rel",
+   "Next_Protect_Procedure",
+   "Next_Protect_Source_Parent",
+   "Next_Specification_Actions",
+   "Notes",
+   "Parent_Specification_Type",
+   "Procedure_Arg_primitive",
+   "Procedure_Arg_type",
+   "Protect_Child_Rel_From_Update",
+   "Protect_Class_From_Edit",
+   "Protect_Class_From_Update",
+   "Protect_Procedure_From_Edit",
+   "Protect_Source_Parent",
+   "Set_Field_To_Source_Field_Or_Child",
+   "Source_Field_Needs_Test_Field",
+   "Source_Field_Type_Match",
+   "Source_Parent_type",
+   "Source_type",
+   "Specification_Actions",
+   "Specification_Name",
+   "Specification_Object",
+   "Specification_Strings",
+   "Specification_Vars",
+   "Test_Field_Type_Match",
+   "Test_Field_type",
+   "Use_Class_As_Source_Parent_Class",
+   "Use_Field_Enum",
+   "Use_Parent_Child_Rel_As_Source_Parent",
+   "Use_Parent_Child_Rel_For_Class",
+   "Use_Parent_Class",
+   "Use_Parent_Field_For_Class",
+   "Use_Parent_Other_Class_For_Class",
+   "Use_Parent_Procedure",
+   "Use_Parent_Source_Class",
+   "Use_Parent_Source_Field_For_Class",
+   "Use_Parent_Source_Parent",
+   "Use_Parent_Source_Parent_For_Class",
+   "View_Id"
+};
+
+inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
+
+inline bool has_field( const string& field )
+{
+   return binary_search( c_all_sorted_field_ids, c_all_sorted_field_ids + c_num_fields, field.c_str( ), compare )
+    || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
+}
+
+const int c_num_transient_fields = 0;
+
+bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
+
+const char* const c_procedure_id_Is_Valid_Field_Type = "114410";
+
+domain_string_max_size< 30 > g_Child_Prefix_domain;
+domain_string_max_size< 100 > g_Name_domain;
+domain_string_max_size< 150 > g_Specification_Name_domain;
+domain_string_max_size< 100 > g_Specification_Object_domain;
+domain_string_max_size< 10 > g_View_Id_domain;
+
+set< string > g_derivations;
+
+typedef map< string, Meta_Specification_Type* > external_aliases_container;
+typedef external_aliases_container::const_iterator external_aliases_const_iterator;
+typedef external_aliases_container::value_type external_aliases_value_type;
+
+typedef map< size_t, Meta_Specification_Type* > external_aliases_lookup_container;
+typedef external_aliases_lookup_container::const_iterator external_aliases_lookup_const_iterator;
+
+external_aliases_container g_external_aliases;
+external_aliases_lookup_container g_external_aliases_lookup;
+
+bool gv_default_Allow_Child_Relationship = bool( 0 );
+bool gv_default_Allow_FK_Source_Field_Choice = bool( 0 );
+bool gv_default_Allow_FK_Test_Field_Choice = bool( 0 );
+bool gv_default_Allow_Field = bool( 0 );
+bool gv_default_Allow_Options = bool( 0 );
+bool gv_default_Allow_Other_Class = bool( 0 );
+bool gv_default_Allow_Other_Field = bool( 0 );
+bool gv_default_Allow_Other_Field_2 = bool( 0 );
+bool gv_default_Allow_Permission = bool( 0 );
+bool gv_default_Allow_Procedure = bool( 0 );
+bool gv_default_Allow_Source_Child = bool( 0 );
+bool gv_default_Allow_Source_Child_2 = bool( 0 );
+bool gv_default_Allow_Source_Class = bool( 0 );
+bool gv_default_Allow_Source_Field = bool( 0 );
+bool gv_default_Allow_Source_Grandchild = bool( 0 );
+bool gv_default_Allow_Source_Parent = bool( 0 );
+bool gv_default_Allow_Test_Field = bool( 0 );
+bool gv_default_Allow_Test_Value = bool( 0 );
+bool gv_default_Allow_Value = bool( 0 );
+string gv_default_Child_Prefix = string( );
+bool gv_default_Child_Rel_Grandparent_Match = bool( 0 );
+bool gv_default_Child_Rel_Parent_Match = bool( 0 );
+bool gv_default_Child_Relationship_Class_Match = bool( 0 );
+string gv_default_Default_Child_Vars = string( );
+int gv_default_Field_type = int( 99 );
+bool gv_default_Has_Next_Specification_Info = bool( 0 );
+bool gv_default_Is_Child_Only = bool( 0 );
+bool gv_default_Is_Required_For_UI_Gen = bool( 0 );
+bool gv_default_Is_System = bool( 0 );
+string gv_default_Name = string( );
+bool gv_default_Needs_Child_Relationship = bool( 0 );
+bool gv_default_Needs_Class = bool( 0 );
+bool gv_default_Needs_Enum = bool( 0 );
+bool gv_default_Needs_Enum_Item = bool( 0 );
+bool gv_default_Needs_Enum_Item_2 = bool( 0 );
+bool gv_default_Needs_Enum_Item_3 = bool( 0 );
+bool gv_default_Needs_Enum_Item_4 = bool( 0 );
+bool gv_default_Needs_Enum_Item_5 = bool( 0 );
+bool gv_default_Needs_Field = bool( 0 );
+bool gv_default_Needs_Modifier = bool( 0 );
+bool gv_default_Needs_Other_Class = bool( 0 );
+bool gv_default_Needs_Other_Field = bool( 0 );
+bool gv_default_Needs_Other_Field_2 = bool( 0 );
+bool gv_default_Needs_Other_Procedure = bool( 0 );
+bool gv_default_Needs_Other_Procedure_2 = bool( 0 );
+bool gv_default_Needs_Permission = bool( 0 );
+bool gv_default_Needs_Procedure = bool( 0 );
+bool gv_default_Needs_Procedure_Arg = bool( 0 );
+bool gv_default_Needs_Procedure_Arg_2 = bool( 0 );
+bool gv_default_Needs_Procedure_Arg_3 = bool( 0 );
+bool gv_default_Needs_Source_Child = bool( 0 );
+bool gv_default_Needs_Source_Child_2 = bool( 0 );
+bool gv_default_Needs_Source_Field = bool( 0 );
+bool gv_default_Needs_Source_Field_Or_Child = bool( 0 );
+bool gv_default_Needs_Source_Parent = bool( 0 );
+bool gv_default_Needs_Test_Field = bool( 0 );
+bool gv_default_Needs_Test_Value = bool( 0 );
+bool gv_default_Needs_Value = bool( 0 );
+bool gv_default_Next_Protect_Child_Rel = bool( 0 );
+bool gv_default_Next_Protect_Procedure = bool( 0 );
+bool gv_default_Next_Protect_Source_Parent = bool( 0 );
+string gv_default_Next_Specification_Actions = string( );
+string gv_default_Notes = string( );
+int gv_default_Procedure_Arg_primitive = int( 99 );
+int gv_default_Procedure_Arg_type = int( 99 );
+bool gv_default_Protect_Child_Rel_From_Update = bool( 0 );
+bool gv_default_Protect_Class_From_Edit = bool( 0 );
+bool gv_default_Protect_Class_From_Update = bool( 0 );
+bool gv_default_Protect_Procedure_From_Edit = bool( 0 );
+bool gv_default_Protect_Source_Parent = bool( 0 );
+bool gv_default_Set_Field_To_Source_Field_Or_Child = bool( 0 );
+bool gv_default_Source_Field_Needs_Test_Field = bool( 0 );
+bool gv_default_Source_Field_Type_Match = bool( 0 );
+int gv_default_Source_Parent_type = int( 50 );
+int gv_default_Source_type = int( 99 );
+string gv_default_Specification_Actions = string( );
+string gv_default_Specification_Name = string( );
+string gv_default_Specification_Object = string( );
+string gv_default_Specification_Strings = string( );
+string gv_default_Specification_Vars = string( );
+bool gv_default_Test_Field_Type_Match = bool( 0 );
+int gv_default_Test_Field_type = int( 99 );
+bool gv_default_Use_Class_As_Source_Parent_Class = bool( 0 );
+bool gv_default_Use_Field_Enum = bool( 0 );
+bool gv_default_Use_Parent_Child_Rel_As_Source_Parent = bool( 0 );
+bool gv_default_Use_Parent_Child_Rel_For_Class = bool( 0 );
+bool gv_default_Use_Parent_Class = bool( 0 );
+bool gv_default_Use_Parent_Field_For_Class = bool( 0 );
+bool gv_default_Use_Parent_Other_Class_For_Class = bool( 0 );
+bool gv_default_Use_Parent_Procedure = bool( 0 );
+bool gv_default_Use_Parent_Source_Class = bool( 0 );
+bool gv_default_Use_Parent_Source_Field_For_Class = bool( 0 );
+bool gv_default_Use_Parent_Source_Parent = bool( 0 );
+bool gv_default_Use_Parent_Source_Parent_For_Class = bool( 0 );
+string gv_default_View_Id = string( );
+
+set< int > g_field_type_enum;
+set< int > g_procedure_arg_primitive_enum;
+set< int > g_procedure_arg_type_enum;
+set< int > g_source_parent_type_enum;
+set< int > g_source_type_enum;
+set< int > g_test_field_type_enum;
+
+const int c_enum_field_type_string( 0 );
+const int c_enum_field_type_datetime( 1 );
+const int c_enum_field_type_date( 2 );
+const int c_enum_field_type_time( 3 );
+const int c_enum_field_type_numeric( 4 );
+const int c_enum_field_type_int( 5 );
+const int c_enum_field_type_bool( 6 );
+const int c_enum_field_type_Any_Text_Type( 20 );
+const int c_enum_field_type_Any_Scalar_Type( 30 );
+const int c_enum_field_type_Any_Math_Type( 31 );
+const int c_enum_field_type_Any_Non_Text_Type( 39 );
+const int c_enum_field_type_Date_Or_Time( 40 );
+const int c_enum_field_type_Calendar_Type( 41 );
+const int c_enum_field_type_Any_Date_Or_Time_Type( 45 );
+const int c_enum_field_type_Any_Primitive( 49 );
+const int c_enum_field_type_Any_Relationship( 50 );
+const int c_enum_field_type_Self_Relationship( 51 );
+const int c_enum_field_type_Non_Self_Relationship( 52 );
+const int c_enum_field_type_Any_Type( 99 );
+
+string get_enum_string_field_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for field_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_field_type_string";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_field_type_datetime";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_field_type_date";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_field_type_time";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_field_type_numeric";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_field_type_int";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_field_type_bool";
+   else if( to_string( val ) == to_string( "20" ) )
+      string_name = "enum_field_type_Any_Text_Type";
+   else if( to_string( val ) == to_string( "30" ) )
+      string_name = "enum_field_type_Any_Scalar_Type";
+   else if( to_string( val ) == to_string( "31" ) )
+      string_name = "enum_field_type_Any_Math_Type";
+   else if( to_string( val ) == to_string( "39" ) )
+      string_name = "enum_field_type_Any_Non_Text_Type";
+   else if( to_string( val ) == to_string( "40" ) )
+      string_name = "enum_field_type_Date_Or_Time";
+   else if( to_string( val ) == to_string( "41" ) )
+      string_name = "enum_field_type_Calendar_Type";
+   else if( to_string( val ) == to_string( "45" ) )
+      string_name = "enum_field_type_Any_Date_Or_Time_Type";
+   else if( to_string( val ) == to_string( "49" ) )
+      string_name = "enum_field_type_Any_Primitive";
+   else if( to_string( val ) == to_string( "50" ) )
+      string_name = "enum_field_type_Any_Relationship";
+   else if( to_string( val ) == to_string( "51" ) )
+      string_name = "enum_field_type_Self_Relationship";
+   else if( to_string( val ) == to_string( "52" ) )
+      string_name = "enum_field_type_Non_Self_Relationship";
+   else if( to_string( val ) == to_string( "99" ) )
+      string_name = "enum_field_type_Any_Type";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for field_type" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_procedure_arg_primitive_string( 0 );
+const int c_enum_procedure_arg_primitive_datetime( 1 );
+const int c_enum_procedure_arg_primitive_date( 2 );
+const int c_enum_procedure_arg_primitive_time( 3 );
+const int c_enum_procedure_arg_primitive_numeric( 4 );
+const int c_enum_procedure_arg_primitive_int( 5 );
+const int c_enum_procedure_arg_primitive_bool( 6 );
+const int c_enum_procedure_arg_primitive_Any_Primitive( 99 );
+
+string get_enum_string_procedure_arg_primitive( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for procedure_arg_primitive" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_procedure_arg_primitive_string";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_procedure_arg_primitive_datetime";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_procedure_arg_primitive_date";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_procedure_arg_primitive_time";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_procedure_arg_primitive_numeric";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_procedure_arg_primitive_int";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_procedure_arg_primitive_bool";
+   else if( to_string( val ) == to_string( "99" ) )
+      string_name = "enum_procedure_arg_primitive_Any_Primitive";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for procedure_arg_primitive" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_procedure_arg_type_in( 0 );
+const int c_enum_procedure_arg_type_out( 1 );
+const int c_enum_procedure_arg_type_Any_Type( 99 );
+
+string get_enum_string_procedure_arg_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for procedure_arg_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_procedure_arg_type_in";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_procedure_arg_type_out";
+   else if( to_string( val ) == to_string( "99" ) )
+      string_name = "enum_procedure_arg_type_Any_Type";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for procedure_arg_type" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_source_parent_type_Any_Relationship( 50 );
+const int c_enum_source_parent_type_Self_Relationship( 51 );
+const int c_enum_source_parent_type_Non_Self_Relationship( 52 );
+
+string get_enum_string_source_parent_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for source_parent_type" );
+   else if( to_string( val ) == to_string( "50" ) )
+      string_name = "enum_source_parent_type_Any_Relationship";
+   else if( to_string( val ) == to_string( "51" ) )
+      string_name = "enum_source_parent_type_Self_Relationship";
+   else if( to_string( val ) == to_string( "52" ) )
+      string_name = "enum_source_parent_type_Non_Self_Relationship";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for source_parent_type" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_source_type_string( 0 );
+const int c_enum_source_type_datetime( 1 );
+const int c_enum_source_type_date( 2 );
+const int c_enum_source_type_time( 3 );
+const int c_enum_source_type_numeric( 4 );
+const int c_enum_source_type_int( 5 );
+const int c_enum_source_type_bool( 6 );
+const int c_enum_source_type_Any_Text_Type( 20 );
+const int c_enum_source_type_Any_Conditional( 35 );
+const int c_enum_source_type_Any_Type( 99 );
+
+string get_enum_string_source_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for source_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_source_type_string";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_source_type_datetime";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_source_type_date";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_source_type_time";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_source_type_numeric";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_source_type_int";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_source_type_bool";
+   else if( to_string( val ) == to_string( "20" ) )
+      string_name = "enum_source_type_Any_Text_Type";
+   else if( to_string( val ) == to_string( "35" ) )
+      string_name = "enum_source_type_Any_Conditional";
+   else if( to_string( val ) == to_string( "99" ) )
+      string_name = "enum_source_type_Any_Type";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for source_type" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_test_field_type_string( 0 );
+const int c_enum_test_field_type_datetime( 1 );
+const int c_enum_test_field_type_date( 2 );
+const int c_enum_test_field_type_time( 3 );
+const int c_enum_test_field_type_numeric( 4 );
+const int c_enum_test_field_type_int( 5 );
+const int c_enum_test_field_type_bool( 6 );
+const int c_enum_test_field_type_Any_Text_Type( 20 );
+const int c_enum_test_field_type_Any_Conditional( 35 );
+const int c_enum_test_field_type_Any_Value_Or_Conditional( 38 );
+const int c_enum_test_field_type_Any_Type( 99 );
+
+string get_enum_string_test_field_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for test_field_type" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_test_field_type_string";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_test_field_type_datetime";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_test_field_type_date";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_test_field_type_time";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_test_field_type_numeric";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_test_field_type_int";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_test_field_type_bool";
+   else if( to_string( val ) == to_string( "20" ) )
+      string_name = "enum_test_field_type_Any_Text_Type";
+   else if( to_string( val ) == to_string( "35" ) )
+      string_name = "enum_test_field_type_Any_Conditional";
+   else if( to_string( val ) == to_string( "38" ) )
+      string_name = "enum_test_field_type_Any_Value_Or_Conditional";
+   else if( to_string( val ) == to_string( "99" ) )
+      string_name = "enum_test_field_type_Any_Type";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for test_field_type" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+// [<start anonymous>]
+// [<finish anonymous>]
+
+}
+
+registration< Meta_Specification_Type > Specification_Type_registration( get_class_registry( ), "114100" );
+
+class Meta_Specification_Type_command_functor;
+
+class Meta_Specification_Type_command_handler : public command_handler
+{
+   friend class Meta_Specification_Type_command_functor;
+
+   public:
+   Meta_Specification_Type_command_handler( ) : p_Meta_Specification_Type( 0 ) { }
+
+   void set_Meta_Specification_Type( Meta_Specification_Type* p_new_Meta_Specification_Type ) { p_Meta_Specification_Type = p_new_Meta_Specification_Type; }
+
+   void handle_unknown_command( const string& command )
+   {
+      throw runtime_error( "unknown command '" + command + "'" );
+   }
+
+   void handle_invalid_command( const command_parser& parser, const string& cmd_and_args )
+   {
+      throw runtime_error( "invalid command usage '" + cmd_and_args + "'" );
+   }
+
+   private:
+   Meta_Specification_Type* p_Meta_Specification_Type;
+
+   protected:
+   string retval;
+};
+
+class Meta_Specification_Type_command_functor : public command_functor
+{
+   public:
+   Meta_Specification_Type_command_functor( Meta_Specification_Type_command_handler& handler )
+    : command_functor( handler ),
+    cmd_handler( handler )
+   {
+   }
+
+   void operator ( )( const string& command, const parameter_info& parameters );
+
+   private:
+   Meta_Specification_Type_command_handler& cmd_handler;
+};
+
+command_functor* Meta_Specification_Type_command_functor_factory( const string& /*name*/, command_handler& handler )
+{
+   return new Meta_Specification_Type_command_functor( dynamic_cast< Meta_Specification_Type_command_handler& >( handler ) );
+}
+
+void Meta_Specification_Type_command_functor::operator ( )( const string& command, const parameter_info& parameters )
+{
+   if( command == c_cmd_Meta_Specification_Type_key )
+   {
+      bool want_fixed( has_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_key_fixed ) );
+
+      if( !want_fixed )
+         cmd_handler.retval = cmd_handler.p_Meta_Specification_Type->get_key( );
+      else
+         cmd_handler.retval = cmd_handler.p_Meta_Specification_Type->get_fixed_key( );
+   }
+   else if( command == c_cmd_Meta_Specification_Type_ver )
+   {
+      string ver_rev( to_string( cmd_handler.p_Meta_Specification_Type->get_version( ) ) );
+      ver_rev += "." + to_string( cmd_handler.p_Meta_Specification_Type->get_revision( ) );
+
+      cmd_handler.retval = ver_rev;
+   }
+   else if( command == c_cmd_Meta_Specification_Type_get )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_get_field_name ) );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Allow_Child_Relationship || field_name == c_field_name_Allow_Child_Relationship )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Child_Relationship( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_FK_Source_Field_Choice || field_name == c_field_name_Allow_FK_Source_Field_Choice )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_FK_Source_Field_Choice( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_FK_Test_Field_Choice || field_name == c_field_name_Allow_FK_Test_Field_Choice )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_FK_Test_Field_Choice( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Field || field_name == c_field_name_Allow_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Options || field_name == c_field_name_Allow_Options )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Options( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Other_Class || field_name == c_field_name_Allow_Other_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Other_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Other_Field || field_name == c_field_name_Allow_Other_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Other_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Other_Field_2 || field_name == c_field_name_Allow_Other_Field_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Other_Field_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Permission || field_name == c_field_name_Allow_Permission )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Permission( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Procedure || field_name == c_field_name_Allow_Procedure )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Source_Child || field_name == c_field_name_Allow_Source_Child )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Child( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Source_Child_2 || field_name == c_field_name_Allow_Source_Child_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Child_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Source_Class || field_name == c_field_name_Allow_Source_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Source_Field || field_name == c_field_name_Allow_Source_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Source_Grandchild || field_name == c_field_name_Allow_Source_Grandchild )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Grandchild( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Source_Parent || field_name == c_field_name_Allow_Source_Parent )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Test_Field || field_name == c_field_name_Allow_Test_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Test_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Test_Value || field_name == c_field_name_Allow_Test_Value )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Test_Value( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Value || field_name == c_field_name_Allow_Value )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Value( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Child_Prefix || field_name == c_field_name_Child_Prefix )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Child_Prefix( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Child_Rel_Grandparent_Match || field_name == c_field_name_Child_Rel_Grandparent_Match )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Child_Rel_Grandparent_Match( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Child_Rel_Parent_Match || field_name == c_field_name_Child_Rel_Parent_Match )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Child_Rel_Parent_Match( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Child_Relationship_Class_Match || field_name == c_field_name_Child_Relationship_Class_Match )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Child_Relationship_Class_Match( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+         string_getter< Meta_Specification_Type >( cmd_handler.p_Meta_Specification_Type->Child_Specification_Type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Default_Child_Vars || field_name == c_field_name_Default_Child_Vars )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Default_Child_Vars( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Field_type || field_name == c_field_name_Field_type )
+         string_getter< int >( cmd_handler.p_Meta_Specification_Type->Field_type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Has_Next_Specification_Info || field_name == c_field_name_Has_Next_Specification_Info )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Has_Next_Specification_Info( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_Child_Only || field_name == c_field_name_Is_Child_Only )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Is_Child_Only( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_Required_For_UI_Gen || field_name == c_field_name_Is_Required_For_UI_Gen )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Is_Required_For_UI_Gen( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_System || field_name == c_field_name_Is_System )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Is_System( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Child_Relationship || field_name == c_field_name_Needs_Child_Relationship )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Child_Relationship( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Class || field_name == c_field_name_Needs_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Enum || field_name == c_field_name_Needs_Enum )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Enum( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Enum_Item || field_name == c_field_name_Needs_Enum_Item )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Enum_Item( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Enum_Item_2 || field_name == c_field_name_Needs_Enum_Item_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Enum_Item_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Enum_Item_3 || field_name == c_field_name_Needs_Enum_Item_3 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Enum_Item_3( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Enum_Item_4 || field_name == c_field_name_Needs_Enum_Item_4 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Enum_Item_4( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Enum_Item_5 || field_name == c_field_name_Needs_Enum_Item_5 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Enum_Item_5( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Field || field_name == c_field_name_Needs_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Modifier || field_name == c_field_name_Needs_Modifier )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Modifier( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Other_Class || field_name == c_field_name_Needs_Other_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Other_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Other_Field || field_name == c_field_name_Needs_Other_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Other_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Other_Field_2 || field_name == c_field_name_Needs_Other_Field_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Other_Field_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Other_Procedure || field_name == c_field_name_Needs_Other_Procedure )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Other_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Other_Procedure_2 || field_name == c_field_name_Needs_Other_Procedure_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Other_Procedure_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Permission || field_name == c_field_name_Needs_Permission )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Permission( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Procedure || field_name == c_field_name_Needs_Procedure )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Procedure_Arg || field_name == c_field_name_Needs_Procedure_Arg )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Procedure_Arg( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Procedure_Arg_2 || field_name == c_field_name_Needs_Procedure_Arg_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Procedure_Arg_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Procedure_Arg_3 || field_name == c_field_name_Needs_Procedure_Arg_3 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Procedure_Arg_3( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Source_Child || field_name == c_field_name_Needs_Source_Child )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Source_Child( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Source_Child_2 || field_name == c_field_name_Needs_Source_Child_2 )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Source_Child_2( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Source_Field || field_name == c_field_name_Needs_Source_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Source_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Source_Field_Or_Child || field_name == c_field_name_Needs_Source_Field_Or_Child )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Source_Field_Or_Child( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Source_Parent || field_name == c_field_name_Needs_Source_Parent )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Test_Field || field_name == c_field_name_Needs_Test_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Test_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Test_Value || field_name == c_field_name_Needs_Test_Value )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Test_Value( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Needs_Value || field_name == c_field_name_Needs_Value )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Needs_Value( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Next_Child_Specification_Type || field_name == c_field_name_Next_Child_Specification_Type )
+         string_getter< Meta_Specification_Type >( cmd_handler.p_Meta_Specification_Type->Next_Child_Specification_Type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Next_Protect_Child_Rel || field_name == c_field_name_Next_Protect_Child_Rel )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Next_Protect_Child_Rel( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Next_Protect_Procedure || field_name == c_field_name_Next_Protect_Procedure )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Next_Protect_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Next_Protect_Source_Parent || field_name == c_field_name_Next_Protect_Source_Parent )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Next_Protect_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Next_Specification_Actions || field_name == c_field_name_Next_Specification_Actions )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Next_Specification_Actions( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Notes || field_name == c_field_name_Notes )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Notes( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Parent_Specification_Type || field_name == c_field_name_Parent_Specification_Type )
+         string_getter< Meta_Specification_Type >( cmd_handler.p_Meta_Specification_Type->Parent_Specification_Type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Procedure_Arg_primitive || field_name == c_field_name_Procedure_Arg_primitive )
+         string_getter< int >( cmd_handler.p_Meta_Specification_Type->Procedure_Arg_primitive( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Procedure_Arg_type || field_name == c_field_name_Procedure_Arg_type )
+         string_getter< int >( cmd_handler.p_Meta_Specification_Type->Procedure_Arg_type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Protect_Child_Rel_From_Update || field_name == c_field_name_Protect_Child_Rel_From_Update )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Protect_Child_Rel_From_Update( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Protect_Class_From_Edit || field_name == c_field_name_Protect_Class_From_Edit )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Protect_Class_From_Edit( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Protect_Class_From_Update || field_name == c_field_name_Protect_Class_From_Update )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Protect_Class_From_Update( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Protect_Procedure_From_Edit || field_name == c_field_name_Protect_Procedure_From_Edit )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Protect_Procedure_From_Edit( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Protect_Source_Parent || field_name == c_field_name_Protect_Source_Parent )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Protect_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Set_Field_To_Source_Field_Or_Child || field_name == c_field_name_Set_Field_To_Source_Field_Or_Child )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Set_Field_To_Source_Field_Or_Child( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Source_Field_Needs_Test_Field || field_name == c_field_name_Source_Field_Needs_Test_Field )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Source_Field_Needs_Test_Field( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Source_Field_Type_Match || field_name == c_field_name_Source_Field_Type_Match )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Source_Field_Type_Match( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Source_Parent_type || field_name == c_field_name_Source_Parent_type )
+         string_getter< int >( cmd_handler.p_Meta_Specification_Type->Source_Parent_type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Source_type || field_name == c_field_name_Source_type )
+         string_getter< int >( cmd_handler.p_Meta_Specification_Type->Source_type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Specification_Actions || field_name == c_field_name_Specification_Actions )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Specification_Actions( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Specification_Name || field_name == c_field_name_Specification_Name )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Specification_Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Specification_Object || field_name == c_field_name_Specification_Object )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Specification_Object( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Specification_Strings || field_name == c_field_name_Specification_Strings )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Specification_Strings( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Specification_Vars || field_name == c_field_name_Specification_Vars )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->Specification_Vars( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Test_Field_Type_Match || field_name == c_field_name_Test_Field_Type_Match )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Test_Field_Type_Match( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Test_Field_type || field_name == c_field_name_Test_Field_type )
+         string_getter< int >( cmd_handler.p_Meta_Specification_Type->Test_Field_type( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Class_As_Source_Parent_Class || field_name == c_field_name_Use_Class_As_Source_Parent_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Class_As_Source_Parent_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Field_Enum || field_name == c_field_name_Use_Field_Enum )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Field_Enum( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Child_Rel_As_Source_Parent || field_name == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Child_Rel_As_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Child_Rel_For_Class || field_name == c_field_name_Use_Parent_Child_Rel_For_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Child_Rel_For_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Class || field_name == c_field_name_Use_Parent_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Field_For_Class || field_name == c_field_name_Use_Parent_Field_For_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Field_For_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Other_Class_For_Class || field_name == c_field_name_Use_Parent_Other_Class_For_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Other_Class_For_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Procedure || field_name == c_field_name_Use_Parent_Procedure )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Source_Class || field_name == c_field_name_Use_Parent_Source_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Source_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Source_Field_For_Class || field_name == c_field_name_Use_Parent_Source_Field_For_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Source_Field_For_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Source_Parent || field_name == c_field_name_Use_Parent_Source_Parent )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Parent_Source_Parent_For_Class || field_name == c_field_name_Use_Parent_Source_Parent_For_Class )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Use_Parent_Source_Parent_For_Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_View_Id || field_name == c_field_name_View_Id )
+         string_getter< string >( cmd_handler.p_Meta_Specification_Type->View_Id( ), cmd_handler.retval );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
+   }
+   else if( command == c_cmd_Meta_Specification_Type_set )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_set_field_name ) );
+      string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_set_field_value ) );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Allow_Child_Relationship || field_name == c_field_name_Allow_Child_Relationship )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Child_Relationship, field_value );
+      else if( field_name == c_field_id_Allow_FK_Source_Field_Choice || field_name == c_field_name_Allow_FK_Source_Field_Choice )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_FK_Source_Field_Choice, field_value );
+      else if( field_name == c_field_id_Allow_FK_Test_Field_Choice || field_name == c_field_name_Allow_FK_Test_Field_Choice )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_FK_Test_Field_Choice, field_value );
+      else if( field_name == c_field_id_Allow_Field || field_name == c_field_name_Allow_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Field, field_value );
+      else if( field_name == c_field_id_Allow_Options || field_name == c_field_name_Allow_Options )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Options, field_value );
+      else if( field_name == c_field_id_Allow_Other_Class || field_name == c_field_name_Allow_Other_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Other_Class, field_value );
+      else if( field_name == c_field_id_Allow_Other_Field || field_name == c_field_name_Allow_Other_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Other_Field, field_value );
+      else if( field_name == c_field_id_Allow_Other_Field_2 || field_name == c_field_name_Allow_Other_Field_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Other_Field_2, field_value );
+      else if( field_name == c_field_id_Allow_Permission || field_name == c_field_name_Allow_Permission )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Permission, field_value );
+      else if( field_name == c_field_id_Allow_Procedure || field_name == c_field_name_Allow_Procedure )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Procedure, field_value );
+      else if( field_name == c_field_id_Allow_Source_Child || field_name == c_field_name_Allow_Source_Child )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Child, field_value );
+      else if( field_name == c_field_id_Allow_Source_Child_2 || field_name == c_field_name_Allow_Source_Child_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Child_2, field_value );
+      else if( field_name == c_field_id_Allow_Source_Class || field_name == c_field_name_Allow_Source_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Class, field_value );
+      else if( field_name == c_field_id_Allow_Source_Field || field_name == c_field_name_Allow_Source_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Field, field_value );
+      else if( field_name == c_field_id_Allow_Source_Grandchild || field_name == c_field_name_Allow_Source_Grandchild )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Grandchild, field_value );
+      else if( field_name == c_field_id_Allow_Source_Parent || field_name == c_field_name_Allow_Source_Parent )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Parent, field_value );
+      else if( field_name == c_field_id_Allow_Test_Field || field_name == c_field_name_Allow_Test_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Test_Field, field_value );
+      else if( field_name == c_field_id_Allow_Test_Value || field_name == c_field_name_Allow_Test_Value )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Test_Value, field_value );
+      else if( field_name == c_field_id_Allow_Value || field_name == c_field_name_Allow_Value )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Value, field_value );
+      else if( field_name == c_field_id_Child_Prefix || field_name == c_field_name_Child_Prefix )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Child_Prefix, field_value );
+      else if( field_name == c_field_id_Child_Rel_Grandparent_Match || field_name == c_field_name_Child_Rel_Grandparent_Match )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Child_Rel_Grandparent_Match, field_value );
+      else if( field_name == c_field_id_Child_Rel_Parent_Match || field_name == c_field_name_Child_Rel_Parent_Match )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Child_Rel_Parent_Match, field_value );
+      else if( field_name == c_field_id_Child_Relationship_Class_Match || field_name == c_field_name_Child_Relationship_Class_Match )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Child_Relationship_Class_Match, field_value );
+      else if( field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+         func_string_setter< Meta_Specification_Type, Meta_Specification_Type >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Child_Specification_Type, field_value );
+      else if( field_name == c_field_id_Default_Child_Vars || field_name == c_field_name_Default_Child_Vars )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Default_Child_Vars, field_value );
+      else if( field_name == c_field_id_Field_type || field_name == c_field_name_Field_type )
+         func_string_setter< Meta_Specification_Type, int >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Field_type, field_value );
+      else if( field_name == c_field_id_Has_Next_Specification_Info || field_name == c_field_name_Has_Next_Specification_Info )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Has_Next_Specification_Info, field_value );
+      else if( field_name == c_field_id_Is_Child_Only || field_name == c_field_name_Is_Child_Only )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Is_Child_Only, field_value );
+      else if( field_name == c_field_id_Is_Required_For_UI_Gen || field_name == c_field_name_Is_Required_For_UI_Gen )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Is_Required_For_UI_Gen, field_value );
+      else if( field_name == c_field_id_Is_System || field_name == c_field_name_Is_System )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Is_System, field_value );
+      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Name, field_value );
+      else if( field_name == c_field_id_Needs_Child_Relationship || field_name == c_field_name_Needs_Child_Relationship )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Child_Relationship, field_value );
+      else if( field_name == c_field_id_Needs_Class || field_name == c_field_name_Needs_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Class, field_value );
+      else if( field_name == c_field_id_Needs_Enum || field_name == c_field_name_Needs_Enum )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Enum, field_value );
+      else if( field_name == c_field_id_Needs_Enum_Item || field_name == c_field_name_Needs_Enum_Item )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Enum_Item, field_value );
+      else if( field_name == c_field_id_Needs_Enum_Item_2 || field_name == c_field_name_Needs_Enum_Item_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Enum_Item_2, field_value );
+      else if( field_name == c_field_id_Needs_Enum_Item_3 || field_name == c_field_name_Needs_Enum_Item_3 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Enum_Item_3, field_value );
+      else if( field_name == c_field_id_Needs_Enum_Item_4 || field_name == c_field_name_Needs_Enum_Item_4 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Enum_Item_4, field_value );
+      else if( field_name == c_field_id_Needs_Enum_Item_5 || field_name == c_field_name_Needs_Enum_Item_5 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Enum_Item_5, field_value );
+      else if( field_name == c_field_id_Needs_Field || field_name == c_field_name_Needs_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Field, field_value );
+      else if( field_name == c_field_id_Needs_Modifier || field_name == c_field_name_Needs_Modifier )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Modifier, field_value );
+      else if( field_name == c_field_id_Needs_Other_Class || field_name == c_field_name_Needs_Other_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Other_Class, field_value );
+      else if( field_name == c_field_id_Needs_Other_Field || field_name == c_field_name_Needs_Other_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Other_Field, field_value );
+      else if( field_name == c_field_id_Needs_Other_Field_2 || field_name == c_field_name_Needs_Other_Field_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Other_Field_2, field_value );
+      else if( field_name == c_field_id_Needs_Other_Procedure || field_name == c_field_name_Needs_Other_Procedure )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Other_Procedure, field_value );
+      else if( field_name == c_field_id_Needs_Other_Procedure_2 || field_name == c_field_name_Needs_Other_Procedure_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Other_Procedure_2, field_value );
+      else if( field_name == c_field_id_Needs_Permission || field_name == c_field_name_Needs_Permission )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Permission, field_value );
+      else if( field_name == c_field_id_Needs_Procedure || field_name == c_field_name_Needs_Procedure )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Procedure, field_value );
+      else if( field_name == c_field_id_Needs_Procedure_Arg || field_name == c_field_name_Needs_Procedure_Arg )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Procedure_Arg, field_value );
+      else if( field_name == c_field_id_Needs_Procedure_Arg_2 || field_name == c_field_name_Needs_Procedure_Arg_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Procedure_Arg_2, field_value );
+      else if( field_name == c_field_id_Needs_Procedure_Arg_3 || field_name == c_field_name_Needs_Procedure_Arg_3 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Procedure_Arg_3, field_value );
+      else if( field_name == c_field_id_Needs_Source_Child || field_name == c_field_name_Needs_Source_Child )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Source_Child, field_value );
+      else if( field_name == c_field_id_Needs_Source_Child_2 || field_name == c_field_name_Needs_Source_Child_2 )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Source_Child_2, field_value );
+      else if( field_name == c_field_id_Needs_Source_Field || field_name == c_field_name_Needs_Source_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Source_Field, field_value );
+      else if( field_name == c_field_id_Needs_Source_Field_Or_Child || field_name == c_field_name_Needs_Source_Field_Or_Child )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Source_Field_Or_Child, field_value );
+      else if( field_name == c_field_id_Needs_Source_Parent || field_name == c_field_name_Needs_Source_Parent )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Source_Parent, field_value );
+      else if( field_name == c_field_id_Needs_Test_Field || field_name == c_field_name_Needs_Test_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Test_Field, field_value );
+      else if( field_name == c_field_id_Needs_Test_Value || field_name == c_field_name_Needs_Test_Value )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Test_Value, field_value );
+      else if( field_name == c_field_id_Needs_Value || field_name == c_field_name_Needs_Value )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Needs_Value, field_value );
+      else if( field_name == c_field_id_Next_Child_Specification_Type || field_name == c_field_name_Next_Child_Specification_Type )
+         func_string_setter< Meta_Specification_Type, Meta_Specification_Type >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Next_Child_Specification_Type, field_value );
+      else if( field_name == c_field_id_Next_Protect_Child_Rel || field_name == c_field_name_Next_Protect_Child_Rel )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Next_Protect_Child_Rel, field_value );
+      else if( field_name == c_field_id_Next_Protect_Procedure || field_name == c_field_name_Next_Protect_Procedure )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Next_Protect_Procedure, field_value );
+      else if( field_name == c_field_id_Next_Protect_Source_Parent || field_name == c_field_name_Next_Protect_Source_Parent )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Next_Protect_Source_Parent, field_value );
+      else if( field_name == c_field_id_Next_Specification_Actions || field_name == c_field_name_Next_Specification_Actions )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Next_Specification_Actions, field_value );
+      else if( field_name == c_field_id_Notes || field_name == c_field_name_Notes )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Notes, field_value );
+      else if( field_name == c_field_id_Parent_Specification_Type || field_name == c_field_name_Parent_Specification_Type )
+         func_string_setter< Meta_Specification_Type, Meta_Specification_Type >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Parent_Specification_Type, field_value );
+      else if( field_name == c_field_id_Procedure_Arg_primitive || field_name == c_field_name_Procedure_Arg_primitive )
+         func_string_setter< Meta_Specification_Type, int >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Procedure_Arg_primitive, field_value );
+      else if( field_name == c_field_id_Procedure_Arg_type || field_name == c_field_name_Procedure_Arg_type )
+         func_string_setter< Meta_Specification_Type, int >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Procedure_Arg_type, field_value );
+      else if( field_name == c_field_id_Protect_Child_Rel_From_Update || field_name == c_field_name_Protect_Child_Rel_From_Update )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Protect_Child_Rel_From_Update, field_value );
+      else if( field_name == c_field_id_Protect_Class_From_Edit || field_name == c_field_name_Protect_Class_From_Edit )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Protect_Class_From_Edit, field_value );
+      else if( field_name == c_field_id_Protect_Class_From_Update || field_name == c_field_name_Protect_Class_From_Update )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Protect_Class_From_Update, field_value );
+      else if( field_name == c_field_id_Protect_Procedure_From_Edit || field_name == c_field_name_Protect_Procedure_From_Edit )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Protect_Procedure_From_Edit, field_value );
+      else if( field_name == c_field_id_Protect_Source_Parent || field_name == c_field_name_Protect_Source_Parent )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Protect_Source_Parent, field_value );
+      else if( field_name == c_field_id_Set_Field_To_Source_Field_Or_Child || field_name == c_field_name_Set_Field_To_Source_Field_Or_Child )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Set_Field_To_Source_Field_Or_Child, field_value );
+      else if( field_name == c_field_id_Source_Field_Needs_Test_Field || field_name == c_field_name_Source_Field_Needs_Test_Field )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Source_Field_Needs_Test_Field, field_value );
+      else if( field_name == c_field_id_Source_Field_Type_Match || field_name == c_field_name_Source_Field_Type_Match )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Source_Field_Type_Match, field_value );
+      else if( field_name == c_field_id_Source_Parent_type || field_name == c_field_name_Source_Parent_type )
+         func_string_setter< Meta_Specification_Type, int >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Source_Parent_type, field_value );
+      else if( field_name == c_field_id_Source_type || field_name == c_field_name_Source_type )
+         func_string_setter< Meta_Specification_Type, int >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Source_type, field_value );
+      else if( field_name == c_field_id_Specification_Actions || field_name == c_field_name_Specification_Actions )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Specification_Actions, field_value );
+      else if( field_name == c_field_id_Specification_Name || field_name == c_field_name_Specification_Name )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Specification_Name, field_value );
+      else if( field_name == c_field_id_Specification_Object || field_name == c_field_name_Specification_Object )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Specification_Object, field_value );
+      else if( field_name == c_field_id_Specification_Strings || field_name == c_field_name_Specification_Strings )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Specification_Strings, field_value );
+      else if( field_name == c_field_id_Specification_Vars || field_name == c_field_name_Specification_Vars )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Specification_Vars, field_value );
+      else if( field_name == c_field_id_Test_Field_Type_Match || field_name == c_field_name_Test_Field_Type_Match )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Test_Field_Type_Match, field_value );
+      else if( field_name == c_field_id_Test_Field_type || field_name == c_field_name_Test_Field_type )
+         func_string_setter< Meta_Specification_Type, int >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Test_Field_type, field_value );
+      else if( field_name == c_field_id_Use_Class_As_Source_Parent_Class || field_name == c_field_name_Use_Class_As_Source_Parent_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Class_As_Source_Parent_Class, field_value );
+      else if( field_name == c_field_id_Use_Field_Enum || field_name == c_field_name_Use_Field_Enum )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Field_Enum, field_value );
+      else if( field_name == c_field_id_Use_Parent_Child_Rel_As_Source_Parent || field_name == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Child_Rel_As_Source_Parent, field_value );
+      else if( field_name == c_field_id_Use_Parent_Child_Rel_For_Class || field_name == c_field_name_Use_Parent_Child_Rel_For_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Child_Rel_For_Class, field_value );
+      else if( field_name == c_field_id_Use_Parent_Class || field_name == c_field_name_Use_Parent_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Class, field_value );
+      else if( field_name == c_field_id_Use_Parent_Field_For_Class || field_name == c_field_name_Use_Parent_Field_For_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Field_For_Class, field_value );
+      else if( field_name == c_field_id_Use_Parent_Other_Class_For_Class || field_name == c_field_name_Use_Parent_Other_Class_For_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Other_Class_For_Class, field_value );
+      else if( field_name == c_field_id_Use_Parent_Procedure || field_name == c_field_name_Use_Parent_Procedure )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Procedure, field_value );
+      else if( field_name == c_field_id_Use_Parent_Source_Class || field_name == c_field_name_Use_Parent_Source_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Source_Class, field_value );
+      else if( field_name == c_field_id_Use_Parent_Source_Field_For_Class || field_name == c_field_name_Use_Parent_Source_Field_For_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Source_Field_For_Class, field_value );
+      else if( field_name == c_field_id_Use_Parent_Source_Parent || field_name == c_field_name_Use_Parent_Source_Parent )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Source_Parent, field_value );
+      else if( field_name == c_field_id_Use_Parent_Source_Parent_For_Class || field_name == c_field_name_Use_Parent_Source_Parent_For_Class )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Use_Parent_Source_Parent_For_Class, field_value );
+      else if( field_name == c_field_id_View_Id || field_name == c_field_name_View_Id )
+         func_string_setter< Meta_Specification_Type, string >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::View_Id, field_value );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
+
+      cmd_handler.retval = c_okay;
+   }
+   else if( command == c_cmd_Meta_Specification_Type_cmd )
+   {
+      string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_cmd_field_name ) );
+      string cmd_and_args( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Type_cmd_cmd_and_args ) );
+
+      cmd_handler.retval.erase( );
+
+      if( field_name.empty( ) )
+         throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+         cmd_handler.retval = cmd_handler.p_Meta_Specification_Type->Child_Specification_Type( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Next_Child_Specification_Type || field_name == c_field_name_Next_Child_Specification_Type )
+         cmd_handler.retval = cmd_handler.p_Meta_Specification_Type->Next_Child_Specification_Type( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Parent_Specification_Type || field_name == c_field_name_Parent_Specification_Type )
+         cmd_handler.retval = cmd_handler.p_Meta_Specification_Type->Parent_Specification_Type( ).execute( cmd_and_args );
+      else
+         throw runtime_error( "unknown field name '" + field_name + "' for command call" );
+   }
+   else if( command == c_cmd_Meta_Specification_Type_Is_Valid_Field_Type )
+   {
+      string Class( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Class ) );
+      string Parent_Class( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Parent_Class ) );
+      int Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Primitive ) );
+      int Procedure_Arg_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Procedure_Arg_Primitive ) );
+      int Procedure_Arg_Type( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Procedure_Arg_Type ) );
+      string Source_Parent_Class( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Source_Parent_Class ) );
+      int Source_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Source_Primitive ) );
+      int Test_Primitive( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Test_Primitive ) );
+      string Test_Value( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Specification_Type_Is_Valid_Field_Type_Test_Value ) );
+      string Error;
+      cmd_handler.p_Meta_Specification_Type->Is_Valid_Field_Type( Class, Error, Parent_Class, Primitive, Procedure_Arg_Primitive, Procedure_Arg_Type, Source_Parent_Class, Source_Primitive, Test_Primitive, Test_Value );
+
+      cmd_handler.retval.erase( );
+      append_value( cmd_handler.retval, Error );
+   }
+}
+
+struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_handler
+{
+   impl( Meta_Specification_Type& o )
+    :
+    cp_obj( &o ),
+    total_child_relationships( 0 )
+   {
+      p_obj = &o;
+      set_Meta_Specification_Type( &o );
+
+      add_commands( 0, Meta_Specification_Type_command_functor_factory,
+       ARRAY_PTR_AND_SIZE( Meta_Specification_Type_command_definitions ) );
+   }
+
+   Meta_Specification_Type& get_obj( ) const
+   {
+      return *cp_obj;
+   }
+
+   bool impl_Allow_Child_Relationship( ) const { return lazy_fetch( p_obj ), v_Allow_Child_Relationship; }
+   void impl_Allow_Child_Relationship( bool Allow_Child_Relationship ) { v_Allow_Child_Relationship = Allow_Child_Relationship; }
+
+   bool impl_Allow_FK_Source_Field_Choice( ) const { return lazy_fetch( p_obj ), v_Allow_FK_Source_Field_Choice; }
+   void impl_Allow_FK_Source_Field_Choice( bool Allow_FK_Source_Field_Choice ) { v_Allow_FK_Source_Field_Choice = Allow_FK_Source_Field_Choice; }
+
+   bool impl_Allow_FK_Test_Field_Choice( ) const { return lazy_fetch( p_obj ), v_Allow_FK_Test_Field_Choice; }
+   void impl_Allow_FK_Test_Field_Choice( bool Allow_FK_Test_Field_Choice ) { v_Allow_FK_Test_Field_Choice = Allow_FK_Test_Field_Choice; }
+
+   bool impl_Allow_Field( ) const { return lazy_fetch( p_obj ), v_Allow_Field; }
+   void impl_Allow_Field( bool Allow_Field ) { v_Allow_Field = Allow_Field; }
+
+   bool impl_Allow_Options( ) const { return lazy_fetch( p_obj ), v_Allow_Options; }
+   void impl_Allow_Options( bool Allow_Options ) { v_Allow_Options = Allow_Options; }
+
+   bool impl_Allow_Other_Class( ) const { return lazy_fetch( p_obj ), v_Allow_Other_Class; }
+   void impl_Allow_Other_Class( bool Allow_Other_Class ) { v_Allow_Other_Class = Allow_Other_Class; }
+
+   bool impl_Allow_Other_Field( ) const { return lazy_fetch( p_obj ), v_Allow_Other_Field; }
+   void impl_Allow_Other_Field( bool Allow_Other_Field ) { v_Allow_Other_Field = Allow_Other_Field; }
+
+   bool impl_Allow_Other_Field_2( ) const { return lazy_fetch( p_obj ), v_Allow_Other_Field_2; }
+   void impl_Allow_Other_Field_2( bool Allow_Other_Field_2 ) { v_Allow_Other_Field_2 = Allow_Other_Field_2; }
+
+   bool impl_Allow_Permission( ) const { return lazy_fetch( p_obj ), v_Allow_Permission; }
+   void impl_Allow_Permission( bool Allow_Permission ) { v_Allow_Permission = Allow_Permission; }
+
+   bool impl_Allow_Procedure( ) const { return lazy_fetch( p_obj ), v_Allow_Procedure; }
+   void impl_Allow_Procedure( bool Allow_Procedure ) { v_Allow_Procedure = Allow_Procedure; }
+
+   bool impl_Allow_Source_Child( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Child; }
+   void impl_Allow_Source_Child( bool Allow_Source_Child ) { v_Allow_Source_Child = Allow_Source_Child; }
+
+   bool impl_Allow_Source_Child_2( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Child_2; }
+   void impl_Allow_Source_Child_2( bool Allow_Source_Child_2 ) { v_Allow_Source_Child_2 = Allow_Source_Child_2; }
+
+   bool impl_Allow_Source_Class( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Class; }
+   void impl_Allow_Source_Class( bool Allow_Source_Class ) { v_Allow_Source_Class = Allow_Source_Class; }
+
+   bool impl_Allow_Source_Field( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Field; }
+   void impl_Allow_Source_Field( bool Allow_Source_Field ) { v_Allow_Source_Field = Allow_Source_Field; }
+
+   bool impl_Allow_Source_Grandchild( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Grandchild; }
+   void impl_Allow_Source_Grandchild( bool Allow_Source_Grandchild ) { v_Allow_Source_Grandchild = Allow_Source_Grandchild; }
+
+   bool impl_Allow_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Parent; }
+   void impl_Allow_Source_Parent( bool Allow_Source_Parent ) { v_Allow_Source_Parent = Allow_Source_Parent; }
+
+   bool impl_Allow_Test_Field( ) const { return lazy_fetch( p_obj ), v_Allow_Test_Field; }
+   void impl_Allow_Test_Field( bool Allow_Test_Field ) { v_Allow_Test_Field = Allow_Test_Field; }
+
+   bool impl_Allow_Test_Value( ) const { return lazy_fetch( p_obj ), v_Allow_Test_Value; }
+   void impl_Allow_Test_Value( bool Allow_Test_Value ) { v_Allow_Test_Value = Allow_Test_Value; }
+
+   bool impl_Allow_Value( ) const { return lazy_fetch( p_obj ), v_Allow_Value; }
+   void impl_Allow_Value( bool Allow_Value ) { v_Allow_Value = Allow_Value; }
+
+   const string& impl_Child_Prefix( ) const { return lazy_fetch( p_obj ), v_Child_Prefix; }
+   void impl_Child_Prefix( const string& Child_Prefix ) { v_Child_Prefix = Child_Prefix; }
+
+   bool impl_Child_Rel_Grandparent_Match( ) const { return lazy_fetch( p_obj ), v_Child_Rel_Grandparent_Match; }
+   void impl_Child_Rel_Grandparent_Match( bool Child_Rel_Grandparent_Match ) { v_Child_Rel_Grandparent_Match = Child_Rel_Grandparent_Match; }
+
+   bool impl_Child_Rel_Parent_Match( ) const { return lazy_fetch( p_obj ), v_Child_Rel_Parent_Match; }
+   void impl_Child_Rel_Parent_Match( bool Child_Rel_Parent_Match ) { v_Child_Rel_Parent_Match = Child_Rel_Parent_Match; }
+
+   bool impl_Child_Relationship_Class_Match( ) const { return lazy_fetch( p_obj ), v_Child_Relationship_Class_Match; }
+   void impl_Child_Relationship_Class_Match( bool Child_Relationship_Class_Match ) { v_Child_Relationship_Class_Match = Child_Relationship_Class_Match; }
+
+   const string& impl_Default_Child_Vars( ) const { return lazy_fetch( p_obj ), v_Default_Child_Vars; }
+   void impl_Default_Child_Vars( const string& Default_Child_Vars ) { v_Default_Child_Vars = Default_Child_Vars; }
+
+   int impl_Field_type( ) const { return lazy_fetch( p_obj ), v_Field_type; }
+   void impl_Field_type( int Field_type ) { v_Field_type = Field_type; }
+
+   bool impl_Has_Next_Specification_Info( ) const { return lazy_fetch( p_obj ), v_Has_Next_Specification_Info; }
+   void impl_Has_Next_Specification_Info( bool Has_Next_Specification_Info ) { v_Has_Next_Specification_Info = Has_Next_Specification_Info; }
+
+   bool impl_Is_Child_Only( ) const { return lazy_fetch( p_obj ), v_Is_Child_Only; }
+   void impl_Is_Child_Only( bool Is_Child_Only ) { v_Is_Child_Only = Is_Child_Only; }
+
+   bool impl_Is_Required_For_UI_Gen( ) const { return lazy_fetch( p_obj ), v_Is_Required_For_UI_Gen; }
+   void impl_Is_Required_For_UI_Gen( bool Is_Required_For_UI_Gen ) { v_Is_Required_For_UI_Gen = Is_Required_For_UI_Gen; }
+
+   bool impl_Is_System( ) const { return lazy_fetch( p_obj ), v_Is_System; }
+   void impl_Is_System( bool Is_System ) { v_Is_System = Is_System; }
+
+   const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
+   void impl_Name( const string& Name ) { v_Name = Name; }
+
+   bool impl_Needs_Child_Relationship( ) const { return lazy_fetch( p_obj ), v_Needs_Child_Relationship; }
+   void impl_Needs_Child_Relationship( bool Needs_Child_Relationship ) { v_Needs_Child_Relationship = Needs_Child_Relationship; }
+
+   bool impl_Needs_Class( ) const { return lazy_fetch( p_obj ), v_Needs_Class; }
+   void impl_Needs_Class( bool Needs_Class ) { v_Needs_Class = Needs_Class; }
+
+   bool impl_Needs_Enum( ) const { return lazy_fetch( p_obj ), v_Needs_Enum; }
+   void impl_Needs_Enum( bool Needs_Enum ) { v_Needs_Enum = Needs_Enum; }
+
+   bool impl_Needs_Enum_Item( ) const { return lazy_fetch( p_obj ), v_Needs_Enum_Item; }
+   void impl_Needs_Enum_Item( bool Needs_Enum_Item ) { v_Needs_Enum_Item = Needs_Enum_Item; }
+
+   bool impl_Needs_Enum_Item_2( ) const { return lazy_fetch( p_obj ), v_Needs_Enum_Item_2; }
+   void impl_Needs_Enum_Item_2( bool Needs_Enum_Item_2 ) { v_Needs_Enum_Item_2 = Needs_Enum_Item_2; }
+
+   bool impl_Needs_Enum_Item_3( ) const { return lazy_fetch( p_obj ), v_Needs_Enum_Item_3; }
+   void impl_Needs_Enum_Item_3( bool Needs_Enum_Item_3 ) { v_Needs_Enum_Item_3 = Needs_Enum_Item_3; }
+
+   bool impl_Needs_Enum_Item_4( ) const { return lazy_fetch( p_obj ), v_Needs_Enum_Item_4; }
+   void impl_Needs_Enum_Item_4( bool Needs_Enum_Item_4 ) { v_Needs_Enum_Item_4 = Needs_Enum_Item_4; }
+
+   bool impl_Needs_Enum_Item_5( ) const { return lazy_fetch( p_obj ), v_Needs_Enum_Item_5; }
+   void impl_Needs_Enum_Item_5( bool Needs_Enum_Item_5 ) { v_Needs_Enum_Item_5 = Needs_Enum_Item_5; }
+
+   bool impl_Needs_Field( ) const { return lazy_fetch( p_obj ), v_Needs_Field; }
+   void impl_Needs_Field( bool Needs_Field ) { v_Needs_Field = Needs_Field; }
+
+   bool impl_Needs_Modifier( ) const { return lazy_fetch( p_obj ), v_Needs_Modifier; }
+   void impl_Needs_Modifier( bool Needs_Modifier ) { v_Needs_Modifier = Needs_Modifier; }
+
+   bool impl_Needs_Other_Class( ) const { return lazy_fetch( p_obj ), v_Needs_Other_Class; }
+   void impl_Needs_Other_Class( bool Needs_Other_Class ) { v_Needs_Other_Class = Needs_Other_Class; }
+
+   bool impl_Needs_Other_Field( ) const { return lazy_fetch( p_obj ), v_Needs_Other_Field; }
+   void impl_Needs_Other_Field( bool Needs_Other_Field ) { v_Needs_Other_Field = Needs_Other_Field; }
+
+   bool impl_Needs_Other_Field_2( ) const { return lazy_fetch( p_obj ), v_Needs_Other_Field_2; }
+   void impl_Needs_Other_Field_2( bool Needs_Other_Field_2 ) { v_Needs_Other_Field_2 = Needs_Other_Field_2; }
+
+   bool impl_Needs_Other_Procedure( ) const { return lazy_fetch( p_obj ), v_Needs_Other_Procedure; }
+   void impl_Needs_Other_Procedure( bool Needs_Other_Procedure ) { v_Needs_Other_Procedure = Needs_Other_Procedure; }
+
+   bool impl_Needs_Other_Procedure_2( ) const { return lazy_fetch( p_obj ), v_Needs_Other_Procedure_2; }
+   void impl_Needs_Other_Procedure_2( bool Needs_Other_Procedure_2 ) { v_Needs_Other_Procedure_2 = Needs_Other_Procedure_2; }
+
+   bool impl_Needs_Permission( ) const { return lazy_fetch( p_obj ), v_Needs_Permission; }
+   void impl_Needs_Permission( bool Needs_Permission ) { v_Needs_Permission = Needs_Permission; }
+
+   bool impl_Needs_Procedure( ) const { return lazy_fetch( p_obj ), v_Needs_Procedure; }
+   void impl_Needs_Procedure( bool Needs_Procedure ) { v_Needs_Procedure = Needs_Procedure; }
+
+   bool impl_Needs_Procedure_Arg( ) const { return lazy_fetch( p_obj ), v_Needs_Procedure_Arg; }
+   void impl_Needs_Procedure_Arg( bool Needs_Procedure_Arg ) { v_Needs_Procedure_Arg = Needs_Procedure_Arg; }
+
+   bool impl_Needs_Procedure_Arg_2( ) const { return lazy_fetch( p_obj ), v_Needs_Procedure_Arg_2; }
+   void impl_Needs_Procedure_Arg_2( bool Needs_Procedure_Arg_2 ) { v_Needs_Procedure_Arg_2 = Needs_Procedure_Arg_2; }
+
+   bool impl_Needs_Procedure_Arg_3( ) const { return lazy_fetch( p_obj ), v_Needs_Procedure_Arg_3; }
+   void impl_Needs_Procedure_Arg_3( bool Needs_Procedure_Arg_3 ) { v_Needs_Procedure_Arg_3 = Needs_Procedure_Arg_3; }
+
+   bool impl_Needs_Source_Child( ) const { return lazy_fetch( p_obj ), v_Needs_Source_Child; }
+   void impl_Needs_Source_Child( bool Needs_Source_Child ) { v_Needs_Source_Child = Needs_Source_Child; }
+
+   bool impl_Needs_Source_Child_2( ) const { return lazy_fetch( p_obj ), v_Needs_Source_Child_2; }
+   void impl_Needs_Source_Child_2( bool Needs_Source_Child_2 ) { v_Needs_Source_Child_2 = Needs_Source_Child_2; }
+
+   bool impl_Needs_Source_Field( ) const { return lazy_fetch( p_obj ), v_Needs_Source_Field; }
+   void impl_Needs_Source_Field( bool Needs_Source_Field ) { v_Needs_Source_Field = Needs_Source_Field; }
+
+   bool impl_Needs_Source_Field_Or_Child( ) const { return lazy_fetch( p_obj ), v_Needs_Source_Field_Or_Child; }
+   void impl_Needs_Source_Field_Or_Child( bool Needs_Source_Field_Or_Child ) { v_Needs_Source_Field_Or_Child = Needs_Source_Field_Or_Child; }
+
+   bool impl_Needs_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Needs_Source_Parent; }
+   void impl_Needs_Source_Parent( bool Needs_Source_Parent ) { v_Needs_Source_Parent = Needs_Source_Parent; }
+
+   bool impl_Needs_Test_Field( ) const { return lazy_fetch( p_obj ), v_Needs_Test_Field; }
+   void impl_Needs_Test_Field( bool Needs_Test_Field ) { v_Needs_Test_Field = Needs_Test_Field; }
+
+   bool impl_Needs_Test_Value( ) const { return lazy_fetch( p_obj ), v_Needs_Test_Value; }
+   void impl_Needs_Test_Value( bool Needs_Test_Value ) { v_Needs_Test_Value = Needs_Test_Value; }
+
+   bool impl_Needs_Value( ) const { return lazy_fetch( p_obj ), v_Needs_Value; }
+   void impl_Needs_Value( bool Needs_Value ) { v_Needs_Value = Needs_Value; }
+
+   bool impl_Next_Protect_Child_Rel( ) const { return lazy_fetch( p_obj ), v_Next_Protect_Child_Rel; }
+   void impl_Next_Protect_Child_Rel( bool Next_Protect_Child_Rel ) { v_Next_Protect_Child_Rel = Next_Protect_Child_Rel; }
+
+   bool impl_Next_Protect_Procedure( ) const { return lazy_fetch( p_obj ), v_Next_Protect_Procedure; }
+   void impl_Next_Protect_Procedure( bool Next_Protect_Procedure ) { v_Next_Protect_Procedure = Next_Protect_Procedure; }
+
+   bool impl_Next_Protect_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Next_Protect_Source_Parent; }
+   void impl_Next_Protect_Source_Parent( bool Next_Protect_Source_Parent ) { v_Next_Protect_Source_Parent = Next_Protect_Source_Parent; }
+
+   const string& impl_Next_Specification_Actions( ) const { return lazy_fetch( p_obj ), v_Next_Specification_Actions; }
+   void impl_Next_Specification_Actions( const string& Next_Specification_Actions ) { v_Next_Specification_Actions = Next_Specification_Actions; }
+
+   const string& impl_Notes( ) const { return lazy_fetch( p_obj ), v_Notes; }
+   void impl_Notes( const string& Notes ) { v_Notes = Notes; }
+
+   int impl_Procedure_Arg_primitive( ) const { return lazy_fetch( p_obj ), v_Procedure_Arg_primitive; }
+   void impl_Procedure_Arg_primitive( int Procedure_Arg_primitive ) { v_Procedure_Arg_primitive = Procedure_Arg_primitive; }
+
+   int impl_Procedure_Arg_type( ) const { return lazy_fetch( p_obj ), v_Procedure_Arg_type; }
+   void impl_Procedure_Arg_type( int Procedure_Arg_type ) { v_Procedure_Arg_type = Procedure_Arg_type; }
+
+   bool impl_Protect_Child_Rel_From_Update( ) const { return lazy_fetch( p_obj ), v_Protect_Child_Rel_From_Update; }
+   void impl_Protect_Child_Rel_From_Update( bool Protect_Child_Rel_From_Update ) { v_Protect_Child_Rel_From_Update = Protect_Child_Rel_From_Update; }
+
+   bool impl_Protect_Class_From_Edit( ) const { return lazy_fetch( p_obj ), v_Protect_Class_From_Edit; }
+   void impl_Protect_Class_From_Edit( bool Protect_Class_From_Edit ) { v_Protect_Class_From_Edit = Protect_Class_From_Edit; }
+
+   bool impl_Protect_Class_From_Update( ) const { return lazy_fetch( p_obj ), v_Protect_Class_From_Update; }
+   void impl_Protect_Class_From_Update( bool Protect_Class_From_Update ) { v_Protect_Class_From_Update = Protect_Class_From_Update; }
+
+   bool impl_Protect_Procedure_From_Edit( ) const { return lazy_fetch( p_obj ), v_Protect_Procedure_From_Edit; }
+   void impl_Protect_Procedure_From_Edit( bool Protect_Procedure_From_Edit ) { v_Protect_Procedure_From_Edit = Protect_Procedure_From_Edit; }
+
+   bool impl_Protect_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Protect_Source_Parent; }
+   void impl_Protect_Source_Parent( bool Protect_Source_Parent ) { v_Protect_Source_Parent = Protect_Source_Parent; }
+
+   bool impl_Set_Field_To_Source_Field_Or_Child( ) const { return lazy_fetch( p_obj ), v_Set_Field_To_Source_Field_Or_Child; }
+   void impl_Set_Field_To_Source_Field_Or_Child( bool Set_Field_To_Source_Field_Or_Child ) { v_Set_Field_To_Source_Field_Or_Child = Set_Field_To_Source_Field_Or_Child; }
+
+   bool impl_Source_Field_Needs_Test_Field( ) const { return lazy_fetch( p_obj ), v_Source_Field_Needs_Test_Field; }
+   void impl_Source_Field_Needs_Test_Field( bool Source_Field_Needs_Test_Field ) { v_Source_Field_Needs_Test_Field = Source_Field_Needs_Test_Field; }
+
+   bool impl_Source_Field_Type_Match( ) const { return lazy_fetch( p_obj ), v_Source_Field_Type_Match; }
+   void impl_Source_Field_Type_Match( bool Source_Field_Type_Match ) { v_Source_Field_Type_Match = Source_Field_Type_Match; }
+
+   int impl_Source_Parent_type( ) const { return lazy_fetch( p_obj ), v_Source_Parent_type; }
+   void impl_Source_Parent_type( int Source_Parent_type ) { v_Source_Parent_type = Source_Parent_type; }
+
+   int impl_Source_type( ) const { return lazy_fetch( p_obj ), v_Source_type; }
+   void impl_Source_type( int Source_type ) { v_Source_type = Source_type; }
+
+   const string& impl_Specification_Actions( ) const { return lazy_fetch( p_obj ), v_Specification_Actions; }
+   void impl_Specification_Actions( const string& Specification_Actions ) { v_Specification_Actions = Specification_Actions; }
+
+   const string& impl_Specification_Name( ) const { return lazy_fetch( p_obj ), v_Specification_Name; }
+   void impl_Specification_Name( const string& Specification_Name ) { v_Specification_Name = Specification_Name; }
+
+   const string& impl_Specification_Object( ) const { return lazy_fetch( p_obj ), v_Specification_Object; }
+   void impl_Specification_Object( const string& Specification_Object ) { v_Specification_Object = Specification_Object; }
+
+   const string& impl_Specification_Strings( ) const { return lazy_fetch( p_obj ), v_Specification_Strings; }
+   void impl_Specification_Strings( const string& Specification_Strings ) { v_Specification_Strings = Specification_Strings; }
+
+   const string& impl_Specification_Vars( ) const { return lazy_fetch( p_obj ), v_Specification_Vars; }
+   void impl_Specification_Vars( const string& Specification_Vars ) { v_Specification_Vars = Specification_Vars; }
+
+   bool impl_Test_Field_Type_Match( ) const { return lazy_fetch( p_obj ), v_Test_Field_Type_Match; }
+   void impl_Test_Field_Type_Match( bool Test_Field_Type_Match ) { v_Test_Field_Type_Match = Test_Field_Type_Match; }
+
+   int impl_Test_Field_type( ) const { return lazy_fetch( p_obj ), v_Test_Field_type; }
+   void impl_Test_Field_type( int Test_Field_type ) { v_Test_Field_type = Test_Field_type; }
+
+   bool impl_Use_Class_As_Source_Parent_Class( ) const { return lazy_fetch( p_obj ), v_Use_Class_As_Source_Parent_Class; }
+   void impl_Use_Class_As_Source_Parent_Class( bool Use_Class_As_Source_Parent_Class ) { v_Use_Class_As_Source_Parent_Class = Use_Class_As_Source_Parent_Class; }
+
+   bool impl_Use_Field_Enum( ) const { return lazy_fetch( p_obj ), v_Use_Field_Enum; }
+   void impl_Use_Field_Enum( bool Use_Field_Enum ) { v_Use_Field_Enum = Use_Field_Enum; }
+
+   bool impl_Use_Parent_Child_Rel_As_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Child_Rel_As_Source_Parent; }
+   void impl_Use_Parent_Child_Rel_As_Source_Parent( bool Use_Parent_Child_Rel_As_Source_Parent ) { v_Use_Parent_Child_Rel_As_Source_Parent = Use_Parent_Child_Rel_As_Source_Parent; }
+
+   bool impl_Use_Parent_Child_Rel_For_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Child_Rel_For_Class; }
+   void impl_Use_Parent_Child_Rel_For_Class( bool Use_Parent_Child_Rel_For_Class ) { v_Use_Parent_Child_Rel_For_Class = Use_Parent_Child_Rel_For_Class; }
+
+   bool impl_Use_Parent_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Class; }
+   void impl_Use_Parent_Class( bool Use_Parent_Class ) { v_Use_Parent_Class = Use_Parent_Class; }
+
+   bool impl_Use_Parent_Field_For_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Field_For_Class; }
+   void impl_Use_Parent_Field_For_Class( bool Use_Parent_Field_For_Class ) { v_Use_Parent_Field_For_Class = Use_Parent_Field_For_Class; }
+
+   bool impl_Use_Parent_Other_Class_For_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Other_Class_For_Class; }
+   void impl_Use_Parent_Other_Class_For_Class( bool Use_Parent_Other_Class_For_Class ) { v_Use_Parent_Other_Class_For_Class = Use_Parent_Other_Class_For_Class; }
+
+   bool impl_Use_Parent_Procedure( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Procedure; }
+   void impl_Use_Parent_Procedure( bool Use_Parent_Procedure ) { v_Use_Parent_Procedure = Use_Parent_Procedure; }
+
+   bool impl_Use_Parent_Source_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Source_Class; }
+   void impl_Use_Parent_Source_Class( bool Use_Parent_Source_Class ) { v_Use_Parent_Source_Class = Use_Parent_Source_Class; }
+
+   bool impl_Use_Parent_Source_Field_For_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Source_Field_For_Class; }
+   void impl_Use_Parent_Source_Field_For_Class( bool Use_Parent_Source_Field_For_Class ) { v_Use_Parent_Source_Field_For_Class = Use_Parent_Source_Field_For_Class; }
+
+   bool impl_Use_Parent_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Source_Parent; }
+   void impl_Use_Parent_Source_Parent( bool Use_Parent_Source_Parent ) { v_Use_Parent_Source_Parent = Use_Parent_Source_Parent; }
+
+   bool impl_Use_Parent_Source_Parent_For_Class( ) const { return lazy_fetch( p_obj ), v_Use_Parent_Source_Parent_For_Class; }
+   void impl_Use_Parent_Source_Parent_For_Class( bool Use_Parent_Source_Parent_For_Class ) { v_Use_Parent_Source_Parent_For_Class = Use_Parent_Source_Parent_For_Class; }
+
+   const string& impl_View_Id( ) const { return lazy_fetch( p_obj ), v_View_Id; }
+   void impl_View_Id( const string& View_Id ) { v_View_Id = View_Id; }
+
+   Meta_Specification_Type& impl_Child_Specification_Type( )
+   {
+      if( !cp_Child_Specification_Type )
+      {
+         cp_Child_Specification_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_Child_Specification_Type, c_field_id_Child_Specification_Type, v_Child_Specification_Type );
+      }
+      return *cp_Child_Specification_Type;
+   }
+
+   const Meta_Specification_Type& impl_Child_Specification_Type( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Child_Specification_Type )
+      {
+         cp_Child_Specification_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_Child_Specification_Type, c_field_id_Child_Specification_Type, v_Child_Specification_Type );
+      }
+      return *cp_Child_Specification_Type;
+   }
+
+   void impl_Child_Specification_Type( const string& key )
+   {
+      class_base_accessor cba( impl_Child_Specification_Type( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Specification_Type& impl_Next_Child_Specification_Type( )
+   {
+      if( !cp_Next_Child_Specification_Type )
+      {
+         cp_Next_Child_Specification_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_Next_Child_Specification_Type, c_field_id_Next_Child_Specification_Type, v_Next_Child_Specification_Type );
+      }
+      return *cp_Next_Child_Specification_Type;
+   }
+
+   const Meta_Specification_Type& impl_Next_Child_Specification_Type( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Next_Child_Specification_Type )
+      {
+         cp_Next_Child_Specification_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_Next_Child_Specification_Type, c_field_id_Next_Child_Specification_Type, v_Next_Child_Specification_Type );
+      }
+      return *cp_Next_Child_Specification_Type;
+   }
+
+   void impl_Next_Child_Specification_Type( const string& key )
+   {
+      class_base_accessor cba( impl_Next_Child_Specification_Type( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Specification_Type& impl_Parent_Specification_Type( )
+   {
+      if( !cp_Parent_Specification_Type )
+      {
+         cp_Parent_Specification_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_Parent_Specification_Type, c_field_id_Parent_Specification_Type, v_Parent_Specification_Type );
+      }
+      return *cp_Parent_Specification_Type;
+   }
+
+   const Meta_Specification_Type& impl_Parent_Specification_Type( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Parent_Specification_Type )
+      {
+         cp_Parent_Specification_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_Parent_Specification_Type, c_field_id_Parent_Specification_Type, v_Parent_Specification_Type );
+      }
+      return *cp_Parent_Specification_Type;
+   }
+
+   void impl_Parent_Specification_Type( const string& key )
+   {
+      class_base_accessor cba( impl_Parent_Specification_Type( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Specification_Type& impl_child_Specification_Type_Child( )
+   {
+      if( !cp_child_Specification_Type_Child )
+      {
+         cp_child_Specification_Type_Child.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Type_Child, "301710" );
+      }
+      return *cp_child_Specification_Type_Child;
+   }
+
+   const Meta_Specification_Type& impl_child_Specification_Type_Child( ) const
+   {
+      if( !cp_child_Specification_Type_Child )
+      {
+         cp_child_Specification_Type_Child.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Type_Child, "301710" );
+      }
+      return *cp_child_Specification_Type_Child;
+   }
+
+   Meta_Specification& impl_child_Specification_Child( )
+   {
+      if( !cp_child_Specification_Child )
+      {
+         cp_child_Specification_Child.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Child, "301406" );
+      }
+      return *cp_child_Specification_Child;
+   }
+
+   const Meta_Specification& impl_child_Specification_Child( ) const
+   {
+      if( !cp_child_Specification_Child )
+      {
+         cp_child_Specification_Child.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Child, "301406" );
+      }
+      return *cp_child_Specification_Child;
+   }
+
+   Meta_Specification_Type& impl_child_Specification_Type_Next_Child( )
+   {
+      if( !cp_child_Specification_Type_Next_Child )
+      {
+         cp_child_Specification_Type_Next_Child.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Type_Next_Child, "301720" );
+      }
+      return *cp_child_Specification_Type_Next_Child;
+   }
+
+   const Meta_Specification_Type& impl_child_Specification_Type_Next_Child( ) const
+   {
+      if( !cp_child_Specification_Type_Next_Child )
+      {
+         cp_child_Specification_Type_Next_Child.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Type_Next_Child, "301720" );
+      }
+      return *cp_child_Specification_Type_Next_Child;
+   }
+
+   Meta_Specification_Type& impl_child_Specification_Type_Parent( )
+   {
+      if( !cp_child_Specification_Type_Parent )
+      {
+         cp_child_Specification_Type_Parent.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Type_Parent, "301700" );
+      }
+      return *cp_child_Specification_Type_Parent;
+   }
+
+   const Meta_Specification_Type& impl_child_Specification_Type_Parent( ) const
+   {
+      if( !cp_child_Specification_Type_Parent )
+      {
+         cp_child_Specification_Type_Parent.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Type_Parent, "301700" );
+      }
+      return *cp_child_Specification_Type_Parent;
+   }
+
+   Meta_Specification& impl_child_Specification( )
+   {
+      if( !cp_child_Specification )
+      {
+         cp_child_Specification.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification, "301410" );
+      }
+      return *cp_child_Specification;
+   }
+
+   const Meta_Specification& impl_child_Specification( ) const
+   {
+      if( !cp_child_Specification )
+      {
+         cp_child_Specification.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification, "301410" );
+      }
+      return *cp_child_Specification;
+   }
+
+   void impl_Is_Valid_Field_Type( const string& Class, string& Error, const string& Parent_Class, int Primitive, int Procedure_Arg_Primitive, int Procedure_Arg_Type, const string& Source_Parent_Class, int Source_Primitive, int Test_Primitive, const string& Test_Value );
+
+   string get_field_value( int field ) const;
+   void set_field_value( int field, const string& value );
+
+   uint64_t get_state( ) const;
+
+   const string& execute( const string& cmd_and_args );
+
+   void clear_foreign_key( const string& field );
+
+   void set_foreign_key_value( const string& field, const string& value );
+
+   const string& get_foreign_key_value( const string& field );
+
+   void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
+
+   void clear( );
+
+   bool value_will_be_provided( const string& field_name );
+
+   void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+
+   void after_fetch( );
+   void finalise_fetch( );
+
+   void at_create( );
+
+   void to_store( bool is_create, bool is_internal );
+   void for_store( bool is_create, bool is_internal );
+   void after_store( bool is_create, bool is_internal );
+
+   bool can_destroy( bool is_internal );
+   void for_destroy( bool is_internal );
+   void after_destroy( bool is_internal );
+
+   void set_default_values( );
+
+   bool is_filtered( const set< string >& filters ) const;
+
+   Meta_Specification_Type* p_obj;
+   class_pointer< Meta_Specification_Type > cp_obj;
+
+   // [<start members>]
+   // [<finish members>]
+
+   size_t total_child_relationships;
+
+   bool v_Allow_Child_Relationship;
+   bool v_Allow_FK_Source_Field_Choice;
+   bool v_Allow_FK_Test_Field_Choice;
+   bool v_Allow_Field;
+   bool v_Allow_Options;
+   bool v_Allow_Other_Class;
+   bool v_Allow_Other_Field;
+   bool v_Allow_Other_Field_2;
+   bool v_Allow_Permission;
+   bool v_Allow_Procedure;
+   bool v_Allow_Source_Child;
+   bool v_Allow_Source_Child_2;
+   bool v_Allow_Source_Class;
+   bool v_Allow_Source_Field;
+   bool v_Allow_Source_Grandchild;
+   bool v_Allow_Source_Parent;
+   bool v_Allow_Test_Field;
+   bool v_Allow_Test_Value;
+   bool v_Allow_Value;
+   string v_Child_Prefix;
+   bool v_Child_Rel_Grandparent_Match;
+   bool v_Child_Rel_Parent_Match;
+   bool v_Child_Relationship_Class_Match;
+   string v_Default_Child_Vars;
+   int v_Field_type;
+   bool v_Has_Next_Specification_Info;
+   bool v_Is_Child_Only;
+   bool v_Is_Required_For_UI_Gen;
+   bool v_Is_System;
+   string v_Name;
+   bool v_Needs_Child_Relationship;
+   bool v_Needs_Class;
+   bool v_Needs_Enum;
+   bool v_Needs_Enum_Item;
+   bool v_Needs_Enum_Item_2;
+   bool v_Needs_Enum_Item_3;
+   bool v_Needs_Enum_Item_4;
+   bool v_Needs_Enum_Item_5;
+   bool v_Needs_Field;
+   bool v_Needs_Modifier;
+   bool v_Needs_Other_Class;
+   bool v_Needs_Other_Field;
+   bool v_Needs_Other_Field_2;
+   bool v_Needs_Other_Procedure;
+   bool v_Needs_Other_Procedure_2;
+   bool v_Needs_Permission;
+   bool v_Needs_Procedure;
+   bool v_Needs_Procedure_Arg;
+   bool v_Needs_Procedure_Arg_2;
+   bool v_Needs_Procedure_Arg_3;
+   bool v_Needs_Source_Child;
+   bool v_Needs_Source_Child_2;
+   bool v_Needs_Source_Field;
+   bool v_Needs_Source_Field_Or_Child;
+   bool v_Needs_Source_Parent;
+   bool v_Needs_Test_Field;
+   bool v_Needs_Test_Value;
+   bool v_Needs_Value;
+   bool v_Next_Protect_Child_Rel;
+   bool v_Next_Protect_Procedure;
+   bool v_Next_Protect_Source_Parent;
+   string v_Next_Specification_Actions;
+   string v_Notes;
+   int v_Procedure_Arg_primitive;
+   int v_Procedure_Arg_type;
+   bool v_Protect_Child_Rel_From_Update;
+   bool v_Protect_Class_From_Edit;
+   bool v_Protect_Class_From_Update;
+   bool v_Protect_Procedure_From_Edit;
+   bool v_Protect_Source_Parent;
+   bool v_Set_Field_To_Source_Field_Or_Child;
+   bool v_Source_Field_Needs_Test_Field;
+   bool v_Source_Field_Type_Match;
+   int v_Source_Parent_type;
+   int v_Source_type;
+   string v_Specification_Actions;
+   string v_Specification_Name;
+   string v_Specification_Object;
+   string v_Specification_Strings;
+   string v_Specification_Vars;
+   bool v_Test_Field_Type_Match;
+   int v_Test_Field_type;
+   bool v_Use_Class_As_Source_Parent_Class;
+   bool v_Use_Field_Enum;
+   bool v_Use_Parent_Child_Rel_As_Source_Parent;
+   bool v_Use_Parent_Child_Rel_For_Class;
+   bool v_Use_Parent_Class;
+   bool v_Use_Parent_Field_For_Class;
+   bool v_Use_Parent_Other_Class_For_Class;
+   bool v_Use_Parent_Procedure;
+   bool v_Use_Parent_Source_Class;
+   bool v_Use_Parent_Source_Field_For_Class;
+   bool v_Use_Parent_Source_Parent;
+   bool v_Use_Parent_Source_Parent_For_Class;
+   string v_View_Id;
+
+   string v_Child_Specification_Type;
+   mutable class_pointer< Meta_Specification_Type > cp_Child_Specification_Type;
+
+   string v_Next_Child_Specification_Type;
+   mutable class_pointer< Meta_Specification_Type > cp_Next_Child_Specification_Type;
+
+   string v_Parent_Specification_Type;
+   mutable class_pointer< Meta_Specification_Type > cp_Parent_Specification_Type;
+
+   mutable class_pointer< Meta_Specification_Type > cp_child_Specification_Type_Child;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Child;
+   mutable class_pointer< Meta_Specification_Type > cp_child_Specification_Type_Next_Child;
+   mutable class_pointer< Meta_Specification_Type > cp_child_Specification_Type_Parent;
+   mutable class_pointer< Meta_Specification > cp_child_Specification;
+};
+
+void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Class, string& Error, const string& Parent_Class, int Primitive, int Procedure_Arg_Primitive, int Procedure_Arg_Type, const string& Source_Parent_Class, int Source_Primitive, int Test_Primitive, const string& Test_Value )
+{
+   // [(start meta_trait_val_proc)]
+   if( get_obj( ).Field_type( ) != c_enum_field_type_Any_Type )
+   {
+      if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Primitive )
+      {
+         if( !Parent_Class.empty( ) )
+            Error = GMS( field_specification_type_field_type ) + " must be a primitive"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Relationship )
+      {
+         if( Parent_Class.empty( ) )
+            Error = GMS( field_specification_type_field_type ) + " must be a relationship"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Self_Relationship )
+      {
+         if( Parent_Class.empty( ) || Parent_Class != Class )
+            Error = GMS( field_specification_type_field_type ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Non_Self_Relationship )
+      {
+         if( Parent_Class.empty( ) || Parent_Class == Class )
+            Error = GMS( field_specification_type_field_type ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Text_Type )
+      {
+         if( Primitive == c_enum_field_type_bool
+          || Primitive == c_enum_field_type_int || Primitive == c_enum_field_type_numeric )
+            Error = GMS( field_specification_type_field_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Scalar_Type )
+      {
+         bool in_error = true;
+         if( Parent_Class.empty( ) )
+         {
+            if( Primitive == c_enum_field_type_datetime
+             || Primitive == c_enum_field_type_date || Primitive == c_enum_field_type_time
+             || Primitive == c_enum_field_type_numeric || Primitive == c_enum_field_type_int )
+               in_error = false;
+         }
+
+         if( in_error )
+            Error = GMS( field_specification_type_field_type ) + " must be a scalar type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Math_Type )
+      {
+         bool in_error = true;
+         if( Parent_Class.empty( ) )
+         {
+            if( Primitive == c_enum_field_type_numeric || Primitive == c_enum_field_type_int )
+               in_error = false;
+         }
+
+         if( in_error )
+            Error = GMS( field_specification_type_field_type ) + " must be a math type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) == c_enum_field_type_Calendar_Type )
+      {
+         bool in_error = true;
+         if( Parent_Class.empty( ) )
+         {
+            if( Primitive == c_enum_field_type_datetime || Primitive == c_enum_field_type_date )
+               in_error = false;
+         }
+
+         if( in_error )
+            Error = GMS( field_specification_type_field_type ) + " must be a calendar type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Field_type( ) < c_enum_field_type_Any_Text_Type ) // i.e. all primitives
+      {
+         if( !Parent_Class.empty( )
+          || ( Primitive >= 0 && Primitive != get_obj( ).Field_type( ) ) )
+         {
+            string primitive_name;
+
+            if( get_obj( ).Field_type( ) == c_enum_field_type_string )
+               primitive_name = GMS( enum_field_type_string );
+            else if( get_obj( ).Field_type( ) == c_enum_field_type_datetime )
+               primitive_name = GMS( enum_field_type_datetime );
+            else if( get_obj( ).Field_type( ) == c_enum_field_type_date )
+               primitive_name = GMS( enum_field_type_date );
+            else if( get_obj( ).Field_type( ) == c_enum_field_type_time )
+               primitive_name = GMS( enum_field_type_time );
+            else if( get_obj( ).Field_type( ) == c_enum_field_type_numeric )
+               primitive_name = GMS( enum_field_type_numeric );
+            else if( get_obj( ).Field_type( ) == c_enum_field_type_int )
+               primitive_name = GMS( enum_field_type_int );
+            else if( get_obj( ).Field_type( ) == c_enum_field_type_bool )
+               primitive_name = GMS( enum_field_type_bool );
+
+            Error = GMS( field_specification_type_field_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+         }
+      }
+      else
+         throw runtime_error( "unexpected Field_type value " + to_string( get_obj( ).Field_type( ) ) + " in Is_Valid_Field_Type" );
+   }
+   // [(finish meta_trait_val_proc)]
+
+   // [(start meta_trait_val_proc)]
+   if( Source_Primitive >= 0 && get_obj( ).Source_type( ) != c_enum_source_type_Any_Type )
+   {
+      if( get_obj( ).Source_type( ) == c_enum_source_type_Any_Text_Type )
+      {
+         if( Source_Primitive >= c_enum_source_type_numeric )
+            Error = GMS( field_specification_type_source_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Source_type( ) == c_enum_source_type_Any_Conditional )
+      {
+         if( Source_Primitive < c_enum_source_type_int || Source_Primitive > c_enum_source_type_bool )
+            Error = GMS( field_specification_type_source_type ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Source_type( ) < c_enum_source_type_Any_Text_Type ) // i.e. all primitives
+      {
+         if( Source_Primitive != get_obj( ).Source_type( ) )
+         {
+            string primitive_name;
+
+            if( get_obj( ).Source_type( ) == c_enum_source_type_string )
+               primitive_name = GMS( enum_source_type_string );
+            else if( get_obj( ).Source_type( ) == c_enum_source_type_datetime )
+               primitive_name = GMS( enum_source_type_datetime );
+            else if( get_obj( ).Source_type( ) == c_enum_source_type_date )
+               primitive_name = GMS( enum_source_type_date );
+            else if( get_obj( ).Source_type( ) == c_enum_source_type_time )
+               primitive_name = GMS( enum_source_type_time );
+            else if( get_obj( ).Source_type( ) == c_enum_source_type_numeric )
+               primitive_name = GMS( enum_source_type_numeric );
+            else if( get_obj( ).Source_type( ) == c_enum_source_type_int )
+               primitive_name = GMS( enum_source_type_int );
+            else if( get_obj( ).Source_type( ) == c_enum_source_type_bool )
+               primitive_name = GMS( enum_source_type_bool );
+
+            Error = GMS( field_specification_type_source_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+         }
+      }
+      else
+         throw runtime_error( "unexpected Source_type value " + to_string( get_obj( ).Source_type( ) ) + " in Is_Valid_Field_Type" );
+   }
+   // [(finish meta_trait_val_proc)]
+
+   // [(start meta_trait_val_proc)]
+   if( Test_Primitive >= 0 && get_obj( ).Test_Field_type( ) != c_enum_test_field_type_Any_Type )
+   {
+      if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Text_Type )
+      {
+         if( Test_Primitive >= c_enum_test_field_type_numeric )
+            Error = GMS( field_specification_type_test_field_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Conditional )
+      {
+         if( Test_Primitive < c_enum_test_field_type_int || Test_Primitive > c_enum_test_field_type_bool )
+            Error = GMS( field_specification_type_test_field_type ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Value_Or_Conditional )
+      {
+         if( Test_Value.empty( )
+          && ( Test_Primitive < c_enum_test_field_type_int || Test_Primitive > c_enum_test_field_type_bool ) )
+            Error = GMS( field_specification_type_test_field_type ) + " must be a conditional type if no value provided"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Test_Field_type( ) < c_enum_test_field_type_Any_Text_Type ) // i.e. all primitives
+      {
+         if( Test_Primitive != get_obj( ).Test_Field_type( ) )
+         {
+            string primitive_name;
+
+            if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_string )
+               primitive_name = GMS( enum_test_field_type_string );
+            else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_datetime )
+               primitive_name = GMS( enum_test_field_type_datetime );
+            else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_date )
+               primitive_name = GMS( enum_test_field_type_date );
+            else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_time )
+               primitive_name = GMS( enum_test_field_type_time );
+            else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_numeric )
+               primitive_name = GMS( enum_test_field_type_numeric );
+            else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_int )
+               primitive_name = GMS( enum_test_field_type_int );
+            else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_bool )
+               primitive_name = GMS( enum_test_field_type_bool );
+
+            Error = GMS( field_specification_type_test_field_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+         }
+      }
+      else
+         throw runtime_error( "unexpected Test_Field_type value " + to_string( get_obj( ).Test_Field_type( ) ) + " in Is_Valid_Field_Type" );
+   }
+   // [(finish meta_trait_val_proc)]
+
+   // [(start meta_trait_val_proc)]
+   if( get_obj( ).Source_Parent_type( ) != c_enum_source_parent_type_Any_Relationship )
+   {
+      if( get_obj( ).Source_Parent_type( ) == c_enum_source_parent_type_Self_Relationship )
+      {
+         if( !Source_Parent_Class.empty( ) && Source_Parent_Class != Class )
+            Error = GMS( field_specification_type_source_parent_type ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Source_Parent_type( ) == c_enum_source_parent_type_Non_Self_Relationship )
+      {
+         if( !Source_Parent_Class.empty( ) && Source_Parent_Class == Class )
+            Error = GMS( field_specification_type_source_parent_type ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
+      }
+      else
+         throw runtime_error( "unexpected Source_Parent_type value " + to_string( get_obj( ).Source_Parent_type( ) ) + " in Is_Valid_Field_Type" );
+   }
+   // [(finish meta_trait_val_proc)]
+
+   // [(start meta_trait_val_proc)]
+   if( get_obj( ).Procedure_Arg_primitive( ) != c_enum_procedure_arg_primitive_Any_Primitive )
+   {
+      if( Procedure_Arg_Primitive != get_obj( ).Procedure_Arg_primitive( ) )
+      {
+         string primitive_name;
+
+         if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_string )
+            primitive_name = GMS( enum_procedure_arg_primitive_string );
+         else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_datetime )
+            primitive_name = GMS( enum_procedure_arg_primitive_datetime );
+         else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_date )
+            primitive_name = GMS( enum_procedure_arg_primitive_date );
+         else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_time )
+            primitive_name = GMS( enum_procedure_arg_primitive_time );
+         else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_numeric )
+            primitive_name = GMS( enum_procedure_arg_primitive_numeric );
+         else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_int )
+            primitive_name = GMS( enum_procedure_arg_primitive_int );
+         else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_bool )
+            primitive_name = GMS( enum_procedure_arg_primitive_bool );
+
+         Error = GMS( field_specification_type_procedure_arg_primitive ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+      }
+   }
+   // [(finish meta_trait_val_proc)]
+
+   // [(start meta_trait_val_proc)]
+   if( get_obj( ).Procedure_Arg_type( ) != c_enum_procedure_arg_type_Any_Type )
+   {
+      if( Procedure_Arg_Type != get_obj( ).Procedure_Arg_type( ) )
+      {
+         string type_name;
+
+         if( get_obj( ).Procedure_Arg_type( ) == c_enum_procedure_arg_type_in )
+            type_name = GMS( enum_procedure_arg_type_in );
+         else if( get_obj( ).Procedure_Arg_type( ) == c_enum_procedure_arg_type_out )
+            type_name = GMS( enum_procedure_arg_type_out );
+
+         Error = GMS( field_specification_type_procedure_arg_type ) + " must be type " + type_name; // FUTURE: Should be in module_strings...
+      }
+   }
+   // [(finish meta_trait_val_proc)]
+
+   // [<start Is_Valid_Field_Type_impl>]
+   // [<finish Is_Valid_Field_Type_impl>]
+}
+
+string Meta_Specification_Type::impl::get_field_value( int field ) const
+{
+   string retval;
+
+   switch( field )
+   {
+      case 0:
+      retval = to_string( impl_Allow_Child_Relationship( ) );
+      break;
+
+      case 1:
+      retval = to_string( impl_Allow_FK_Source_Field_Choice( ) );
+      break;
+
+      case 2:
+      retval = to_string( impl_Allow_FK_Test_Field_Choice( ) );
+      break;
+
+      case 3:
+      retval = to_string( impl_Allow_Field( ) );
+      break;
+
+      case 4:
+      retval = to_string( impl_Allow_Options( ) );
+      break;
+
+      case 5:
+      retval = to_string( impl_Allow_Other_Class( ) );
+      break;
+
+      case 6:
+      retval = to_string( impl_Allow_Other_Field( ) );
+      break;
+
+      case 7:
+      retval = to_string( impl_Allow_Other_Field_2( ) );
+      break;
+
+      case 8:
+      retval = to_string( impl_Allow_Permission( ) );
+      break;
+
+      case 9:
+      retval = to_string( impl_Allow_Procedure( ) );
+      break;
+
+      case 10:
+      retval = to_string( impl_Allow_Source_Child( ) );
+      break;
+
+      case 11:
+      retval = to_string( impl_Allow_Source_Child_2( ) );
+      break;
+
+      case 12:
+      retval = to_string( impl_Allow_Source_Class( ) );
+      break;
+
+      case 13:
+      retval = to_string( impl_Allow_Source_Field( ) );
+      break;
+
+      case 14:
+      retval = to_string( impl_Allow_Source_Grandchild( ) );
+      break;
+
+      case 15:
+      retval = to_string( impl_Allow_Source_Parent( ) );
+      break;
+
+      case 16:
+      retval = to_string( impl_Allow_Test_Field( ) );
+      break;
+
+      case 17:
+      retval = to_string( impl_Allow_Test_Value( ) );
+      break;
+
+      case 18:
+      retval = to_string( impl_Allow_Value( ) );
+      break;
+
+      case 19:
+      retval = to_string( impl_Child_Prefix( ) );
+      break;
+
+      case 20:
+      retval = to_string( impl_Child_Rel_Grandparent_Match( ) );
+      break;
+
+      case 21:
+      retval = to_string( impl_Child_Rel_Parent_Match( ) );
+      break;
+
+      case 22:
+      retval = to_string( impl_Child_Relationship_Class_Match( ) );
+      break;
+
+      case 23:
+      retval = to_string( impl_Child_Specification_Type( ) );
+      break;
+
+      case 24:
+      retval = to_string( impl_Default_Child_Vars( ) );
+      break;
+
+      case 25:
+      retval = to_string( impl_Field_type( ) );
+      break;
+
+      case 26:
+      retval = to_string( impl_Has_Next_Specification_Info( ) );
+      break;
+
+      case 27:
+      retval = to_string( impl_Is_Child_Only( ) );
+      break;
+
+      case 28:
+      retval = to_string( impl_Is_Required_For_UI_Gen( ) );
+      break;
+
+      case 29:
+      retval = to_string( impl_Is_System( ) );
+      break;
+
+      case 30:
+      retval = to_string( impl_Name( ) );
+      break;
+
+      case 31:
+      retval = to_string( impl_Needs_Child_Relationship( ) );
+      break;
+
+      case 32:
+      retval = to_string( impl_Needs_Class( ) );
+      break;
+
+      case 33:
+      retval = to_string( impl_Needs_Enum( ) );
+      break;
+
+      case 34:
+      retval = to_string( impl_Needs_Enum_Item( ) );
+      break;
+
+      case 35:
+      retval = to_string( impl_Needs_Enum_Item_2( ) );
+      break;
+
+      case 36:
+      retval = to_string( impl_Needs_Enum_Item_3( ) );
+      break;
+
+      case 37:
+      retval = to_string( impl_Needs_Enum_Item_4( ) );
+      break;
+
+      case 38:
+      retval = to_string( impl_Needs_Enum_Item_5( ) );
+      break;
+
+      case 39:
+      retval = to_string( impl_Needs_Field( ) );
+      break;
+
+      case 40:
+      retval = to_string( impl_Needs_Modifier( ) );
+      break;
+
+      case 41:
+      retval = to_string( impl_Needs_Other_Class( ) );
+      break;
+
+      case 42:
+      retval = to_string( impl_Needs_Other_Field( ) );
+      break;
+
+      case 43:
+      retval = to_string( impl_Needs_Other_Field_2( ) );
+      break;
+
+      case 44:
+      retval = to_string( impl_Needs_Other_Procedure( ) );
+      break;
+
+      case 45:
+      retval = to_string( impl_Needs_Other_Procedure_2( ) );
+      break;
+
+      case 46:
+      retval = to_string( impl_Needs_Permission( ) );
+      break;
+
+      case 47:
+      retval = to_string( impl_Needs_Procedure( ) );
+      break;
+
+      case 48:
+      retval = to_string( impl_Needs_Procedure_Arg( ) );
+      break;
+
+      case 49:
+      retval = to_string( impl_Needs_Procedure_Arg_2( ) );
+      break;
+
+      case 50:
+      retval = to_string( impl_Needs_Procedure_Arg_3( ) );
+      break;
+
+      case 51:
+      retval = to_string( impl_Needs_Source_Child( ) );
+      break;
+
+      case 52:
+      retval = to_string( impl_Needs_Source_Child_2( ) );
+      break;
+
+      case 53:
+      retval = to_string( impl_Needs_Source_Field( ) );
+      break;
+
+      case 54:
+      retval = to_string( impl_Needs_Source_Field_Or_Child( ) );
+      break;
+
+      case 55:
+      retval = to_string( impl_Needs_Source_Parent( ) );
+      break;
+
+      case 56:
+      retval = to_string( impl_Needs_Test_Field( ) );
+      break;
+
+      case 57:
+      retval = to_string( impl_Needs_Test_Value( ) );
+      break;
+
+      case 58:
+      retval = to_string( impl_Needs_Value( ) );
+      break;
+
+      case 59:
+      retval = to_string( impl_Next_Child_Specification_Type( ) );
+      break;
+
+      case 60:
+      retval = to_string( impl_Next_Protect_Child_Rel( ) );
+      break;
+
+      case 61:
+      retval = to_string( impl_Next_Protect_Procedure( ) );
+      break;
+
+      case 62:
+      retval = to_string( impl_Next_Protect_Source_Parent( ) );
+      break;
+
+      case 63:
+      retval = to_string( impl_Next_Specification_Actions( ) );
+      break;
+
+      case 64:
+      retval = to_string( impl_Notes( ) );
+      break;
+
+      case 65:
+      retval = to_string( impl_Parent_Specification_Type( ) );
+      break;
+
+      case 66:
+      retval = to_string( impl_Procedure_Arg_primitive( ) );
+      break;
+
+      case 67:
+      retval = to_string( impl_Procedure_Arg_type( ) );
+      break;
+
+      case 68:
+      retval = to_string( impl_Protect_Child_Rel_From_Update( ) );
+      break;
+
+      case 69:
+      retval = to_string( impl_Protect_Class_From_Edit( ) );
+      break;
+
+      case 70:
+      retval = to_string( impl_Protect_Class_From_Update( ) );
+      break;
+
+      case 71:
+      retval = to_string( impl_Protect_Procedure_From_Edit( ) );
+      break;
+
+      case 72:
+      retval = to_string( impl_Protect_Source_Parent( ) );
+      break;
+
+      case 73:
+      retval = to_string( impl_Set_Field_To_Source_Field_Or_Child( ) );
+      break;
+
+      case 74:
+      retval = to_string( impl_Source_Field_Needs_Test_Field( ) );
+      break;
+
+      case 75:
+      retval = to_string( impl_Source_Field_Type_Match( ) );
+      break;
+
+      case 76:
+      retval = to_string( impl_Source_Parent_type( ) );
+      break;
+
+      case 77:
+      retval = to_string( impl_Source_type( ) );
+      break;
+
+      case 78:
+      retval = to_string( impl_Specification_Actions( ) );
+      break;
+
+      case 79:
+      retval = to_string( impl_Specification_Name( ) );
+      break;
+
+      case 80:
+      retval = to_string( impl_Specification_Object( ) );
+      break;
+
+      case 81:
+      retval = to_string( impl_Specification_Strings( ) );
+      break;
+
+      case 82:
+      retval = to_string( impl_Specification_Vars( ) );
+      break;
+
+      case 83:
+      retval = to_string( impl_Test_Field_Type_Match( ) );
+      break;
+
+      case 84:
+      retval = to_string( impl_Test_Field_type( ) );
+      break;
+
+      case 85:
+      retval = to_string( impl_Use_Class_As_Source_Parent_Class( ) );
+      break;
+
+      case 86:
+      retval = to_string( impl_Use_Field_Enum( ) );
+      break;
+
+      case 87:
+      retval = to_string( impl_Use_Parent_Child_Rel_As_Source_Parent( ) );
+      break;
+
+      case 88:
+      retval = to_string( impl_Use_Parent_Child_Rel_For_Class( ) );
+      break;
+
+      case 89:
+      retval = to_string( impl_Use_Parent_Class( ) );
+      break;
+
+      case 90:
+      retval = to_string( impl_Use_Parent_Field_For_Class( ) );
+      break;
+
+      case 91:
+      retval = to_string( impl_Use_Parent_Other_Class_For_Class( ) );
+      break;
+
+      case 92:
+      retval = to_string( impl_Use_Parent_Procedure( ) );
+      break;
+
+      case 93:
+      retval = to_string( impl_Use_Parent_Source_Class( ) );
+      break;
+
+      case 94:
+      retval = to_string( impl_Use_Parent_Source_Field_For_Class( ) );
+      break;
+
+      case 95:
+      retval = to_string( impl_Use_Parent_Source_Parent( ) );
+      break;
+
+      case 96:
+      retval = to_string( impl_Use_Parent_Source_Parent_For_Class( ) );
+      break;
+
+      case 97:
+      retval = to_string( impl_View_Id( ) );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+   }
+
+   return retval;
+}
+
+void Meta_Specification_Type::impl::set_field_value( int field, const string& value )
+{
+   switch( field )
+   {
+      case 0:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Child_Relationship, value );
+      break;
+
+      case 1:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_FK_Source_Field_Choice, value );
+      break;
+
+      case 2:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_FK_Test_Field_Choice, value );
+      break;
+
+      case 3:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Field, value );
+      break;
+
+      case 4:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Options, value );
+      break;
+
+      case 5:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Other_Class, value );
+      break;
+
+      case 6:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Other_Field, value );
+      break;
+
+      case 7:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Other_Field_2, value );
+      break;
+
+      case 8:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Permission, value );
+      break;
+
+      case 9:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Procedure, value );
+      break;
+
+      case 10:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Child, value );
+      break;
+
+      case 11:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Child_2, value );
+      break;
+
+      case 12:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Class, value );
+      break;
+
+      case 13:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Field, value );
+      break;
+
+      case 14:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Grandchild, value );
+      break;
+
+      case 15:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Parent, value );
+      break;
+
+      case 16:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Test_Field, value );
+      break;
+
+      case 17:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Test_Value, value );
+      break;
+
+      case 18:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Value, value );
+      break;
+
+      case 19:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Child_Prefix, value );
+      break;
+
+      case 20:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Rel_Grandparent_Match, value );
+      break;
+
+      case 21:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Rel_Parent_Match, value );
+      break;
+
+      case 22:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Relationship_Class_Match, value );
+      break;
+
+      case 23:
+      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Child_Specification_Type, value );
+      break;
+
+      case 24:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Default_Child_Vars, value );
+      break;
+
+      case 25:
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Field_type, value );
+      break;
+
+      case 26:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Has_Next_Specification_Info, value );
+      break;
+
+      case 27:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_Child_Only, value );
+      break;
+
+      case 28:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_Required_For_UI_Gen, value );
+      break;
+
+      case 29:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_System, value );
+      break;
+
+      case 30:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Name, value );
+      break;
+
+      case 31:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Child_Relationship, value );
+      break;
+
+      case 32:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Class, value );
+      break;
+
+      case 33:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum, value );
+      break;
+
+      case 34:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item, value );
+      break;
+
+      case 35:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_2, value );
+      break;
+
+      case 36:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_3, value );
+      break;
+
+      case 37:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_4, value );
+      break;
+
+      case 38:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_5, value );
+      break;
+
+      case 39:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Field, value );
+      break;
+
+      case 40:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Modifier, value );
+      break;
+
+      case 41:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Class, value );
+      break;
+
+      case 42:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Field, value );
+      break;
+
+      case 43:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Field_2, value );
+      break;
+
+      case 44:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Procedure, value );
+      break;
+
+      case 45:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Procedure_2, value );
+      break;
+
+      case 46:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Permission, value );
+      break;
+
+      case 47:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure, value );
+      break;
+
+      case 48:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg, value );
+      break;
+
+      case 49:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg_2, value );
+      break;
+
+      case 50:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg_3, value );
+      break;
+
+      case 51:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Child, value );
+      break;
+
+      case 52:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Child_2, value );
+      break;
+
+      case 53:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Field, value );
+      break;
+
+      case 54:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Field_Or_Child, value );
+      break;
+
+      case 55:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Parent, value );
+      break;
+
+      case 56:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Test_Field, value );
+      break;
+
+      case 57:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Test_Value, value );
+      break;
+
+      case 58:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Value, value );
+      break;
+
+      case 59:
+      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Next_Child_Specification_Type, value );
+      break;
+
+      case 60:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Child_Rel, value );
+      break;
+
+      case 61:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Procedure, value );
+      break;
+
+      case 62:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Source_Parent, value );
+      break;
+
+      case 63:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Next_Specification_Actions, value );
+      break;
+
+      case 64:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Notes, value );
+      break;
+
+      case 65:
+      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Parent_Specification_Type, value );
+      break;
+
+      case 66:
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Procedure_Arg_primitive, value );
+      break;
+
+      case 67:
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Procedure_Arg_type, value );
+      break;
+
+      case 68:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Child_Rel_From_Update, value );
+      break;
+
+      case 69:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Class_From_Edit, value );
+      break;
+
+      case 70:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Class_From_Update, value );
+      break;
+
+      case 71:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Procedure_From_Edit, value );
+      break;
+
+      case 72:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Source_Parent, value );
+      break;
+
+      case 73:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Set_Field_To_Source_Field_Or_Child, value );
+      break;
+
+      case 74:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Source_Field_Needs_Test_Field, value );
+      break;
+
+      case 75:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Source_Field_Type_Match, value );
+      break;
+
+      case 76:
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Source_Parent_type, value );
+      break;
+
+      case 77:
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Source_type, value );
+      break;
+
+      case 78:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Actions, value );
+      break;
+
+      case 79:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Name, value );
+      break;
+
+      case 80:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Object, value );
+      break;
+
+      case 81:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Strings, value );
+      break;
+
+      case 82:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Vars, value );
+      break;
+
+      case 83:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Test_Field_Type_Match, value );
+      break;
+
+      case 84:
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Test_Field_type, value );
+      break;
+
+      case 85:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Class_As_Source_Parent_Class, value );
+      break;
+
+      case 86:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Field_Enum, value );
+      break;
+
+      case 87:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Child_Rel_As_Source_Parent, value );
+      break;
+
+      case 88:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Child_Rel_For_Class, value );
+      break;
+
+      case 89:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Class, value );
+      break;
+
+      case 90:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Field_For_Class, value );
+      break;
+
+      case 91:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Other_Class_For_Class, value );
+      break;
+
+      case 92:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Procedure, value );
+      break;
+
+      case 93:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Class, value );
+      break;
+
+      case 94:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Field_For_Class, value );
+      break;
+
+      case 95:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Parent, value );
+      break;
+
+      case 96:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Parent_For_Class, value );
+      break;
+
+      case 97:
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_View_Id, value );
+      break;
+
+      default:
+      throw runtime_error( "field #" + to_string( field ) + " is out of range" );
+   }
+}
+
+uint64_t Meta_Specification_Type::impl::get_state( ) const
+{
+   uint64_t state = 0;
+
+   // [<start get_state>]
+   // [<finish get_state>]
+
+   return state;
+}
+
+const string& Meta_Specification_Type::impl::execute( const string& cmd_and_args )
+{
+   execute_command( cmd_and_args );
+   return retval;
+}
+
+void Meta_Specification_Type::impl::clear_foreign_key( const string& field )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
+      impl_Child_Specification_Type( "" );
+   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
+      impl_Next_Child_Specification_Type( "" );
+   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
+      impl_Parent_Specification_Type( "" );
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+void Meta_Specification_Type::impl::set_foreign_key_value( const string& field, const string& value )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
+      v_Child_Specification_Type = value;
+   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
+      v_Next_Child_Specification_Type = value;
+   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
+      v_Parent_Specification_Type = value;
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+const string& Meta_Specification_Type::impl::get_foreign_key_value( const string& field )
+{
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
+      return v_Child_Specification_Type;
+   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
+      return v_Next_Child_Specification_Type;
+   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
+      return v_Parent_Specification_Type;
+   else
+      throw runtime_error( "unknown foreign key field '" + field + "'" );
+}
+
+void Meta_Specification_Type::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
+{
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Child_Specification_Type, v_Child_Specification_Type ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Next_Child_Specification_Type, v_Next_Child_Specification_Type ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Specification_Type, v_Parent_Specification_Type ) );
+}
+
+void Meta_Specification_Type::impl::clear( )
+{
+   v_Allow_Child_Relationship = gv_default_Allow_Child_Relationship;
+   v_Allow_FK_Source_Field_Choice = gv_default_Allow_FK_Source_Field_Choice;
+   v_Allow_FK_Test_Field_Choice = gv_default_Allow_FK_Test_Field_Choice;
+   v_Allow_Field = gv_default_Allow_Field;
+   v_Allow_Options = gv_default_Allow_Options;
+   v_Allow_Other_Class = gv_default_Allow_Other_Class;
+   v_Allow_Other_Field = gv_default_Allow_Other_Field;
+   v_Allow_Other_Field_2 = gv_default_Allow_Other_Field_2;
+   v_Allow_Permission = gv_default_Allow_Permission;
+   v_Allow_Procedure = gv_default_Allow_Procedure;
+   v_Allow_Source_Child = gv_default_Allow_Source_Child;
+   v_Allow_Source_Child_2 = gv_default_Allow_Source_Child_2;
+   v_Allow_Source_Class = gv_default_Allow_Source_Class;
+   v_Allow_Source_Field = gv_default_Allow_Source_Field;
+   v_Allow_Source_Grandchild = gv_default_Allow_Source_Grandchild;
+   v_Allow_Source_Parent = gv_default_Allow_Source_Parent;
+   v_Allow_Test_Field = gv_default_Allow_Test_Field;
+   v_Allow_Test_Value = gv_default_Allow_Test_Value;
+   v_Allow_Value = gv_default_Allow_Value;
+   v_Child_Prefix = gv_default_Child_Prefix;
+   v_Child_Rel_Grandparent_Match = gv_default_Child_Rel_Grandparent_Match;
+   v_Child_Rel_Parent_Match = gv_default_Child_Rel_Parent_Match;
+   v_Child_Relationship_Class_Match = gv_default_Child_Relationship_Class_Match;
+   v_Default_Child_Vars = gv_default_Default_Child_Vars;
+   v_Field_type = gv_default_Field_type;
+   v_Has_Next_Specification_Info = gv_default_Has_Next_Specification_Info;
+   v_Is_Child_Only = gv_default_Is_Child_Only;
+   v_Is_Required_For_UI_Gen = gv_default_Is_Required_For_UI_Gen;
+   v_Is_System = gv_default_Is_System;
+   v_Name = gv_default_Name;
+   v_Needs_Child_Relationship = gv_default_Needs_Child_Relationship;
+   v_Needs_Class = gv_default_Needs_Class;
+   v_Needs_Enum = gv_default_Needs_Enum;
+   v_Needs_Enum_Item = gv_default_Needs_Enum_Item;
+   v_Needs_Enum_Item_2 = gv_default_Needs_Enum_Item_2;
+   v_Needs_Enum_Item_3 = gv_default_Needs_Enum_Item_3;
+   v_Needs_Enum_Item_4 = gv_default_Needs_Enum_Item_4;
+   v_Needs_Enum_Item_5 = gv_default_Needs_Enum_Item_5;
+   v_Needs_Field = gv_default_Needs_Field;
+   v_Needs_Modifier = gv_default_Needs_Modifier;
+   v_Needs_Other_Class = gv_default_Needs_Other_Class;
+   v_Needs_Other_Field = gv_default_Needs_Other_Field;
+   v_Needs_Other_Field_2 = gv_default_Needs_Other_Field_2;
+   v_Needs_Other_Procedure = gv_default_Needs_Other_Procedure;
+   v_Needs_Other_Procedure_2 = gv_default_Needs_Other_Procedure_2;
+   v_Needs_Permission = gv_default_Needs_Permission;
+   v_Needs_Procedure = gv_default_Needs_Procedure;
+   v_Needs_Procedure_Arg = gv_default_Needs_Procedure_Arg;
+   v_Needs_Procedure_Arg_2 = gv_default_Needs_Procedure_Arg_2;
+   v_Needs_Procedure_Arg_3 = gv_default_Needs_Procedure_Arg_3;
+   v_Needs_Source_Child = gv_default_Needs_Source_Child;
+   v_Needs_Source_Child_2 = gv_default_Needs_Source_Child_2;
+   v_Needs_Source_Field = gv_default_Needs_Source_Field;
+   v_Needs_Source_Field_Or_Child = gv_default_Needs_Source_Field_Or_Child;
+   v_Needs_Source_Parent = gv_default_Needs_Source_Parent;
+   v_Needs_Test_Field = gv_default_Needs_Test_Field;
+   v_Needs_Test_Value = gv_default_Needs_Test_Value;
+   v_Needs_Value = gv_default_Needs_Value;
+   v_Next_Protect_Child_Rel = gv_default_Next_Protect_Child_Rel;
+   v_Next_Protect_Procedure = gv_default_Next_Protect_Procedure;
+   v_Next_Protect_Source_Parent = gv_default_Next_Protect_Source_Parent;
+   v_Next_Specification_Actions = gv_default_Next_Specification_Actions;
+   v_Notes = gv_default_Notes;
+   v_Procedure_Arg_primitive = gv_default_Procedure_Arg_primitive;
+   v_Procedure_Arg_type = gv_default_Procedure_Arg_type;
+   v_Protect_Child_Rel_From_Update = gv_default_Protect_Child_Rel_From_Update;
+   v_Protect_Class_From_Edit = gv_default_Protect_Class_From_Edit;
+   v_Protect_Class_From_Update = gv_default_Protect_Class_From_Update;
+   v_Protect_Procedure_From_Edit = gv_default_Protect_Procedure_From_Edit;
+   v_Protect_Source_Parent = gv_default_Protect_Source_Parent;
+   v_Set_Field_To_Source_Field_Or_Child = gv_default_Set_Field_To_Source_Field_Or_Child;
+   v_Source_Field_Needs_Test_Field = gv_default_Source_Field_Needs_Test_Field;
+   v_Source_Field_Type_Match = gv_default_Source_Field_Type_Match;
+   v_Source_Parent_type = gv_default_Source_Parent_type;
+   v_Source_type = gv_default_Source_type;
+   v_Specification_Actions = gv_default_Specification_Actions;
+   v_Specification_Name = gv_default_Specification_Name;
+   v_Specification_Object = gv_default_Specification_Object;
+   v_Specification_Strings = gv_default_Specification_Strings;
+   v_Specification_Vars = gv_default_Specification_Vars;
+   v_Test_Field_Type_Match = gv_default_Test_Field_Type_Match;
+   v_Test_Field_type = gv_default_Test_Field_type;
+   v_Use_Class_As_Source_Parent_Class = gv_default_Use_Class_As_Source_Parent_Class;
+   v_Use_Field_Enum = gv_default_Use_Field_Enum;
+   v_Use_Parent_Child_Rel_As_Source_Parent = gv_default_Use_Parent_Child_Rel_As_Source_Parent;
+   v_Use_Parent_Child_Rel_For_Class = gv_default_Use_Parent_Child_Rel_For_Class;
+   v_Use_Parent_Class = gv_default_Use_Parent_Class;
+   v_Use_Parent_Field_For_Class = gv_default_Use_Parent_Field_For_Class;
+   v_Use_Parent_Other_Class_For_Class = gv_default_Use_Parent_Other_Class_For_Class;
+   v_Use_Parent_Procedure = gv_default_Use_Parent_Procedure;
+   v_Use_Parent_Source_Class = gv_default_Use_Parent_Source_Class;
+   v_Use_Parent_Source_Field_For_Class = gv_default_Use_Parent_Source_Field_For_Class;
+   v_Use_Parent_Source_Parent = gv_default_Use_Parent_Source_Parent;
+   v_Use_Parent_Source_Parent_For_Class = gv_default_Use_Parent_Source_Parent_For_Class;
+   v_View_Id = gv_default_View_Id;
+
+   v_Child_Specification_Type = string( );
+   if( cp_Child_Specification_Type )
+      p_obj->setup_foreign_key( *cp_Child_Specification_Type, v_Child_Specification_Type );
+
+   v_Next_Child_Specification_Type = string( );
+   if( cp_Next_Child_Specification_Type )
+      p_obj->setup_foreign_key( *cp_Next_Child_Specification_Type, v_Next_Child_Specification_Type );
+
+   v_Parent_Specification_Type = string( );
+   if( cp_Parent_Specification_Type )
+      p_obj->setup_foreign_key( *cp_Parent_Specification_Type, v_Parent_Specification_Type );
+}
+
+bool Meta_Specification_Type::impl::value_will_be_provided( const string& field_name )
+{
+   ( void )field_name;
+
+   // [<start value_will_be_provided>]
+   // [<finish value_will_be_provided>]
+
+   return false;
+}
+
+void Meta_Specification_Type::impl::validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors )
+{
+   ( void )state;
+   ( void )is_internal;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+
+   if( is_null( v_Specification_Name ) && !value_will_be_provided( c_field_name_Specification_Name ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Specification_Name,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Specification_Name ) ) ) ) );
+
+   if( is_null( v_Specification_Object ) && !value_will_be_provided( c_field_name_Specification_Object ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Specification_Object,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Specification_Object ) ) ) ) );
+
+   string error_message;
+   if( !is_null( v_Child_Prefix )
+    && ( v_Child_Prefix != gv_default_Child_Prefix
+    || !value_will_be_provided( c_field_name_Child_Prefix ) )
+    && !g_Child_Prefix_domain.is_valid( v_Child_Prefix, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Prefix,
+       get_module_string( c_field_display_name_Child_Prefix ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( v_Name != gv_default_Name
+    || !value_will_be_provided( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Specification_Name )
+    && ( v_Specification_Name != gv_default_Specification_Name
+    || !value_will_be_provided( c_field_name_Specification_Name ) )
+    && !g_Specification_Name_domain.is_valid( v_Specification_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Specification_Name,
+       get_module_string( c_field_display_name_Specification_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Specification_Object )
+    && ( v_Specification_Object != gv_default_Specification_Object
+    || !value_will_be_provided( c_field_name_Specification_Object ) )
+    && !g_Specification_Object_domain.is_valid( v_Specification_Object, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Specification_Object,
+       get_module_string( c_field_display_name_Specification_Object ) + " " + error_message ) );
+
+   if( !is_null( v_View_Id )
+    && ( v_View_Id != gv_default_View_Id
+    || !value_will_be_provided( c_field_name_View_Id ) )
+    && !g_View_Id_domain.is_valid( v_View_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_View_Id,
+       get_module_string( c_field_display_name_View_Id ) + " " + error_message ) );
+
+   if( !g_field_type_enum.count( v_Field_type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Field_type ) ) ) ) );
+
+   if( !g_procedure_arg_primitive_enum.count( v_Procedure_Arg_primitive ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Procedure_Arg_primitive,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Procedure_Arg_primitive ) ) ) ) );
+
+   if( !g_procedure_arg_type_enum.count( v_Procedure_Arg_type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Procedure_Arg_type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Procedure_Arg_type ) ) ) ) );
+
+   if( !g_source_parent_type_enum.count( v_Source_Parent_type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Source_Parent_type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Source_Parent_type ) ) ) ) );
+
+   if( !g_source_type_enum.count( v_Source_type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Source_type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Source_type ) ) ) ) );
+
+   if( !g_test_field_type_enum.count( v_Test_Field_type ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Test_Field_type,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Test_Field_type ) ) ) ) );
+
+   // [<start validate>]
+   // [<finish validate>]
+}
+
+void Meta_Specification_Type::impl::after_fetch( )
+{
+   set< string > required_transients;
+
+   p_obj->get_required_field_names( required_transients, true );
+
+   if( cp_Child_Specification_Type )
+      p_obj->setup_foreign_key( *cp_Child_Specification_Type, v_Child_Specification_Type );
+
+   if( cp_Next_Child_Specification_Type )
+      p_obj->setup_foreign_key( *cp_Next_Child_Specification_Type, v_Next_Child_Specification_Type );
+
+   if( cp_Parent_Specification_Type )
+      p_obj->setup_foreign_key( *cp_Parent_Specification_Type, v_Parent_Specification_Type );
+
+   // [<start after_fetch>]
+   // [<finish after_fetch>]
+}
+
+void Meta_Specification_Type::impl::finalise_fetch( )
+{
+   set< string > required_transients;
+
+   p_obj->get_required_field_names( required_transients, true );
+
+   // [<start finalise_fetch>]
+   // [<finish finalise_fetch>]
+}
+
+void Meta_Specification_Type::impl::at_create( )
+{
+   // [<start at_create>]
+   // [<finish at_create>]
+}
+
+void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
+   // [<start to_store>]
+   // [<finish to_store>]
+}
+
+void Meta_Specification_Type::impl::for_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   // [<start for_store>]
+   // [<finish for_store>]
+}
+
+void Meta_Specification_Type::impl::after_store( bool is_create, bool is_internal )
+{
+   ( void )is_create;
+   ( void )is_internal;
+
+   // [<start after_store>]
+   // [<finish after_store>]
+}
+
+bool Meta_Specification_Type::impl::can_destroy( bool is_internal )
+{
+   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+
+   // [<start can_destroy>]
+   // [<finish can_destroy>]
+
+   return retval;
+}
+
+void Meta_Specification_Type::impl::for_destroy( bool is_internal )
+{
+   ( void )is_internal;
+
+   // [<start for_destroy>]
+   // [<finish for_destroy>]
+}
+
+void Meta_Specification_Type::impl::after_destroy( bool is_internal )
+{
+   ( void )is_internal;
+
+   // [<start after_destroy>]
+   // [<finish after_destroy>]
+}
+
+void Meta_Specification_Type::impl::set_default_values( )
+{
+   clear( );
+}
+
+bool Meta_Specification_Type::impl::is_filtered( const set< string >& filters ) const
+{
+   ( void )filters;
+
+   // [<start is_filtered>]
+   // [<finish is_filtered>]
+
+   return false;
+}
+
+#undef MODULE_TRACE
+#define MODULE_TRACE( x ) trace( x )
+
+Meta_Specification_Type::Meta_Specification_Type( )
+{
+   set_version( c_version );
+
+   p_impl = new impl( *this );
+}
+
+Meta_Specification_Type::~Meta_Specification_Type( )
+{
+   cleanup( );
+   delete p_impl;
+}
+
+bool Meta_Specification_Type::Allow_Child_Relationship( ) const
+{
+   return p_impl->impl_Allow_Child_Relationship( );
+}
+
+void Meta_Specification_Type::Allow_Child_Relationship( bool Allow_Child_Relationship )
+{
+   p_impl->impl_Allow_Child_Relationship( Allow_Child_Relationship );
+}
+
+bool Meta_Specification_Type::Allow_FK_Source_Field_Choice( ) const
+{
+   return p_impl->impl_Allow_FK_Source_Field_Choice( );
+}
+
+void Meta_Specification_Type::Allow_FK_Source_Field_Choice( bool Allow_FK_Source_Field_Choice )
+{
+   p_impl->impl_Allow_FK_Source_Field_Choice( Allow_FK_Source_Field_Choice );
+}
+
+bool Meta_Specification_Type::Allow_FK_Test_Field_Choice( ) const
+{
+   return p_impl->impl_Allow_FK_Test_Field_Choice( );
+}
+
+void Meta_Specification_Type::Allow_FK_Test_Field_Choice( bool Allow_FK_Test_Field_Choice )
+{
+   p_impl->impl_Allow_FK_Test_Field_Choice( Allow_FK_Test_Field_Choice );
+}
+
+bool Meta_Specification_Type::Allow_Field( ) const
+{
+   return p_impl->impl_Allow_Field( );
+}
+
+void Meta_Specification_Type::Allow_Field( bool Allow_Field )
+{
+   p_impl->impl_Allow_Field( Allow_Field );
+}
+
+bool Meta_Specification_Type::Allow_Options( ) const
+{
+   return p_impl->impl_Allow_Options( );
+}
+
+void Meta_Specification_Type::Allow_Options( bool Allow_Options )
+{
+   p_impl->impl_Allow_Options( Allow_Options );
+}
+
+bool Meta_Specification_Type::Allow_Other_Class( ) const
+{
+   return p_impl->impl_Allow_Other_Class( );
+}
+
+void Meta_Specification_Type::Allow_Other_Class( bool Allow_Other_Class )
+{
+   p_impl->impl_Allow_Other_Class( Allow_Other_Class );
+}
+
+bool Meta_Specification_Type::Allow_Other_Field( ) const
+{
+   return p_impl->impl_Allow_Other_Field( );
+}
+
+void Meta_Specification_Type::Allow_Other_Field( bool Allow_Other_Field )
+{
+   p_impl->impl_Allow_Other_Field( Allow_Other_Field );
+}
+
+bool Meta_Specification_Type::Allow_Other_Field_2( ) const
+{
+   return p_impl->impl_Allow_Other_Field_2( );
+}
+
+void Meta_Specification_Type::Allow_Other_Field_2( bool Allow_Other_Field_2 )
+{
+   p_impl->impl_Allow_Other_Field_2( Allow_Other_Field_2 );
+}
+
+bool Meta_Specification_Type::Allow_Permission( ) const
+{
+   return p_impl->impl_Allow_Permission( );
+}
+
+void Meta_Specification_Type::Allow_Permission( bool Allow_Permission )
+{
+   p_impl->impl_Allow_Permission( Allow_Permission );
+}
+
+bool Meta_Specification_Type::Allow_Procedure( ) const
+{
+   return p_impl->impl_Allow_Procedure( );
+}
+
+void Meta_Specification_Type::Allow_Procedure( bool Allow_Procedure )
+{
+   p_impl->impl_Allow_Procedure( Allow_Procedure );
+}
+
+bool Meta_Specification_Type::Allow_Source_Child( ) const
+{
+   return p_impl->impl_Allow_Source_Child( );
+}
+
+void Meta_Specification_Type::Allow_Source_Child( bool Allow_Source_Child )
+{
+   p_impl->impl_Allow_Source_Child( Allow_Source_Child );
+}
+
+bool Meta_Specification_Type::Allow_Source_Child_2( ) const
+{
+   return p_impl->impl_Allow_Source_Child_2( );
+}
+
+void Meta_Specification_Type::Allow_Source_Child_2( bool Allow_Source_Child_2 )
+{
+   p_impl->impl_Allow_Source_Child_2( Allow_Source_Child_2 );
+}
+
+bool Meta_Specification_Type::Allow_Source_Class( ) const
+{
+   return p_impl->impl_Allow_Source_Class( );
+}
+
+void Meta_Specification_Type::Allow_Source_Class( bool Allow_Source_Class )
+{
+   p_impl->impl_Allow_Source_Class( Allow_Source_Class );
+}
+
+bool Meta_Specification_Type::Allow_Source_Field( ) const
+{
+   return p_impl->impl_Allow_Source_Field( );
+}
+
+void Meta_Specification_Type::Allow_Source_Field( bool Allow_Source_Field )
+{
+   p_impl->impl_Allow_Source_Field( Allow_Source_Field );
+}
+
+bool Meta_Specification_Type::Allow_Source_Grandchild( ) const
+{
+   return p_impl->impl_Allow_Source_Grandchild( );
+}
+
+void Meta_Specification_Type::Allow_Source_Grandchild( bool Allow_Source_Grandchild )
+{
+   p_impl->impl_Allow_Source_Grandchild( Allow_Source_Grandchild );
+}
+
+bool Meta_Specification_Type::Allow_Source_Parent( ) const
+{
+   return p_impl->impl_Allow_Source_Parent( );
+}
+
+void Meta_Specification_Type::Allow_Source_Parent( bool Allow_Source_Parent )
+{
+   p_impl->impl_Allow_Source_Parent( Allow_Source_Parent );
+}
+
+bool Meta_Specification_Type::Allow_Test_Field( ) const
+{
+   return p_impl->impl_Allow_Test_Field( );
+}
+
+void Meta_Specification_Type::Allow_Test_Field( bool Allow_Test_Field )
+{
+   p_impl->impl_Allow_Test_Field( Allow_Test_Field );
+}
+
+bool Meta_Specification_Type::Allow_Test_Value( ) const
+{
+   return p_impl->impl_Allow_Test_Value( );
+}
+
+void Meta_Specification_Type::Allow_Test_Value( bool Allow_Test_Value )
+{
+   p_impl->impl_Allow_Test_Value( Allow_Test_Value );
+}
+
+bool Meta_Specification_Type::Allow_Value( ) const
+{
+   return p_impl->impl_Allow_Value( );
+}
+
+void Meta_Specification_Type::Allow_Value( bool Allow_Value )
+{
+   p_impl->impl_Allow_Value( Allow_Value );
+}
+
+const string& Meta_Specification_Type::Child_Prefix( ) const
+{
+   return p_impl->impl_Child_Prefix( );
+}
+
+void Meta_Specification_Type::Child_Prefix( const string& Child_Prefix )
+{
+   p_impl->impl_Child_Prefix( Child_Prefix );
+}
+
+bool Meta_Specification_Type::Child_Rel_Grandparent_Match( ) const
+{
+   return p_impl->impl_Child_Rel_Grandparent_Match( );
+}
+
+void Meta_Specification_Type::Child_Rel_Grandparent_Match( bool Child_Rel_Grandparent_Match )
+{
+   p_impl->impl_Child_Rel_Grandparent_Match( Child_Rel_Grandparent_Match );
+}
+
+bool Meta_Specification_Type::Child_Rel_Parent_Match( ) const
+{
+   return p_impl->impl_Child_Rel_Parent_Match( );
+}
+
+void Meta_Specification_Type::Child_Rel_Parent_Match( bool Child_Rel_Parent_Match )
+{
+   p_impl->impl_Child_Rel_Parent_Match( Child_Rel_Parent_Match );
+}
+
+bool Meta_Specification_Type::Child_Relationship_Class_Match( ) const
+{
+   return p_impl->impl_Child_Relationship_Class_Match( );
+}
+
+void Meta_Specification_Type::Child_Relationship_Class_Match( bool Child_Relationship_Class_Match )
+{
+   p_impl->impl_Child_Relationship_Class_Match( Child_Relationship_Class_Match );
+}
+
+const string& Meta_Specification_Type::Default_Child_Vars( ) const
+{
+   return p_impl->impl_Default_Child_Vars( );
+}
+
+void Meta_Specification_Type::Default_Child_Vars( const string& Default_Child_Vars )
+{
+   p_impl->impl_Default_Child_Vars( Default_Child_Vars );
+}
+
+int Meta_Specification_Type::Field_type( ) const
+{
+   return p_impl->impl_Field_type( );
+}
+
+void Meta_Specification_Type::Field_type( int Field_type )
+{
+   p_impl->impl_Field_type( Field_type );
+}
+
+bool Meta_Specification_Type::Has_Next_Specification_Info( ) const
+{
+   return p_impl->impl_Has_Next_Specification_Info( );
+}
+
+void Meta_Specification_Type::Has_Next_Specification_Info( bool Has_Next_Specification_Info )
+{
+   p_impl->impl_Has_Next_Specification_Info( Has_Next_Specification_Info );
+}
+
+bool Meta_Specification_Type::Is_Child_Only( ) const
+{
+   return p_impl->impl_Is_Child_Only( );
+}
+
+void Meta_Specification_Type::Is_Child_Only( bool Is_Child_Only )
+{
+   p_impl->impl_Is_Child_Only( Is_Child_Only );
+}
+
+bool Meta_Specification_Type::Is_Required_For_UI_Gen( ) const
+{
+   return p_impl->impl_Is_Required_For_UI_Gen( );
+}
+
+void Meta_Specification_Type::Is_Required_For_UI_Gen( bool Is_Required_For_UI_Gen )
+{
+   p_impl->impl_Is_Required_For_UI_Gen( Is_Required_For_UI_Gen );
+}
+
+bool Meta_Specification_Type::Is_System( ) const
+{
+   return p_impl->impl_Is_System( );
+}
+
+void Meta_Specification_Type::Is_System( bool Is_System )
+{
+   p_impl->impl_Is_System( Is_System );
+}
+
+const string& Meta_Specification_Type::Name( ) const
+{
+   return p_impl->impl_Name( );
+}
+
+void Meta_Specification_Type::Name( const string& Name )
+{
+   p_impl->impl_Name( Name );
+}
+
+bool Meta_Specification_Type::Needs_Child_Relationship( ) const
+{
+   return p_impl->impl_Needs_Child_Relationship( );
+}
+
+void Meta_Specification_Type::Needs_Child_Relationship( bool Needs_Child_Relationship )
+{
+   p_impl->impl_Needs_Child_Relationship( Needs_Child_Relationship );
+}
+
+bool Meta_Specification_Type::Needs_Class( ) const
+{
+   return p_impl->impl_Needs_Class( );
+}
+
+void Meta_Specification_Type::Needs_Class( bool Needs_Class )
+{
+   p_impl->impl_Needs_Class( Needs_Class );
+}
+
+bool Meta_Specification_Type::Needs_Enum( ) const
+{
+   return p_impl->impl_Needs_Enum( );
+}
+
+void Meta_Specification_Type::Needs_Enum( bool Needs_Enum )
+{
+   p_impl->impl_Needs_Enum( Needs_Enum );
+}
+
+bool Meta_Specification_Type::Needs_Enum_Item( ) const
+{
+   return p_impl->impl_Needs_Enum_Item( );
+}
+
+void Meta_Specification_Type::Needs_Enum_Item( bool Needs_Enum_Item )
+{
+   p_impl->impl_Needs_Enum_Item( Needs_Enum_Item );
+}
+
+bool Meta_Specification_Type::Needs_Enum_Item_2( ) const
+{
+   return p_impl->impl_Needs_Enum_Item_2( );
+}
+
+void Meta_Specification_Type::Needs_Enum_Item_2( bool Needs_Enum_Item_2 )
+{
+   p_impl->impl_Needs_Enum_Item_2( Needs_Enum_Item_2 );
+}
+
+bool Meta_Specification_Type::Needs_Enum_Item_3( ) const
+{
+   return p_impl->impl_Needs_Enum_Item_3( );
+}
+
+void Meta_Specification_Type::Needs_Enum_Item_3( bool Needs_Enum_Item_3 )
+{
+   p_impl->impl_Needs_Enum_Item_3( Needs_Enum_Item_3 );
+}
+
+bool Meta_Specification_Type::Needs_Enum_Item_4( ) const
+{
+   return p_impl->impl_Needs_Enum_Item_4( );
+}
+
+void Meta_Specification_Type::Needs_Enum_Item_4( bool Needs_Enum_Item_4 )
+{
+   p_impl->impl_Needs_Enum_Item_4( Needs_Enum_Item_4 );
+}
+
+bool Meta_Specification_Type::Needs_Enum_Item_5( ) const
+{
+   return p_impl->impl_Needs_Enum_Item_5( );
+}
+
+void Meta_Specification_Type::Needs_Enum_Item_5( bool Needs_Enum_Item_5 )
+{
+   p_impl->impl_Needs_Enum_Item_5( Needs_Enum_Item_5 );
+}
+
+bool Meta_Specification_Type::Needs_Field( ) const
+{
+   return p_impl->impl_Needs_Field( );
+}
+
+void Meta_Specification_Type::Needs_Field( bool Needs_Field )
+{
+   p_impl->impl_Needs_Field( Needs_Field );
+}
+
+bool Meta_Specification_Type::Needs_Modifier( ) const
+{
+   return p_impl->impl_Needs_Modifier( );
+}
+
+void Meta_Specification_Type::Needs_Modifier( bool Needs_Modifier )
+{
+   p_impl->impl_Needs_Modifier( Needs_Modifier );
+}
+
+bool Meta_Specification_Type::Needs_Other_Class( ) const
+{
+   return p_impl->impl_Needs_Other_Class( );
+}
+
+void Meta_Specification_Type::Needs_Other_Class( bool Needs_Other_Class )
+{
+   p_impl->impl_Needs_Other_Class( Needs_Other_Class );
+}
+
+bool Meta_Specification_Type::Needs_Other_Field( ) const
+{
+   return p_impl->impl_Needs_Other_Field( );
+}
+
+void Meta_Specification_Type::Needs_Other_Field( bool Needs_Other_Field )
+{
+   p_impl->impl_Needs_Other_Field( Needs_Other_Field );
+}
+
+bool Meta_Specification_Type::Needs_Other_Field_2( ) const
+{
+   return p_impl->impl_Needs_Other_Field_2( );
+}
+
+void Meta_Specification_Type::Needs_Other_Field_2( bool Needs_Other_Field_2 )
+{
+   p_impl->impl_Needs_Other_Field_2( Needs_Other_Field_2 );
+}
+
+bool Meta_Specification_Type::Needs_Other_Procedure( ) const
+{
+   return p_impl->impl_Needs_Other_Procedure( );
+}
+
+void Meta_Specification_Type::Needs_Other_Procedure( bool Needs_Other_Procedure )
+{
+   p_impl->impl_Needs_Other_Procedure( Needs_Other_Procedure );
+}
+
+bool Meta_Specification_Type::Needs_Other_Procedure_2( ) const
+{
+   return p_impl->impl_Needs_Other_Procedure_2( );
+}
+
+void Meta_Specification_Type::Needs_Other_Procedure_2( bool Needs_Other_Procedure_2 )
+{
+   p_impl->impl_Needs_Other_Procedure_2( Needs_Other_Procedure_2 );
+}
+
+bool Meta_Specification_Type::Needs_Permission( ) const
+{
+   return p_impl->impl_Needs_Permission( );
+}
+
+void Meta_Specification_Type::Needs_Permission( bool Needs_Permission )
+{
+   p_impl->impl_Needs_Permission( Needs_Permission );
+}
+
+bool Meta_Specification_Type::Needs_Procedure( ) const
+{
+   return p_impl->impl_Needs_Procedure( );
+}
+
+void Meta_Specification_Type::Needs_Procedure( bool Needs_Procedure )
+{
+   p_impl->impl_Needs_Procedure( Needs_Procedure );
+}
+
+bool Meta_Specification_Type::Needs_Procedure_Arg( ) const
+{
+   return p_impl->impl_Needs_Procedure_Arg( );
+}
+
+void Meta_Specification_Type::Needs_Procedure_Arg( bool Needs_Procedure_Arg )
+{
+   p_impl->impl_Needs_Procedure_Arg( Needs_Procedure_Arg );
+}
+
+bool Meta_Specification_Type::Needs_Procedure_Arg_2( ) const
+{
+   return p_impl->impl_Needs_Procedure_Arg_2( );
+}
+
+void Meta_Specification_Type::Needs_Procedure_Arg_2( bool Needs_Procedure_Arg_2 )
+{
+   p_impl->impl_Needs_Procedure_Arg_2( Needs_Procedure_Arg_2 );
+}
+
+bool Meta_Specification_Type::Needs_Procedure_Arg_3( ) const
+{
+   return p_impl->impl_Needs_Procedure_Arg_3( );
+}
+
+void Meta_Specification_Type::Needs_Procedure_Arg_3( bool Needs_Procedure_Arg_3 )
+{
+   p_impl->impl_Needs_Procedure_Arg_3( Needs_Procedure_Arg_3 );
+}
+
+bool Meta_Specification_Type::Needs_Source_Child( ) const
+{
+   return p_impl->impl_Needs_Source_Child( );
+}
+
+void Meta_Specification_Type::Needs_Source_Child( bool Needs_Source_Child )
+{
+   p_impl->impl_Needs_Source_Child( Needs_Source_Child );
+}
+
+bool Meta_Specification_Type::Needs_Source_Child_2( ) const
+{
+   return p_impl->impl_Needs_Source_Child_2( );
+}
+
+void Meta_Specification_Type::Needs_Source_Child_2( bool Needs_Source_Child_2 )
+{
+   p_impl->impl_Needs_Source_Child_2( Needs_Source_Child_2 );
+}
+
+bool Meta_Specification_Type::Needs_Source_Field( ) const
+{
+   return p_impl->impl_Needs_Source_Field( );
+}
+
+void Meta_Specification_Type::Needs_Source_Field( bool Needs_Source_Field )
+{
+   p_impl->impl_Needs_Source_Field( Needs_Source_Field );
+}
+
+bool Meta_Specification_Type::Needs_Source_Field_Or_Child( ) const
+{
+   return p_impl->impl_Needs_Source_Field_Or_Child( );
+}
+
+void Meta_Specification_Type::Needs_Source_Field_Or_Child( bool Needs_Source_Field_Or_Child )
+{
+   p_impl->impl_Needs_Source_Field_Or_Child( Needs_Source_Field_Or_Child );
+}
+
+bool Meta_Specification_Type::Needs_Source_Parent( ) const
+{
+   return p_impl->impl_Needs_Source_Parent( );
+}
+
+void Meta_Specification_Type::Needs_Source_Parent( bool Needs_Source_Parent )
+{
+   p_impl->impl_Needs_Source_Parent( Needs_Source_Parent );
+}
+
+bool Meta_Specification_Type::Needs_Test_Field( ) const
+{
+   return p_impl->impl_Needs_Test_Field( );
+}
+
+void Meta_Specification_Type::Needs_Test_Field( bool Needs_Test_Field )
+{
+   p_impl->impl_Needs_Test_Field( Needs_Test_Field );
+}
+
+bool Meta_Specification_Type::Needs_Test_Value( ) const
+{
+   return p_impl->impl_Needs_Test_Value( );
+}
+
+void Meta_Specification_Type::Needs_Test_Value( bool Needs_Test_Value )
+{
+   p_impl->impl_Needs_Test_Value( Needs_Test_Value );
+}
+
+bool Meta_Specification_Type::Needs_Value( ) const
+{
+   return p_impl->impl_Needs_Value( );
+}
+
+void Meta_Specification_Type::Needs_Value( bool Needs_Value )
+{
+   p_impl->impl_Needs_Value( Needs_Value );
+}
+
+bool Meta_Specification_Type::Next_Protect_Child_Rel( ) const
+{
+   return p_impl->impl_Next_Protect_Child_Rel( );
+}
+
+void Meta_Specification_Type::Next_Protect_Child_Rel( bool Next_Protect_Child_Rel )
+{
+   p_impl->impl_Next_Protect_Child_Rel( Next_Protect_Child_Rel );
+}
+
+bool Meta_Specification_Type::Next_Protect_Procedure( ) const
+{
+   return p_impl->impl_Next_Protect_Procedure( );
+}
+
+void Meta_Specification_Type::Next_Protect_Procedure( bool Next_Protect_Procedure )
+{
+   p_impl->impl_Next_Protect_Procedure( Next_Protect_Procedure );
+}
+
+bool Meta_Specification_Type::Next_Protect_Source_Parent( ) const
+{
+   return p_impl->impl_Next_Protect_Source_Parent( );
+}
+
+void Meta_Specification_Type::Next_Protect_Source_Parent( bool Next_Protect_Source_Parent )
+{
+   p_impl->impl_Next_Protect_Source_Parent( Next_Protect_Source_Parent );
+}
+
+const string& Meta_Specification_Type::Next_Specification_Actions( ) const
+{
+   return p_impl->impl_Next_Specification_Actions( );
+}
+
+void Meta_Specification_Type::Next_Specification_Actions( const string& Next_Specification_Actions )
+{
+   p_impl->impl_Next_Specification_Actions( Next_Specification_Actions );
+}
+
+const string& Meta_Specification_Type::Notes( ) const
+{
+   return p_impl->impl_Notes( );
+}
+
+void Meta_Specification_Type::Notes( const string& Notes )
+{
+   p_impl->impl_Notes( Notes );
+}
+
+int Meta_Specification_Type::Procedure_Arg_primitive( ) const
+{
+   return p_impl->impl_Procedure_Arg_primitive( );
+}
+
+void Meta_Specification_Type::Procedure_Arg_primitive( int Procedure_Arg_primitive )
+{
+   p_impl->impl_Procedure_Arg_primitive( Procedure_Arg_primitive );
+}
+
+int Meta_Specification_Type::Procedure_Arg_type( ) const
+{
+   return p_impl->impl_Procedure_Arg_type( );
+}
+
+void Meta_Specification_Type::Procedure_Arg_type( int Procedure_Arg_type )
+{
+   p_impl->impl_Procedure_Arg_type( Procedure_Arg_type );
+}
+
+bool Meta_Specification_Type::Protect_Child_Rel_From_Update( ) const
+{
+   return p_impl->impl_Protect_Child_Rel_From_Update( );
+}
+
+void Meta_Specification_Type::Protect_Child_Rel_From_Update( bool Protect_Child_Rel_From_Update )
+{
+   p_impl->impl_Protect_Child_Rel_From_Update( Protect_Child_Rel_From_Update );
+}
+
+bool Meta_Specification_Type::Protect_Class_From_Edit( ) const
+{
+   return p_impl->impl_Protect_Class_From_Edit( );
+}
+
+void Meta_Specification_Type::Protect_Class_From_Edit( bool Protect_Class_From_Edit )
+{
+   p_impl->impl_Protect_Class_From_Edit( Protect_Class_From_Edit );
+}
+
+bool Meta_Specification_Type::Protect_Class_From_Update( ) const
+{
+   return p_impl->impl_Protect_Class_From_Update( );
+}
+
+void Meta_Specification_Type::Protect_Class_From_Update( bool Protect_Class_From_Update )
+{
+   p_impl->impl_Protect_Class_From_Update( Protect_Class_From_Update );
+}
+
+bool Meta_Specification_Type::Protect_Procedure_From_Edit( ) const
+{
+   return p_impl->impl_Protect_Procedure_From_Edit( );
+}
+
+void Meta_Specification_Type::Protect_Procedure_From_Edit( bool Protect_Procedure_From_Edit )
+{
+   p_impl->impl_Protect_Procedure_From_Edit( Protect_Procedure_From_Edit );
+}
+
+bool Meta_Specification_Type::Protect_Source_Parent( ) const
+{
+   return p_impl->impl_Protect_Source_Parent( );
+}
+
+void Meta_Specification_Type::Protect_Source_Parent( bool Protect_Source_Parent )
+{
+   p_impl->impl_Protect_Source_Parent( Protect_Source_Parent );
+}
+
+bool Meta_Specification_Type::Set_Field_To_Source_Field_Or_Child( ) const
+{
+   return p_impl->impl_Set_Field_To_Source_Field_Or_Child( );
+}
+
+void Meta_Specification_Type::Set_Field_To_Source_Field_Or_Child( bool Set_Field_To_Source_Field_Or_Child )
+{
+   p_impl->impl_Set_Field_To_Source_Field_Or_Child( Set_Field_To_Source_Field_Or_Child );
+}
+
+bool Meta_Specification_Type::Source_Field_Needs_Test_Field( ) const
+{
+   return p_impl->impl_Source_Field_Needs_Test_Field( );
+}
+
+void Meta_Specification_Type::Source_Field_Needs_Test_Field( bool Source_Field_Needs_Test_Field )
+{
+   p_impl->impl_Source_Field_Needs_Test_Field( Source_Field_Needs_Test_Field );
+}
+
+bool Meta_Specification_Type::Source_Field_Type_Match( ) const
+{
+   return p_impl->impl_Source_Field_Type_Match( );
+}
+
+void Meta_Specification_Type::Source_Field_Type_Match( bool Source_Field_Type_Match )
+{
+   p_impl->impl_Source_Field_Type_Match( Source_Field_Type_Match );
+}
+
+int Meta_Specification_Type::Source_Parent_type( ) const
+{
+   return p_impl->impl_Source_Parent_type( );
+}
+
+void Meta_Specification_Type::Source_Parent_type( int Source_Parent_type )
+{
+   p_impl->impl_Source_Parent_type( Source_Parent_type );
+}
+
+int Meta_Specification_Type::Source_type( ) const
+{
+   return p_impl->impl_Source_type( );
+}
+
+void Meta_Specification_Type::Source_type( int Source_type )
+{
+   p_impl->impl_Source_type( Source_type );
+}
+
+const string& Meta_Specification_Type::Specification_Actions( ) const
+{
+   return p_impl->impl_Specification_Actions( );
+}
+
+void Meta_Specification_Type::Specification_Actions( const string& Specification_Actions )
+{
+   p_impl->impl_Specification_Actions( Specification_Actions );
+}
+
+const string& Meta_Specification_Type::Specification_Name( ) const
+{
+   return p_impl->impl_Specification_Name( );
+}
+
+void Meta_Specification_Type::Specification_Name( const string& Specification_Name )
+{
+   p_impl->impl_Specification_Name( Specification_Name );
+}
+
+const string& Meta_Specification_Type::Specification_Object( ) const
+{
+   return p_impl->impl_Specification_Object( );
+}
+
+void Meta_Specification_Type::Specification_Object( const string& Specification_Object )
+{
+   p_impl->impl_Specification_Object( Specification_Object );
+}
+
+const string& Meta_Specification_Type::Specification_Strings( ) const
+{
+   return p_impl->impl_Specification_Strings( );
+}
+
+void Meta_Specification_Type::Specification_Strings( const string& Specification_Strings )
+{
+   p_impl->impl_Specification_Strings( Specification_Strings );
+}
+
+const string& Meta_Specification_Type::Specification_Vars( ) const
+{
+   return p_impl->impl_Specification_Vars( );
+}
+
+void Meta_Specification_Type::Specification_Vars( const string& Specification_Vars )
+{
+   p_impl->impl_Specification_Vars( Specification_Vars );
+}
+
+bool Meta_Specification_Type::Test_Field_Type_Match( ) const
+{
+   return p_impl->impl_Test_Field_Type_Match( );
+}
+
+void Meta_Specification_Type::Test_Field_Type_Match( bool Test_Field_Type_Match )
+{
+   p_impl->impl_Test_Field_Type_Match( Test_Field_Type_Match );
+}
+
+int Meta_Specification_Type::Test_Field_type( ) const
+{
+   return p_impl->impl_Test_Field_type( );
+}
+
+void Meta_Specification_Type::Test_Field_type( int Test_Field_type )
+{
+   p_impl->impl_Test_Field_type( Test_Field_type );
+}
+
+bool Meta_Specification_Type::Use_Class_As_Source_Parent_Class( ) const
+{
+   return p_impl->impl_Use_Class_As_Source_Parent_Class( );
+}
+
+void Meta_Specification_Type::Use_Class_As_Source_Parent_Class( bool Use_Class_As_Source_Parent_Class )
+{
+   p_impl->impl_Use_Class_As_Source_Parent_Class( Use_Class_As_Source_Parent_Class );
+}
+
+bool Meta_Specification_Type::Use_Field_Enum( ) const
+{
+   return p_impl->impl_Use_Field_Enum( );
+}
+
+void Meta_Specification_Type::Use_Field_Enum( bool Use_Field_Enum )
+{
+   p_impl->impl_Use_Field_Enum( Use_Field_Enum );
+}
+
+bool Meta_Specification_Type::Use_Parent_Child_Rel_As_Source_Parent( ) const
+{
+   return p_impl->impl_Use_Parent_Child_Rel_As_Source_Parent( );
+}
+
+void Meta_Specification_Type::Use_Parent_Child_Rel_As_Source_Parent( bool Use_Parent_Child_Rel_As_Source_Parent )
+{
+   p_impl->impl_Use_Parent_Child_Rel_As_Source_Parent( Use_Parent_Child_Rel_As_Source_Parent );
+}
+
+bool Meta_Specification_Type::Use_Parent_Child_Rel_For_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Child_Rel_For_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Child_Rel_For_Class( bool Use_Parent_Child_Rel_For_Class )
+{
+   p_impl->impl_Use_Parent_Child_Rel_For_Class( Use_Parent_Child_Rel_For_Class );
+}
+
+bool Meta_Specification_Type::Use_Parent_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Class( bool Use_Parent_Class )
+{
+   p_impl->impl_Use_Parent_Class( Use_Parent_Class );
+}
+
+bool Meta_Specification_Type::Use_Parent_Field_For_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Field_For_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Field_For_Class( bool Use_Parent_Field_For_Class )
+{
+   p_impl->impl_Use_Parent_Field_For_Class( Use_Parent_Field_For_Class );
+}
+
+bool Meta_Specification_Type::Use_Parent_Other_Class_For_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Other_Class_For_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Other_Class_For_Class( bool Use_Parent_Other_Class_For_Class )
+{
+   p_impl->impl_Use_Parent_Other_Class_For_Class( Use_Parent_Other_Class_For_Class );
+}
+
+bool Meta_Specification_Type::Use_Parent_Procedure( ) const
+{
+   return p_impl->impl_Use_Parent_Procedure( );
+}
+
+void Meta_Specification_Type::Use_Parent_Procedure( bool Use_Parent_Procedure )
+{
+   p_impl->impl_Use_Parent_Procedure( Use_Parent_Procedure );
+}
+
+bool Meta_Specification_Type::Use_Parent_Source_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Source_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Source_Class( bool Use_Parent_Source_Class )
+{
+   p_impl->impl_Use_Parent_Source_Class( Use_Parent_Source_Class );
+}
+
+bool Meta_Specification_Type::Use_Parent_Source_Field_For_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Source_Field_For_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Source_Field_For_Class( bool Use_Parent_Source_Field_For_Class )
+{
+   p_impl->impl_Use_Parent_Source_Field_For_Class( Use_Parent_Source_Field_For_Class );
+}
+
+bool Meta_Specification_Type::Use_Parent_Source_Parent( ) const
+{
+   return p_impl->impl_Use_Parent_Source_Parent( );
+}
+
+void Meta_Specification_Type::Use_Parent_Source_Parent( bool Use_Parent_Source_Parent )
+{
+   p_impl->impl_Use_Parent_Source_Parent( Use_Parent_Source_Parent );
+}
+
+bool Meta_Specification_Type::Use_Parent_Source_Parent_For_Class( ) const
+{
+   return p_impl->impl_Use_Parent_Source_Parent_For_Class( );
+}
+
+void Meta_Specification_Type::Use_Parent_Source_Parent_For_Class( bool Use_Parent_Source_Parent_For_Class )
+{
+   p_impl->impl_Use_Parent_Source_Parent_For_Class( Use_Parent_Source_Parent_For_Class );
+}
+
+const string& Meta_Specification_Type::View_Id( ) const
+{
+   return p_impl->impl_View_Id( );
+}
+
+void Meta_Specification_Type::View_Id( const string& View_Id )
+{
+   p_impl->impl_View_Id( View_Id );
+}
+
+Meta_Specification_Type& Meta_Specification_Type::Child_Specification_Type( )
+{
+   return p_impl->impl_Child_Specification_Type( );
+}
+
+const Meta_Specification_Type& Meta_Specification_Type::Child_Specification_Type( ) const
+{
+   return p_impl->impl_Child_Specification_Type( );
+}
+
+void Meta_Specification_Type::Child_Specification_Type( const string& key )
+{
+   p_impl->impl_Child_Specification_Type( key );
+}
+
+Meta_Specification_Type& Meta_Specification_Type::Next_Child_Specification_Type( )
+{
+   return p_impl->impl_Next_Child_Specification_Type( );
+}
+
+const Meta_Specification_Type& Meta_Specification_Type::Next_Child_Specification_Type( ) const
+{
+   return p_impl->impl_Next_Child_Specification_Type( );
+}
+
+void Meta_Specification_Type::Next_Child_Specification_Type( const string& key )
+{
+   p_impl->impl_Next_Child_Specification_Type( key );
+}
+
+Meta_Specification_Type& Meta_Specification_Type::Parent_Specification_Type( )
+{
+   return p_impl->impl_Parent_Specification_Type( );
+}
+
+const Meta_Specification_Type& Meta_Specification_Type::Parent_Specification_Type( ) const
+{
+   return p_impl->impl_Parent_Specification_Type( );
+}
+
+void Meta_Specification_Type::Parent_Specification_Type( const string& key )
+{
+   p_impl->impl_Parent_Specification_Type( key );
+}
+
+Meta_Specification_Type& Meta_Specification_Type::child_Specification_Type_Child( )
+{
+   return p_impl->impl_child_Specification_Type_Child( );
+}
+
+const Meta_Specification_Type& Meta_Specification_Type::child_Specification_Type_Child( ) const
+{
+   return p_impl->impl_child_Specification_Type_Child( );
+}
+
+Meta_Specification& Meta_Specification_Type::child_Specification_Child( )
+{
+   return p_impl->impl_child_Specification_Child( );
+}
+
+const Meta_Specification& Meta_Specification_Type::child_Specification_Child( ) const
+{
+   return p_impl->impl_child_Specification_Child( );
+}
+
+Meta_Specification_Type& Meta_Specification_Type::child_Specification_Type_Next_Child( )
+{
+   return p_impl->impl_child_Specification_Type_Next_Child( );
+}
+
+const Meta_Specification_Type& Meta_Specification_Type::child_Specification_Type_Next_Child( ) const
+{
+   return p_impl->impl_child_Specification_Type_Next_Child( );
+}
+
+Meta_Specification_Type& Meta_Specification_Type::child_Specification_Type_Parent( )
+{
+   return p_impl->impl_child_Specification_Type_Parent( );
+}
+
+const Meta_Specification_Type& Meta_Specification_Type::child_Specification_Type_Parent( ) const
+{
+   return p_impl->impl_child_Specification_Type_Parent( );
+}
+
+Meta_Specification& Meta_Specification_Type::child_Specification( )
+{
+   return p_impl->impl_child_Specification( );
+}
+
+const Meta_Specification& Meta_Specification_Type::child_Specification( ) const
+{
+   return p_impl->impl_child_Specification( );
+}
+
+void Meta_Specification_Type::Is_Valid_Field_Type( const string& Class, string& Error, const string& Parent_Class, int Primitive, int Procedure_Arg_Primitive, int Procedure_Arg_Type, const string& Source_Parent_Class, int Source_Primitive, int Test_Primitive, const string& Test_Value )
+{
+   p_impl->impl_Is_Valid_Field_Type( Class, Error, Parent_Class, Primitive, Procedure_Arg_Primitive, Procedure_Arg_Type, Source_Parent_Class, Source_Primitive, Test_Primitive, Test_Value );
+}
+
+string Meta_Specification_Type::get_field_value( int field ) const
+{
+   return p_impl->get_field_value( field );
+}
+
+void Meta_Specification_Type::set_field_value( int field, const string& value )
+{
+   p_impl->set_field_value( field, value );
+}
+
+bool Meta_Specification_Type::is_field_transient( int field ) const
+{
+   return static_is_field_transient( ( field_id )( field + 1 ) );
+}
+
+string Meta_Specification_Type::get_field_name( int field ) const
+{
+   return static_get_field_name( ( field_id )( field + 1 ) );
+}
+
+int Meta_Specification_Type::get_field_num( const string& field ) const
+{
+   int rc = static_get_field_num( field );
+
+   if( rc < 0 )
+      throw runtime_error( "unknown field name/id '" + field + "' in get_field_num( )" );
+
+   return rc;
+}
+
+bool Meta_Specification_Type::has_field_changed( const string& field ) const
+{
+   return class_base::has_field_changed( get_field_num( field ) );
+}
+
+uint64_t Meta_Specification_Type::get_state( ) const
+{
+   uint64_t state = 0;
+
+   state |= p_impl->get_state( );
+
+   return state;
+}
+
+const string& Meta_Specification_Type::execute( const string& cmd_and_args )
+{
+   return p_impl->execute( cmd_and_args );
+}
+
+void Meta_Specification_Type::clear( )
+{
+   p_impl->clear( );
+}
+
+void Meta_Specification_Type::validate( unsigned state, bool is_internal )
+{
+   p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Specification_Type::after_fetch( )
+{
+   p_impl->after_fetch( );
+}
+
+void Meta_Specification_Type::finalise_fetch( )
+{
+   p_impl->finalise_fetch( );
+}
+
+void Meta_Specification_Type::at_create( )
+{
+   p_impl->at_create( );
+}
+
+void Meta_Specification_Type::to_store( bool is_create, bool is_internal )
+{
+   p_impl->to_store( is_create, is_internal );
+}
+
+void Meta_Specification_Type::for_store( bool is_create, bool is_internal )
+{
+   p_impl->for_store( is_create, is_internal );
+}
+
+void Meta_Specification_Type::after_store( bool is_create, bool is_internal )
+{
+   p_impl->after_store( is_create, is_internal );
+}
+
+bool Meta_Specification_Type::can_destroy( bool is_internal )
+{
+   return p_impl->can_destroy( is_internal );
+}
+
+void Meta_Specification_Type::for_destroy( bool is_internal )
+{
+   p_impl->for_destroy( is_internal );
+}
+
+void Meta_Specification_Type::after_destroy( bool is_internal )
+{
+   p_impl->after_destroy( is_internal );
+}
+
+void Meta_Specification_Type::set_default_values( )
+{
+   p_impl->set_default_values( );
+}
+
+bool Meta_Specification_Type::is_filtered( const set< string >& filters ) const
+{
+   return p_impl->is_filtered( filters );
+}
+
+const char* Meta_Specification_Type::get_field_id(
+ const string& name, bool* p_sql_numeric, string* p_type_name ) const
+{
+   const char* p_id( 0 );
+
+   if( name.empty( ) )
+      throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Allow_Child_Relationship )
+   {
+      p_id = c_field_id_Allow_Child_Relationship;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_FK_Source_Field_Choice )
+   {
+      p_id = c_field_id_Allow_FK_Source_Field_Choice;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_FK_Test_Field_Choice )
+   {
+      p_id = c_field_id_Allow_FK_Test_Field_Choice;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Field )
+   {
+      p_id = c_field_id_Allow_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Options )
+   {
+      p_id = c_field_id_Allow_Options;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Other_Class )
+   {
+      p_id = c_field_id_Allow_Other_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Other_Field )
+   {
+      p_id = c_field_id_Allow_Other_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Other_Field_2 )
+   {
+      p_id = c_field_id_Allow_Other_Field_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Permission )
+   {
+      p_id = c_field_id_Allow_Permission;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Procedure )
+   {
+      p_id = c_field_id_Allow_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Source_Child )
+   {
+      p_id = c_field_id_Allow_Source_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Source_Child_2 )
+   {
+      p_id = c_field_id_Allow_Source_Child_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Source_Class )
+   {
+      p_id = c_field_id_Allow_Source_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Source_Field )
+   {
+      p_id = c_field_id_Allow_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Source_Grandchild )
+   {
+      p_id = c_field_id_Allow_Source_Grandchild;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Source_Parent )
+   {
+      p_id = c_field_id_Allow_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Test_Field )
+   {
+      p_id = c_field_id_Allow_Test_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Test_Value )
+   {
+      p_id = c_field_id_Allow_Test_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Allow_Value )
+   {
+      p_id = c_field_id_Allow_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Child_Prefix )
+   {
+      p_id = c_field_id_Child_Prefix;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Child_Rel_Grandparent_Match )
+   {
+      p_id = c_field_id_Child_Rel_Grandparent_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Child_Rel_Parent_Match )
+   {
+      p_id = c_field_id_Child_Rel_Parent_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Child_Relationship_Class_Match )
+   {
+      p_id = c_field_id_Child_Relationship_Class_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Child_Specification_Type )
+   {
+      p_id = c_field_id_Child_Specification_Type;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Specification_Type";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Default_Child_Vars )
+   {
+      p_id = c_field_id_Default_Child_Vars;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Field_type )
+   {
+      p_id = c_field_id_Field_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Has_Next_Specification_Info )
+   {
+      p_id = c_field_id_Has_Next_Specification_Info;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Is_Child_Only )
+   {
+      p_id = c_field_id_Is_Child_Only;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Is_Required_For_UI_Gen )
+   {
+      p_id = c_field_id_Is_Required_For_UI_Gen;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Is_System )
+   {
+      p_id = c_field_id_Is_System;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Name )
+   {
+      p_id = c_field_id_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Needs_Child_Relationship )
+   {
+      p_id = c_field_id_Needs_Child_Relationship;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Class )
+   {
+      p_id = c_field_id_Needs_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Enum )
+   {
+      p_id = c_field_id_Needs_Enum;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Enum_Item )
+   {
+      p_id = c_field_id_Needs_Enum_Item;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Enum_Item_2 )
+   {
+      p_id = c_field_id_Needs_Enum_Item_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Enum_Item_3 )
+   {
+      p_id = c_field_id_Needs_Enum_Item_3;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Enum_Item_4 )
+   {
+      p_id = c_field_id_Needs_Enum_Item_4;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Enum_Item_5 )
+   {
+      p_id = c_field_id_Needs_Enum_Item_5;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Field )
+   {
+      p_id = c_field_id_Needs_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Modifier )
+   {
+      p_id = c_field_id_Needs_Modifier;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Other_Class )
+   {
+      p_id = c_field_id_Needs_Other_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Other_Field )
+   {
+      p_id = c_field_id_Needs_Other_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Other_Field_2 )
+   {
+      p_id = c_field_id_Needs_Other_Field_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Other_Procedure )
+   {
+      p_id = c_field_id_Needs_Other_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Other_Procedure_2 )
+   {
+      p_id = c_field_id_Needs_Other_Procedure_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Permission )
+   {
+      p_id = c_field_id_Needs_Permission;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Procedure )
+   {
+      p_id = c_field_id_Needs_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Procedure_Arg )
+   {
+      p_id = c_field_id_Needs_Procedure_Arg;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Procedure_Arg_2 )
+   {
+      p_id = c_field_id_Needs_Procedure_Arg_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Procedure_Arg_3 )
+   {
+      p_id = c_field_id_Needs_Procedure_Arg_3;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Source_Child )
+   {
+      p_id = c_field_id_Needs_Source_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Source_Child_2 )
+   {
+      p_id = c_field_id_Needs_Source_Child_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Source_Field )
+   {
+      p_id = c_field_id_Needs_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Source_Field_Or_Child )
+   {
+      p_id = c_field_id_Needs_Source_Field_Or_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Source_Parent )
+   {
+      p_id = c_field_id_Needs_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Test_Field )
+   {
+      p_id = c_field_id_Needs_Test_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Test_Value )
+   {
+      p_id = c_field_id_Needs_Test_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Needs_Value )
+   {
+      p_id = c_field_id_Needs_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Next_Child_Specification_Type )
+   {
+      p_id = c_field_id_Next_Child_Specification_Type;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Specification_Type";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Next_Protect_Child_Rel )
+   {
+      p_id = c_field_id_Next_Protect_Child_Rel;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Next_Protect_Procedure )
+   {
+      p_id = c_field_id_Next_Protect_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Next_Protect_Source_Parent )
+   {
+      p_id = c_field_id_Next_Protect_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Next_Specification_Actions )
+   {
+      p_id = c_field_id_Next_Specification_Actions;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Notes )
+   {
+      p_id = c_field_id_Notes;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Parent_Specification_Type )
+   {
+      p_id = c_field_id_Parent_Specification_Type;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Specification_Type";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Procedure_Arg_primitive )
+   {
+      p_id = c_field_id_Procedure_Arg_primitive;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Procedure_Arg_type )
+   {
+      p_id = c_field_id_Procedure_Arg_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Protect_Child_Rel_From_Update )
+   {
+      p_id = c_field_id_Protect_Child_Rel_From_Update;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Protect_Class_From_Edit )
+   {
+      p_id = c_field_id_Protect_Class_From_Edit;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Protect_Class_From_Update )
+   {
+      p_id = c_field_id_Protect_Class_From_Update;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Protect_Procedure_From_Edit )
+   {
+      p_id = c_field_id_Protect_Procedure_From_Edit;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Protect_Source_Parent )
+   {
+      p_id = c_field_id_Protect_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Set_Field_To_Source_Field_Or_Child )
+   {
+      p_id = c_field_id_Set_Field_To_Source_Field_Or_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Source_Field_Needs_Test_Field )
+   {
+      p_id = c_field_id_Source_Field_Needs_Test_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Source_Field_Type_Match )
+   {
+      p_id = c_field_id_Source_Field_Type_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Source_Parent_type )
+   {
+      p_id = c_field_id_Source_Parent_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Source_type )
+   {
+      p_id = c_field_id_Source_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Specification_Actions )
+   {
+      p_id = c_field_id_Specification_Actions;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Specification_Name )
+   {
+      p_id = c_field_id_Specification_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Specification_Object )
+   {
+      p_id = c_field_id_Specification_Object;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Specification_Strings )
+   {
+      p_id = c_field_id_Specification_Strings;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Specification_Vars )
+   {
+      p_id = c_field_id_Specification_Vars;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Test_Field_Type_Match )
+   {
+      p_id = c_field_id_Test_Field_Type_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Test_Field_type )
+   {
+      p_id = c_field_id_Test_Field_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Class_As_Source_Parent_Class )
+   {
+      p_id = c_field_id_Use_Class_As_Source_Parent_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Field_Enum )
+   {
+      p_id = c_field_id_Use_Field_Enum;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
+   {
+      p_id = c_field_id_Use_Parent_Child_Rel_As_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Child_Rel_For_Class )
+   {
+      p_id = c_field_id_Use_Parent_Child_Rel_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Class )
+   {
+      p_id = c_field_id_Use_Parent_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Field_For_Class )
+   {
+      p_id = c_field_id_Use_Parent_Field_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Other_Class_For_Class )
+   {
+      p_id = c_field_id_Use_Parent_Other_Class_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Procedure )
+   {
+      p_id = c_field_id_Use_Parent_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Source_Class )
+   {
+      p_id = c_field_id_Use_Parent_Source_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Source_Field_For_Class )
+   {
+      p_id = c_field_id_Use_Parent_Source_Field_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Source_Parent )
+   {
+      p_id = c_field_id_Use_Parent_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Use_Parent_Source_Parent_For_Class )
+   {
+      p_id = c_field_id_Use_Parent_Source_Parent_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_View_Id )
+   {
+      p_id = c_field_id_View_Id;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+
+   return p_id;
+}
+
+const char* Meta_Specification_Type::get_field_name(
+ const string& id, bool* p_sql_numeric, string* p_type_name ) const
+{
+   const char* p_name( 0 );
+
+   if( id.empty( ) )
+      throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Allow_Child_Relationship )
+   {
+      p_name = c_field_name_Allow_Child_Relationship;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_FK_Source_Field_Choice )
+   {
+      p_name = c_field_name_Allow_FK_Source_Field_Choice;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_FK_Test_Field_Choice )
+   {
+      p_name = c_field_name_Allow_FK_Test_Field_Choice;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Field )
+   {
+      p_name = c_field_name_Allow_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Options )
+   {
+      p_name = c_field_name_Allow_Options;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Other_Class )
+   {
+      p_name = c_field_name_Allow_Other_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Other_Field )
+   {
+      p_name = c_field_name_Allow_Other_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Other_Field_2 )
+   {
+      p_name = c_field_name_Allow_Other_Field_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Permission )
+   {
+      p_name = c_field_name_Allow_Permission;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Procedure )
+   {
+      p_name = c_field_name_Allow_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Source_Child )
+   {
+      p_name = c_field_name_Allow_Source_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Source_Child_2 )
+   {
+      p_name = c_field_name_Allow_Source_Child_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Source_Class )
+   {
+      p_name = c_field_name_Allow_Source_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Source_Field )
+   {
+      p_name = c_field_name_Allow_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Source_Grandchild )
+   {
+      p_name = c_field_name_Allow_Source_Grandchild;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Source_Parent )
+   {
+      p_name = c_field_name_Allow_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Test_Field )
+   {
+      p_name = c_field_name_Allow_Test_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Test_Value )
+   {
+      p_name = c_field_name_Allow_Test_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Allow_Value )
+   {
+      p_name = c_field_name_Allow_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Child_Prefix )
+   {
+      p_name = c_field_name_Child_Prefix;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Child_Rel_Grandparent_Match )
+   {
+      p_name = c_field_name_Child_Rel_Grandparent_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Child_Rel_Parent_Match )
+   {
+      p_name = c_field_name_Child_Rel_Parent_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Child_Relationship_Class_Match )
+   {
+      p_name = c_field_name_Child_Relationship_Class_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Child_Specification_Type )
+   {
+      p_name = c_field_name_Child_Specification_Type;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Specification_Type";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Default_Child_Vars )
+   {
+      p_name = c_field_name_Default_Child_Vars;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Field_type )
+   {
+      p_name = c_field_name_Field_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Has_Next_Specification_Info )
+   {
+      p_name = c_field_name_Has_Next_Specification_Info;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Is_Child_Only )
+   {
+      p_name = c_field_name_Is_Child_Only;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Is_Required_For_UI_Gen )
+   {
+      p_name = c_field_name_Is_Required_For_UI_Gen;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Is_System )
+   {
+      p_name = c_field_name_Is_System;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Name )
+   {
+      p_name = c_field_name_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Needs_Child_Relationship )
+   {
+      p_name = c_field_name_Needs_Child_Relationship;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Class )
+   {
+      p_name = c_field_name_Needs_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Enum )
+   {
+      p_name = c_field_name_Needs_Enum;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Enum_Item )
+   {
+      p_name = c_field_name_Needs_Enum_Item;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Enum_Item_2 )
+   {
+      p_name = c_field_name_Needs_Enum_Item_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Enum_Item_3 )
+   {
+      p_name = c_field_name_Needs_Enum_Item_3;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Enum_Item_4 )
+   {
+      p_name = c_field_name_Needs_Enum_Item_4;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Enum_Item_5 )
+   {
+      p_name = c_field_name_Needs_Enum_Item_5;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Field )
+   {
+      p_name = c_field_name_Needs_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Modifier )
+   {
+      p_name = c_field_name_Needs_Modifier;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Other_Class )
+   {
+      p_name = c_field_name_Needs_Other_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Other_Field )
+   {
+      p_name = c_field_name_Needs_Other_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Other_Field_2 )
+   {
+      p_name = c_field_name_Needs_Other_Field_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Other_Procedure )
+   {
+      p_name = c_field_name_Needs_Other_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Other_Procedure_2 )
+   {
+      p_name = c_field_name_Needs_Other_Procedure_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Permission )
+   {
+      p_name = c_field_name_Needs_Permission;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Procedure )
+   {
+      p_name = c_field_name_Needs_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Procedure_Arg )
+   {
+      p_name = c_field_name_Needs_Procedure_Arg;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Procedure_Arg_2 )
+   {
+      p_name = c_field_name_Needs_Procedure_Arg_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Procedure_Arg_3 )
+   {
+      p_name = c_field_name_Needs_Procedure_Arg_3;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Source_Child )
+   {
+      p_name = c_field_name_Needs_Source_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Source_Child_2 )
+   {
+      p_name = c_field_name_Needs_Source_Child_2;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Source_Field )
+   {
+      p_name = c_field_name_Needs_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Source_Field_Or_Child )
+   {
+      p_name = c_field_name_Needs_Source_Field_Or_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Source_Parent )
+   {
+      p_name = c_field_name_Needs_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Test_Field )
+   {
+      p_name = c_field_name_Needs_Test_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Test_Value )
+   {
+      p_name = c_field_name_Needs_Test_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Needs_Value )
+   {
+      p_name = c_field_name_Needs_Value;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Next_Child_Specification_Type )
+   {
+      p_name = c_field_name_Next_Child_Specification_Type;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Specification_Type";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Next_Protect_Child_Rel )
+   {
+      p_name = c_field_name_Next_Protect_Child_Rel;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Next_Protect_Procedure )
+   {
+      p_name = c_field_name_Next_Protect_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Next_Protect_Source_Parent )
+   {
+      p_name = c_field_name_Next_Protect_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Next_Specification_Actions )
+   {
+      p_name = c_field_name_Next_Specification_Actions;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Notes )
+   {
+      p_name = c_field_name_Notes;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Parent_Specification_Type )
+   {
+      p_name = c_field_name_Parent_Specification_Type;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Specification_Type";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Procedure_Arg_primitive )
+   {
+      p_name = c_field_name_Procedure_Arg_primitive;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Procedure_Arg_type )
+   {
+      p_name = c_field_name_Procedure_Arg_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Protect_Child_Rel_From_Update )
+   {
+      p_name = c_field_name_Protect_Child_Rel_From_Update;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Protect_Class_From_Edit )
+   {
+      p_name = c_field_name_Protect_Class_From_Edit;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Protect_Class_From_Update )
+   {
+      p_name = c_field_name_Protect_Class_From_Update;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Protect_Procedure_From_Edit )
+   {
+      p_name = c_field_name_Protect_Procedure_From_Edit;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Protect_Source_Parent )
+   {
+      p_name = c_field_name_Protect_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Set_Field_To_Source_Field_Or_Child )
+   {
+      p_name = c_field_name_Set_Field_To_Source_Field_Or_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Source_Field_Needs_Test_Field )
+   {
+      p_name = c_field_name_Source_Field_Needs_Test_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Source_Field_Type_Match )
+   {
+      p_name = c_field_name_Source_Field_Type_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Source_Parent_type )
+   {
+      p_name = c_field_name_Source_Parent_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Source_type )
+   {
+      p_name = c_field_name_Source_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Specification_Actions )
+   {
+      p_name = c_field_name_Specification_Actions;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Specification_Name )
+   {
+      p_name = c_field_name_Specification_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Specification_Object )
+   {
+      p_name = c_field_name_Specification_Object;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Specification_Strings )
+   {
+      p_name = c_field_name_Specification_Strings;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Specification_Vars )
+   {
+      p_name = c_field_name_Specification_Vars;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Test_Field_Type_Match )
+   {
+      p_name = c_field_name_Test_Field_Type_Match;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Test_Field_type )
+   {
+      p_name = c_field_name_Test_Field_type;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Class_As_Source_Parent_Class )
+   {
+      p_name = c_field_name_Use_Class_As_Source_Parent_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Field_Enum )
+   {
+      p_name = c_field_name_Use_Field_Enum;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Child_Rel_As_Source_Parent )
+   {
+      p_name = c_field_name_Use_Parent_Child_Rel_As_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Child_Rel_For_Class )
+   {
+      p_name = c_field_name_Use_Parent_Child_Rel_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Class )
+   {
+      p_name = c_field_name_Use_Parent_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Field_For_Class )
+   {
+      p_name = c_field_name_Use_Parent_Field_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Other_Class_For_Class )
+   {
+      p_name = c_field_name_Use_Parent_Other_Class_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Procedure )
+   {
+      p_name = c_field_name_Use_Parent_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Source_Class )
+   {
+      p_name = c_field_name_Use_Parent_Source_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Source_Field_For_Class )
+   {
+      p_name = c_field_name_Use_Parent_Source_Field_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Source_Parent )
+   {
+      p_name = c_field_name_Use_Parent_Source_Parent;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Use_Parent_Source_Parent_For_Class )
+   {
+      p_name = c_field_name_Use_Parent_Source_Parent_For_Class;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_View_Id )
+   {
+      p_name = c_field_name_View_Id;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+
+   return p_name;
+}
+
+string Meta_Specification_Type::get_field_display_name( const string& id ) const
+{
+   string display_name;
+
+   if( id.empty( ) )
+      throw runtime_error( "unexpected empty field id for get_field_display_name" );
+   else if( id == c_field_id_Allow_Child_Relationship )
+      display_name = get_module_string( c_field_display_name_Allow_Child_Relationship );
+   else if( id == c_field_id_Allow_FK_Source_Field_Choice )
+      display_name = get_module_string( c_field_display_name_Allow_FK_Source_Field_Choice );
+   else if( id == c_field_id_Allow_FK_Test_Field_Choice )
+      display_name = get_module_string( c_field_display_name_Allow_FK_Test_Field_Choice );
+   else if( id == c_field_id_Allow_Field )
+      display_name = get_module_string( c_field_display_name_Allow_Field );
+   else if( id == c_field_id_Allow_Options )
+      display_name = get_module_string( c_field_display_name_Allow_Options );
+   else if( id == c_field_id_Allow_Other_Class )
+      display_name = get_module_string( c_field_display_name_Allow_Other_Class );
+   else if( id == c_field_id_Allow_Other_Field )
+      display_name = get_module_string( c_field_display_name_Allow_Other_Field );
+   else if( id == c_field_id_Allow_Other_Field_2 )
+      display_name = get_module_string( c_field_display_name_Allow_Other_Field_2 );
+   else if( id == c_field_id_Allow_Permission )
+      display_name = get_module_string( c_field_display_name_Allow_Permission );
+   else if( id == c_field_id_Allow_Procedure )
+      display_name = get_module_string( c_field_display_name_Allow_Procedure );
+   else if( id == c_field_id_Allow_Source_Child )
+      display_name = get_module_string( c_field_display_name_Allow_Source_Child );
+   else if( id == c_field_id_Allow_Source_Child_2 )
+      display_name = get_module_string( c_field_display_name_Allow_Source_Child_2 );
+   else if( id == c_field_id_Allow_Source_Class )
+      display_name = get_module_string( c_field_display_name_Allow_Source_Class );
+   else if( id == c_field_id_Allow_Source_Field )
+      display_name = get_module_string( c_field_display_name_Allow_Source_Field );
+   else if( id == c_field_id_Allow_Source_Grandchild )
+      display_name = get_module_string( c_field_display_name_Allow_Source_Grandchild );
+   else if( id == c_field_id_Allow_Source_Parent )
+      display_name = get_module_string( c_field_display_name_Allow_Source_Parent );
+   else if( id == c_field_id_Allow_Test_Field )
+      display_name = get_module_string( c_field_display_name_Allow_Test_Field );
+   else if( id == c_field_id_Allow_Test_Value )
+      display_name = get_module_string( c_field_display_name_Allow_Test_Value );
+   else if( id == c_field_id_Allow_Value )
+      display_name = get_module_string( c_field_display_name_Allow_Value );
+   else if( id == c_field_id_Child_Prefix )
+      display_name = get_module_string( c_field_display_name_Child_Prefix );
+   else if( id == c_field_id_Child_Rel_Grandparent_Match )
+      display_name = get_module_string( c_field_display_name_Child_Rel_Grandparent_Match );
+   else if( id == c_field_id_Child_Rel_Parent_Match )
+      display_name = get_module_string( c_field_display_name_Child_Rel_Parent_Match );
+   else if( id == c_field_id_Child_Relationship_Class_Match )
+      display_name = get_module_string( c_field_display_name_Child_Relationship_Class_Match );
+   else if( id == c_field_id_Child_Specification_Type )
+      display_name = get_module_string( c_field_display_name_Child_Specification_Type );
+   else if( id == c_field_id_Default_Child_Vars )
+      display_name = get_module_string( c_field_display_name_Default_Child_Vars );
+   else if( id == c_field_id_Field_type )
+      display_name = get_module_string( c_field_display_name_Field_type );
+   else if( id == c_field_id_Has_Next_Specification_Info )
+      display_name = get_module_string( c_field_display_name_Has_Next_Specification_Info );
+   else if( id == c_field_id_Is_Child_Only )
+      display_name = get_module_string( c_field_display_name_Is_Child_Only );
+   else if( id == c_field_id_Is_Required_For_UI_Gen )
+      display_name = get_module_string( c_field_display_name_Is_Required_For_UI_Gen );
+   else if( id == c_field_id_Is_System )
+      display_name = get_module_string( c_field_display_name_Is_System );
+   else if( id == c_field_id_Name )
+      display_name = get_module_string( c_field_display_name_Name );
+   else if( id == c_field_id_Needs_Child_Relationship )
+      display_name = get_module_string( c_field_display_name_Needs_Child_Relationship );
+   else if( id == c_field_id_Needs_Class )
+      display_name = get_module_string( c_field_display_name_Needs_Class );
+   else if( id == c_field_id_Needs_Enum )
+      display_name = get_module_string( c_field_display_name_Needs_Enum );
+   else if( id == c_field_id_Needs_Enum_Item )
+      display_name = get_module_string( c_field_display_name_Needs_Enum_Item );
+   else if( id == c_field_id_Needs_Enum_Item_2 )
+      display_name = get_module_string( c_field_display_name_Needs_Enum_Item_2 );
+   else if( id == c_field_id_Needs_Enum_Item_3 )
+      display_name = get_module_string( c_field_display_name_Needs_Enum_Item_3 );
+   else if( id == c_field_id_Needs_Enum_Item_4 )
+      display_name = get_module_string( c_field_display_name_Needs_Enum_Item_4 );
+   else if( id == c_field_id_Needs_Enum_Item_5 )
+      display_name = get_module_string( c_field_display_name_Needs_Enum_Item_5 );
+   else if( id == c_field_id_Needs_Field )
+      display_name = get_module_string( c_field_display_name_Needs_Field );
+   else if( id == c_field_id_Needs_Modifier )
+      display_name = get_module_string( c_field_display_name_Needs_Modifier );
+   else if( id == c_field_id_Needs_Other_Class )
+      display_name = get_module_string( c_field_display_name_Needs_Other_Class );
+   else if( id == c_field_id_Needs_Other_Field )
+      display_name = get_module_string( c_field_display_name_Needs_Other_Field );
+   else if( id == c_field_id_Needs_Other_Field_2 )
+      display_name = get_module_string( c_field_display_name_Needs_Other_Field_2 );
+   else if( id == c_field_id_Needs_Other_Procedure )
+      display_name = get_module_string( c_field_display_name_Needs_Other_Procedure );
+   else if( id == c_field_id_Needs_Other_Procedure_2 )
+      display_name = get_module_string( c_field_display_name_Needs_Other_Procedure_2 );
+   else if( id == c_field_id_Needs_Permission )
+      display_name = get_module_string( c_field_display_name_Needs_Permission );
+   else if( id == c_field_id_Needs_Procedure )
+      display_name = get_module_string( c_field_display_name_Needs_Procedure );
+   else if( id == c_field_id_Needs_Procedure_Arg )
+      display_name = get_module_string( c_field_display_name_Needs_Procedure_Arg );
+   else if( id == c_field_id_Needs_Procedure_Arg_2 )
+      display_name = get_module_string( c_field_display_name_Needs_Procedure_Arg_2 );
+   else if( id == c_field_id_Needs_Procedure_Arg_3 )
+      display_name = get_module_string( c_field_display_name_Needs_Procedure_Arg_3 );
+   else if( id == c_field_id_Needs_Source_Child )
+      display_name = get_module_string( c_field_display_name_Needs_Source_Child );
+   else if( id == c_field_id_Needs_Source_Child_2 )
+      display_name = get_module_string( c_field_display_name_Needs_Source_Child_2 );
+   else if( id == c_field_id_Needs_Source_Field )
+      display_name = get_module_string( c_field_display_name_Needs_Source_Field );
+   else if( id == c_field_id_Needs_Source_Field_Or_Child )
+      display_name = get_module_string( c_field_display_name_Needs_Source_Field_Or_Child );
+   else if( id == c_field_id_Needs_Source_Parent )
+      display_name = get_module_string( c_field_display_name_Needs_Source_Parent );
+   else if( id == c_field_id_Needs_Test_Field )
+      display_name = get_module_string( c_field_display_name_Needs_Test_Field );
+   else if( id == c_field_id_Needs_Test_Value )
+      display_name = get_module_string( c_field_display_name_Needs_Test_Value );
+   else if( id == c_field_id_Needs_Value )
+      display_name = get_module_string( c_field_display_name_Needs_Value );
+   else if( id == c_field_id_Next_Child_Specification_Type )
+      display_name = get_module_string( c_field_display_name_Next_Child_Specification_Type );
+   else if( id == c_field_id_Next_Protect_Child_Rel )
+      display_name = get_module_string( c_field_display_name_Next_Protect_Child_Rel );
+   else if( id == c_field_id_Next_Protect_Procedure )
+      display_name = get_module_string( c_field_display_name_Next_Protect_Procedure );
+   else if( id == c_field_id_Next_Protect_Source_Parent )
+      display_name = get_module_string( c_field_display_name_Next_Protect_Source_Parent );
+   else if( id == c_field_id_Next_Specification_Actions )
+      display_name = get_module_string( c_field_display_name_Next_Specification_Actions );
+   else if( id == c_field_id_Notes )
+      display_name = get_module_string( c_field_display_name_Notes );
+   else if( id == c_field_id_Parent_Specification_Type )
+      display_name = get_module_string( c_field_display_name_Parent_Specification_Type );
+   else if( id == c_field_id_Procedure_Arg_primitive )
+      display_name = get_module_string( c_field_display_name_Procedure_Arg_primitive );
+   else if( id == c_field_id_Procedure_Arg_type )
+      display_name = get_module_string( c_field_display_name_Procedure_Arg_type );
+   else if( id == c_field_id_Protect_Child_Rel_From_Update )
+      display_name = get_module_string( c_field_display_name_Protect_Child_Rel_From_Update );
+   else if( id == c_field_id_Protect_Class_From_Edit )
+      display_name = get_module_string( c_field_display_name_Protect_Class_From_Edit );
+   else if( id == c_field_id_Protect_Class_From_Update )
+      display_name = get_module_string( c_field_display_name_Protect_Class_From_Update );
+   else if( id == c_field_id_Protect_Procedure_From_Edit )
+      display_name = get_module_string( c_field_display_name_Protect_Procedure_From_Edit );
+   else if( id == c_field_id_Protect_Source_Parent )
+      display_name = get_module_string( c_field_display_name_Protect_Source_Parent );
+   else if( id == c_field_id_Set_Field_To_Source_Field_Or_Child )
+      display_name = get_module_string( c_field_display_name_Set_Field_To_Source_Field_Or_Child );
+   else if( id == c_field_id_Source_Field_Needs_Test_Field )
+      display_name = get_module_string( c_field_display_name_Source_Field_Needs_Test_Field );
+   else if( id == c_field_id_Source_Field_Type_Match )
+      display_name = get_module_string( c_field_display_name_Source_Field_Type_Match );
+   else if( id == c_field_id_Source_Parent_type )
+      display_name = get_module_string( c_field_display_name_Source_Parent_type );
+   else if( id == c_field_id_Source_type )
+      display_name = get_module_string( c_field_display_name_Source_type );
+   else if( id == c_field_id_Specification_Actions )
+      display_name = get_module_string( c_field_display_name_Specification_Actions );
+   else if( id == c_field_id_Specification_Name )
+      display_name = get_module_string( c_field_display_name_Specification_Name );
+   else if( id == c_field_id_Specification_Object )
+      display_name = get_module_string( c_field_display_name_Specification_Object );
+   else if( id == c_field_id_Specification_Strings )
+      display_name = get_module_string( c_field_display_name_Specification_Strings );
+   else if( id == c_field_id_Specification_Vars )
+      display_name = get_module_string( c_field_display_name_Specification_Vars );
+   else if( id == c_field_id_Test_Field_Type_Match )
+      display_name = get_module_string( c_field_display_name_Test_Field_Type_Match );
+   else if( id == c_field_id_Test_Field_type )
+      display_name = get_module_string( c_field_display_name_Test_Field_type );
+   else if( id == c_field_id_Use_Class_As_Source_Parent_Class )
+      display_name = get_module_string( c_field_display_name_Use_Class_As_Source_Parent_Class );
+   else if( id == c_field_id_Use_Field_Enum )
+      display_name = get_module_string( c_field_display_name_Use_Field_Enum );
+   else if( id == c_field_id_Use_Parent_Child_Rel_As_Source_Parent )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Child_Rel_As_Source_Parent );
+   else if( id == c_field_id_Use_Parent_Child_Rel_For_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Child_Rel_For_Class );
+   else if( id == c_field_id_Use_Parent_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Class );
+   else if( id == c_field_id_Use_Parent_Field_For_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Field_For_Class );
+   else if( id == c_field_id_Use_Parent_Other_Class_For_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Other_Class_For_Class );
+   else if( id == c_field_id_Use_Parent_Procedure )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Procedure );
+   else if( id == c_field_id_Use_Parent_Source_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Source_Class );
+   else if( id == c_field_id_Use_Parent_Source_Field_For_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Source_Field_For_Class );
+   else if( id == c_field_id_Use_Parent_Source_Parent )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Source_Parent );
+   else if( id == c_field_id_Use_Parent_Source_Parent_For_Class )
+      display_name = get_module_string( c_field_display_name_Use_Parent_Source_Parent_For_Class );
+   else if( id == c_field_id_View_Id )
+      display_name = get_module_string( c_field_display_name_View_Id );
+
+   return display_name;
+}
+
+void Meta_Specification_Type::clear_foreign_key( const string& field )
+{
+   p_impl->clear_foreign_key( field );
+}
+
+void Meta_Specification_Type::set_foreign_key_value( const string& field, const string& value )
+{
+   p_impl->set_foreign_key_value( field, value );
+}
+
+const string& Meta_Specification_Type::get_foreign_key_value( const string& field )
+{
+   return p_impl->get_foreign_key_value( field );
+}
+
+void Meta_Specification_Type::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
+{
+   p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_Specification_Type::setup_foreign_key( Meta_Specification_Type& o, const string& value )
+{
+   static_cast< Meta_Specification_Type& >( o ).set_key( value );
+}
+
+void Meta_Specification_Type::setup_graph_parent( Meta_Specification_Type& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Specification_Type& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Specification_Type::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Specification_Type::setup_graph_parent(
+ Meta_Specification_Type& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Specification_Type& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Specification_Type& >( o ).set_key( init_value );
+}
+
+size_t Meta_Specification_Type::get_total_child_relationships( ) const
+{
+   return p_impl->total_child_relationships;
+}
+
+void Meta_Specification_Type::set_total_child_relationships( size_t new_total_child_relationships ) const
+{
+   p_impl->total_child_relationships = new_total_child_relationships;
+}
+
+size_t Meta_Specification_Type::get_num_foreign_key_children( bool is_internal ) const
+{
+   size_t rc = 5;
+
+   if( !is_internal )
+   {
+      g_external_aliases_lookup.clear( );
+
+      for( external_aliases_const_iterator
+       eaci = g_external_aliases.begin( ), end = g_external_aliases.end( ); eaci != end; ++eaci )
+      {
+         size_t num_extra = eaci->second->get_num_foreign_key_children( true );
+
+         if( num_extra )
+         {
+            eaci->second->set_key( get_key( ) );
+            eaci->second->copy_all_field_values( *this );
+
+            g_external_aliases_lookup.insert( make_pair( rc, eaci->second ) );
+
+            rc += num_extra;
+         }
+      }
+   }
+
+   set_total_child_relationships( rc );
+
+   return rc;
+}
+
+class_base* Meta_Specification_Type::get_next_foreign_key_child(
+ size_t child_num, string& next_child_field, cascade_op op, bool is_internal )
+{
+   class_base* p_class_base = 0;
+
+   if( child_num >= 5 )
+   {
+      external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
+      if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
+         --ealci;
+
+      p_class_base = ealci->second->get_next_foreign_key_child( child_num - ealci->first, next_child_field, op, true );
+   }
+   else
+   {
+      switch( child_num )
+      {
+         case 0:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301710";
+            p_class_base = &child_Specification_Type_Child( );
+         }
+         break;
+
+         case 1:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301406";
+            p_class_base = &child_Specification_Child( );
+         }
+         break;
+
+         case 2:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301720";
+            p_class_base = &child_Specification_Type_Next_Child( );
+         }
+         break;
+
+         case 3:
+         if( op == e_cascade_op_destroy )
+         {
+            next_child_field = "301700";
+            p_class_base = &child_Specification_Type_Parent( );
+         }
+         break;
+
+         case 4:
+         if( op == e_cascade_op_destroy )
+         {
+            next_child_field = "301410";
+            p_class_base = &child_Specification( );
+         }
+         break;
+      }
+   }
+
+   return p_class_base;
+}
+
+const char* Meta_Specification_Type::class_id( ) const
+{
+   return static_class_id( );
+}
+
+const char* Meta_Specification_Type::class_name( ) const
+{
+   return static_class_name( );
+}
+
+const char* Meta_Specification_Type::plural_name( ) const
+{
+   return static_plural_name( );
+}
+
+const char* Meta_Specification_Type::module_id( ) const
+{
+   return static_module_id( );
+}
+
+const char* Meta_Specification_Type::module_name( ) const
+{
+   return static_module_name( );
+}
+
+string Meta_Specification_Type::get_display_name( bool plural ) const
+{
+   string key( plural ? "plural_" : "class_" );
+   key += "specification_type";
+
+   return get_module_string( key );
+}
+
+bool Meta_Specification_Type::get_is_alias( ) const
+{
+   return false;
+}
+
+void Meta_Specification_Type::get_alias_base_info( pair< string, string >& alias_base_info ) const
+{
+   ( void )alias_base_info;
+}
+
+void Meta_Specification_Type::get_base_class_info( vector< pair< string, string > >& base_class_info ) const
+{
+   ( void )base_class_info;
+}
+
+class_base& Meta_Specification_Type::get_or_create_graph_child( const string& context )
+{
+   class_base* p_class_base( 0 );
+
+   string::size_type pos = context.find( '.' );
+   string sub_context( context.substr( 0, pos ) );
+
+   if( sub_context.empty( ) )
+      throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_301710" || sub_context == "child_Specification_Type_Child" )
+      p_class_base = &child_Specification_Type_Child( );
+   else if( sub_context == "_301406" || sub_context == "child_Specification_Child" )
+      p_class_base = &child_Specification_Child( );
+   else if( sub_context == "_301720" || sub_context == "child_Specification_Type_Next_Child" )
+      p_class_base = &child_Specification_Type_Next_Child( );
+   else if( sub_context == "_301700" || sub_context == "child_Specification_Type_Parent" )
+      p_class_base = &child_Specification_Type_Parent( );
+   else if( sub_context == "_301410" || sub_context == "child_Specification" )
+      p_class_base = &child_Specification( );
+   else if( sub_context == c_field_id_Child_Specification_Type || sub_context == c_field_name_Child_Specification_Type )
+      p_class_base = &Child_Specification_Type( );
+   else if( sub_context == c_field_id_Next_Child_Specification_Type || sub_context == c_field_name_Next_Child_Specification_Type )
+      p_class_base = &Next_Child_Specification_Type( );
+   else if( sub_context == c_field_id_Parent_Specification_Type || sub_context == c_field_name_Parent_Specification_Type )
+      p_class_base = &Parent_Specification_Type( );
+
+   if( !p_class_base )
+      throw runtime_error( "unknown sub-context '" + sub_context + "'" );
+
+   if( pos != string::npos )
+      p_class_base = &p_class_base->get_or_create_graph_child( context.substr( pos + 1 ) );
+
+   return *p_class_base;
+}
+
+void Meta_Specification_Type::get_sql_column_names(
+ vector< string >& names, bool* p_done, const string* p_class_name ) const
+{
+   if( p_done && *p_done )
+      return;
+
+   names.push_back( "C_Allow_Child_Relationship" );
+   names.push_back( "C_Allow_FK_Source_Field_Choice" );
+   names.push_back( "C_Allow_FK_Test_Field_Choice" );
+   names.push_back( "C_Allow_Field" );
+   names.push_back( "C_Allow_Options" );
+   names.push_back( "C_Allow_Other_Class" );
+   names.push_back( "C_Allow_Other_Field" );
+   names.push_back( "C_Allow_Other_Field_2" );
+   names.push_back( "C_Allow_Permission" );
+   names.push_back( "C_Allow_Procedure" );
+   names.push_back( "C_Allow_Source_Child" );
+   names.push_back( "C_Allow_Source_Child_2" );
+   names.push_back( "C_Allow_Source_Class" );
+   names.push_back( "C_Allow_Source_Field" );
+   names.push_back( "C_Allow_Source_Grandchild" );
+   names.push_back( "C_Allow_Source_Parent" );
+   names.push_back( "C_Allow_Test_Field" );
+   names.push_back( "C_Allow_Test_Value" );
+   names.push_back( "C_Allow_Value" );
+   names.push_back( "C_Child_Prefix" );
+   names.push_back( "C_Child_Rel_Grandparent_Match" );
+   names.push_back( "C_Child_Rel_Parent_Match" );
+   names.push_back( "C_Child_Relationship_Class_Match" );
+   names.push_back( "C_Child_Specification_Type" );
+   names.push_back( "C_Default_Child_Vars" );
+   names.push_back( "C_Field_type" );
+   names.push_back( "C_Has_Next_Specification_Info" );
+   names.push_back( "C_Is_Child_Only" );
+   names.push_back( "C_Is_Required_For_UI_Gen" );
+   names.push_back( "C_Is_System" );
+   names.push_back( "C_Name" );
+   names.push_back( "C_Needs_Child_Relationship" );
+   names.push_back( "C_Needs_Class" );
+   names.push_back( "C_Needs_Enum" );
+   names.push_back( "C_Needs_Enum_Item" );
+   names.push_back( "C_Needs_Enum_Item_2" );
+   names.push_back( "C_Needs_Enum_Item_3" );
+   names.push_back( "C_Needs_Enum_Item_4" );
+   names.push_back( "C_Needs_Enum_Item_5" );
+   names.push_back( "C_Needs_Field" );
+   names.push_back( "C_Needs_Modifier" );
+   names.push_back( "C_Needs_Other_Class" );
+   names.push_back( "C_Needs_Other_Field" );
+   names.push_back( "C_Needs_Other_Field_2" );
+   names.push_back( "C_Needs_Other_Procedure" );
+   names.push_back( "C_Needs_Other_Procedure_2" );
+   names.push_back( "C_Needs_Permission" );
+   names.push_back( "C_Needs_Procedure" );
+   names.push_back( "C_Needs_Procedure_Arg" );
+   names.push_back( "C_Needs_Procedure_Arg_2" );
+   names.push_back( "C_Needs_Procedure_Arg_3" );
+   names.push_back( "C_Needs_Source_Child" );
+   names.push_back( "C_Needs_Source_Child_2" );
+   names.push_back( "C_Needs_Source_Field" );
+   names.push_back( "C_Needs_Source_Field_Or_Child" );
+   names.push_back( "C_Needs_Source_Parent" );
+   names.push_back( "C_Needs_Test_Field" );
+   names.push_back( "C_Needs_Test_Value" );
+   names.push_back( "C_Needs_Value" );
+   names.push_back( "C_Next_Child_Specification_Type" );
+   names.push_back( "C_Next_Protect_Child_Rel" );
+   names.push_back( "C_Next_Protect_Procedure" );
+   names.push_back( "C_Next_Protect_Source_Parent" );
+   names.push_back( "C_Next_Specification_Actions" );
+   names.push_back( "C_Notes" );
+   names.push_back( "C_Parent_Specification_Type" );
+   names.push_back( "C_Procedure_Arg_primitive" );
+   names.push_back( "C_Procedure_Arg_type" );
+   names.push_back( "C_Protect_Child_Rel_From_Update" );
+   names.push_back( "C_Protect_Class_From_Edit" );
+   names.push_back( "C_Protect_Class_From_Update" );
+   names.push_back( "C_Protect_Procedure_From_Edit" );
+   names.push_back( "C_Protect_Source_Parent" );
+   names.push_back( "C_Set_Field_To_Source_Field_Or_Child" );
+   names.push_back( "C_Source_Field_Needs_Test_Field" );
+   names.push_back( "C_Source_Field_Type_Match" );
+   names.push_back( "C_Source_Parent_type" );
+   names.push_back( "C_Source_type" );
+   names.push_back( "C_Specification_Actions" );
+   names.push_back( "C_Specification_Name" );
+   names.push_back( "C_Specification_Object" );
+   names.push_back( "C_Specification_Strings" );
+   names.push_back( "C_Specification_Vars" );
+   names.push_back( "C_Test_Field_Type_Match" );
+   names.push_back( "C_Test_Field_type" );
+   names.push_back( "C_Use_Class_As_Source_Parent_Class" );
+   names.push_back( "C_Use_Field_Enum" );
+   names.push_back( "C_Use_Parent_Child_Rel_As_Source_Parent" );
+   names.push_back( "C_Use_Parent_Child_Rel_For_Class" );
+   names.push_back( "C_Use_Parent_Class" );
+   names.push_back( "C_Use_Parent_Field_For_Class" );
+   names.push_back( "C_Use_Parent_Other_Class_For_Class" );
+   names.push_back( "C_Use_Parent_Procedure" );
+   names.push_back( "C_Use_Parent_Source_Class" );
+   names.push_back( "C_Use_Parent_Source_Field_For_Class" );
+   names.push_back( "C_Use_Parent_Source_Parent" );
+   names.push_back( "C_Use_Parent_Source_Parent_For_Class" );
+   names.push_back( "C_View_Id" );
+
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+}
+
+void Meta_Specification_Type::get_sql_column_values(
+ vector< string >& values, bool* p_done, const string* p_class_name ) const
+{
+   if( p_done && *p_done )
+      return;
+
+   values.push_back( to_string( Allow_Child_Relationship( ) ) );
+   values.push_back( to_string( Allow_FK_Source_Field_Choice( ) ) );
+   values.push_back( to_string( Allow_FK_Test_Field_Choice( ) ) );
+   values.push_back( to_string( Allow_Field( ) ) );
+   values.push_back( to_string( Allow_Options( ) ) );
+   values.push_back( to_string( Allow_Other_Class( ) ) );
+   values.push_back( to_string( Allow_Other_Field( ) ) );
+   values.push_back( to_string( Allow_Other_Field_2( ) ) );
+   values.push_back( to_string( Allow_Permission( ) ) );
+   values.push_back( to_string( Allow_Procedure( ) ) );
+   values.push_back( to_string( Allow_Source_Child( ) ) );
+   values.push_back( to_string( Allow_Source_Child_2( ) ) );
+   values.push_back( to_string( Allow_Source_Class( ) ) );
+   values.push_back( to_string( Allow_Source_Field( ) ) );
+   values.push_back( to_string( Allow_Source_Grandchild( ) ) );
+   values.push_back( to_string( Allow_Source_Parent( ) ) );
+   values.push_back( to_string( Allow_Test_Field( ) ) );
+   values.push_back( to_string( Allow_Test_Value( ) ) );
+   values.push_back( to_string( Allow_Value( ) ) );
+   values.push_back( sql_quote( to_string( Child_Prefix( ) ) ) );
+   values.push_back( to_string( Child_Rel_Grandparent_Match( ) ) );
+   values.push_back( to_string( Child_Rel_Parent_Match( ) ) );
+   values.push_back( to_string( Child_Relationship_Class_Match( ) ) );
+   values.push_back( sql_quote( to_string( Child_Specification_Type( ) ) ) );
+   values.push_back( sql_quote( to_string( Default_Child_Vars( ) ) ) );
+   values.push_back( to_string( Field_type( ) ) );
+   values.push_back( to_string( Has_Next_Specification_Info( ) ) );
+   values.push_back( to_string( Is_Child_Only( ) ) );
+   values.push_back( to_string( Is_Required_For_UI_Gen( ) ) );
+   values.push_back( to_string( Is_System( ) ) );
+   values.push_back( sql_quote( to_string( Name( ) ) ) );
+   values.push_back( to_string( Needs_Child_Relationship( ) ) );
+   values.push_back( to_string( Needs_Class( ) ) );
+   values.push_back( to_string( Needs_Enum( ) ) );
+   values.push_back( to_string( Needs_Enum_Item( ) ) );
+   values.push_back( to_string( Needs_Enum_Item_2( ) ) );
+   values.push_back( to_string( Needs_Enum_Item_3( ) ) );
+   values.push_back( to_string( Needs_Enum_Item_4( ) ) );
+   values.push_back( to_string( Needs_Enum_Item_5( ) ) );
+   values.push_back( to_string( Needs_Field( ) ) );
+   values.push_back( to_string( Needs_Modifier( ) ) );
+   values.push_back( to_string( Needs_Other_Class( ) ) );
+   values.push_back( to_string( Needs_Other_Field( ) ) );
+   values.push_back( to_string( Needs_Other_Field_2( ) ) );
+   values.push_back( to_string( Needs_Other_Procedure( ) ) );
+   values.push_back( to_string( Needs_Other_Procedure_2( ) ) );
+   values.push_back( to_string( Needs_Permission( ) ) );
+   values.push_back( to_string( Needs_Procedure( ) ) );
+   values.push_back( to_string( Needs_Procedure_Arg( ) ) );
+   values.push_back( to_string( Needs_Procedure_Arg_2( ) ) );
+   values.push_back( to_string( Needs_Procedure_Arg_3( ) ) );
+   values.push_back( to_string( Needs_Source_Child( ) ) );
+   values.push_back( to_string( Needs_Source_Child_2( ) ) );
+   values.push_back( to_string( Needs_Source_Field( ) ) );
+   values.push_back( to_string( Needs_Source_Field_Or_Child( ) ) );
+   values.push_back( to_string( Needs_Source_Parent( ) ) );
+   values.push_back( to_string( Needs_Test_Field( ) ) );
+   values.push_back( to_string( Needs_Test_Value( ) ) );
+   values.push_back( to_string( Needs_Value( ) ) );
+   values.push_back( sql_quote( to_string( Next_Child_Specification_Type( ) ) ) );
+   values.push_back( to_string( Next_Protect_Child_Rel( ) ) );
+   values.push_back( to_string( Next_Protect_Procedure( ) ) );
+   values.push_back( to_string( Next_Protect_Source_Parent( ) ) );
+   values.push_back( sql_quote( to_string( Next_Specification_Actions( ) ) ) );
+   values.push_back( sql_quote( to_string( Notes( ) ) ) );
+   values.push_back( sql_quote( to_string( Parent_Specification_Type( ) ) ) );
+   values.push_back( to_string( Procedure_Arg_primitive( ) ) );
+   values.push_back( to_string( Procedure_Arg_type( ) ) );
+   values.push_back( to_string( Protect_Child_Rel_From_Update( ) ) );
+   values.push_back( to_string( Protect_Class_From_Edit( ) ) );
+   values.push_back( to_string( Protect_Class_From_Update( ) ) );
+   values.push_back( to_string( Protect_Procedure_From_Edit( ) ) );
+   values.push_back( to_string( Protect_Source_Parent( ) ) );
+   values.push_back( to_string( Set_Field_To_Source_Field_Or_Child( ) ) );
+   values.push_back( to_string( Source_Field_Needs_Test_Field( ) ) );
+   values.push_back( to_string( Source_Field_Type_Match( ) ) );
+   values.push_back( to_string( Source_Parent_type( ) ) );
+   values.push_back( to_string( Source_type( ) ) );
+   values.push_back( sql_quote( to_string( Specification_Actions( ) ) ) );
+   values.push_back( sql_quote( to_string( Specification_Name( ) ) ) );
+   values.push_back( sql_quote( to_string( Specification_Object( ) ) ) );
+   values.push_back( sql_quote( to_string( Specification_Strings( ) ) ) );
+   values.push_back( sql_quote( to_string( Specification_Vars( ) ) ) );
+   values.push_back( to_string( Test_Field_Type_Match( ) ) );
+   values.push_back( to_string( Test_Field_type( ) ) );
+   values.push_back( to_string( Use_Class_As_Source_Parent_Class( ) ) );
+   values.push_back( to_string( Use_Field_Enum( ) ) );
+   values.push_back( to_string( Use_Parent_Child_Rel_As_Source_Parent( ) ) );
+   values.push_back( to_string( Use_Parent_Child_Rel_For_Class( ) ) );
+   values.push_back( to_string( Use_Parent_Class( ) ) );
+   values.push_back( to_string( Use_Parent_Field_For_Class( ) ) );
+   values.push_back( to_string( Use_Parent_Other_Class_For_Class( ) ) );
+   values.push_back( to_string( Use_Parent_Procedure( ) ) );
+   values.push_back( to_string( Use_Parent_Source_Class( ) ) );
+   values.push_back( to_string( Use_Parent_Source_Field_For_Class( ) ) );
+   values.push_back( to_string( Use_Parent_Source_Parent( ) ) );
+   values.push_back( to_string( Use_Parent_Source_Parent_For_Class( ) ) );
+   values.push_back( sql_quote( to_string( View_Id( ) ) ) );
+
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+}
+
+void Meta_Specification_Type::get_required_field_names(
+ set< string >& names, bool required_transients, set< string >* p_dependents ) const
+{
+   set< string > local_dependents;
+   set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
+
+   get_always_required_field_names( names, required_transients, dependents );
+
+   // [<start get_required_field_names>]
+   // [<finish get_required_field_names>]
+}
+
+void Meta_Specification_Type::get_always_required_field_names(
+ set< string >& names, bool required_transients, set< string >& dependents ) const
+{
+   ( void )names;
+   ( void )dependents;
+   ( void )required_transients;
+
+   // [<start get_always_required_field_names>]
+   // [<finish get_always_required_field_names>]
+}
+
+void Meta_Specification_Type::get_transient_replacement_field_names( const string& name, vector< string >& names ) const
+{
+   ( void )name;
+   ( void )names;
+
+   // [<start get_transient_replacement_field_names>]
+   // [<finish get_transient_replacement_field_names>]
+}
+
+void Meta_Specification_Type::do_generate_sql( generate_sql_type type, vector< string >& sql_stmts ) const
+{
+   generate_sql( static_class_name( ), type, sql_stmts );
+}
+
+const char* Meta_Specification_Type::static_resolved_module_id( )
+{
+   return static_module_id( );
+}
+
+const char* Meta_Specification_Type::static_resolved_module_name( )
+{
+   return static_module_name( );
+}
+
+const char* Meta_Specification_Type::static_lock_class_id( )
+{
+   return "114100";
+}
+
+const char* Meta_Specification_Type::static_check_class_name( )
+{
+   return "Specification_Type";
+}
+
+bool Meta_Specification_Type::static_has_derivations( )
+{
+   return !g_derivations.empty( );
+}
+
+void Meta_Specification_Type::static_get_class_info( class_info_container& class_info )
+{
+   class_info.push_back( "100.114100" );
+}
+
+void Meta_Specification_Type::static_get_field_info( field_info_container& all_field_info )
+{
+   all_field_info.push_back( field_info( "114191", "Allow_Child_Relationship", "bool", false ) );
+   all_field_info.push_back( field_info( "114123", "Allow_FK_Source_Field_Choice", "bool", false ) );
+   all_field_info.push_back( field_info( "114142", "Allow_FK_Test_Field_Choice", "bool", false ) );
+   all_field_info.push_back( field_info( "114124", "Allow_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114117", "Allow_Options", "bool", false ) );
+   all_field_info.push_back( field_info( "114192", "Allow_Other_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114174", "Allow_Other_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114183", "Allow_Other_Field_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114136", "Allow_Permission", "bool", false ) );
+   all_field_info.push_back( field_info( "114171", "Allow_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "114121", "Allow_Source_Child", "bool", false ) );
+   all_field_info.push_back( field_info( "114176", "Allow_Source_Child_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114172", "Allow_Source_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114128", "Allow_Source_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114178", "Allow_Source_Grandchild", "bool", false ) );
+   all_field_info.push_back( field_info( "114125", "Allow_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "114126", "Allow_Test_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114115", "Allow_Test_Value", "bool", false ) );
+   all_field_info.push_back( field_info( "114135", "Allow_Value", "bool", false ) );
+   all_field_info.push_back( field_info( "114164", "Child_Prefix", "string", false ) );
+   all_field_info.push_back( field_info( "114157", "Child_Rel_Grandparent_Match", "bool", false ) );
+   all_field_info.push_back( field_info( "114156", "Child_Rel_Parent_Match", "bool", false ) );
+   all_field_info.push_back( field_info( "114155", "Child_Relationship_Class_Match", "bool", false ) );
+   all_field_info.push_back( field_info( "301710", "Child_Specification_Type", "Meta_Specification_Type", false ) );
+   all_field_info.push_back( field_info( "114165", "Default_Child_Vars", "string", false ) );
+   all_field_info.push_back( field_info( "114111", "Field_type", "int", false ) );
+   all_field_info.push_back( field_info( "114149", "Has_Next_Specification_Info", "bool", false ) );
+   all_field_info.push_back( field_info( "114151", "Is_Child_Only", "bool", false ) );
+   all_field_info.push_back( field_info( "114163", "Is_Required_For_UI_Gen", "bool", false ) );
+   all_field_info.push_back( field_info( "114147", "Is_System", "bool", false ) );
+   all_field_info.push_back( field_info( "114101", "Name", "string", false ) );
+   all_field_info.push_back( field_info( "114138", "Needs_Child_Relationship", "bool", false ) );
+   all_field_info.push_back( field_info( "114104", "Needs_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114108", "Needs_Enum", "bool", false ) );
+   all_field_info.push_back( field_info( "114109", "Needs_Enum_Item", "bool", false ) );
+   all_field_info.push_back( field_info( "114182", "Needs_Enum_Item_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114185", "Needs_Enum_Item_3", "bool", false ) );
+   all_field_info.push_back( field_info( "114186", "Needs_Enum_Item_4", "bool", false ) );
+   all_field_info.push_back( field_info( "114189", "Needs_Enum_Item_5", "bool", false ) );
+   all_field_info.push_back( field_info( "114105", "Needs_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114107", "Needs_Modifier", "bool", false ) );
+   all_field_info.push_back( field_info( "114193", "Needs_Other_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114175", "Needs_Other_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114184", "Needs_Other_Field_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114187", "Needs_Other_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "114188", "Needs_Other_Procedure_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114180", "Needs_Permission", "bool", false ) );
+   all_field_info.push_back( field_info( "114106", "Needs_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "114132", "Needs_Procedure_Arg", "bool", false ) );
+   all_field_info.push_back( field_info( "114194", "Needs_Procedure_Arg_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114195", "Needs_Procedure_Arg_3", "bool", false ) );
+   all_field_info.push_back( field_info( "114122", "Needs_Source_Child", "bool", false ) );
+   all_field_info.push_back( field_info( "114177", "Needs_Source_Child_2", "bool", false ) );
+   all_field_info.push_back( field_info( "114113", "Needs_Source_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114154", "Needs_Source_Field_Or_Child", "bool", false ) );
+   all_field_info.push_back( field_info( "114112", "Needs_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "114114", "Needs_Test_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114116", "Needs_Test_Value", "bool", false ) );
+   all_field_info.push_back( field_info( "114110", "Needs_Value", "bool", false ) );
+   all_field_info.push_back( field_info( "301720", "Next_Child_Specification_Type", "Meta_Specification_Type", false ) );
+   all_field_info.push_back( field_info( "114169", "Next_Protect_Child_Rel", "bool", false ) );
+   all_field_info.push_back( field_info( "114161", "Next_Protect_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "114153", "Next_Protect_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "114150", "Next_Specification_Actions", "string", false ) );
+   all_field_info.push_back( field_info( "114120", "Notes", "string", false ) );
+   all_field_info.push_back( field_info( "301700", "Parent_Specification_Type", "Meta_Specification_Type", false ) );
+   all_field_info.push_back( field_info( "114133", "Procedure_Arg_primitive", "int", false ) );
+   all_field_info.push_back( field_info( "114134", "Procedure_Arg_type", "int", false ) );
+   all_field_info.push_back( field_info( "114145", "Protect_Child_Rel_From_Update", "bool", false ) );
+   all_field_info.push_back( field_info( "114146", "Protect_Class_From_Edit", "bool", false ) );
+   all_field_info.push_back( field_info( "114141", "Protect_Class_From_Update", "bool", false ) );
+   all_field_info.push_back( field_info( "114160", "Protect_Procedure_From_Edit", "bool", false ) );
+   all_field_info.push_back( field_info( "114137", "Protect_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "114179", "Set_Field_To_Source_Field_Or_Child", "bool", false ) );
+   all_field_info.push_back( field_info( "114129", "Source_Field_Needs_Test_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "114118", "Source_Field_Type_Match", "bool", false ) );
+   all_field_info.push_back( field_info( "114119", "Source_Parent_type", "int", false ) );
+   all_field_info.push_back( field_info( "114130", "Source_type", "int", false ) );
+   all_field_info.push_back( field_info( "114140", "Specification_Actions", "string", false ) );
+   all_field_info.push_back( field_info( "114102", "Specification_Name", "string", false ) );
+   all_field_info.push_back( field_info( "114103", "Specification_Object", "string", false ) );
+   all_field_info.push_back( field_info( "114166", "Specification_Strings", "string", false ) );
+   all_field_info.push_back( field_info( "114158", "Specification_Vars", "string", false ) );
+   all_field_info.push_back( field_info( "114127", "Test_Field_Type_Match", "bool", false ) );
+   all_field_info.push_back( field_info( "114131", "Test_Field_type", "int", false ) );
+   all_field_info.push_back( field_info( "114181", "Use_Class_As_Source_Parent_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114162", "Use_Field_Enum", "bool", false ) );
+   all_field_info.push_back( field_info( "114168", "Use_Parent_Child_Rel_As_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "114148", "Use_Parent_Child_Rel_For_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114139", "Use_Parent_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114167", "Use_Parent_Field_For_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114196", "Use_Parent_Other_Class_For_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114159", "Use_Parent_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "114173", "Use_Parent_Source_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114190", "Use_Parent_Source_Field_For_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114144", "Use_Parent_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "114152", "Use_Parent_Source_Parent_For_Class", "bool", false ) );
+   all_field_info.push_back( field_info( "114170", "View_Id", "string", false ) );
+}
+
+void Meta_Specification_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
+{
+   ( void )foreign_key_info;
+
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Child_Specification_Type, make_pair( "Meta.114100", "Meta_Specification_Type" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Next_Child_Specification_Type, make_pair( "Meta.114100", "Meta_Specification_Type" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Specification_Type, make_pair( "Meta.114100", "Meta_Specification_Type" ) ) );
+}
+
+int Meta_Specification_Type::static_get_num_fields( bool* p_done, const string* p_class_name )
+{
+   if( p_done && p_class_name && *p_class_name == static_class_name( ) )
+      *p_done = true;
+
+   return c_num_fields;
+}
+
+bool Meta_Specification_Type::static_is_field_transient( field_id id )
+{
+   return is_transient_field( static_get_field_id( id ) );
+}
+
+const char* Meta_Specification_Type::static_get_field_id( field_id id )
+{
+   const char* p_id = 0;
+
+   switch( id )
+   {
+      case 1:
+      p_id = "114191";
+      break;
+
+      case 2:
+      p_id = "114123";
+      break;
+
+      case 3:
+      p_id = "114142";
+      break;
+
+      case 4:
+      p_id = "114124";
+      break;
+
+      case 5:
+      p_id = "114117";
+      break;
+
+      case 6:
+      p_id = "114192";
+      break;
+
+      case 7:
+      p_id = "114174";
+      break;
+
+      case 8:
+      p_id = "114183";
+      break;
+
+      case 9:
+      p_id = "114136";
+      break;
+
+      case 10:
+      p_id = "114171";
+      break;
+
+      case 11:
+      p_id = "114121";
+      break;
+
+      case 12:
+      p_id = "114176";
+      break;
+
+      case 13:
+      p_id = "114172";
+      break;
+
+      case 14:
+      p_id = "114128";
+      break;
+
+      case 15:
+      p_id = "114178";
+      break;
+
+      case 16:
+      p_id = "114125";
+      break;
+
+      case 17:
+      p_id = "114126";
+      break;
+
+      case 18:
+      p_id = "114115";
+      break;
+
+      case 19:
+      p_id = "114135";
+      break;
+
+      case 20:
+      p_id = "114164";
+      break;
+
+      case 21:
+      p_id = "114157";
+      break;
+
+      case 22:
+      p_id = "114156";
+      break;
+
+      case 23:
+      p_id = "114155";
+      break;
+
+      case 24:
+      p_id = "301710";
+      break;
+
+      case 25:
+      p_id = "114165";
+      break;
+
+      case 26:
+      p_id = "114111";
+      break;
+
+      case 27:
+      p_id = "114149";
+      break;
+
+      case 28:
+      p_id = "114151";
+      break;
+
+      case 29:
+      p_id = "114163";
+      break;
+
+      case 30:
+      p_id = "114147";
+      break;
+
+      case 31:
+      p_id = "114101";
+      break;
+
+      case 32:
+      p_id = "114138";
+      break;
+
+      case 33:
+      p_id = "114104";
+      break;
+
+      case 34:
+      p_id = "114108";
+      break;
+
+      case 35:
+      p_id = "114109";
+      break;
+
+      case 36:
+      p_id = "114182";
+      break;
+
+      case 37:
+      p_id = "114185";
+      break;
+
+      case 38:
+      p_id = "114186";
+      break;
+
+      case 39:
+      p_id = "114189";
+      break;
+
+      case 40:
+      p_id = "114105";
+      break;
+
+      case 41:
+      p_id = "114107";
+      break;
+
+      case 42:
+      p_id = "114193";
+      break;
+
+      case 43:
+      p_id = "114175";
+      break;
+
+      case 44:
+      p_id = "114184";
+      break;
+
+      case 45:
+      p_id = "114187";
+      break;
+
+      case 46:
+      p_id = "114188";
+      break;
+
+      case 47:
+      p_id = "114180";
+      break;
+
+      case 48:
+      p_id = "114106";
+      break;
+
+      case 49:
+      p_id = "114132";
+      break;
+
+      case 50:
+      p_id = "114194";
+      break;
+
+      case 51:
+      p_id = "114195";
+      break;
+
+      case 52:
+      p_id = "114122";
+      break;
+
+      case 53:
+      p_id = "114177";
+      break;
+
+      case 54:
+      p_id = "114113";
+      break;
+
+      case 55:
+      p_id = "114154";
+      break;
+
+      case 56:
+      p_id = "114112";
+      break;
+
+      case 57:
+      p_id = "114114";
+      break;
+
+      case 58:
+      p_id = "114116";
+      break;
+
+      case 59:
+      p_id = "114110";
+      break;
+
+      case 60:
+      p_id = "301720";
+      break;
+
+      case 61:
+      p_id = "114169";
+      break;
+
+      case 62:
+      p_id = "114161";
+      break;
+
+      case 63:
+      p_id = "114153";
+      break;
+
+      case 64:
+      p_id = "114150";
+      break;
+
+      case 65:
+      p_id = "114120";
+      break;
+
+      case 66:
+      p_id = "301700";
+      break;
+
+      case 67:
+      p_id = "114133";
+      break;
+
+      case 68:
+      p_id = "114134";
+      break;
+
+      case 69:
+      p_id = "114145";
+      break;
+
+      case 70:
+      p_id = "114146";
+      break;
+
+      case 71:
+      p_id = "114141";
+      break;
+
+      case 72:
+      p_id = "114160";
+      break;
+
+      case 73:
+      p_id = "114137";
+      break;
+
+      case 74:
+      p_id = "114179";
+      break;
+
+      case 75:
+      p_id = "114129";
+      break;
+
+      case 76:
+      p_id = "114118";
+      break;
+
+      case 77:
+      p_id = "114119";
+      break;
+
+      case 78:
+      p_id = "114130";
+      break;
+
+      case 79:
+      p_id = "114140";
+      break;
+
+      case 80:
+      p_id = "114102";
+      break;
+
+      case 81:
+      p_id = "114103";
+      break;
+
+      case 82:
+      p_id = "114166";
+      break;
+
+      case 83:
+      p_id = "114158";
+      break;
+
+      case 84:
+      p_id = "114127";
+      break;
+
+      case 85:
+      p_id = "114131";
+      break;
+
+      case 86:
+      p_id = "114181";
+      break;
+
+      case 87:
+      p_id = "114162";
+      break;
+
+      case 88:
+      p_id = "114168";
+      break;
+
+      case 89:
+      p_id = "114148";
+      break;
+
+      case 90:
+      p_id = "114139";
+      break;
+
+      case 91:
+      p_id = "114167";
+      break;
+
+      case 92:
+      p_id = "114196";
+      break;
+
+      case 93:
+      p_id = "114159";
+      break;
+
+      case 94:
+      p_id = "114173";
+      break;
+
+      case 95:
+      p_id = "114190";
+      break;
+
+      case 96:
+      p_id = "114144";
+      break;
+
+      case 97:
+      p_id = "114152";
+      break;
+
+      case 98:
+      p_id = "114170";
+      break;
+   }
+
+   if( !p_id )
+      throw runtime_error( "unknown field id #" + to_string( id ) + " for class Specification_Type" );
+
+   return p_id;
+}
+
+const char* Meta_Specification_Type::static_get_field_name( field_id id )
+{
+   const char* p_id = 0;
+
+   switch( id )
+   {
+      case 1:
+      p_id = "Allow_Child_Relationship";
+      break;
+
+      case 2:
+      p_id = "Allow_FK_Source_Field_Choice";
+      break;
+
+      case 3:
+      p_id = "Allow_FK_Test_Field_Choice";
+      break;
+
+      case 4:
+      p_id = "Allow_Field";
+      break;
+
+      case 5:
+      p_id = "Allow_Options";
+      break;
+
+      case 6:
+      p_id = "Allow_Other_Class";
+      break;
+
+      case 7:
+      p_id = "Allow_Other_Field";
+      break;
+
+      case 8:
+      p_id = "Allow_Other_Field_2";
+      break;
+
+      case 9:
+      p_id = "Allow_Permission";
+      break;
+
+      case 10:
+      p_id = "Allow_Procedure";
+      break;
+
+      case 11:
+      p_id = "Allow_Source_Child";
+      break;
+
+      case 12:
+      p_id = "Allow_Source_Child_2";
+      break;
+
+      case 13:
+      p_id = "Allow_Source_Class";
+      break;
+
+      case 14:
+      p_id = "Allow_Source_Field";
+      break;
+
+      case 15:
+      p_id = "Allow_Source_Grandchild";
+      break;
+
+      case 16:
+      p_id = "Allow_Source_Parent";
+      break;
+
+      case 17:
+      p_id = "Allow_Test_Field";
+      break;
+
+      case 18:
+      p_id = "Allow_Test_Value";
+      break;
+
+      case 19:
+      p_id = "Allow_Value";
+      break;
+
+      case 20:
+      p_id = "Child_Prefix";
+      break;
+
+      case 21:
+      p_id = "Child_Rel_Grandparent_Match";
+      break;
+
+      case 22:
+      p_id = "Child_Rel_Parent_Match";
+      break;
+
+      case 23:
+      p_id = "Child_Relationship_Class_Match";
+      break;
+
+      case 24:
+      p_id = "Child_Specification_Type";
+      break;
+
+      case 25:
+      p_id = "Default_Child_Vars";
+      break;
+
+      case 26:
+      p_id = "Field_type";
+      break;
+
+      case 27:
+      p_id = "Has_Next_Specification_Info";
+      break;
+
+      case 28:
+      p_id = "Is_Child_Only";
+      break;
+
+      case 29:
+      p_id = "Is_Required_For_UI_Gen";
+      break;
+
+      case 30:
+      p_id = "Is_System";
+      break;
+
+      case 31:
+      p_id = "Name";
+      break;
+
+      case 32:
+      p_id = "Needs_Child_Relationship";
+      break;
+
+      case 33:
+      p_id = "Needs_Class";
+      break;
+
+      case 34:
+      p_id = "Needs_Enum";
+      break;
+
+      case 35:
+      p_id = "Needs_Enum_Item";
+      break;
+
+      case 36:
+      p_id = "Needs_Enum_Item_2";
+      break;
+
+      case 37:
+      p_id = "Needs_Enum_Item_3";
+      break;
+
+      case 38:
+      p_id = "Needs_Enum_Item_4";
+      break;
+
+      case 39:
+      p_id = "Needs_Enum_Item_5";
+      break;
+
+      case 40:
+      p_id = "Needs_Field";
+      break;
+
+      case 41:
+      p_id = "Needs_Modifier";
+      break;
+
+      case 42:
+      p_id = "Needs_Other_Class";
+      break;
+
+      case 43:
+      p_id = "Needs_Other_Field";
+      break;
+
+      case 44:
+      p_id = "Needs_Other_Field_2";
+      break;
+
+      case 45:
+      p_id = "Needs_Other_Procedure";
+      break;
+
+      case 46:
+      p_id = "Needs_Other_Procedure_2";
+      break;
+
+      case 47:
+      p_id = "Needs_Permission";
+      break;
+
+      case 48:
+      p_id = "Needs_Procedure";
+      break;
+
+      case 49:
+      p_id = "Needs_Procedure_Arg";
+      break;
+
+      case 50:
+      p_id = "Needs_Procedure_Arg_2";
+      break;
+
+      case 51:
+      p_id = "Needs_Procedure_Arg_3";
+      break;
+
+      case 52:
+      p_id = "Needs_Source_Child";
+      break;
+
+      case 53:
+      p_id = "Needs_Source_Child_2";
+      break;
+
+      case 54:
+      p_id = "Needs_Source_Field";
+      break;
+
+      case 55:
+      p_id = "Needs_Source_Field_Or_Child";
+      break;
+
+      case 56:
+      p_id = "Needs_Source_Parent";
+      break;
+
+      case 57:
+      p_id = "Needs_Test_Field";
+      break;
+
+      case 58:
+      p_id = "Needs_Test_Value";
+      break;
+
+      case 59:
+      p_id = "Needs_Value";
+      break;
+
+      case 60:
+      p_id = "Next_Child_Specification_Type";
+      break;
+
+      case 61:
+      p_id = "Next_Protect_Child_Rel";
+      break;
+
+      case 62:
+      p_id = "Next_Protect_Procedure";
+      break;
+
+      case 63:
+      p_id = "Next_Protect_Source_Parent";
+      break;
+
+      case 64:
+      p_id = "Next_Specification_Actions";
+      break;
+
+      case 65:
+      p_id = "Notes";
+      break;
+
+      case 66:
+      p_id = "Parent_Specification_Type";
+      break;
+
+      case 67:
+      p_id = "Procedure_Arg_primitive";
+      break;
+
+      case 68:
+      p_id = "Procedure_Arg_type";
+      break;
+
+      case 69:
+      p_id = "Protect_Child_Rel_From_Update";
+      break;
+
+      case 70:
+      p_id = "Protect_Class_From_Edit";
+      break;
+
+      case 71:
+      p_id = "Protect_Class_From_Update";
+      break;
+
+      case 72:
+      p_id = "Protect_Procedure_From_Edit";
+      break;
+
+      case 73:
+      p_id = "Protect_Source_Parent";
+      break;
+
+      case 74:
+      p_id = "Set_Field_To_Source_Field_Or_Child";
+      break;
+
+      case 75:
+      p_id = "Source_Field_Needs_Test_Field";
+      break;
+
+      case 76:
+      p_id = "Source_Field_Type_Match";
+      break;
+
+      case 77:
+      p_id = "Source_Parent_type";
+      break;
+
+      case 78:
+      p_id = "Source_type";
+      break;
+
+      case 79:
+      p_id = "Specification_Actions";
+      break;
+
+      case 80:
+      p_id = "Specification_Name";
+      break;
+
+      case 81:
+      p_id = "Specification_Object";
+      break;
+
+      case 82:
+      p_id = "Specification_Strings";
+      break;
+
+      case 83:
+      p_id = "Specification_Vars";
+      break;
+
+      case 84:
+      p_id = "Test_Field_Type_Match";
+      break;
+
+      case 85:
+      p_id = "Test_Field_type";
+      break;
+
+      case 86:
+      p_id = "Use_Class_As_Source_Parent_Class";
+      break;
+
+      case 87:
+      p_id = "Use_Field_Enum";
+      break;
+
+      case 88:
+      p_id = "Use_Parent_Child_Rel_As_Source_Parent";
+      break;
+
+      case 89:
+      p_id = "Use_Parent_Child_Rel_For_Class";
+      break;
+
+      case 90:
+      p_id = "Use_Parent_Class";
+      break;
+
+      case 91:
+      p_id = "Use_Parent_Field_For_Class";
+      break;
+
+      case 92:
+      p_id = "Use_Parent_Other_Class_For_Class";
+      break;
+
+      case 93:
+      p_id = "Use_Parent_Procedure";
+      break;
+
+      case 94:
+      p_id = "Use_Parent_Source_Class";
+      break;
+
+      case 95:
+      p_id = "Use_Parent_Source_Field_For_Class";
+      break;
+
+      case 96:
+      p_id = "Use_Parent_Source_Parent";
+      break;
+
+      case 97:
+      p_id = "Use_Parent_Source_Parent_For_Class";
+      break;
+
+      case 98:
+      p_id = "View_Id";
+      break;
+   }
+
+   if( !p_id )
+      throw runtime_error( "unknown field id #" + to_string( id ) + " for class Specification_Type" );
+
+   return p_id;
+}
+
+int Meta_Specification_Type::static_get_field_num( const string& field )
+{
+   int rc = 0;
+
+   if( field.empty( ) )
+      throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
+   else if( field == c_field_id_Allow_Child_Relationship || field == c_field_name_Allow_Child_Relationship )
+      rc += 1;
+   else if( field == c_field_id_Allow_FK_Source_Field_Choice || field == c_field_name_Allow_FK_Source_Field_Choice )
+      rc += 2;
+   else if( field == c_field_id_Allow_FK_Test_Field_Choice || field == c_field_name_Allow_FK_Test_Field_Choice )
+      rc += 3;
+   else if( field == c_field_id_Allow_Field || field == c_field_name_Allow_Field )
+      rc += 4;
+   else if( field == c_field_id_Allow_Options || field == c_field_name_Allow_Options )
+      rc += 5;
+   else if( field == c_field_id_Allow_Other_Class || field == c_field_name_Allow_Other_Class )
+      rc += 6;
+   else if( field == c_field_id_Allow_Other_Field || field == c_field_name_Allow_Other_Field )
+      rc += 7;
+   else if( field == c_field_id_Allow_Other_Field_2 || field == c_field_name_Allow_Other_Field_2 )
+      rc += 8;
+   else if( field == c_field_id_Allow_Permission || field == c_field_name_Allow_Permission )
+      rc += 9;
+   else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
+      rc += 10;
+   else if( field == c_field_id_Allow_Source_Child || field == c_field_name_Allow_Source_Child )
+      rc += 11;
+   else if( field == c_field_id_Allow_Source_Child_2 || field == c_field_name_Allow_Source_Child_2 )
+      rc += 12;
+   else if( field == c_field_id_Allow_Source_Class || field == c_field_name_Allow_Source_Class )
+      rc += 13;
+   else if( field == c_field_id_Allow_Source_Field || field == c_field_name_Allow_Source_Field )
+      rc += 14;
+   else if( field == c_field_id_Allow_Source_Grandchild || field == c_field_name_Allow_Source_Grandchild )
+      rc += 15;
+   else if( field == c_field_id_Allow_Source_Parent || field == c_field_name_Allow_Source_Parent )
+      rc += 16;
+   else if( field == c_field_id_Allow_Test_Field || field == c_field_name_Allow_Test_Field )
+      rc += 17;
+   else if( field == c_field_id_Allow_Test_Value || field == c_field_name_Allow_Test_Value )
+      rc += 18;
+   else if( field == c_field_id_Allow_Value || field == c_field_name_Allow_Value )
+      rc += 19;
+   else if( field == c_field_id_Child_Prefix || field == c_field_name_Child_Prefix )
+      rc += 20;
+   else if( field == c_field_id_Child_Rel_Grandparent_Match || field == c_field_name_Child_Rel_Grandparent_Match )
+      rc += 21;
+   else if( field == c_field_id_Child_Rel_Parent_Match || field == c_field_name_Child_Rel_Parent_Match )
+      rc += 22;
+   else if( field == c_field_id_Child_Relationship_Class_Match || field == c_field_name_Child_Relationship_Class_Match )
+      rc += 23;
+   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
+      rc += 24;
+   else if( field == c_field_id_Default_Child_Vars || field == c_field_name_Default_Child_Vars )
+      rc += 25;
+   else if( field == c_field_id_Field_type || field == c_field_name_Field_type )
+      rc += 26;
+   else if( field == c_field_id_Has_Next_Specification_Info || field == c_field_name_Has_Next_Specification_Info )
+      rc += 27;
+   else if( field == c_field_id_Is_Child_Only || field == c_field_name_Is_Child_Only )
+      rc += 28;
+   else if( field == c_field_id_Is_Required_For_UI_Gen || field == c_field_name_Is_Required_For_UI_Gen )
+      rc += 29;
+   else if( field == c_field_id_Is_System || field == c_field_name_Is_System )
+      rc += 30;
+   else if( field == c_field_id_Name || field == c_field_name_Name )
+      rc += 31;
+   else if( field == c_field_id_Needs_Child_Relationship || field == c_field_name_Needs_Child_Relationship )
+      rc += 32;
+   else if( field == c_field_id_Needs_Class || field == c_field_name_Needs_Class )
+      rc += 33;
+   else if( field == c_field_id_Needs_Enum || field == c_field_name_Needs_Enum )
+      rc += 34;
+   else if( field == c_field_id_Needs_Enum_Item || field == c_field_name_Needs_Enum_Item )
+      rc += 35;
+   else if( field == c_field_id_Needs_Enum_Item_2 || field == c_field_name_Needs_Enum_Item_2 )
+      rc += 36;
+   else if( field == c_field_id_Needs_Enum_Item_3 || field == c_field_name_Needs_Enum_Item_3 )
+      rc += 37;
+   else if( field == c_field_id_Needs_Enum_Item_4 || field == c_field_name_Needs_Enum_Item_4 )
+      rc += 38;
+   else if( field == c_field_id_Needs_Enum_Item_5 || field == c_field_name_Needs_Enum_Item_5 )
+      rc += 39;
+   else if( field == c_field_id_Needs_Field || field == c_field_name_Needs_Field )
+      rc += 40;
+   else if( field == c_field_id_Needs_Modifier || field == c_field_name_Needs_Modifier )
+      rc += 41;
+   else if( field == c_field_id_Needs_Other_Class || field == c_field_name_Needs_Other_Class )
+      rc += 42;
+   else if( field == c_field_id_Needs_Other_Field || field == c_field_name_Needs_Other_Field )
+      rc += 43;
+   else if( field == c_field_id_Needs_Other_Field_2 || field == c_field_name_Needs_Other_Field_2 )
+      rc += 44;
+   else if( field == c_field_id_Needs_Other_Procedure || field == c_field_name_Needs_Other_Procedure )
+      rc += 45;
+   else if( field == c_field_id_Needs_Other_Procedure_2 || field == c_field_name_Needs_Other_Procedure_2 )
+      rc += 46;
+   else if( field == c_field_id_Needs_Permission || field == c_field_name_Needs_Permission )
+      rc += 47;
+   else if( field == c_field_id_Needs_Procedure || field == c_field_name_Needs_Procedure )
+      rc += 48;
+   else if( field == c_field_id_Needs_Procedure_Arg || field == c_field_name_Needs_Procedure_Arg )
+      rc += 49;
+   else if( field == c_field_id_Needs_Procedure_Arg_2 || field == c_field_name_Needs_Procedure_Arg_2 )
+      rc += 50;
+   else if( field == c_field_id_Needs_Procedure_Arg_3 || field == c_field_name_Needs_Procedure_Arg_3 )
+      rc += 51;
+   else if( field == c_field_id_Needs_Source_Child || field == c_field_name_Needs_Source_Child )
+      rc += 52;
+   else if( field == c_field_id_Needs_Source_Child_2 || field == c_field_name_Needs_Source_Child_2 )
+      rc += 53;
+   else if( field == c_field_id_Needs_Source_Field || field == c_field_name_Needs_Source_Field )
+      rc += 54;
+   else if( field == c_field_id_Needs_Source_Field_Or_Child || field == c_field_name_Needs_Source_Field_Or_Child )
+      rc += 55;
+   else if( field == c_field_id_Needs_Source_Parent || field == c_field_name_Needs_Source_Parent )
+      rc += 56;
+   else if( field == c_field_id_Needs_Test_Field || field == c_field_name_Needs_Test_Field )
+      rc += 57;
+   else if( field == c_field_id_Needs_Test_Value || field == c_field_name_Needs_Test_Value )
+      rc += 58;
+   else if( field == c_field_id_Needs_Value || field == c_field_name_Needs_Value )
+      rc += 59;
+   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
+      rc += 60;
+   else if( field == c_field_id_Next_Protect_Child_Rel || field == c_field_name_Next_Protect_Child_Rel )
+      rc += 61;
+   else if( field == c_field_id_Next_Protect_Procedure || field == c_field_name_Next_Protect_Procedure )
+      rc += 62;
+   else if( field == c_field_id_Next_Protect_Source_Parent || field == c_field_name_Next_Protect_Source_Parent )
+      rc += 63;
+   else if( field == c_field_id_Next_Specification_Actions || field == c_field_name_Next_Specification_Actions )
+      rc += 64;
+   else if( field == c_field_id_Notes || field == c_field_name_Notes )
+      rc += 65;
+   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
+      rc += 66;
+   else if( field == c_field_id_Procedure_Arg_primitive || field == c_field_name_Procedure_Arg_primitive )
+      rc += 67;
+   else if( field == c_field_id_Procedure_Arg_type || field == c_field_name_Procedure_Arg_type )
+      rc += 68;
+   else if( field == c_field_id_Protect_Child_Rel_From_Update || field == c_field_name_Protect_Child_Rel_From_Update )
+      rc += 69;
+   else if( field == c_field_id_Protect_Class_From_Edit || field == c_field_name_Protect_Class_From_Edit )
+      rc += 70;
+   else if( field == c_field_id_Protect_Class_From_Update || field == c_field_name_Protect_Class_From_Update )
+      rc += 71;
+   else if( field == c_field_id_Protect_Procedure_From_Edit || field == c_field_name_Protect_Procedure_From_Edit )
+      rc += 72;
+   else if( field == c_field_id_Protect_Source_Parent || field == c_field_name_Protect_Source_Parent )
+      rc += 73;
+   else if( field == c_field_id_Set_Field_To_Source_Field_Or_Child || field == c_field_name_Set_Field_To_Source_Field_Or_Child )
+      rc += 74;
+   else if( field == c_field_id_Source_Field_Needs_Test_Field || field == c_field_name_Source_Field_Needs_Test_Field )
+      rc += 75;
+   else if( field == c_field_id_Source_Field_Type_Match || field == c_field_name_Source_Field_Type_Match )
+      rc += 76;
+   else if( field == c_field_id_Source_Parent_type || field == c_field_name_Source_Parent_type )
+      rc += 77;
+   else if( field == c_field_id_Source_type || field == c_field_name_Source_type )
+      rc += 78;
+   else if( field == c_field_id_Specification_Actions || field == c_field_name_Specification_Actions )
+      rc += 79;
+   else if( field == c_field_id_Specification_Name || field == c_field_name_Specification_Name )
+      rc += 80;
+   else if( field == c_field_id_Specification_Object || field == c_field_name_Specification_Object )
+      rc += 81;
+   else if( field == c_field_id_Specification_Strings || field == c_field_name_Specification_Strings )
+      rc += 82;
+   else if( field == c_field_id_Specification_Vars || field == c_field_name_Specification_Vars )
+      rc += 83;
+   else if( field == c_field_id_Test_Field_Type_Match || field == c_field_name_Test_Field_Type_Match )
+      rc += 84;
+   else if( field == c_field_id_Test_Field_type || field == c_field_name_Test_Field_type )
+      rc += 85;
+   else if( field == c_field_id_Use_Class_As_Source_Parent_Class || field == c_field_name_Use_Class_As_Source_Parent_Class )
+      rc += 86;
+   else if( field == c_field_id_Use_Field_Enum || field == c_field_name_Use_Field_Enum )
+      rc += 87;
+   else if( field == c_field_id_Use_Parent_Child_Rel_As_Source_Parent || field == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
+      rc += 88;
+   else if( field == c_field_id_Use_Parent_Child_Rel_For_Class || field == c_field_name_Use_Parent_Child_Rel_For_Class )
+      rc += 89;
+   else if( field == c_field_id_Use_Parent_Class || field == c_field_name_Use_Parent_Class )
+      rc += 90;
+   else if( field == c_field_id_Use_Parent_Field_For_Class || field == c_field_name_Use_Parent_Field_For_Class )
+      rc += 91;
+   else if( field == c_field_id_Use_Parent_Other_Class_For_Class || field == c_field_name_Use_Parent_Other_Class_For_Class )
+      rc += 92;
+   else if( field == c_field_id_Use_Parent_Procedure || field == c_field_name_Use_Parent_Procedure )
+      rc += 93;
+   else if( field == c_field_id_Use_Parent_Source_Class || field == c_field_name_Use_Parent_Source_Class )
+      rc += 94;
+   else if( field == c_field_id_Use_Parent_Source_Field_For_Class || field == c_field_name_Use_Parent_Source_Field_For_Class )
+      rc += 95;
+   else if( field == c_field_id_Use_Parent_Source_Parent || field == c_field_name_Use_Parent_Source_Parent )
+      rc += 96;
+   else if( field == c_field_id_Use_Parent_Source_Parent_For_Class || field == c_field_name_Use_Parent_Source_Parent_For_Class )
+      rc += 97;
+   else if( field == c_field_id_View_Id || field == c_field_name_View_Id )
+      rc += 98;
+
+   return rc - 1;
+}
+
+procedure_info_container& Meta_Specification_Type::static_get_procedure_info( )
+{
+   static bool initialised = false;
+   static procedure_info_container procedures;
+
+   if( !initialised )
+   {
+      initialised = true;
+      procedures.insert( make_pair( "114410", "Is_Valid_Field_Type" ) );
+   }
+
+   return procedures;
+}
+
+string Meta_Specification_Type::static_get_sql_columns( )
+{
+   string sql_columns;
+
+   sql_columns += 
+    "C_Key_ VARCHAR(64),"
+    "C_Ver_ INTEGER NOT NULL,"
+    "C_Rev_ INTEGER NOT NULL,"
+    "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Allow_Child_Relationship INTEGER NOT NULL,"
+    "C_Allow_FK_Source_Field_Choice INTEGER NOT NULL,"
+    "C_Allow_FK_Test_Field_Choice INTEGER NOT NULL,"
+    "C_Allow_Field INTEGER NOT NULL,"
+    "C_Allow_Options INTEGER NOT NULL,"
+    "C_Allow_Other_Class INTEGER NOT NULL,"
+    "C_Allow_Other_Field INTEGER NOT NULL,"
+    "C_Allow_Other_Field_2 INTEGER NOT NULL,"
+    "C_Allow_Permission INTEGER NOT NULL,"
+    "C_Allow_Procedure INTEGER NOT NULL,"
+    "C_Allow_Source_Child INTEGER NOT NULL,"
+    "C_Allow_Source_Child_2 INTEGER NOT NULL,"
+    "C_Allow_Source_Class INTEGER NOT NULL,"
+    "C_Allow_Source_Field INTEGER NOT NULL,"
+    "C_Allow_Source_Grandchild INTEGER NOT NULL,"
+    "C_Allow_Source_Parent INTEGER NOT NULL,"
+    "C_Allow_Test_Field INTEGER NOT NULL,"
+    "C_Allow_Test_Value INTEGER NOT NULL,"
+    "C_Allow_Value INTEGER NOT NULL,"
+    "C_Child_Prefix VARCHAR(128) NOT NULL,"
+    "C_Child_Rel_Grandparent_Match INTEGER NOT NULL,"
+    "C_Child_Rel_Parent_Match INTEGER NOT NULL,"
+    "C_Child_Relationship_Class_Match INTEGER NOT NULL,"
+    "C_Child_Specification_Type VARCHAR(64) NOT NULL,"
+    "C_Default_Child_Vars TEXT NOT NULL,"
+    "C_Field_type INTEGER NOT NULL,"
+    "C_Has_Next_Specification_Info INTEGER NOT NULL,"
+    "C_Is_Child_Only INTEGER NOT NULL,"
+    "C_Is_Required_For_UI_Gen INTEGER NOT NULL,"
+    "C_Is_System INTEGER NOT NULL,"
+    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Needs_Child_Relationship INTEGER NOT NULL,"
+    "C_Needs_Class INTEGER NOT NULL,"
+    "C_Needs_Enum INTEGER NOT NULL,"
+    "C_Needs_Enum_Item INTEGER NOT NULL,"
+    "C_Needs_Enum_Item_2 INTEGER NOT NULL,"
+    "C_Needs_Enum_Item_3 INTEGER NOT NULL,"
+    "C_Needs_Enum_Item_4 INTEGER NOT NULL,"
+    "C_Needs_Enum_Item_5 INTEGER NOT NULL,"
+    "C_Needs_Field INTEGER NOT NULL,"
+    "C_Needs_Modifier INTEGER NOT NULL,"
+    "C_Needs_Other_Class INTEGER NOT NULL,"
+    "C_Needs_Other_Field INTEGER NOT NULL,"
+    "C_Needs_Other_Field_2 INTEGER NOT NULL,"
+    "C_Needs_Other_Procedure INTEGER NOT NULL,"
+    "C_Needs_Other_Procedure_2 INTEGER NOT NULL,"
+    "C_Needs_Permission INTEGER NOT NULL,"
+    "C_Needs_Procedure INTEGER NOT NULL,"
+    "C_Needs_Procedure_Arg INTEGER NOT NULL,"
+    "C_Needs_Procedure_Arg_2 INTEGER NOT NULL,"
+    "C_Needs_Procedure_Arg_3 INTEGER NOT NULL,"
+    "C_Needs_Source_Child INTEGER NOT NULL,"
+    "C_Needs_Source_Child_2 INTEGER NOT NULL,"
+    "C_Needs_Source_Field INTEGER NOT NULL,"
+    "C_Needs_Source_Field_Or_Child INTEGER NOT NULL,"
+    "C_Needs_Source_Parent INTEGER NOT NULL,"
+    "C_Needs_Test_Field INTEGER NOT NULL,"
+    "C_Needs_Test_Value INTEGER NOT NULL,"
+    "C_Needs_Value INTEGER NOT NULL,"
+    "C_Next_Child_Specification_Type VARCHAR(64) NOT NULL,"
+    "C_Next_Protect_Child_Rel INTEGER NOT NULL,"
+    "C_Next_Protect_Procedure INTEGER NOT NULL,"
+    "C_Next_Protect_Source_Parent INTEGER NOT NULL,"
+    "C_Next_Specification_Actions VARCHAR(128) NOT NULL,"
+    "C_Notes TEXT NOT NULL,"
+    "C_Parent_Specification_Type VARCHAR(64) NOT NULL,"
+    "C_Procedure_Arg_primitive INTEGER NOT NULL,"
+    "C_Procedure_Arg_type INTEGER NOT NULL,"
+    "C_Protect_Child_Rel_From_Update INTEGER NOT NULL,"
+    "C_Protect_Class_From_Edit INTEGER NOT NULL,"
+    "C_Protect_Class_From_Update INTEGER NOT NULL,"
+    "C_Protect_Procedure_From_Edit INTEGER NOT NULL,"
+    "C_Protect_Source_Parent INTEGER NOT NULL,"
+    "C_Set_Field_To_Source_Field_Or_Child INTEGER NOT NULL,"
+    "C_Source_Field_Needs_Test_Field INTEGER NOT NULL,"
+    "C_Source_Field_Type_Match INTEGER NOT NULL,"
+    "C_Source_Parent_type INTEGER NOT NULL,"
+    "C_Source_type INTEGER NOT NULL,"
+    "C_Specification_Actions VARCHAR(128) NOT NULL,"
+    "C_Specification_Name VARCHAR(128) NOT NULL,"
+    "C_Specification_Object VARCHAR(128) NOT NULL,"
+    "C_Specification_Strings TEXT NOT NULL,"
+    "C_Specification_Vars TEXT NOT NULL,"
+    "C_Test_Field_Type_Match INTEGER NOT NULL,"
+    "C_Test_Field_type INTEGER NOT NULL,"
+    "C_Use_Class_As_Source_Parent_Class INTEGER NOT NULL,"
+    "C_Use_Field_Enum INTEGER NOT NULL,"
+    "C_Use_Parent_Child_Rel_As_Source_Parent INTEGER NOT NULL,"
+    "C_Use_Parent_Child_Rel_For_Class INTEGER NOT NULL,"
+    "C_Use_Parent_Class INTEGER NOT NULL,"
+    "C_Use_Parent_Field_For_Class INTEGER NOT NULL,"
+    "C_Use_Parent_Other_Class_For_Class INTEGER NOT NULL,"
+    "C_Use_Parent_Procedure INTEGER NOT NULL,"
+    "C_Use_Parent_Source_Class INTEGER NOT NULL,"
+    "C_Use_Parent_Source_Field_For_Class INTEGER NOT NULL,"
+    "C_Use_Parent_Source_Parent INTEGER NOT NULL,"
+    "C_Use_Parent_Source_Parent_For_Class INTEGER NOT NULL,"
+    "C_View_Id VARCHAR(128) NOT NULL,"
+    "PRIMARY KEY(C_Key_)";
+
+   return sql_columns;
+}
+
+void Meta_Specification_Type::static_get_text_search_fields( vector< string >& fields )
+{
+   ( void )fields;
+}
+
+void Meta_Specification_Type::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
+{
+   pairs.push_back( make_pair( "enum_field_type_0", get_enum_string_field_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_1", get_enum_string_field_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_2", get_enum_string_field_type( 2 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_3", get_enum_string_field_type( 3 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_4", get_enum_string_field_type( 4 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_5", get_enum_string_field_type( 5 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_6", get_enum_string_field_type( 6 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_20", get_enum_string_field_type( 20 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_30", get_enum_string_field_type( 30 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_31", get_enum_string_field_type( 31 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_39", get_enum_string_field_type( 39 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_40", get_enum_string_field_type( 40 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_41", get_enum_string_field_type( 41 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_45", get_enum_string_field_type( 45 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_49", get_enum_string_field_type( 49 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_50", get_enum_string_field_type( 50 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_51", get_enum_string_field_type( 51 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_52", get_enum_string_field_type( 52 ) ) );
+   pairs.push_back( make_pair( "enum_field_type_99", get_enum_string_field_type( 99 ) ) );
+
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_0", get_enum_string_procedure_arg_primitive( 0 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_1", get_enum_string_procedure_arg_primitive( 1 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_2", get_enum_string_procedure_arg_primitive( 2 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_3", get_enum_string_procedure_arg_primitive( 3 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_4", get_enum_string_procedure_arg_primitive( 4 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_5", get_enum_string_procedure_arg_primitive( 5 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_6", get_enum_string_procedure_arg_primitive( 6 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_primitive_99", get_enum_string_procedure_arg_primitive( 99 ) ) );
+
+   pairs.push_back( make_pair( "enum_procedure_arg_type_0", get_enum_string_procedure_arg_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_type_1", get_enum_string_procedure_arg_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_procedure_arg_type_99", get_enum_string_procedure_arg_type( 99 ) ) );
+
+   pairs.push_back( make_pair( "enum_source_parent_type_50", get_enum_string_source_parent_type( 50 ) ) );
+   pairs.push_back( make_pair( "enum_source_parent_type_51", get_enum_string_source_parent_type( 51 ) ) );
+   pairs.push_back( make_pair( "enum_source_parent_type_52", get_enum_string_source_parent_type( 52 ) ) );
+
+   pairs.push_back( make_pair( "enum_source_type_0", get_enum_string_source_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_1", get_enum_string_source_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_2", get_enum_string_source_type( 2 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_3", get_enum_string_source_type( 3 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_4", get_enum_string_source_type( 4 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_5", get_enum_string_source_type( 5 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_6", get_enum_string_source_type( 6 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_20", get_enum_string_source_type( 20 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_35", get_enum_string_source_type( 35 ) ) );
+   pairs.push_back( make_pair( "enum_source_type_99", get_enum_string_source_type( 99 ) ) );
+
+   pairs.push_back( make_pair( "enum_test_field_type_0", get_enum_string_test_field_type( 0 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_1", get_enum_string_test_field_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_2", get_enum_string_test_field_type( 2 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_3", get_enum_string_test_field_type( 3 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_4", get_enum_string_test_field_type( 4 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_5", get_enum_string_test_field_type( 5 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_6", get_enum_string_test_field_type( 6 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_20", get_enum_string_test_field_type( 20 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_35", get_enum_string_test_field_type( 35 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_38", get_enum_string_test_field_type( 38 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_99", get_enum_string_test_field_type( 99 ) ) );
+}
+
+void Meta_Specification_Type::static_get_sql_indexes( vector< string >& indexes )
+{
+   indexes.push_back( "C_Is_Child_Only,C_Parent_Specification_Type,C_Name" );
+   indexes.push_back( "C_Parent_Specification_Type,C_Name" );
+}
+
+void Meta_Specification_Type::static_get_sql_unique_indexes( vector< string >& indexes )
+{
+   indexes.push_back( "C_Is_Child_Only,C_Parent_Specification_Type,C_Name" );
+   indexes.push_back( "C_Parent_Specification_Type,C_Name" );
+}
+
+void Meta_Specification_Type::static_insert_derivation( const string& module_and_class_id )
+{
+   g_derivations.insert( module_and_class_id );
+}
+
+void Meta_Specification_Type::static_remove_derivation( const string& module_and_class_id )
+{
+   if( g_derivations.count( module_and_class_id ) )
+      g_derivations.erase( module_and_class_id );
+}
+
+void Meta_Specification_Type::static_insert_external_alias( const string& module_and_class_id, Meta_Specification_Type* p_instance )
+{
+   g_external_aliases.insert( external_aliases_value_type( module_and_class_id, p_instance ) );
+}
+
+void Meta_Specification_Type::static_remove_external_alias( const string& module_and_class_id )
+{
+   if( g_external_aliases.count( module_and_class_id ) )
+   {
+      delete g_external_aliases[ module_and_class_id ];
+      g_external_aliases.erase( module_and_class_id );
+   }
+}
+
+void Meta_Specification_Type::static_class_init( const char* p_module_name )
+{
+   if( !p_module_name )
+      throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_field_type_enum.insert( 0 );
+   g_field_type_enum.insert( 1 );
+   g_field_type_enum.insert( 2 );
+   g_field_type_enum.insert( 3 );
+   g_field_type_enum.insert( 4 );
+   g_field_type_enum.insert( 5 );
+   g_field_type_enum.insert( 6 );
+   g_field_type_enum.insert( 20 );
+   g_field_type_enum.insert( 30 );
+   g_field_type_enum.insert( 31 );
+   g_field_type_enum.insert( 39 );
+   g_field_type_enum.insert( 40 );
+   g_field_type_enum.insert( 41 );
+   g_field_type_enum.insert( 45 );
+   g_field_type_enum.insert( 49 );
+   g_field_type_enum.insert( 50 );
+   g_field_type_enum.insert( 51 );
+   g_field_type_enum.insert( 52 );
+   g_field_type_enum.insert( 99 );
+   g_procedure_arg_primitive_enum.insert( 0 );
+   g_procedure_arg_primitive_enum.insert( 1 );
+   g_procedure_arg_primitive_enum.insert( 2 );
+   g_procedure_arg_primitive_enum.insert( 3 );
+   g_procedure_arg_primitive_enum.insert( 4 );
+   g_procedure_arg_primitive_enum.insert( 5 );
+   g_procedure_arg_primitive_enum.insert( 6 );
+   g_procedure_arg_primitive_enum.insert( 99 );
+   g_procedure_arg_type_enum.insert( 0 );
+   g_procedure_arg_type_enum.insert( 1 );
+   g_procedure_arg_type_enum.insert( 99 );
+   g_source_parent_type_enum.insert( 50 );
+   g_source_parent_type_enum.insert( 51 );
+   g_source_parent_type_enum.insert( 52 );
+   g_source_type_enum.insert( 0 );
+   g_source_type_enum.insert( 1 );
+   g_source_type_enum.insert( 2 );
+   g_source_type_enum.insert( 3 );
+   g_source_type_enum.insert( 4 );
+   g_source_type_enum.insert( 5 );
+   g_source_type_enum.insert( 6 );
+   g_source_type_enum.insert( 20 );
+   g_source_type_enum.insert( 35 );
+   g_source_type_enum.insert( 99 );
+   g_test_field_type_enum.insert( 0 );
+   g_test_field_type_enum.insert( 1 );
+   g_test_field_type_enum.insert( 2 );
+   g_test_field_type_enum.insert( 3 );
+   g_test_field_type_enum.insert( 4 );
+   g_test_field_type_enum.insert( 5 );
+   g_test_field_type_enum.insert( 6 );
+   g_test_field_type_enum.insert( 20 );
+   g_test_field_type_enum.insert( 35 );
+   g_test_field_type_enum.insert( 38 );
+   g_test_field_type_enum.insert( 99 );
+
+   // [<start static_class_init>]
+   // [<finish static_class_init>]
+}
+
+void Meta_Specification_Type::static_class_term( const char* p_module_name )
+{
+   if( !p_module_name )
+      throw runtime_error( "unexpected null module name pointer for term" );
+
+   // [<start static_class_term>]
+   // [<finish static_class_term>]
+}
+

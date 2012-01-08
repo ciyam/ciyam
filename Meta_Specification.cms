@@ -1,0 +1,25 @@
+key "get key value" [<opt/fixed>]
+ver "get version info"
+get "get field value" <val//field_name>
+set "set field value" <val//field_name>[<oval//field_value>]
+cmd "call field command" <val//field_name><val//cmd_and_args>
+Add_Arg_1 "Add_Arg_1 procedure"
+Add_Arg_2 "Add_Arg_2 procedure"
+Add_Child_Info "Add_Child_Info procedure"
+Add_Extra_Info "Add_Extra_Info procedure"
+Add_Field "Add_Field procedure"
+Add_Field_Pair "Add_Field_Pair procedure"
+Add_Grandchild_Info "Add_Grandchild_Info procedure"
+Add_Info "Add_Info procedure"
+Add_Next "Add_Next procedure"
+Add_Opt_Info "Add_Opt_Info procedure"
+Add_Other_Info "Add_Other_Info procedure"
+Add_Secondary "Add_Secondary procedure"
+Add_Source_Info "Add_Source_Info procedure"
+Add_Stats_1 "Add_Stats_1 procedure"
+Add_Stats_2 "Add_Stats_2 procedure"
+Add_Stats_Info "Add_Stats_Info procedure"
+Generate_All_Strings "Generate_All_Strings procedure" <oval//Parent_Prefix>
+Generate_All_Vars "Generate_All_Vars procedure" <oval//Parent_Prefix>
+Move_Down "Move_Down procedure" <oval//Restrict_Fields><oval//Restrict_Values>
+Move_Up "Move_Up procedure" <oval//Restrict_Fields><oval//Restrict_Values>

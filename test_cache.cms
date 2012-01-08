@@ -1,0 +1,11 @@
+get "get item(s) [use item#-item# for a range]" <val//items>[<val//filename>]
+put "put item(s) [use %d in in data for item# replacement]" <val//items><val//data>
+mark "mark item(s) new or old" <val//items><opt/new>|<opt/old>
+dump "dump item details" {<opt/info>|<opt/summary>|<opt/detailed>}[<val//filename>]
+flush "flush cache items" <opt/new>|<opt/old>
+limit "get/set item limit for get command" [<val//num>]
+retain "set whether items are to retained in cache" <opt/true>|<opt/false>
+throw "setup item for exception throw" {<opt/ctor>|<opt/fetch>|<opt/store>}[<val//delay>]
+clear "clear cache items" [<opt/stats>]
+max "set cache maximum" {<opt/items>|<opt/itemspr>|<opt/regions>}<val//num>
+exit "exit program"

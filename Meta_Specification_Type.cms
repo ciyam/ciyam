@@ -1,0 +1,6 @@
+key "get key value" [<opt/fixed>]
+ver "get version info"
+get "get field value" <val//field_name>
+set "set field value" <val//field_name>[<oval//field_value>]
+cmd "call field command" <val//field_name><val//cmd_and_args>
+Is_Valid_Field_Type "Is_Valid_Field_Type procedure" <oval//Class><oval//Parent_Class><oval//Primitive><oval//Procedure_Arg_Primitive><oval//Procedure_Arg_Type><oval//Source_Parent_Class><oval//Source_Primitive><oval//Test_Primitive><oval//Test_Value>
