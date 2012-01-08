@@ -1,6 +1,6 @@
 <sio/>
 # <license>11F38888
- <timezone>CST
+ <timezone>GMT
  <web_root>/webroot
  <set_trace>100
 # <use_https>true
