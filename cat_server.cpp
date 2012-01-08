@@ -53,7 +53,7 @@
 #  define _chdir chdir
 #endif
 
-#define USE_MAC_LICENSE
+//#define USE_MAC_LICENSE
 
 #ifdef USE_MAC_LICENSE
 #  include "mac.h"
