@@ -1,0 +1,13 @@
+<sio/>
+ <script/>
+  <name>install_package
+  <filename>*script*
+  <arguments>install_package.cin @name
+ </script>
+ <script/>
+  <name>checkmail
+  <filename>checkmail
+ </script>
+### [<start generated>]
+### [<finish generated>]
+</sio>

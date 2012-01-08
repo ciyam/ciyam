@@ -53,8 +53,12 @@
 #  define _chdir chdir
 #endif
 
-#include "mac.h"
-#include "sha1.h"
+#define USE_MAC_LICENSE
+
+#ifdef USE_MAC_LICENSE
+#  include "mac.h"
+#  include "sha1.h"
+#endif
 #include "sql_db.h"
 #include "sockets.h"
 #include "cat_base.h"
@@ -203,7 +207,9 @@ const char* const c_cmd_parm_trace_flags = "flags";
 
 const char* const c_cmd_no_auto = "no_auto";
 
+#ifdef USE_MAC_LICENSE
 const char* const c_cmd_register = "register";
+#endif
 
 #ifdef _WIN32
 const char* const c_cmd_svcins = "svcins";
@@ -298,6 +304,7 @@ class cat_server_startup_functor : public command_functor
 
          set_trace_flags( trace_flags );
       }
+#ifdef USE_MAC_LICENSE
       else if( command == c_cmd_register )
       {
          g_had_exiting_command = true;
@@ -313,6 +320,7 @@ class cat_server_startup_functor : public command_functor
 
          cout << "Registration Key: " << upper( sha1_quads[ 2 ] ) << endl;
       }
+#endif
 #ifdef _WIN32
       else if( command == c_cmd_svcins )
       {
@@ -412,9 +420,10 @@ int main( int argc, char* argv[ ] )
           "", "run server as a daemon", new cat_server_startup_functor( cmd_handler ) );
 #endif
 
+#ifdef USE_MAC_LICENSE
          cmd_handler.add_command( c_cmd_register, 2,
           "", "get registration key", new cat_server_startup_functor( cmd_handler ) );
-
+#endif
          processor.process_commands( );
       }
 
@@ -463,6 +472,7 @@ int main( int argc, char* argv[ ] )
 
       init_globals( );
 
+#ifdef USE_MAC_LICENSE
       // NOTE: Make sure that server has the correct license key.
       string mac_addr( get_mac_addr( ) );
 
@@ -502,6 +512,7 @@ int main( int argc, char* argv[ ] )
 
       if( !is_licensed )
          throw runtime_error( "server is not licensed" );
+#endif
 
       tcp_socket s;
       bool okay = s.open( );
