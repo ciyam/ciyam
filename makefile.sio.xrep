@@ -52,6 +52,7 @@
    <dyn_lib/>
     <name>cat_base
     <sockets>true
+#    <openssl>true
     <openssl>false
     <libharu>true
     <libicnv>true
@@ -169,6 +170,7 @@
     <gen_ext>
     <threads>true
     <sockets>true
+#    <openssl>true
     <openssl>false
     <libfcgi>false
     <libharu>true
