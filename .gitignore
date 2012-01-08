@@ -1,0 +1,44 @@
+# Ignore dependency files.
+*.d
+*.dep
+*.inc
+
+# Ignore object files.
+*.o
+*.obj
+
+# Ignore libraries and executables.
+*.a
+*.so
+*.dll
+*.lib
+*.exe
+*.exp
+
+# Ignore generated header files.
+*.cmh
+
+# Ignore log files.
+*.log
+
+# Ignore generated compile script.
+compile.sh
+compile.bat
+
+# Ignore generated .sid file and config files.
+cat_server.sid
+
+# Except libraries that are included in the repository.
+!iconv.dll
+!iconv.lib
+!libfcgi.dll
+!libfcgi.lib
+!libhpdf.dll
+!libhpdf.lib
+!libmySQL.dll
+!libmysql.lib
+!libpng13.dll
+!zlib.dll
+!zlib1.dll
+!zlib1.lib
+
