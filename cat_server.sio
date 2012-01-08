@@ -1,7 +1,7 @@
 <sio/>
 # <license>11F38888
-# <timezone>CST
-# <web_root>/webroot
+ <timezone>CST
+ <web_root>/webroot
  <set_trace>100
 # <use_https>true
 # <pem_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
@@ -9,7 +9,7 @@
 # <default_storage>test
  <script_reconfig>true
  <session_timeout>0
-# <email/>
+ <email/>
 #  <pop3/>
 #   <server>mail.server.com:995
 #   <suffix>server.com
@@ -27,5 +27,5 @@
 #   <max_send_attempts>3
 #   <max_attached_data>100K
 #  </smtp>
-# </email>
+ </email>
 </sio>

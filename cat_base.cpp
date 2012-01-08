@@ -2592,7 +2592,7 @@ void read_server_configuration( )
 
       g_domain = reader.read_opt_attribute( c_attribute_domain, "localhost" );
 
-      g_license = upper( reader.read_attribute( c_attribute_license ) );
+      g_license = upper( reader.read_opt_attribute( c_attribute_license ) );
 
       g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
 
