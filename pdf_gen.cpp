@@ -37,23 +37,22 @@
 #  include <shellapi.h>
 #endif
 
-#define ICONV_SUPPORT
-
-#ifdef ICONV_SUPPORT
-#  include <iconv.h>
-#endif
-
 //#define DEBUG
 
 #include "pdf_gen.h"
 
 #include "pdf.h"
 #include "sio.h"
+#include "config.h"
 #include "format.h"
 #include "numeric.h"
 #include "pointers.h"
 #include "date_time.h"
 #include "utilities.h"
+
+#ifdef ICONV_SUPPORT
+#  include <iconv.h>
+#endif
 
 using namespace std;
 

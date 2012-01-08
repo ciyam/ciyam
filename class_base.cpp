@@ -39,12 +39,6 @@
 #  endif
 #endif
 
-#define ICONV_SUPPORT
-
-#ifdef ICONV_SUPPORT
-#  include <iconv.h>
-#endif
-
 #define CAT_BASE_IMPL
 
 #include "class_base.h"
@@ -54,6 +48,7 @@
 #include "mime.h"
 #include "smtp.h"
 #include "base64.h"
+#include "config.h"
 #include "format.h"
 #include "sql_db.h"
 #include "numeric.h"
@@ -64,6 +59,10 @@
 #include "mail_source.h"
 #include "oid_pointer.h"
 #include "module_management.h"
+
+#ifdef ICONV_SUPPORT
+#  include <iconv.h>
+#endif
 
 #ifdef __GNUG__
 #  define _chdir chdir

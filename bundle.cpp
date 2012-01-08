@@ -30,16 +30,15 @@
 #  pragma warning (disable: 4996)
 #endif
 
-#define ZLIB_SUPPORT
+#include "md5.h"
+#include "base64.h"
+#include "config.h"
+#include "fs_iterator.h"
+#include "utilities.h"
 
 #ifdef ZLIB_SUPPORT
 #  include <zlib.h>
 #endif
-
-#include "md5.h"
-#include "base64.h"
-#include "fs_iterator.h"
-#include "utilities.h"
 
 using namespace std;
 

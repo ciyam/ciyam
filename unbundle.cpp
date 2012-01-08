@@ -46,15 +46,14 @@
 #  define _access access
 #endif
 
-#define ZLIB_SUPPORT
+#include "md5.h"
+#include "base64.h"
+#include "config.h"
+#include "utilities.h"
 
 #ifdef ZLIB_SUPPORT
 #  include <zlib.h>
 #endif
-
-#include "md5.h"
-#include "base64.h"
-#include "utilities.h"
 
 using namespace std;
 

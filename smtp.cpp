@@ -24,11 +24,10 @@
 
 #include "smtp.h"
 
-#define SSL_SUPPORT
-
 #include "md5.h"
 #include "mime.h"
 #include "base64.h"
+#include "config.h"
 #include "sockets.h"
 #include "date_time.h"
 #include "utilities.h"
