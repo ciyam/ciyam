@@ -120,6 +120,7 @@ TARGET_BASE_CPPS = base64.cpp\
  command_parser.cpp\
  command_handler.cpp\
  command_processor.cpp\
+ crypt_stream.cpp\
  date_time.cpp\
  dynamic_library.cpp\
  file_buffer.cpp\
@@ -249,7 +250,7 @@ TARGET_META_CMHS = Meta.cmh\
 TARGET_BUNDLE_CPPS = bundle.cpp
 TARGET_BUNDLE_OBJS = $(TARGET_BUNDLE_CPPS:.cpp=.o)
 
-TARGET_CAT_CLIENT_CPPS = CAT_client.cpp
+TARGET_CAT_CLIENT_CPPS = cat_client.cpp
 TARGET_CAT_CLIENT_OBJS = $(TARGET_CAT_CLIENT_CPPS:.cpp=.o)
 
 TARGET_CAT_INTERFACE_CPPS = cat_interface.cpp\
