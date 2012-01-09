@@ -25,6 +25,10 @@
 compile.sh
 compile.bat
 
+# Ignore makefile generation temp files.
+makefile.sio
+makefile.vars.xrep
+
 # Ignore generated .sid file and config files.
 cat_server.sid
 
