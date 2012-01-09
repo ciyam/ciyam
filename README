@@ -15,9 +15,28 @@ NOTE: To make things easier for Windows developers all required .lib and .dll fi
 in the repository (these should be removed after cloning under Linux).
 
 
+MySQL
+-----
+http://dev.mysql.com/downloads/mysql/
+
+[Linux]
+
+Install the appropriate developer package (e.g. mysql-devel).
+
+[Windows]
+
+If installing a version of MySQL other than 5.1 then ensure that during the installation the option
+for "Development libraries and headers" was ticked and then do the following:
+
+copy "C:\Program Files\MySQL\MySQL Server <ver>\lib\opt\libmysql.lib"
+copy "C:\Program Files\MySQL\MySQL Server <ver>\lib\opt\libmysql.dll"
+cd mysql
+del *.*
+copy "C:\Program Files\MySQL\MySQL Server <ver>\include\*.*"
+
+
 FastCGI
 -------
-
 http://www.fastcgi.com/dist/
 
 [Linux]
@@ -39,7 +58,6 @@ copy libfcgi\Release\libfcgi.dll <dest directory>
 
 Haru PDF Library
 ----------------
-
 http://libharu.org/files
 
 [Linux]
@@ -65,7 +83,6 @@ unzip -j \tmp\libharu-2.1.0-vc8.zip include/*
 
 OpenSSL
 -------
-
 http://www.openssl.org/
 
 [Linux]
