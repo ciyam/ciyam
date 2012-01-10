@@ -347,9 +347,9 @@ int main( int argc, char* argv[ ] )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-r [-i]] <name> <filespec1> [<filespec2> [...]]" << endl;
+      cout << "usage: bundle [-r [-p]] <name> <filespec1> [<filespec2> [...]]" << endl;
 #else
-      cout << "usage: bundle [-r [-i]] [-z] <name> <filespec1> [<filespec2 [...]>]" << endl;
+      cout << "usage: bundle [-r [-p]] [-z] <name> <filespec1> [<filespec2 [...]>]" << endl;
 #endif
 
       cout << "\nwhere: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
