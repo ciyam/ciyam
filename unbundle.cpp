@@ -20,6 +20,8 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cerrno>
 #  include <cstdlib>
+#  include <set>
+#  include <deque>
 #  include <stack>
 #  include <string>
 #  include <memory>
@@ -58,10 +60,13 @@
 using namespace std;
 
 const char c_type_file = 'F';
+const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
 
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
+
+MD5 g_md5;
 
 #ifdef ZLIB_SUPPORT
 bool read_zlib_line( gzFile& gzf, string& s )
@@ -84,21 +89,69 @@ bool read_zlib_line( gzFile& gzf, string& s )
 }
 #endif
 
+void create_all_directories( deque< string >& create_directories )
+{
+   while( !create_directories.empty( ) )
+   {
+      string path_name( create_directories.front( ) );
+      cout << "creating directory '" << path_name << "'..." << endl;
+#ifdef _WIN32
+      if( _mkdir( path_name.c_str( ) ) < 0 )
+         throw runtime_error( "unable to create directory '" + path_name + "' (already exists?)" );
+#else
+      if( _mkdir( path_name.c_str( ), S_IRWXU ) < 0 )
+         throw runtime_error( "unable to create directory '" + path_name + "' (already exists?)" );
+#endif
+      create_directories.pop_front( );
+   }
+}
+
 int main( int argc, char* argv[ ] )
 {
-   cout << "unbundle v0.1\n";
+   cout << "unbundle v0.1b\n";
 
-   if( argc != 2 || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
+   int first_arg = 0;
+   bool junk = false;
+   bool skip = false;
+   bool prune = false;
+   bool use_zlib = false;
+
+   if( argc > first_arg + 1  )
    {
-      cout << "usage: unbundle <filename>" << endl;
+      if( string( argv[ first_arg + 1 ] ) == "-j" )
+      {
+         ++first_arg;
+         junk = true;
+      }
+      else if( string( argv[ first_arg + 1 ] ) == "-s" )
+      {
+         ++first_arg;
+         skip = true;
+      }
+   }
+
+   if( argc > first_arg + 1  )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-p" )
+      {
+         ++first_arg;
+         prune = true;
+      }
+   }
+
+   if( ( argc - first_arg < 2 )
+    || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
+   {
+      cout << "usage: unbundle [-j|-s] [-p] <filename> [<filespec1> [<filespec2> [...]]" << endl;
+
+      cout << "\nwhere: -j is to junk directories or -s skips the top level directory" << endl;
+      cout << "  and: -p is to prune empty directories" << endl;
       return 0;
    }
 
-   bool use_zlib = false;
-
    try
    {
-      string filename( argv[ 1 ] );
+      string filename( argv[ first_arg + 1 ] );
 
       if( filename.length( ) > 3
        && filename.substr( filename.length( ) - 3 ) == string( c_zlib_extension ) )
@@ -138,6 +191,10 @@ int main( int argc, char* argv[ ] )
 
       cout << "started unbundling '" << filename << "'\n";
 
+      vector< string > filename_filters;
+      for( int i = first_arg + 2; i < argc; i++ )
+         filename_filters.push_back( argv[ i ] );
+
       int level = -1;
       bool is_first = false;
 
@@ -145,12 +202,18 @@ int main( int argc, char* argv[ ] )
       int file_data_lines = 0;
 
       stack< string > paths;
+      deque< string > create_directories;
+
+      set< string > created;
       auto_ptr< ofstream > ap_ofstream;
 
       MD5 md5;
       string next;
       string next_md5;
       size_t line = 0;
+      bool finished = false;
+      string top_level_directory;
+
       while( true )
       {
 #ifdef ZLIB_SUPPORT
@@ -175,28 +238,36 @@ int main( int argc, char* argv[ ] )
 
          if( file_data_lines )
          {
-            string fdata( base64::decode( next ) );
-            if( ap_ofstream->rdbuf( )->sputn( fdata.c_str( ), fdata.length( ) ) != ( int )fdata.length( ) )
-               throw runtime_error( "write failed for file '" + next_file + "'" );
+            --file_data_lines;
 
-            md5.update( ( unsigned char* )fdata.c_str( ), fdata.length( ) );
-
-            if( --file_data_lines == 0 )
+            if( ap_ofstream.get( ) )
             {
-               ap_ofstream->flush( );
-               if( !ap_ofstream->good( ) )
-                  throw runtime_error( "flush failed for file '" + next_file + "'" );
-               ap_ofstream->close( );
+               string fdata( base64::decode( next ) );
+               if( ap_ofstream->rdbuf( )->sputn( fdata.c_str( ), fdata.length( ) ) != ( int )fdata.length( ) )
+                  throw runtime_error( "write failed for file '" + next_file + "'" );
 
-               md5.finalize( );
-               string digest( md5.hex_digest( ) );
+               md5.update( ( unsigned char* )fdata.c_str( ), fdata.length( ) );
 
-               if( next_md5 != digest )
-                  cerr << "*** error: file '" << next_file << "' failed MD5 checksum check ***" << endl;
+               if( file_data_lines == 0 )
+               {
+                  ap_ofstream->flush( );
+                  if( !ap_ofstream->good( ) )
+                     throw runtime_error( "flush failed for file '" + next_file + "'" );
+                  ap_ofstream->close( );
+
+                  md5.finalize( );
+                  string digest( md5.hex_digest( ) );
+
+                  if( next_md5 != digest )
+                     cerr << "*** error: file '" << next_file << "' failed MD5 digest check ***" << endl;
+               }
             }
 
             continue;
          }
+
+         if( finished )
+            throw runtime_error( "unexpected end of file not found at line #" + to_string( line ) );
 
          string::size_type pos = next.find( ' ' );
          if( pos != 1 )
@@ -231,12 +302,60 @@ int main( int argc, char* argv[ ] )
             next_md5 = next.substr( pos + 1 );
             next.erase( pos );
 
-            next_file = paths.top( ) + "/" + next;
-            cout << "extracting '" << next_file << "'..." << endl;
+            g_md5.update( ( unsigned char* )next_md5.c_str( ), next_md5.length( ) );
 
-            ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
-            if( !*ap_ofstream.get( ) )
-               throw runtime_error( "unable to open file '" + next_file + "' for output" );
+            string test_file( next );
+            if( !paths.empty( ) )
+               test_file = paths.top( ) + "/" + next;
+
+            if( junk )
+               next_file = next;
+            else
+               next_file = test_file;
+
+            bool matched = false;
+            if( filename_filters.empty( ) )
+               matched = true;
+            else
+            {
+               for( size_t i = 0; i < filename_filters.size( ); i++ )
+               {
+                  string wildcard( filename_filters[ i ] );
+
+                  string::size_type pos = wildcard.find( "/" );
+                  if( pos == string::npos )
+                  {
+                     pos = test_file.find_last_of( "/" );
+                     if( pos != string::npos )
+                        test_file.erase( 0, pos + 1 );
+                  }
+                  else if( junk )
+                  {
+                     if( wildcard.find( top_level_directory + "/" ) != 0 )
+                        wildcard = top_level_directory + "/" + wildcard;
+                  }
+
+                  if( wildcard_match( wildcard, test_file ) )
+                  {
+                     matched = true;
+                     break;
+                  }
+               }
+            }
+
+            if( matched )
+               create_all_directories( create_directories );
+
+            if( !matched )
+               ap_ofstream.reset( );
+            else
+            {
+               cout << "extracting '" << next_file << "'..." << endl;
+
+               ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
+               if( !*ap_ofstream.get( ) )
+                  throw runtime_error( "unable to open file '" + next_file + "' for output" );
+            }
          }
          else if( type == c_type_directory )
          {
@@ -244,6 +363,13 @@ int main( int argc, char* argv[ ] )
             pos = next.find( ' ' );
             if( pos == string::npos )
                throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+            string::size_type cpos = next.find_last_of( ' ' );
+            if( cpos == pos || cpos == string::npos )
+               throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+            string check( next.substr( cpos + 1 ) );
+            next.erase( cpos );
 
             int next_level( atoi( next.substr( 0, pos ).c_str( ) ) );
             if( next_level > level )
@@ -256,8 +382,19 @@ int main( int argc, char* argv[ ] )
             }
             else
             {
-               if( next_level < 1 )
+               if( next_level < 0 )
                   throw runtime_error( "invalid level " + to_string( next_level ) + " found in line #" + to_string( line ) );
+
+               if( skip || create_directories.size( ) > 1 )
+               {
+                  size_t test_level( next_level );
+                  if( next_level > 0 && skip )
+                     --test_level;
+
+                  while( create_directories.size( ) > test_level )
+                     create_directories.pop_back( );
+               }
+
                level = next_level;
 
                while( ( int )paths.size( ) > level )
@@ -266,20 +403,64 @@ int main( int argc, char* argv[ ] )
 
             next.erase( 0, pos + 1 );
             string path_name( next );
-            cout << "creating directory '" << path_name << "'..." << endl;
 
-#ifdef _WIN32
-            if( _mkdir( path_name.c_str( ) ) < 0 )
-               throw runtime_error( "unable to create directory '" + path_name + "' (already exists?)" );
-#else
-            if( _mkdir( path_name.c_str( ), S_IRWXU ) < 0 )
-               throw runtime_error( "unable to create directory '" + path_name + "' (already exists?)" );
-#endif
-            paths.push( path_name );
+            if( top_level_directory.empty( ) )
+               top_level_directory = path_name;
+
+            MD5 md5;
+            md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
+            md5.finalize( );
+
+            string digest( md5.hex_digest( ) );
+
+            if( check != digest )
+               cerr << "*** error: directory '" << path_name << "' failed MD5 digest check ***" << endl;
+
+            g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
+
+            if( !skip || level > 0 )
+            {
+               if( skip )
+               {
+                  string::size_type pos = path_name.find( '/' );
+                  if( pos == string::npos )
+                     throw runtime_error( "unexpected path_name '" + path_name + " found in line #" + to_string( line ) );
+
+                  path_name.erase( 0, pos + 1 );
+               }
+
+               if( !junk && !created.count( path_name ) )
+               {
+                  created.insert( path_name );
+                  create_directories.push_back( path_name );
+
+                  if( !prune )
+                     create_all_directories( create_directories );
+               }
+
+               paths.push( path_name );
+            }
 
             is_first = false;
          }
+         else if( type == c_type_checksum )
+         {
+            g_md5.finalize( );
+            string digest( g_md5.hex_digest( ) );
+
+            next.erase( 0, 2 );
+
+            if( next != digest )
+               cerr << "*** error: bundle file failed MD5 digest check ***" << endl;
+
+            finished = true;
+         }
+         else
+            throw runtime_error( "unexpected entry type '" + to_string( type ) + "' found in line #" + to_string( line ) );
       }
+
+      if( !finished )
+         cerr << "*** error: final MD5 digest not found (file truncated?) ***" << endl;
 
 #ifdef ZLIB_SUPPORT
       if( use_zlib && !gzeof( gzf ) )
