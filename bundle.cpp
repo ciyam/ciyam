@@ -58,7 +58,13 @@
 
 using namespace std;
 
-const int c_buffer_size = 1024;
+int c_format_version = 1;
+
+const char c_type_file = 'F';
+const char c_type_checksum = 'C';
+const char c_type_directory = 'D';
+
+const int c_buffer_size = 8192;
 
 // const int c_max_bytes_per_line = 57; // (for 76 characters)
 const int c_max_bytes_per_line = 96; // (for 128 characters)
@@ -84,7 +90,64 @@ bool is_root_path( const string& absolute_path )
    return false;
 }
 
+string escaped_line( const string& line )
+{
+   string str;
+
+   bool is_escape = false;
+   for( size_t i = 0; i < line.length( ); i++ )
+   {
+      if( line[ i ] == '\\' )
+         str += '\\';
+
+      if( line[ i ] == '\n' )
+         str += "\\n";
+      else if( line[ i ] == '\r' )
+         str += "\\r";
+      else if( line[ i ] == '\0' )
+         str += "\\z";
+      else
+         str += line[ i ];
+   }
+
+   return str;
+}
+
 #ifdef ZLIB_SUPPORT
+bool read_zlib_line( gzFile& gzf, string& s )
+{
+   char c;
+   s.erase( );
+
+   bool is_escape = false;
+   while( !gzeof( gzf ) )
+   {
+      if( !gzread( gzf, &c, sizeof( char ) ) )
+         throw runtime_error( "reading char" );
+
+      if( is_escape )
+      {
+         is_escape = false;
+
+         if( c == 'n' )
+            c = '\n';
+         else if( c == 'r' )
+            c = '\r';
+         else if( c == 'z' )
+            c = '\0';
+      }
+      else if( c == '\\' )
+         is_escape = true;
+      else if( c == '\n' )
+         break;
+
+      if( !is_escape )
+         s += c;
+   }
+
+   return !s.empty( );
+}
+
 void write_zlib_line( gzFile& gzf, const string& str )
 {
    if( str.size( ) )
@@ -99,50 +162,95 @@ void write_zlib_line( gzFile& gzf, const string& str )
 #endif
 
 #ifndef ZLIB_SUPPORT
-void output_directory( const string& path_name, int level, ofstream& outf )
+void check_file_header( ifstream& inpf, const string& filename, bool& is_base64 )
 #else
-void output_directory( const string& path_name, int level, ofstream& outf, bool use_zlib, gzFile& gzf )
+void check_file_header( ifstream& inpf, const string& filename, bool& is_base64, bool use_zlib, gzFile& gzf )
+#endif
+{
+   string header;
+#ifdef ZLIB_SUPPORT
+   if( use_zlib )
+      read_zlib_line( gzf, header );
+   else
+      getline( inpf, header );
+#else
+   getline( inpf, header );
+#endif
+
+   string::size_type pos = header.find( ' ' );
+   if( pos != 1 || header[ 0 ] != 'B' )
+      throw runtime_error( "*** no bundle header found in '" + filename + "' ***" );
+
+   header.erase( 0, 2 );
+   pos = header.find( ' ' );
+   if( pos == string::npos )
+      throw runtime_error( "*** invalid bundle header was found in '" + filename + "' ***" );
+
+   int ver = atoi( header.substr( 0, pos ).c_str( ) );
+   header.erase( 0, pos + 1 );
+
+   if( ver > c_format_version )
+      throw runtime_error( "*** unknown bundle format version " + to_string( ver ) + " in '" + filename + "' ***" );
+
+   if( header == "B64" )
+      is_base64 = true;
+   else if( header != "ESC" )
+      throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
+}
+
+#ifndef ZLIB_SUPPORT
+void output_directory( set< string >& file_names, const string& path_name, int level, ofstream& outf )
+#else
+void output_directory( set< string >& file_names,
+ const string& path_name, int level, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
 {
    string::size_type pos = path_name.find_last_of( '/' );
    if( level > 1 && pos != string::npos && !g_output_directories.count( path_name.substr( 0, pos ) ) )
    {
 #ifndef ZLIB_SUPPORT
-      output_directory( path_name.substr( 0, pos ), level - 1, outf );
+      output_directory( file_names, path_name.substr( 0, pos ), level - 1, outf );
 #else
-      output_directory( path_name.substr( 0, pos ), level - 1, outf, use_zlib, gzf );
+      output_directory( file_names, path_name.substr( 0, pos ), level - 1, outf, use_zlib, gzf );
 #endif
    }
 
-   MD5 md5;
-   md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
-   md5.finalize( );
+   if( !file_names.count( path_name ) )
+   {
+      MD5 md5;
+      md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
+      md5.finalize( );
 
-   string digest( md5.hex_digest( ) );
+      string digest( md5.hex_digest( ) );
 
-   ostringstream osstr;
-   osstr << "D " << level << ' ' << path_name << ' ' << digest;
+      ostringstream osstr;
+      osstr << "D " << level << ' ' << path_name << ' ' << digest;
 
-   g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
+      g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
 
 #ifndef ZLIB_SUPPORT
-   outf << osstr.str( ) << '\n';
-#else
-   if( !use_zlib )
       outf << osstr.str( ) << '\n';
-   else
-      write_zlib_line( gzf, osstr.str( ) );
+#else
+      if( !use_zlib )
+         outf << osstr.str( ) << '\n';
+      else
+         write_zlib_line( gzf, osstr.str( ) );
 #endif
+
+      file_names.insert( path_name );
+   }
 
    g_output_directories.insert( path_name );
 }
 
 #ifndef ZLIB_SUPPORT
-void process_directory( const string& directory, const string& filespec_path,
- const vector< string >& filename_filters, bool recurse, bool prune, ofstream& outf )
+void process_directory( const string& directory,
+ const string& filespec_path, const vector< string >& filename_filters,
+ set< string >& file_names, bool recurse, bool prune, bool is_quiet, bool is_append, bool use_base64, ofstream& outf )
 #else
-void process_directory( const string& directory, const string& filespec_path,
- const vector< string >& filename_filters, bool recurse, bool prune, ofstream& outf, bool use_zlib, gzFile& gzf )
+void process_directory( const string& directory,
+ const string& filespec_path, const vector< string >& filename_filters, set< string >& file_names,
+ bool recurse, bool prune, bool is_quiet, bool is_append, bool use_base64, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
 {
    directory_filter df;
@@ -174,9 +282,9 @@ void process_directory( const string& directory, const string& filespec_path,
       {
          has_output_directory = true;
 #ifndef ZLIB_SUPPORT
-         output_directory( path_name, dfsi.get_level( ), outf );
+         output_directory( file_names, path_name, dfsi.get_level( ), outf );
 #else
-         output_directory( path_name, dfsi.get_level( ), outf, use_zlib, gzf );
+         output_directory( file_names, path_name, dfsi.get_level( ), outf, use_zlib, gzf );
 #endif
       }
 
@@ -208,6 +316,9 @@ void process_directory( const string& directory, const string& filespec_path,
             }
          }
 
+         if( file_names.count( ffsi.get_name( ) ) )
+            matched = false;
+
          if( !matched )
             continue;
 
@@ -222,13 +333,19 @@ void process_directory( const string& directory, const string& filespec_path,
          {
             has_output_directory = true;
 #ifndef ZLIB_SUPPORT
-            output_directory( path_name, dfsi.get_level( ), outf );
+            output_directory( file_names, path_name, dfsi.get_level( ), outf );
 #else
-            output_directory( path_name, dfsi.get_level( ), outf, use_zlib, gzf );
+            output_directory( file_names, path_name, dfsi.get_level( ), outf, use_zlib, gzf );
 #endif
          }
 
-         cout << "adding '" << path_name << '/' << ffsi.get_name( ) << "'..." << endl;
+         if( !is_quiet )
+         {
+            if( !is_append )
+               cout << "adding '" << path_name << '/' << ffsi.get_name( ) << "'..." << endl;
+            else
+               cout << "adding/replacing '" << path_name << '/' << ffsi.get_name( ) << "'..." << endl;
+         }
 
          ifstream inpf( ffsi.get_full_name( ).c_str( ), ios::in | ios::binary );
          if( !inpf )
@@ -256,14 +373,20 @@ void process_directory( const string& directory, const string& filespec_path,
          md5.finalize( );
          inpf.seekg( 0, ios::beg );
 
-         size_t num_lines( size / c_max_bytes_per_line );
-         if( size % c_max_bytes_per_line )
+         int max_size = c_max_bytes_per_line;
+         if( !use_base64 )
+            max_size = c_buffer_size;
+
+         size_t num_lines( size / max_size );
+         if( size % max_size )
             ++num_lines;
 
          string digest( md5.hex_digest( ) );
 
          ostringstream osstr;
          osstr << "F " << num_lines << ' ' << ffsi.get_name( ) << ' ' << digest;
+
+         file_names.insert( ffsi.get_name( ) );
 
          g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
 
@@ -278,21 +401,25 @@ void process_directory( const string& directory, const string& filespec_path,
 
          while( size > 0 )
          {
-            char buffer[ c_max_bytes_per_line + 1 ];
-            streamsize count = inpf.rdbuf( )->sgetn( buffer, c_max_bytes_per_line );
+            char buffer[ c_buffer_size ];
+            streamsize count = inpf.rdbuf( )->sgetn( buffer, max_size );
 
             if( count == 0 )
                throw runtime_error( "read failed for file '" + ffsi.get_full_name( ) + "'" );
 
-            string b64_encoded( base64::encode( string( buffer, count ) ) );
+            string encoded;
+            if( !use_base64 )
+               encoded = escaped_line( string( buffer, count ) );
+            else
+               encoded = base64::encode( string( buffer, count ) );
 
 #ifndef ZLIB_SUPPORT
-            outf << b64_encoded << '\n';
+            outf << encoded << '\n';
 #else
             if( !use_zlib )
-               outf << b64_encoded << '\n';
+               outf << encoded << '\n';
             else
-               write_zlib_line( gzf, b64_encoded );
+               write_zlib_line( gzf, encoded );
 #endif
 
             size -= count;
@@ -303,13 +430,13 @@ void process_directory( const string& directory, const string& filespec_path,
 
 int main( int argc, char* argv[ ] )
 {
-   cout << "bundle v0.1b\n";
-
    int first_arg = 0;
    bool prune = false;
    bool recurse = false;
    bool invalid = false;
-   bool use_zlib = false;
+   bool is_quiet = false;
+   bool use_zlib = true;
+   bool use_base64 = false;
 
    if( argc > first_arg + 1 )
    {
@@ -332,29 +459,59 @@ int main( int argc, char* argv[ ] )
       }
    }
 
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-q" )
+      {
+         ++first_arg;
+         is_quiet = true;
+      }
+   }
+
+   if( argc > first_arg + 1 )
+   {
+      // NOTE: Ignore '-y' for compatibility with zip.
+      if( string( argv[ first_arg + 1 ] ) == "-y" )
+         ++first_arg;
+   }
+
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-b64" )
+      {
+         ++first_arg;
+         use_base64 = true;
+      }
+   }
+
 #ifdef ZLIB_SUPPORT
    if( argc > first_arg + 1 )
    {
-      if( string( argv[ first_arg + 1 ] ) == "-z" )
+      if( string( argv[ first_arg + 1 ] ) == "-ngz" )
       {
          ++first_arg;
-         use_zlib = true;
+         use_zlib = false;
       }
    }
 #endif
 
-   if( invalid || ( argc - first_arg < 3 )
+   if( !is_quiet )
+      cout << "bundle v0.1b\n";
+
+   if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-r [-p]] <name> <filespec1> [<filespec2> [...]]" << endl;
+      cout << "usage: bundle [-r [-p]] [-q] [-b64] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #else
-      cout << "usage: bundle [-r [-p]] [-z] <name> <filespec1> [<filespec2 [...]>]" << endl;
+      cout << "usage: bundle [-r [-p]] [-q] [-b64] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #endif
 
       cout << "\nwhere: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
+      cout << "  and: -q to suppress all output apart from errors" << endl;
+      cout << "  and: -b64 stores file data using base64 encoding" << endl;
 #ifdef ZLIB_SUPPORT
-      cout << "  and: -z to use zlib compression" << endl;
+      cout << "  and: -ngz in order to not preform zlib compression" << endl;
 #endif
       return 0;
    }
@@ -415,65 +572,273 @@ int main( int argc, char* argv[ ] )
          all_filespecs[ filespec_path ].push_back( filename_filter );
       }
 
-#ifndef ZLIB_SUPPORT
-      ofstream outf( filename.c_str( ) );
-      if( !outf )
-         throw runtime_error( "unable to open file '" + filename + "' for output" );
-#else
-      gzFile gzf;
-      ofstream outf;
+      if( all_filespecs.empty( ) )
+         all_filespecs[ g_cwd ].push_back( "*" );
 
-      if( !use_zlib )
-         outf.open( filename.c_str( ) );
-      else
-         gzf = gzopen( filename.c_str( ), "wb" );
+      set< string > file_names;
 
-      if( ( use_zlib && !gzf ) || ( !use_zlib && !outf ) )
-         throw runtime_error( "unable to open file '" + filename + "' for output" );
-#endif
-      cout << "creating bundle '" << filename << "'\n";
+      bool is_append = false;
+      if( file_exists( filename ) )
+         is_append = true;
 
-      absolute_path( filename, g_bundle_file_name );
+      string output_filename( filename );
+      if( is_append )
+         output_filename = "~" + output_filename;
 
-      for( map< string, vector< string > >::iterator i = all_filespecs.begin( ); i != all_filespecs.end( ); ++i )
+      // NOTE: Empty code block for scope purposes.
       {
-         string filespec_path( i->first );
-         vector< string >& filename_filters( i->second );
-
 #ifndef ZLIB_SUPPORT
-         process_directory( directory, filespec_path, filename_filters, recurse, prune, outf );
+         ofstream outf( output_filename.c_str( ), ios::out | ios::binary );
+         if( !outf )
+            throw runtime_error( "unable to open file '" + output_filename + "' for output" );
 #else
-         process_directory( directory, filespec_path, filename_filters, recurse, prune, outf, use_zlib, gzf );
-#endif
-      }
+         gzFile gzf;
+         ofstream outf;
 
-      g_md5.finalize( );
-      ostringstream osstr;
-      osstr << "C " << g_md5.hex_digest( );
+         if( !use_zlib )
+            outf.open( output_filename.c_str( ), ios::out | ios::binary );
+         else
+            gzf = gzopen( output_filename.c_str( ), "wb9" );
 
-#ifndef ZLIB_SUPPORT
-      outf << osstr.str( ) << '\n';
-#else
-      if( !use_zlib )
-         outf << osstr.str( ) << '\n';
-      else
-         write_zlib_line( gzf, osstr.str( ) );
+         if( ( use_zlib && !gzf ) || ( !use_zlib && !outf ) )
+            throw runtime_error( "unable to open file '" + output_filename + "' for output" );
 #endif
 
+         if( !is_quiet )
+         {
+            if( !is_append )
+               cout << "==> started bundling '" << filename << "'\n";
+            else
+               cout << "==> continue bundling '" << filename << "'\n";
+         }
+
+         absolute_path( filename, g_bundle_file_name );
+
+         string header( "B " );
+         header += to_string( c_format_version );
+
+         if( use_base64 )
+            header += " B64";
+         else
+            header += " ESC";
+
+#ifndef ZLIB_SUPPORT
+         outf << header << '\n';
+#else
+         if( !use_zlib )
+            outf << header << '\n';
+         else
+            write_zlib_line( gzf, header );
+#endif
+
+         for( map< string, vector< string > >::iterator i = all_filespecs.begin( ); i != all_filespecs.end( ); ++i )
+         {
+            string filespec_path( i->first );
+            vector< string >& filename_filters( i->second );
+
+#ifndef ZLIB_SUPPORT
+            process_directory( directory, filespec_path,
+             filename_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf );
+#else
+            process_directory( directory, filespec_path,
+             filename_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf, use_zlib, gzf );
+#endif
+         }
+
+         if( is_append )
+         {
+#ifdef ZLIB_SUPPORT
+            gzFile igzf;
+            ifstream inpf;
+
+            if( !use_zlib )
+               inpf.open( filename.c_str( ), ios::in | ios::binary );
+            else
+               igzf = gzopen( filename.c_str( ), "rb" );
+
+            if( ( use_zlib && !igzf ) || ( !use_zlib && !inpf ) )
+               throw runtime_error( "unable to open file '" + filename + "' for input" );
+#else
+            ifstream inpf( filename.c_str( ), ios::in | ios::binary );
+            if( !inpf )
+               throw runtime_error( "unable to open file '" + filename + "' for input" );
+#endif
+
+            bool was_base64;
+#ifndef ZLIB_SUPPORT
+            check_file_header( inpf, filename, was_base64 );
+#else
+            check_file_header( inpf, filename, was_base64, use_zlib, igzf );
+#endif
+
+            if( was_base64 != use_base64 )
+               throw runtime_error( "*** cannot combine different bundle data encoding types ***" );
+
+            string next;
+            int line = 0;
+            int file_data_lines = 0;
+            bool skip_existing_file = false;
+
+            while( true )
+            {
+#ifdef ZLIB_SUPPORT
+               if( use_zlib )
+               {
+                  if( !read_zlib_line( igzf, next ) )
+                     break;
+               }
+               else if( !getline( inpf, next ) )
+                  break;
+#else
+               if( !getline( inpf, next ) )
+                  break;
+#endif
+               ++line;
+               if( file_data_lines )
+               {
+                  --file_data_lines;
+                  if( !skip_existing_file )
+                  {
+#ifndef ZLIB_SUPPORT
+                     outf << line << '\n';
+#else
+                     if( !use_zlib )
+                        outf << next << '\n';
+                     else
+                        write_zlib_line( gzf, next );
+#endif
+                  }
+               }
+               else
+               {
+                  string::size_type pos = next.find( ' ' );
+                  if( pos != 1 )
+                     throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+                  char type( next[ 0 ] );
+
+                  string next_line( next );
+
+                  if( type == c_type_file )
+                  {
+                     next.erase( 0, 2 );
+                     pos = next.find( ' ' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+                     int num_lines( atoi( next.substr( 0, pos ).c_str( ) ) );
+                     if( num_lines < 0 )
+                        throw runtime_error( "invalid number of lines "
+                         + to_string( num_lines ) + " specified in line #" + to_string( line ) );
+
+                     file_data_lines = num_lines;
+
+                     next.erase( 0, pos + 1 );
+
+                     string::size_type pos = next.find_last_of( " " );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected file entry format in line #" + to_string( line ) );
+
+                     string check = next.substr( pos + 1 );
+                     next.erase( pos );
+
+                     if( file_names.count( next ) )
+                     {
+                        skip_existing_file = true;
+                        continue;
+                     }
+                     else
+                     {
+                        skip_existing_file = false;
+
+                        file_names.insert( next );
+                        g_md5.update( ( unsigned char* )check.c_str( ), check.length( ) );
+                     }
+                  }
+                  else if( type == c_type_directory )
+                  {
+                     next.erase( 0, 2 );
+                     pos = next.find( ' ' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+                     string::size_type cpos = next.find_last_of( ' ' );
+                     if( cpos == pos || cpos == string::npos )
+                        throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+                     string check( next.substr( cpos + 1 ) );
+                     next.erase( cpos );
+
+                     pos = next.find( ' ' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+                     next.erase( 0, pos + 1 );
+
+                     if( file_names.count( next ) )
+                        continue;
+                     else
+                     {
+                        file_names.insert( next );
+                        g_md5.update( ( unsigned char* )check.c_str( ), check.length( ) );
+                     }
+                  }
+                  else if( type == c_type_checksum )
+                     break;
+                  else
+                     throw runtime_error( "unexpected entry type '" + to_string( type ) + "' found in line #" + to_string( line ) );
+
+#ifndef ZLIB_SUPPORT
+                  outf << next_line << '\n';
+#else
+                  if( !use_zlib )
+                     outf << next_line << '\n';
+                  else
+                     write_zlib_line( gzf, next_line );
+#endif
+               }
+            }
 
 #ifdef ZLIB_SUPPORT
-      if( use_zlib )
-         gzclose( gzf );
+            if( use_zlib )
+               gzclose( igzf );
+#endif
+         }
+
+         g_md5.finalize( );
+         ostringstream osstr;
+         osstr << "C " << g_md5.hex_digest( );
+
+#ifndef ZLIB_SUPPORT
+         outf << osstr.str( ) << '\n';
+#else
+         if( !use_zlib )
+            outf << osstr.str( ) << '\n';
+         else
+            write_zlib_line( gzf, osstr.str( ) );
 #endif
 
-      if( !use_zlib )
-      {
-         outf.flush( );
-         if( !outf.good( ) )
-            throw runtime_error( "unexpected write failure for output file '" + filename + "'" );
+#ifdef ZLIB_SUPPORT
+         if( use_zlib )
+            gzclose( gzf );
+#endif
+
+         if( !use_zlib )
+         {
+            outf.flush( );
+            if( !outf.good( ) )
+               throw runtime_error( "unexpected write failure for output file '" + filename + "'" );
+         }
       }
 
-      cout << "finished bundle '" << filename << "'" << endl;
+      if( is_append )
+      {
+         if( !file_remove( filename ) || rename( output_filename.c_str( ), filename.c_str( ) ) != 0 )
+            throw runtime_error( "unable to replace original '" + filename + "' with '" + output_filename + "'" );
+      }
+
+      if( !is_quiet )
+         cout << "==> finished bundling '" << filename << "'" << endl;
    }
    catch( exception& x )
    {
