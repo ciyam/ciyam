@@ -59,6 +59,8 @@
 
 using namespace std;
 
+int c_format_version = 1;
+
 const char c_type_file = 'F';
 const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
@@ -68,65 +70,179 @@ const char* const c_default_extension = ".bun";
 
 MD5 g_md5;
 
+string unescaped_line( const string& line )
+{
+   string str;
+
+   bool is_escape = false;
+   for( size_t i = 0; i < line.size( ); i++ )
+   {
+      char c = line[ i ];
+
+      if( is_escape )
+      {
+         is_escape = false;
+
+         if( c == 'n' )
+            c = '\n';
+         else if( c == 'r' )
+            c = '\r';
+         else if( c == 'z' )
+            c = '\0';
+      }
+      else if( c == '\\' )
+         is_escape = true;
+      else if( c == '\n' )
+         break;
+
+      if( !is_escape )
+         str += c;
+   }
+
+   return str;
+}
+
 #ifdef ZLIB_SUPPORT
 bool read_zlib_line( gzFile& gzf, string& s )
 {
    char c;
    s.erase( );
 
+   bool is_escape = false;
    while( !gzeof( gzf ) )
    {
       if( !gzread( gzf, &c, sizeof( char ) ) )
          throw runtime_error( "reading char" );
 
-      if( c == '\n' )
+      if( is_escape )
+      {
+         is_escape = false;
+
+         if( c == 'n' )
+            c = '\n';
+         else if( c == 'r' )
+            c = '\r';
+         else if( c == 'z' )
+            c = '\0';
+      }
+      else if( c == '\\' )
+         is_escape = true;
+      else if( c == '\n' )
          break;
 
-      s += c;
+      if( !is_escape )
+         s += c;
    }
 
    return !s.empty( );
 }
 #endif
 
-void create_all_directories( deque< string >& create_directories )
+#ifndef ZLIB_SUPPORT
+void check_file_header( ifstream& inpf, const string& filename, bool& is_base64 )
+#else
+void check_file_header( ifstream& inpf, const string& filename, bool& is_base64, bool use_zlib, gzFile& gzf )
+#endif
+{
+   string header;
+#ifdef ZLIB_SUPPORT
+   if( use_zlib )
+      read_zlib_line( gzf, header );
+   else
+      getline( inpf, header );
+#else
+   getline( inpf, header );
+#endif
+
+   string::size_type pos = header.find( ' ' );
+   if( pos != 1 || header[ 0 ] != 'B' )
+      throw runtime_error( "*** no bundle header found in '" + filename + "' ***" );
+
+   header.erase( 0, 2 );
+   pos = header.find( ' ' );
+   if( pos == string::npos )
+      throw runtime_error( "*** invalid bundle header was found in '" + filename + "' ***" );
+
+   int ver = atoi( header.substr( 0, pos ).c_str( ) );
+   header.erase( 0, pos + 1 );
+
+   if( ver > c_format_version )
+      throw runtime_error( "*** unknown bundle format version " + to_string( ver ) + " in '" + filename + "' ***" );
+
+   if( header == "B64" )
+      is_base64 = true;
+   else if( header != "ESC" )
+      throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
+}
+
+void create_all_directories( deque< string >& create_directories, bool list_only, bool is_quiet )
 {
    while( !create_directories.empty( ) )
    {
       string path_name( create_directories.front( ) );
-      cout << "creating directory '" << path_name << "'..." << endl;
+      if( list_only )
+         cout << path_name << "/" << endl;
+      else
+      {
 #ifdef _WIN32
-      if( _mkdir( path_name.c_str( ) ) < 0 )
-         throw runtime_error( "unable to create directory '" + path_name + "' (already exists?)" );
+         int rc = _mkdir( path_name.c_str( ) );
 #else
-      if( _mkdir( path_name.c_str( ), S_IRWXU ) < 0 )
-         throw runtime_error( "unable to create directory '" + path_name + "' (already exists?)" );
+         int rc = _mkdir( path_name.c_str( ), S_IRWXU );
 #endif
+
+         if( rc < 0 && errno != EEXIST )
+            throw runtime_error( "unable to create directory '" + path_name + "'" );
+         else if( rc >= 0 || errno != EEXIST )
+         {
+            if( !is_quiet )
+               cout << "created directory '" << path_name << "'..." << endl;
+         }
+      }
+
       create_directories.pop_front( );
    }
 }
 
 int main( int argc, char* argv[ ] )
 {
-   cout << "unbundle v0.1b\n";
-
    int first_arg = 0;
    bool junk = false;
-   bool skip = false;
    bool prune = false;
+   bool include = false;
    bool use_zlib = false;
+   bool is_quiet = false;
+   bool list_only = false;
+   bool overwrite = false;
 
    if( argc > first_arg + 1  )
    {
-      if( string( argv[ first_arg + 1 ] ) == "-j" )
+      if( string( argv[ first_arg + 1 ] ) == "-i" )
       {
          ++first_arg;
          junk = true;
       }
-      else if( string( argv[ first_arg + 1 ] ) == "-s" )
+      else if( string( argv[ first_arg + 1 ] ) == "-j" )
       {
          ++first_arg;
-         skip = true;
+         include = true;
+      }
+   }
+
+   if( argc > first_arg + 1  )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-l" )
+      {
+         ++first_arg;
+         list_only = true;
+      }
+   }
+
+   if( argc > first_arg + 1  )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-o" )
+      {
+         ++first_arg;
+         overwrite = true;
       }
    }
 
@@ -139,13 +255,27 @@ int main( int argc, char* argv[ ] )
       }
    }
 
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-q" )
+      {
+         ++first_arg;
+         is_quiet = true;
+      }
+   }
+
+   if( !is_quiet )
+      cout << "unbundle v0.1b\n";
+
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
-      cout << "usage: unbundle [-j|-s] [-p] <filename> [<filespec1> [<filespec2> [...]]" << endl;
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q] <filename> [<filespec1> [<filespec2> [...]]]" << endl;
 
-      cout << "\nwhere: -j is to junk directories or -s skips the top level directory" << endl;
-      cout << "  and: -p is to prune empty directories" << endl;
+      cout << "\nwhere: -i to include top level directory and -j is to junk directories" << endl;
+      cout << "  and: -l to list rather than create all matching files and directories" << endl;
+      cout << "  and: -o to overwrite existing files and -p to prune empty directories" << endl;
+      cout << "  and: -q to suppress unnecessary output apart from errors" << endl;
       return 0;
    }
 
@@ -163,7 +293,9 @@ int main( int argc, char* argv[ ] )
 #endif
       }
 
-      if( _access( filename.c_str( ), 0 ) != 0 )
+      string::size_type pos = filename.find( '.' );
+
+      if( pos == string::npos || _access( filename.c_str( ), 0 ) != 0 )
          filename += c_default_extension;
 
 #ifdef ZLIB_SUPPORT
@@ -177,19 +309,20 @@ int main( int argc, char* argv[ ] )
       ifstream inpf;
 
       if( !use_zlib )
-         inpf.open( filename.c_str( ) );
+         inpf.open( filename.c_str( ), ios::in | ios::binary );
       else
          gzf = gzopen( filename.c_str( ), "rb" );
 
       if( ( use_zlib && !gzf ) || ( !use_zlib && !inpf ) )
          throw runtime_error( "unable to open file '" + filename + "' for input" );
 #else
-      ifstream inpf( filename.c_str( ) );
+      ifstream inpf( filename.c_str( ), ios::in | ios::binary );
       if( !inpf )
          throw runtime_error( "unable to open file '" + filename + "' for input" );
 #endif
 
-      cout << "started unbundling '" << filename << "'\n";
+      if( !is_quiet && !list_only )
+         cout << "==> started unbundling '" << filename << "'\n";
 
       vector< string > filename_filters;
       for( int i = first_arg + 2; i < argc; i++ )
@@ -210,9 +343,16 @@ int main( int argc, char* argv[ ] )
       MD5 md5;
       string next;
       string next_md5;
-      size_t line = 0;
+      size_t line = 1;
       bool finished = false;
+      bool is_base64 = false;
       string top_level_directory;
+
+#ifndef ZLIB_SUPPORT
+      check_file_header( inpf, filename, is_base64 );
+#else
+      check_file_header( inpf, filename, is_base64, use_zlib, gzf );
+#endif
 
       while( true )
       {
@@ -229,9 +369,6 @@ int main( int argc, char* argv[ ] )
             break;
 #endif
          ++line;
-         // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-         if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-            next.erase( next.size( ) - 1 );
 
          if( next.empty( ) )
             throw runtime_error( "unexpected empty line #" + to_string( line ) );
@@ -242,7 +379,15 @@ int main( int argc, char* argv[ ] )
 
             if( ap_ofstream.get( ) )
             {
-               string fdata( base64::decode( next ) );
+               string fdata;
+
+               if( use_zlib )
+                  fdata = next;
+               else if( !is_base64 )
+                  fdata = unescaped_line( next );
+               else
+                  fdata = base64::decode( next );
+
                if( ap_ofstream->rdbuf( )->sputn( fdata.c_str( ), fdata.length( ) ) != ( int )fdata.length( ) )
                   throw runtime_error( "write failed for file '" + next_file + "'" );
 
@@ -343,14 +488,26 @@ int main( int argc, char* argv[ ] )
                }
             }
 
+            if( !list_only && !overwrite && file_exists( next_file ) )
+            {
+               matched = false;
+               cerr << "*** error: file '" << next_file << "' already exists ***" << endl;
+            }
+
             if( matched )
-               create_all_directories( create_directories );
+               create_all_directories( create_directories, list_only, is_quiet );
 
             if( !matched )
                ap_ofstream.reset( );
+            else if( list_only )
+            {
+               ap_ofstream.reset( );
+               cout << next_file << endl;
+            }
             else
             {
-               cout << "extracting '" << next_file << "'..." << endl;
+               if( !is_quiet )
+                  cout << "extracting '" << next_file << "'..." << endl;
 
                ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
                if( !*ap_ofstream.get( ) )
@@ -385,10 +542,10 @@ int main( int argc, char* argv[ ] )
                if( next_level < 0 )
                   throw runtime_error( "invalid level " + to_string( next_level ) + " found in line #" + to_string( line ) );
 
-               if( skip || create_directories.size( ) > 1 )
+               if( !include || create_directories.size( ) > 1 )
                {
                   size_t test_level( next_level );
-                  if( next_level > 0 && skip )
+                  if( next_level > 0 && !include )
                      --test_level;
 
                   while( create_directories.size( ) > test_level )
@@ -418,9 +575,9 @@ int main( int argc, char* argv[ ] )
 
             g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
 
-            if( !skip || level > 0 )
+            if( include || level > 0 )
             {
-               if( skip )
+               if( !include )
                {
                   string::size_type pos = path_name.find( '/' );
                   if( pos == string::npos )
@@ -435,7 +592,7 @@ int main( int argc, char* argv[ ] )
                   create_directories.push_back( path_name );
 
                   if( !prune )
-                     create_all_directories( create_directories );
+                     create_all_directories( create_directories, list_only, is_quiet );
                }
 
                paths.push( path_name );
@@ -469,7 +626,8 @@ int main( int argc, char* argv[ ] )
       if( !use_zlib && !inpf.eof( ) )
          throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
 
-      cout << "finished unbundling '" << filename << "'" << endl;
+      if( !is_quiet && !list_only )
+         cout << "==> finished unbundling '" << filename << "'" << endl;
    }
    catch( exception& x )
    {
