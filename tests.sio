@@ -167,6 +167,21 @@
    </tests>
   </group>
   <group/>
+   <name>test_diff
+   <tests/>
+    <test/>
+     <name>1
+     <description>Create a number of simple diffs.
+     <test_step/>
+      <name>a
+      <exec>diff -q -rcs diff0.txt diff0.0.txt
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_ods
    <tests/>
     <test/>
