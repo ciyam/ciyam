@@ -168,7 +168,7 @@ void check_file_header( ifstream& inpf, const string& filename, bool& is_base64,
       throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
 }
 
-void create_all_directories( deque< string >& create_directories, bool list_only, bool is_quiet )
+void create_all_directories( deque< string >& create_directories, bool list_only, bool is_quieter )
 {
    while( !create_directories.empty( ) )
    {
@@ -187,7 +187,7 @@ void create_all_directories( deque< string >& create_directories, bool list_only
             throw runtime_error( "unable to create directory '" + path_name + "'" );
          else if( rc >= 0 || errno != EEXIST )
          {
-            if( !is_quiet )
+            if( !is_quieter )
                cout << "created directory '" << path_name << "'..." << endl;
          }
       }
@@ -206,6 +206,7 @@ int main( int argc, char* argv[ ] )
    bool is_quiet = false;
    bool list_only = false;
    bool overwrite = false;
+   bool is_quieter = false;
 
    if( argc > first_arg + 1  )
    {
@@ -257,18 +258,28 @@ int main( int argc, char* argv[ ] )
       }
    }
 
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-qq" )
+      {
+         ++first_arg;
+         is_quiet = true;
+         is_quieter = true;
+      }
+   }
+
    if( !is_quiet )
       cout << "unbundle v0.1b\n";
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
-      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q] <filename> [<filespec1> [<filespec2> [...]]] [-d <directory>]" << endl;
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] <filename> [<filespec1> [<filespec2> [...]]] [-d <directory>]" << endl;
 
       cout << "\nwhere: -i to include top level directory and -j to junk all directories" << endl;
       cout << "  and: -l to list rather than create all matching files and directories" << endl;
       cout << "  and: -o to overwrite existing files and -p to prune empty directories" << endl;
-      cout << "  and: -q to suppress unnecessary output apart from errors" << endl;
+      cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << " also: -d <directory> to set a directory origin for output" << endl;
       return 0;
    }
@@ -559,13 +570,13 @@ cout << "destination_directory = " << destination_directory << endl;
                {
                   matched = false;
 
-                  if( is_quiet )
+                  if( is_quieter )
                      cerr << "*** error: file '" << next_file << "' already exists ***" << endl;
                }
             }
 
             if( matched )
-               create_all_directories( create_directories, list_only, is_quiet );
+               create_all_directories( create_directories, list_only, is_quieter );
 
             if( !matched )
                ap_ofstream.reset( );
@@ -576,7 +587,7 @@ cout << "destination_directory = " << destination_directory << endl;
             }
             else
             {
-               if( !is_quiet )
+               if( !is_quieter )
                   cout << "extracting '" << next_file << "'..." << endl;
 
                ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
@@ -662,7 +673,7 @@ cout << "destination_directory = " << destination_directory << endl;
                   create_directories.push_back( path_name );
 
                   if( !prune )
-                     create_all_directories( create_directories, list_only, is_quiet );
+                     create_all_directories( create_directories, list_only, is_quieter );
                }
 
                paths.push( path_name );
@@ -686,7 +697,7 @@ cout << "destination_directory = " << destination_directory << endl;
             throw runtime_error( "unexpected entry type '" + to_string( type ) + "' found in line #" + to_string( line ) );
       }
 
-      if( !is_quiet )
+      if( !is_quieter )
       {
          for( size_t i = 0; i < filename_filters.size( ); i++ )
          {

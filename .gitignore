@@ -50,7 +50,7 @@ compile.bat
 makefile.sio
 makefile.vars.xrep
 
-# Ignore generated .sid file and config files.
+# Ignore various generated files.
 cat_server.sid
 
 # Except libraries that are included in the repository.

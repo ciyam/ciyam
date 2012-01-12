@@ -1,6 +1,40 @@
 <sio/>
  <groups/>
   <group/>
+   <name>test_bundle
+   <tests/>
+    <test/>
+     <name>1
+     <description>Create and update a base64 encoded bundle.
+     <kill>test.bun
+     <test_step/>
+      <name>a
+      <exec>bundle -q -b64 -ngz test test.png README
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>cat test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>bundle -q -b64 -ngz test test.png
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>cat test.bun
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_cache
    <tests/>
     <test/>

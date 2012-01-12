@@ -239,13 +239,14 @@ void output_directory( set< string >& file_names,
 
 #ifndef ZLIB_SUPPORT
 void process_directory( const string& directory,
- const string& filespec_path, const vector< string >& filename_filters, set< string >& matched_filters,
- set< string >& file_names, bool recurse, bool prune, bool is_quiet, bool is_append, bool use_base64, ofstream& outf )
+ const string& filespec_path, const vector< string >& filename_filters,
+ set< string >& matched_filters, set< string >& file_names, bool recurse,
+ bool prune, bool is_quieter, bool is_append, bool use_base64, ofstream& outf )
 #else
 void process_directory( const string& directory,
  const string& filespec_path, const vector< string >& filename_filters,
  set< string >& matched_filters, set< string >& file_names, bool recurse, bool prune,
- bool is_quiet, bool is_append, bool use_base64, ofstream& outf, bool use_zlib, gzFile& gzf )
+ bool is_quieter, bool is_append, bool use_base64, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
 {
    directory_filter df;
@@ -336,12 +337,24 @@ void process_directory( const string& directory,
 #endif
          }
 
-         if( !is_quiet )
+         if( !is_quieter )
          {
+            string next_path( path_name );
+
+            if( next_path.find( directory ) == 0 )
+            {
+               next_path.erase( 0, directory.size( ) );
+               if( !next_path.empty( ) && next_path[ 0 ] == '/' )
+                  next_path.erase( 0, 1 );
+            }      
+
+            if( !next_path.empty( ) )
+               next_path += "/";
+
             if( !is_append )
-               cout << "adding '" << path_name << '/' << ffsi.get_name( ) << "'..." << endl;
+               cout << "adding '" << next_path << ffsi.get_name( ) << "'..." << endl;
             else
-               cout << "adding/replacing '" << path_name << '/' << ffsi.get_name( ) << "'..." << endl;
+               cout << "adding/replacing '" << next_path << ffsi.get_name( ) << "'..." << endl;
          }
 
          ifstream inpf( ffsi.get_full_name( ).c_str( ), ios::in | ios::binary );
@@ -433,6 +446,7 @@ int main( int argc, char* argv[ ] )
    bool invalid = false;
    bool is_quiet = false;
    bool use_zlib = true;
+   bool is_quieter = false;
    bool use_base64 = false;
 
    if( argc > first_arg + 1 )
@@ -462,6 +476,16 @@ int main( int argc, char* argv[ ] )
       {
          ++first_arg;
          is_quiet = true;
+      }
+   }
+
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-qq" )
+      {
+         ++first_arg;
+         is_quiet = true;
+         is_quieter = true;
       }
    }
 
@@ -499,13 +523,13 @@ int main( int argc, char* argv[ ] )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-r [-p]] [-q] [-b64] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-r [-p]] [-q[q]] [-b64] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #else
-      cout << "usage: bundle [-r [-p]] [-q] [-b64] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-r [-p]] [-q[q]] [-b64] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #endif
 
       cout << "\nwhere: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
-      cout << "  and: -q to suppress all output apart from errors" << endl;
+      cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -b64 stores file data using base64 encoding" << endl;
 #ifdef ZLIB_SUPPORT
       cout << "  and: -ngz in order to not preform zlib compression" << endl;
@@ -640,12 +664,12 @@ int main( int argc, char* argv[ ] )
 
 #ifndef ZLIB_SUPPORT
             process_directory( directory, filespec_path, filename_filters,
-             matched_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf );
+             matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf );
 #else
             process_directory( directory, filespec_path, filename_filters,
-             matched_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf, use_zlib, gzf );
+             matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf, use_zlib, gzf );
 #endif
-            if( !is_quiet )
+            if( !is_quieter )
             {
                for( size_t i = 0; i < filename_filters.size( ); i++ )
                {
