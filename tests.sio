@@ -15,7 +15,7 @@
      </test_step>
      <test_step/>
       <name>b
-      <exec>cat test.bun
+      <exec>print test.bun
       <input>false
       <output>generate
      </test_step>
@@ -27,7 +27,7 @@
      </test_step>
      <test_step/>
       <name>d
-      <exec>cat test.bun
+      <exec>print test.bun
       <input>false
       <output>generate
      </test_step>
