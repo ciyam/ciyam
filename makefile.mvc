@@ -18,10 +18,12 @@
 ##             cat_interface        make cat_interface.exe target
 ##             cat_server           make cat_server.exe target
 ##             construct            make construct.exe target
-##             extract              make extract.exe target
-##             modeller             make modeller.exe target
+##             diff                 make diff.exe target
+##             diffp                make diffp.exe target
 ##             dump                 make dump.exe target
+##             extract              make extract.exe target
 ##             generate_commands    make generate_commands.exe target
+##             modeller             make modeller.exe target
 ##             test                 make test.exe target
 ##             test_cache           make test_cache.exe target
 ##             test_fcgi            make test_fcgi.exe target
@@ -299,9 +301,25 @@ TARGET_CONSTRUCT=construct.exe
 TARGET_CONSTRUCT_INCLUDE=construct.inc
 TARGET_CONSTRUCT_OBJECTS=construct.obj
 
+TARGET_DIFF=diff.exe
+TARGET_DIFF_INCLUDE=diff.inc
+TARGET_DIFF_OBJECTS=diff.obj
+
+TARGET_DIFFP=diffp.exe
+TARGET_DIFFP_INCLUDE=diffp.inc
+TARGET_DIFFP_OBJECTS=diffp.obj
+
+TARGET_DUMP=dump.exe
+TARGET_DUMP_INCLUDE=dump.inc
+TARGET_DUMP_OBJECTS=dump.obj
+
 TARGET_EXTRACT=extract.exe
 TARGET_EXTRACT_INCLUDE=extract.inc
 TARGET_EXTRACT_OBJECTS=extract.obj
+
+TARGET_GENERATE_COMMANDS=generate_commands.exe
+TARGET_GENERATE_COMMANDS_INCLUDE=generate_commands.inc
+TARGET_GENERATE_COMMANDS_OBJECTS=generate_commands.obj
 
 TARGET_MODELLER=modeller.exe
 TARGET_MODELLER_INCLUDE=modeller.inc
@@ -311,14 +329,6 @@ TARGET_MODELLER_OBJECTS=model.obj\
  interface_specifications.obj\
  modeller.obj
 TARGET_MODELLER_COMMANDS=modeller.cmh
-
-TARGET_DUMP=dump.exe
-TARGET_DUMP_INCLUDE=dump.inc
-TARGET_DUMP_OBJECTS=dump.obj
-
-TARGET_GENERATE_COMMANDS=generate_commands.exe
-TARGET_GENERATE_COMMANDS_INCLUDE=generate_commands.inc
-TARGET_GENERATE_COMMANDS_OBJECTS=generate_commands.obj
 
 TARGET_TEST=test.exe
 TARGET_TEST_INCLUDE=test.inc
@@ -382,10 +392,12 @@ ALL_TARGETS=\
  $(TARGET_CAT_INTERFACE)\
  $(TARGET_CAT_SERVER)\
  $(TARGET_CONSTRUCT)\
- $(TARGET_EXTRACT)\
- $(TARGET_MODELLER)\
+ $(TARGET_DIFF)\
+ $(TARGET_DIFFP)\
  $(TARGET_DUMP)\
+ $(TARGET_EXTRACT)\
  $(TARGET_GENERATE_COMMANDS)\
+ $(TARGET_MODELLER)\
  $(TARGET_TEST)\
  $(TARGET_TEST_CACHE)\
  $(TARGET_TEST_FCGI)\
@@ -409,10 +421,12 @@ ALL_INCLUDES=\
  $(TARGET_CAT_INTERFACE_INCLUDE)\
  $(TARGET_CAT_SERVER_INCLUDE)\
  $(TARGET_CONSTRUCT_INCLUDE)\
- $(TARGET_EXTRACT_INCLUDE)\
- $(TARGET_MODELLER_INCLUDE)\
+ $(TARGET_DIFF_INCLUDE)\
+ $(TARGET_DIFFP_INCLUDE)\
  $(TARGET_DUMP_INCLUDE)\
+ $(TARGET_EXTRACT_INCLUDE)\
  $(TARGET_GENERATE_COMMANDS_INCLUDE)\
+ $(TARGET_MODELLER_INCLUDE)\
  $(TARGET_TEST_INCLUDE)\
  $(TARGET_TEST_CACHE_INCLUDE)\
  $(TARGET_TEST_FCGI_INCLUDE)\
@@ -436,10 +450,12 @@ ALL_OBJECTS=\
  $(TARGET_CAT_INTERFACE_OBJECTS)\
  $(TARGET_CAT_SERVER_OBJECTS)\
  $(TARGET_CONSTRUCT_OBJECTS)\
- $(TARGET_EXTRACT_OBJECTS)\
- $(TARGET_MODELLER_OBJECTS)\
+ $(TARGET_DIFF_OBJECTS)\
+ $(TARGET_DIFFP_OBJECTS)\
  $(TARGET_DUMP_OBJECTS)\
+ $(TARGET_EXTRACT_OBJECTS)\
  $(TARGET_GENERATE_COMMANDS_OBJECTS)\
+ $(TARGET_MODELLER_OBJECTS)\
  $(TARGET_TEST_OBJECTS)\
  $(TARGET_TEST_CACHE_OBJECTS)\
  $(TARGET_TEST_FCGI_OBJECTS)\
@@ -476,10 +492,12 @@ cat_client: $(TARGET_CAT_CLIENT)
 cat_interface: $(TARGET_CAT_INTERFACE)
 cat_server: $(TARGET_CAT_SERVER)
 construct: $(TARGET_CONSTRUCT)
-extract: $(TARGET_EXTRACT)
-modeller: $(TARGET_MODELLER)
+diff: $(TARGET_DIFF)
+diffp: $(TARGET_DIFFP)
 dump: $(TARGET_DUMP)
+extract: $(TARGET_EXTRACT)
 generate_commands: $(TARGET_GENERATE_COMMANDS)
+modeller: $(TARGET_MODELLER)
 test: $(TARGET_TEST)
 test_cache: $(TARGET_TEST_CACHE)
 test_fcgi: $(TARGET_TEST_FCGI)
@@ -509,10 +527,12 @@ touch_incs:
  @touch.bat cat_interface.inc
  @touch.bat cat_server.inc
  @touch.bat construct.inc
- @touch.bat extract.inc
- @touch.bat modeller.inc
+ @touch.bat diff.inc
+ @touch.bat diffp.inc
  @touch.bat dump.inc
+ @touch.bat extract.inc
  @touch.bat generate_commands.inc
+ @touch.bat modeller.inc
  @touch.bat test.inc
  @touch.bat test_cache.inc
  @touch.bat test_fcgi.inc
@@ -701,43 +721,43 @@ $(TARGET_CONSTRUCT):: $(TARGET_CONSTRUCT_OBJECTS) $(TARGET_BASE)
 !endif
 
 !ifndef NO_INC_FILES
-! include $(TARGET_EXTRACT_INCLUDE)
+! include $(TARGET_DIFF_INCLUDE)
 !endif
 
-$(TARGET_EXTRACT:.exe=.compile):
+$(TARGET_DIFF:.exe=.compile):
  @echo @call gendeps.bat %* >compile.bat
  @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_EXTRACT_OBJECTS:.obj=) >$(TARGET_EXTRACT_INCLUDE)
+ @geninc $(TARGET_DIFF_OBJECTS:.obj=) >$(TARGET_DIFF_INCLUDE)
 
-$(TARGET_EXTRACT):: $(TARGET_EXTRACT:.exe=.compile)
+$(TARGET_DIFF):: $(TARGET_BASE) $(TARGET_DIFF:.exe=.compile)
  @
 
-$(TARGET_EXTRACT):: $(TARGET_EXTRACT_OBJECTS)
+$(TARGET_DIFF):: $(TARGET_DIFF_OBJECTS) $(TARGET_BASE)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS)
 <<
 !ifdef MANIFEST
- @$(MANIFEST) $(TARGET_EXTRACT)
+ @$(MANIFEST) $(TARGET_DIFF)
 !endif
 
 !ifndef NO_INC_FILES
-! include $(TARGET_MODELLER_INCLUDE)
+! include $(TARGET_DIFFP_INCLUDE)
 !endif
 
-$(TARGET_MODELLER:.exe=.compile):
+$(TARGET_DIFFP:.exe=.compile):
  @echo @call gendeps.bat %* >compile.bat
  @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_MODELLER_OBJECTS:.obj=) >$(TARGET_MODELLER_INCLUDE)
+ @geninc $(TARGET_DIFFP_OBJECTS:.obj=) >$(TARGET_DIFFP_INCLUDE)
 
-$(TARGET_MODELLER):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_MODELLER_COMMANDS) $(TARGET_MODELLER:.exe=.compile)
+$(TARGET_DIFFP):: $(TARGET_BASE) $(TARGET_DIFFP:.exe=.compile)
  @
 
-$(TARGET_MODELLER):: $(TARGET_MODELLER_OBJECTS) $(TARGET_BASE)
+$(TARGET_DIFFP):: $(TARGET_DIFFP_OBJECTS) $(TARGET_BASE)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS)
 <<
 !ifdef MANIFEST
- @$(MANIFEST) $(TARGET_MODELLER)
+ @$(MANIFEST) $(TARGET_DIFFP)
 !endif
 
 !ifndef NO_INC_FILES
@@ -761,6 +781,26 @@ $(TARGET_DUMP):: $(TARGET_DUMP_OBJECTS) $(TARGET_BASE)
 !endif
 
 !ifndef NO_INC_FILES
+! include $(TARGET_EXTRACT_INCLUDE)
+!endif
+
+$(TARGET_EXTRACT:.exe=.compile):
+ @echo @call gendeps.bat %* >compile.bat
+ @echo $(CPP_NORMAL) %* >>compile.bat
+ @geninc $(TARGET_EXTRACT_OBJECTS:.obj=) >$(TARGET_EXTRACT_INCLUDE)
+
+$(TARGET_EXTRACT):: $(TARGET_EXTRACT:.exe=.compile)
+ @
+
+$(TARGET_EXTRACT):: $(TARGET_EXTRACT_OBJECTS)
+ $(LINK) @<<
+ $(LINK_NORMAL) $(COMMON_LIBS)
+<<
+!ifdef MANIFEST
+ @$(MANIFEST) $(TARGET_EXTRACT)
+!endif
+
+!ifndef NO_INC_FILES
 ! include $(TARGET_GENERATE_COMMANDS_INCLUDE)
 !endif
 
@@ -779,6 +819,26 @@ $(TARGET_GENERATE_COMMANDS):: $(TARGET_GENERATE_COMMANDS_OBJECTS) $(TARGET_COMMA
  @if exist *.cmh del *.cmh
 !ifdef MANIFEST
  @$(MANIFEST) $(TARGET_GENERATE_COMMANDS)
+!endif
+
+!ifndef NO_INC_FILES
+! include $(TARGET_MODELLER_INCLUDE)
+!endif
+
+$(TARGET_MODELLER:.exe=.compile):
+ @echo @call gendeps.bat %* >compile.bat
+ @echo $(CPP_NORMAL) %* >>compile.bat
+ @geninc $(TARGET_MODELLER_OBJECTS:.obj=) >$(TARGET_MODELLER_INCLUDE)
+
+$(TARGET_MODELLER):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_MODELLER_COMMANDS) $(TARGET_MODELLER:.exe=.compile)
+ @
+
+$(TARGET_MODELLER):: $(TARGET_MODELLER_OBJECTS) $(TARGET_BASE)
+ $(LINK) @<<
+ $(LINK_NORMAL) $(COMMON_LIBS)
+<<
+!ifdef MANIFEST
+ @$(MANIFEST) $(TARGET_MODELLER)
 !endif
 
 !ifndef NO_INC_FILES

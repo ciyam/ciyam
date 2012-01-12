@@ -461,7 +461,7 @@ void perform_test_step( const test_step& s, const string& test_name )
          {
             ++num_test_steps_mismatched;
             cout << "  " << test_step_name << ": *** failed *** "
-             << "(diff " << temp_output_file_name << ' ' << test_output_file_name << ')' << endl;
+             << "diff " << temp_output_file_name << ' ' << test_output_file_name << endl;
 
             if( !is_quiet )
             {

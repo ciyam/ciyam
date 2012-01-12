@@ -18,10 +18,12 @@
 ##             cat_interface        make cat_interface.exe target
 ##             cat_server           make cat_server.exe target
 ##             construct            make construct.exe target
-##             extract              make extract.exe target
-##             modeller             make modeller.exe target
+##             diff                 make diff.exe target
+##             diffp                make diffp.exe target
 ##             dump                 make dump.exe target
+##             extract              make extract.exe target
 ##             generate_commands    make generate_commands.exe target
+##             modeller             make modeller.exe target
 ##             test                 make test.exe target
 ##             test_cache           make test_cache.exe target
 ##             test_fcgi            make test_fcgi.exe target
@@ -336,8 +338,20 @@ TARGET_CAT_SERVER_COMMANDS=cat_session.cmh
 TARGET_CONSTRUCT=construct.exe
 TARGET_CONSTRUCT_OBJECTS=construct.obj
 
+TARGET_DIFF=diff.exe
+TARGET_DIFF_OBJECTS=diff.obj
+
+TARGET_DIFFP=diffp.exe
+TARGET_DIFFP_OBJECTS=diffp.obj
+
+TARGET_DUMP=dump.exe
+TARGET_DUMP_OBJECTS=dump.obj
+
 TARGET_EXTRACT=extract.exe
 TARGET_EXTRACT_OBJECTS=extract.obj
+
+TARGET_GENERATE_COMMANDS=generate_commands.exe
+TARGET_GENERATE_COMMANDS_OBJECTS=generate_commands.obj
 
 TARGET_MODELLER=modeller.exe
 TARGET_MODELLER_OBJECTS=model.obj\
@@ -346,12 +360,6 @@ TARGET_MODELLER_OBJECTS=model.obj\
  interface_specifications.obj\
  modeller.obj
 TARGET_MODELLER_COMMANDS=modeller.cmh
-
-TARGET_DUMP=dump.exe
-TARGET_DUMP_OBJECTS=dump.obj
-
-TARGET_GENERATE_COMMANDS=generate_commands.exe
-TARGET_GENERATE_COMMANDS_OBJECTS=generate_commands.obj
 
 TARGET_TEST=test.exe
 TARGET_TEST_OBJECTS=test.obj
@@ -403,10 +411,12 @@ ALL_TARGETS=\
  $(TARGET_CAT_INTERFACE)\
  $(TARGET_CAT_SERVER)\
  $(TARGET_CONSTRUCT)\
- $(TARGET_EXTRACT)\
- $(TARGET_MODELLER)\
+ $(TARGET_DIFF)\
+ $(TARGET_DIFFP)\
  $(TARGET_DUMP)\
+ $(TARGET_EXTRACT)\
  $(TARGET_GENERATE_COMMANDS)\
+ $(TARGET_MODELLER)\
  $(TARGET_TEST)\
  $(TARGET_TEST_CACHE)\
  $(TARGET_TEST_FCGI)\
@@ -434,10 +444,12 @@ ALL_OBJECTS=\
  $(TARGET_CAT_INTERFACE_OBJECTS)\
  $(TARGET_CAT_SERVER_OBJECTS)\
  $(TARGET_CONSTRUCT_OBJECTS)\
- $(TARGET_EXTRACT_OBJECTS)\
- $(TARGET_MODELLER_OBJECTS)\
+ $(TARGET_DIFF_OBJECTS)\
+ $(TARGET_DIFFP_OBJECTS)\
  $(TARGET_DUMP_OBJECTS)\
+ $(TARGET_EXTRACT_OBJECTS)\
  $(TARGET_GENERATE_COMMANDS_OBJECTS)\
+ $(TARGET_MODELLER_OBJECTS)\
  $(TARGET_TEST_OBJECTS)\
  $(TARGET_TEST_CACHE_OBJECTS)\
  $(TARGET_TEST_FCGI_OBJECTS)\
@@ -474,10 +486,12 @@ cat_client: $(TARGET_CAT_CLIENT)
 cat_interface: $(TARGET_CAT_INTERFACE)
 cat_server: $(TARGET_CAT_SERVER)
 construct: $(TARGET_CONSTRUCT)
-extract: $(TARGET_EXTRACT)
-modeller: $(TARGET_MODELLER)
+diff: $(TARGET_DIFF)
+diffp: $(TARGET_DIFFP)
 dump: $(TARGET_DUMP)
+extract: $(TARGET_EXTRACT)
 generate_commands: $(TARGET_GENERATE_COMMANDS)
+modeller: $(TARGET_MODELLER)
 test: $(TARGET_TEST)
 test_cache: $(TARGET_TEST_CACHE)
 test_fcgi: $(TARGET_TEST_FCGI)
@@ -599,22 +613,22 @@ $(TARGET_CONSTRUCT):: $(TARGET_CONSTRUCT_OBJECTS) $(TARGET_BASE)
  $(LINK_NORMAL)
 !
 
-$(TARGET_EXTRACT:.exe=.compile):
+$(TARGET_DIFF:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_EXTRACT):: $(TARGET_EXTRACT:.exe=.compile)
+$(TARGET_DIFF):: $(TARGET_BASE) $(TARGET_DIFF:.exe=.compile)
 
-$(TARGET_EXTRACT):: $(TARGET_EXTRACT_OBJECTS)
+$(TARGET_DIFF):: $(TARGET_DIFF_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL)
 !
 
-$(TARGET_MODELLER:.exe=.compile):
+$(TARGET_DIFFP:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_MODELLER):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_MODELLER_COMMANDS) $(TARGET_MODELLER:.exe=.compile)
+$(TARGET_DIFFP):: $(TARGET_BASE) $(TARGET_DIFFP:.exe=.compile)
 
-$(TARGET_MODELLER):: $(TARGET_MODELLER_OBJECTS) $(TARGET_BASE)
+$(TARGET_DIFFP):: $(TARGET_DIFFP_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL)
 !
@@ -629,6 +643,16 @@ $(TARGET_DUMP):: $(TARGET_DUMP_OBJECTS) $(TARGET_BASE)
  $(LINK_NORMAL)
 !
 
+$(TARGET_EXTRACT:.exe=.compile):
+ @echo $(CPP_NORMAL) %* >compile.bat
+
+$(TARGET_EXTRACT):: $(TARGET_EXTRACT:.exe=.compile)
+
+$(TARGET_EXTRACT):: $(TARGET_EXTRACT_OBJECTS)
+ $(LINK) @&&!
+ $(LINK_NORMAL)
+!
+
 $(TARGET_GENERATE_COMMANDS:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
 
@@ -639,6 +663,16 @@ $(TARGET_GENERATE_COMMANDS):: $(TARGET_GENERATE_COMMANDS_OBJECTS) $(TARGET_COMMA
  $(LINK_NORMAL)
 !
  @if exist *.cmh del *.cmh
+
+$(TARGET_MODELLER:.exe=.compile):
+ @echo $(CPP_NORMAL) %* >compile.bat
+
+$(TARGET_MODELLER):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_MODELLER_COMMANDS) $(TARGET_MODELLER:.exe=.compile)
+
+$(TARGET_MODELLER):: $(TARGET_MODELLER_OBJECTS) $(TARGET_BASE)
+ $(LINK) @&&!
+ $(LINK_NORMAL)
+!
 
 $(TARGET_TEST:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
