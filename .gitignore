@@ -19,6 +19,8 @@ cat_client
 cat_interface
 cat_server
 construct
+diff
+diffp
 dump
 extract
 generate_commands

@@ -1,0 +1,9 @@
+if [ $# -ne 3 ]; then
+ echo Usage: merge [base file] [first variation] [second variation]
+else
+ ./diff -q -min -rcs $1 $2 > ~merge1.tmp
+ ./diff -q -min -rcs $1 $3 > ~merge2.tmp
+ ./diffp -q -min $1 ~merge1.tmp ~merge2.tmp
+ rm ~merge1.tmp
+ rm ~merge2.tmp
+fi
