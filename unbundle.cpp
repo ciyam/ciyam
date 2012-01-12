@@ -371,8 +371,6 @@ int main( int argc, char* argv[ ] )
          }
       }
 
-//idk
-cout << "destination_directory = " << destination_directory << endl;
       int level = -1;
       bool is_first = false;
 
