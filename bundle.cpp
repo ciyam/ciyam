@@ -239,12 +239,13 @@ void output_directory( set< string >& file_names,
 
 #ifndef ZLIB_SUPPORT
 void process_directory( const string& directory,
- const string& filespec_path, const vector< string >& filename_filters,
+ const string& filespec_path, const vector< string >& filename_filters, set< string >& matched_filters,
  set< string >& file_names, bool recurse, bool prune, bool is_quiet, bool is_append, bool use_base64, ofstream& outf )
 #else
 void process_directory( const string& directory,
- const string& filespec_path, const vector< string >& filename_filters, set< string >& file_names,
- bool recurse, bool prune, bool is_quiet, bool is_append, bool use_base64, ofstream& outf, bool use_zlib, gzFile& gzf )
+ const string& filespec_path, const vector< string >& filename_filters,
+ set< string >& matched_filters, set< string >& file_names, bool recurse, bool prune,
+ bool is_quiet, bool is_append, bool use_base64, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
 {
    directory_filter df;
@@ -306,6 +307,8 @@ void process_directory( const string& directory,
             if( wildcard_match( next_filter, ffsi.get_name( ) ) )
             {
                matched = true;
+               matched_filters.insert( filename_filters[ i ] );
+
                break;
             }
          }
@@ -528,6 +531,10 @@ int main( int argc, char* argv[ ] )
       map< string, vector< string > > all_filespecs;
 
       string filename( argv[ first_arg + 1 ] );
+
+      if( !filename.empty( ) && filename[ 0 ] == '-' )
+         throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
+
       filename += c_default_extension;
 
       if( use_zlib )
@@ -570,6 +577,7 @@ int main( int argc, char* argv[ ] )
          all_filespecs[ g_cwd ].push_back( "*" );
 
       set< string > file_names;
+      set< string > matched_filters;
 
       bool is_append = false;
       if( file_exists( filename ) )
@@ -631,12 +639,20 @@ int main( int argc, char* argv[ ] )
             vector< string >& filename_filters( i->second );
 
 #ifndef ZLIB_SUPPORT
-            process_directory( directory, filespec_path,
-             filename_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf );
+            process_directory( directory, filespec_path, filename_filters,
+             matched_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf );
 #else
-            process_directory( directory, filespec_path,
-             filename_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf, use_zlib, gzf );
+            process_directory( directory, filespec_path, filename_filters,
+             matched_filters, file_names, recurse, prune, is_quiet, is_append, use_base64, outf, use_zlib, gzf );
 #endif
+            if( !is_quiet )
+            {
+               for( size_t i = 0; i < filename_filters.size( ); i++ )
+               {
+                  if( matched_filters.count( filename_filters[ i ] ) == 0 )
+                     cout << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
+               }
+            }
          }
 
          if( is_append )
@@ -829,6 +845,11 @@ int main( int argc, char* argv[ ] )
       {
          if( !file_remove( filename ) || rename( output_filename.c_str( ), filename.c_str( ) ) != 0 )
             throw runtime_error( "unable to replace original '" + filename + "' with '" + output_filename + "'" );
+      }
+      else if( matched_filters.empty( ) )
+      {
+         file_remove( filename );
+         throw runtime_error( "*** nothing to do ***" );
       }
 
       if( !is_quiet )
