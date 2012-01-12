@@ -102,10 +102,6 @@ string escaped_line( const string& line )
 
       if( line[ i ] == '\n' )
          str += "\\n";
-      else if( line[ i ] == '\r' )
-         str += "\\r";
-      else if( line[ i ] == '\0' )
-         str += "\\z";
       else
          str += line[ i ];
    }
@@ -131,10 +127,6 @@ bool read_zlib_line( gzFile& gzf, string& s )
 
          if( c == 'n' )
             c = '\n';
-         else if( c == 'r' )
-            c = '\r';
-         else if( c == 'z' )
-            c = '\0';
       }
       else if( c == '\\' )
          is_escape = true;
