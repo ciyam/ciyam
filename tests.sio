@@ -9,7 +9,7 @@
      <kill>test.bun
      <test_step/>
       <name>a
-      <exec>bundle -q -b64 -ngz test test.png README
+      <exec>bundle -q -b64 -ngz test test.png
       <input>false
       <output>generate
      </test_step>
@@ -21,12 +21,24 @@
      </test_step>
      <test_step/>
       <name>c
-      <exec>bundle -q -b64 -ngz test test.png
+      <exec>bundle -q -b64 -ngz test test.jpg
       <input>false
       <output>generate
      </test_step>
      <test_step/>
       <name>d
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>e
+      <exec>bundle -q -b64 -ngz test test.jpg
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>f
       <exec>print test.bun
       <input>false
       <output>generate

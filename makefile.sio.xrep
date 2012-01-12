@@ -211,6 +211,69 @@
     </cms_files>
    </executable>
    <executable/>
+    <name>diff
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>diff.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
+    <name>diffp
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>diffp.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
+    <name>dump
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>dump.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
     <name>extract
     <gen_ext>
     <threads>false
@@ -227,6 +290,27 @@
     <dlink_libs>
     <cpp_files/>
      <filename>extract.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
+    <name>generate_commands
+    <gen_ext>cmh
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>commands
+    <dlink_libs>
+    <cpp_files/>
+     <filename>generate_commands.cpp
     </cpp_files>
     <cms_files/>
     </cms_files>
@@ -255,48 +339,6 @@
     </cpp_files>
     <cms_files/>
      <filename>modeller.cms
-    </cms_files>
-   </executable>
-   <executable/>
-    <name>dump
-    <gen_ext>
-    <threads>false
-    <sockets>false
-    <openssl>false
-    <libfcgi>false
-    <libharu>false
-    <libicnv>false
-    <mysqldb>false
-    <zlibuse>false
-    <dynamic>false
-    <readline>false
-    <link_libs>base
-    <dlink_libs>
-    <cpp_files/>
-     <filename>dump.cpp
-    </cpp_files>
-    <cms_files/>
-    </cms_files>
-   </executable>
-   <executable/>
-    <name>generate_commands
-    <gen_ext>cmh
-    <threads>false
-    <sockets>false
-    <openssl>false
-    <libfcgi>false
-    <libharu>false
-    <libicnv>false
-    <mysqldb>false
-    <zlibuse>false
-    <dynamic>false
-    <readline>false
-    <link_libs>commands
-    <dlink_libs>
-    <cpp_files/>
-     <filename>generate_commands.cpp
-    </cpp_files>
-    <cms_files/>
     </cms_files>
    </executable>
    <executable/>
