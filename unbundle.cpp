@@ -263,18 +263,22 @@ int main( int argc, char* argv[ ] )
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
-      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q] <filename> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q] <filename> [<filespec1> [<filespec2> [...]]] [-d <directory>]" << endl;
 
-      cout << "\nwhere: -i to include top level directory and -j is to junk directories" << endl;
+      cout << "\nwhere: -i to include top level directory and -j to junk all directories" << endl;
       cout << "  and: -l to list rather than create all matching files and directories" << endl;
       cout << "  and: -o to overwrite existing files and -p to prune empty directories" << endl;
       cout << "  and: -q to suppress unnecessary output apart from errors" << endl;
+      cout << " also: -d <directory> to set a directory origin for output" << endl;
       return 0;
    }
 
    try
    {
       string filename( argv[ first_arg + 1 ] );
+
+      if( !filename.empty( ) && filename[ 0 ] == '-' )
+         throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
 
       if( filename.length( ) > 3
        && filename.substr( filename.length( ) - 3 ) == string( c_zlib_extension ) )
@@ -317,10 +321,47 @@ int main( int argc, char* argv[ ] )
       if( !is_quiet && !list_only )
          cout << "==> started unbundling '" << filename << "'\n";
 
+      string destination_directory;
+      bool get_destination_directory = false;
+
       vector< string > filename_filters;
       for( int i = first_arg + 2; i < argc; i++ )
-         filename_filters.push_back( argv[ i ] );
+      {
+         string next( argv[ i ] );
 
+         if( !next.empty( ) && next[ 0 ] == '-' )
+         {
+            if( next == "-d" && !get_destination_directory )
+            {
+               next.erase( );
+               get_destination_directory = true;
+            }
+            else
+               throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
+         }
+
+         if( !next.empty( ) )
+         {
+            if( get_destination_directory && destination_directory.empty( ) )
+            {
+               destination_directory = next;
+#ifndef _WIN32
+               if( destination_directory[ destination_directory.size( ) - 1 ] != '/' )
+                  destination_directory += '/';
+#else
+               if( destination_directory[ destination_directory.size( ) - 1 ] != '/'
+                && destination_directory[ destination_directory.size( ) - 1 ] != '\\'
+                && destination_directory[ destination_directory.size( ) - 1 ] != ':' )
+                  destination_directory += '/';
+#endif
+            }
+            else
+               filename_filters.push_back( next );
+         }
+      }
+
+//idk
+cout << "destination_directory = " << destination_directory << endl;
       int level = -1;
       bool is_first = false;
 
@@ -331,6 +372,8 @@ int main( int argc, char* argv[ ] )
       deque< string > create_directories;
 
       set< string > created;
+      set< string > matched_filters;
+
       auto_ptr< ofstream > ap_ofstream;
 
       MD5 md5;
@@ -449,9 +492,9 @@ int main( int argc, char* argv[ ] )
                test_file = paths.top( ) + "/" + next;
 
             if( junk )
-               next_file = next;
+               next_file = destination_directory + next;
             else
-               next_file = test_file;
+               next_file = destination_directory + test_file;
 
             bool matched = false;
             if( filename_filters.empty( ) )
@@ -478,6 +521,8 @@ int main( int argc, char* argv[ ] )
                   if( wildcard_match( wildcard, test_file ) )
                   {
                      matched = true;
+                     matched_filters.insert( filename_filters[ i ] );
+
                      break;
                   }
                }
@@ -639,6 +684,15 @@ int main( int argc, char* argv[ ] )
          }
          else
             throw runtime_error( "unexpected entry type '" + to_string( type ) + "' found in line #" + to_string( line ) );
+      }
+
+      if( !is_quiet )
+      {
+         for( size_t i = 0; i < filename_filters.size( ); i++ )
+         {
+            if( matched_filters.count( filename_filters[ i ] ) == 0 )
+               cout << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
+         }
       }
 
       if( !finished )
