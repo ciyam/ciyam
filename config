@@ -1,0 +1,3 @@
+./xrep @config.h.xrep >config.h.new
+./update config.h config.h.new
+./genmake
