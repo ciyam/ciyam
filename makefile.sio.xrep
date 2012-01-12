@@ -1,3 +1,4 @@
+`{`#config.info @`}
 <sio/>
  <targets/>
   <libs/>
@@ -52,10 +53,9 @@
    <dyn_lib/>
     <name>cat_base
     <sockets>true
-#    <openssl>true
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libharu>true
-    <libicnv>true
+    <libicnv>`{`!`(`?`$use_iconv`)`|`@eq`(`$use_iconv`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)false`,true`}
     <mysqldb>true
     <zlibuse>false
     <readline>true
@@ -106,7 +106,7 @@
     <libharu>false
     <libicnv>false
     <mysqldb>false
-    <zlibuse>true
+    <zlibuse>`{`!`(`?`$use_zlib`)`|`@eq`(`$use_zlib`,`'0`'`)`|`@eq`(`$use_zlib`,`'false`'`)false`,true`}
     <dynamic>false
     <readline>false
     <link_libs>base
@@ -170,11 +170,10 @@
     <gen_ext>
     <threads>true
     <sockets>true
-#    <openssl>true
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>false
     <libharu>true
-    <libicnv>true
+    <libicnv>`{`!`(`?`$use_iconv`)`|`@eq`(`$use_iconv`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)false`,true`}
     <mysqldb>false
     <zlibuse>false
     <dynamic>false
@@ -437,7 +436,7 @@
     <openssl>false
     <libfcgi>false
     <libharu>true
-    <libicnv>true
+    <libicnv>`{`!`(`?`$use_iconv`)`|`@eq`(`$use_iconv`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)false`,true`}
     <mysqldb>false
     <zlibuse>false
     <dynamic>false
@@ -482,7 +481,7 @@
     <libharu>false
     <libicnv>false
     <mysqldb>false
-    <zlibuse>true
+    <zlibuse>`{`!`(`?`$use_zlib`)`|`@eq`(`$use_zlib`,`'0`'`)`|`@eq`(`$use_zlib`,`'false`'`)false`,true`}
     <dynamic>false
     <readline>true
     <link_libs>base
