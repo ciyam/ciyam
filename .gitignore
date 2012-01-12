@@ -14,6 +14,27 @@
 *.lib
 *.exe
 *.exp
+bundle
+cat_client
+cat_interface
+cat_server
+construct
+dump
+extract
+generate_commands
+modeller
+test
+test_cache
+test_fcgi
+test_numeric
+test_ods
+test_parser
+test_pdf_gen
+test_sql
+unbundle
+upload
+xrep
+xvars
 
 # Ignore generated header files.
 *.cmh
