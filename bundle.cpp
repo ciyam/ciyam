@@ -110,7 +110,7 @@ string escaped_line( const string& line )
 }
 
 #ifdef ZLIB_SUPPORT
-bool read_zlib_line( gzFile& gzf, string& s )
+bool read_zlib_line( gzFile& gzf, string& s, bool unescape = true )
 {
    char c;
    s.erase( );
@@ -125,7 +125,7 @@ bool read_zlib_line( gzFile& gzf, string& s )
       {
          is_escape = false;
 
-         if( c == 'n' )
+         if( c == 'n' && unescape )
             c = '\n';
       }
       else if( c == '\\' )
@@ -133,7 +133,7 @@ bool read_zlib_line( gzFile& gzf, string& s )
       else if( c == '\n' )
          break;
 
-      if( !is_escape )
+      if( !is_escape || !unescape )
          s += c;
    }
 
@@ -186,7 +186,9 @@ void check_file_header( ifstream& inpf, const string& filename, bool& is_base64,
 
    if( header == "B64" )
       is_base64 = true;
-   else if( header != "ESC" )
+   else if( header == "ESC" )
+      is_base64 = false;
+   else
       throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
 }
 
@@ -676,7 +678,7 @@ int main( int argc, char* argv[ ] )
 #ifdef ZLIB_SUPPORT
                if( use_zlib )
                {
-                  if( !read_zlib_line( igzf, next ) )
+                  if( !read_zlib_line( igzf, next, false ) )
                      break;
                }
                else if( !getline( inpf, next ) )

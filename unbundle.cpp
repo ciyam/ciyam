@@ -51,6 +51,7 @@
 #include "md5.h"
 #include "base64.h"
 #include "config.h"
+#include "console.h"
 #include "utilities.h"
 
 #ifdef ZLIB_SUPPORT
@@ -338,6 +339,8 @@ int main( int argc, char* argv[ ] )
       size_t line = 1;
       bool finished = false;
       bool is_base64 = false;
+      bool replace_all = false;
+      bool replace_none = false;
       string top_level_directory;
 
 #ifndef ZLIB_SUPPORT
@@ -480,10 +483,40 @@ int main( int argc, char* argv[ ] )
                }
             }
 
-            if( !list_only && !overwrite && file_exists( next_file ) )
+            if( matched && !list_only && !overwrite && !replace_all && file_exists( next_file ) )
             {
-               matched = false;
-               cerr << "*** error: file '" << next_file << "' already exists ***" << endl;
+               bool replace = false;
+               if( !is_quiet && !replace_none )
+               {
+                  char ch;
+                  string prompt( "File '" + next_file + "' already exists. Replace [y/n/A/N]? " );
+                  while( true )
+                  {
+                     ch = get_char( prompt.c_str( ) );
+
+                     if( ch == 'A' )
+                        replace_all = true;
+                     else if( ch == 'N' )
+                        replace_none = true;
+
+                     if( ch == 'y' || ch == 'A' )
+                        replace = true;
+
+                     if( replace || replace_all || replace_none || ch == 'n' )
+                     {
+                        cout << ch << '\n';
+                        break;
+                     }
+                  }
+               }
+
+               if( !replace )
+               {
+                  matched = false;
+
+                  if( is_quiet )
+                     cerr << "*** error: file '" << next_file << "' already exists ***" << endl;
+               }
             }
 
             if( matched )
