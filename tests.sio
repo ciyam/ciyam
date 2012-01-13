@@ -101,7 +101,43 @@
      </test_step>
      <test_step/>
       <name>p
+      <exec>unbundle -l -q test
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>q
       <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>r
+      <exec>bundle -d -q -b64 -ngz test test.jpg
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>s
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>t
+      <exec>bundle -d -q -b64 -ngz test test.png
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>u
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>v
+      <exec>unbundle -l -q test
       <input>false
       <output>generate
      </test_step>
