@@ -64,7 +64,8 @@ const char c_type_file = 'F';
 const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
 
-const int c_buffer_size = 8192;
+const int c_buffer_size = 65536;
+const int c_progress_lines = 250;
 
 // const int c_max_bytes_per_line = 57; // (for 76 characters)
 const int c_max_bytes_per_line = 96; // (for 128 characters)
@@ -351,10 +352,7 @@ void process_directory( const string& directory,
             if( !next_path.empty( ) )
                next_path += "/";
 
-            if( !is_append )
-               cout << "adding '" << next_path << ffsi.get_name( ) << "'..." << endl;
-            else
-               cout << "adding/replacing '" << next_path << ffsi.get_name( ) << "'..." << endl;
+            cout << "adding \"" << next_path << ffsi.get_name( ) << "\"";
          }
 
          ifstream inpf( ffsi.get_full_name( ).c_str( ), ios::in | ios::binary );
@@ -409,6 +407,7 @@ void process_directory( const string& directory,
             write_zlib_line( gzf, osstr.str( ) );
 #endif
 
+         int line = 0;
          while( size > 0 )
          {
             char buffer[ c_buffer_size ];
@@ -416,6 +415,14 @@ void process_directory( const string& directory,
 
             if( count == 0 )
                throw runtime_error( "read failed for file '" + ffsi.get_full_name( ) + "'" );
+
+            if( !is_quieter && ++line % c_progress_lines == 0 )
+            {
+               if( line == c_progress_lines )
+                  cout << ' ';
+               cout << '.';
+               cout.flush( );
+            }
 
             string encoded;
             if( !use_base64 )
@@ -434,6 +441,9 @@ void process_directory( const string& directory,
 
             size -= count;
          }
+
+         if( !is_quieter )
+            cout << endl;
       }
    } while( recurse && dfsi.has_next( ) );
 }
@@ -710,6 +720,8 @@ int main( int argc, char* argv[ ] )
 
             string next;
             int line = 0;
+            int count = 0;
+            int line_size = 0;
             int file_data_lines = 0;
             bool skip_existing_file = false;
 
@@ -731,6 +743,38 @@ int main( int argc, char* argv[ ] )
                if( file_data_lines )
                {
                   --file_data_lines;
+
+                  if( count == 0 )
+                     line_size = unescaped( next ).size( );
+
+                  // NOTE: If skipping a file then there is no need to actually
+                  // read the data so by determining the line size of the first
+                  // line (after unescaping) it is safe to "seek" one byte less
+                  // forwards and then read the remainder of the line (the size
+                  // of this will depend upon how much escaping is being used).
+                  if( skip_existing_file && line_size && file_data_lines > 1 )
+                  {
+#ifdef ZLIB_SUPPORT
+                     if( use_zlib )
+                        gzseek( igzf, line_size - 1, SEEK_CUR );
+                     else
+                        inpf.seekg( line_size - 1, ios::cur );
+#else
+                     inpf.seekg( line_size - 1, ios::cur );
+#endif
+                  }
+
+                  if( ++count % c_progress_lines == 0 && !is_quieter && !skip_existing_file )
+                  {
+                     if( count == c_progress_lines )
+                        cout << ' ';
+                     cout << '.';
+                     cout.flush( );
+                  }
+
+                  if( !is_quieter && !skip_existing_file && file_data_lines == 0 )
+                     cout << endl;
+
                   if( !skip_existing_file )
                   {
 #ifndef ZLIB_SUPPORT
@@ -776,6 +820,8 @@ int main( int argc, char* argv[ ] )
                      string check = next.substr( pos + 1 );
                      next.erase( pos );
 
+                     count = 0;
+
                      if( file_names.count( next ) )
                      {
                         skip_existing_file = true;
@@ -784,6 +830,9 @@ int main( int argc, char* argv[ ] )
                      else
                      {
                         skip_existing_file = false;
+
+                        if( !is_quieter )
+                           cout << "append \"" << next << "\"";
 
                         file_names.insert( next );
                         g_md5.update( ( unsigned char* )check.c_str( ), check.length( ) );
