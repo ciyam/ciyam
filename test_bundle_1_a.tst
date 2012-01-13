@@ -1,1 +1,1 @@
-adding "test.png" .
+adding "test.png"

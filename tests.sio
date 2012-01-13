@@ -7,6 +7,8 @@
      <name>1
      <description>Create and update a base64 encoded bundle.
      <kill>test.bun
+     <kill>~temp.jpg
+     <kill>~temp.png
      <test_step/>
       <name>a
       <exec>bundle -q -b64 -ngz test test.png
@@ -39,6 +41,66 @@
      </test_step>
      <test_step/>
       <name>f
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>g
+      <exec>copy test.jpg ~temp.jpg
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>h
+      <exec>bundle -q -b64 -ngz test ~temp.jpg
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>i
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>j
+      <exec>copy test.png ~temp.png
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>k
+      <exec>bundle -q -b64 -ngz test ~temp.png
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>l
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>m
+      <exec>bundle -q -b64 -ngz test test.jpg
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>n
+      <exec>print test.bun
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>o
+      <exec>bundle -q -b64 -ngz test test.png
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>p
       <exec>print test.bun
       <input>false
       <output>generate
