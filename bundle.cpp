@@ -97,6 +97,7 @@ bool is_root_path( const string& absolute_path )
 string escaped_line( const string& line )
 {
    string str;
+   str.reserve( line.size( ) * 2 );
 
    bool is_escape = false;
    for( size_t i = 0; i < line.length( ); i++ )
@@ -148,11 +149,11 @@ void write_zlib_line( gzFile& gzf, const string& str )
 {
    if( str.size( ) )
    {
-      string s( str );
-      s += '\n';
+      if( !gzwrite( gzf, str.c_str( ), str.size( ) ) )
+         throw runtime_error( "writing zlib string" );
 
-      if( !gzwrite( gzf, s.c_str( ), s.size( ) ) )
-         throw runtime_error( "writing string content for '" + str + "'" );
+      if( !gzwrite( gzf, "\n", 1 ) )
+         throw runtime_error( "writing zlib linefeed" );
    }
 }
 #endif
@@ -384,9 +385,21 @@ void process_directory( const string& directory,
          md5.finalize( );
          inpf.seekg( 0, ios::beg );
 
+         auto_ptr< char > ap_buffer;
+
+         int progress = c_progress_lines;
          int max_size = c_max_bytes_per_line;
          if( !use_base64 )
-            max_size = c_buffer_size;
+         {
+            if( size < 104857600 ) // i.e. 100 MB
+               max_size = c_buffer_size;
+            else
+            {
+               progress = 2;
+               max_size = 10485760; // i.e. 10 MB
+               ap_buffer.reset( new char[ max_size ] );
+            }
+         }
 
          size_t num_lines( size / max_size );
          if( size % max_size )
@@ -411,17 +424,25 @@ void process_directory( const string& directory,
 #endif
 
          int line = 0;
+         char* p_buffer = 0;
+
+         if( ap_buffer.get( ) )
+            p_buffer = &( *ap_buffer );
+
          while( size > 0 )
          {
             char buffer[ c_buffer_size ];
-            streamsize count = inpf.rdbuf( )->sgetn( buffer, max_size );
+            if( !p_buffer )
+               p_buffer = buffer;
+
+            streamsize count = inpf.rdbuf( )->sgetn( p_buffer, max_size );
 
             if( count == 0 )
                throw runtime_error( "read failed for file '" + ffsi.get_full_name( ) + "'" );
 
-            if( !is_quieter && ++line % c_progress_lines == 0 )
+            if( !is_quieter && ++line % progress == 0 )
             {
-               if( line == c_progress_lines )
+               if( line == progress )
                   cout << ' ';
                cout << '.';
                cout.flush( );
@@ -429,9 +450,9 @@ void process_directory( const string& directory,
 
             string encoded;
             if( !use_base64 )
-               encoded = escaped_line( string( buffer, count ) );
+               encoded = escaped_line( string( p_buffer, count ) );
             else
-               encoded = base64::encode( string( buffer, count ) );
+               encoded = base64::encode( string( p_buffer, count ) );
 
 #ifndef ZLIB_SUPPORT
             outf << encoded << '\n';
@@ -758,6 +779,7 @@ int main( int argc, char* argv[ ] )
             bool skip_existing_file = false;
 
             string current_sub_path;
+            int progress = c_progress_lines;
 
             while( true )
             {
@@ -779,7 +801,14 @@ int main( int argc, char* argv[ ] )
                   --file_data_lines;
 
                   if( count == 0 )
+                  {
                      line_size = unescaped( next ).size( );
+
+                     if( line_size >= 10485760 ) // i.e. 10 MB
+                        progress = 2;
+                     else
+                        progress = c_progress_lines;
+                  }
 
                   // NOTE: If skipping a file then there is no need to actually
                   // read the data so by determining the line size of the first
@@ -798,9 +827,9 @@ int main( int argc, char* argv[ ] )
 #endif
                   }
 
-                  if( ++count % c_progress_lines == 0 && !is_quieter && !skip_existing_file )
+                  if( ++count % progress == 0 && !is_quieter && !skip_existing_file )
                   {
-                     if( count == c_progress_lines )
+                     if( count == progress )
                         cout << ' ';
                      cout << '.';
                      cout.flush( );

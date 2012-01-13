@@ -76,6 +76,7 @@ MD5 g_md5;
 string unescaped_line( const string& line )
 {
    string str;
+   str.reserve( line.size( ) );
 
    bool is_escape = false;
    for( size_t i = 0; i < line.size( ); i++ )
@@ -399,6 +400,8 @@ int main( int argc, char* argv[ ] )
       bool replace_none = false;
       string top_level_directory;
 
+      int progress = c_progress_lines;
+
 #ifndef ZLIB_SUPPORT
       check_file_header( inpf, filename, is_base64 );
 #else
@@ -429,7 +432,14 @@ int main( int argc, char* argv[ ] )
             --file_data_lines;
 
             if( count == 0 )
+            {
                line_size = unescaped( next ).size( );
+
+               if( line_size >= 1048576 ) // i.e. 1 MB
+                  progress = 2;
+               else
+                  progress = c_progress_lines;
+            }
 
             // NOTE: If skipping a file then there is no need to actually
             // read the data so by determining the line size of the first
@@ -448,9 +458,9 @@ int main( int argc, char* argv[ ] )
 #endif
             }
 
-            if( ++count % c_progress_lines == 0 && !is_quieter && ap_ofstream.get( ) )
+            if( ++count % progress == 0 && !is_quieter && ap_ofstream.get( ) )
             {
-               if( count == c_progress_lines )
+               if( count == progress )
                   cout << ' ';
                cout << '.';
                cout.flush( );
