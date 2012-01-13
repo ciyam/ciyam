@@ -66,6 +66,8 @@ const char c_type_file = 'F';
 const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
 
+const int c_progress_lines = 250;
+
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
 
@@ -375,6 +377,7 @@ int main( int argc, char* argv[ ] )
       bool is_first = false;
 
       string next_file;
+      int line_size = 0;
       int file_data_lines = 0;
 
       stack< string > paths;
@@ -389,6 +392,7 @@ int main( int argc, char* argv[ ] )
       string next;
       string next_md5;
       size_t line = 1;
+      size_t count = 0;
       bool finished = false;
       bool is_base64 = false;
       bool replace_all = false;
@@ -423,6 +427,37 @@ int main( int argc, char* argv[ ] )
          if( file_data_lines )
          {
             --file_data_lines;
+
+            if( count == 0 )
+               line_size = unescaped( next ).size( );
+
+            // NOTE: If skipping a file then there is no need to actually
+            // read the data so by determining the line size of the first
+            // line (after unescaping) it is safe to "seek" one byte less
+            // forwards and then read the remainder of the line (the size
+            // of this will depend upon how much escaping is being used).
+            if( !ap_ofstream.get( ) && line_size && file_data_lines > 1 )
+            {
+#ifdef ZLIB_SUPPORT
+               if( use_zlib )
+                  gzseek( gzf, line_size - 1, SEEK_CUR );
+               else
+                  inpf.seekg( line_size - 1, ios::cur );
+#else
+               inpf.seekg( line_size - 1, ios::cur );
+#endif
+            }
+
+            if( ++count % c_progress_lines == 0 && !is_quieter && ap_ofstream.get( ) )
+            {
+               if( count == c_progress_lines )
+                  cout << ' ';
+               cout << '.';
+               cout.flush( );
+            }
+
+            if( !is_quieter && ap_ofstream.get( ) && file_data_lines == 0 )
+               cout << endl;
 
             if( ap_ofstream.get( ) )
             {
@@ -573,6 +608,8 @@ int main( int argc, char* argv[ ] )
                }
             }
 
+            count = 0;
+
             if( matched )
                create_all_directories( create_directories, list_only, is_quieter );
 
@@ -586,7 +623,7 @@ int main( int argc, char* argv[ ] )
             else
             {
                if( !is_quieter )
-                  cout << "extracting '" << next_file << "'..." << endl;
+                  cout << "extracting \"" << next_file << "\"";
 
                ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
                if( !*ap_ofstream.get( ) )
