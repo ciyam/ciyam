@@ -73,10 +73,13 @@ const int c_max_bytes_per_line = 96; // (for 128 characters)
 const char* const c_zlib_extension = ".gz";
 const char* const c_default_extension = ".bun";
 
+const char* const c_delete_dummy_path = "<delete>";
+
 MD5 g_md5;
 
 string g_cwd;
 string g_bundle_file_name;
+string g_output_file_name;
 
 set< string > g_output_directories;
 
@@ -325,7 +328,7 @@ void process_directory( const string& directory,
          if( !absolute_path( ffsi.get_full_name( ), absolute_file_name ) )
             throw runtime_error( "unable to determine absolute path for '" + ffsi.get_full_name( ) + "'" );
 
-         if( absolute_file_name == g_bundle_file_name )
+         if( absolute_file_name == g_bundle_file_name || absolute_file_name == g_output_file_name )
             continue;
 
          if( !has_output_directory )
@@ -456,27 +459,40 @@ int main( int argc, char* argv[ ] )
    bool invalid = false;
    bool is_quiet = false;
    bool use_zlib = true;
+   bool is_delete = false;
    bool is_quieter = false;
    bool use_base64 = false;
 
    if( argc > first_arg + 1 )
    {
-      if( string( argv[ first_arg + 1 ] ) == "-r" )
+      if( string( argv[ first_arg + 1 ] ) == "-d" )
       {
          ++first_arg;
-         recurse = true;
+         is_delete = true;
       }
    }
 
-   if( argc > first_arg + 1 )
+   if( !is_delete )
    {
-      if( string( argv[ first_arg + 1 ] ) == "-p" )
+      if( argc > first_arg + 1 )
       {
-         ++first_arg;
-         prune = true;
+         if( string( argv[ first_arg + 1 ] ) == "-r" )
+         {
+            ++first_arg;
+            recurse = true;
+         }
+      }
 
-         if( !recurse )
-            invalid = true;
+      if( argc > first_arg + 1 )
+      {
+         if( string( argv[ first_arg + 1 ] ) == "-p" )
+         {
+            ++first_arg;
+            prune = true;
+
+            if( !recurse )
+               invalid = true;
+         }
       }
    }
 
@@ -533,12 +549,13 @@ int main( int argc, char* argv[ ] )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-r [-p]] [-q[q]] [-b64] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #else
-      cout << "usage: bundle [-r [-p]] [-q[q]] [-b64] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #endif
 
-      cout << "\nwhere: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
+      cout << "\nwhere: -d is to delete matching files which exist in an existing bundle" << endl;
+      cout << "  and: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -b64 stores file data using base64 encoding" << endl;
 #ifdef ZLIB_SUPPORT
@@ -575,40 +592,45 @@ int main( int argc, char* argv[ ] )
          filename += c_zlib_extension;
 
       string directory = g_cwd.substr( pos + 1 );
-      for( int i = first_arg + 2; i < argc; i++ )
+      if( !is_delete )
       {
-         string filespec_path;
-         if( !absolute_path( argv[ i ], filespec_path ) )
-            throw runtime_error( "unable to determine absolute path for '" + string( argv[ i ] ) + "'" );
+         for( int i = first_arg + 2; i < argc; i++ )
+         {
+            string filespec_path;
+            if( !absolute_path( argv[ i ], filespec_path ) )
+               throw runtime_error( "unable to determine absolute path for '" + string( argv[ i ] ) + "'" );
 
-         if( is_root_path( filespec_path ) )
-            throw runtime_error( "cannot bundle directory '" + string( argv[ i ] ) + "' (need to specify a non-root directory)" );
+            if( is_root_path( filespec_path ) )
+               throw runtime_error( "cannot bundle directory '" + string( argv[ i ] ) + "' (need to specify a non-root directory)" );
 
 #ifndef _WIN32
-         string::size_type rpos = filespec_path.find_last_of( "/" );
+            string::size_type rpos = filespec_path.find_last_of( "/" );
 #else
-         string::size_type rpos = filespec_path.find_last_of( "/\\" );
+            string::size_type rpos = filespec_path.find_last_of( "/\\" );
 #endif
 
-         string filename_filter;
-         if( rpos != string::npos )
-         {
-            filename_filter = filespec_path.substr( rpos + 1 );
-            filespec_path.erase( rpos );
+            string filename_filter;
+            if( rpos != string::npos )
+            {
+               filename_filter = filespec_path.substr( rpos + 1 );
+               filespec_path.erase( rpos );
+            }
+
+            if( recurse == true
+             && filespec_path.length( ) > g_cwd.length( ) && filespec_path.find( g_cwd ) == 0 )
+            {
+               filename_filter = filespec_path.substr( g_cwd.length( ) + 1 ) + "/" + filename_filter;
+               filespec_path = g_cwd;
+            }
+
+            all_filespecs[ filespec_path ].push_back( filename_filter );
          }
 
-         if( recurse == true
-          && filespec_path.length( ) > g_cwd.length( ) && filespec_path.find( g_cwd ) == 0 )
-         {
-            filename_filter = filespec_path.substr( g_cwd.length( ) + 1 ) + "/" + filename_filter;
-            filespec_path = g_cwd;
-         }
-
-         all_filespecs[ filespec_path ].push_back( filename_filter );
+         if( all_filespecs.empty( ) )
+            all_filespecs[ g_cwd ].push_back( "*" );
       }
 
-      if( all_filespecs.empty( ) )
-         all_filespecs[ g_cwd ].push_back( "*" );
+      int num_deleted = 0;
 
       set< string > file_names;
       set< string > matched_filters;
@@ -616,6 +638,12 @@ int main( int argc, char* argv[ ] )
       bool is_append = false;
       if( file_exists( filename ) )
          is_append = true;
+
+      if( is_delete && first_arg + 2 >= argc )
+         throw runtime_error( "cannot delete files without specifying at least one filespec" );
+
+      if( is_delete && !is_append )
+         throw runtime_error( "no bundle file '" + filename + "' was found" );
 
       string output_filename( filename );
       if( is_append )
@@ -649,6 +677,7 @@ int main( int argc, char* argv[ ] )
          }
 
          absolute_path( filename, g_bundle_file_name );
+         absolute_path( output_filename, g_output_file_name );
 
          string header( "B " );
          header += to_string( c_format_version );
@@ -667,24 +696,27 @@ int main( int argc, char* argv[ ] )
             write_zlib_line( gzf, header );
 #endif
 
-         for( map< string, vector< string > >::iterator i = all_filespecs.begin( ); i != all_filespecs.end( ); ++i )
+         if( !is_delete )
          {
-            string filespec_path( i->first );
-            vector< string >& filename_filters( i->second );
+            for( map< string, vector< string > >::iterator i = all_filespecs.begin( ); i != all_filespecs.end( ); ++i )
+            {
+               string filespec_path( i->first );
+               vector< string >& filename_filters( i->second );
 
 #ifndef ZLIB_SUPPORT
-            process_directory( directory, filespec_path, filename_filters,
-             matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf );
+               process_directory( directory, filespec_path, filename_filters,
+                matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf );
 #else
-            process_directory( directory, filespec_path, filename_filters,
-             matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf, use_zlib, gzf );
+               process_directory( directory, filespec_path, filename_filters,
+                matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf, use_zlib, gzf );
 #endif
-            if( !is_quieter )
-            {
-               for( size_t i = 0; i < filename_filters.size( ); i++ )
+               if( !is_quieter )
                {
-                  if( matched_filters.count( filename_filters[ i ] ) == 0 )
-                     cout << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
+                  for( size_t i = 0; i < filename_filters.size( ); i++ )
+                  {
+                     if( matched_filters.count( filename_filters[ i ] ) == 0 )
+                        cout << "warning: found no files matching '" << filename_filters[ i ] << "'" << endl;
+                  }
                }
             }
          }
@@ -724,6 +756,8 @@ int main( int argc, char* argv[ ] )
             int line_size = 0;
             int file_data_lines = 0;
             bool skip_existing_file = false;
+
+            string current_sub_path;
 
             while( true )
             {
@@ -822,6 +856,31 @@ int main( int argc, char* argv[ ] )
 
                      count = 0;
 
+                     if( is_delete )
+                     {
+                        bool matched = false;
+                        vector< string >& exprs( all_filespecs[ c_delete_dummy_path ] );
+
+                        string next_path( current_sub_path + '/' + next );
+                        for( size_t i = 0; i < exprs.size( ); i++ )
+                        {
+                           if( wildcard_match( exprs[ i ], next_path ) )
+                           {
+                              if( !is_quieter )
+                                 cout << "*kill* \"" << next << "\"" << endl;
+                              ++num_deleted;
+                              matched = true;
+                              break;
+                           }
+                        }
+
+                        if( matched )
+                        {
+                           skip_existing_file = true;
+                           continue;
+                        }
+                     }
+
                      if( file_names.count( next ) )
                      {
                         skip_existing_file = true;
@@ -857,6 +916,14 @@ int main( int argc, char* argv[ ] )
                         throw runtime_error( "unexpected format in line #" + to_string( line ) );
 
                      next.erase( 0, pos + 1 );
+
+                     if( is_delete && all_filespecs.empty( ) )
+                     {
+                        for( int i = first_arg + 2; i < argc; i++ )
+                           all_filespecs[ c_delete_dummy_path ].push_back( next + '/' + string( argv[ i ] ) );
+                     }
+
+                     current_sub_path = next;
 
                      if( file_names.count( next ) )
                         continue;
@@ -918,6 +985,9 @@ int main( int argc, char* argv[ ] )
       {
          if( !file_remove( filename ) || rename( output_filename.c_str( ), filename.c_str( ) ) != 0 )
             throw runtime_error( "unable to replace original '" + filename + "' with '" + output_filename + "'" );
+
+         if( is_delete && !is_quieter && num_deleted == 0 )
+            cout << "warning: found no matching files to delete" << endl;
       }
       else if( matched_filters.empty( ) )
       {
