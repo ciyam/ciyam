@@ -49,6 +49,7 @@
 #include "md5.h"
 #include "base64.h"
 #include "config.h"
+#include "format.h"
 #include "fs_iterator.h"
 #include "utilities.h"
 
@@ -59,6 +60,13 @@
 using namespace std;
 
 int c_format_version = 1;
+
+enum encoding_type
+{
+   e_encoding_type_b64,
+   e_encoding_type_esc,
+   e_encoding_type_raw
+};
 
 const char c_type_file = 'F';
 const char c_type_checksum = 'C';
@@ -124,7 +132,7 @@ bool read_zlib_line( gzFile& gzf, string& s, bool unescape = true )
    while( !gzeof( gzf ) )
    {
       if( !gzread( gzf, &c, sizeof( char ) ) )
-         throw runtime_error( "reading char" );
+         throw runtime_error( "reading zlib char" );
 
       if( is_escape )
       {
@@ -159,9 +167,9 @@ void write_zlib_line( gzFile& gzf, const string& str )
 #endif
 
 #ifndef ZLIB_SUPPORT
-void check_file_header( ifstream& inpf, const string& filename, bool& is_base64 )
+void check_file_header( ifstream& inpf, const string& filename, encoding_type& encoding )
 #else
-void check_file_header( ifstream& inpf, const string& filename, bool& is_base64, bool use_zlib, gzFile& gzf )
+void check_file_header( ifstream& inpf, const string& filename, encoding_type& encoding, bool use_zlib, gzFile& gzf )
 #endif
 {
    string header;
@@ -190,9 +198,11 @@ void check_file_header( ifstream& inpf, const string& filename, bool& is_base64,
       throw runtime_error( "*** unknown bundle format version " + to_string( ver ) + " in '" + filename + "' ***" );
 
    if( header == "B64" )
-      is_base64 = true;
+      encoding = e_encoding_type_b64;
    else if( header == "ESC" )
-      is_base64 = false;
+      encoding = e_encoding_type_esc;
+   else if( header == "RAW" )
+      encoding = e_encoding_type_raw;
    else
       throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
 }
@@ -246,12 +256,12 @@ void output_directory( set< string >& file_names,
 void process_directory( const string& directory,
  const string& filespec_path, const vector< string >& filename_filters,
  set< string >& matched_filters, set< string >& file_names, bool recurse,
- bool prune, bool is_quieter, bool is_append, bool use_base64, ofstream& outf )
+ bool prune, bool is_quieter, bool is_append, encoding_type encoding, ofstream& outf )
 #else
 void process_directory( const string& directory,
  const string& filespec_path, const vector< string >& filename_filters,
  set< string >& matched_filters, set< string >& file_names, bool recurse, bool prune,
- bool is_quieter, bool is_append, bool use_base64, ofstream& outf, bool use_zlib, gzFile& gzf )
+ bool is_quieter, bool is_append, encoding_type encoding, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
 {
    directory_filter df;
@@ -359,21 +369,21 @@ void process_directory( const string& directory,
             cout << "adding \"" << next_path << ffsi.get_name( ) << "\"";
          }
 
+         int64_t size = file_size( ffsi.get_full_name( ).c_str( ) );
+
          ifstream inpf( ffsi.get_full_name( ).c_str( ), ios::in | ios::binary );
          if( !inpf )
             throw runtime_error( "unable to open file '" + ffsi.get_full_name( ) + "' for input" );
 
-         inpf.seekg( 0, ios::end );
-         ifstream::pos_type size = inpf.tellg( );
-         inpf.seekg( 0, ios::beg );
-
          MD5 md5;
          unsigned char buffer[ c_buffer_size ];
 
-         int size_left = ( int )size;
+         int64_t size_left = size;
          while( size_left )
          {
-            int next_len( min( size_left, c_buffer_size ) );
+            int next_len = c_buffer_size;
+            if( size_left < c_buffer_size )
+               next_len = ( int )size_left;
 
             inpf.read( ( char* )buffer, next_len );
 
@@ -385,30 +395,24 @@ void process_directory( const string& directory,
          md5.finalize( );
          inpf.seekg( 0, ios::beg );
 
-         auto_ptr< char > ap_buffer;
-
-         int progress = c_progress_lines;
          int max_size = c_max_bytes_per_line;
-         if( !use_base64 )
-         {
-            if( size < 104857600 ) // i.e. 100 MB
-               max_size = c_buffer_size;
-            else
-            {
-               progress = 2;
-               max_size = 10485760; // i.e. 10 MB
-               ap_buffer.reset( new char[ max_size ] );
-            }
-         }
+         if( encoding != e_encoding_type_b64 )
+            max_size = c_buffer_size;
 
-         size_t num_lines( size / max_size );
-         if( size % max_size )
-            ++num_lines;
+         int64_t num;
+         if( encoding == e_encoding_type_raw )
+            num = size;
+         else
+         {
+            num = size / max_size;
+            if( size % max_size )
+               ++num;
+         }
 
          string digest( md5.hex_digest( ) );
 
          ostringstream osstr;
-         osstr << "F " << num_lines << ' ' << ffsi.get_name( ) << ' ' << digest;
+         osstr << "F " << num << ' ' << ffsi.get_name( ) << ' ' << digest;
 
          file_names.insert( ffsi.get_name( ) );
 
@@ -424,43 +428,56 @@ void process_directory( const string& directory,
 #endif
 
          int line = 0;
-         char* p_buffer = 0;
-
-         if( ap_buffer.get( ) )
-            p_buffer = &( *ap_buffer );
 
          while( size > 0 )
          {
             char buffer[ c_buffer_size ];
-            if( !p_buffer )
-               p_buffer = buffer;
 
-            streamsize count = inpf.rdbuf( )->sgetn( p_buffer, max_size );
+            streamsize count = inpf.rdbuf( )->sgetn( buffer, max_size );
 
             if( count == 0 )
                throw runtime_error( "read failed for file '" + ffsi.get_full_name( ) + "'" );
 
-            if( !is_quieter && ++line % progress == 0 )
+            if( !is_quieter && ++line % c_progress_lines == 0 )
             {
-               if( line == progress )
+               if( line == c_progress_lines )
                   cout << ' ';
                cout << '.';
                cout.flush( );
             }
 
             string encoded;
-            if( !use_base64 )
-               encoded = escaped_line( string( p_buffer, count ) );
-            else
-               encoded = base64::encode( string( p_buffer, count ) );
+            if( encoding == e_encoding_type_esc )
+               encoded = escaped_line( string( buffer, count ) );
+            else if( encoding == e_encoding_type_b64 )
+               encoded = base64::encode( string( buffer, count ) );
 
 #ifndef ZLIB_SUPPORT
-            outf << encoded << '\n';
-#else
-            if( !use_zlib )
+            if( encoding != e_encoding_type_raw )
                outf << encoded << '\n';
             else
-               write_zlib_line( gzf, encoded );
+               outf.rdbuf( )->sputn( buffer, count );
+
+            if( !outf.good( ) )
+               throw runtime_error( "unexpected bad output file stream" );
+#else
+            if( !use_zlib )
+            {
+               if( encoding != e_encoding_type_raw )
+                  outf << encoded << '\n';
+               else
+                  outf.rdbuf( )->sputn( buffer, count );
+
+               if( !outf.good( ) )
+                  throw runtime_error( "unexpected bad output file stream" );
+            }
+            else
+            {
+               if( encoding != e_encoding_type_raw )
+                  write_zlib_line( gzf, encoded );
+               else if( !gzwrite( gzf, buffer, count ) )
+                  throw runtime_error( "writing zlib block" );
+            }
 #endif
 
             size -= count;
@@ -482,7 +499,8 @@ int main( int argc, char* argv[ ] )
    bool use_zlib = true;
    bool is_delete = false;
    bool is_quieter = false;
-   bool use_base64 = false;
+
+   encoding_type encoding = e_encoding_type_raw;
 
    if( argc > first_arg + 1 )
    {
@@ -548,7 +566,12 @@ int main( int argc, char* argv[ ] )
       if( string( argv[ first_arg + 1 ] ) == "-b64" )
       {
          ++first_arg;
-         use_base64 = true;
+         encoding = e_encoding_type_b64;
+      }
+      else if( string( argv[ first_arg + 1 ] ) == "-esc" )
+      {
+         ++first_arg;
+         encoding = e_encoding_type_esc;
       }
    }
 
@@ -570,15 +593,15 @@ int main( int argc, char* argv[ ] )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #else
-      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64|-esc] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #endif
 
       cout << "\nwhere: -d is to delete matching files which exist in an existing bundle" << endl;
       cout << "  and: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
-      cout << "  and: -b64 stores file data using base64 encoding" << endl;
+      cout << "  and: -b64/-esc stores file data using b64/esc encoding for text lines" << endl;
 #ifdef ZLIB_SUPPORT
       cout << "  and: -ngz in order to not preform zlib compression" << endl;
 #endif
@@ -683,7 +706,7 @@ int main( int argc, char* argv[ ] )
          if( !use_zlib )
             outf.open( output_filename.c_str( ), ios::out | ios::binary );
          else
-            gzf = gzopen( output_filename.c_str( ), "wb9" );
+            gzf = gzopen( output_filename.c_str( ), "wb" );
 
          if( ( use_zlib && !gzf ) || ( !use_zlib && !outf ) )
             throw runtime_error( "unable to open file '" + output_filename + "' for output" );
@@ -703,10 +726,20 @@ int main( int argc, char* argv[ ] )
          string header( "B " );
          header += to_string( c_format_version );
 
-         if( use_base64 )
+         switch( encoding )
+         {
+            case e_encoding_type_b64:
             header += " B64";
-         else
+            break;
+
+            case e_encoding_type_esc:
             header += " ESC";
+            break;
+
+            case e_encoding_type_raw:
+            header += " RAW";
+            break;
+         }
 
 #ifndef ZLIB_SUPPORT
          outf << header << '\n';
@@ -726,10 +759,10 @@ int main( int argc, char* argv[ ] )
 
 #ifndef ZLIB_SUPPORT
                process_directory( directory, filespec_path, filename_filters,
-                matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf );
+                matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf );
 #else
                process_directory( directory, filespec_path, filename_filters,
-                matched_filters, file_names, recurse, prune, is_quieter, is_append, use_base64, outf, use_zlib, gzf );
+                matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf, use_zlib, gzf );
 #endif
                if( !is_quieter )
                {
@@ -761,14 +794,14 @@ int main( int argc, char* argv[ ] )
                throw runtime_error( "unable to open file '" + filename + "' for input" );
 #endif
 
-            bool was_base64;
+            encoding_type old_encoding;
 #ifndef ZLIB_SUPPORT
-            check_file_header( inpf, filename, was_base64 );
+            check_file_header( inpf, filename, old_encoding );
 #else
-            check_file_header( inpf, filename, was_base64, use_zlib, igzf );
+            check_file_header( inpf, filename, old_encoding, use_zlib, igzf );
 #endif
 
-            if( was_base64 != use_base64 )
+            if( old_encoding != encoding )
                throw runtime_error( "*** cannot combine different bundle data encoding types ***" );
 
             string next;
@@ -776,13 +809,88 @@ int main( int argc, char* argv[ ] )
             int count = 0;
             int line_size = 0;
             int file_data_lines = 0;
+            int64_t raw_file_size = 0;
             bool skip_existing_file = false;
 
             string current_sub_path;
-            int progress = c_progress_lines;
 
             while( true )
             {
+               if( raw_file_size )
+               {
+                  if( skip_existing_file )
+                  {
+#ifdef ZLIB_SUPPORT
+                     if( use_zlib )
+                        gzseek( igzf, raw_file_size, SEEK_CUR );
+                     else
+                        inpf.seekg( raw_file_size, ios::cur );
+#else
+                     inpf.seekg( raw_file_size, ios::cur );
+#endif
+                     raw_file_size = 0;
+                  }
+                  else
+                  {
+                     int64_t chunk = 0;
+                     while( raw_file_size > 0 )
+                     {
+                        char buffer[ c_buffer_size ];
+
+                        int count = c_buffer_size;
+                        if( raw_file_size < c_buffer_size )
+                           count = raw_file_size;
+
+#ifdef ZLIB_SUPPORT
+                        if( use_zlib )
+                        {
+                           if( !gzread( igzf, buffer, count ) )
+                              throw runtime_error( "reading zlib input" );
+                        }
+                        else
+                        {
+                           if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
+                              throw runtime_error( "reading file input" );
+                        }
+#else
+                        if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
+                           throw runtime_error( "reading file input" );
+#endif
+
+                        if( !is_quieter && ++chunk % c_progress_lines == 0 )
+                        {
+                           if( line == c_progress_lines )
+                              cout << ' ';
+                           cout << '.';
+                           cout.flush( );
+                        }
+
+#ifndef ZLIB_SUPPORT
+                        outf.rdbuf( )->sputn( buffer, count );
+                        if( !outf.good( ) )
+                           throw runtime_error( "unexpected bad output file stream" );
+#else
+                        if( !use_zlib )
+                        {
+                           outf.rdbuf( )->sputn( buffer, count );
+
+                           if( !outf.good( ) )
+                              throw runtime_error( "unexpected bad output file stream" );
+                        }
+                        else if( !gzwrite( gzf, buffer, count ) )
+                           throw runtime_error( "writing zlib block" );
+#endif
+
+                        raw_file_size -= count;
+                     }
+
+                     if( !is_quieter )
+                        cout << endl;
+
+                     continue;
+                  }
+               }
+
 #ifdef ZLIB_SUPPORT
                if( use_zlib )
                {
@@ -801,14 +909,7 @@ int main( int argc, char* argv[ ] )
                   --file_data_lines;
 
                   if( count == 0 )
-                  {
                      line_size = unescaped( next ).size( );
-
-                     if( line_size >= 10485760 ) // i.e. 10 MB
-                        progress = 2;
-                     else
-                        progress = c_progress_lines;
-                  }
 
                   // NOTE: If skipping a file then there is no need to actually
                   // read the data so by determining the line size of the first
@@ -827,9 +928,9 @@ int main( int argc, char* argv[ ] )
 #endif
                   }
 
-                  if( ++count % progress == 0 && !is_quieter && !skip_existing_file )
+                  if( ++count % c_progress_lines == 0 && !is_quieter && !skip_existing_file )
                   {
-                     if( count == progress )
+                     if( count == c_progress_lines )
                         cout << ' ';
                      cout << '.';
                      cout.flush( );
@@ -867,12 +968,17 @@ int main( int argc, char* argv[ ] )
                      if( pos == string::npos )
                         throw runtime_error( "unexpected format in line #" + to_string( line ) );
 
-                     int num_lines( atoi( next.substr( 0, pos ).c_str( ) ) );
-                     if( num_lines < 0 )
-                        throw runtime_error( "invalid number of lines "
-                         + to_string( num_lines ) + " specified in line #" + to_string( line ) );
+                     if( encoding == e_encoding_type_raw )
+                        raw_file_size = unformat_bytes( next.substr( 0, pos ) );
+                     else
+                     {
+                        int num_lines( atoi( next.substr( 0, pos ).c_str( ) ) );
+                        if( num_lines < 0 )
+                           throw runtime_error( "invalid number of lines "
+                            + to_string( num_lines ) + " specified in line #" + to_string( line ) );
 
-                     file_data_lines = num_lines;
+                        file_data_lines = num_lines;
+                     }
 
                      next.erase( 0, pos + 1 );
 
