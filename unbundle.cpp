@@ -43,6 +43,12 @@
 #  endif
 #endif
 
+// KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
+// the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
+#ifdef _MSC_VER
+#  pragma warning (disable: 4996)
+#endif
+
 #ifdef __GNUG__
 #  define _mkdir mkdir
 #  define _access access
@@ -51,6 +57,7 @@
 #include "md5.h"
 #include "base64.h"
 #include "config.h"
+#include "format.h"
 #include "console.h"
 #include "utilities.h"
 
@@ -62,10 +69,18 @@ using namespace std;
 
 int c_format_version = 1;
 
+enum encoding_type
+{
+   e_encoding_type_b64,
+   e_encoding_type_esc,
+   e_encoding_type_raw
+};
+
 const char c_type_file = 'F';
 const char c_type_checksum = 'C';
 const char c_type_directory = 'D';
 
+const int c_buffer_size = 65536;
 const int c_progress_lines = 250;
 
 const char* const c_zlib_extension = ".gz";
@@ -135,9 +150,9 @@ bool read_zlib_line( gzFile& gzf, string& s )
 #endif
 
 #ifndef ZLIB_SUPPORT
-void check_file_header( ifstream& inpf, const string& filename, bool& is_base64 )
+void check_file_header( ifstream& inpf, const string& filename, encoding_type& encoding )
 #else
-void check_file_header( ifstream& inpf, const string& filename, bool& is_base64, bool use_zlib, gzFile& gzf )
+void check_file_header( ifstream& inpf, const string& filename, encoding_type& encoding, bool use_zlib, gzFile& gzf )
 #endif
 {
    string header;
@@ -166,8 +181,12 @@ void check_file_header( ifstream& inpf, const string& filename, bool& is_base64,
       throw runtime_error( "*** unknown bundle format version " + to_string( ver ) + " in '" + filename + "' ***" );
 
    if( header == "B64" )
-      is_base64 = true;
-   else if( header != "ESC" )
+      encoding = e_encoding_type_b64;
+   else if( header == "ESC" )
+      encoding = e_encoding_type_esc;
+   else if( header == "RAW" )
+      encoding = e_encoding_type_raw;
+   else
       throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
 }
 
@@ -380,6 +399,7 @@ int main( int argc, char* argv[ ] )
       string next_file;
       int line_size = 0;
       int file_data_lines = 0;
+      int64_t raw_file_size = 0;
 
       stack< string > paths;
       deque< string > create_directories;
@@ -394,22 +414,87 @@ int main( int argc, char* argv[ ] )
       string next_md5;
       size_t line = 1;
       size_t count = 0;
+
       bool finished = false;
-      bool is_base64 = false;
       bool replace_all = false;
       bool replace_none = false;
+
+      encoding_type encoding;
       string top_level_directory;
 
       int progress = c_progress_lines;
 
 #ifndef ZLIB_SUPPORT
-      check_file_header( inpf, filename, is_base64 );
+      check_file_header( inpf, filename, encoding );
 #else
-      check_file_header( inpf, filename, is_base64, use_zlib, gzf );
+      check_file_header( inpf, filename, encoding, use_zlib, gzf );
 #endif
 
       while( true )
       {
+         if( raw_file_size )
+         {
+            if( !ap_ofstream.get( ) )
+            {
+#ifdef ZLIB_SUPPORT
+               if( use_zlib )
+                  gzseek( gzf, raw_file_size, SEEK_CUR );
+               else
+                  inpf.seekg( raw_file_size, ios::cur );
+#else
+               inpf.seekg( raw_file_size, ios::cur );
+#endif
+               raw_file_size = 0;
+            }
+            else
+            {
+               int64_t chunk = 0;
+               while( raw_file_size > 0 )
+               {
+                  char buffer[ c_buffer_size ];
+
+                  int count = c_buffer_size;
+                  if( raw_file_size < c_buffer_size )
+                     count = raw_file_size;
+
+#ifdef ZLIB_SUPPORT
+                  if( use_zlib )
+                  {
+                     if( !gzread( gzf, buffer, count ) )
+                        throw runtime_error( "reading zlib input" );
+                  }
+                  else
+                  {
+                     if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
+                        throw runtime_error( "reading file input" );
+                  }
+#else
+                  if( inpf.rdbuf( )->sgetn( buffer, count ) != count )
+                     throw runtime_error( "reading file input" );
+#endif
+
+                  if( !is_quieter && ++chunk % c_progress_lines == 0 )
+                  {
+                     if( line == c_progress_lines )
+                        cout << ' ';
+                     cout << '.';
+                     cout.flush( );
+                  }
+
+                  ap_ofstream->rdbuf( )->sputn( buffer, count );
+                  if( !ap_ofstream->good( ) )
+                     throw runtime_error( "unexpected bad output file stream" );
+
+                  raw_file_size -= count;
+               }
+
+               if( !is_quieter )
+                  cout << endl;
+
+               continue;
+            }
+         }
+
 #ifdef ZLIB_SUPPORT
          if( use_zlib )
          {
@@ -475,7 +560,7 @@ int main( int argc, char* argv[ ] )
 
                if( use_zlib )
                   fdata = next;
-               else if( !is_base64 )
+               else if( encoding != e_encoding_type_b64 )
                   fdata = unescaped_line( next );
                else
                   fdata = base64::decode( next );
@@ -523,12 +608,17 @@ int main( int argc, char* argv[ ] )
             if( pos == string::npos )
                throw runtime_error( "unexpected format in line #" + to_string( line ) );
 
-            int num_lines( atoi( next.substr( 0, pos ).c_str( ) ) );
-            if( num_lines < 0 )
-               throw runtime_error( "invalid number of lines "
-                + to_string( num_lines ) + " specified in line #" + to_string( line ) );
+            if( encoding == e_encoding_type_raw )
+               raw_file_size = unformat_bytes( next.substr( 0, pos ) );
+            else
+            {
+               int num_lines( atoi( next.substr( 0, pos ).c_str( ) ) );
+               if( num_lines < 0 )
+                  throw runtime_error( "invalid number of lines "
+                   + to_string( num_lines ) + " specified in line #" + to_string( line ) );
 
-            file_data_lines = num_lines;
+               file_data_lines = num_lines;
+            }
 
             next.erase( 0, pos + 1 );
 
