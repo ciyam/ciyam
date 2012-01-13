@@ -1,2 +1,2 @@
 adding "test.jpg"
-append "test.png" .
+append "test.png"
