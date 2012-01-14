@@ -52,8 +52,13 @@
 #  endif
 #endif
 
+#ifdef _WIN32
+typedef int mode_t;
+#endif
+
 #ifdef __GNUG__
 #  define _open open
+#  define _chmod chmod
 #  define _close close
 #endif
 
@@ -270,6 +275,190 @@ int64_t file_size( const char* p_name )
 #endif
 
    return retval;
+}
+
+string file_perms( const char* p_name )
+{
+   string str;
+   struct stat statbuf;
+   int rc = stat( p_name, &statbuf );
+
+   if( rc != 0 )
+      throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
+
+#ifdef _WIN32
+   if( statbuf.st_mode & _S_IREAD )
+      str += 'r';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & _S_IWRITE )
+      str += 'w';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IFDIR )
+      str += 'x';
+   else
+      str += '-';
+
+   str = str + str + str;
+#else
+   if( statbuf.st_mode & S_IRUSR )
+      str += 'r';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IWUSR )
+      str += 'w';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IXUSR )
+      str += 'x';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IRGRP )
+      str += 'r';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IWGRP )
+      str += 'w';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IXGRP )
+      str += 'x';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IROTH )
+      str += 'r';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IWOTH )
+      str += 'w';
+   else
+      str += '-';
+
+   if( statbuf.st_mode & S_IXOTH )
+      str += 'x';
+   else
+      str += '-';
+#endif
+
+   return str;
+}
+
+void file_perms( const string& name, const string& rwx_perms )
+{
+   mode_t mode = 0;
+   bool invalid = false;
+
+   if( rwx_perms.length( ) != 9 )
+      throw runtime_error( "rwx_perms must be a 9 character string" );
+
+   for( size_t i = 0; i < rwx_perms.size( ); i++ )
+   {
+      char ch( rwx_perms[ i ] );
+
+#ifdef _WIN32
+      if( i % 3 == 0 )
+      {
+         if( ch == 'r' )
+            mode |= _S_IREAD;
+         else if( ch != '-' )
+            invalid = true;
+      }
+      else if( i % 3 == 1 )
+      {
+         if( ch == 'w' )
+            mode |= _S_IWRITE;
+         else if( ch != '-' )
+            invalid = true;
+      }
+      else if( i % 3 == 1 )
+      {
+         if( ch != 'x' && ch != '-' )
+            invalid = true;
+      }
+#else
+      switch( i )
+      {
+         case 0:
+         if( ch == 'r' )
+            mode |= S_IRUSR;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 1:
+         if( ch == 'w' )
+            mode |= S_IWUSR;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 2:
+         if( ch == 'x' )
+            mode |= S_IXUSR;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 3:
+         if( ch == 'r' )
+            mode |= S_IRGRP;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 4:
+         if( ch == 'w' )
+            mode |= S_IWGRP;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 5:
+         if( ch == 'x' )
+            mode |= S_IXGRP;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 6:
+         if( ch == 'r' )
+            mode |= S_IROTH;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 7:
+         if( ch == 'w' )
+            mode |= S_IWOTH;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+
+         case 8:
+         if( ch == 'x' )
+            mode |= S_IXOTH;
+         else if( ch != '-' )
+            invalid = true;
+         break;
+      }
+#endif
+   }
+
+   if( invalid )
+      throw runtime_error( "invalid rwx_perms string '" + rwx_perms + "' for '" + name + "'" );
+
+   if( _chmod( name.c_str( ), mode ) != 0 )
+      throw runtime_error( "_chmod call failed for '" + name + "'" );
 }
 
 void file_link( const char* p_src, const char* p_name, const wchar_t* p_wsrc, const wchar_t* p_wname )

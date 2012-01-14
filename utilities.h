@@ -231,6 +231,11 @@ inline bool file_remove( const std::wstring& name ) { return file_remove( name.c
 int64_t file_size( const char* p_name );
 inline int64_t file_size( const std::string& name ) { return file_size( name.c_str( ) ); }
 
+std::string file_perms( const char* p_name );
+inline std::string file_perms( const std::string& name ) { return file_perms( name.c_str( ) ); }
+
+void file_perms( const std::string& name, const std::string& rwx_perms );
+
 void file_link( const char* p_src, const char* p_name = 0, const wchar_t* p_wsrc = 0, const wchar_t* p_wname = 0 );
 inline void file_link( const std::string& src, const char* p_name = 0 ) { file_link( src.c_str( ), p_name ); }
 inline void file_link( const std::string& src, const std::string& name ) { file_link( src.c_str( ), name.c_str( ) ); }

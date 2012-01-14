@@ -232,8 +232,15 @@ void output_directory( set< string >& file_names,
 
       string digest( md5.hex_digest( ) );
 
+      string rel_path( "." );
+      string::size_type pos = path_name.find( '/' );
+      if( pos != string::npos )
+         rel_path += path_name.substr( pos );
+
+      string perms = file_perms( rel_path );
+
       ostringstream osstr;
-      osstr << "D " << level << ' ' << path_name << ' ' << digest;
+      osstr << "D " << level << ' ' << perms << ' ' << path_name << ' ' << digest;
 
       g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
 
@@ -369,7 +376,8 @@ void process_directory( const string& directory,
             cout << "adding \"" << next_path << ffsi.get_name( ) << "\"";
          }
 
-         int64_t size = file_size( ffsi.get_full_name( ).c_str( ) );
+         int64_t size = file_size( ffsi.get_full_name( ) );
+         string perms = file_perms( ffsi.get_full_name( ) );
 
          ifstream inpf( ffsi.get_full_name( ).c_str( ), ios::in | ios::binary );
          if( !inpf )
@@ -412,7 +420,7 @@ void process_directory( const string& directory,
          string digest( md5.hex_digest( ) );
 
          ostringstream osstr;
-         osstr << "F " << num << ' ' << ffsi.get_name( ) << ' ' << digest;
+         osstr << "F " << num << ' ' << perms << ' ' << ffsi.get_name( ) << ' ' << digest;
 
          file_names.insert( ffsi.get_name( ) );
 
@@ -500,7 +508,28 @@ int main( int argc, char* argv[ ] )
    bool is_delete = false;
    bool is_quieter = false;
 
+   string open_mode( "wb" );
+
    encoding_type encoding = e_encoding_type_raw;
+
+   if( argc > first_arg + 1 )
+   {
+      if( string( argv[ first_arg + 1 ] ) == "-0" )
+      {
+         ++first_arg;
+         open_mode += "0";
+      }
+      else if( string( argv[ first_arg + 1 ] ) == "-1" )
+      {
+         ++first_arg;
+         open_mode += "1";
+      }
+      else if( string( argv[ first_arg + 1 ] ) == "-9" )
+      {
+         ++first_arg;
+         open_mode += "9";
+      }
+   }
 
    if( argc > first_arg + 1 )
    {
@@ -587,18 +616,19 @@ int main( int argc, char* argv[ ] )
 #endif
 
    if( !is_quiet )
-      cout << "bundle v0.1b\n";
+      cout << "bundle v0.1c\n";
 
    if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #else
-      cout << "usage: bundle [-d]|[-r [-p]] [-q[q]] [-b64|-esc] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
 #endif
 
-      cout << "\nwhere: -d is to delete matching files which exist in an existing bundle" << endl;
+      cout << "\nwhere: -0/-1/-9 is used for setting zero/fastest/best compression level" << endl;
+      cout << "  and: -d is to delete matching files which exist in an existing bundle" << endl;
       cout << "  and: -r is to recurse sub-directories (-p to prune empty directories)" << endl;
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
       cout << "  and: -b64/-esc stores file data using b64/esc encoding for text lines" << endl;
@@ -706,7 +736,7 @@ int main( int argc, char* argv[ ] )
          if( !use_zlib )
             outf.open( output_filename.c_str( ), ios::out | ios::binary );
          else
-            gzf = gzopen( output_filename.c_str( ), "wb" );
+            gzf = gzopen( output_filename.c_str( ), open_mode.c_str( ) );
 
          if( ( use_zlib && !gzf ) || ( !use_zlib && !outf ) )
             throw runtime_error( "unable to open file '" + output_filename + "' for output" );
@@ -989,6 +1019,13 @@ int main( int argc, char* argv[ ] )
                      string check = next.substr( pos + 1 );
                      next.erase( pos );
 
+                     pos = next.find( ' ' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected file entry format in line #" + to_string( line ) );
+
+                     string rwx_perms( next.substr( 0, pos ) );
+                     next.erase( 0, pos + 1 );
+
                      count = 0;
 
                      if( is_delete )
@@ -1050,6 +1087,14 @@ int main( int argc, char* argv[ ] )
                      if( pos == string::npos )
                         throw runtime_error( "unexpected format in line #" + to_string( line ) );
 
+                     int next_level( atoi( next.substr( 0, pos ).c_str( ) ) );
+                     next.erase( 0, pos + 1 );
+
+                     pos = next.find( ' ' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+                     string rwx_perms( next.substr( 0, pos ) );
                      next.erase( 0, pos + 1 );
 
                      if( is_delete && all_filespecs.empty( ) )
