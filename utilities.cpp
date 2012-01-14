@@ -287,22 +287,32 @@ string file_perms( const char* p_name )
       throw runtime_error( "unable to stat '" + to_string( p_name ) + "'" );
 
 #ifdef _WIN32
+   string extra;
+
    if( statbuf.st_mode & _S_IREAD )
       str += 'r';
    else
       str += '-';
+   extra += str;
 
    if( statbuf.st_mode & _S_IWRITE )
       str += 'w';
    else
       str += '-';
+   extra += '-';
 
    if( statbuf.st_mode & S_IFDIR )
+   {
       str += 'x';
+      extra += 'x';
+   }
    else
+   {
       str += '-';
+      extra += '-';
+   }   
 
-   str = str + str + str;
+   str += extra + extra;
 #else
    if( statbuf.st_mode & S_IRUSR )
       str += 'r';
