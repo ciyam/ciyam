@@ -190,7 +190,8 @@ void check_file_header( ifstream& inpf, const string& filename, encoding_type& e
       throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
 }
 
-void create_all_directories( deque< string >& create_directories, bool list_only, bool is_quieter )
+void create_all_directories( deque< string >& create_directories,
+ const map< string, string >& directory_perms, bool list_only, bool is_quieter )
 {
    while( !create_directories.empty( ) )
    {
@@ -199,6 +200,9 @@ void create_all_directories( deque< string >& create_directories, bool list_only
          cout << path_name << "/" << endl;
       else
       {
+         if( !directory_perms.count( path_name ) )
+            throw runtime_error( "unexpected missing directory perms for '" + path_name + "'" );
+
 #ifdef _WIN32
          int rc = _mkdir( path_name.c_str( ) );
 #else
@@ -209,6 +213,8 @@ void create_all_directories( deque< string >& create_directories, bool list_only
             throw runtime_error( "unable to create directory '" + path_name + "'" );
          else if( rc >= 0 || errno != EEXIST )
          {
+            file_perms( path_name, directory_perms.find( path_name )->second );
+
             if( !is_quieter )
                cout << "created directory '" << path_name << "'..." << endl;
          }
@@ -291,7 +297,7 @@ int main( int argc, char* argv[ ] )
    }
 
    if( !is_quiet )
-      cout << "unbundle v0.1b\n";
+      cout << "unbundle v0.1c\n";
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
@@ -305,6 +311,10 @@ int main( int argc, char* argv[ ] )
       cout << " also: -d <directory> to set a directory origin for output" << endl;
       return 0;
    }
+
+#ifdef __GNUG__
+   umask( 0 );
+#endif
 
    try
    {
@@ -397,12 +407,14 @@ int main( int argc, char* argv[ ] )
       bool is_first = false;
 
       string next_file;
+      string rwx_perms;
       int line_size = 0;
       int file_data_lines = 0;
       int64_t raw_file_size = 0;
 
       stack< string > paths;
       deque< string > create_directories;
+      map< string, string > directory_perms;
 
       set< string > created;
       set< string > matched_filters;
@@ -577,6 +589,8 @@ int main( int argc, char* argv[ ] )
                      throw runtime_error( "flush failed for file '" + next_file + "'" );
                   ap_ofstream->close( );
 
+                  file_perms( next_file, rwx_perms );
+
                   md5.finalize( );
                   string digest( md5.hex_digest( ) );
 
@@ -630,6 +644,13 @@ int main( int argc, char* argv[ ] )
             next.erase( pos );
 
             g_md5.update( ( unsigned char* )next_md5.c_str( ), next_md5.length( ) );
+
+            pos = next.find( ' ' );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected file entry format in line #" + to_string( line ) );
+
+            rwx_perms = next.substr( 0, pos );
+            next.erase( 0, pos + 1 );
 
             string test_file( next );
             if( !paths.empty( ) )
@@ -711,7 +732,7 @@ int main( int argc, char* argv[ ] )
             count = 0;
 
             if( matched )
-               create_all_directories( create_directories, list_only, is_quieter );
+               create_all_directories( create_directories, directory_perms, list_only, is_quieter );
 
             if( !matched )
                ap_ofstream.reset( );
@@ -775,6 +796,14 @@ int main( int argc, char* argv[ ] )
             }
 
             next.erase( 0, pos + 1 );
+
+            pos = next.find( ' ' );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected format in line #" + to_string( line ) );
+
+            string rwx_perms( next.substr( 0, pos ) );
+            next.erase( 0, pos + 1 );
+
             string path_name( next );
 
             if( top_level_directory.empty( ) )
@@ -806,9 +835,10 @@ int main( int argc, char* argv[ ] )
                {
                   created.insert( path_name );
                   create_directories.push_back( path_name );
+                  directory_perms.insert( make_pair( path_name, rwx_perms ) );
 
                   if( !prune )
-                     create_all_directories( create_directories, list_only, is_quieter );
+                     create_all_directories( create_directories, directory_perms, list_only, is_quieter );
                }
 
                paths.push( path_name );
