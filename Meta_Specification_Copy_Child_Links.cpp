@@ -25,7 +25,7 @@
 #  include <stdexcept>
 #endif
 
-#define CAT_BASE_LIB
+#define CIYAM_BASE_LIB
 #define MODULE_META_IMPL
 
 // [<start macros>]
@@ -49,7 +49,7 @@
 #include "Meta_Class.h"
 #include "Meta_Relationship.h"
 
-#include "cat_base.h"
+#include "ciyam_base.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"
@@ -1827,6 +1827,7 @@ void Meta_Specification_Copy_Child_Links::get_required_field_names(
 void Meta_Specification_Copy_Child_Links::get_always_required_field_names(
  set< string >& names, bool required_transients, set< string >& dependents ) const
 {
+
    parent_class_type::get_always_required_field_names( names, required_transients, dependents );
 
    // [(start modifier_field_value)]
@@ -1843,6 +1844,7 @@ void Meta_Specification_Copy_Child_Links::get_always_required_field_names(
 
 void Meta_Specification_Copy_Child_Links::get_transient_replacement_field_names( const string& name, vector< string >& names ) const
 {
+
    parent_class_type::get_transient_replacement_field_names( name, names );
 
    // [<start get_transient_replacement_field_names>]

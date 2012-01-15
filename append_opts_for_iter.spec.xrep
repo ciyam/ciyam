@@ -1,0 +1,30 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start append_opts_for_iter)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) ) )
+   {
+`{`@eq`(`$arg_ofield`,`'`'`)\
+      string key_info;
+`,\
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_ofield`} ) );
+      key_info += " ";
+`}
+      // NOTE: Perform child iteration only if parent is not iterating to avoid infinite recusion
+      // in case of the child or a foreign key of the child is the same class type as this class.
+      if( ( !get_obj( ).get_graph_parent( )
+       || !get_obj( ).get_graph_parent( )->get_is_iterating( ) )
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+      {
+         string str( get_obj( ).`{`$arg_field`}( ) );
+
+         do
+         {
+            str = str`{`!`@eq`(`$arg_separator`,`'`'`) + ( str.empty( ) ? "" : "`{`$arg_separator`}" )`} + get_obj( ).child_`{`$arg_child`}( ).`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`{`$arg_cfield`}`}( );
+         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+
+         get_obj( ).`{`$arg_field`}( str );
+      }
+   }
+   // [(finish append_opts_for_iter)]
+`}

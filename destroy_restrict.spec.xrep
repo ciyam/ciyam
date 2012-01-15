@@ -1,0 +1,7 @@
+`{`@eq`(`'can_destroy`'`,`$section`)\
+   // [(start destroy_restrict)]
+   if( `{`@eq`(`$arg_allow_internal`,`'true`'`)!is_internal && `}\
+get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) == `{`$arg_value`} )
+      retval = false;
+   // [(finish destroy_restrict)]
+`}

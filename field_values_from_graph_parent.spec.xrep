@@ -1,0 +1,14 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_values_from_graph_parent)]
+   if( get_obj( ).get_graph_parent( ) )
+   {
+      `{`$module_name`}_`{`$arg_pclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_pclass`}* >( get_obj( ).get_graph_parent( ) );
+      if( p_parent && p_parent->get_is_updating( ) )
+      {
+`{`[`$arg_field_info`%,`,\
+         get_obj( ).\\1( p_parent->`{`$arg_psfield`}( ).\\0( ) );\
+`+\n`]`}
+      }
+   }
+   // [(finish field_values_from_graph_parent)]
+`}

@@ -1,0 +1,53 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start clone_children)]
+   if( !get_obj( ).get_clone_key( ).empty( ) )
+   {
+      class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+
+      cp_source->begin_review( get_obj( ).get_clone_key( ) );
+
+      if( cp_source->child_`{`$arg_cclass`}( ).iterate_forwards( ) )
+      {
+         int child_num = 0;
+         do
+         {
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tvalue`,`'`'`)\
+            if( `{`@eq`(`$arg_not_eq`,`'`'`)!`}is_null( cp_source->child_`{`$arg_cclass`}( ).`{`$arg_tfield`}( ) ) )
+               continue;
+`,\
+            if( cp_source->child_`{`$arg_cclass`}( ).`{`$arg_tfield`}( ) `{`@eq`(`$arg_not_eq`,`'`'`)!=`,==`} `{`$arg_tvalue`} )
+               continue;
+`}\
+`}\
+            string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+            child_key += ' ';
+            child_key += cp_source->child_`{`$arg_cclass`}( ).get_key( );
+
+            get_obj( ).child_`{`$arg_cclass`}( ).op_create( child_key );
+            get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
+`{`!`@eq`(`$arg_ffield`,`'`'`)
+            string file_name( cp_source->child_`{`$arg_cclass`}( ).`{`$arg_ffield`}( ) );
+            if( !file_name.empty( ) )
+            {
+               string old_file( cp_source->child_`{`$arg_cclass`}( ).get_attached_file_path( file_name ) );
+               string new_file( get_obj( ).child_`{`$arg_cclass`}( ).get_attached_file_path( "" ) );
+
+               new_file += "/" + get_obj( ).child_`{`$arg_cclass`}( ).get_key( ) + get_ext( file_name );
+
+               if( !storage_locked_for_admin( ) && exists_file( old_file ) )
+                  copy_file( old_file, new_file );
+
+               get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_ffield`}(
+                get_obj( ).child_`{`$arg_cclass`}( ).get_key( ) + get_ext( file_name ) );
+            }
+`}
+            get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
+
+         } while( cp_source->child_`{`$arg_cclass`}( ).iterate_next( ) );
+      }
+
+      cp_source->finish_review( );
+   }
+   // [(finish clone_children)]
+`}

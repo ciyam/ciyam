@@ -1,0 +1,39 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_clone)]
+   transaction_start( );
+   try
+   {
+      get_obj( ).begin_review( );
+
+      get_obj( ).`{`$arg_spfield`}( ).op_update( );
+      int next_copy_num = get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( );
+
+      string key_info( construct_key_from_int( get_obj( ).get_key( ) + "_C", next_copy_num ) );
+      key_info += " " + get_obj( ).get_key( );
+
+      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( next_copy_num + 1 );
+      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+
+      class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+
+      cp_source->op_create( key_info );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+      cp_source->`{`$arg_tfield`}( "" );\
+`}
+      cp_source->`{`$arg_field`}( "`{`$arg_value`}" );
+      cp_source->op_apply( );
+
+      get_obj( ).finish_review( );
+      transaction_commit( );
+
+      // FUTURE: The return message itself should be a module string.
+      `{`$arg_output_arg`} = "Created New " + get_obj( ).get_display_name( );
+   }
+   catch( ... )
+   {
+      get_obj( ).finish_review( );
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish for_clone)]
+`}

@@ -1,0 +1,28 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start file_content)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      string filename( get_obj( ).get_key( ) + ".html" );
+      string full_path( get_obj( ).get_attached_file_path( filename ) );
+
+      if( !storage_locked_for_admin( ) )
+      {
+         create_directories_for_file_name( full_path, true );
+         remove_file( full_path );
+      }
+
+      if( get_obj( ).`{`$arg_sfield`}( ).empty( ) )
+         filename.erase( );
+      else if( !storage_locked_for_admin( ) )
+      {
+         ofstream outf( full_path.c_str( ) );
+         if( !outf )
+            throw runtime_error( "unable to open file '" + full_path + "' for output" );
+
+         outf << get_obj( ).`{`$arg_sfield`}( );
+      }
+
+      get_obj( ).`{`$arg_field`}( filename );
+   }
+   // [(finish file_content)]
+`}   

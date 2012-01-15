@@ -1,0 +1,26 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_from_concatenation)]
+   if( !get_obj( ).get_key( ).empty( ) )
+   {
+      string value;
+
+`{`@eq`(`$arg_separator`,`'`'`)\
+`{`[`$arg_field_list`,\
+      if( !is_null( get_obj( ).\\\\$( ) ) )
+         value += to_string( get_obj( ).\\\\$( ) );\
+`+\n\n`]`}\
+`,\
+`{`[`$arg_field_list`,\
+      if( !is_null( get_obj( ).\\\\$( ) ) )
+      {
+         if( !value.empty( ) )
+            value += "`{`$arg_separator`}";
+         value += to_string( get_obj( ).\\\\$( ) );
+      }\
+`+\n\n`]`}\
+`}
+
+      get_obj( ).`{`$arg_dfield`}( value );
+   }   
+   // [(finish field_from_concatenation)]
+`}

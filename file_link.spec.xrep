@@ -1,0 +1,36 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start file_link)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      string ext( "`{`$arg_ext`}" );
+`{`@eq`(`$arg_field2`,`'`'`)\
+      string source( get_obj( ).`{`$arg_field1`}( ) + ext );\
+`,\
+      string source( get_obj( ).`{`!`@eq`(`$arg_pfield2`,`'`'`)`$arg_pfield2`*`'( ).`'`}`{`$arg_field2`}( ) + "_" + get_obj( ).`{`$arg_field1`}( ) + ext );\
+`}
+
+      bool has_source_file( exists_file( source ) );
+
+      string dest( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ext ) );
+
+      if( exists_file( dest, false ) )
+         remove_file( dest );
+      else if( has_source_file )
+         create_directories_for_file_name( dest );
+
+      if( !has_source_file )
+         get_obj( ).`{`$arg_field`}( "" );
+      else
+      {
+         link_file( source, dest );
+         get_obj( ).`{`$arg_field`}( get_obj( ).get_key( ) + ext );
+      }
+   }
+   // [(finish file_link)]
+`}
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start file_link)]
+   if( !get_obj( ).`{`$arg_field`}( ).empty( ) )
+      remove_file( get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_field`}( ) ) );
+   // [(finish file_link)]
+`}

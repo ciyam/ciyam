@@ -15,9 +15,9 @@
 *.exe
 *.exp
 bundle
-cat_client
-cat_interface
-cat_server
+ciyam_client
+ciyam_interface
+ciyam_server
 construct
 diff
 diffp
@@ -38,6 +38,10 @@ upload
 xrep
 xvars
 
+# Ignore temporary files
+~*
+*.sav
+
 # Ignore generated header files.
 *.cmh
 
@@ -53,7 +57,10 @@ makefile.sio
 makefile.vars.xrep
 
 # Ignore various generated files.
-cat_server.sid
+Meta.sio
+Meta.txt
+Meta.fcgi.sio
+Meta.spec.vars.xrep
 
 # Except libraries that are included in the repository.
 !iconv.dll

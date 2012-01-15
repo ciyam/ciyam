@@ -1,0 +1,175 @@
+`{`@eq`(`'anonymous`'`,`$section`)\
+// [(start for_user_account_invitation)]
+string g_email_html_invitation;
+string g_email_text_invitation;
+
+const char* const c_email_html_invitation_file = "user_account.email.html";
+const char* const c_email_text_invitation_file = "user_account.email.txt";
+
+string replace_invitation_tokens( const string& original_message,
+ const string& module_name, const `{`$module_name`}_`{`$arg_uclass`}& user, const `{`$module_name`}_`{`$arg_uclass`}& owner )
+{
+   string message( original_message );
+
+   message = search_replace( message, "{user_id}", user.`{`$arg_idfield`}( ) );
+   message = search_replace( message, "{user_key}", user.get_key( ) );
+   message = search_replace( message, "{user_name}", user.`{`$arg_dfield`}( ) );
+   message = search_replace( message, "{owner_name}", owner.`{`$arg_dfield`}( ) );
+
+   message = search_replace( message, "{prefix}", get_prefix( ) );
+   message = search_replace( message, "{domain}", get_domain( ) );
+   message = search_replace( message, "{app_dir}", get_app_dir( ) );
+   message = search_replace( message, "{app_file}", get_app_file( module_name ) );
+
+   message = search_replace( message, "{checksum}", get_checksum( "activate" + user.`{`$arg_idfield`}( ) + user.get_key( ) ) );
+
+   return message;
+}
+// [(finish for_user_account_invitation)]
+`}
+`{`@eq`(`'act_procedure`'`,`$section`)\
+   // [(start for_user_account_invitation)]
+   get_obj( ).`{`$arg_ufield`}( ).op_update( );
+   get_obj( ).`{`$arg_ufield`}( ).`{`$arg_afield`}( true );
+   get_obj( ).`{`$arg_ufield`}( ).op_apply( );
+   // [(finish for_user_account_invitation)]
+`}
+`{`@eq`(`'send_procedure`'`,`$section`)\
+   // [(start for_user_account_invitation)]
+   if( get_uid( ) != "auto" && !storage_locked_for_admin( ) )
+   {
+      get_obj( ).op_update( );
+
+      if( get_obj( ).`{`$arg_sfield`}( ) == c_enum_`{`$arg_enum`}_`{`$arg_sending_invitation`} )
+         // FUTURE: This message should be a module string.
+         throw runtime_error( "This message is already currently being sent." );
+
+      get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_sending_invitation`} );
+      get_obj( ).`{`$arg_actfield`}( "" );
+
+      get_obj( ).op_apply( );
+
+      set_session_variable( "@key", get_obj( ).get_key( ) );
+
+      run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_send_proc`}" );
+   }
+   else if( get_uid( ) == "auto" )
+   {
+      bool had_error = false;
+      string error_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".txt" ) );
+      try
+      {
+         get_obj( ).op_update( );
+
+         // NOTE: If a recovery is in progress then don't send email.
+         if( !storage_locked_for_admin( ) )
+         {
+            if( g_email_text_invitation.empty( ) && g_email_html_invitation.empty( ) )
+               throw runtime_error( "email invitation templates are missing or empty" );
+
+            string text_message( g_email_text_invitation );
+
+            text_message = replace_invitation_tokens( text_message,
+             get_obj( ).module_name( ), get_obj( ).`{`$arg_ufield`}( ), get_obj( ).`{`$arg_ofield`}( ) );
+
+            string html_file;
+            string html_message( g_email_html_invitation );
+
+            if( !html_message.empty( ) )
+            {
+               html_message = replace_invitation_tokens( html_message,
+                get_obj( ).module_name( ), get_obj( ).`{`$arg_ufield`}( ), get_obj( ).`{`$arg_ofield`}( ) );
+
+               html_file = "~" + get_uuid( );
+               ofstream outf( html_file.c_str( ) );
+
+               if( !outf )
+                  throw runtime_error( "unable to open file '" + html_file + "' for output" );
+
+               outf << html_message;
+            }
+
+            send_email_message( get_obj( ).`{`$arg_ufield`}( ).`{`$arg_mfield`}( ),
+             // FUTURE: This message should be a module string.
+             "Invitation from " + get_obj( ).`{`$arg_ofield`}( ).`{`$arg_dfield`}( ), text_message, html_file );
+
+            if( !html_file.empty( ) )
+               remove_file( html_file );
+
+            if( exists_file( error_filename ) )
+               remove_file( error_filename );
+
+            get_obj( ).`{`$arg_efield`}( "" );
+            get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_inactive`} );
+         }
+         else
+         {
+            if( exists_file( error_filename ) )
+               get_obj( ).`{`$arg_efield`}( load_file( error_filename ) );
+            else
+            {
+               get_obj( ).`{`$arg_efield`}( "" );
+               get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_inactive`} );
+            }
+         }
+      }
+      catch( exception& x )
+      {
+         // NOTE: It is not expected that an exception should occur here during a recovery.
+         if( storage_locked_for_admin( ) )
+            throw;
+
+         had_error = true;
+         get_obj( ).`{`$arg_efield`}( x.what( ) );
+         get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_needs_invitation`} );
+      }
+      catch( ... )
+      {
+         // NOTE: It is not expected that an exception should occur here during a recovery.
+         if( storage_locked_for_admin( ) )
+            throw;
+
+         had_error = true;
+         get_obj( ).`{`$arg_efield`}( "Unexpected exception occurred." );
+         get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_needs_invitation`} );
+      }
+
+      if( had_error )
+      {
+         ofstream outf( error_filename.c_str( ) );
+         outf << get_obj( ).`{`$arg_efield`}( );
+      }
+
+      get_obj( ).op_apply( );
+   }
+   // [(finish for_user_account_invitation)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_user_account_invitation)]
+   if( get_obj( ).`{`$arg_sfield`}( ) == c_enum_`{`$arg_enum`}_`{`$arg_needs_invitation`} )
+      get_obj( ).`{`$arg_actfield`}( c_procedure_id_`{`$arg_send_procedure`} );
+
+   if( is_admin_uid( ) && get_obj( ).`{`$arg_sfield`}( ) == c_enum_`{`$arg_enum`}_`{`$arg_needs_invitation`} )
+      get_obj( ).`{`$arg_actfield`}( get_obj( ).`{`$arg_actfield`}( ) + "," + to_string( c_procedure_id_`{`$arg_act_procedure`} ) );
+   // [(finish for_user_account_invitation)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_user_account_invitation)]
+   if( is_create )
+   {
+      if( !get_obj( ).`{`$arg_cfield`}( ).empty( ) )
+         get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_needs_invitation`} );
+      else if( !get_obj( ).`{`$arg_ufield`}( ).`{`$arg_afield`}( ) )
+         get_obj( ).`{`$arg_sfield`}( c_enum_`{`$arg_enum`}_`{`$arg_inactive`} );
+   }
+   // [(finish for_user_account_invitation)]
+`}
+`{`@eq`(`'static_class_init`'`,`$section`)\
+   // [(start for_user_account_invitation)]
+   if( exists_file( c_email_html_invitation_file ) )
+      g_email_html_invitation = load_file( c_email_html_invitation_file );
+
+   if( exists_file( c_email_text_invitation_file ) )
+      g_email_text_invitation = load_file( c_email_text_invitation_file );
+   // [(finish for_user_account_invitation)]
+`}

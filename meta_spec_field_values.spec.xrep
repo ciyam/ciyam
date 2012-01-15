@@ -1,0 +1,65 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start meta_spec_field_values)]
+   // NOTE: Scope for local variables.
+   {
+      string str, rstr;
+      if( !is_create && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            if( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_fkfield`}( ).get_key( ) == "`{`$arg_tvalue`}" )
+            {
+               string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
+               key_info += ' ';
+               if( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+               {
+                  do
+                  {
+                     if( !rstr.empty( ) )
+                        rstr += "+";
+
+                     string value( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Value( ) );
+                     if( !value.empty( ) && value[ 0 ] == '@' )
+                     {
+                        if( value != "@order" )
+                           rstr += value + ":";
+                        value.erase( );
+                     }
+
+                     rstr += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Field( ).Id( );
+
+                     if( value == "<none>" )
+                        rstr += "=";
+                     else if( !value.empty( ) )
+                        rstr += "=" + value;
+
+                     if( !str.empty( ) )
+                        str += "_and_";
+
+                     str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).`{`$arg_sfield`}( );
+                  } while( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_next( ) );
+               }
+               get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
+               break;
+            }
+         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+      }
+
+      if( get_obj( ).Specification_Type( ).get_key( ) == "restriction" )
+      {
+         if( !get_obj( ).Value( ).empty( ) )
+         {
+            if( !rstr.empty( ) )
+               rstr += "+";
+            rstr += get_obj( ).Value( );
+         }
+      }
+
+      if( !is_create || get_obj( ).Specification_Type( ).get_key( ) == "restriction" )
+      {
+         get_obj( ).`{`$arg_field`}( str );
+         get_obj( ).`{`$arg_rfield`}( rstr );
+      }
+   }
+   // [(finish meta_spec_field_values)]
+`}

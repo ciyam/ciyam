@@ -1,0 +1,31 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start acyclic)]
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) ) && get_obj( ).`{`$arg_field`}( ) == get_obj( ).get_key( ) )
+      p_validation_errors->insert(
+       validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_cannot_link_to_self ), make_pair(
+       c_str_parm_cannot_link_to_self_class, get_obj( ).get_display_name( ) ) ) ) );
+
+   `{`$full_class_name`}* p_parent = &get_obj( ).`{`$arg_field`}( );
+   if( p_parent->has_changed( ) )
+   {
+      while( true )
+      {
+         string pkey( p_parent->`{`$arg_field`}( ).get_key( ) );
+         if( pkey.empty( ) )
+            break;
+
+         if( pkey == get_obj( ).get_key( ) )
+         {
+            p_validation_errors->insert(
+             validation_error_value_type( c_field_name_`{`$arg_field`},
+             get_string_message( GS( c_str_linking_to_class_prohibited ), make_pair(
+             c_str_parm_linking_to_class_prohibited_class, p_parent->get_display_name( ) ) ) ) );
+            break;
+         }
+
+         p_parent = &p_parent->`{`$arg_field`}( );
+      }
+   }
+   // [(finish acyclic)]
+`}

@@ -34,7 +34,7 @@
 #  endif
 #endif
 
-#define CAT_BASE_IMPL
+#define CIYAM_BASE_IMPL
 
 #ifdef __GNUG__
 #  define _access access

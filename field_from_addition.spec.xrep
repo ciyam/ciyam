@@ -1,0 +1,13 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+`{`$type`=`$arg_dtype`}\
+`{`@eq`(`$type`,`'second`'`)`$type`=`'seconds`'`}\
+`{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\
+`{`@eq`(`$type`,`'hour`'`)`$type`=`'hours`'`}\
+`{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
+`{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
+`{`@eq`(`$type`,`'year`'`)`$type`=`'years`'`}\
+   // [(start field_from_addition)]
+   if( !is_null( get_obj( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_dflt`,`'`'`) && !get_obj( ).get_key( ).empty( )`} )
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_sfield`}( ) + `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}`{`$arg_value`} );
+   // [(finish field_from_addition)]
+`}

@@ -1,0 +1,24 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start clone_children_for_update)]
+   if( !is_create && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         get_obj( ).child_`{`$arg_child`}( ).op_update( );
+         string parent( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( ) );
+`{`!`@eq`(`$arg_xfield`,`'`'`)\
+         string extra(  get_obj( ).child_`{`$arg_child`}( ).`{`$arg_xfield`}( ) );
+`}
+         get_obj( ).child_`{`$arg_child`}( ).copy_all_field_values( get_obj( ) );
+
+         get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( parent );
+`{`!`@eq`(`$arg_xfield`,`'`'`)\
+         get_obj( ).child_`{`$arg_child`}( ).`{`$arg_xfield`}( extra );
+`}\
+         get_obj( ).child_`{`$arg_child`}( ).`{`$arg_sfield`}( get_obj( ).get_key( ) );
+
+         get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+      } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+   }
+   // [(finish clone_children_for_update)]
+`}

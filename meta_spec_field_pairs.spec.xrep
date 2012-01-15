@@ -1,0 +1,42 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start meta_spec_field_pairs)]
+   if( !is_create && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
+   {
+      string str( get_obj( ).`{`$arg_field`}( ) );
+      do
+      {
+         if( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_sfield`}( ) == "`{`$arg_tvalue`}" )
+         {
+            string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
+            key_info += ' ';
+            if( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+            {
+               do
+               {
+                  if( !str.empty( ) )
+                     str += " ";
+
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Field( ).Name( );
+`{`@eq`(`$arg_tvalue`,`'field_pair_list`'`)`|`@eq`(`$arg_tvalue`,`'field_pair2_list`'`)`|`@eq`(`$arg_tvalue`,`'field_pair_g_list`'`)
+                  str += ",";
+`{`@eq`(`$arg_tvalue`,`'field_pair2_list`'`)\
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Field( ).Name( );
+`,`@eq`(`$arg_tvalue`,`'field_pair_g_list`'`)\
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Grandchild( ).Name( );
+`,\
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Child( ).Name( );
+`}
+                  str += ",";
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Field( ).Parent_Class_Name( );
+`}
+               } while( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_next( ) );
+            }
+            get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
+            break;
+         }
+      } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+
+      get_obj( ).`{`$arg_field`}( str );
+   }
+   // [(finish meta_spec_field_pairs)]
+`}

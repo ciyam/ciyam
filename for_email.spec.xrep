@@ -1,0 +1,1565 @@
+`{`@eq`(`'anonymous`'`,`$section`)\
+// [(start for_email)]
+string g_email_html_signature;
+
+const char* const c_dead_tags = "dead_tags";
+
+const char* const c_email_content_marker = "<!-- @@content -->";
+const char* const c_email_signature_file = "email_signature.htms";
+
+void parse_recipients( const string& source, vector< string >& dest )
+{
+   string next;
+   bool in_quotes = false;
+
+   for( size_t i = 0; i < source.size( ); i++ )
+   {
+      char c = source[ i ];
+
+      if( c == '"' )
+         in_quotes = !in_quotes;
+      else if( !in_quotes )
+      {
+         if( c == ',' || c == ';' ) // i.e. allow either ',' or ';' as an address separator
+         {
+            dest.push_back( next );
+            next.clear( );
+            continue;
+         }
+      }
+
+      if( !next.empty( ) || c != ' ' ) // i.e. ignore leading spaces
+         next += c;
+   }
+
+   if( !next.empty( ) )
+      dest.push_back( next );
+}
+
+void replace_mail_merge_token( string& html_content, const string& token, const string& replacement_text )
+{
+   string tok1( "{" + token + "}" ); // i.e. simple replace {name}
+   string tok2( "{" + token + ":" ); // i.e. default if empty {name:Valued Customer}
+   string tok3( "{?" + token + ":" ); // i.e. optional template {?name:<b>$</b>;<b>Valued Customer</b>}
+
+   while( true )
+   {
+      string::size_type pos = html_content.find( tok1 );
+
+      if( pos == string::npos )
+         break;
+      else
+      {
+         html_content.erase( pos, tok1.length( ) );
+         html_content.insert( pos, replacement_text );
+      }
+   }
+
+   while( true )
+   {
+      string::size_type pos = html_content.find( tok2 );
+
+      if( pos == string::npos )
+         break;
+      else
+      {
+         string::size_type epos = html_content.find( "}", pos + 1 );
+         if( epos == string::npos )
+            break;
+
+         string::size_type spos = pos + tok2.length( );
+
+         string def_content( html_content.substr( spos, epos - spos ) );
+
+         html_content.erase( pos, epos - pos + 1 );
+
+         if( replacement_text.empty( ) )
+            html_content.insert( pos, def_content );
+         else
+            html_content.insert( pos, replacement_text );
+      }
+   }
+
+   while( true )
+   {
+      string::size_type pos = html_content.find( tok3 );
+
+      if( pos == string::npos )
+         break;
+      else
+      {
+         string::size_type epos = html_content.find( "}", pos + 1 );
+         if( epos == string::npos )
+            break;
+
+         string::size_type spos = pos + tok3.length( );
+
+         string opt_content( html_content.substr( spos, epos - spos ) );
+
+         string def_content;
+         string::size_type dpos = opt_content.find( ';' );
+         if( dpos != string::npos )
+         {
+            def_content = opt_content.substr( dpos + 1 );
+            opt_content.erase( dpos );
+         }
+
+         html_content.erase( pos, epos - pos + 1 );
+
+         if( replacement_text.empty( ) )
+            html_content.insert( pos, def_content );
+         else
+         {
+            opt_content = search_replace( opt_content, "$", replacement_text );
+            html_content.insert( pos, opt_content );
+         }
+      }
+   }
+}
+// [(finish for_email)]
+`}
+`{`@eq`(`'delete_procedure`'`,`$section`)\
+   // [(start for_email)]
+   get_obj( ).op_destroy( );
+   get_obj( ).op_apply( );
+   // [(finish for_email)]
+`}
+`{`@eq`(`'fetch_messages_procedure`'`,`$section`)\
+   // [(start for_email)]
+   transaction_start( );
+
+   string uid( get_obj( ).get_variable( "@uid" ) );
+   if( uid.empty( ) )
+      uid = get_uid( );
+
+   int num_created = 0;
+   size_t num_messages = 0;
+   vector< pair< int, string > > old_messages;
+   vector< pair< bool, string > > new_messages;
+
+   string exception_text;
+   try
+   {
+      if( !storage_locked_for_admin( ) )
+      {
+         user_account account;
+
+         class_pointer< `{`$module_name`}_`{`$arg_uclass`} > ap_user( e_create_instance );
+
+         ap_user->perform_fetch( uid );
+
+         account.username = ap_user->`{`$arg_email_account`}( );
+         account.password = ap_user->`{`$arg_email_password`}( );
+
+         fetch_email_messages( account, new_messages, true );
+         num_messages = new_messages.size( );
+      }
+      else
+      {
+         // NOTE: If a recovery is in progress then look for the raw message files in
+         // order to determine which records (if any) need to be created.
+         int i = 0;
+         while( true )
+         {
+            string key( construct_key_from_int( get_dtm( ), i++ ) );
+            string message_file( get_obj( ).get_attached_file_path( key + ".txt" ) );
+
+            if( storage_is_dead_key( get_obj( ).class_id( ), key ) )
+               continue;
+
+            if( !exists_file( message_file ) )
+               break;
+
+            string message = load_file( message_file );
+            old_messages.push_back( make_pair( i - 1, message ) );
+            ++num_messages;
+         }
+      }
+
+      class_pointer< `{`$module_name`}_`{`$arg_fclass`} > ap_junk( e_create_instance );
+
+      set< string > junk_senders;
+      ap_junk->perform_fetch( uid + "_junk" );
+      if( ap_junk->child_`{`$arg_folder_emails`}( ).iterate_forwards( ) )
+      {
+         string name, email;
+
+         do
+         {
+            if( ap_junk->child_`{`$arg_folder_emails`}( ).`{`$arg_read`}( ) )
+            {
+               parse_email_address( ap_junk->child_`{`$arg_folder_emails`}( ).`{`$arg_from`}( ), name, email );
+               junk_senders.insert( email );
+            }
+         } while( ap_junk->child_`{`$arg_folder_emails`}( ).iterate_next( ) );
+      }
+
+      for( size_t i = 0; i < num_messages; i++ )
+      {
+         string* p_next_message = 0;
+
+         if( !storage_locked_for_admin( ) )
+            p_next_message = &new_messages[ i ].second;
+         else
+            p_next_message = &old_messages[ i ].second;
+
+         size_t pos = 0;
+         for( size_t j = 0; j < p_next_message->size( ); j++ )
+         {
+            if( j && ( *p_next_message )[ j ] == '\\n' && ( *p_next_message )[ j - 1 ] == '\\n' )
+            {
+               pos = j - 1;
+               break;
+            }
+         }
+
+         if( pos == 0 )
+            throw runtime_error( "invalid email message format" );
+
+         bool is_mime = false;
+         string headers = p_next_message->substr( 0, pos );
+         if( lower( headers ).find( "content-type:" ) != string::npos )
+            is_mime = true;
+
+         vector< string > all_headers;
+         split_string( headers, all_headers, '\\n' );
+
+         int next_num = 0;
+         if( !storage_locked_for_admin( ) )
+            next_num = ( int )i;
+         else
+            next_num = old_messages[ i ].first;
+
+         string key( construct_key_from_int( get_dtm( ), next_num ) );
+
+         get_obj( ).op_create( key );
+
+         get_obj( ).`{`$arg_ufield`}( uid );
+         get_obj( ).`{`$arg_folder`}( uid + "_inbox" );
+
+         get_obj( ).`{`$arg_when`}( date_time( get_dtm( ) ) );
+
+         get_obj( ).`{`$arg_headers`}( headers );
+
+         string in_reply_to;
+         bool is_marked_as_spam = false;
+         bool has_invalid_hashcash = false;
+         for( size_t j = 0; j < all_headers.size( ); j++ )
+         {
+            if( lower( all_headers[ j ] ).find( "to: " ) == 0 )
+               get_obj( ).`{`$arg_to`}( decode_email_header( all_headers[ j ].substr( 4 ) ) );
+            else if( lower( all_headers[ j ] ).find( "cc: " ) == 0 )
+               get_obj( ).`{`$arg_cc`}( decode_email_header( all_headers[ j ].substr( 4 ) ) );
+            else if( lower( all_headers[ j ] ).find( "from: " ) == 0 )
+               get_obj( ).`{`$arg_from`}( decode_email_header( all_headers[ j ].substr( 6 ) ) );
+            else if( lower( all_headers[ j ] ).find( "subject: " ) == 0 )
+               get_obj( ).`{`$arg_subject`}( decode_email_header( all_headers[ j ].substr( 9 ) ) );
+            else if( lower( all_headers[ j ] ).find( "message-id: " ) == 0 )
+               get_obj( ).`{`$arg_message_id`}( all_headers[ j ].substr( 12 ) );
+            else if( lower( all_headers[ j ] ).find( "in-reply-to: " ) == 0 )
+               in_reply_to = all_headers[ j ].substr( 13 );
+            else if( lower( all_headers[ j ] ).find( "x-hashcash: " ) == 0 )
+               has_invalid_hashcash = !has_valid_hashcash( all_headers[ j ].substr( 12 ) );
+            else if( lower( all_headers[ j ] ).find( "x-spam-flag:yes" ) != string::npos )
+               is_marked_as_spam = true;
+         }
+
+         string message_id( get_obj( ).`{`$arg_message_id`}( ) );
+
+         string::size_type spos = message_id.find( '<' );
+         if( spos != string::npos )
+         {
+            string::size_type epos = message_id.find( '>', spos + 1 );
+            if( epos != string::npos )
+               get_obj( ).`{`$arg_message_id`}( message_id.substr( spos + 1, epos - spos - 1 ) );
+         }
+
+         if( !in_reply_to.empty( ) )
+         {
+            spos = in_reply_to.find( '<' );
+            if( spos != string::npos )
+            {
+               string::size_type epos = in_reply_to.find( '>', spos + 1 );
+               if( epos != string::npos )
+               {
+                  string in_reply_to_token( in_reply_to.substr( spos + 1, epos - spos - 1 ) );
+
+                  string key_info( c_field_id_`{`$arg_message_id`} );
+                  key_info += "#1 " + in_reply_to_token;
+
+                  class_pointer< `{`$module_name`}_`{`$class_name`} > ap_email( e_create_instance );
+                  if( ap_email->iterate_forwards( key_info ) )
+                  {
+                     get_obj( ).`{`$arg_replies`}( ap_email->get_key( ) );
+
+                     ap_email->iterate_stop( );
+                  }
+               }
+            }
+         }
+
+         string name, email;
+         bool found_address = false;
+
+         parse_email_address( get_obj( ).`{`$arg_from`}( ), name, email );
+
+         if( !email.empty( ) )
+         {
+            if( get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).iterate_forwards( ) )
+            {
+               do
+               {
+                  if( get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).`{`$arg_contact_email`}( ) == email
+                   || get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).`{`$arg_contact_email`}( ) == "<" + email + ">" )
+                  {
+                     get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).iterate_stop( );
+                     found_address = true;
+                     break;
+                  }
+               } while( get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).iterate_next( ) );
+            }
+         }
+
+         bool addressed_to_user = ( get_obj( ).`{`$arg_to`}( ).find( get_obj( ).`{`$arg_ufield`}( ).`{`$arg_email_account`}( ) ) != string::npos );
+
+         // NOTE: If is a large `{`$arg_to`} then assume it was not really addressed to the user.
+         if( get_obj( ).`{`$arg_to`}( ).length( ) > 200 )
+            addressed_to_user = false;
+
+         if( junk_senders.count( email ) )
+         {
+            get_obj( ).`{`$arg_read`}( true );
+            get_obj( ).`{`$arg_folder`}( uid + "_trash" );
+         }
+         else if( is_marked_as_spam || has_invalid_hashcash
+          || ( !found_address && !addressed_to_user && is_null( get_obj( ).`{`$arg_replies`}( ) ) ) )
+            get_obj( ).`{`$arg_folder`}( uid + "_junk" );
+
+         get_obj( ).`{`$arg_status`}( c_enum_`{`$arg_status_enum`}_`{`$arg_status_received`} );
+         get_obj( ).`{`$arg_received`}( get_dtm( ) );
+
+         vector< pair< string, string > > attachments;
+
+         if( !storage_locked_for_admin( ) )
+         {
+            string message_file( get_obj( ).get_attached_file_path( key + ".txt" ) );
+
+            ofstream outf( message_file.c_str( ), ios::out | ios::binary );
+            outf << *p_next_message;
+         }
+
+         if( !is_mime )
+            get_obj( ).`{`$arg_message`}( p_next_message->substr( pos + 1 ) );
+         else
+         {
+            string message, html_message;
+
+            decode_mime_message( *p_next_message, message, html_message, attachments );
+
+            if( !html_message.empty( ) )
+            {
+               if( html_message.find( "</HTML>" ) == string::npos && html_message.find( "</html>" ) == string::npos )
+                  html_message = "<html>\\n" + html_message + "\\n</html>";
+
+               get_obj( ).`{`$arg_is_html_message`}( true );
+            }
+
+            get_obj( ).`{`$arg_message`}( message );
+            get_obj( ).`{`$arg_html_message`}( html_message );
+
+            if( !html_message.empty( ) )
+               get_obj( ).`{`$arg_is_html_message`}( true );
+         }
+
+         get_obj( ).`{`$arg_original_message`}( key + ".txt" );
+
+         get_obj( ).op_apply( );
+         ++num_created;
+
+         for( size_t k = 0; k < attachments.size( ); k++ )
+         {
+            string encoding_and_name( attachments[ k ].first );
+            string::size_type pos = encoding_and_name.find( ' ' );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected invalid encoding_and_name '" + encoding_and_name + "'" );
+
+            string encoding( encoding_and_name.substr( 0, pos ) );
+            string name( encoding_and_name.substr( pos + 1 ) );
+
+            string ext;
+
+            pos = name.find_last_of( "." );
+            if( pos == string::npos )
+               ext = ".dat";
+            else
+            {
+               ext = name.substr( pos );
+               name.erase( pos );
+            }
+
+            string attachment_file(
+             get_obj( ).child_`{`$arg_attachments`}( ).get_attached_file_path( key + to_string( k ) + ext ) );
+
+            save_attachment( encoding, attachments[ k ].second, attachment_file );
+
+            get_obj( ).child_`{`$arg_attachments`}( ).op_create( key + to_string( k ) );
+
+            get_obj( ).child_`{`$arg_attachments`}( ).`{`$arg_pemail`}( get_obj( ).get_key( ) );
+
+            get_obj( ).child_`{`$arg_attachments`}( ).`{`$arg_filename`}( name );
+            get_obj( ).child_`{`$arg_attachments`}( ).`{`$arg_attachment`}( key + to_string( k ) + ext );
+
+            get_obj( ).child_`{`$arg_attachments`}( ).op_apply( );
+         }
+      }
+   }
+   catch( exception& x )
+   {
+      exception_text = x.what( );
+      TRACE_LOG( TRACE_ANYTHING, exception_text );
+   }
+   catch( ... )
+   {
+      exception_text = "unknown exception occurred";
+      TRACE_LOG( TRACE_ANYTHING, exception_text );
+   }
+
+   class_pointer< `{`$module_name`}_`{`$arg_fclass`} > ap_inbox( e_create_instance );
+
+   ap_inbox->op_update( uid + "_inbox" );
+
+   ap_inbox->`{`$arg_folder_changing`}( false );
+   ap_inbox->`{`$arg_folder_error`}( exception_text );
+
+   ap_inbox->op_apply( );
+
+   transaction_commit( );
+   // [(finish for_email)]
+`}
+`{`@eq`(`'mark_as_read_procedure`'`,`$section`)\
+   // [(start for_email)]
+   transaction_start( );
+
+   try
+   {
+      get_obj( ).op_update( );
+      get_obj( ).`{`$arg_read`}( true );
+      get_obj( ).op_apply( );
+
+      get_obj( ).`{`$arg_folder`}( ).op_update( );
+      get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( ) - 1 );
+
+      get_obj( ).`{`$arg_folder`}( ).op_apply( );
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'move_to_junk_proc_procedure`'`,`$section`)\
+   // [(start for_email)]
+   get_obj( ).op_update( );
+   get_obj( ).`{`$arg_read`}( true );
+   get_obj( ).`{`$arg_folder`}( get_uid( ) + "_junk" );
+   get_obj( ).op_apply( );
+   // [(finish for_email)]
+`}
+`{`@eq`(`'move_to_parent_folder_procedure`'`,`$section`)\
+   // [(start for_email)]
+   get_obj( ).op_update( );
+   if( is_null( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_parent`}( ) ) )
+      get_obj( ).op_cancel( );
+   else
+   {
+      get_obj( ).`{`$arg_folder`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_parent`}( ) );
+      get_obj( ).op_apply( );
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'move_to_trash_proc_procedure`'`,`$section`)\
+   // [(start for_email)]
+   get_obj( ).op_update( );
+   get_obj( ).`{`$arg_read`}( true );
+   get_obj( ).`{`$arg_folder`}( get_uid( ) + "_trash" );
+   get_obj( ).op_apply( );
+   // [(finish for_email)]
+`}
+`{`@eq`(`'recover_procedure`'`,`$section`)\
+   // [(start for_email)]
+   get_obj( ).op_update( );
+
+   if( !is_null( get_obj( ).`{`$arg_sent`}( ) ) )
+      get_obj( ).`{`$arg_folder`}( get_uid( ) + "_outbox" );
+   else if( !is_null( get_obj( ).`{`$arg_received`}( ) ) )
+      get_obj( ).`{`$arg_folder`}( get_uid( ) + "_inbox" );
+   else
+      get_obj( ).`{`$arg_folder`}( get_uid( ) + "_drafts" );
+
+   get_obj( ).op_apply( );
+   // [(finish for_email)]
+`}
+`{`@eq`(`'send_procedure`'`,`$section`)\
+   // [(start for_email)]
+   if( get_uid( ) != "auto" && !storage_locked_for_admin( ) )
+   {
+      transaction_start( );
+
+      try
+      {
+         get_obj( ).op_update( );
+
+         if( get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_sending`} )
+            // FUTURE: This message should be a module string.
+            throw runtime_error( "This message is already currently being sent." );
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+         if( get_obj( ).`{`$arg_to`}( ).empty( ) && is_null( get_obj( ).`{`$arg_mail_merge_group`}( ) ) )
+            // FUTURE: This message should be a module string.
+            throw runtime_error( "This message needs the To field set in order to be sent." );
+
+         if( is_null( get_obj( ).`{`$arg_email_template`}( ) ) && !is_null( get_obj( ).`{`$arg_mail_merge_group`}( ) ) )
+            // FUTURE: This message should be a module string.
+            throw runtime_error( "This message needs the Email Template set in order to be sent." );
+
+         if( get_obj( ).`{`$arg_email_template`}( ).`{`$arg_merge_template`}( ) && is_null( get_obj( ).`{`$arg_mail_merge_group`}( ) ) )
+            // FUTURE: This message should be a module string.
+            throw runtime_error( "This message needs the Mail Merge Group set in order to be sent." );
+
+         if( !is_null( get_obj( ).`{`$arg_mail_merge_group`}( ) ) )
+         {
+            if( get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).iterate_forwards( ) )
+               get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).iterate_stop( );
+            else
+               // FUTURE: This message should be a module string.
+               throw runtime_error( "Cannot send emails to an empty Mail Merge Group" );
+         }
+`}
+         get_obj( ).`{`$arg_status`}( c_enum_`{`$arg_status_enum`}_`{`$arg_status_sending`} );
+         get_obj( ).op_apply( );
+
+         get_obj( ).`{`$arg_folder`}( ).op_update( );
+
+         if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_changing`}( ) )
+            // FUTURE: This message should be a module string.
+            throw runtime_error( "Currently busy sending an email. Please try again later." );
+
+         if( get_obj( ).`{`$arg_folder`}( ).get_key( ) != string( get_uid( ) + "_drafts" ) )
+            // FUTURE: This message should be a module string.
+            throw runtime_error( "Drafts can only be sent from the top draft folder. Move this email to there first then send it." );
+
+         get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_changing`}( true );
+         get_obj( ).`{`$arg_folder`}( ).op_apply( );
+
+         class_pointer< `{`$module_name`}_`{`$arg_fclass`} > ap_outbox( e_create_instance );
+
+         ap_outbox->op_update( get_uid( ) + "_outbox" );
+         ap_outbox->`{`$arg_folder_changing`}( true );
+         ap_outbox->op_apply( );
+
+         transaction_commit( );
+
+         set_session_variable( "@key", get_obj( ).get_key( ) );
+
+         run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_send_proc`}" );
+      }
+      catch( ... )
+      {
+         transaction_rollback( );
+         throw;
+      }
+   }
+   else if( get_uid( ) == "auto" )
+   {
+      transaction_start( );
+
+      string uid( get_obj( ).get_variable( "@uid" ) );
+      if( uid.empty( ) )
+         throw runtime_error( "unexpected missing @uid session variable" );
+
+      vector< string > attachments;
+      if( get_obj( ).child_`{`$arg_attachments`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            attachments.push_back( get_obj( ).child_`{`$arg_attachments`}( ).`{`$arg_filename`}( ) + "?"
+             + get_obj( ).child_`{`$arg_attachments`}( ).get_attached_file_path( get_obj( ).child_`{`$arg_attachments`}( ).`{`$arg_attachment`}( ) ) );
+         } while( get_obj( ).child_`{`$arg_attachments`}( ).iterate_next( ) );
+      }
+
+      string html_file;
+      if( get_obj( ).`{`$arg_is_html_message`}( ) )
+         html_file = get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".html" );
+
+      set< string > contacts;
+      string list_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".lst" ) );
+
+      if( exists_file( list_filename ) )
+         read_file_lines( list_filename, contacts );
+
+      string error_text;
+      string error_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".txt" ) );
+
+      get_obj( ).op_update( );
+
+      // NOTE: The message id needs to be a unique string but needs to be the same when a
+      // restore occurs so use the logged date/time plus email account instead of a UUID.
+      string message_id( get_dtm( ) + get_obj( ).`{`$arg_ufield`}( ).`{`$arg_email_account`}( ) );
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+      bool is_mail_merge = false;
+      deque< string > mail_merge_contacts;
+      if( !is_null( get_obj( ).`{`$arg_mail_merge_group`}( ) ) )
+      {
+         is_mail_merge = true;
+         if( !storage_locked_for_admin( )
+          && get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).iterate_forwards( ) )
+         {
+            do
+            {
+               mail_merge_contacts.push_back(
+                get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ).get_key( ) );
+
+            } while( get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).iterate_next( ) );
+         }
+      }
+`}
+      while( true )
+      {
+         string temp_file, last_recipient;
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+         if( !storage_locked_for_admin( ) && is_mail_merge && mail_merge_contacts.empty( ) )
+            break;
+`}
+         try
+         {
+            // NOTE: If a recovery is in progress then ignore.
+            if( !storage_locked_for_admin( ) )
+            {
+               vector< string > recipients;
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+               if( is_mail_merge )
+               {
+                  // NOTE: If this send is due to one or more errors from a previous send attempt
+                  // then only contacts to which emails were not sent previously will be included.
+                  if( contacts.count( mail_merge_contacts.front( ) ) )
+                  {
+                     mail_merge_contacts.pop_front( );
+                     continue;
+                  }
+
+                  string html_content( load_file( html_file ) );
+
+                  `{`$module_name`}_`{`$arg_cclass`}& contact( get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ) );
+
+                  contact.perform_fetch( mail_merge_contacts.front( ) );
+
+                  string name( contact.`{`$arg_contact_display`}( ) );
+
+                  if( name.empty( ) )
+                     name = contact.`{`$arg_contact_name`}( );
+
+                  string name_and_email = name + " <" + contact.`{`$arg_contact_email`}( ) + ">";
+
+                  // FUTURE: Month names should be module strings.
+                  date_time dt( get_dtm( ) );
+                  string date_text( dt.month_name( ) );
+                  date_text += " " + to_string( dt.get_day( ) ) + ", " + to_string( dt.get_year( ) );
+
+                  replace_mail_merge_token( html_content, "name", name );
+                  replace_mail_merge_token( html_content, "date", date_text );
+
+`{`?`$arg_contact_fields`[`$arg_contact_fields`,\
+                  replace_mail_merge_token( html_content, "`{`@lower`(`'\\\\$`'`)`}", contact.\\\\$( ) );
+`]`}
+                  replace_mail_merge_token( html_content, "domain", get_domain( ) );
+
+                  replace_mail_merge_token( html_content, "app_dir", get_app_dir( ) );
+                  replace_mail_merge_token( html_content, "app_file", get_app_file( get_obj( ).module_name( ) ) );
+
+                  parse_recipients( name_and_email, recipients );
+
+                  if( !recipients.empty( ) )
+                     last_recipient = recipients[ 0 ];
+
+                  temp_file = "~" + get_uuid( ) + ".html";
+
+                  ofstream outf( temp_file.c_str( ) );
+                  outf << html_content;
+               }
+`}
+               parse_recipients( get_obj( ).`{`$arg_to`}( ), recipients );
+
+               if( !get_obj( ).`{`$arg_cc`}( ).empty( ) )
+               {
+                  recipients.push_back( "" );
+                  parse_recipients( get_obj( ).`{`$arg_cc`}( ), recipients );
+               }
+
+               if( !get_obj( ).`{`$arg_bcc`}( ).empty( ) )
+               {
+                  if( get_obj( ).`{`$arg_cc`}( ).empty( ) )
+                     recipients.push_back( "" );
+
+                  recipients.push_back( "" );
+                  parse_recipients( get_obj( ).`{`$arg_bcc`}( ), recipients );
+               }
+
+               user_account account;
+               account.sender = get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_description`}( )
+                + " <" + get_obj( ).`{`$arg_ufield`}( ).`{`$arg_email_account`}( ) + ">";
+
+               account.username = get_obj( ).`{`$arg_ufield`}( ).`{`$arg_email_account`}( );
+               account.password = get_obj( ).`{`$arg_ufield`}( ).`{`$arg_email_password`}( );
+
+               vector< string > extra_headers;
+               extra_headers.push_back( "Message-ID: <" + message_id + ">" );
+
+               if( !is_null( get_obj( ).`{`$arg_replies`}( ) ) )
+                  extra_headers.push_back( "In-Reply-To: " + get_obj( ).`{`$arg_replies`}( ).`{`$arg_message_id`}( ) );
+`{`!`@eq`(`$arg_add_hashcash`,`'`'`)
+               if( get_obj( ).`{`$arg_add_hashcash`}( ) )
+                  extra_headers.push_back( "X-Hashcash: " + generate_hashcash( recipients[ 0 ] ) );
+`}
+               string tz_abbr( get_timezone( ) );
+
+               send_email_message( account,
+                recipients, get_obj( ).`{`$arg_subject`}( ), get_obj( ).`{`$arg_message`}( ),
+                temp_file.empty( ) ? html_file : temp_file, &extra_headers, &attachments, &tz_abbr );
+
+               if( get_obj( ).`{`$arg_message_id`}( ).empty( ) )
+                  get_obj( ).`{`$arg_message_id`}( message_id );
+
+               if( get_obj( ).`{`$arg_conversation_id`}( ).empty( ) )
+                  get_obj( ).`{`$arg_conversation_id`}( message_id );
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+               if( is_mail_merge )
+               {
+                  ofstream outf( list_filename.c_str( ), ios::out | ios::app );
+                  if( !outf )
+                     throw runtime_error( "unable to open '" + list_filename + "' for output" );
+
+                  outf << mail_merge_contacts.front( ) << '\\\\n';
+                  if( !is_null( get_obj( ).`{`$arg_add_on_send`}( ) ) )
+                  {
+                     `{`$module_name`}_`{`$arg_cclass`}& contact( get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ) );
+
+                     contact.child_`{`$arg_group_contacts`}( ).op_create( get_obj( ).get_key( ) + "_" + mail_merge_contacts.front( ) );
+                     contact.child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact_group`}( get_obj( ).`{`$arg_add_on_send`}( ) );
+                     contact.child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact_contact`}( mail_merge_contacts.front( ) );
+                     contact.child_`{`$arg_group_contacts`}( ).op_apply( );
+                  }
+               }
+`}
+               if( !temp_file.empty( ) && exists_file( temp_file ) )
+                  remove_file( temp_file );
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+               if( is_mail_merge )
+                  mail_merge_contacts.pop_front( );
+               else
+                  break;\
+`,\
+               break;\
+`}
+            }
+            else
+            {
+               // NOTE: Check that this hasn't already been done as for the case of a mail merge
+               // that had errors repeated sends may have been issued.
+               if( !get_obj( ).`{`$arg_read`}( ) )
+               {
+                  if( exists_file( error_filename ) )
+                     error_text = load_file( error_filename );
+
+                  if( get_obj( ).`{`$arg_message_id`}( ).empty( ) )
+                     get_obj( ).`{`$arg_message_id`}( message_id );
+
+                  if( get_obj( ).`{`$arg_conversation_id`}( ).empty( ) )
+                     get_obj( ).`{`$arg_conversation_id`}( message_id );
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+                  if( is_mail_merge && !is_null( get_obj( ).`{`$arg_add_on_send`}( ) ) )
+                  {
+                     `{`$module_name`}_`{`$arg_cclass`}& contact( get_obj( ).`{`$arg_mail_merge_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ) );
+                     for( set< string >::iterator i = contacts.begin( ); i != contacts.end( ); ++i )
+                     {
+                        contact.child_`{`$arg_group_contacts`}( ).op_create( get_obj( ).get_key( ) + "_" + *i );
+                        contact.child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact_group`}( get_obj( ).`{`$arg_add_on_send`}( ) );
+                        contact.child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact_contact`}( *i );
+                        contact.child_`{`$arg_group_contacts`}( ).op_apply( );
+                     }
+                  }\
+`}
+               }
+
+               break;
+            }
+         }
+         catch( exception& x )
+         {
+            // NOTE: It is not expected that an exception should occur here during a recovery.
+            if( storage_locked_for_admin( ) )
+               throw;
+
+            if( !temp_file.empty( ) && exists_file( temp_file ) )
+               remove_file( temp_file );
+
+            if( !error_text.empty( ) )
+               error_text += '\\n';
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+            if( is_mail_merge && !last_recipient.empty( ) )
+               error_text += last_recipient + ": ";
+`}
+            error_text += x.what( );
+
+            ofstream outf( error_filename.c_str( ), ios::out | ios::app );
+            outf << error_text << '\\n';
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+            if( is_mail_merge )
+               mail_merge_contacts.pop_front( );
+            else
+               break;\
+`,\
+            break;\
+`}
+         }
+         catch( ... )
+         {
+            // NOTE: It is not expected that an exception should occur here during a recovery.
+            if( storage_locked_for_admin( ) )
+               throw;
+
+            if( !temp_file.empty( ) && exists_file( temp_file ) )
+               remove_file( temp_file );
+
+            if( !error_text.empty( ) )
+               error_text += '\\n';
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+            if( is_mail_merge && !last_recipient.empty( ) )
+               error_text += last_recipient + ": ";
+`}
+            error_text += "Unexpected exception occurred.";
+
+            ofstream outf( error_filename.c_str( ), ios::out | ios::app );
+            outf << error_text << '\\n';
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+            if( is_mail_merge )
+               mail_merge_contacts.pop_front( );
+            else
+               break;\
+`,\
+            break;\
+`}
+         }
+      }
+
+      if( error_text.empty( ) )
+      {
+         get_obj( ).`{`$arg_error`}( "" );
+
+         if( !get_obj( ).`{`$arg_read`}( ) )
+         {
+            get_obj( ).`{`$arg_read`}( true );
+            get_obj( ).`{`$arg_sent`}( get_dtm( ) );
+            get_obj( ).`{`$arg_when`}( date_time( get_dtm( ) ) );
+            get_obj( ).`{`$arg_folder`}( uid + "_outbox" );
+            get_obj( ).`{`$arg_status`}( c_enum_`{`$arg_status_enum`}_`{`$arg_status_sent`} );
+
+            if( !html_file.empty( ) && exists_file( html_file ) )
+               get_obj( ).`{`$arg_html_message`}( load_file( html_file ) );
+
+            if( exists_file( error_filename ) )
+               remove_file( error_filename );
+         }
+      }
+      else
+      {
+         get_obj( ).`{`$arg_error`}( error_text );
+         get_obj( ).`{`$arg_status`}( c_enum_`{`$arg_status_enum`}_`{`$arg_status_failed`} );
+
+         get_obj( ).`{`$arg_folder`}( ).op_update( );
+         get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_changing`}( false );
+         get_obj( ).`{`$arg_folder`}( ).op_apply( );
+
+         class_pointer< `{`$module_name`}_`{`$arg_fclass`} > ap_folder( e_create_instance );
+
+         ap_folder->op_update( uid + "_outbox" );
+         ap_folder->`{`$arg_folder_changing`}( false );
+         ap_folder->op_apply( );
+      }
+
+      get_obj( ).op_apply( );
+
+      transaction_commit( );
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start for_email)]
+   if( get_obj( ).`{`$arg_status`}( ) != c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`} )
+   {
+      if( get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_sending`} )
+         state |= c_state_uneditable | c_state_unactionable;
+      else if( get_obj( ).`{`$arg_status`}( ) != c_enum_`{`$arg_status_enum`}_`{`$arg_status_failed`} )
+         state |= c_state_uneditable | c_state_ignore_uneditable;
+   }
+
+   if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_junk`}( ) || get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_trash`}( ) )
+   {
+      state |= c_state_uneditable;
+      state &= ~c_modifier_Is_HTML;
+      state |= c_modifier_Is_Not_HTML;
+   }
+
+   if( get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_sending`} )
+      state |= c_state_is_changing;
+   // [(finish for_email)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_email)]
+   if( !storage_locked_for_admin( )
+    && ( get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} )
+    || get_obj( ).needs_field_value( c_field_name_`{`$arg_contact`} ) ) )
+   {
+      string actions;
+      if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_drafts`}( ) && get_obj( ).`{`$arg_status`}( ) != c_enum_`{`$arg_status_enum`}_`{`$arg_status_sending`} )
+      {
+         // NOTE: Emails can only be "sent" from the root draft folder.
+         if( !get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_changing`}( )
+          && get_obj( ).`{`$arg_folder`}( ).get_key( ) == get_uid( ) + "_drafts" )
+            actions = "<" + string( c_procedure_id_`{`$arg_send_proc`} );
+
+         actions += ",#<" + string( c_procedure_id_`{`$arg_move_to_trash_proc`} );
+      }
+      else if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_inbox`}( ) )
+      {
+         actions = "#" + string( c_procedure_id_`{`$arg_reply_proc`} ) + "$"
+          + string( get_obj( ).class_id( ) ) + "." + string( c_field_id_`{`$arg_type`} )
+          + "=" + to_string( c_enum_`{`$arg_type_enum`}_`{`$arg_reply`} ) + "%" + get_obj( ).get_key( );
+
+         actions += ",#" + string( c_procedure_id_`{`$arg_forward_proc`} ) + "$"
+          + string( get_obj( ).class_id( ) ) + "." + string( c_field_id_`{`$arg_type`} )
+          + "=" + to_string( c_enum_`{`$arg_type_enum`}_`{`$arg_forward`} ) + "%" + get_obj( ).get_key( );
+
+         if( !get_obj( ).`{`$arg_read`}( ) )
+            actions += ",#<" + string( c_procedure_id_`{`$arg_mark_as_read_proc`} );
+
+         if( !get_obj( ).`{`$arg_from`}( ).empty( ) )
+         {
+            string name, email;
+
+            parse_email_address( get_obj( ).`{`$arg_from`}( ), name, email );
+
+            if( !email.empty( ) )
+            {
+               string contact_key;
+               bool found_address = false;
+
+               string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_contact_email`} ) );
+               key_info += " ";
+
+               if( get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).iterate_forwards( key_info ) )
+               {
+                  do
+                  {
+                     if( get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).`{`$arg_contact_email`}( ) == email
+                      || get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).`{`$arg_contact_email`}( ) == "<" + email + ">" )
+                     {
+                        contact_key = get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).get_key( );
+                        get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).iterate_stop( );
+                        found_address = true;
+                        break;
+                     }
+                  } while( get_obj( ).`{`$arg_ufield`}( ).child_`{`$arg_user_contacts`}( ).iterate_next( ) );
+               }
+
+               if( found_address )
+                  get_obj( ).`{`$arg_contact`}( contact_key );
+               else
+                  actions += ",#" + string( c_procedure_id_`{`$arg_add_contact_proc`} )
+                   + "$" + string( CLASS_ID( `{`$module_name`}, `{`$arg_cclass`} ) )
+                   + "." + string( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_contact_from`} ) ) + "=" + get_obj( ).get_key( );
+            }
+         }
+
+         actions += ",#<" + string( c_procedure_id_`{`$arg_move_to_junk_proc`} );
+         actions += ",#<" + string( c_procedure_id_`{`$arg_move_to_trash_proc`} );
+      }
+      else if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_outbox`}( ) )
+      {
+         actions = "#" + string( c_procedure_id_`{`$arg_forward_proc`} ) + "$"
+          + string( get_obj( ).class_id( ) ) + "." + string( c_field_id_`{`$arg_type`} )
+          + "=" + to_string( c_enum_`{`$arg_type_enum`}_`{`$arg_forward`} ) + "%" + get_obj( ).get_key( );
+
+         actions += ",#" + string( c_procedure_id_`{`$arg_redraft_proc`} )
+          + "$" + string( get_obj( ).class_id( ) ) + "%" + get_obj( ).get_key( );
+
+         actions += ",#<" + string( c_procedure_id_`{`$arg_move_to_trash_proc`} );
+      }
+      else if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_junk`}( ) || get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_trash`}( ) )
+      {
+         actions += "#" + string( c_procedure_id_`{`$arg_recover_proc`} );
+
+         if( !get_obj( ).`{`$arg_read`}( ) )
+            actions += ",#<" + string( c_procedure_id_`{`$arg_mark_as_read_proc`} );
+
+         if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_junk`}( ) )
+            actions += ",#<" + string( c_procedure_id_`{`$arg_move_to_trash_proc`} );
+      }
+
+      get_obj( ).`{`$arg_actions`}( actions );
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start for_email)]
+   if( !is_internal )
+   {
+      if( is_create && !get_dtm( ).empty( ) )
+         get_obj( ).`{`$arg_when`}( date_time( get_dtm( ) ) );
+
+      if( is_create )
+         get_obj( ).`{`$arg_ufield`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_user`}( ) );
+`{`!`@eq`(`$arg_mail_merge_group`,`'`'`)
+      if( !get_obj( ).`{`$arg_is_html_message`}( ) )
+      {
+         get_obj( ).`{`$arg_email_template`}( "" );
+         get_obj( ).`{`$arg_mail_merge_group`}( "" );
+      }
+`}
+      if( is_create && get_obj( ).`{`$arg_type`}( ) == c_enum_`{`$arg_type_enum`}_`{`$arg_normal`} )
+      {
+         get_obj( ).`{`$arg_status`}( c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`} );
+
+         get_obj( ).`{`$arg_read`}( false );
+         get_obj( ).`{`$arg_sent`}( tdatetime( ) );
+         get_obj( ).`{`$arg_received`}( tdatetime( ) );
+
+         get_obj( ).`{`$arg_original_message`}( "" );
+         get_obj( ).`{`$arg_html_preview`}( "" );
+         get_obj( ).`{`$arg_message_id`}( "" );
+         get_obj( ).`{`$arg_conversation_id`}( "" );
+         get_obj( ).`{`$arg_headers`}( "" );
+
+         if( get_obj( ).get_key( ) == string( c_clone_key ) )
+         {
+            get_obj( ).`{`$arg_to`}( "" );
+            get_obj( ).`{`$arg_cc`}( "" );
+            get_obj( ).`{`$arg_bcc`}( "" );
+         }
+
+         if( get_obj( ).`{`$arg_is_html_message`}( ) )
+            get_obj( ).`{`$arg_html_message`}( get_obj( ).`{`$arg_html_injected`}( ) );
+      }
+
+      if( is_create && get_obj( ).`{`$arg_type`}( ) != c_enum_`{`$arg_type_enum`}_`{`$arg_normal`} )
+      {
+         if( get_obj( ).get_key( ) == string( c_clone_key )
+          && is_null( get_obj( ).`{`$arg_select_group`}( ) ) && is_null( get_obj( ).`{`$arg_select_contact`}( ) ) )
+         {
+            string subject( get_obj( ).`{`$arg_subject`}( ) );
+            string::size_type pos = subject.find( ":" );
+            if( pos != string::npos )
+               subject.erase( 0, pos + 1 );
+
+            if( !subject.empty( ) && subject[ 0 ] != ' ' )
+               subject = ' ' + subject;
+
+            if( get_obj( ).`{`$arg_type`}( ) == c_enum_`{`$arg_type_enum`}_`{`$arg_reply`} )
+            {
+               get_obj( ).`{`$arg_subject`}( "Re:" + subject );
+               get_obj( ).`{`$arg_to`}( get_obj( ).`{`$arg_from`}( ) );
+            }
+            else
+            {
+               get_obj( ).`{`$arg_subject`}( "Fw:" + subject );
+               get_obj( ).`{`$arg_to`}( "" );
+               get_obj( ).`{`$arg_cc`}( "" );
+            }
+
+            string text_message( "\\n\\n\\n--- Original Message ---\\n" );
+
+            set< string > all_headers;
+            string from, sent, to;
+            if( !get_obj( ).`{`$arg_headers`}( ).empty( ) )
+            {
+               vector< string > all_headers;
+               split_string( get_obj( ).`{`$arg_headers`}( ), all_headers, '\\n' );
+
+               for( size_t i = 0; i < all_headers.size( ); i++ )
+               {
+                  if( lower( all_headers[ i ] ).find( "to: " ) == 0 )
+                     to = all_headers[ i ].substr( 4 );
+                  else if( lower( all_headers[ i ] ).find( "from: " ) == 0 )
+                     from = all_headers[ i ].substr( 6 );
+                  else if( lower( all_headers[ i ] ).find( "date: " ) == 0 )
+                     sent = all_headers[ i ].substr( 6 );
+               }
+
+               if( !from.empty( ) )
+                  text_message += "From: " + from + "\\n";
+               if( !sent.empty( ) )
+                  text_message += "Sent: " + sent + "\\n";
+               if( !to.empty( ) )
+                  text_message += "To: " + to + "\\n";
+
+               text_message += "Subject: " + subject + "\\n";
+            }
+
+            get_obj( ).`{`$arg_message`}( text_message + "\\n" + get_obj( ).`{`$arg_message`}( ) );
+
+            if( !get_obj( ).`{`$arg_html_message`}( ).empty( ) )
+            {
+               string html_messge( "<p>&nbsp;</p><p>--- Original Message ---<br/>\\n" );
+
+               if( !from.empty( ) )
+                  html_messge += "<b>From:</b> " + from + "<br/>\\n";
+               if( !sent.empty( ) )
+                  html_messge += "<b>Sent:</b> " + sent + "<br/>\\n";
+               if( !to.empty( ) )
+                  html_messge += "<b>To:</b> " + to + "<br/>\\n";
+
+               html_messge += "<b>Subject:</b> " + subject + "<br/>\\n";
+
+               get_obj( ).`{`$arg_html_message`}( html_messge + "</p>\\n" + get_obj( ).`{`$arg_html_message`}( ) );
+            }
+         }
+         else if( get_obj( ).`{`$arg_type`}( ) == c_enum_`{`$arg_type_enum`}_`{`$arg_reply`} )
+         {
+            get_obj( ).`{`$arg_replies`}( get_obj( ).get_clone_key( ) );
+
+            // NOTE: For a "reply" we don't want to copy the attachments so the clone
+            // key is cleared here to prevent that occurring in "after_store".
+            get_obj( ).clear_clone_key( );
+         }
+
+         get_obj( ).`{`$arg_status`}( c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`} );
+
+         get_obj( ).`{`$arg_read`}( false );
+         get_obj( ).`{`$arg_received`}( tdatetime( ) );
+
+         get_obj( ).`{`$arg_original_message`}( "" );
+         get_obj( ).`{`$arg_html_preview`}( "" );
+         get_obj( ).`{`$arg_message_id`}( "" );
+         get_obj( ).`{`$arg_headers`}( "" );
+
+         get_obj( ).`{`$arg_ufield`}( get_uid( ) );
+         get_obj( ).`{`$arg_folder`}( get_uid( ) + "_drafts" );
+      }
+
+      string trigger_field = get_obj( ).get_variable( "@trigger" );
+
+      if( trigger_field == c_field_id_`{`$arg_recipient_type`}
+       && ( get_obj( ).`{`$arg_recipient_type`}( ) == c_enum_`{`$arg_rtype_enum`}_`{`$arg_rtype_group`}
+       || get_obj( ).`{`$arg_recipient_type`}( ) == c_enum_`{`$arg_rtype_enum`}_`{`$arg_rtype_manual`} ) )
+      {
+         get_obj( ).`{`$arg_select_group`}( "" );
+         get_obj( ).`{`$arg_select_contact`}( "" );
+      }
+
+      if( trigger_field == c_field_id_`{`$arg_select_group`}
+       && get_obj( ).`{`$arg_recipient_type`}( ) != c_enum_`{`$arg_rtype_enum`}_`{`$arg_rtype_gcontact`} )
+      {
+         string s;
+
+         if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_to`} )
+            s = get_obj( ).`{`$arg_to`}( );
+         else if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_cc`} )
+            s = get_obj( ).`{`$arg_cc`}( );
+         else
+            s = get_obj( ).`{`$arg_bcc`}( );
+
+         if( get_obj( ).`{`$arg_select_group`}( ).child_`{`$arg_group_contacts`}( ).iterate_forwards( ) )
+         {
+            do
+            {
+               if( !s.empty( ) )
+                  s += ", ";
+
+               if( get_obj( ).`{`$arg_select_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_display`}( ).empty( ) )
+                  s += get_obj( ).`{`$arg_select_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_name`}( );
+               else
+                  s += get_obj( ).`{`$arg_select_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_display`}( );
+
+               string email( get_obj( ).`{`$arg_select_group`}( ).child_`{`$arg_group_contacts`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_email`}( ) );
+
+               if( email.empty( ) )
+                  s.erase( );
+               else
+               {
+                  string::size_type pos = email.find( '<' );
+                  if( pos == string::npos )
+                     email = "<" + email + ">";
+
+                  s += ' ' + email;
+               }
+            } while( get_obj( ).`{`$arg_select_group`}( ).child_`{`$arg_group_contacts`}( ).iterate_next( ) );
+         }
+
+         if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_to`} )
+            get_obj( ).`{`$arg_to`}( s );
+         else if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_cc`} )
+            get_obj( ).`{`$arg_cc`}( s );
+         else
+            get_obj( ).`{`$arg_bcc`}( s );
+      }
+
+      if( trigger_field == c_field_id_`{`$arg_select_contact`} )
+      {
+         string s;
+
+         if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_to`} )
+            s = get_obj( ).`{`$arg_to`}( );
+         else if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_cc`} )
+            s = get_obj( ).`{`$arg_cc`}( );
+         else
+            s = get_obj( ).`{`$arg_bcc`}( );
+
+
+         if( !s.empty( ) )
+            s += ", ";
+
+         if( get_obj( ).`{`$arg_select_contact`}( ).`{`$arg_contact_display`}( ).empty( ) )
+            s += get_obj( ).`{`$arg_select_contact`}( ).`{`$arg_contact_name`}( );
+         else
+            s += get_obj( ).`{`$arg_select_contact`}( ).`{`$arg_contact_display`}( );
+
+         string email( get_obj( ).`{`$arg_select_contact`}( ).`{`$arg_contact_email`}( ) );
+
+         if( email.empty( ) )
+            s.erase( );
+         else
+         {
+            string::size_type pos = email.find( '<' );
+            if( pos == string::npos )
+               email = "<" + email + ">";
+
+            s += ' ' + email;
+         }
+
+         if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_to`} )
+            get_obj( ).`{`$arg_to`}( s );
+         else if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_cc`} )
+            get_obj( ).`{`$arg_cc`}( s );
+         else
+            get_obj( ).`{`$arg_bcc`}( s );
+      }
+
+      if( trigger_field == c_field_id_`{`$arg_select_group_contact`} )
+      {
+         string s;
+
+         if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_to`} )
+            s = get_obj( ).`{`$arg_to`}( );
+         else if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_cc`} )
+            s = get_obj( ).`{`$arg_cc`}( );
+         else
+            s = get_obj( ).`{`$arg_bcc`}( );
+
+         if( !s.empty( ) )
+            s += ", ";
+
+         if( get_obj( ).`{`$arg_select_group_contact`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_display`}( ).empty( ) )
+            s += get_obj( ).`{`$arg_select_group_contact`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_name`}( );
+         else
+            s += get_obj( ).`{`$arg_select_group_contact`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_display`}( );
+
+         string email( get_obj( ).`{`$arg_select_group_contact`}( ).`{`$arg_group_contact`}( ).`{`$arg_contact_email`}( ) );
+
+         if( email.empty( ) )
+            s.erase( );
+         else
+         {
+            string::size_type pos = email.find( '<' );
+            if( pos == string::npos )
+               email = "<" + email + ">";
+
+            s += ' ' + email;
+         }   
+
+         if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_to`} )
+            get_obj( ).`{`$arg_to`}( s );
+         else if( get_obj( ).`{`$arg_add_recipient`}( ) == c_enum_`{`$arg_recipient_enum`}_`{`$arg_recipient_cc`} )
+            get_obj( ).`{`$arg_cc`}( s );
+         else
+            get_obj( ).`{`$arg_bcc`}( s );
+      }
+
+      if( is_create && get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`} )
+      {
+         if( !get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_drafts`}( ) )
+            get_obj( ).`{`$arg_folder`}( get_uid( ) + "_drafts" );
+
+         if( get_obj( ).`{`$arg_from`}( ).empty( ) )
+         {
+            string address( get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_account`}( ) );
+            if( address.find( '@' ) == string::npos )
+               address += "@" + get_domain( );
+
+            get_obj( ).`{`$arg_from`}(
+             get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_description`}( ) + " <" + address + ">" );
+         }
+      }
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_email)]
+   if( is_create )
+   {
+      get_obj( ).`{`$arg_folder`}( ).op_update( );
+
+      get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_total`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_total`}( ) + 1 );
+
+      if( !get_obj( ).`{`$arg_read`}( ) )
+         get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( ) + 1 );
+
+      get_obj( ).`{`$arg_folder`}( ).op_apply( );
+
+      if( !is_null( get_obj( ).`{`$arg_replies`}( ) ) )
+      {
+         class_pointer< `{`$module_name`}_`{`$class_name`} > ap_reply( e_create_instance );
+
+         ap_reply->perform_fetch( get_obj( ).`{`$arg_replies`}( ) );
+
+         while( !is_null( ap_reply->`{`$arg_replies`}( ) ) )
+            ap_reply->perform_fetch( ap_reply->`{`$arg_replies`}( ) );
+
+         get_obj( ).`{`$arg_conversation_id`}( ap_reply->`{`$arg_message_id`}( ) );
+      }
+      else
+         get_obj( ).`{`$arg_conversation_id`}( get_obj( ).`{`$arg_message_id`}( ) );
+   }
+
+   if( get_obj( ).get_variable( "email_folder_bulk" ).empty( ) )
+   {
+      int64_t size = 1024;
+
+      size += get_obj( ).`{`$arg_to`}( ).length( );
+      size += get_obj( ).`{`$arg_cc`}( ).length( );
+      size += get_obj( ).`{`$arg_subject`}( ).length( );
+      size += get_obj( ).`{`$arg_message`}( ).length( );
+      size += get_obj( ).`{`$arg_html_message`}( ).length( );
+
+      if( get_obj( ).child_`{`$arg_attachments`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            string attachment( get_obj( ).child_`{`$arg_attachments`}( ).`{`$arg_attachment`}( ) );
+
+            if( !attachment.empty( ) )
+               size += size_file( get_obj( ).child_`{`$arg_attachments`}( ).get_attached_file_path( attachment ) );
+
+         } while( get_obj( ).child_`{`$arg_attachments`}( ).iterate_next( ) );
+      }
+      else if( !get_obj( ).get_clone_key( ).empty( ) )
+      {
+         class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+         cp_source->begin_review( get_obj( ).get_clone_key( ) );
+
+         if( cp_source->child_`{`$arg_attachments`}( ).iterate_forwards( ) )
+         {
+            do
+            {
+               string attachment( cp_source->child_`{`$arg_attachments`}( ).`{`$arg_attachment`}( ) );
+
+               if( !attachment.empty( ) )
+                  size += ( int )size_file( cp_source->child_`{`$arg_attachments`}( ).get_attached_file_path( attachment ) );
+
+            } while( cp_source->child_`{`$arg_attachments`}( ).iterate_next( ) );
+         }
+
+         cp_source->finish_review( );
+
+         get_obj( ).set_variable( "@skip_update", "true" );
+      }
+
+      get_obj( ).`{`$arg_size`}( size );
+   }
+
+   if( !is_create
+    && get_obj( ).`{`$arg_folder`}( ).has_changed( ) && get_obj( ).get_variable( "email_folder_bulk" ).empty( ) )
+   {
+      get_obj( ).`{`$arg_folder`}( ).op_update( );
+
+      bool was_unread( atoi( get_obj( ).get_original_field_value( get_obj( ).get_field_num( "`{`$arg_read`}" ) ).c_str( ) ) == 0 );
+
+      if( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_drafts`}( ) )
+         get_obj( ).`{`$arg_read`}( false );
+
+      get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_total`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_total`}( ) + 1 );
+      if( !get_obj( ).`{`$arg_read`}( ) )
+         get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( ) + 1 );
+
+      get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_changing`}( false );
+
+      get_obj( ).`{`$arg_folder`}( ).op_apply( );
+
+      string old_folder = get_obj( ).get_original_field_value( get_obj( ).get_field_num( "`{`$arg_folder`}" ) );
+
+      class_pointer< `{`$module_name`}_`{`$arg_fclass`} > ap_folder( e_create_instance );
+      ap_folder->op_update( old_folder );
+
+      ap_folder->`{`$arg_folder_total`}( ap_folder->`{`$arg_folder_total`}( ) - 1 );
+      if( was_unread )
+         ap_folder->`{`$arg_folder_unread`}( ap_folder->`{`$arg_folder_unread`}( ) - 1 );
+
+      ap_folder->`{`$arg_folder_changing`}( false );
+
+      ap_folder->op_apply( );
+   }
+
+   if( get_obj( ).`{`$arg_is_html_message`}( )
+    && get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`} && get_obj( ).get_variable( "email_folder_bulk" ).empty( ) )
+   {
+      string html_file( to_string( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".html" ) ) );
+
+      if( !storage_locked_for_admin( ) )
+      {
+`{`@eq`(`$arg_email_template`,`'`'`)\
+         string all_html( get_obj( ).`{`$arg_html_message`}( ) );
+`,\
+         string all_html;
+         if( get_obj( ).`{`$arg_email_template`}( ).`{`$arg_template`}( ).empty( ) )
+            all_html = get_obj( ).`{`$arg_html_message`}( );
+         else
+            all_html = get_obj( ).`{`$arg_email_template`}( ).`{`$arg_template`}( );
+
+         if( !is_null( get_obj( ).`{`$arg_email_template`}( ) ) )
+         {
+            string::size_type pos = all_html.find( c_email_content_marker );
+            if( pos != string::npos )
+            {
+               all_html.erase( pos, strlen( c_email_content_marker ) );
+               if( !get_obj( ).`{`$arg_email_template`}( ).`{`$arg_merge_template`}( ) )
+                  all_html.insert( pos, get_obj( ).`{`$arg_html_message`}( ) );
+               else
+                  all_html.insert( pos, get_obj( ).`{`$arg_html_message`}( ) + g_email_html_signature );
+            }
+
+            if( get_obj( ).`{`$arg_email_template`}( ).`{`$arg_merge_template`}( ) )
+            {
+               replace_mail_merge_token( all_html, "sender_name", get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_description`}( ) );
+               replace_mail_merge_token( all_html, "sender_job_title", get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_job_title`}( ) );
+            }
+         }
+`}
+         ofstream outf( html_file.c_str( ) );
+         outf << all_html;
+      }
+
+      if( exists_file( html_file ) )
+         get_obj( ).`{`$arg_message`}( convert_html_to_text( load_file( html_file ) ) );
+
+      get_obj( ).`{`$arg_html_injected`}( get_obj( ).`{`$arg_html_message`}( ) );
+      get_obj( ).`{`$arg_html_preview`}( get_obj( ).get_key( ) + ".html" );
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start for_email)]
+   get_obj( ).set_variable( "@skip_update", "" );
+   // [(finish for_email)]
+`}
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start for_email)]
+   if( get_obj( ).get_variable( "email_folder_bulk" ).empty( ) )
+   {
+      get_obj( ).`{`$arg_folder`}( ).op_update( );
+      get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_total`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_total`}( ) - 1 );
+
+      if( !get_obj( ).`{`$arg_read`}( ) )
+         get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( get_obj( ).`{`$arg_folder`}( ).`{`$arg_folder_unread`}( ) - 1 );
+
+      get_obj( ).`{`$arg_folder`}( ).op_apply( );
+   }   
+`{`!`@eq`(`$arg_tags`,`'`'`)
+   if( get_obj( ).child_`{`$arg_tags`}( ).iterate_forwards( ) )
+   {
+      string dead_tags;
+      do
+      {
+         if( !dead_tags.empty( ) )
+            dead_tags += ",";
+         dead_tags += get_obj( ).child_`{`$arg_tags`}( ).get_key( );
+
+      } while( get_obj( ).child_`{`$arg_tags`}( ).iterate_next( ) );
+
+      get_obj( ).set_variable( c_dead_tags, dead_tags );
+   }
+`}\
+   // [(finish for_email)]
+`}
+`{`@eq`(`'after_destroy`'`,`$section`)\
+   // [(start for_email)]
+   string error_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".txt" ) );
+   remove_file( error_filename );
+
+   string list_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".lst" ) );
+
+   if( exists_file( list_filename ) )
+   {
+      vector< string > contacts;
+      read_file_lines( list_filename, contacts );
+
+      class_pointer< `{`$module_name`}_`{`$arg_gcclass`} > cp_group_contact( e_create_instance );
+
+      for( size_t i = 0; i < contacts.size( ); i++ )
+      {
+         string next_key( get_obj( ).get_key( ) + "_" + contacts[ i ] );
+
+         perform_fetch_rc rc;
+         cp_group_contact->perform_fetch( next_key, &rc );
+
+         if( rc == e_perform_fetch_rc_okay )
+         {
+            cp_group_contact->op_destroy( next_key );
+            cp_group_contact->op_apply( );
+
+            storage_add_dead_key( cp_group_contact->class_id( ), next_key );
+         }
+      }
+
+      remove_file( list_filename );
+   }
+
+`{`@eq`(`$arg_tags`,`'`'`)\
+   if( !get_obj( ).`{`$arg_original_message`}( ).empty( ) )
+      storage_add_dead_key( get_obj( ).class_id( ), get_obj( ).get_key( ) );
+`,\
+   if( !get_obj( ).`{`$arg_original_message`}( ).empty( ) )
+   {
+      storage_add_dead_key( get_obj( ).class_id( ), get_obj( ).get_key( ) );
+      string dead_tags = get_obj( ).get_variable( c_dead_tags );
+
+      if( !dead_tags.empty( ) )
+      {
+         vector< string > all_tag_keys;
+         split_string( dead_tags, all_tag_keys );
+
+         for( size_t i = 0; i < all_tag_keys.size( ); i++ )
+            storage_add_dead_key( get_obj( ).child_`{`$arg_tags`}( ).class_id( ), all_tag_keys[ i ] );
+      }
+   }
+`}\
+   // [(finish for_email)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start for_email)]
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_folder`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_folder`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_folder`} ) ) )
+         names.insert( "`{`$arg_folder`}" );
+   }
+   // [(finish for_email)]
+`}
+`{`@eq`(`'static_class_init`'`,`$section`)\
+   // [(start for_email)]
+   if( exists_file( c_email_signature_file ) )
+      g_email_html_signature = load_file( c_email_signature_file );
+   // [(finish for_email)]
+`}

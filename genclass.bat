@@ -39,15 +39,15 @@ call update %full_name%.cpp.xrep ~genclass.tmp >nul
 :skip_extract
 if exist %full_name%.cpp.xrep set user_vars=%user_vars% user_source=%full_name%.cpp.xrep
 
-xrep @cat_class.h.xrep %user_vars% >%full_name%.h.new
+xrep @ciyam_class.h.xrep %user_vars% >%full_name%.h.new
 if errorlevel 1 goto end
 call update.bat %full_name%.h %full_name%.h.new
 
-xrep @cat_class.cpp.xrep %user_vars% >%full_name%.cpp.new
+xrep @ciyam_class.cpp.xrep %user_vars% >%full_name%.cpp.new
 if errorlevel 1 goto end
 call update.bat %full_name%.cpp %full_name%.cpp.new
 
-xrep @cat_class.cms.xrep %user_vars% >%full_name%.cms.new
+xrep @ciyam_class.cms.xrep %user_vars% >%full_name%.cms.new
 if errorlevel 1 goto end
 call update.bat %full_name%.cms %full_name%.cms.new
 

@@ -11,12 +11,12 @@
 ##
 ##             base                 make base.lib target
 ##             commands             make commands.lib target
-##             cat_base             make cat_base.dll target
+##             ciyam_base           make ciyam_base.dll target
 ##             Meta                 make Meta.dll target
 ##             bundle               make bundle.exe target
-##             cat_client           make cat_client.exe target
-##             cat_interface        make cat_interface.exe target
-##             cat_server           make cat_server.exe target
+##             ciyam_client         make ciyam_client.exe target
+##             ciyam_interface      make ciyam_interface.exe target
+##             ciyam_server         make ciyam_server.exe target
 ##             construct            make construct.exe target
 ##             diff                 make diff.exe target
 ##             diffp                make diffp.exe target
@@ -219,22 +219,22 @@ TARGET_COMMANDS_OBJECTS=command_parser.obj\
  utilities.obj
 TARGET_COMMANDS_ERRFILE=commands.err
 
-TARGET_CAT_BASE=cat_base.dll
-TARGET_CAT_BASE_EXPORT=cat_base.lib
-TARGET_CAT_BASE_OBJECTS=cat_base.obj\
- cat_base_command_handler.obj\
- cat_base_date_time.obj\
- cat_base_file_buffer.obj\
- cat_base_numeric.obj\
- cat_base_ods.obj\
+TARGET_CIYAM_BASE=ciyam_base.dll
+TARGET_CIYAM_BASE_EXPORT=ciyam_base.lib
+TARGET_CIYAM_BASE_OBJECTS=ciyam_base.obj\
+ ciyam_base_command_handler.obj\
+ ciyam_base_date_time.obj\
+ ciyam_base_file_buffer.obj\
+ ciyam_base_numeric.obj\
+ ciyam_base_ods.obj\
  class_base.obj\
  commands_date_time.obj\
  commands_numeric.obj\
  mail_source.obj\
  module_management.obj
-TARGET_CAT_BASE_COMMANDS=date_time.cmh\
+TARGET_CIYAM_BASE_COMMANDS=date_time.cmh\
  numeric.cmh
-TARGET_CAT_BASE_ERRFILE=cat_base.err
+TARGET_CIYAM_BASE_ERRFILE=ciyam_base.err
 
 TARGET_META=Meta.dll
 TARGET_META_EXPORT=Meta.lib
@@ -317,11 +317,11 @@ TARGET_META_ERRFILE=Meta.err
 TARGET_BUNDLE=bundle.exe
 TARGET_BUNDLE_OBJECTS=bundle.obj
 
-TARGET_CAT_CLIENT=cat_client.exe
-TARGET_CAT_CLIENT_OBJECTS=cat_client.obj
+TARGET_CIYAM_CLIENT=ciyam_client.exe
+TARGET_CIYAM_CLIENT_OBJECTS=ciyam_client.obj
 
-TARGET_CAT_INTERFACE=cat_interface.exe
-TARGET_CAT_INTERFACE_OBJECTS=cat_interface.obj\
+TARGET_CIYAM_INTERFACE=ciyam_interface.exe
+TARGET_CIYAM_INTERFACE_OBJECTS=ciyam_interface.obj\
  fcgi_cmds.obj\
  fcgi_info.obj\
  fcgi_list.obj\
@@ -329,11 +329,11 @@ TARGET_CAT_INTERFACE_OBJECTS=cat_interface.obj\
  fcgi_utils.obj\
  fcgi_view.obj
 
-TARGET_CAT_SERVER=cat_server.exe
-TARGET_CAT_SERVER_OBJECTS=auto_script.obj\
- cat_server.obj\
- cat_session.obj
-TARGET_CAT_SERVER_COMMANDS=cat_session.cmh
+TARGET_CIYAM_SERVER=ciyam_server.exe
+TARGET_CIYAM_SERVER_OBJECTS=auto_script.obj\
+ ciyam_server.obj\
+ ciyam_session.obj
+TARGET_CIYAM_SERVER_COMMANDS=ciyam_session.cmh
 
 TARGET_CONSTRUCT=construct.exe
 TARGET_CONSTRUCT_OBJECTS=construct.obj
@@ -404,12 +404,12 @@ TARGET_XVARS_OBJECTS=xvars.obj
 ALL_TARGETS=\
  $(TARGET_BASE)\
  $(TARGET_COMMANDS)\
- $(TARGET_CAT_BASE)\
+ $(TARGET_CIYAM_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
- $(TARGET_CAT_CLIENT)\
- $(TARGET_CAT_INTERFACE)\
- $(TARGET_CAT_SERVER)\
+ $(TARGET_CIYAM_CLIENT)\
+ $(TARGET_CIYAM_INTERFACE)\
+ $(TARGET_CIYAM_SERVER)\
  $(TARGET_CONSTRUCT)\
  $(TARGET_DIFF)\
  $(TARGET_DIFFP)\
@@ -431,18 +431,18 @@ ALL_TARGETS=\
  $(TARGET_XVARS)
 
 ALL_EXPORTS=\
- $(TARGET_CAT_BASE_EXPORT)\
+ $(TARGET_CIYAM_BASE_EXPORT)\
  $(TARGET_META_EXPORT)
 
 ALL_OBJECTS=\
  $(TARGET_BASE_OBJECTS)\
  $(TARGET_COMMANDS_OBJECTS)\
- $(TARGET_CAT_BASE_OBJECTS)\
+ $(TARGET_CIYAM_BASE_OBJECTS)\
  $(TARGET_META_OBJECTS)\
  $(TARGET_BUNDLE_OBJECTS)\
- $(TARGET_CAT_CLIENT_OBJECTS)\
- $(TARGET_CAT_INTERFACE_OBJECTS)\
- $(TARGET_CAT_SERVER_OBJECTS)\
+ $(TARGET_CIYAM_CLIENT_OBJECTS)\
+ $(TARGET_CIYAM_INTERFACE_OBJECTS)\
+ $(TARGET_CIYAM_SERVER_OBJECTS)\
  $(TARGET_CONSTRUCT_OBJECTS)\
  $(TARGET_DIFF_OBJECTS)\
  $(TARGET_DIFFP_OBJECTS)\
@@ -464,9 +464,9 @@ ALL_OBJECTS=\
  $(TARGET_XVARS_OBJECTS)
 
 ALL_COMMANDS=\
- $(TARGET_CAT_BASE_COMMANDS)\
+ $(TARGET_CIYAM_BASE_COMMANDS)\
  $(TARGET_META_COMMANDS)\
- $(TARGET_CAT_SERVER_COMMANDS)\
+ $(TARGET_CIYAM_SERVER_COMMANDS)\
  $(TARGET_MODELLER_COMMANDS)\
  $(TARGET_TEST_CACHE_COMMANDS)\
  $(TARGET_TEST_NUMERIC_COMMANDS)\
@@ -479,12 +479,12 @@ all: $(ALL_TARGETS)
 
 base: $(TARGET_BASE)
 commands: $(TARGET_COMMANDS)
-cat_base: $(TARGET_CAT_BASE)
+ciyam_base: $(TARGET_CIYAM_BASE)
 Meta: $(TARGET_META)
 bundle: $(TARGET_BUNDLE)
-cat_client: $(TARGET_CAT_CLIENT)
-cat_interface: $(TARGET_CAT_INTERFACE)
-cat_server: $(TARGET_CAT_SERVER)
+ciyam_client: $(TARGET_CIYAM_CLIENT)
+ciyam_interface: $(TARGET_CIYAM_INTERFACE)
+ciyam_server: $(TARGET_CIYAM_SERVER)
 construct: $(TARGET_CONSTRUCT)
 diff: $(TARGET_DIFF)
 diffp: $(TARGET_DIFFP)
@@ -537,25 +537,25 @@ $(TARGET_COMMANDS):: $(TARGET_COMMANDS_OBJECTS)
  @filter -r "^-+" "^TLIB " "^Warning: '.*' not found in library$" <$(TARGET_COMMANDS_ERRFILE)
  @del $(TARGET_COMMANDS_ERRFILE)
 
-$(TARGET_CAT_BASE:.dll=.compile):
+$(TARGET_CIYAM_BASE:.dll=.compile):
  @echo $(CPP_DYNAMIC) %* >compile.bat
 
-$(TARGET_CAT_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_BASE_COMMANDS) $(TARGET_CAT_BASE:.dll=.compile)
+$(TARGET_CIYAM_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CIYAM_BASE_COMMANDS) $(TARGET_CIYAM_BASE:.dll=.compile)
 
-$(TARGET_CAT_BASE):: $(TARGET_CAT_BASE_OBJECTS) $(TARGET_BASE)
+$(TARGET_CIYAM_BASE):: $(TARGET_CIYAM_BASE_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_DYNAMIC) $(WINSOCK_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(MYSQL_LIBS)
 !
- $(EXPORT) $(EXPORTFLAGS) $(TARGET_CAT_BASE:.dll=.lib) $(TARGET_CAT_BASE) >$(TARGET_CAT_BASE_ERRFILE)
- @filter -r "^$" "^Borland Implib" <$(TARGET_CAT_BASE_ERRFILE)
- @del $(TARGET_CAT_BASE_ERRFILE)
+ $(EXPORT) $(EXPORTFLAGS) $(TARGET_CIYAM_BASE:.dll=.lib) $(TARGET_CIYAM_BASE) >$(TARGET_CIYAM_BASE_ERRFILE)
+ @filter -r "^$" "^Borland Implib" <$(TARGET_CIYAM_BASE_ERRFILE)
+ @del $(TARGET_CIYAM_BASE_ERRFILE)
 
 $(TARGET_META:.dll=.compile):
  @echo $(CPP_DYNAMIC) %* >compile.bat
 
-$(TARGET_META):: $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_META_COMMANDS) $(TARGET_META:.dll=.compile)
+$(TARGET_META):: $(TARGET_CIYAM_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_META_COMMANDS) $(TARGET_META:.dll=.compile)
 
-$(TARGET_META):: $(TARGET_META_OBJECTS) $(TARGET_CAT_BASE:.dll=.lib)
+$(TARGET_META):: $(TARGET_META_OBJECTS) $(TARGET_CIYAM_BASE:.dll=.lib)
  $(LINK) @&&!
  $(LINK_DYNAMIC)
 !
@@ -573,32 +573,32 @@ $(TARGET_BUNDLE):: $(TARGET_BUNDLE_OBJECTS) $(TARGET_BASE)
  $(LINK_NORMAL) $(ZLIB_LIBS)
 !
 
-$(TARGET_CAT_CLIENT:.exe=.compile):
+$(TARGET_CIYAM_CLIENT:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_CAT_CLIENT):: $(TARGET_BASE) $(TARGET_CAT_CLIENT:.exe=.compile)
+$(TARGET_CIYAM_CLIENT):: $(TARGET_BASE) $(TARGET_CIYAM_CLIENT:.exe=.compile)
 
-$(TARGET_CAT_CLIENT):: $(TARGET_CAT_CLIENT_OBJECTS) $(TARGET_BASE)
+$(TARGET_CIYAM_CLIENT):: $(TARGET_CIYAM_CLIENT_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL) $(WINSOCK_LIBS)
 !
 
-$(TARGET_CAT_INTERFACE:.exe=.compile):
+$(TARGET_CIYAM_INTERFACE:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_CAT_INTERFACE):: $(TARGET_BASE) $(TARGET_CAT_INTERFACE:.exe=.compile)
+$(TARGET_CIYAM_INTERFACE):: $(TARGET_BASE) $(TARGET_CIYAM_INTERFACE:.exe=.compile)
 
-$(TARGET_CAT_INTERFACE):: $(TARGET_CAT_INTERFACE_OBJECTS) $(TARGET_BASE)
+$(TARGET_CIYAM_INTERFACE):: $(TARGET_CIYAM_INTERFACE_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL) $(WINSOCK_LIBS) $(LIBFCGI_LIBS)
 !
 
-$(TARGET_CAT_SERVER:.exe=.compile):
+$(TARGET_CIYAM_SERVER:.exe=.compile):
  @echo $(CPP_NORMAL) %* >compile.bat
 
-$(TARGET_CAT_SERVER):: $(TARGET_BASE) $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_SERVER_COMMANDS) $(TARGET_CAT_SERVER:.exe=.compile)
+$(TARGET_CIYAM_SERVER):: $(TARGET_BASE) $(TARGET_CIYAM_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CIYAM_SERVER_COMMANDS) $(TARGET_CIYAM_SERVER:.exe=.compile)
 
-$(TARGET_CAT_SERVER):: $(TARGET_CAT_SERVER_OBJECTS) $(TARGET_BASE) $(TARGET_CAT_BASE:.dll=.lib)
+$(TARGET_CIYAM_SERVER):: $(TARGET_CIYAM_SERVER_OBJECTS) $(TARGET_BASE) $(TARGET_CIYAM_BASE:.dll=.lib)
  $(LINK) @&&!
  $(LINK_NORMAL) $(WINSOCK_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS)
 !

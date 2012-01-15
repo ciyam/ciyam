@@ -1,0 +1,12 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start default_to_uid)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish default_to_uid)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start default_to_uid)]
+   if( is_create && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+      get_obj( ).`{`$arg_field`}( get_uid( ) );
+   // [(finish default_to_uid)]
+`}

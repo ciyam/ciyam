@@ -24,8 +24,8 @@
 
 #  include "progress.h"
 
-#  ifdef CAT_BASE_LIB
-#     ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_LIB
+#     ifdef CIYAM_BASE_IMPL
 #        define COMMAND_HANDLER_DECL_SPEC DYNAMIC_EXPORT
 #     else
 #        define COMMAND_HANDLER_DECL_SPEC DYNAMIC_IMPORT

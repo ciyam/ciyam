@@ -1,0 +1,15 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start parent_field_from_other)]
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)\
+ && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}\
+`{`$arg_tfield`}( )`{`!`@eq`(`$arg_test_value`,`'`'`) == `{`$arg_test_value`}`}`} )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( ) );
+
+      cp_parent->op_update( );
+      cp_parent->`{`$arg_dfield`}(\
+ get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
+      cp_parent->op_apply( );
+   }
+   // [(finish parent_field_from_other)]
+`}

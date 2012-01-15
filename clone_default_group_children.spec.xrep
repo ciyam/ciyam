@@ -1,0 +1,23 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start clone_default_group_children)]
+   if( is_create && get_obj( ).get_clone_key( ).empty( ) )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_cclass`} > cp_child( e_create_instance );
+      class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+
+      if( cp_source->child_`{`$arg_cclass`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            cp_child->op_create( get_obj( ).get_key( )
+             + "_" + cp_source->child_`{`$arg_cclass`}( ).get_key( )
+             + " " + cp_source->child_`{`$arg_cclass`}( ).get_key( ) );
+
+            cp_child->`{`$arg_gfield`}( get_obj( ).get_key( ) );
+
+            cp_child->op_apply( );
+         } while( cp_source->child_`{`$arg_cclass`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish clone_default_group_children)]
+`}

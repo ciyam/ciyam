@@ -24,14 +24,14 @@
 #  include <stdexcept>
 #endif
 
-#define CAT_BASE_IMPL
+#define CIYAM_BASE_IMPL
 
 #include "mail_source.h"
 
 #include "pop3.h"
 #include "threads.h"
-#include "cat_base.h"
 #include "utilities.h"
+#include "ciyam_base.h"
 
 using namespace std;
 

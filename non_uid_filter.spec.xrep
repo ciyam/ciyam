@@ -1,0 +1,17 @@
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start non_uid_filter)]
+   if( filters.count( "uid" ) )
+   {
+      `{`$module_name`}_`{`$arg_pclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_pclass`}* >( get_obj( ).get_graph_parent( ) );
+
+      if( p_parent )
+      {
+         set< string > user_ids;
+         split_string( p_parent->`{`$arg_cfield`}( ), user_ids );
+
+         if( !user_ids.count( get_uid( ) ) )
+            return true;
+      }
+   }
+   // [(finish non_uid_filter)]
+`}

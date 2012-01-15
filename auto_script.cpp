@@ -32,11 +32,11 @@
 
 #include "sio.h"
 #include "format.h"
-#include "cat_base.h"
 #include "date_time.h"
 #include "utilities.h"
+#include "ciyam_base.h"
 #include "class_base.h"
-#include "cat_session.h"
+#include "ciyam_session.h"
 
 //#define DEBUG
 
@@ -304,12 +304,12 @@ void output_schedule( ostream& os )
 
 autoscript_session::autoscript_session( )
 {
-   cat_session::increment_session_count( );
+   ciyam_session::increment_session_count( );
 }
 
 autoscript_session::~autoscript_session( )
 {
-   cat_session::decrement_session_count( );
+   ciyam_session::decrement_session_count( );
 }
 
 void autoscript_session::on_start( )

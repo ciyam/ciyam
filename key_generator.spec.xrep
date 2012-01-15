@@ -1,0 +1,10 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start key_generator)]
+   get_obj( ).op_update( get_obj( ).get_key( ) );
+   int key_id = `{`$arg_field`}( );
+   `{`$arg_procedure_arg`} = construct_key_from_int( get_obj( ).get_key( ), key_id++ );
+
+   `{`$arg_field`}( key_id );
+   get_obj( ).op_apply( );
+   // [(finish key_generator)]
+`}

@@ -1,0 +1,1194 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start for_cms_gen)]
+#include "`{`$module_name`}_`{`$arg_frclass`}.h"
+// [(finish for_cms_gen)]
+`}
+`{`@eq`(`'anonymous`'`,`$section`)\
+// [(start for_cms_gen)]
+void setup_variables( `{`$module_name`}_`{`$arg_pgclass`}& page, map< string, string >& variables, map< string, string >& decorated_variables )
+{
+   const char* c_token_key = "key";
+   const char* c_token_code = "code";
+   const char* c_token_pcode = "pcode";
+   const char* c_token_title = "title";
+   const char* c_token_ptitle = "ptitle";
+
+   if( page.child_`{`$arg_vclass`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         string value( page.child_`{`$arg_vclass`}( ).`{`$arg_vvalue`}( ) );
+
+         if( value == "@" + string( c_token_key ) )
+            value = page.get_key( );
+         else if( value == "@" + string( c_token_code ) )
+            value = page.`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_pcode ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_title ) )
+            value = page.`{`$arg_pgtitle`}( );
+         else if( value == "@" + string( c_token_ptitle ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgtitle`}( );
+
+         variables.insert( make_pair( page.child_`{`$arg_vclass`}( ).`{`$arg_vname`}( ), value ) );
+
+      } while( page.child_`{`$arg_vclass`}( ).iterate_next( ) );
+   }
+
+   if( page.`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         string value( page.`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).`{`$arg_vvalue`}( ) );
+
+         if( value == "@" + string( c_token_key ) )
+            value = page.`{`$arg_pgparent`}( ).get_key( );
+         else if( value == "@" + string( c_token_code ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_pcode ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_title ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgtitle`}( );
+         else if( value == "@" + string( c_token_ptitle ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).`{`$arg_pgtitle`}( );
+
+         variables.insert( make_pair( "$" + page.`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).`{`$arg_vname`}( ), value ) );
+
+      } while( page.`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).iterate_next( ) );
+   }
+
+   if( page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         string value( page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).`{`$arg_vvalue`}( ) );
+
+         if( value == "@" + string( c_token_key ) )
+            value = page.`{`$arg_pgparent`}( ).get_key( );
+         else if( value == "@" + string( c_token_code ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_pcode ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_title ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgtitle`}( );
+         else if( value == "@" + string( c_token_ptitle ) )
+            value = page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).`{`$arg_pgtitle`}( );
+
+         variables.insert( make_pair( "$$" + page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).`{`$arg_vname`}( ), value ) );
+
+      } while( page.`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).child_`{`$arg_vclass`}( ).iterate_next( ) );
+   }
+
+   // NOTE: Locate the "root" of the acyclic graph so that "root variables"
+   // can be used by any node in the entire graph (by using the "!" prefix).
+   `{`$full_class_name`}* p_ayclic_root( &page );
+   while( true )
+   {
+      if( p_ayclic_root->`{`$arg_pgparent`}( ).get_key( ).empty( ) )
+         break;
+      p_ayclic_root = &p_ayclic_root->`{`$arg_pgparent`}( );
+   }
+
+   if( p_ayclic_root->child_`{`$arg_vclass`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         string value( p_ayclic_root->child_`{`$arg_vclass`}( ).`{`$arg_vvalue`}( ) );
+
+         if( value == "@" + string( c_token_key ) )
+            value = p_ayclic_root->get_key( );
+         else if( value == "@" + string( c_token_code ) )
+            value = p_ayclic_root->`{`$arg_pgcode`}( );
+         else if( value == "@" + string( c_token_title ) )
+            value = p_ayclic_root->`{`$arg_pgtitle`}( );
+
+         variables.insert( make_pair( "!" + p_ayclic_root->child_`{`$arg_vclass`}( ).`{`$arg_vname`}( ), value ) );
+
+      } while( p_ayclic_root->child_`{`$arg_vclass`}( ).iterate_next( ) );
+   }
+
+   variables.insert( make_pair( "!!code", p_ayclic_root->Code( ) ) );
+
+   decorated_variables.insert( make_pair( "{" + string( c_token_key ) + "}", page.get_key( ) ) );
+   decorated_variables.insert( make_pair( "{" + string( c_token_code ) + "}", page.`{`$arg_pgcode`}( ) ) );
+   decorated_variables.insert( make_pair( "{" + string( c_token_pcode ) + "}", page.`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( ) ) );
+   decorated_variables.insert( make_pair( "{" + string( c_token_title ) + "}", page.`{`$arg_pgtitle`}( ) ) );
+   decorated_variables.insert( make_pair( "{" + string( c_token_ptitle ) + "}", page.`{`$arg_pgparent`}( ).`{`$arg_pgtitle`}( ) ) );
+
+   for( map< string, string >::iterator i = variables.begin( ), end = variables.end( ); i != end; ++i )
+      decorated_variables.insert( make_pair( "{$" + i->first + "}", i->second ) );
+}
+
+string expand_name( `{`$module_name`}_`{`$arg_pgclass`}& page, const string& file_name,
+ `{`$module_name`}_`{`$arg_pgclass`}* p_parent = 0, const map< string, string >* p_existing_decorated_variables = 0 )
+{
+   string retval( file_name );
+
+   map< string, string > variables;
+   map< string, string > decorated_variables;
+
+   const map< string, string >* p_decorated_variables( p_existing_decorated_variables );
+   if( !p_decorated_variables )
+   {
+      setup_variables( page, variables, decorated_variables );
+
+      p_decorated_variables = &decorated_variables;
+   }
+
+   for( map< string, string >::const_iterator ci = p_decorated_variables->begin( ), end = p_decorated_variables->end( ); ci != end; ++ci )
+   {
+      while( true )
+      {
+         string::size_type pos = retval.find( ci->first );
+         if( pos == string::npos )
+            break;
+
+         retval.erase( pos, ( ci->first ).length( ) );
+         retval.insert( pos, ci->second );
+      }
+   }
+
+   int file_level = 0;
+
+   if( p_parent && !p_parent->`{`$arg_pgfname`}( ).empty( ) )
+   {
+      string file_name( p_parent->`{`$arg_pgfname`}( ) );
+      for( size_t i = 0; i < file_name.length( ); i++ )
+      {
+         if( file_name[ i ] == '/' )
+            ++file_level;
+      }
+   }
+
+   for( int i = 0; i < file_level; i++ )
+      retval = "../" + retval;
+
+   return retval;
+}
+
+string normalise_xhtml_text( const string& html_text )
+{
+   string retval;
+
+   // NOTE: Fix up any upper case tag or tag attribute names that might end up
+   // in the HTML due to the use of external HTML generation tools (so that it
+   // should be possible to correctly validate the HTML generated).
+   bool is_in_tag = false;
+   bool is_in_quotes = false;
+   for( size_t i = 0; i < html_text.size( ); i++ )
+   {
+      if( is_in_tag )
+      {
+         if( html_text[ i ] == '>' )
+            is_in_tag = false;
+         else if( html_text[ i ] =='"' )
+            is_in_quotes = !is_in_quotes;
+
+         if( !is_in_tag || is_in_quotes )
+            retval += html_text[ i ];
+         else
+            retval += tolower( html_text[ i ] );
+      }
+      else
+      {
+         if( html_text[ i ] == '<' )
+         {
+            is_in_tag = true;
+            is_in_quotes = false;
+         }
+
+         retval += html_text[ i ];
+      }
+   }
+
+   return retval;
+}
+
+string expand_text( const string& input, `{`$module_name`}_`{`$arg_pgclass`}* p_parent )
+{
+   string output;
+
+   string linkref;
+   bool in_linkref = false;
+   bool had_escape = false;
+
+   for( size_t i = 0; i < input.size( ); i++ )
+   {
+      if( had_escape )
+      {
+         had_escape = false;
+         output += input[ i ];
+      }
+      else if( in_linkref )
+      {
+         if( input[ i ] == '}' )
+            in_linkref = false;
+         else
+            linkref += input[ i ];
+      }
+      else if( input[ i ] == '{' )
+         in_linkref = true;
+      else if( input[ i ] == '\\\\' )
+         had_escape = true;
+      else
+         output += input[ i ];
+
+      if( !in_linkref && !linkref.empty( ) )
+      {
+         string linktext;
+         bool is_external = false;
+
+         if( linkref.size( ) > 7 && linkref.substr( 0, 7 ) == "http://" )
+         {
+            is_external = true;
+
+            linkref.erase( 0, 7 );
+            linktext = linkref;
+         }
+
+         string::size_type pos = linkref.find( ' ' );
+         if( pos != string::npos )
+         {
+            linktext = linkref.substr( pos + 1 );
+            linkref.erase( pos );
+         }
+
+         if( is_external )
+            output += "<a href=\\"http://" + linkref + "\\">" + linktext + "</a>";
+         else
+         {
+            string full_link( linkref );
+
+            `{`$module_name`}_`{`$arg_pgclass`} page;
+            `{`$module_name`}_`{`$arg_pgclass`}* p_page( &page );
+
+            while( true )
+            {
+               pos = linkref.find( '.' );
+               string next_key( linkref.substr( 0, pos ) );
+
+               perform_fetch_rc rc;
+
+               string key_info( `{`$module_name`}_`{`$arg_pgclass`}::static_get_field_id( `{`$module_name`}_`{`$arg_pgclass`}::e_field_id_`{`$arg_pgparent`} ) );
+               key_info += "," + to_string( `{`$module_name`}_`{`$arg_pgclass`}::static_get_field_id( `{`$module_name`}_`{`$arg_pgclass`}::e_field_id_`{`$arg_pgcode`} ) );
+               key_info += "#1 " + p_page->get_key( ) + "," + next_key;
+
+               p_page->child_`{`$arg_pgchild`}( ).perform_fetch( key_info, &rc );
+
+               if( rc != e_perform_fetch_rc_okay )
+                  // FUTURE: The error message itself should be a module string.
+                  throw runtime_error( "Unknown child: " + next_key );
+
+               if( pos == string::npos )
+                  break;
+
+               linkref.erase( 0, pos + 1 );
+               p_page = &p_page->child_`{`$arg_pgchild`}( );
+            }
+
+            if( p_page->child_`{`$arg_pgchild`}( ).`{`$arg_pgfname`}( ).empty( ) )
+               // FUTURE: The error message itself should be a module string.
+               throw runtime_error( "Link '" + full_link + "' is not to a file." );
+
+            if( linktext.empty( ) )
+               linktext = p_page->child_`{`$arg_pgchild`}( ).`{`$arg_pghyper`}( );
+
+            string link_file_name(
+             expand_name( p_page->child_`{`$arg_pgchild`}( ), p_page->child_`{`$arg_pgchild`}( ).`{`$arg_pgfname`}( ), p_parent ) );
+
+            output += "<a href=\\"" + link_file_name + "\\">" + linktext + "</a>";
+         }
+
+         linkref.erase( );
+      }
+   }
+
+   return normalise_xhtml_text( output );
+}
+// [(finish for_cms_gen)]
+`}
+`{`@eq`(`'copy_procedure`'`,`$section`)\
+   // [(start for_cms_gen)]
+   // NOTE: Refer to the "after_fetch" note regarding the use of the session variable.
+   if( !set_session_variable( string( get_obj( ).class_id( ) ), "true", "" ) )
+      // FUTURE: The error message itself should be a module string.
+      throw runtime_error( "Currently copying a Page." );
+
+   transaction_start( );
+   try
+   {
+      get_obj( ).`{`$arg_pgparent`}( ).op_update( );
+
+      int next_child_num = get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgnext`}( );
+
+      if( next_child_num < 2 )
+         next_child_num = 2;
+
+      string key_info( construct_key_from_int( get_obj( ).`{`$arg_pgparent`}( ).get_key( ), next_child_num ) );
+      key_info += " " + get_obj( ).get_key( );
+
+      get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgnext`}( next_child_num + 1 );
+      get_obj( ).`{`$arg_pgparent`}( ).op_apply( );
+
+      get_obj( ).`{`$arg_pgparent`}( ).child_`{`$arg_pgchild`}( ).op_create( key_info );
+
+      get_obj( ).`{`$arg_pgparent`}( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgcode`}( "other" );
+
+      // FUTURE: The strings here should be changed to module strings.
+      get_obj( ).`{`$arg_pgparent`}( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgtitle`}( "Other Page" );
+      get_obj( ).`{`$arg_pgparent`}( ).child_`{`$arg_pgchild`}( ).`{`$arg_pghyper`}( "Other Page" );
+
+      string file_name( get_obj( ).`{`$arg_pgfname`}( ) ), child_file_name;
+      string::size_type pos = file_name.find_last_of( "/" );
+      if( pos != string::npos )
+         child_file_name = file_name.substr( 0, pos + 1 );
+      child_file_name += "{code}.html";
+
+      get_obj( ).`{`$arg_pgparent`}( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgfname`}( child_file_name );
+      get_obj( ).`{`$arg_pgparent`}( ).child_`{`$arg_pgchild`}( ).op_apply( );
+
+      // FUTURE: The return message itself should be a module string.
+      `{`$arg_pgcopyout`} = "Copy Created.";
+      set_session_variable( string( get_obj( ).class_id( ) ), "" );
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      set_session_variable( string( get_obj( ).class_id( ) ), "" );
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish for_cms_gen)]
+`}
+`{`@eq`(`'gen_procedure`'`,`$section`)\
+   // [(start for_cms_gen)]
+   bool in_token = false;
+   bool was_escape = false;
+   bool is_var_loop = false;
+   bool is_link_loop = false;
+   bool creating_loop = false;
+   bool is_reverse_loop = false;
+   bool processing_loop = false;
+
+   const char* const c_token_code = "code";
+   const char* const c_token_frag = "frag";
+   const char* const c_token_link = "link";
+   const char* const c_token_text = "text";
+   const char* const c_token_child = "child";
+   const char* const c_token_extra = "extra";
+   const char* const c_token_group = "group";
+   const char* const c_token_pcode = "pcode";
+   const char* const c_token_plink = "plink";
+   const char* const c_token_title = "title";
+   const char* const c_token_stitle = "stitle";
+   const char* const c_token_gchild = "gchild";
+   const char* const c_token_ltitle = "ltitle";
+   const char* const c_token_pchild = "pchild";
+   const char* const c_token_backpath = "backpath";
+   const char* const c_token_end_loop = "/loop";
+   const char* const c_token_var_loop = "vloop";
+   const char* const c_token_link_loop = "lloop";
+   const char* const c_token_rlink_loop = "rlloop";
+   const char* const c_token_child_loop = "cloop";
+   const char* const c_token_rchild_loop = "rcloop";
+   const char* const c_token_loop_num = "@#";
+   const char* const c_token_loop_link = "@link";
+   const char* const c_token_loop_meta = "@meta";
+   const char* const c_token_loop_text = "@text";
+   const char* const c_token_loop_group = "@group";
+   const char* const c_token_loop_lself = "@lself";
+   const char* const c_token_loop_title = "@title";
+   const char* const c_token_loop_value = "@value";
+   const char* const c_token_loop_ltitle = "@ltitle";
+   const char* const c_token_loop_nslink = "@nslink";
+   const char* const c_token_loop_value0 = "@value0";
+   const char* const c_token_loop_value1 = "@value1";
+   const char* const c_token_loop_value2 = "@value2";
+   const char* const c_token_loop_value3 = "@value3";
+   const char* const c_token_loop_value4 = "@value4";
+   const char* const c_token_loop_value5 = "@value5";
+   const char* const c_token_loop_value6 = "@value6";
+   const char* const c_token_loop_value7 = "@value7";
+   const char* const c_token_loop_value8 = "@value8";
+   const char* const c_token_loop_value9 = "@value9";
+
+   bool is_in_recovery = false;
+
+   // NOTE: If a recovery is in progress then will not physically create/remove files.
+   if( storage_locked_for_admin( ) )
+      is_in_recovery = true;
+
+   size_t loop_num = 0;
+   size_t loop_limit = 0;
+   size_t var_counter = 0;
+
+   const size_t c_max_var_loop_size = 100;
+
+   string base_path( get_obj( ).`{`$arg_gclass`}( ).`{`$arg_gbase`}( ) );
+   string token, content, variable_value, var_loop_variable, loop_content, after_loop_content( get_obj( ).`{`$arg_pgmeta`}( ) );
+
+   vector< string > variable_values;
+
+   string file_name( get_obj( ).`{`$arg_pgfname`}( ) );
+
+   bool okay = true;
+
+   // NOTE: If child content is being generated then make sure it matches the type of the originating file
+   // node. For non-matching types looping is continued (see after the main generation loop) as there could
+   // well be more matching type content in further parts of the graph.
+   `{`$full_class_name`}* p_parent( dynamic_cast< `{`$full_class_name`}* >( get_obj( ).get_graph_parent( ) ) );
+
+   while( p_parent )
+   {
+      if( p_parent->get_is_iterating( ) && !p_parent->`{`$arg_pgchildgen`}( ) && p_parent->get_graph_parent( ) )
+         p_parent = dynamic_cast< `{`$full_class_name`}* >( p_parent->get_graph_parent( ) );
+      else
+         break;
+   }
+
+   if( !get_obj( ).`{`$arg_pgchildgen`}( ) && p_parent && p_parent->`{`$arg_pgctype`}( ) != get_obj( ).`{`$arg_pgctype`}( ) )
+      okay = false;
+
+   map< string, string > variables;
+   map< string, string > decorated_variables;
+
+   setup_variables( get_obj( ), variables, decorated_variables );
+
+   string link_key_info( FIELD_ID( `{`$module_name`}, `{`$arg_plclass`}, `{`$arg_plorder`} ) );
+   link_key_info += " ";
+
+   string child_key_info( FIELD_ID( `{`$module_name`}, `{`$arg_pgclass`}, `{`$arg_pgcode`} ) );
+   child_key_info += " ";
+
+   while( okay && !is_in_recovery )
+   {
+      if( processing_loop )
+      {
+         content = loop_content;
+         if( loop_limit && --loop_limit == 0 )
+            break;
+      }
+      else
+      {
+         content = after_loop_content;
+         after_loop_content.erase( );
+      }
+
+      if( content.empty( ) )
+         break;
+
+      for( size_t i = 0; i < content.size( ); i++ )
+      {
+         if( in_token )
+         {
+            if( content[ i ] == '}' )
+               in_token = false;
+            else
+               token += content[ i ];
+         }
+         else if( was_escape )
+         {
+            was_escape = false;
+            if( !creating_loop )
+               Output += content[ i ];
+            else
+               loop_content += content[ i ];
+         }
+         else if( content[ i ] == '{' && i != content.size( ) - 1 &&
+          ( ( content[ i + 1 ] >= 'a' && content[ i + 1 ] <= 'z' )
+          || ( content[ i + 1 ] >= 'A' && content[ i + 1 ] <= 'Z' )
+          || content[ i + 1 ] == '@' || content[ i + 1 ] == '$' || content[ i + 1 ] == '/' ) )
+            in_token = true;
+         else if( content[ i ] == '\\\\' )
+            was_escape = true;
+         else
+         {
+            if( !creating_loop )
+               `{`$arg_pggenout`} += content[ i ];
+            else
+               loop_content += content[ i ];
+         }
+
+         if( !in_token && !token.empty( ) )
+         {
+            string extra;
+            string::size_type pos = token.find( ':' );
+            if( pos != string::npos )
+            {
+               extra = token.substr( pos + 1 );
+               token.erase( pos );
+            }
+
+            if( creating_loop )
+            {
+               if( token == c_token_end_loop )
+               {
+                  creating_loop = false;
+
+                  if( i >= content.size( ) - 1 )
+                     after_loop_content.erase( );
+                  else
+                     after_loop_content = content.substr( i + 1 );
+
+                  if( is_var_loop )
+                  {
+                     processing_loop = false;
+                     while( var_counter < c_max_var_loop_size )
+                     {
+                        if( variables.count( var_loop_variable + to_string( var_counter ) ) )
+                        {
+                           processing_loop = true;
+                           variable_value = variables[ var_loop_variable + to_string( var_counter++ ) ];
+                           variable_values.clear( );
+                           split_string( variable_value, variable_values );
+                           break;
+                        }
+                        else
+                           ++var_counter;
+                     }
+                  }
+                  else
+                  {
+                     if( !is_reverse_loop )
+                     {
+                        if( !is_link_loop )
+                           processing_loop = get_obj( ).child_`{`$arg_pgchild`}( ).iterate_forwards( child_key_info );
+                        else
+                           processing_loop = get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).iterate_forwards( link_key_info );
+                     }
+                     else
+                     {
+                        if( !is_link_loop )
+                           processing_loop = get_obj( ).child_`{`$arg_pgchild`}( ).iterate_backwards( child_key_info );
+                        else
+                           processing_loop = get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).iterate_backwards( link_key_info );
+                     }
+                  }
+
+                  if( processing_loop )
+                     loop_num = 1;
+
+                  token.erase( );
+                  break;
+               }
+               else
+               {
+                  if( !extra.empty( ) )
+                     token += ":" + extra;
+                  loop_content += "{" + token + "}";
+               }
+            }
+            else if( token == c_token_child || token == c_token_pchild || token == c_token_gchild )
+            {
+               string key( get_obj( ).get_key( ) );
+               if( token == c_token_pchild  )
+                  key = get_obj( ).`{`$arg_pgparent`}( ).get_key( );
+               else if( token == c_token_gchild )
+                  key = get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgparent`}( ).get_key( );
+
+               string key_info( static_get_field_id( e_field_id_`{`$arg_pgparent`} ) );
+               key_info += "," + to_string( static_get_field_id( e_field_id_`{`$arg_pgcode`} ) );
+               key_info += "#1 " + key + "," + extra;
+
+               if( get_obj( ).child_`{`$arg_pgchild`}( ).iterate_forwards( key_info ) )
+               {
+                  // NOTE: Inject the generated output of the child and then continue.
+                  get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgchildgen`}( false );
+                  get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pggen`}( after_loop_content );
+
+                  get_obj( ).child_`{`$arg_pgchild`}( ).iterate_stop( );
+
+                  after_loop_content += content.substr( i + 1 );
+                  token.erase( );
+               }
+               else
+                  // FUTURE: The error message itself should be a module string.
+                  throw runtime_error( "Unknown child: " + extra );
+
+               break;
+            }
+            else if( token == c_token_child_loop || token == c_token_rchild_loop )
+            {
+               if( creating_loop )
+                  // FUTURE: The error message itself should be a module string.
+                  throw runtime_error( "Nested loops are not permitted." );
+
+               creating_loop = true;
+
+               loop_num = 0;
+
+               if( extra.empty( ) )
+                  loop_limit = 0;
+               else
+                  loop_limit = atoi( extra.c_str( ) ) + 1;
+
+               is_var_loop = false;
+               is_link_loop = false;
+               is_reverse_loop = ( token == c_token_rchild_loop );
+            }
+            else if( token == c_token_var_loop )
+            {
+               if( creating_loop )
+                  // FUTURE: The error message itself should be a module string.
+                  throw runtime_error( "Nested loops are not permitted." );
+
+               creating_loop = true;
+
+               var_loop_variable = extra;
+
+               loop_num = 0;
+               loop_limit = 0;
+               var_counter = 0;
+
+               is_var_loop = true;
+               is_link_loop = false;
+               is_reverse_loop = false;
+            }
+            else if( token == c_token_link_loop || token == c_token_rlink_loop )
+            {
+               if( creating_loop )
+                  // FUTURE: The error message itself should be a module string.
+                  throw runtime_error( "Nested loops are not permitted." );
+
+               creating_loop = true;
+
+               loop_num = 0;
+
+               if( extra.empty( ) )
+                  loop_limit = 0;
+               else
+                  loop_limit = atoi( extra.c_str( ) ) + 1;
+
+               is_var_loop = false;
+               is_link_loop = true;
+               is_reverse_loop = ( token == c_token_rlink_loop );
+            }
+            else if( token == c_token_code )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_pgcode`}( );
+            else if( token == c_token_frag )
+            {
+               `{`$module_name`}_`{`$arg_frclass`} fragment;
+
+               string key_info( `{`$module_name`}_`{`$arg_frclass`}::static_get_field_id( `{`$module_name`}_`{`$arg_frclass`}::e_field_id_`{`$arg_frgroup`} ) );
+               key_info += "," + to_string( `{`$module_name`}_`{`$arg_frclass`}::static_get_field_id( `{`$module_name`}_`{`$arg_frclass`}::e_field_id_`{`$arg_frcode`} ) );
+               key_info += "#1 " + get_obj( ).`{`$arg_gclass`}( ).get_key( ) + "," + extra;
+
+               perform_fetch_rc rc;
+               fragment.perform_fetch( key_info, &rc );
+
+               if( rc != e_perform_fetch_rc_okay )
+                  // FUTURE: The error message itself should be a module string.
+                  throw runtime_error( "Unknown fragment: " + extra );
+
+               // NOTE: Inject the meta-content of the fragment and then continue.
+               after_loop_content = fragment.`{`$arg_frmeta`}( );
+               after_loop_content += content.substr( i + 1 );
+               token.erase( );
+               break;
+            }
+            else if( token == c_token_text )
+               `{`$arg_pggenout`} += expand_text( get_obj( ).`{`$arg_pgtext`}( ), p_parent );
+            else if( token == c_token_extra )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_gclass`}( ).`{`$arg_gextra`}( );
+            else if( token == c_token_group )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_gclass`}( ).`{`$arg_gname`}( );
+            else if( token == c_token_pcode )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgcode`}( );
+            else if( token == c_token_title )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_pgtitle`}( );
+            else if( token == c_token_stitle )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_pgstitle`}( );
+            else if( token == c_token_ltitle )
+               `{`$arg_pggenout`} += get_obj( ).`{`$arg_pghyper`}( );
+            else if( token == c_token_backpath )
+            {
+               int file_level = 0;
+
+               if( p_parent && !p_parent->File_Name( ).empty( ) )
+               {
+                  string file_name( p_parent->File_Name( ) );
+                  for( size_t i = 0; i < file_name.length( ); i++ )
+                  {
+                     if( file_name[ i ] == '/' )
+                        ++file_level;
+                  }
+               }
+
+               for( int i = 0; i < file_level; i++ )
+                  Output += "../";
+            }
+            else if( token == c_token_loop_meta )
+            {
+               if( !is_link_loop )
+               {
+                  get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgchildgen`}( false );
+                  get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pggen`}( `{`$arg_pggenout`} );
+                  get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgchildgen`}( true );
+               }
+               else
+               {
+                  get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pgchildgen`}( false );
+                  get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pggen`}( `{`$arg_pggenout`} );
+                  get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pgchildgen`}( true );
+               }
+            }
+            else if( token == c_token_link || token == c_token_plink || token == c_token_loop_link || token == c_token_loop_nslink )
+            {
+               bool link_okay = true;
+
+               if( token == c_token_loop_nslink && is_link_loop && p_parent
+                && *p_parent == get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ) )
+                  link_okay = false;
+
+               if( link_okay )
+                  `{`$arg_pggenout`} += "<a href=\\"";
+
+               if( !is_link_loop )
+               {
+                  if( link_okay )
+                  {
+                     if( token == c_token_plink )
+                        `{`$arg_pggenout`} += expand_name( get_obj( ).`{`$arg_pgparent`}( ), get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgfname`}( ), p_parent );
+                     else if( token == c_token_link )
+                        `{`$arg_pggenout`} += expand_name( get_obj( ).child_`{`$arg_pgchild`}( ), get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgfname`}( ), p_parent );
+                     else
+                        // FUTURE: The error message itself should be a module string.
+                        throw runtime_error( "Invalid token '" + string( c_token_loop_link ) + "' in non-link loop" );
+
+                     `{`$arg_pggenout`} += "\\">";
+                  }
+
+                  if( !extra.empty( ) )
+                     `{`$arg_pggenout`} += extra;
+                  else
+                  {
+                     if( token == c_token_plink )
+                        `{`$arg_pggenout`} += get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pghyper`}( );
+                     else
+                        `{`$arg_pggenout`} += get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pghyper`}( );
+                  }
+               }
+               else
+               {
+                  if( link_okay )
+                  {
+                     if( token == c_token_plink )
+                        `{`$arg_pggenout`} += expand_name( get_obj( ).`{`$arg_pgparent`}( ), get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgfname`}( ), p_parent );
+                     else if( token == c_token_link )
+                        `{`$arg_pggenout`} += expand_name( get_obj( ).child_`{`$arg_pgchild`}( ), get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgfname`}( ), p_parent );
+                     else
+                     {
+                        string link_file_name( get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pgfname`}( ) );
+
+                        link_file_name = expand_name( get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ), link_file_name, p_parent );
+
+                        `{`$arg_pggenout`} += link_file_name;
+                     }
+
+                     `{`$arg_pggenout`} += "\\">";
+                  }
+
+                  if( !extra.empty( ) )
+                     `{`$arg_pggenout`} += extra;
+                  else
+                  {
+                     if( token == c_token_plink )
+                        `{`$arg_pggenout`} += get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pghyper`}( );
+                     else if( token == c_token_link )
+                        `{`$arg_pggenout`} += get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pghyper`}( );
+                     else
+                        `{`$arg_pggenout`} += get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pghyper`}( );
+                  }
+               }
+
+               if( link_okay )
+                  `{`$arg_pggenout`} += "</a>";
+            }
+            else if( token == c_token_loop_num )
+               `{`$arg_pggenout`} += to_string( loop_num );
+            else if( token == c_token_loop_text )
+            {
+               if( !is_link_loop )
+                  `{`$arg_pggenout`} += expand_text( get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgtext`}( ), p_parent );
+               else
+                  `{`$arg_pggenout`} += expand_text( get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pgtext`}( ), p_parent );
+            }
+            else if( token == c_token_loop_group )
+            {
+               if( !is_link_loop )
+                  `{`$arg_pggenout`} += get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_gclass`}( ).`{`$arg_gname`}( );
+               else
+                  `{`$arg_pggenout`} += get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_gclass`}( ).`{`$arg_gname`}( );
+            }
+            else if( token == c_token_loop_lself )
+            {
+               if( is_link_loop && p_parent
+                && p_parent->get_key( ) == get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).get_key( ) )
+                  `{`$arg_pggenout`} += extra;
+            }
+            else if( token == c_token_loop_title )
+            {
+               if( !is_link_loop )
+                  `{`$arg_pggenout`} += get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgtitle`}( );
+               else
+                  `{`$arg_pggenout`} += get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pgtitle`}( );
+            }
+            else if( token == c_token_loop_value )
+               `{`$arg_pggenout`} += variable_value;
+            else if( token == c_token_loop_value0 )
+            {
+               if( variable_values.size( ) > 0 )
+                  `{`$arg_pggenout`} += variable_values[ 0 ];
+            }
+            else if( token == c_token_loop_value1 )
+            {
+               if( variable_values.size( ) > 1 )
+                  `{`$arg_pggenout`} += variable_values[ 1 ];
+            }
+            else if( token == c_token_loop_value2 )
+            {
+               if( variable_values.size( ) > 2 )
+                  `{`$arg_pggenout`} += variable_values[ 2 ];
+            }
+            else if( token == c_token_loop_value3 )
+            {
+               if( variable_values.size( ) > 3 )
+                  `{`$arg_pggenout`} += variable_values[ 3 ];
+            }
+            else if( token == c_token_loop_value4 )
+            {
+               if( variable_values.size( ) > 4 )
+                  `{`$arg_pggenout`} += variable_values[ 4 ];
+            }
+            else if( token == c_token_loop_value5 )
+            {
+               if( variable_values.size( ) > 5 )
+                  `{`$arg_pggenout`} += variable_values[ 5 ];
+            }
+            else if( token == c_token_loop_value6 )
+            {
+               if( variable_values.size( ) > 6 )
+                  `{`$arg_pggenout`} += variable_values[ 6 ];
+            }
+            else if( token == c_token_loop_value7 )
+            {
+               if( variable_values.size( ) > 7 )
+                  `{`$arg_pggenout`} += variable_values[ 7 ];
+            }
+            else if( token == c_token_loop_value8 )
+            {
+               if( variable_values.size( ) > 8 )
+                  `{`$arg_pggenout`} += variable_values[ 8 ];
+            }
+            else if( token == c_token_loop_value9 )
+            {
+               if( variable_values.size( ) > 9 )
+                  `{`$arg_pggenout`} += variable_values[ 9 ];
+            }
+            else if( token == c_token_loop_ltitle )
+            {
+               if( !is_link_loop )
+                  `{`$arg_pggenout`} += get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pghyper`}( );
+               else
+                  `{`$arg_pggenout`} += get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).`{`$arg_plpage`}( ).`{`$arg_pghyper`}( );
+            }
+            else if( token[ 0 ] == '$' )
+            {
+               if( variables.count( token.substr( 1 ) ) )
+                  `{`$arg_pggenout`} += variables[ token.substr( 1 ) ];
+               else
+                  `{`$arg_pggenout`} += extra;
+            }
+            else
+               // FUTURE: The error message itself should be a module string.
+               throw runtime_error( "Unknown token '" + token + "'." );
+
+            token.erase( );
+         }
+
+         if( processing_loop && i == content.size( ) - 1 )
+         {
+            if( is_var_loop )
+            {
+               processing_loop = false;
+               while( var_counter < c_max_var_loop_size )
+               {
+                  if( variables.count( var_loop_variable + to_string( var_counter ) ) )
+                  {
+                     processing_loop = true;
+                     variable_value = variables[ var_loop_variable + to_string( var_counter++ ) ];
+                     variable_values.clear( );
+                     split_string( variable_value, variable_values );
+                     break;
+                  }
+                  else
+                     ++var_counter;
+               }
+            }
+            else if( !is_link_loop )
+               processing_loop = get_obj( ).child_`{`$arg_pgchild`}( ).iterate_next( );
+            else
+               processing_loop = get_obj( ).`{`$arg_pglink`}( ).child_`{`$arg_plchild`}( ).iterate_next( );
+
+            if( processing_loop )
+               ++loop_num;
+         }
+      }
+   }
+
+   // NOTE: For non-matching content type children continue the child iteration with their children
+   // in case more matching content type is located further in the graph (unless the child is itself
+   // a new file of the matching content type).
+   if( !okay && !is_in_recovery && p_parent && get_obj( ).child_`{`$arg_pgchild`}( ).iterate_forwards( child_key_info ) )
+   {
+      do
+      {
+         if( get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgfname`}( ).empty( )
+          || p_parent->`{`$arg_pgctype`}( ) != get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgctype`}( ) )
+         {
+            get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgchildgen`}( false );
+            get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pggen`}( `{`$arg_pggenout`} );
+            get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pgchildgen`}( true );
+         }
+      } while( get_obj( ).child_`{`$arg_pgchild`}( ).iterate_next( ) );
+   }
+
+   // NOTE: Perform a "generate" for all child pages to ensure all files are created/updated.
+   // The "`{`$arg_pgchildgen`}" transient is used to ensure that child pages are only generated
+   // whilst traversing the graph just for this purpose (otherwise recursion would be possible).
+   if( get_obj( ).`{`$arg_pgchildgen`}( ) && get_obj( ).child_`{`$arg_pgchild`}( ).iterate_forwards( child_key_info ) )
+   {
+      do
+      {
+         string dummy;
+         get_obj( ).child_`{`$arg_pgchild`}( ).`{`$arg_pggen`}( dummy );
+
+      } while( get_obj( ).child_`{`$arg_pgchild`}( ).iterate_next( ) );
+   }
+
+   if( okay && !file_name.empty( ) )
+   {
+      file_name = expand_name( get_obj( ), file_name, 0, &decorated_variables );
+
+      string old_file_name( get_obj( ).`{`$arg_pgfnamegen`}( ) );
+
+      if( file_name != old_file_name )
+      {
+         get_obj( ).op_update( );
+         get_obj( ).`{`$arg_pgfnamegen`}( file_name );
+         get_obj( ).op_apply( );
+
+         if( !is_in_recovery && !old_file_name.empty( ) )
+         {
+            old_file_name = base_path + '/' + old_file_name;
+            remove_file( old_file_name );
+         }
+      }
+
+      file_name = base_path + '/' + file_name;
+      if( !is_in_recovery )
+      {
+         create_directories_for_file_name( file_name, true );
+
+         ofstream outf( file_name.c_str( ), ios::binary );
+         outf << `{`$arg_pggenout`};
+
+         if( !outf.good( ) )
+            // FUTURE: The error message itself should be a module string.
+            throw runtime_error( "Unable to create file '" + file_name + "'." );
+      }
+
+      // FUTURE: The return message itself should be a module string.
+      `{`$arg_pggenout`} = "Successfully generated '" + file_name + "'.";
+   }
+
+   if( get_obj( ).child_`{`$arg_pfclass`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pffile`}( ).empty( ) )
+            continue;
+            
+         string dest_file_name( expand_name( get_obj( ), get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pfname`}( ), 0, &decorated_variables ) );
+
+         string src_file( get_obj( ).child_`{`$arg_pfclass`}( ).get_attached_file_path( get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pffile`}( ) ) );
+         string dest_file( base_path );
+
+         if( !dest_file.empty( ) )
+            dest_file += "/";
+
+         dest_file += dest_file_name;
+
+         string old_file_name( get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pfnamegen`}( ) );
+
+         if( dest_file_name != old_file_name )
+         {
+            get_obj( ).child_`{`$arg_pfclass`}( ).op_update( );
+            get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pfnamegen`}( dest_file_name );
+            get_obj( ).child_`{`$arg_pfclass`}( ).op_apply( );
+
+            if( !is_in_recovery && !old_file_name.empty( ) )
+            {
+               old_file_name = base_path + '/' + old_file_name;
+               remove_file( old_file_name );
+            }
+         }
+
+         if( !is_in_recovery )
+         {
+            create_directories_for_file_name( dest_file, true );
+            copy_file( src_file, dest_file );
+         }
+      } while( get_obj( ).child_`{`$arg_pfclass`}( ).iterate_next( ) );
+   }
+   // [(finish for_cms_gen)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_cms_gen)]
+   // NOTE: When using "`{`$arg_pgcopy`}" to clone a HTML page any CSS children need to be skipped. The use of the
+   // session variable is to determine whether cloning is occurring via the "`{`$arg_pgcopy`}" call (when creating
+   // clone children separate graphs are currently being used so can't set the transient of the graph root).
+   if( !get_session_variable( to_string( get_obj( ).class_id( ) ) ).empty( ) && get_obj( ).`{`$arg_pgctype`}( ) == 0 )
+      get_obj( ).`{`$arg_pgcanclone`}( false );
+   // [(finish for_cms_gen)]
+`}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start for_cms_gen)]
+   // NOTE: If a HTML file will be generated under a CSS parent then the "`{`$arg_pgcopy`}" action is added.
+   if( !get_obj( ).`{`$arg_pgfname`}( ).empty( )
+    && get_obj( ).`{`$arg_pgctype`}( ) == 1
+    && !is_null( get_obj( ).`{`$arg_pgparent`}( ) ) && get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgctype`}( ) == 0 )
+   {
+      string actions( "`{`$arg_pgcopyid`}" );
+      if( !get_obj( ).`{`$arg_pgactions`}( ).empty( ) )
+         actions = get_obj( ).`{`$arg_pgactions`}( ) + "," + actions;
+
+      get_obj( ).`{`$arg_pgactions`}( actions );
+   }
+   // [(finish for_cms_gen)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_cms_gen)]
+   `{`$full_class_name`}* p_parent( &get_obj( ) );
+   while( true )
+   {
+      if( is_null( p_parent->`{`$arg_pgparent`}( ) ) )
+         break;
+
+      p_parent = &p_parent->`{`$arg_pgparent`}( );
+      if( p_parent->Content_Type( ) == 1 && !p_parent->`{`$arg_pgfname`}( ).empty( ) )
+         break;
+   }
+
+   // NOTE: If is "HTML" and the parent is a "Menu" then create a `{`$arg_lclass`} (if it does not already exist)
+   // with the name being the expanded meta content of the parent.
+   if( get_obj( ).`{`$arg_pgctype`}( ) == 1 && get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgctype`}( ) == 2 )
+   {
+      if( is_null( get_obj( ).`{`$arg_pglink`}( ) ) )
+      {
+         string name = expand_name( get_obj( ).`{`$arg_pgparent`}( ), get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgmeta`}( ) );
+
+         perform_fetch_rc rc;
+         string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_lclass`}, `{`$arg_lgroup`} ) );
+         key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_lclass`}, `{`$arg_lname`} ) );
+         key_info += "#2 " + string( get_obj( ).`{`$arg_pggroup`}( ) ) + "," + name;
+
+         string key( get_obj( ).get_key( ) + "_L" );
+
+         get_obj( ).`{`$arg_pglink`}( ).perform_fetch( key_info, &rc );
+         if( rc == e_perform_fetch_rc_okay )
+            key = get_obj( ).`{`$arg_pglink`}( ).get_key( );
+         else
+         {
+            get_obj( ).`{`$arg_pglink`}( ).op_create( key );
+            get_obj( ).`{`$arg_pglink`}( ).`{`$arg_lname`}( name );
+            get_obj( ).`{`$arg_pglink`}( ).`{`$arg_lgroup`}( get_obj( ).`{`$arg_pggroup`}( ) );
+            get_obj( ).`{`$arg_pglink`}( ).op_apply( );
+         }
+
+         get_obj( ).`{`$arg_pglink`}( key );
+
+         if( p_parent )
+         {
+            class_pointer< `{`$module_name`}_`{`$class_name`} > cp_parent( e_create_instance );
+            cp_parent->perform_fetch( p_parent->get_key( ) );
+
+            cp_parent->child_`{`$arg_pglchild`}( ).op_create( p_parent->get_key( ) + "00000" );
+
+            cp_parent->child_`{`$arg_pglchild`}( ).`{`$arg_plpage`}( p_parent->get_key( ) );
+            cp_parent->child_`{`$arg_pglchild`}( ).Link( get_obj( ).`{`$arg_pglink`}( ) );
+
+            cp_parent->child_`{`$arg_pglchild`}( ).op_apply( );
+         }
+      }
+   }
+   // [(finish for_cms_gen)]
+`}
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start for_cms_gen)]
+   if( !storage_locked_for_admin( ) )
+   {
+      string base_path( get_obj( ).`{`$arg_gclass`}( ).`{`$arg_gbase`}( ) );
+
+      string file_name( get_obj( ).`{`$arg_pgfnamegen`}( ) );
+
+      if( !file_name.empty( ) )
+      {
+         file_name = base_path + '/' + file_name;
+         remove_file( file_name );
+      }
+
+      // NOTE: If a "Menu" link was created by this object then make sure it will be destroyed later.
+      if( get_obj( ).`{`$arg_pgparent`}( ).`{`$arg_pgctype`}( ) == 2
+       && get_obj( ).`{`$arg_pglink`}( ).get_key( ) == get_obj( ).get_key( ) + "_L" )
+      {
+         `{`$full_class_name`}* p_root( dynamic_cast< `{`$full_class_name`}* >( get_obj( ).get_graph_root( ) ) );
+
+         if( p_root )
+         {
+            string links( p_root->`{`$arg_pgolinks`}( ) );
+
+            if( !links.empty( ) )
+               links += ",";
+            links += get_obj( ).`{`$arg_pglink`}( );
+
+            p_root->`{`$arg_pgolinks`}( links );
+         }
+      }
+
+      if( get_obj( ).child_`{`$arg_pfclass`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            if( !get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pfnamegen`}( ).empty( ) )
+            {
+               string dest_file( base_path );
+
+               if( !dest_file.empty( ) )
+                  dest_file += "/";
+
+               dest_file += get_obj( ).child_`{`$arg_pfclass`}( ).`{`$arg_pfnamegen`}( );
+
+               remove_file( dest_file );
+            }
+         } while( get_obj( ).child_`{`$arg_pfclass`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish for_cms_gen)]
+`}
+`{`@eq`(`'after_destroy`'`,`$section`)\
+   // [(start for_cms_gen)]
+   if( !get_obj( ).`{`$arg_pgolinks`}( ).empty( ) )
+   {
+      vector< string > all_links;
+      split_string( get_obj( ).`{`$arg_pgolinks`}( ), all_links );
+
+      for( size_t i = 0; i < all_links.size( ); i++ )
+      {
+         get_obj( ).`{`$arg_pglink`}( ).op_destroy( all_links[ i ] );
+         get_obj( ).`{`$arg_pglink`}( ).op_apply( );
+      }
+   }
+   // [(finish for_cms_gen)]
+`}

@@ -39,7 +39,7 @@
 #  endif
 #endif
 
-#define CAT_BASE_IMPL
+#define CIYAM_BASE_IMPL
 
 #include "class_base.h"
 
@@ -52,10 +52,10 @@
 #include "format.h"
 #include "sql_db.h"
 #include "numeric.h"
-#include "cat_base.h"
 #include "hashcash.h"
 #include "date_time.h"
 #include "utilities.h"
+#include "ciyam_base.h"
 #include "mail_source.h"
 #include "oid_pointer.h"
 #include "module_management.h"

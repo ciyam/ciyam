@@ -1,0 +1,45 @@
+`{`@eq`(`'includes`'`,`$section`)\
+`{`!`@eq`(`$arg_class`,`$arg_cclass`)`|`!`@eq`(`$arg_class`,`$arg_gclass`)\
+// [(start clone_children_for_create)]
+`{`!`@eq`(`$arg_class`,`$arg_cclass`)\
+#include "`{`$module_name`}_`{`$arg_cclass`}.h"
+`}\
+`{`!`@eq`(`$arg_class`,`$arg_gclass`)\
+#include "`{`$module_name`}_`{`$arg_gclass`}.h"
+`}\
+// [(finish clone_children_for_create)]
+`}\
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start clone_children_for_create)]
+   if( is_create
+`{`@eq`(`$arg_class`,`$arg_gclass`)\
+    && get_obj( ).get_clone_key( ).empty( )
+`}\
+    && get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
+   {
+`{`@eq`(`$arg_combine_keys`,`'`'`)\
+      int child_num = 0;
+`}\
+      do
+      {
+`{`@eq`(`$arg_combine_keys`,`'`'`)\
+         string key_info( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+`,\
+         string key_info( get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).get_key( ) + "_" + get_obj( ).get_key( ) );
+`}\
+`{`@eq`(`$arg_class`,`$arg_gclass`)\
+         key_info += ' ';
+         key_info += get_obj( ).get_key( );
+`}
+         get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).child_`{`$arg_gchild`}( ).op_create( key_info );
+         get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).child_`{`$arg_gchild`}( ).`{`$arg_gpfield`}( get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).get_key( ) );
+         get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).child_`{`$arg_gchild`}( ).`{`$arg_sfield`}( get_obj( ).get_key( ) );
+`{`!`@eq`(`$arg_vsfield`,`'`'`)\
+         get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).child_`{`$arg_gchild`}( ).`{`$arg_vdfield`}( get_obj( ).`{`$arg_vsfield`}( ) );\
+`}
+         get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).child_`{`$arg_gchild`}( ).op_apply( );
+      } while( get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).iterate_next( ) );
+   }
+   // [(finish clone_children_for_create)]
+`}

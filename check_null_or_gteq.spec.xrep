@@ -1,0 +1,10 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start check_null_or_gteq)]
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) )
+    && ( get_obj( ).`{`$arg_field`}( ) < get_obj( ).`{`$arg_field2`}( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_be_greater_or_equal ), make_pair(
+       c_str_parm_field_must_be_greater_or_equal_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_parm_field_must_be_greater_or_equal_field2, get_module_string( c_field_display_name_`{`$arg_field2`} ) ) ) ) );
+   // [(finish check_null_or_gteq)]
+`}

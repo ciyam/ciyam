@@ -1,0 +1,335 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start for_itinerary)]
+#include "`{`$module_name`}_`{`$arg_event_class`}.h"
+// [(finish for_itinerary)]
+`}
+`{`@eq`(`'generate_procedure`'`,`$section`)\
+   // [(start for_itinerary)]
+   get_obj( ).op_update( );
+
+   if( !storage_locked_for_admin( ) )
+   {
+      if( !get_obj( ).`{`$arg_pdf_doc`}( ).empty( ) )
+         remove_file( get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_pdf_doc`}( ) ) );
+
+      if( get_obj( ).child_`{`$arg_itinerary_weeks`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).op_destroy( );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).op_apply( );
+         } while( get_obj( ).child_`{`$arg_itinerary_weeks`}( ).iterate_next( ) );
+      }
+
+      udate sd( get_obj( ).`{`$arg_starts`}( ) );
+      udate fd( get_obj( ).`{`$arg_finishes`}( ) );
+
+      date_time dt_start( local_to_utc( date_time( sd ), get_tz_abbr( ) ) );
+      date_time dt_finish( local_to_utc( date_time( fd ), get_tz_abbr( ) ) + ( days )1 );
+
+`{`@eq`(`$arg_event_owner`,`'`'`)\
+      map< date_time, string > event_records;
+      map< string, pair< string, int > > event_details;
+
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_event_class`}, `{`$arg_event_when`} ) );
+      key_info += ' ';
+      key_info += dt_start.as_string( );
+
+      class_pointer< `{`$module_name`}_`{`$arg_event_class`} > cp_events( e_create_instance );
+
+      if( cp_events->iterate_forwards( key_info ) )
+      {
+         do
+         {
+            string key( cp_events->get_key( ) );
+            date_time when( cp_events->`{`$arg_event_when`}( ) );
+
+            if( when >= dt_start && when < dt_finish )
+            {
+               event_records.insert( make_pair( when, key ) );
+`{`@eq`(`$arg_event_dur`,`'`'`)\
+               event_details.insert( make_pair( key, make_pair( cp_events->`{`$arg_event_desc`}( ), 0 ) ) );\
+`,\
+               event_details.insert( make_pair( key,
+                make_pair( cp_events->`{`$arg_event_desc`}( ), cp_events->`{`$arg_event_dur`}( ) ) ) );\
+`}
+            }
+            else
+            {
+               cp_events->iterate_stop( );
+               break;
+            }
+         } while( cp_events->iterate_next( ) );
+      }
+`,\
+      map< date_time, string > user_event_records;
+`{`!`@eq`(`$arg_group`,`'`'`)\
+      map< date_time, string > group_event_records;
+`}
+      map< string, pair< string, int > > event_details;
+
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_event_class`}, `{`$arg_event_when`} ) );
+      key_info += ' ';
+      key_info += dt_start.as_string( );
+
+      if( get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).iterate_forwards( key_info ) )
+      {
+         do
+         {
+            string key( get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).get_key( ) );
+            date_time when( get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).`{`$arg_event_when`}( ) );
+
+            if( when >= dt_start && when < dt_finish )
+            {
+               user_event_records.insert( make_pair( when, key ) );
+
+`{`@eq`(`$arg_event_dur`,`'`'`)\
+               event_details.insert( make_pair( key, make_pair(
+                get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).`{`$arg_event_desc`}( ), 0 ) ) );\
+`,\
+               event_details.insert( make_pair( key, make_pair(
+                get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).`{`$arg_event_desc`}( ),
+                get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).`{`$arg_event_dur`}( ) ) ) );\
+`}
+            }
+            else
+            {
+               get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).iterate_stop( );
+               break;
+            }
+
+         } while( get_obj( ).`{`$arg_owner`}( ).child_`{`$arg_user_events`}( ).iterate_next( ) );
+      }
+`{`!`@eq`(`$arg_group`,`'`'`)
+      if( !is_null( get_obj( ).`{`$arg_group`}( ) )
+       && get_obj( ).`{`$arg_inc_group_events`}( )
+       && get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).iterate_forwards( key_info ) )
+      {
+         do
+         {
+            if( get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).`{`$arg_event_owner`}( ) != get_uid( ) )
+            {
+               string key( get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).get_key( ) );
+               date_time when( get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).`{`$arg_event_when`}( ) );
+
+               if( when >= dt_start && when < dt_finish )
+               {
+                  group_event_records.insert( make_pair( when, key ) );
+
+`{`@eq`(`$arg_event_dur`,`'`'`)\
+                  event_details.insert( make_pair( key, make_pair(
+                   get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).`{`$arg_event_desc`}( ), 0 ) ) );\
+`,\
+                  event_details.insert( make_pair( key, make_pair(
+                   get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).`{`$arg_event_desc`}( ),
+                   get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).`{`$arg_event_dur`}( ) ) ) );\
+`}
+               }
+               else
+               {
+                  get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).iterate_stop( );
+                  break;
+               }
+            }
+         } while( get_obj( ).`{`$arg_group`}( ).child_`{`$arg_group_events`}( ).iterate_next( ) );
+      }
+`}`}
+      while( ( weekday )sd != e_weekday_monday )
+      {
+         --sd;
+         dt_start -= ( days )1;
+      }
+
+      int child = 0;
+      int day_num = 0;
+      int total_days = ( fd - sd ) + 1;
+
+      string monday_details;
+      string tuesday_details;
+      string wednesday_details;
+      string thursday_details;
+      string friday_details;
+      string saturday_details;
+      string sunday_details;
+
+      string* p_details = 0;
+
+      for( int i = 0; i < total_days; i++ )
+      {
+         if( i % 7 == 0 )
+         {
+            monday_details.erase( );
+            tuesday_details.erase( );
+            wednesday_details.erase( );
+            thursday_details.erase( );
+            friday_details.erase( );
+            saturday_details.erase( );
+            sunday_details.erase( );
+
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child ) );
+
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_itinerary`}( get_obj( ).get_key( ) );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_itw_owner`}( get_obj( ).`{`$arg_owner`}( ) );
+
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_itw_starts`}( sd );
+         }
+
+         if( sd >= get_obj( ).`{`$arg_starts`}( ) )
+         {
+            ++day_num;
+            p_details = 0;
+
+            weekday wd = ( weekday )sd;
+            switch( wd )
+            {
+               case e_weekday_monday:
+               p_details = &monday_details;
+               break;
+
+               case e_weekday_tuesday:
+               p_details = &tuesday_details;
+               break;
+
+               case e_weekday_wednesday:
+               p_details = &wednesday_details;
+               break;
+
+               case e_weekday_thursday:
+               p_details = &thursday_details;
+               break;
+
+               case e_weekday_friday:
+               p_details = &friday_details;
+               break;
+
+               case e_weekday_saturday:
+               p_details = &saturday_details;
+               break;
+
+               case e_weekday_sunday:
+               p_details = &sunday_details;
+               break;
+            }
+
+            if( p_details && get_obj( ).`{`$arg_inc_daynums`}( ) )
+               // FUTURE: This should be a module string.
+               *p_details = "Day " + to_string( day_num ) + "\\r\\n\\r\\n";
+         }
+
+`{`@eq`(`$arg_event_owner`,`'`'`)\
+         if( p_details )
+         {
+            map< date_time, string >::iterator mi = event_records.lower_bound( dt_start );
+
+            for( ; mi != event_records.end( ); ++mi )
+            {
+               if( mi->first >= dt_start + ( days )1 )
+                  break;
+
+               date_time dt( utc_to_local( mi->first, get_tz_abbr( ) ) );
+
+               string event_time( dt.get_time( ).as_string( e_time_format_hhmm, true ) );
+               if( event_details[ mi->second ].second > 0 )
+               {
+                  event_time += "-";
+                  dt += ( seconds )event_details[ mi->second ].second;
+                  event_time += dt.get_time( ).as_string( e_time_format_hhmm, true );
+               }
+
+               *p_details += event_time + " " + event_details[ mi->second ].first + "\\\\r\\\\n\\\\r\\\\n";
+            }
+         }
+`,\
+         if( p_details )
+         {
+            map< date_time, string >::iterator mi = user_event_records.lower_bound( dt_start );
+
+            for( ; mi != user_event_records.end( ); ++mi )
+            {
+               if( mi->first >= dt_start + ( days )1 )
+                  break;
+
+               date_time dt( utc_to_local( mi->first, get_tz_abbr( ) ) );
+
+               string event_time( dt.get_time( ).as_string( e_time_format_hhmm, true ) );
+               if( event_details[ mi->second ].second > 0 )
+               {
+                  event_time += "-";
+                  dt += ( seconds )event_details[ mi->second ].second;
+                  event_time += dt.get_time( ).as_string( e_time_format_hhmm, true );
+               }
+
+               *p_details += event_time + " " + event_details[ mi->second ].first + "\\\\r\\\\n\\\\r\\\\n";
+            }
+         }
+`{`!`@eq`(`$arg_group`,`'`'`)
+         if( p_details && get_obj( ).`{`$arg_inc_group_events`}( ) )
+         {
+            map< date_time, string >::iterator mi = group_event_records.lower_bound( dt_start );
+
+            for( ; mi != group_event_records.end( ); ++mi )
+            {
+               if( mi->first >= dt_start + ( days )1 )
+                  break;
+
+               date_time dt( utc_to_local( mi->first, get_tz_abbr( ) ) );
+
+               string event_time( dt.get_time( ).as_string( e_time_format_hhmm, true ) );
+               if( event_details[ mi->second ].second > 0 )
+               {
+                  event_time += "-";
+                  dt += ( seconds )event_details[ mi->second ].second;
+                  event_time += dt.get_time( ).as_string( e_time_format_hhmm, true );
+               }
+
+               *p_details += event_time + " " + event_details[ mi->second ].first + "\=4r\=4n\=4r\=4n";
+            }
+         }
+`}`}
+         if( day_num && p_details && p_details->empty( ) )
+            *p_details = "\\r\\n\\r\\n";
+
+         if( i % 7 == 6 || i == total_days - 1 )
+         {
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_mon`}( monday_details );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_tue`}( tuesday_details );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_wed`}( wednesday_details );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_thu`}( thursday_details );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_fri`}( friday_details );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_sat`}( saturday_details );
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).`{`$arg_det_sun`}( sunday_details );
+
+            get_obj( ).child_`{`$arg_itinerary_weeks`}( ).op_apply( );
+         }
+
+         ++sd;
+         dt_start += ( days )1;
+      }
+   }
+
+   get_obj( ).`{`$arg_pdf_doc`}( get_obj( ).get_key( ) + ".pdf" );
+
+   get_obj( ).op_apply( );
+
+   if( !storage_locked_for_admin( ) )
+   {
+      string pdf_file( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".pdf" ) );
+
+      set_session_variable( "@key", get_obj( ).get_key( ) );
+      set_session_variable( "@file", pdf_file );
+      set_session_variable( "@title", get_obj( ).`{`$arg_name`}( ) );
+
+      run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_gen_proc`}", false );
+
+      // FUTURE: This should be a module string.
+      `{`$arg_gen_output`} = "Generated Itinerary PDF...";
+   }
+   // [(finish for_itinerary)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_itinerary)]
+   // NOTE: Don't let the command processor use a transaction as the PDF generation script
+   // is executed synchronously whilst still within the procedure.
+   get_obj( ).`{`$arg_actions`}( "-" + string( c_procedure_id_`{`$arg_gen_proc`} ) );
+   // [(finish for_itinerary)]
+`}

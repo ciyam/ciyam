@@ -21,7 +21,7 @@
 #  include <string>
 #endif
 
-#define CAT_BASE_IMPL
+#define CIYAM_BASE_IMPL
 
 #include "class_base.h"
 

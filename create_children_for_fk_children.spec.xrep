@@ -1,0 +1,25 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start create_children_for_fk_children)]
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).iterate_forwards( ) )
+   {
+      int child_num = 0;
+      do
+      {
+         string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+
+         get_obj( ).child_`{`$arg_cfield`}( ).op_create( child_key );
+
+         get_obj( ).child_`{`$arg_cfield`}( ).`{`$arg_cname`}( get_obj( ).get_key( ) );
+         get_obj( ).child_`{`$arg_cfield`}( ).`{`$arg_fkfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ) );
+
+`{`?`$arg_field_list`[`$arg_field_list`,\
+         get_obj( ).child_`{`$arg_cfield`}( ).\\$( get_obj( ).\\$( ) );
+`]`}
+         get_obj( ).child_`{`$arg_cfield`}( ).op_apply( );
+
+      } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).iterate_next( ) );
+   }
+   // [(finish create_children_for_fk_children)]
+`}

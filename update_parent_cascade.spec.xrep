@@ -1,0 +1,60 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start update_parent_cascade)]
+`{`@eq`(`$arg_fkfield`,`'`'`)
+   class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
+
+   if( !cp_parent->get_key( ).empty( ) )
+   {
+      cp_parent->op_update( );
+      cp_parent->op_apply( );
+   }\
+`,\
+   if( get_obj( ).`{`$arg_fkfield`}( ).get_key( ) == "`{`$arg_tvalue`}" )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }\
+`}
+   // [(finish update_parent_cascade)]
+`}
+`{`@eq`(`'after_destroy`'`,`$section`)\
+   // [(start update_parent_cascade)]
+`{`@eq`(`$arg_fkfield`,`'`'`)
+   if( !get_obj( ).get_is_being_cascaded( ) )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }\
+`,\
+   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).`{`$arg_fkfield`}( ).get_key( ) == "`{`$arg_tvalue`}" )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_pclass`} > cp_parent( &get_obj( ).`{`$arg_pfield`}( )`{`@eq`(`$arg_grand_parent`,`'true`'`).`{`$arg_pfield`}( )`} );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }\
+`}
+   // [(finish update_parent_cascade)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start update_parent_cascade)]
+   dependents.insert( "`{`$arg_pfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+      names.insert( "`{`$arg_pfield`}" );
+   // [(finish update_parent_cascade)]
+`}

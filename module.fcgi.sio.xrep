@@ -1,0 +1,698 @@
+`{`#$include @`}
+`{`}
+`{`$pnums`=`'0 1 2 3 4 5 6 7 8 9`'`}
+`{`$vnums`=`'0 1 2 3 4 5 6 7 8 9`'`}
+`{`$rnums`=`'0 1 2 3 4 5 6 7 8 9`'`}
+`{`$cnums`=`'00 01 02 03 04 05 06 07 08 09`'`}
+`{`}
+<sio/>
+ <id>`{`$model_id`}
+ <name>`{`$model_name`}
+ <perm>`{`$model_perm`}
+ <title>`{`$model_title`/_`/ `}
+ <user_info>`{`(`?`$specification_user_info_id`)`{`$specification_user_info_cid`},`{`$specification_user_info_class`},\
+`{`$specification_user_info_uid`},`{`$specification_user_info_pwd`}
+ <user_perm>`{`$specification_user_info_perm`}
+ <user_group>`{`$specification_user_info_group`}`{`(`?`$specification_qlink_info_id`)
+ <user_qlink>`{`$specification_qlink_info_cid`}:`{`$specification_qlink_info_parent`}\
+,`{`$specification_qlink_info_url`},`{`$specification_qlink_info_name`}\
+,`{`(`?`$specification_qlink_info_tfield`&`!`@eq`(`$specification_qlink_info_tfield`,`'`'`)`)\
+`{`$specification_qlink_info_tfield`}=`{`$specification_qlink_info_tvalue`}:`}\
+`{`$specification_qlink_info_order`},`{`$specification_qlink_info_checksum`}\
+`{`!`@eq`(`$specification_qlink_info_perm`,`'`'`)!`{`$specification_qlink_info_perm`}`}`}
+ <user_other>`{`$specification_user_info_other`}
+ <user_parent>`{`$specification_user_info_parent`}
+ <user_active>`{`$specification_user_info_active`}
+ <user_select>`{`@eq`(`$specification_user_info_ostrict`,`'true`'`)!`}`{`$specification_user_info_sfield`}\
+`{`!`@eq`(`$specification_user_info_pcfield`,`'`'`).`}`{`$specification_user_info_pcfield`}\
+`{`!`@eq`(`$specification_user_info_pfield`,`'`'`):`}`{`$specification_user_info_pfield`}\
+`{`!`@eq`(`$specification_user_info_ofield`,`'`'`)!`}`{`$specification_user_info_ofield`}\
+`{`!`@eq`(`$specification_user_info_sclsnm`,`'`'`);class_`{`@lower`(`$specification_user_info_sclsnm`)`}`}\
+`{`!`@eq`(`$specification_user_info_slperm`,`'`'`),`{`$specification_user_info_slperm`}`}\
+`{`!`@eq`(`$specification_user_info_koverride`,`'`'`)@`{`$specification_user_info_koverride`}`}\
+`{`!`@eq`(`$specification_user_info_soverride`,`'`'`)#`{`$specification_user_info_soverride`}`}
+ <user_slevel>`{`(`?`$specification_user_info_slevel`)`$specification_user_info_slevel`}`}
+ <home_info>`{`(`?`$specification_home_message_id`)`{`$specification_home_message_command`}`}`{\
+`(`?`$specification_home_message_cmd_args`) `{`$specification_home_message_cmd_args`}`}
+ <enums/>
+`{`(`?`$all_enums`)`[`$all_enums`%,`,\
+  <enum/>
+   <id>\0
+   <name>enum_`{`@lower`(`'\1`'`)`}
+   <values/>
+`{`[`$enum_\1`%=`,\
+    <value/>
+     <data>\\0
+     <name>enum_`{`@lower`(`'\1`'`)`}_`{`$val`=`@lower`(`'\\1`'`)`}`{`$val`}
+    </value>
+`]`}\
+   </values>
+  </enum>\
+`+\n`]`}
+ </enums>
+ <views/>`{`?`$all_classes`[`$all_classes`,\
+`{`(`?`$specification_\$_view_name`)
+  <view/>
+   <id>`{`$specification_\$_view_id`}
+   <cid>`{`$specification_\$_view_cid`}
+   <name>`{`$specification_\$_view_id`}_name
+   <type>`{`$specification_\$_view_type`}
+   <extra>`{`$specification_\$_view_extra`}
+   <modifiers>`{`$specification_\$_view_mods`}
+   <class>\$
+   <bclass>`{`$specification_\$_view_binfo`}
+   <module>`{`$model_name`}
+   <fields/>
+`}\
+`{`?`$specification_\$_view_fnums`[`$specification_\$_view_fnums`,`{`[`$specification_\$_view_field\\$`,\
+    <field/>
+     <name>`{`$specification_\$_view_fname\\$`}
+     <field>\=3$
+     <ftype>`{`$specification_\$_view_ftype\\$`}
+     <extra>`{`$specification_\$_view_extra\\$`}
+     <mandatory>`{`$specification_\$_view_fmand\\$`}
+     <modifiers>`{`$specification_\$_view_fmods\\$`}`{`(`?`$specification_\$_view_prcls\\$`)
+     <pclass>`{`$specification_\$_view_prcls\\$`}`}`{`(`?`$specification_\$_view_prfld\\$`)
+     <pfield>`{`$specification_\$_view_prfld\\$`}`}`{`(`?`$specification_\$_view_prfnm\\$`)
+     <pfname>field_`{`@lower`(`$specification_\$_view_prcnm\\$`)`}\
+_`{`@lower`(`$specification_\$_view_prfnm\\$`)`}`}`{`(`?`$specification_\$_view_pdfld\\$`)
+     <pdname>field_`{`@lower`(`$specification_\$_view_pdfld\\$`)`}`}`{`(`?`$specification_\$_view_prxtr\\$`)
+     <pextra>`{`$specification_\$_view_prxtr\\$`}`}
+    </field>
+`]`}`]`}\
+`{`(`?`$specification_\$_view_name`)\
+   </fields>
+  </view>\
+`}\
+`{`(`?`$specification_\$_print_name`)
+  <view/>
+   <id>`{`$specification_\$_print_id`}
+   <cid>`{`$specification_\$_print_cid`}
+   <name>`{`$specification_\$_print_id`}_name
+   <type>`{`$specification_\$_print_type`}
+   <extra>`{`$specification_\$_print_extra`}`{`(`?`$specification_\$_print_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_print_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_print_mods`}`{`(`?`$specification_\$_view_id`)
+   <vlink>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_print_binfo`}
+   <module>`{`$model_name`}
+   <fields/>
+`}\
+`{`?`$specification_\$_print_fnums`[`$specification_\$_print_fnums`,`{`[`$specification_\$_print_field\\$`,\
+    <field/>
+     <name>`{`$specification_\$_print_fname\\$`}
+     <field>\=3$
+     <ftype>`{`$specification_\$_print_ftype\\$`}
+     <extra>`{`$specification_\$_print_extra\\$`}
+     <mandatory>`{`$specification_\$_print_fmand\\$`}
+     <modifiers>`{`$specification_\$_print_fmods\\$`}`{`(`?`$specification_\$_print_prcls\\$`)
+     <pclass>`{`$specification_\$_print_prcls\\$`}`}`{`(`?`$specification_\$_print_prfld\\$`)
+     <pfield>`{`$specification_\$_print_prfld\\$`}`}`{`(`?`$specification_\$_print_prfnm\\$`)
+     <pfname>field_`{`@lower`(`$specification_\$_print_prcnm\\$`)`}\
+_`{`@lower`(`$specification_\$_print_prfnm\\$`)`}`}`{`(`?`$specification_\$_print_pdfld\\$`)
+     <pdname>field_`{`@lower`(`$specification_\$_print_pdfld\\$`)`}`}`{`(`?`$specification_\$_print_prxtr\\$`)
+     <pextra>`{`$specification_\$_print_prxtr\\$`}`}
+    </field>
+`]`}`]`}\
+`{`(`?`$specification_\$_print_name`)\
+   </fields>
+  </view>\
+`}\
+`]`}
+ </views>
+ <lists/>`{`?`$all_classes`[`$all_classes`,\
+`{`(`?`$specification_\$_list_name`)
+  <list/>
+   <id>`{`$specification_\$_list_id`}
+   <cid>`{`$specification_\$_list_cid`}
+   <name>`{`$specification_\$_list_id`}_name
+   <type>`{`$specification_\$_list_type`}
+   <extra>`{`$specification_\$_list_extra`}
+   <actions>`{`$specification_\$_list_acts`}`{`(`?`$specification_\$_list_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_list_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_list_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_list_binfo`}
+   <order>`{`$specification_\$_list_order`}`{`(`?`$specification_\$_list_pclass`)
+   <pclass>`{`$specification_\$_list_pclass`}`}`{`(`?`$specification_\$_list_pfield`)
+   <pfield>`{`$specification_\$_list_pfield`}`}`{`(`?`$specification_\$_list_pfldnm`)
+   <pfldnm>`{`$specification_\$_list_pfldnm`}`}`{`(`?`$specification_\$_list_nclass`)
+   <nclass>`{`$specification_\$_list_nclass`}`}`{`(`?`$specification_\$_list_nfield`)
+   <nfield>`{`$specification_\$_list_nfield`}`}`{`(`?`$specification_\$_list_nextra`)
+   <nextra>`{`$specification_\$_list_nextra`}`}`{`(`?`$specification_\$_list_dfenum`)
+   <dfenum>`{`$specification_\$_list_dfenum`}`}`{`(`?`$specification_\$_list_dfield`)
+   <dfield>`{`$specification_\$_list_dfield`}`}`{`(`?`$specification_\$_list_dvalue`)
+   <dvalue>`{`$specification_\$_list_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_list_filters`)
+   <filters>`{`$specification_\$_list_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_list_column\=3$`[`$specification_\$_list_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_list_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_list_cltype\=3$`}
+     <extra>`{`$specification_\$_list_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_list_clmods\=3$`}`{`(`?`$specification_\$_list_pclass\=3$`)
+     <pclass>`{`$specification_\$_list_pclass\=3$`}`}`{`(`?`$specification_\$_list_pfield\=3$`)
+     <pfield>`{`$specification_\$_list_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_list_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_list_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_list_cluniq\=3$`}
+     <indexed>`{`$specification_\$_list_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_list_parent\=3$`[`$specification_\$_list_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_list_prntnm\=3$`)\
+     <name>`{`$specification_\$_list_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_list_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_list_jfield\=3$`}
+     <extra>`{`$specification_\$_list_dextra\=3$`}
+     <pclass>`{`$specification_\$_list_pclass\=3$`}
+     <pfield>`{`$specification_\$_list_pfield\=3$`}
+     <pextra>`{`$specification_\$_list_pextra\=3$`}
+     <mandatory>`{`$specification_\$_list_mandatory\=3$`}
+     <operations>`{`$specification_\$_list_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_list_rfield\=3$`[`$specification_\$_list_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_list_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_list_rfield\=3$`}
+     <ftype>`{`$specification_\$_list_rftype\=3$`}
+     <extra>`{`$specification_\$_list_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_list_rfmand\=3$`}
+     <operations>`{`$specification_\$_list_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}\
+`{`[`$vnums`,`{`(`?`$specification_\$_list_var\\$_name`)
+  <list/>
+   <id>`{`$specification_\$_list_var\\$_id`}
+   <cid>`{`$specification_\$_list_var\\$_cid`}
+   <pid>`{`$specification_\$_list_id`}
+   <name>`{`$specification_\$_list_var\\$_id`}_name
+   <type>`{`$specification_\$_list_var\\$_type`}
+   <extra>`{`$specification_\$_list_var\\$_extra`}
+   <actions>`{`$specification_\$_list_var\\$_acts`}`{`(`?`$specification_\$_list_var\\$_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_list_var\\$_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_list_var\\$_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_list_var\\$_binfo`}
+   <order>`{`$specification_\$_list_var\\$_order`}`{`(`?`$specification_\$_list_var\\$_pclass`)
+   <pclass>`{`$specification_\$_list_var\\$_pclass`}`}`{`(`?`$specification_\$_list_var\\$_pfield`)
+   <pfield>`{`$specification_\$_list_var\\$_pfield`}`}`{`(`?`$specification_\$_list_var\\$_pfldnm`)
+   <pfldnm>`{`$specification_\$_list_var\\$_pfldnm`}`}`{`(`?`$specification_\$_list_var\\$_nclass`)
+   <nclass>`{`$specification_\$_list_var\\$_nclass`}`}`{`(`?`$specification_\$_list_var\\$_nfield`)
+   <nfield>`{`$specification_\$_list_var\\$_nfield`}`}`{`(`?`$specification_\$_list_var\\$_nextra`)
+   <nextra>`{`$specification_\$_list_var\\$_nextra`}`}`{`(`?`$specification_\$_list_var\\$_dfenum`)
+   <dfenum>`{`$specification_\$_list_var\\$_dfenum`}`}`{`(`?`$specification_\$_list_var\\$_dfield`)
+   <dfield>`{`$specification_\$_list_var\\$_dfield`}`}`{`(`?`$specification_\$_list_var\\$_dvalue`)
+   <dvalue>`{`$specification_\$_list_var\\$_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_list_var\\$_filters`)
+   <filters>`{`$specification_\$_list_var\\$_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_list_var\\$_column\=4$`[`$specification_\$_list_var\\$_column\=4$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_list_var\\$_clname\=4$`)`}
+     <field>\=5$
+     <ftype>`{`$specification_\$_list_var\\$_cltype\=4$`}
+     <extra>`{`$specification_\$_list_var\\$_clxtra\=4$`}
+     <modifiers>`{`$specification_\$_list_var\\$_clmods\=4$`}`{`(`?`$specification_\$_list_var\\$_pclass\=4$`)
+     <pclass>`{`$specification_\$_list_var\\$_pclass\=4$`}`}`{`(`?`$specification_\$_list_var\\$_pfield\=4$`)
+     <pfield>`{`$specification_\$_list_var\\$_pfield\=4$`}
+     <pfname>field_`{`@lower`(`$specification_\$_list_var\\$_pclsnm\=4$`)`}_`{`@lower`(`$specification_\$_list_var\\$_pfldnm\=4$`)`}`}
+     <unique>`{`$specification_\$_list_var\\$_cluniq\=4$`}
+     <indexed>`{`$specification_\$_list_var\\$_cindex\=4$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_list_var\\$_parent\=4$`[`$specification_\$_list_var\\$_parent\=4$`,\
+    <parent/>
+`{`(`?`$specification_\$_list_var\\$_prntnm\=4$`)\
+     <name>`{`$specification_\$_list_var\\$_prntnm\=4$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_list_var\\$_parent\=4$`)`}\
+`}
+     <field>`{`$specification_\$_list_var\\$_jfield\=4$`}
+     <extra>`{`$specification_\$_list_var\\$_dextra\=4$`}
+     <pclass>`{`$specification_\$_list_var\\$_pclass\=4$`}
+     <pfield>`{`$specification_\$_list_var\\$_pfield\=4$`}
+     <pextra>`{`$specification_\$_list_var\\$_pextra\=4$`}
+     <mandatory>`{`$specification_\$_list_var\\$_mandatory\=4$`}
+     <operations>`{`$specification_\$_list_var\\$_operations\=4$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_list_var\\$_rfield\=4$`[`$specification_\$_list_var\\$_rfield\=4$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_list_var\\$_rfldnm\=4$`)`}
+     <field>`{`$specification_\$_list_var\\$_rfield\=4$`}
+     <ftype>`{`$specification_\$_list_var\\$_rftype\=4$`}
+     <extra>`{`$specification_\$_list_var\\$_rfxtra\=4$`}
+     <mandatory>`{`$specification_\$_list_var\\$_rfmand\=4$`}
+     <operations>`{`$specification_\$_list_var\\$_rfldops\=4$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}`]`}\
+`{`[`$pnums`,`{`(`?`$specification_\$_child_list\\$_name`)
+  <list/>
+   <id>`{`$specification_\$_child_list\\$_id`}
+   <cid>`{`$specification_\$_child_list\\$_cid`}
+   <name>`{`$specification_\$_child_list\\$_id`}_name
+   <type>`{`$specification_\$_child_list\\$_type`}
+   <extra>`{`$specification_\$_child_list\\$_extra`}
+   <actions>`{`$specification_\$_child_list\\$_acts`}
+   <modifiers>`{`$specification_\$_child_list\\$_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_child_list\\$_binfo`}
+   <order>`{`$specification_\$_child_list\\$_order`}
+   <pclass>`{`$specification_\$_child_list\\$_pclass`}
+   <pfield>`{`$specification_\$_child_list\\$_pfield`}
+   <pfldnm>`{`$specification_\$_child_list\\$_pfldnm`}`{`(`?`$specification_\$_child_list\\$_ufield`)
+   <ufield>`{`$specification_\$_child_list\\$_ufield`}`}`{`(`?`$specification_\$_child_list\\$_nclass`)
+   <nclass>`{`$specification_\$_child_list\\$_nclass`}`}`{`(`?`$specification_\$_child_list\\$_nfield`)
+   <nfield>`{`$specification_\$_child_list\\$_nfield`}`}`{`(`?`$specification_\$_child_list\\$_nextra`)
+   <nextra>`{`$specification_\$_child_list\\$_nextra`}`}`{`(`?`$specification_\$_child_list\\$_dfenum`)
+   <dfenum>`{`$specification_\$_child_list\\$_dfenum`}`}`{`(`?`$specification_\$_child_list\\$_dfield`)
+   <dfield>`{`$specification_\$_child_list\\$_dfield`}`}`{`(`?`$specification_\$_child_list\\$_dvalue`)
+   <dvalue>`{`$specification_\$_child_list\\$_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_child_list\\$_filters`)
+   <filters>`{`$specification_\$_child_list\\$_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_child_list\\$_column\=4$`[`$specification_\$_child_list\\$_column\=4$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_child_list\\$_clname\=4$`)`}
+     <field>\=5$
+     <ftype>`{`$specification_\$_child_list\\$_cltype\=4$`}
+     <extra>`{`$specification_\$_child_list\\$_clxtra\=4$`}
+     <modifiers>`{`$specification_\$_child_list\\$_clmods\=4$`}`{`(`?`$specification_\$_child_list\\$_pclass\=4$`)
+     <pclass>`{`$specification_\$_child_list\\$_pclass\=4$`}`}`{`(`?`$specification_\$_child_list\\$_pfield\=4$`)
+     <pfield>`{`$specification_\$_child_list\\$_pfield\=4$`}
+     <pfname>field_`{`@lower`(`$specification_\$_child_list\\$_pclsnm\=4$`)`}_`{`@lower`(`$specification_\$_child_list\\$_pfldnm\=4$`)`}`}
+     <unique>`{`$specification_\$_child_list\\$_cluniq\=4$`}
+     <indexed>`{`$specification_\$_child_list\\$_cindex\=4$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_child_list\\$_parent\=4$`[`$specification_\$_child_list\\$_parent\=4$`,\
+    <parent/>
+`{`(`?`$specification_\$_child_list\\$_prntnm\=4$`)\
+     <name>`{`$specification_\$_child_list\\$_prntnm\=4$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_child_list\\$_parent\=4$`)`}\
+`}
+     <field>`{`$specification_\$_child_list\\$_jfield\=4$`}
+     <extra>`{`$specification_\$_child_list\\$_dextra\=4$`}
+     <pclass>`{`$specification_\$_child_list\\$_pclass\=4$`}
+     <pfield>`{`$specification_\$_child_list\\$_pfield\=4$`}
+     <pextra>`{`$specification_\$_child_list\\$_pextra\=4$`}
+     <mandatory>`{`$specification_\$_child_list\\$_mandatory\=4$`}
+     <operations>`{`$specification_\$_child_list\\$_operations\=4$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_child_list\\$_rfield\=4$`[`$specification_\$_child_list\\$_rfield\=4$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_child_list\\$_rfldnm\=4$`)`}
+     <field>`{`$specification_\$_child_list\\$_rfield\=4$`}
+     <ftype>`{`$specification_\$_child_list\\$_rftype\=4$`}
+     <extra>`{`$specification_\$_child_list\\$_rfxtra\=4$`}
+     <mandatory>`{`$specification_\$_child_list\\$_rfmand\=4$`}
+     <operations>`{`$specification_\$_child_list\\$_rfldops\=4$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}`]`}\
+`{`(`?`$specification_\$_home_list_name`)
+  <list/>
+   <id>`{`$specification_\$_home_list_id`}
+   <cid>`{`$specification_\$_home_list_cid`}
+   <name>`{`$specification_\$_home_list_id`}_name
+   <type>`{`$specification_\$_home_list_type`}
+   <extra>`{`$specification_\$_home_list_extra`}
+   <actions>`{`$specification_\$_home_list_acts`}
+   <modifiers>`{`$specification_\$_home_list_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_home_list_binfo`}
+   <order>`{`$specification_\$_home_list_order`}`{`(`?`$specification_\$_home_list_pclass`)
+   <pclass>`{`$specification_\$_home_list_pclass`}`}`{`(`?`$specification_\$_home_list_pfield`)
+   <pfield>`{`$specification_\$_home_list_pfield`}`}`{`(`?`$specification_\$_home_list_nclass`)
+   <nclass>`{`$specification_\$_home_list_nclass`}`}`{`(`?`$specification_\$_home_list_nfield`)
+   <nfield>`{`$specification_\$_home_list_nfield`}`}`{`(`?`$specification_\$_home_list_nextra`)
+   <nextra>`{`$specification_\$_home_list_nextra`}`}`{`(`?`$specification_\$_home_list_dfenum`)
+   <dfenum>`{`$specification_\$_home_list_dfenum`}`}`{`(`?`$specification_\$_home_list_dfield`)
+   <dfield>`{`$specification_\$_home_list_dfield`}`}`{`(`?`$specification_\$_home_list_dvalue`)
+   <dvalue>`{`$specification_\$_home_list_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_home_list_filters`)
+   <filters>`{`$specification_\$_home_list_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_home_list_column\=3$`[`$specification_\$_home_list_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_home_list_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_home_list_cltype\=3$`}
+     <extra>`{`$specification_\$_home_list_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_home_list_clmods\=3$`}`{`(`?`$specification_\$_home_list_pclass\=3$`)
+     <pclass>`{`$specification_\$_home_list_pclass\=3$`}`}`{`(`?`$specification_\$_home_list_pfield\=3$`)
+     <pfield>`{`$specification_\$_home_list_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_home_list_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_home_list_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_home_list_cluniq\=3$`}
+     <indexed>`{`$specification_\$_home_list_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_home_list_parent\=3$`[`$specification_\$_home_list_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_home_list_prntnm\=3$`)\
+     <name>`{`$specification_\$_home_list_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_home_list_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_home_list_jfield\=3$`}
+     <extra>`{`$specification_\$_home_list_dextra\=3$`}
+     <pclass>`{`$specification_\$_home_list_pclass\=3$`}
+     <pfield>`{`$specification_\$_home_list_pfield\=3$`}
+     <pextra>`{`$specification_\$_home_list_pextra\=3$`}
+     <mandatory>`{`$specification_\$_home_list_mandatory\=3$`}
+     <operations>`{`$specification_\$_home_list_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_home_list_rfield\=3$`[`$specification_\$_home_list_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_home_list_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_home_list_rfield\=3$`}
+     <ftype>`{`$specification_\$_home_list_rftype\=3$`}
+     <extra>`{`$specification_\$_home_list_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_home_list_rfmand\=3$`}
+     <operations>`{`$specification_\$_home_list_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}`{`(`?`$specification_\$_user_list_name`)
+  <list/>
+   <id>`{`$specification_\$_user_list_id`}
+   <cid>`{`$specification_\$_user_list_cid`}
+   <name>`{`$specification_\$_user_list_id`}_name
+   <type>`{`$specification_\$_user_list_type`}
+   <extra>`{`$specification_\$_user_list_extra`}
+   <actions>`{`$specification_\$_user_list_acts`}`{`(`?`$specification_\$_user_list_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_user_list_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_user_list_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_user_list_binfo`}
+   <order>`{`$specification_\$_user_list_order`}
+   <pclass>`{`$specification_\$_user_list_pclass`}
+   <pfield>`{`$specification_\$_user_list_pfield`}`{`(`?`$specification_\$_user_list_nclass`)
+   <nclass>`{`$specification_\$_user_list_nclass`}`}`{`(`?`$specification_\$_user_list_nfield`)
+   <nfield>`{`$specification_\$_user_list_nfield`}`}`{`(`?`$specification_\$_user_list_nextra`)
+   <nextra>`{`$specification_\$_user_list_nextra`}`}`{`(`?`$specification_\$_user_list_dfenum`)
+   <dfenum>`{`$specification_\$_user_list_dfenum`}`}`{`(`?`$specification_\$_user_list_dfield`)
+   <dfield>`{`$specification_\$_user_list_dfield`}`}`{`(`?`$specification_\$_user_list_dvalue`)
+   <dvalue>`{`$specification_\$_user_list_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_user_list_filters`)
+   <filters>`{`$specification_\$_user_list_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_user_list_column\=3$`[`$specification_\$_user_list_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_user_list_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_user_list_cltype\=3$`}
+     <extra>`{`$specification_\$_user_list_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_user_list_clmods\=3$`}`{`(`?`$specification_\$_user_list_pclass\=3$`)
+     <pclass>`{`$specification_\$_user_list_pclass\=3$`}`}`{`(`?`$specification_\$_user_list_pfield\=3$`)
+     <pfield>`{`$specification_\$_user_list_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_user_list_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_user_list_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_user_list_cluniq\=3$`}
+     <indexed>`{`$specification_\$_user_list_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_user_list_parent\=3$`[`$specification_\$_user_list_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_user_list_prntnm\=3$`)\
+     <name>`{`$specification_\$_user_list_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_user_list_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_user_list_jfield\=3$`}
+     <extra>`{`$specification_\$_user_list_dextra\=3$`}
+     <pclass>`{`$specification_\$_user_list_pclass\=3$`}
+     <pfield>`{`$specification_\$_user_list_pfield\=3$`}
+     <pextra>`{`$specification_\$_user_list_pextra\=3$`}
+     <mandatory>`{`$specification_\$_user_list_mandatory\=3$`}
+     <operations>`{`$specification_\$_user_list_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_user_list_rfield\=3$`[`$specification_\$_user_list_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_user_list_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_user_list_rfield\=3$`}
+     <ftype>`{`$specification_\$_user_list_rftype\=3$`}
+     <extra>`{`$specification_\$_user_list_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_user_list_rfmand\=3$`}
+     <operations>`{`$specification_\$_user_list_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}\
+`{`[`$vnums`,`{`(`?`$specification_\$_user_list_var\\$_name`)
+  <list/>
+   <id>`{`$specification_\$_user_list_var\\$_id`}
+   <cid>`{`$specification_\$_user_list_var\\$_cid`}
+   <pid>`{`$specification_\$_user_list_id`}
+   <name>`{`$specification_\$_user_list_var\\$_id`}_name
+   <type>`{`$specification_\$_user_list_var\\$_type`}
+   <extra>`{`$specification_\$_user_list_var\\$_extra`}
+   <actions>`{`$specification_\$_user_list_var\\$_acts`}`{`(`?`$specification_\$_user_list_var\\$_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_user_list_var\\$_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_user_list_var\\$_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_user_list_var\\$_binfo`}
+   <order>`{`$specification_\$_user_list_var\\$_order`}
+   <pclass>`{`$specification_\$_user_list_var\\$_pclass`}
+   <pfield>`{`$specification_\$_user_list_var\\$_pfield`}`{`(`?`$specification_\$_user_list_var\\$_nclass`)
+   <nclass>`{`$specification_\$_user_list_var\\$_nclass`}`}`{`(`?`$specification_\$_user_list_var\\$_nfield`)
+   <nfield>`{`$specification_\$_user_list_var\\$_nfield`}`}`{`(`?`$specification_\$_user_list_var\\$_nextra`)
+   <nextra>`{`$specification_\$_user_list_var\\$_nextra`}`}`{`(`?`$specification_\$_user_list_var\\$_dfenum`)
+   <dfenum>`{`$specification_\$_user_list_var\\$_dfenum`}`}`{`(`?`$specification_\$_user_list_var\\$_dfield`)
+   <dfield>`{`$specification_\$_user_list_var\\$_dfield`}`}`{`(`?`$specification_\$_user_list_var\\$_dvalue`)
+   <dvalue>`{`$specification_\$_user_list_var\\$_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_user_list_var\\$_filters`)
+   <filters>`{`$specification_\$_user_list_var\\$_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_user_list_var\\$_column\=4$`[`$specification_\$_user_list_var\\$_column\=4$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_user_list_var\\$_clname\=4$`)`}
+     <field>\=5$
+     <ftype>`{`$specification_\$_user_list_var\\$_cltype\=4$`}
+     <extra>`{`$specification_\$_user_list_var\\$_clxtra\=4$`}
+     <modifiers>`{`$specification_\$_user_list_var\\$_clmods\=4$`}`{`(`?`$specification_\$_user_list_var\\$_pclass\=4$`)
+     <pclass>`{`$specification_\$_user_list_var\\$_pclass\=4$`}`}`{`(`?`$specification_\$_user_list_var\\$_pfield\=4$`)
+     <pfield>`{`$specification_\$_user_list_var\\$_pfield\=4$`}
+     <pfname>field_`{`@lower`(`$specification_\$_user_list_var\\$_pclsnm\=4$`)`}_`{`@lower`(`$specification_\$_user_list_var\\$_pfldnm\=4$`)`}`}
+     <unique>`{`$specification_\$_user_list_var\\$_cluniq\=4$`}
+     <indexed>`{`$specification_\$_user_list_var\\$_cindex\=4$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_user_list_var\\$_parent\=4$`[`$specification_\$_user_list_var\\$_parent\=4$`,\
+    <parent/>
+`{`(`?`$specification_\$_user_list_var\\$_prntnm\=4$`)\
+     <name>`{`$specification_\$_user_list_var\\$_prntnm\=4$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_user_list_var\\$_parent\=4$`)`}\
+`}
+     <field>`{`$specification_\$_user_list_var\\$_jfield\=4$`}
+     <extra>`{`$specification_\$_user_list_var\\$_dextra\=4$`}
+     <pclass>`{`$specification_\$_user_list_var\\$_pclass\=4$`}
+     <pfield>`{`$specification_\$_user_list_var\\$_pfield\=4$`}
+     <pextra>`{`$specification_\$_user_list_var\\$_pextra\=4$`}
+     <mandatory>`{`$specification_\$_user_list_var\\$_mandatory\=4$`}
+     <operations>`{`$specification_\$_user_list_var\\$_operations\=4$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_user_list_var\\$_rfield\=4$`[`$specification_\$_user_list_var\\$_rfield\=4$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_user_list_var\\$_rfldnm\=4$`)`}
+     <field>`{`$specification_\$_user_list_var\\$_rfield\=4$`}
+     <ftype>`{`$specification_\$_user_list_var\\$_rftype\=4$`}
+     <extra>`{`$specification_\$_user_list_var\\$_rfxtra\=4$`}
+     <mandatory>`{`$specification_\$_user_list_var\\$_rfmand\=4$`}
+     <operations>`{`$specification_\$_user_list_var\\$_rfldops\=4$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}`]`}\
+`{`(`?`$specification_\$_group_list_name`)
+  <list/>
+   <id>`{`$specification_\$_group_list_id`}
+   <cid>`{`$specification_\$_group_list_cid`}
+   <name>`{`$specification_\$_group_list_id`}_name
+   <type>`{`$specification_\$_group_list_type`}
+   <extra>`{`$specification_\$_group_list_extra`}
+   <actions>`{`$specification_\$_group_list_acts`}`{`(`?`$specification_\$_group_list_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_group_list_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_group_list_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_group_list_binfo`}
+   <order>`{`$specification_\$_group_list_order`}
+   <pclass>`{`$specification_\$_group_list_pclass`}
+   <pfield>`{`$specification_\$_group_list_pfield`}`{`(`?`$specification_\$_group_list_nclass`)
+   <nclass>`{`$specification_\$_group_list_nclass`}`}`{`(`?`$specification_\$_group_list_nfield`)
+   <nfield>`{`$specification_\$_group_list_nfield`}`}`{`(`?`$specification_\$_group_list_nextra`)
+   <nextra>`{`$specification_\$_group_list_nextra`}`}`{`(`?`$specification_\$_group_list_dfenum`)
+   <dfenum>`{`$specification_\$_group_list_dfenum`}`}`{`(`?`$specification_\$_group_list_dfield`)
+   <dfield>`{`$specification_\$_group_list_dfield`}`}`{`(`?`$specification_\$_group_list_dvalue`)
+   <dvalue>`{`$specification_\$_group_list_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_group_list_filters`)
+   <filters>`{`$specification_\$_group_list_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_group_list_column\=3$`[`$specification_\$_group_list_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_group_list_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_group_list_cltype\=3$`}
+     <extra>`{`$specification_\$_group_list_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_group_list_clmods\=3$`}`{`(`?`$specification_\$_group_list_pclass\=3$`)
+     <pclass>`{`$specification_\$_group_list_pclass\=3$`}`}`{`(`?`$specification_\$_group_list_pfield\=3$`)
+     <pfield>`{`$specification_\$_group_list_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_group_list_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_group_list_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_group_list_cluniq\=3$`}
+     <indexed>`{`$specification_\$_group_list_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_group_list_parent\=3$`[`$specification_\$_group_list_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_group_list_prntnm\=3$`)\
+     <name>`{`$specification_\$_group_list_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_group_list_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_group_list_jfield\=3$`}
+     <extra>`{`$specification_\$_group_list_dextra\=3$`}
+     <pclass>`{`$specification_\$_group_list_pclass\=3$`}
+     <pfield>`{`$specification_\$_group_list_pfield\=3$`}
+     <pextra>`{`$specification_\$_group_list_pextra\=3$`}
+     <mandatory>`{`$specification_\$_group_list_mandatory\=3$`}
+     <operations>`{`$specification_\$_group_list_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_group_list_rfield\=3$`[`$specification_\$_group_list_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_group_list_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_group_list_rfield\=3$`}
+     <ftype>`{`$specification_\$_group_list_rftype\=3$`}
+     <extra>`{`$specification_\$_group_list_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_group_list_rfmand\=3$`}
+     <operations>`{`$specification_\$_group_list_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}\
+`{`[`$vnums`,`{`(`?`$specification_\$_group_list_var\\$_name`)
+  <list/>
+   <id>`{`$specification_\$_group_list_var\\$_id`}
+   <cid>`{`$specification_\$_group_list_var\\$_cid`}
+   <pid>`{`$specification_\$_group_list_id`}
+   <name>`{`$specification_\$_group_list_var\\$_id`}_name
+   <type>`{`$specification_\$_group_list_var\\$_type`}
+   <extra>`{`$specification_\$_group_list_var\\$_extra`}
+   <actions>`{`$specification_\$_group_list_var\\$_acts`}`{`(`?`$specification_\$_group_list_var\\$_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_group_list_var\\$_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_group_list_var\\$_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_group_list_var\\$_binfo`}
+   <order>`{`$specification_\$_group_list_var\\$_order`}
+   <pclass>`{`$specification_\$_group_list_var\\$_pclass`}
+   <pfield>`{`$specification_\$_group_list_var\\$_pfield`}`{`(`?`$specification_\$_group_list_var\\$_nclass`)
+   <nclass>`{`$specification_\$_group_list_var\\$_nclass`}`}`{`(`?`$specification_\$_group_list_var\\$_nfield`)
+   <nfield>`{`$specification_\$_group_list_var\\$_nfield`}`}`{`(`?`$specification_\$_group_list_var\\$_nextra`)
+   <nextra>`{`$specification_\$_group_list_var\\$_nextra`}`}`{`(`?`$specification_\$_group_list_var\\$_dfenum`)
+   <dfenum>`{`$specification_\$_group_list_var\\$_dfenum`}`}`{`(`?`$specification_\$_group_list_var\\$_dfield`)
+   <dfield>`{`$specification_\$_group_list_var\\$_dfield`}`}`{`(`?`$specification_\$_group_list_var\\$_dvalue`)
+   <dvalue>`{`$specification_\$_group_list_var\\$_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_group_list_var\\$_filters`)
+   <filters>`{`$specification_\$_group_list_var\\$_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_group_list_var\\$_column\=4$`[`$specification_\$_group_list_var\\$_column\=4$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_group_list_var\\$_clname\=4$`)`}
+     <field>\=5$
+     <ftype>`{`$specification_\$_group_list_var\\$_cltype\=4$`}
+     <extra>`{`$specification_\$_group_list_var\\$_clxtra\=4$`}
+     <modifiers>`{`$specification_\$_group_list_var\\$_clmods\=4$`}`{`(`?`$specification_\$_group_list_var\\$_pclass\=4$`)
+     <pclass>`{`$specification_\$_group_list_var\\$_pclass\=4$`}`}`{`(`?`$specification_\$_group_list_var\\$_pfield\=4$`)
+     <pfield>`{`$specification_\$_group_list_var\\$_pfield\=4$`}
+     <pfname>field_`{`@lower`(`$specification_\$_group_list_var\\$_pclsnm\=4$`)`}_`{`@lower`(`$specification_\$_group_list_var\\$_pfldnm\=4$`)`}`}
+     <unique>`{`$specification_\$_group_list_var\\$_cluniq\=4$`}
+     <indexed>`{`$specification_\$_group_list_var\\$_cindex\=4$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_group_list_var\\$_parent\=4$`[`$specification_\$_group_list_var\\$_parent\=4$`,\
+    <parent/>
+`{`(`?`$specification_\$_group_list_var\\$_prntnm\=4$`)\
+     <name>`{`$specification_\$_group_list_var\\$_prntnm\=4$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_group_list_var\\$_parent\=4$`)`}\
+`}
+     <field>`{`$specification_\$_group_list_var\\$_jfield\=4$`}
+     <extra>`{`$specification_\$_group_list_var\\$_dextra\=4$`}
+     <pclass>`{`$specification_\$_group_list_var\\$_pclass\=4$`}
+     <pfield>`{`$specification_\$_group_list_var\\$_pfield\=4$`}
+     <pextra>`{`$specification_\$_group_list_var\\$_pextra\=4$`}
+     <mandatory>`{`$specification_\$_group_list_var\\$_mandatory\=4$`}
+     <operations>`{`$specification_\$_group_list_var\\$_operations\=4$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_group_list_var\\$_rfield\=4$`[`$specification_\$_group_list_var\\$_rfield\=4$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_v_rfldnm\=4$`)`}
+     <field>`{`$specification_\$_group_list_var\\$_rfield\=4$`}
+     <ftype>`{`$specification_\$_group_list_var\\$_rftype\=4$`}
+     <extra>`{`$specification_\$_group_list_var\\$_rfxtra\=4$`}
+     <mandatory>`{`$specification_\$_group_list_var\\$_rfmand\=4$`}
+     <operations>`{`$specification_\$_group_list_var\\$_rfldops\=4$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}`]`}`]`}
+ </lists>
+</sio>

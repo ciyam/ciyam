@@ -28,9 +28,9 @@
 
 #define MODULE_META_IMPL
 
-#include "cat_base.h"
 #include "utilities.h"
-#include "cat_macros.h"
+#include "ciyam_base.h"
+#include "ciyam_macros.h"
 #include "module_strings.h"
 #include "command_handler.h"
 

@@ -1,0 +1,23 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start modifier_field_value)]
+   if( `{`!`@eq`(`$arg_not_dflt`,`'`'`)!get_obj( ).get_key( ).empty( ) && `}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )\
+`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && `}\
+`{`!`@eq`(`$arg_cvt_func`,`'`'`)`{`$arg_cvt_func`}( `}\
+get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
+`{`!`@eq`(`$arg_cvt_func`,`'`'`) )`}\
+`{`!`@eq`(`$arg_not_eq`,`'`'`) != `, == `}`{`$arg_value`} )\
+`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
+      state |= c_modifier_`{`$arg_modifier`};
+   // [(finish modifier_field_value)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+`{`$field`=`$arg_pfield`}`{`@eq`(`$field`,`'`'`)`$field`=`$arg_field`}\
+   // [(start modifier_field_value)]
+   dependents.insert( "`{`$field`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$field`} ) ) )
+      names.insert( "`{`$field`}" );
+   // [(finish modifier_field_value)]
+`}

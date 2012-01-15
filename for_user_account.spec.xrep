@@ -1,0 +1,68 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start for_user_account)]
+   if( field_name == c_field_name_`{`$arg_ufield`} && get_obj( ).`{`$arg_create_user`}( ) )
+      return true;
+   // [(finish for_user_account)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_user_account)]
+   if( is_admin_uid_key( get_obj( ).`{`$arg_owner`}( ).get_key( ) ) )
+      get_obj( ).`{`$arg_display_name`}( get_obj( ).`{`$arg_ufield`}( ).`{`$arg_dfield`}( ) );
+   else
+      get_obj( ).`{`$arg_display_name`}( get_obj( ).`{`$arg_owner`}( ).`{`$arg_dfield`}( ) );
+   // [(finish for_user_account)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_user_account)]
+   if( is_create && get_obj( ).`{`$arg_create_user`}( ) )
+   {
+      string new_key( get_obj( ).get_key( ) + "_U" );
+`{`!`@eq`(`$arg_user_template`,`'`'`)
+      if( is_null( get_obj( ).`{`$arg_user_template`}( ) ) )
+         new_key += " default";
+      else
+         new_key += " " + get_obj( ).`{`$arg_user_template`}( ).get_key( );
+`}
+      get_obj( ).`{`$arg_ufield`}( ).op_create( new_key );
+
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+      get_obj( ).`{`$arg_ufield`}( ).\\1( get_obj( ).\\0( ) );\
+`+\n`]`}
+
+      get_obj( ).`{`$arg_ufield`}( ).op_apply( );
+
+      get_obj( ).`{`$arg_ufield`}( get_obj( ).`{`$arg_ufield`}( ).get_key( ) );
+   }
+   // [(finish for_user_account)]
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start for_user_account)]
+   if( is_null( get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_account`}( ) ) )
+   {
+      get_obj( ).`{`$arg_ufield`}( ).op_update( );
+      get_obj( ).`{`$arg_ufield`}( ).`{`$arg_user_account`}( get_obj( ).get_key( ) );
+      get_obj( ).`{`$arg_ufield`}( ).op_apply( );
+   }
+   // [(finish for_user_account)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start for_user_account)]
+   if( needs_field_value( "`{`$arg_display_name`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_ufield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
+         names.insert( "`{`$arg_ufield`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_display_name`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_owner`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_owner`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_owner`} ) ) )
+         names.insert( "`{`$arg_owner`}" );
+   }
+   // [(finish for_user_account)]
+`}

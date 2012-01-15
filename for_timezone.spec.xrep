@@ -1,0 +1,80 @@
+`{`@eq`(`'gen_procedure`'`,`$section`)\
+   // [(start for_timezone)]
+   string key_info( c_field_id_`{`$arg_name`} );
+   key_info += ' ';
+
+   vector< timezone_info > timezones;
+
+   if( get_obj( ).iterate_forwards( key_info ) )
+   {
+      do
+      {
+         timezone_info tz_info;
+
+         tz_info.abbr = get_obj( ).`{`$arg_abbr`}( );
+         tz_info.utc_offset = get_obj( ).`{`$arg_utc_offset`}( ).as_double( );
+
+         tz_info.description = get_obj( ).`{`$arg_name`}( );
+
+         tz_info.daylight_abbr = get_obj( ).`{`$arg_dl_abbr`}( );
+         if( !tz_info.daylight_abbr.empty( ) )
+         {
+            tz_info.daylight_year_start = get_obj( ).`{`$arg_dl_yr_start`}( );
+            tz_info.daylight_year_finish = get_obj( ).`{`$arg_dl_yr_finish`}( );
+
+            tz_info.daylight_start_month = get_obj( ).`{`$arg_dl_mo_start`}( );
+            tz_info.daylight_start_occurrence = get_obj( ).`{`$arg_dl_occ_start`}( );
+            tz_info.daylight_start_day_of_week = get_obj( ).`{`$arg_dl_wd_start`}( );
+
+            tz_info.daylight_start_time = to_string( get_obj( ).`{`$arg_dl_tm_start`}( ) );
+
+            tz_info.daylight_finish_month = get_obj( ).`{`$arg_dl_mo_finish`}( );
+            tz_info.daylight_finish_occurrence = get_obj( ).`{`$arg_dl_occ_finish`}( );
+            tz_info.daylight_finish_day_of_week = get_obj( ).`{`$arg_dl_wd_finish`}( );
+
+            tz_info.daylight_finish_time = to_string( get_obj( ).`{`$arg_dl_tm_finish`}( ) );
+
+            tz_info.daylight_utc_offset = get_obj( ).`{`$arg_dl_utc_offset`}( ).as_double( );
+         }
+
+         string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_child_class`}, `{`$arg_hd_yr_start`} ) );
+         key_info += ' ';
+
+         if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+         {
+            do
+            {
+               historical_daylight_info hd_info;
+
+               hd_info.year_start = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_yr_start`}( );
+               hd_info.year_finish = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_yr_finish`}( );
+
+               hd_info.description = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_description`}( );
+
+               hd_info.start_month = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_mo_start`}( );
+               hd_info.start_occurrence = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_occ_start`}( );
+               hd_info.start_day_of_week = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_wd_start`}( );
+
+               hd_info.start_time = to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_tm_start`}( ) );
+
+               hd_info.finish_month = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_mo_finish`}( );
+               hd_info.finish_occurrence = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_occ_finish`}( );
+               hd_info.finish_day_of_week = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_wd_finish`}( );
+
+               hd_info.finish_time = to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_tm_finish`}( ) );
+
+               hd_info.utc_offset = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_hd_utc_offset`}( ).as_double( );
+
+               tz_info.historical_daylights.push_back( hd_info );
+
+            } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+         }
+
+         timezones.push_back( tz_info );
+
+      } while( get_obj( ).iterate_next( ) );
+
+      generate_timezones_sio( timezones );
+   }
+   // [(finish for_timezone)]
+`}

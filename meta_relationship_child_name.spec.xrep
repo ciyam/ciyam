@@ -1,0 +1,42 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start meta_relationship_child_name)]
+   if( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) )
+   {
+      string str( get_obj( ).`{`$arg_sfield`}( ) );
+      meta_relationship_child_name( str, get_obj( ).`{`$arg_pfield1`}( ).`{`$arg_pcfield1`}( ), get_obj( ).`{`$arg_pfield2`}( ).`{`$arg_pcfield2`}( ), "_" );
+
+      get_obj( ).`{`$arg_field`}( str );
+   }
+   // [(start meta_relationship_child_name)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start meta_relationship_child_name)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_pfield1`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield1`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield1`} ) ) )
+         names.insert( "`{`$arg_pfield1`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_pfield2`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield2`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield2`} ) ) )
+         names.insert( "`{`$arg_pfield2`}" );
+   }
+   // [(finish meta_relationship_child_name)]
+`}

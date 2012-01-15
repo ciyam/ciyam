@@ -26,8 +26,8 @@
 #  include "threads.h"
 #  include "auto_buffer.h"
 
-#  ifdef CAT_BASE_LIB
-#     ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_LIB
+#     ifdef CIYAM_BASE_IMPL
 #        define ODS_DECL_SPEC DYNAMIC_EXPORT
 #     else
 #        define ODS_DECL_SPEC DYNAMIC_IMPORT

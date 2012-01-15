@@ -1,0 +1,42 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start for_word_group_topic)]
+#include "`{`$module_name`}_`{`$arg_wclass`}.h"
+// [(finish for_word_group_topic)]
+`}
+`{`@eq`(`'anonymous`'`,`$section`)\
+// [(start for_word_group_topic)]
+const char* const c_reversed_map_name = "reversed";
+// [(finish for_word_group_topic)]
+`}
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start for_word_group_topic)]
+   if( field_name == c_field_name_`{`$arg_sfield`} )
+      return true;
+   // [(finish for_word_group_topic)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_word_group_topic)]
+   if( !get_obj( ).`{`$arg_pfield`}( ).empty( ) )
+   {
+      vector< string > words;
+      split_string( get_obj( ).`{`$arg_pfield`}( ), words, ' ' );
+
+      string next, search_name;
+      for( size_t i = 0; i < words.size( ); i++ )
+      {
+         if( !search_name.empty( ) )
+            search_name += ' ';
+
+         next = get_class_map_value(
+          `{`$module_name`}_`{`$arg_wclass`}::static_class_id( ), c_reversed_map_name, words[ i ] );
+
+         if( next.empty( ) )
+            search_name += words[ i ];
+         else
+            search_name += next;
+      }
+
+      get_obj( ).`{`$arg_sfield`}( search_name );
+   }
+   // [(finish for_word_group_topic)]
+`}

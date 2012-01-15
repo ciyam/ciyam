@@ -1,0 +1,9 @@
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start filter_perm_restricted)]
+   if( ( filters.count( "`{`$arg_id`}" ) || filters.count( "`{`$arg_name`}" ) ) && !get_obj( ).`{`$arg_field`}( ).empty( ) )
+   {
+      if( !get_perms( ).count( get_obj( ).`{`$arg_field`}( ) ) )
+         return true;
+   }
+   // [(finish filter_perm_restricted)]
+`}

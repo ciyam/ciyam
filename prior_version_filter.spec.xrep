@@ -1,0 +1,36 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start prior_version_filter)]
+#include "`{`$module_name`}_`{`$arg_sfclass`}.h"
+// [(finish prior_version_filter)]
+`}
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start prior_version_filter)]
+   if( filters.count( "`{`$arg_id`}" ) || filters.count( "`{`$class_name`}_prior_version_filter" ) )
+   {
+      `{`$module_name`}_`{`$arg_sclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_sclass`}* >( get_obj( ).get_graph_parent( ) );
+      if( p_parent )
+      {
+         if( string( p_parent->`{`$arg_sfclass`}( ) ) == string( "`{`$arg_sfvalue`}" ) )
+         {
+            if( `{`$arg_ver_field`}( ).find( '.' ) != string::npos )
+               return true;
+         }
+         else
+         {
+            string::size_type pos = get_obj( ).`{`$arg_ver_field`}( ).find( '.' );
+            string major_version = get_obj( ).`{`$arg_ver_field`}( ).substr( 0, pos );
+            string minor_version;
+
+            if( pos != string::npos )
+               minor_version = get_obj( ).`{`$arg_ver_field`}( ).substr( pos + 1 );
+
+            string parent_version( p_parent->`{`$arg_ver_field`}( ) );
+            pos = parent_version.find( '.' );
+
+            if( major_version != parent_version.substr( 0, pos ) && !minor_version.empty( ) )
+               return true;
+         }
+      }
+   }
+   // [(finish prior_version_filter)]
+`}

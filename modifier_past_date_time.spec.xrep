@@ -1,0 +1,37 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+`{`$add_amt`=`'`'`}\
+`{`$add_typ`=`'`'`}\
+`{`$arg_value`=`$arg_value`/ `/,`}\
+`{`[`$arg_value`%,`,`{`$add_amt`=`'\\0`'`}`{`$add_typ`=`'\\1`'`}`]`}\
+`{`$add_typ`=`$add_typ`/rs`/r`/ds`/d`/es`/e`/ys`/y`/hs`/h`/ks`/k`}\
+`{`!`@eq`(`$add_typ`,`'`'`)`{`$add_typ`^`'s`'`}`}\
+`{`@eq`(`$add_amt`,`'now`'`)`$add_amt`=`'`'`}\
+`{`@eq`(`$add_amt`,`'today`'`)`$add_amt`=`'`'`}\
+`{`}\
+`{`$dftypes`=`'1,date_time 2,udate 3,mtime`'`}\
+`{`[`$dftypes`%,`,`{`@eq`(`$arg_dfprim`,`'\\0`'`)`{`$dftype`=`'\\1`'`}`}`]`}\
+`{`}\
+   // [(start modifier_past_date_time)]
+   if(`{`!`@eq`(`$arg_tfield`,`'`'`) get_obj( ).`{`$arg_tfield`}( )\
+`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} &&`} get_obj( ).`{`$arg_dfield`}( )\
+`{`!`@eq`(`$arg_future`,`'`'`) >`, <`} `{`$dftype`}::standard( )\
+`{`!`@eq`(`$add_amt`,`'`'`) + `{`!`@eq`(`$add_typ`,`'`'`)( `{`$add_typ`} )`}`{`$add_amt`}`} )
+      state |= c_modifier_`{`$arg_modifier`};
+   // [(finish modifier_past_date_time)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start modifier_past_date_time)]
+   dependents.insert( "`{`$arg_dfield`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_dfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_dfield`} ) ) )
+      names.insert( "`{`$arg_dfield`}" );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+   dependents.insert( "`{`$arg_tfield`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );`}
+   // [(finish modifier_past_date_time)]
+`}

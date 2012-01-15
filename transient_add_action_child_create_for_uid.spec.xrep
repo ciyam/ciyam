@@ -1,0 +1,37 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_add_action_child_create_for_uid)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) ) )
+   {
+      set< string > user_ids;
+      split_string( get_obj( ).`{`$arg_sfield`}( ), user_ids );
+
+      string actions( get_obj( ).`{`$arg_field`}( ) );
+
+      if( user_ids.count( get_uid( ) ) )
+      {
+         if( !actions.empty( ) )
+            actions += ",";
+
+         actions += string( c_procedure_id_`{`$arg_procedure`} ) + "$"
+          + string( get_obj( ).child_`{`$arg_child`}( ).static_class_id( ) )
+          + "." + get_obj( ).child_`{`$arg_child`}( ).get_graph_parent_fk_field( );
+
+         get_obj( ).`{`$arg_field`}( actions );
+      }
+   }   
+   // [(finish transient_add_action_child_create_for_uid)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_add_action_child_create_for_uid)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish transient_add_action_child_create_for_uid)]
+`}

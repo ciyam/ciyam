@@ -1,0 +1,42 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start meta_relationship_field)]
+#include "`{`$module_name`}_`{`$arg_fclass`}.h"
+#include "`{`$module_name`}_`{`$arg_gclass`}.h"
+// [(finish meta_relationship_field)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start meta_relationship_field)]
+   if( is_null( get_obj( ).Source_Relationship( ) ) )
+   {
+      `{`$module_name`}_`{`$arg_fclass`} rel_field;
+
+      if( is_create )
+         rel_field.op_create( get_obj( ).get_key( ) + "_C" );
+      else
+         rel_field.op_update( get_obj( ).get_key( ) + "_C" );
+
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+      rel_field.\\0( get_obj( ).\\1( ) );\
+`+\n`]\n`}
+      rel_field.`{`$arg_tfield`}( get_obj( ).`{`$arg_mclass`}( ).`{`$arg_gclass`}( ).get_key( ) + "_foreign_key" );
+      rel_field.`{`$arg_xfield`}( get_obj( ).`{`$arg_xsfield`}( ) * -1 );
+      rel_field.`{`$arg_ifield`}( true );
+
+      rel_field.op_apply( );
+
+      get_obj( ).`{`$arg_idfield`}( rel_field.`{`$arg_fidfield`}( ) );
+      get_obj( ).`{`$arg_keyfield`}( rel_field.get_key( ) );
+   }
+   // [(finish meta_relationship_field)]
+`}
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start meta_relationship_field)]
+   if( !get_obj( ).get_is_being_cascaded( ) && is_null( get_obj( ).Source_Relationship( ) ) )
+   {
+      `{`$module_name`}_`{`$arg_fclass`} rel_field;
+
+      rel_field.op_destroy( get_obj( ).get_key( ) + "_C" );
+      rel_field.op_apply( );
+   }
+   // [(finish meta_relationship_field)]
+`}

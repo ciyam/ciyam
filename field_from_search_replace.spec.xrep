@@ -1,0 +1,131 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start field_from_search_replace)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
+    || required_transients.count( "`{`$arg_dfield`}" ) ) )
+   {
+`{`@eq`(`$arg_cfield`,`'`'`)
+      string str( get_obj( ).`{`$arg_sfield`}( ) );\
+`,\
+      string str( get_obj( ).`{`$arg_sfield`}( ).`{`$arg_cfield`}( ) );\
+`}
+
+      get_obj( ).`{`$arg_dfield`}( str );
+
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+      get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "\\2", to_string( get_obj( ).\\0( )`{`!`@eq`(`'\\1`'`,`'`'`).\\1( )`} ) );\
+`+\n`]`}
+`{`!`@eq`(`$arg_ofield`,`'`'`)
+      vector< string > options_set;
+      split_string( get_obj( ).`{`$arg_ofield`}( ), options_set, ' ' );
+
+      for( size_t i = 0; i < options_set.size( ); i++ )
+      {
+         string next_search;
+
+         string next_opt( options_set[ i ] );
+         string::size_type pos = next_opt.find( '=' );
+
+         string next_val;
+         if( pos != string::npos )
+            next_val = next_opt.substr( pos + 1 );
+
+         next_search = "`{`$arg_oleftb`}?"  + next_opt + "`{`$arg_orightb`}";
+         get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, "true" );
+
+         if( pos != string::npos )
+         {
+            next_search = "`{`$arg_oleftb`}#"  + next_opt.substr( 0, pos ) + "`{`$arg_orightb`}";
+            get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, next_val );
+         }
+      }
+`}\
+`{`!`@eq`(`$arg_separator`,`'`'`)
+      get_obj( ).set_search_replace_separator( "`{`$arg_dfield`}", '`{`$arg_separator`}' );
+`}\
+`{`@eq`(`$arg_opt_prefix`,`'true`'`)
+      get_obj( ).set_search_replace_has_opt_prefixing( "`{`$arg_dfield`}" );
+`}\
+   }
+   // [(finish field_from_search_replace)]
+`}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_from_search_replace)]
+   if( get_obj( ).get_is_editing( ) )
+   {
+`{`@eq`(`$arg_cfield`,`'`'`)
+      string str( get_obj( ).`{`$arg_sfield`}( ) );\
+`,\
+      string str( get_obj( ).`{`$arg_sfield`}( ).`{`$arg_cfield`}( ) );\
+`}
+
+      get_obj( ).`{`$arg_dfield`}( str );
+
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+      get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "\\2", to_string( get_obj( ).\\0( )`{`!`@eq`(`'\\1`'`,`'`'`).\\1( )`} ) );\
+`+\n`]`}
+`{`!`@eq`(`$arg_ofield`,`'`'`)
+      vector< string > options_set;
+      split_string( get_obj( ).`{`$arg_ofield`}( ), options_set, ' ' );
+
+      for( size_t i = 0; i < options_set.size( ); i++ )
+      {
+         string next_search;
+
+         string next_opt( options_set[ i ] );
+         string::size_type pos = next_opt.find( '=' );
+
+         string next_val;
+         if( pos != string::npos )
+            next_val = next_opt.substr( pos + 1 );
+
+         next_search = "`{`$arg_oleftb`}?"  + next_opt + "`{`$arg_orightb`}";
+         get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, "true" );
+
+         if( pos != string::npos )
+         {
+            next_search = "`{`$arg_oleftb`}#"  + next_opt.substr( 0, pos ) + "`{`$arg_orightb`}";
+            get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, next_val );
+         }
+      }
+`}\
+`{`!`@eq`(`$arg_separator`,`'`'`)
+      get_obj( ).set_search_replace_separator( "`{`$arg_dfield`}", '`{`$arg_separator`}' );
+`}\
+`{`@eq`(`$arg_opt_prefix`,`'true`'`)
+      get_obj( ).set_search_replace_has_opt_prefixing( "`{`$arg_dfield`}" );
+`}\
+   }
+   // [(finish field_from_search_replace)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_from_search_replace)]
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+   if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
+   {
+      dependents.insert( "\\0" );
+
+      if( ( required_transients && is_field_transient( e_field_id_\\0 ) )
+       || ( !required_transients && !is_field_transient( e_field_id_\\0 ) ) )
+         names.insert( "\\0" );
+   }
+`+\n`]`}`{`!`@eq`(`$arg_ofield`,`'`'`)
+   if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_ofield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+         names.insert( "`{`$arg_ofield`}" );
+   }
+`}
+   if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish field_from_search_replace)]
+`}

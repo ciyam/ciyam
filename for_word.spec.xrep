@@ -1,0 +1,161 @@
+`{`@eq`(`'anonymous`'`,`$section`)\
+// [(start for_word)]
+const char* const c_reversed_map_name = "reversed";
+const char* const c_decorated_map_name = "decorated";
+const char* const c_decorated_map_file_name = "`{`$module_name`}_`{`$class_name`}.map.txt";
+// [(finish for_word)]
+`}
+`{`@eq`(`'genlist_procedure`'`,`$section`)\
+   // [(start for_word)]
+   if( get_obj( ).`{`$arg_level`}( ) <= `{`$arg_genlist_level`} )
+   {
+      if( !`{`$arg_genlist_expand`} || !get_obj( ).`{`$arg_is_tag`}( ) )
+      {
+         if( !`{`$arg_genlist_pinyin`}.empty( ) )
+            `{`$arg_genlist_pinyin`} += "+";
+         if( `{`$arg_genlist_use_measure`} && !is_null( get_obj( ).`{`$arg_measure_word`}( ) ) )
+            `{`$arg_genlist_pinyin`} += get_obj( ).`{`$arg_measure_word`}( ).`{`$arg_pinyin`}( ) + " ";
+         `{`$arg_genlist_pinyin`} += get_obj( ).`{`$arg_pinyin`}( );
+
+         if( !`{`$arg_genlist_chinese`}.empty( ) )
+            `{`$arg_genlist_chinese`} += "+";
+         if( `{`$arg_genlist_use_measure`} && !is_null( get_obj( ).`{`$arg_measure_word`}( ) ) )
+            `{`$arg_genlist_chinese`} += get_obj( ).`{`$arg_measure_word`}( ).`{`$arg_chinese`}( );
+         `{`$arg_genlist_chinese`} += get_obj( ).`{`$arg_chinese`}( );
+
+         if( !`{`$arg_genlist_translation`}.empty( ) )
+            `{`$arg_genlist_translation`} += "+";
+         `{`$arg_genlist_translation`} += get_obj( ).`{`$arg_translation`}( );
+      }
+      else if( get_obj( ).child_`{`$arg_tag_tags`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            get_obj( ).child_`{`$arg_tag_tags`}( ).`{`$arg_tag_user`}( ).`{`$arg_genlist_proc`}( `{`$arg_genlist_pinyin`},
+             `{`$arg_genlist_chinese`}, `{`$arg_genlist_translation`},\
+ `{`$arg_genlist_expand_all`}, `{`$arg_genlist_expand_all`}, `{`$arg_genlist_use_measure`}, `{`$arg_genlist_level`} );
+         } while( get_obj( ).child_`{`$arg_tag_tags`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish for_word)]
+`}
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start for_word)]
+   if( field_name == c_field_name_`{`$arg_search_name`} )
+      return true;
+   // [(finish for_word)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_word)]
+   if( get_obj( ).needs_field_value( "`{`$arg_search_text`}" )
+    || required_transients.count( "`{`$arg_search_text`}" ) )
+      get_obj( ).`{`$arg_search_text`}( get_obj( ).`{`$arg_search_name`}( ) + ' ' + get_obj( ).`{`$arg_chinese`}( ) );
+   // [(finish for_word)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start for_word)]
+   if( !get_obj( ).`{`$arg_pinyin`}( ).empty( ) )
+   {
+      vector< string > words;
+      split_string( get_obj( ).`{`$arg_pinyin`}( ), words, ' ' );
+
+      string next, search_name;
+      for( size_t i = 0; i < words.size( ); i++ )
+      {
+         if( !search_name.empty( ) )
+            search_name += ' ';
+
+         next = get_class_map_value(
+          `{`$module_name`}_`{`$class_name`}::static_class_id( ), c_reversed_map_name, words[ i ] );
+
+         if( next.empty( ) )
+            search_name += words[ i ];
+         else
+            search_name += next;
+      }
+
+      get_obj( ).`{`$arg_search_name`}( search_name );
+   }
+
+   if( !is_create && !get_obj( ).`{`$arg_is_tag`}( ) && get_obj( ).has_field_changed( c_field_id_`{`$arg_is_tag`} ) )
+   {
+      if( get_obj( ).child_`{`$arg_tag_tags`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            get_obj( ).child_`{`$arg_tag_tags`}( ).op_destroy( );
+            get_obj( ).child_`{`$arg_tag_tags`}( ).op_apply( );
+         } while( get_obj( ).child_`{`$arg_tag_tags`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish for_word)]
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start for_word)]
+   if( get_obj( ).`{`$arg_opposite`}( ).has_changed( ) )
+   {
+      if( !get_obj( ).get_is_being_cascaded( ) && get_session_variable( get_obj( ).class_id( ) ).empty( ) )
+      {
+         // NOTE: Use a session variable to stop recursion.
+         set_session_variable( get_obj( ).class_id( ), "true" );
+
+         if( !is_null( get_obj( ).get_original_field_value( c_field_name_`{`$arg_opposite`} ) ) )
+         {
+            get_obj( ).`{`$arg_opposite`}( ).op_update( get_obj( ).get_original_field_value( c_field_name_`{`$arg_opposite`} ) );
+            get_obj( ).`{`$arg_opposite`}( ).`{`$arg_opposite`}( "" );
+            get_obj( ).`{`$arg_opposite`}( ).op_apply( );
+         }
+
+         if( !is_null( get_obj( ).`{`$arg_opposite`}( ) ) )
+         {
+            get_obj( ).`{`$arg_opposite`}( ).op_update( );
+            get_obj( ).`{`$arg_opposite`}( ).`{`$arg_opposite`}( get_obj( ).get_key( ) );
+            get_obj( ).`{`$arg_opposite`}( ).op_apply( );
+         }
+
+         set_session_variable( get_obj( ).class_id( ), "" );
+      }
+   }
+   // [(finish for_word)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start for_word)]
+   if( needs_field_value( "`{`$arg_search_text`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_search_name`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_search_name`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_search_name`} ) ) )
+         names.insert( "`{`$arg_search_name`}" );
+
+      dependents.insert( "`{`$arg_chinese`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_chinese`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_chinese`} ) ) )
+         names.insert( "`{`$arg_chinese`}" );
+   }
+   // [(finish for_word)]
+`}
+`{`@eq`(`'get_transient_replacement_field_names`'`,`$section`)\
+   // [(start for_word)]
+   if( name == "`{`$arg_search_text`}" )
+   {
+      names.push_back( "`{`$arg_search_name`}" );
+      names.push_back( "`{`$arg_chinese`}" );
+   }   
+   // [(finish for_word)]
+`}
+`{`@eq`(`'static_class_init`'`,`$section`)\
+   // [(start for_word)]
+   add_class_map(
+    `{`$module_name`}_`{`$class_name`}::static_class_id( ), c_decorated_map_name, c_decorated_map_file_name );
+   add_class_map(
+    `{`$module_name`}_`{`$class_name`}::static_class_id( ), c_reversed_map_name, c_decorated_map_file_name, true );
+   // [(finish for_word)]
+`}
+`{`@eq`(`'static_class_term`'`,`$section`)\
+   // [(start for_word)]
+   remove_class_map( `{`$module_name`}_`{`$class_name`}::static_class_id( ), c_reversed_map_name );
+   remove_class_map( `{`$module_name`}_`{`$class_name`}::static_class_id( ), c_decorated_map_name );
+   // [(finish for_word)]
+`}

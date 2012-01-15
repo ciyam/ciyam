@@ -1,0 +1,6 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start default_for_clone)]
+   if( !get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).`{`$arg_field`}( gv_default_`{`$arg_field`} );
+   // [(finish default_for_clone)]
+`}
