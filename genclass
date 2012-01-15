@@ -41,17 +41,17 @@ else
     export user_vars="$user_vars user_source=$full_name.cpp.xrep"
    fi
 
-   ./xrep @cat_class.h.xrep $user_vars >$full_name.h.new
+   ./xrep @ciyam_class.h.xrep $user_vars >$full_name.h.new
    if [ $? -eq 0 ]; then
     ./update $full_name.h $full_name.h.new
    fi
 
-   ./xrep @cat_class.cpp.xrep $user_vars >$full_name.cpp.new
+   ./xrep @ciyam_class.cpp.xrep $user_vars >$full_name.cpp.new
    if [ $? -eq 0 ]; then
     ./update $full_name.cpp $full_name.cpp.new
    fi
 
-   ./xrep @cat_class.cms.xrep $user_vars >$full_name.cms.new
+   ./xrep @ciyam_class.cms.xrep $user_vars >$full_name.cms.new
    if [ $? -eq 0 ]; then
     ./update $full_name.cms $full_name.cms.new
    fi

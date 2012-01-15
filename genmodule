@@ -34,11 +34,11 @@ else
    ./update $mod_name.txt $mod_name.txt.new
   fi
 
-  ./xrep @cat_main.cpp.xrep $user_vars >$mod_name.cpp.new
+  ./xrep @ciyam_main.cpp.xrep $user_vars >$mod_name.cpp.new
   if [ $? -eq 0 ]; then
    ./update $mod_name.cpp $mod_name.cpp.new
 
-   ./xrep @cat_main.cms.xrep $user_vars >$mod_name.cms.new
+   ./xrep @ciyam_main.cms.xrep $user_vars >$mod_name.cms.new
    if [ $? -eq 0 ]; then
     ./update $mod_name.cms $mod_name.cms.new
 
