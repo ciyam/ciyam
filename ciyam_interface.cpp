@@ -4050,7 +4050,9 @@ int main( int argc, char* argv[ ] )
          md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
          md5.finalize( );
 
-         g_id = string( md5.hex_digest( ) ).substr( 12 );
+         auto_ptr< char > ap_digest( md5.hex_digest( ) );
+
+         g_id = string( ap_digest.get( ) ).substr( 12 );
       }
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );

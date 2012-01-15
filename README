@@ -13,8 +13,7 @@ Environment variables LIB and INCLUDE for VC++ will require additions for MySQL 
 
 The following are platform specific instructions for installing 3rd party libraries:
 
-NOTE: To make things easier for Windows developers some .lib and .dll files have been included
-in the repository (these can be removed after cloning under Linux).
+NOTE: To make things easier for Windows developers some .lib and .dll files have been included.
 
 
 MySQL
@@ -114,5 +113,5 @@ For VC++ the INCLUDE environment variable will need this added:
 C:\OpenSSL-Win32\include
 e.g. set INCLUDE=C:\OpenSSL-Win32\include;%INCLUDE%
 
-Note that "cat_server.pem" is a test public/private key pair encrypted with the password "password".
+Note that "ciyam_server.pem" is a test public/private key pair encrypted with the password "password".
 

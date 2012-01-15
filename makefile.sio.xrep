@@ -143,7 +143,7 @@
     <gen_ext>
     <threads>true
     <sockets>true
-    <openssl>false
+    <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libfcgi>true
     <libharu>false
     <libicnv>false

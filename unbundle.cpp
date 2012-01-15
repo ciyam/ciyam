@@ -503,9 +503,9 @@ int main( int argc, char* argv[ ] )
                }
 
                md5.finalize( );
-               string digest( md5.hex_digest( ) );
+               auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
-               if( next_md5 != digest )
+               if( next_md5 != string( ap_digest.get( ) ) )
                   cerr << "*** error: file '" << next_file << "' failed MD5 digest check ***" << endl;
 
                ap_ofstream.reset( );
@@ -604,9 +604,9 @@ int main( int argc, char* argv[ ] )
                   file_perms( next_file, rwx_perms );
 
                   md5.finalize( );
-                  string digest( md5.hex_digest( ) );
+                  auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
-                  if( next_md5 != digest )
+                  if( next_md5 != string( ap_digest.get( ) ) )
                      cerr << "*** error: file '" << next_file << "' failed MD5 digest check ***" << endl;
                }
             }
@@ -829,12 +829,12 @@ int main( int argc, char* argv[ ] )
             md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
             md5.finalize( );
 
-            string digest( md5.hex_digest( ) );
+            auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
-            if( check != digest )
+            if( check != string( ap_digest.get( ) ) )
                cerr << "*** error: directory '" << path_name << "' failed MD5 digest check ***" << endl;
 
-            g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
+            g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
 
             if( include || level > 0 )
             {
@@ -865,11 +865,11 @@ int main( int argc, char* argv[ ] )
          else if( type == c_type_checksum )
          {
             g_md5.finalize( );
-            string digest( g_md5.hex_digest( ) );
+            auto_ptr< char > ap_digest( g_md5.hex_digest( ) );
 
             next.erase( 0, 2 );
 
-            if( next != digest )
+            if( next != string( ap_digest.get( ) ) )
                cerr << "*** error: bundle file failed MD5 digest check ***" << endl;
 
             finished = true;
