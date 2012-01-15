@@ -1,0 +1,19 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start default_from_key)]
+`{`@eq`(`$arg_chk_null`,`'`'`)`&`@eq`(`$arg_not_dflt`,`'`'`)
+   if( is_create )\
+`,\
+`{`@eq`(`$arg_inc_clones`,`'true`'`)\
+   if( is_create`{`!`@eq`(`$arg_chk_null`,`'`'`)\
+ && is_null( get_obj( ).`{`$arg_field`}( ) )`}`{`!`@eq`(`$arg_not_dflt`,`'`'`) && !get_obj( ).get_key( ).empty( )`} )\
+`,\
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create`{`!`@eq`(`$arg_chk_null`,`'`'`)\
+ && is_null( get_obj( ).`{`$arg_field`}( ) )`}`{`!`@eq`(`$arg_not_dflt`,`'`'`) && !get_obj( ).get_key( ).empty( )`} ) )\
+`}`}
+`{`@eq`(`$arg_func`,`'`'`)\
+      get_obj( ).`{`$arg_field`}( get_obj( ).get_key( ) );\
+`,\
+      get_obj( ).`{`$arg_field`}( `{`$arg_func`}( get_obj( ).`{`$arg_field`}( ), get_obj( ) ) );\
+`}
+   // [(finish default_from_key)]
+`}

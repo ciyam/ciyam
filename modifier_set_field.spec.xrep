@@ -1,0 +1,6 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start modifier_set_field)]
+   if( state & c_modifier_`{`$arg_modifier`} )
+      get_obj( ).`{`$arg_field`}( `{`$arg_value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
+   // [(finish modifier_set_field)]
+`}

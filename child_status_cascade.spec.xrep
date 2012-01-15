@@ -1,0 +1,29 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start child_status_cascade)]
+   if( !is_create`{`!`@eq`(`$arg_neq_status_field`,`'`'`) && get_obj( ).`{`$arg_neq_status_field`}( ).has_changed( ) && to_string( get_obj( ).`{`$arg_neq_status_field`}( ) ) != "`{`$arg_neq_status_value`}"`} )
+   {
+`{`!`@eq`(`$arg_order_field`,`'`'`)\
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_child_class`}, `{`$arg_order_field`} ) );
+      key_info += ' ';
+`}\
+      if( get_obj( ).child_`{`$arg_child_class`}( ).iterate_forwards( key_info ) )
+      {
+         do
+         {
+            get_obj( ).child_`{`$arg_child_class`}( ).op_update( );
+
+`{`!`@eq`(`$arg_special_field`,`'`'`)\
+            if( get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_special_cfield`}( ).get_key( ) == get_obj( ).`{`$arg_special_field`}( ).get_key( ) )
+               get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_child_field`}( "`{`$arg_special_value`}" );
+            else
+               get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_child_field`}( "`{`$arg_status_value`}" );
+`,\
+            get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_child_field`}( "`{`$arg_status_value`}" );
+`}\
+
+            get_obj( ).child_`{`$arg_child_class`}( ).op_apply( );
+         } while( get_obj( ).child_`{`$arg_child_class`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish child_status_cascade)]
+`}

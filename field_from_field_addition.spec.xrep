@@ -1,0 +1,39 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_field_addition)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish field_from_field_addition)]
+`}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_from_field_addition)]
+   get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield1`}( )\
+ + `{`!`@eq`(`$arg_type`,`'`'`)( `{`$arg_type`} )`}get_obj( ).`{`$arg_sfield2`}( ) );
+   // [(finish field_from_field_addition)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start field_from_field_addition)]
+   get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield1`}( )\
+ + `{`!`@eq`(`$arg_type`,`'`'`)( `{`$arg_type`} )`}get_obj( ).`{`$arg_sfield2`}( ) );
+   // [(finish field_from_field_addition)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_from_field_addition)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield1`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield1`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield1`} ) ) )
+         names.insert( "`{`$arg_sfield1`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield2`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield2`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield2`} ) ) )
+         names.insert( "`{`$arg_sfield2`}" );
+   }
+   // [(finish field_from_field_addition)]
+`}

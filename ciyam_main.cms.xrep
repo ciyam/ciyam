@@ -1,0 +1,14 @@
+`{`;Usage: xrep @ciyam_main.cms.xrep user_vars=model.vars.xrep`}
+`{`}
+`{`#$user_vars @`}
+`{`}
+`{`;(mandatory)$model_name='mname'`}
+`{`;(mandatory)$model_version='0.1'`}
+`{`;(mandatory)$year_created='2002'`}
+`{`}
+ver "retreive module version information"`{`(`?`$specification_home_message_id`)
+Home_Message "retreive home page message"`{`@eq`(`$specification_home_message_type`,`'stats`'`) <val//user_key>`}`}
+// [<start commands>]
+`{`(`?`$user_source`)`#$user_source section=commands`}
+// [<finish commands>]
+

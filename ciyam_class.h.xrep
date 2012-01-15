@@ -1,0 +1,335 @@
+`{`;Usage: xrep @ciyam_class.h.xrep user_vars=model_class.vars.xrep`}
+`{`}
+`{`#$user_vars @`}
+`{`}
+`{`;(mandatory)$class_id='cid'`}
+`{`;(mandatory)$class_name='cname'`}
+`{`;(mandatory)$plural_name='pname'`}
+`{`;(mandatory)$module_id='mid'`}
+`{`;(mandatory)$module_name='mname'`}
+`{`;(mandatory)$year_created='2002'`}
+`{`}
+`{`;$all_fields='name1,type1,id1 name2,type2,id2 name3,type3,id3 name4,type4,id4 name5,type5,id5...'`}
+`{`;$basic_fields='name1 ...'`}
+`{`;$complex_fields='name2 ...'`}
+`{`;$parent_fields='name4 ...'`}
+`{`}
+`{`;$child_info='name5,type5,fk_name,fk_id,cascade_op ...'`}
+`{`}
+`{`;$child_types='type5 ...'`}
+`{`;$parent_types='type4 ...'`}
+`{`}
+`{`;$customised_types='...'(such as numeric and date_time)`}
+`{`}
+`{`;$fixed_key='val'`}
+`{`}
+`{`;$parent_class='...'`}
+`{`}
+`{`;$all_procedures='procedure1 ...'`}
+`{`}
+`{`;$procedure1_all_args='arg1,type1 arg2,type2 arg3,type3 ...'`}
+`{`;$procedure1_all_inputs='arg1,type1 arg2,type2 ...'`}
+`{`;$procedure1_all_outputs='arg3,type3 ...'`}
+`{`;(mandatory if any procedure args)$procedure1_all_simple_inputs='arg1 ...'`}
+`{`;(mandatory if any procedure args)$procedure1_all_complex_inputs='arg2 ...'`}
+`{`}
+`{`;The variables above need to be provided whereas the following variables are derived here.`}
+`{`}
+`{`$std_types`=`'string`'`}
+`{`}
+`{`$full_class_name`=`$module_name`}
+`{`$full_class_name`^`'_`'`}
+`{`$full_class_name`^`$class_name`}
+`{`}
+`{`!`(`?`$parent_class`)`$base_class`=`'class_base`'`,`$base_class`=`'`{`$parent_class`}`'`}
+`{`}
+`{`(`?`$child_types`|`?`$parent_types`)`$related_types`=`'`'`}
+`{`(`?`$child_types`|`?`$parent_types`)`$related_other_types`=`'`'`}
+`{`(`?`$child_types`)`$related_types`=`$related_types`+`$child_types`}
+`{`(`?`$trans_types`)`$related_types`=`$related_types`+`$trans_types`}
+`{`(`?`$parent_types`)`$related_types`=`$related_types`+`$parent_types`}
+`{`?`$related_types`[`$related_types`,`{`!`@in`(`'\$`'`,`$full_class_name`)`{`$related_other_types`=`$related_other_types`+`'\$`'`}`}`]`}
+`{`}
+`{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_args`$\$_all_non_inputs`=`'`'`}`]`}
+`{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,`{`$\$_all_non_inputs`=`$\$_all_non_inputs`+`'\\0`'`}`]`}`]`}
+`{`}
+// Copyright (c) `{`$year_created`}
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifndef `{`@upper`(`$full_class_name`)`}_H
+#  define `{`@upper`(`$full_class_name`)`}_H
+
+#  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <string>
+#  endif
+
+#  include "class_base.h"
+`{`(`?`$parent_class`)
+#  include "`{`$parent_class`}.h"\
+`}
+
+#  ifdef MODULE_`{`@upper`(`$module_name`)`}_IMPL
+#     define `{`@upper`(`$full_class_name`)`}_DECL_SPEC DYNAMIC_EXPORT
+#  else
+#     define `{`@upper`(`$full_class_name`)`}_DECL_SPEC DYNAMIC_IMPORT
+#  endif
+`{`?`$related_types`[`$related_types`,
+class \$;\
+`]`}
+`{`?`$customised_types`[`$customised_types`,
+class \$;\
+`]`}
+
+class `{`@upper`(`$full_class_name`)`}_DECL_SPEC `{`$full_class_name`} : public `{`$base_class`}
+{
+`{`?`$related_other_types`[`$related_other_types`,\
+   friend class \$;\
+`+\n`]
+`}
+   public:
+   typedef `{`$full_class_name`} class_type;
+`{`(`?`$parent_class`)\
+   typedef `{`$parent_class`} parent_class_type;\
+`}
+`{`(`?`$all_fields`)\
+
+   enum field_id
+   {
+      e_field_id_none = 0,
+`{`[`$all_fields`%,`,\
+      e_field_id_\\0 = \\+`+,\n`]`}
+   };\
+`}
+
+   `{`$full_class_name`}( );
+   ~`{`$full_class_name`}( );
+`{`?`$all_fields`[`$all_fields`%,`,\
+`{`?`$basic_fields`&`@in`(`'\0`'`,`$basic_fields`)
+   \1 \0( ) const;
+   void \0( \1 \0 );
+`}\
+`{`?`$complex_fields`&`@in`(`'\0`'`,`$complex_fields`)
+   const `{`@in`(`'\1`'`,`$std_types`)std::`}\1& \0( ) const;
+   void \0( const `{`@in`(`'\1`'`,`$std_types`)std::`}\1& \0 );
+`}\
+`]`}`{`?`$all_fields`[`$all_fields`%,`,\
+`{`?`$parent_fields`&`@in`(`'\0`'`,`$parent_fields`)
+   \1& \0( );
+   const \1& \0( ) const;
+   void \0( const std::string& key );
+`}\
+`]`}`{`?`$child_info`[`$child_info`%,`,
+
+   \1& \0( );
+   const \1& \0( ) const;
+`]`}
+`{`?`$all_procedures`[`$all_procedures`,\
+   virtual void \$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
+`{`@in`(`'\\0`'`,`$\$_all_simple_inputs`) \\1 \\0`}\
+`{`@in`(`'\\0`'`,`$\$_all_complex_inputs`) const `{`@in`(`'\\1`'`,`$std_types`)std::`}\\1& \\0`}\
+`{`@in`(`'\\0`'`,`$\$_all_non_inputs`) `{`@in`(`'\\1`'`,`$std_types`)std::`}\\1& \\0`}\
+`+,`] `});\
+`+\n\n`]
+`}
+`{`!`?`$all_fields`}
+   std::string get_field_value( int field ) const;
+   void set_field_value( int field, const std::string& value );
+
+   bool has_field_changed( const std::string& field ) const;
+
+   bool is_field_transient( int field ) const;
+   bool is_field_transient( field_id id ) const { return static_is_field_transient( id ); }
+
+   std::string get_field_name( int field ) const;
+
+   int get_field_num( const std::string& field ) const;
+
+   uint64_t get_state( ) const;
+
+   const std::string& execute( const std::string& cmd_and_args );
+
+   void clear( );
+
+   void validate( unsigned state, bool is_internal );
+
+   void after_fetch( );
+   void finalise_fetch( );
+
+   void at_create( );
+
+   void to_store( bool is_create, bool is_internal );
+   void for_store( bool is_create, bool is_internal );
+   void after_store( bool is_create, bool is_internal );
+
+   bool can_destroy( bool is_internal );
+   void for_destroy( bool is_internal );
+   void after_destroy( bool is_internal );
+
+   void set_default_values( );
+
+   bool is_filtered( const std::set< std::string >& filters ) const;
+
+   const char* class_id( ) const;
+   const char* class_name( ) const;
+   const char* plural_name( ) const;
+
+   const char* module_id( ) const;
+   const char* module_name( ) const;
+
+   const char* resolved_module_id( ) const { return static_resolved_module_id( ); }
+   const char* resolved_module_name( ) const { return static_resolved_module_name( ); }
+
+   const char* lock_class_id( ) const { return static_lock_class_id( ); }
+   const char* check_class_name( ) const { return static_check_class_name( ); }
+`{`(`?`$fixed_key`)
+   const std::string& get_fixed_key( ) const;\
+`}
+
+   std::string get_display_name( bool plural = false ) const;
+
+   bool get_is_alias( ) const;
+   void get_alias_base_info( std::pair< std::string, std::string >& alias_base_info ) const;
+
+   void get_base_class_info( std::vector< std::pair< std::string, std::string > >& base_class_info ) const;
+
+   class_base& get_or_create_graph_child( const std::string& context );
+
+   void clear_foreign_key( const std::string& field );
+   void set_foreign_key_value( const std::string& field, const std::string& value );
+
+   const std::string& get_foreign_key_value( const std::string& field );
+
+   void get_class_info( class_info_container& class_info ) const { static_get_class_info( class_info ); }
+   void get_field_info( field_info_container& field_info ) const { return static_get_field_info( field_info ); }
+   void get_foreign_key_info( foreign_key_info_container& foreign_key_info ) const { static_get_foreign_key_info( foreign_key_info ); }
+
+   int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
+
+   const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }
+
+   void get_text_search_fields( std::vector< std::string >& fields ) const { return static_get_text_search_fields( fields ); }
+
+   void get_all_enum_pairs( std::vector< std::pair< std::string, std::string > >& pairs ) const { return static_get_all_enum_pairs( pairs ); }
+
+   std::string get_sql_columns( ) const { return static_get_sql_columns( ); }
+
+   void get_sql_indexes( std::vector< std::string >& indexes ) const { static_get_sql_indexes( indexes ); }
+   void get_sql_unique_indexes( std::vector< std::string >& indexes ) const { static_get_sql_unique_indexes( indexes ); }
+
+   void get_sql_column_names( std::vector< std::string >& names, bool* p_done, const std::string* p_class_name ) const;
+   void get_sql_column_values( std::vector< std::string >& values, bool* p_done, const std::string* p_class_name ) const;
+
+   void get_required_field_names( std::set< std::string >& names,
+    bool required_transients, std::set< std::string >* p_dependents = 0 ) const;
+
+   void get_always_required_field_names( std::set< std::string >& names,
+    bool required_transients, std::set< std::string >& dependents ) const;
+
+   void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
+
+   void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts ) const;
+
+   static void static_class_init( const char* p_module_name );
+   static void static_class_term( const char* p_module_name );
+
+   static const char* static_class_id( ) { return "`{`$class_id`}"; }
+   static const char* static_class_name( ) { return "`{`$class_name`}"; }
+   static const char* static_plural_name( ) { return "`{`$plural_name`}"; }
+
+   static const char* static_module_id( ) { return "`{`$module_id`}"; }
+   static const char* static_module_name( ) { return "`{`$module_name`}"; }
+
+   static const char* static_resolved_module_id( );
+   static const char* static_resolved_module_name( );
+
+   static const char* static_lock_class_id( );
+   static const char* static_check_class_name( );
+
+   static bool static_has_derivations( );
+
+   static void static_get_class_info( class_info_container& class_info );
+   static void static_get_field_info( field_info_container& all_field_info );
+   static void static_get_foreign_key_info( foreign_key_info_container& foreign_key_info );
+
+   static int static_get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 );
+
+   static bool static_is_field_transient( field_id id );
+
+   static const char* static_get_field_id( field_id id );
+   static const char* static_get_field_name( field_id id );
+
+   static int static_get_field_num( const std::string& field );
+
+   static procedure_info_container& static_get_procedure_info( );
+
+   static void static_get_all_enum_pairs( std::vector< std::pair< std::string, std::string > >& pairs );
+
+   static void static_get_text_search_fields( std::vector< std::string >& fields );
+
+   static std::string static_get_sql_columns( );
+
+   static void static_get_sql_indexes( std::vector< std::string >& indexes );
+   static void static_get_sql_unique_indexes( std::vector< std::string >& indexes );
+
+   static void static_insert_derivation( const std::string& module_and_class_id );
+   static void static_remove_derivation( const std::string& module_and_class_id );
+
+   static void static_insert_external_alias( const std::string& module_and_class_id, `{`$full_class_name`}* p_instance );
+   static void static_remove_external_alias( const std::string& module_and_class_id );
+
+   private:
+   `{`$full_class_name`}( const `{`$full_class_name`}& );
+   `{`$full_class_name`}& operator =( const `{`$full_class_name`}& );
+
+   struct impl;
+   friend struct impl;
+
+   impl* p_impl;
+
+   protected:
+   const char* get_field_id( const std::string& name, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
+   const char* get_field_name( const std::string& id, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
+
+   std::string get_field_display_name( const std::string& id ) const;
+
+   void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
+`{`?`$parent_types`[`$parent_types`,
+   virtual void setup_foreign_key( \$& o, const std::string& value );\
+`]`}
+`{`?`$child_types`[`$child_types`,
+   virtual void setup_graph_parent( \$& o, const std::string& foreign_key_field );\
+`]`}
+`{`?`$parent_types`[`$parent_types`,
+   virtual void setup_graph_parent( \$& o,
+    const std::string& foreign_key_field, const std::string& init_value );\
+`+\n`]`}
+
+   size_t get_total_child_relationships( ) const;
+   void set_total_child_relationships( size_t new_total_child_relationships ) const;
+
+   size_t get_num_foreign_key_children( bool is_internal = false ) const;
+
+   class_base* get_next_foreign_key_child( size_t child_num,
+    std::string& next_child_field, cascade_op op, bool is_internal = false );
+};
+
+inline std::string to_string( const `{`$full_class_name`}& c ) { return c.get_key( ); }
+
+inline bool is_null( const `{`$full_class_name`}& c ) { return c.get_key( ).empty( ); }
+
+inline bool check_equal( const `{`$full_class_name`}& c, const char* p ) { return c.get_key( ) == p; }
+inline bool check_not_equal( const `{`$full_class_name`}& c, const char* p ) { return !( c.get_key( ) == p ); }
+
+#endif
+

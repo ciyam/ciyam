@@ -1,0 +1,6 @@
+`{`@eq`(`'at_create`'`,`$section`)\
+   // [(start fk_default)]
+   if( is_null( get_obj( ).`{`$arg_field`}( ) ) )
+      get_obj( ).`{`$arg_field`}( "`{`$arg_value`}" );
+   // [(finish fk_default)]
+`}

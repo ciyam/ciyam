@@ -1,0 +1,223 @@
+`{`@eq`(`'up_procedure`'`,`$section`)\
+   // [(start move_up_and_down)]
+   transaction_start( );
+   try
+   {
+`{`!`@eq`(`$arg_pclass`,`'`'`)\
+      if( !`{`$arg_up_fields`}.empty( ) )\
+`,\
+      // NOTE: Empty code block for scope purposes.\
+`}
+      {
+         get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
+
+         class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
+
+         int num_fixed = 0;
+         if( !`{`$arg_up_fields`}.empty( ) )
+            num_fixed = split_count( `{`$arg_up_fields`} );
+
+         string key_info( `{`$arg_up_fields`} );
+         if( num_fixed )
+            key_info += ',';
+         key_info += string( c_field_id_`{`$arg_field`} );
+
+         if( !num_fixed )
+            key_info += ' ' + get_obj( ).`{`$arg_field`}( );
+         else
+         {
+            key_info += '#' + to_string( num_fixed );
+            key_info += ' ' + `{`$arg_up_values`} + ',' + get_obj( ).`{`$arg_field`}( );
+         }
+
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( cp_other->iterate_backwards( key_info, string( c_field_name_`{`$arg_field`} ), false, 1 ) )
+         {
+            string old_val( get_obj( ).`{`$arg_field`}( ) );
+            string new_val( cp_other->`{`$arg_field`}( ) );
+
+            get_obj( ).`{`$arg_field`}( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
+
+            cp_other->op_update( cp_other->get_key( ), c_field_name_`{`$arg_field`} );
+            cp_other->`{`$arg_field`}( old_val );
+            cp_other->op_apply( );
+
+            get_obj( ).`{`$arg_field`}( new_val );
+            get_obj( ).op_apply( );
+
+            cp_other->iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+`{`!`@eq`(`$arg_pclass`,`'`'`)\
+      else
+      {
+         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
+         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
+         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
+         get_obj( ).op_update( get_obj( ).get_key( ) );
+
+         `{`$module_name`}_`{`$arg_pclass`} parent;
+         parent.perform_fetch( get_obj( ).`{`$arg_pfield`}( ) );
+
+`{`@eq`(`$arg_efield`,`'`'`)\
+         string key_info( c_field_id_`{`$arg_field`} );
+         key_info += ' ' + get_obj( ).`{`$arg_field`}( );\
+`,\
+         string key_info( c_field_id_`{`$arg_efield`} );
+         key_info += ',' + string( c_field_id_`{`$arg_field`} );
+         key_info += "#1 " + to_string( get_obj( ).`{`$arg_efield`}( ) ) + ',' + get_obj( ).`{`$arg_field`}( );\
+`}
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( parent.child_`{`$class_name`}( ).iterate_backwards( key_info, false, 1 ) )
+         {
+            string old_val( get_obj( ).`{`$arg_field`}( ) );
+            string new_val( parent.child_`{`$class_name`}( ).`{`$arg_field`}( ) );
+
+            get_obj( ).`{`$arg_field`}( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( );
+
+            parent.child_`{`$class_name`}( ).op_update( );
+            parent.child_`{`$class_name`}( ).`{`$arg_field`}( old_val );
+            parent.child_`{`$class_name`}( ).op_apply( );
+
+            get_obj( ).`{`$arg_field`}( new_val );
+            get_obj( ).op_apply( );
+
+            parent.child_`{`$class_name`}( ).iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+`}
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish move_up_and_down)]
+`}
+`{`@eq`(`'down_procedure`'`,`$section`)\
+   // [(start move_up_and_down)]
+   transaction_start( );
+   try
+   {
+`{`!`@eq`(`$arg_pclass`,`'`'`)\
+      if( !`{`$arg_dn_fields`}.empty( ) )\
+`,\
+      // NOTE: Empty code block for scope purposes.\
+`}
+      {
+         get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
+
+         class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
+
+         int num_fixed = 0;
+         if( !`{`$arg_dn_fields`}.empty( ) )
+            num_fixed = split_count( `{`$arg_dn_fields`} );
+
+         string key_info( `{`$arg_dn_fields`} );
+         if( num_fixed )
+            key_info += ',';
+         key_info += string( c_field_id_`{`$arg_field`} );
+
+         if( !num_fixed )
+            key_info += ' ' + get_obj( ).`{`$arg_field`}( );
+         else
+         {
+            key_info += '#' + to_string( num_fixed );
+            key_info += ' ' + `{`$arg_dn_values`} + ',' + get_obj( ).`{`$arg_field`}( );
+         }
+
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( cp_other->iterate_forwards( key_info, string( c_field_name_`{`$arg_field`} ), false, 1 ) )
+         {
+            string old_val( get_obj( ).`{`$arg_field`}( ) );
+            string new_val( cp_other->`{`$arg_field`}( ) );
+
+            get_obj( ).`{`$arg_field`}( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
+
+            cp_other->op_update( cp_other->get_key( ), c_field_name_`{`$arg_field`} );
+            cp_other->`{`$arg_field`}( old_val );
+            cp_other->op_apply( );
+
+            get_obj( ).`{`$arg_field`}( new_val );
+            get_obj( ).op_apply( );
+
+            cp_other->iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+`{`!`@eq`(`$arg_pclass`,`'`'`)\
+      else
+      {
+         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
+         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
+         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
+         get_obj( ).op_update( get_obj( ).get_key( ) );
+
+         `{`$module_name`}_`{`$arg_pclass`} parent;
+         parent.perform_fetch( get_obj( ).`{`$arg_pfield`}( ) );
+
+`{`@eq`(`$arg_efield`,`'`'`)\
+         string key_info( c_field_id_`{`$arg_field`} );
+         key_info += ' ' + get_obj( ).`{`$arg_field`}( );\
+`,\
+         string key_info( c_field_id_`{`$arg_efield`} );
+         key_info += ',' + string( c_field_id_`{`$arg_field`} );
+         key_info += "#1 " + to_string( get_obj( ).`{`$arg_efield`}( ) ) + ',' + get_obj( ).`{`$arg_field`}( );\
+`}
+         // NOTE: Only the first record is required so set the row limit to 1.
+         if( parent.child_`{`$class_name`}( ).iterate_forwards( key_info, false, 1 ) )
+         {
+            string old_val( get_obj( ).`{`$arg_field`}( ) );
+            string new_val( parent.child_`{`$class_name`}( ).`{`$arg_field`}( ) );
+
+            get_obj( ).`{`$arg_field`}( gen_key( ) );
+            get_obj( ).op_apply( );
+
+            get_obj( ).op_update( );
+
+            parent.child_`{`$class_name`}( ).op_update( );
+            parent.child_`{`$class_name`}( ).`{`$arg_field`}( old_val );
+            parent.child_`{`$class_name`}( ).op_apply( );
+
+            get_obj( ).`{`$arg_field`}( new_val );
+            get_obj( ).op_apply( );
+
+            parent.child_`{`$class_name`}( ).iterate_stop( );
+         }
+         else
+            get_obj( ).op_cancel( );
+      }
+`}
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish move_up_and_down)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start move_up_and_down)]
+   dependents.insert( "`{`$arg_field`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );
+   // [(finish move_up_and_down)]
+`}

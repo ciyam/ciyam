@@ -29,7 +29,7 @@
 #include "utilities.h"
 #include "fcgi_utils.h"
 #include "crypt_stream.h"
-#include "cat_interface.h"
+#include "ciyam_interface.h"
 
 using namespace std;
 

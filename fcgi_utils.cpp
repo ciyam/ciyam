@@ -46,7 +46,7 @@
 #include "fcgi_info.h"
 #include "utilities.h"
 #include "fs_iterator.h"
-#include "cat_interface.h"
+#include "ciyam_interface.h"
 
 using namespace std;
 
@@ -67,8 +67,8 @@ map< string, string > g_strings;
 const int c_default_directory_perms = S_IRWXU;
 #endif
 
-const char* const c_log_file = "cat_interface.log";
-const char* const c_str_file = "cat_interface.txt";
+const char* const c_log_file = "ciyam_interface.log";
+const char* const c_str_file = "ciyam_interface.txt";
 
 const char* const c_extkeys_file = "extkeys.txt";
 

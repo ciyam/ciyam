@@ -25,7 +25,7 @@
 #  include "macros.h"
 #  include "class_base.h"
 
-#  ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_IMPL
 #     define MODULE_MANAGEMENT_DECL_SPEC DYNAMIC_EXPORT
 #  else
 #     define MODULE_MANAGEMENT_DECL_SPEC DYNAMIC_IMPORT

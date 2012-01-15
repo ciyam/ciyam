@@ -1,0 +1,100 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_concat)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
+    || required_transients.count( "`{`$arg_dfield`}" ) ) )
+   {
+`{`@eq`(`$arg_rfield`,`'`'`)\
+`{`@eq`(`$arg_reverse`,`'`'`)\
+`{`@eq`(`$arg_non_empty`,`'`'`)\
+      get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+`{`!`@eq`(`$arg_separator`,`'`'`)
+      if( !to_string( get_obj( ).`{`$arg_field1`}( ) ).empty( ) &&\
+ !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + "`{`$arg_separator`}" );
+`}
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) +\
+ to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) );
+`,\
+      if( !to_string( get_obj( ).`{`$arg_field1`}( ) ).empty( ) &&\
+ !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+         get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field1`}( ) + "`{`$arg_separator`}" +\
+ to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} );
+`}\
+`,\
+`{`@eq`(`$arg_non_empty`,`'`'`)\
+      string str( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+      get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) );
+`{`!`@eq`(`$arg_separator`,`'`'`)
+      if( !str.empty( ) && !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + "`{`$arg_separator`}" );
+`}
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + str );
+`,\
+      string str( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+
+      if( !str.empty( ) && !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+         get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) + "`{`$arg_separator`}" + str );
+`}\
+`}\
+`,\
+      if( `{`!`@eq`(`$arg_reverse`,`'`'`)!`}get_obj( ).`{`$arg_field2`}( ).`{`$arg_rfield`}( ) )
+      {
+`{`@eq`(`$arg_non_empty`,`'`'`)\
+         get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+`{`!`@eq`(`$arg_separator`,`'`'`)
+         if( !to_string( get_obj( ).`{`$arg_field1`}( ) ).empty( ) &&\
+ !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+            get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + "`{`$arg_separator`}" );
+`}
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) +\
+ to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) );
+`,\
+         if( !to_string( get_obj( ).`{`$arg_field1`}( ) ).empty( ) &&\
+ !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+            get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field1`}( ) ) + "`{`$arg_separator`}" +\
+ to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) );
+`}\
+      }
+      else
+      {
+`{`@eq`(`$arg_non_empty`,`'`'`)\
+         string str( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+         get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) );
+`{`!`@eq`(`$arg_separator`,`'`'`)
+         if( !str.empty( ) && !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+            get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + "`{`$arg_separator`}" );
+`}
+         get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_dfield`}( ) + str );
+`,\
+         string str( to_string( get_obj( ).`{`$arg_field1`}( ) ) );
+
+         if( !str.empty( ) && !to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ).empty( ) )
+            get_obj( ).`{`$arg_dfield`}( to_string( get_obj( ).`{`$arg_field2`}( )`{`!`@eq`(`$arg_cfield`,`'`'`).`{`$arg_cfield`}( )`} ) + "`{`$arg_separator`}" + str );
+`}\
+      }
+`}\
+   }
+   // [(finish transient_field_concat)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_concat)]
+   if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_field1`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field1`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field1`} ) ) )
+         names.insert( "`{`$arg_field1`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_field2`}" );
+
+       if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field2`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field2`} ) ) )
+         names.insert( "`{`$arg_field2`}" );
+   }
+   // [(finish transient_field_concat)]
+`}

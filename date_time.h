@@ -24,8 +24,8 @@
 
 #  include "ptypes.h"
 
-#  ifdef CAT_BASE_LIB
-#     ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_LIB
+#     ifdef CIYAM_BASE_IMPL
 #        define DATE_TIME_DECL_SPEC DYNAMIC_EXPORT
 #     else
 #        define DATE_TIME_DECL_SPEC DYNAMIC_IMPORT

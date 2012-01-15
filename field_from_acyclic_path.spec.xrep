@@ -1,0 +1,52 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start field_from_acyclic_path)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" )
+    || required_transients.count( "`{`$arg_dest_field`}" ) ) )
+   {
+      string s;
+      `{`$full_class_name`}* p_parent = &get_obj( ).`{`$arg_pfield`}( );
+      while( true )
+      {
+         if( p_parent->get_key( ).empty( ) )
+            break;
+
+         if( !s.empty( ) )
+            s = "`{`$arg_separator`}" + s;
+`{`@eq`(`$arg_embed_links`,`'`'`)\
+         s = p_parent->`{`$arg_src_field`}( ) + s;
+`,\
+         s = "{" + p_parent->get_key( ) + ":" + p_parent->`{`$arg_src_field`}( ) + "}" + s;
+`}
+         p_parent = &p_parent->`{`$arg_pfield`}( );
+      }
+
+      if( !s.empty( ) )
+         s += "`{`$arg_separator`}";
+      s += get_obj( ).`{`$arg_src_field`}( );
+
+      get_obj( ).`{`$arg_dest_field`}( s );
+   }
+   // [(finish field_from_acyclic_path)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_from_acyclic_path)]
+   if( needs_field_value( "`{`$arg_dest_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_pfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+         names.insert( "`{`$arg_pfield`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_dest_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_src_field`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_src_field`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_src_field`} ) ) )
+         names.insert( "`{`$arg_src_field`}" );
+   }
+   // [(finish field_from_acyclic_path)]
+`}

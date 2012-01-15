@@ -1,0 +1,31 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start create_child)]
+`{`@eq`(`$arg_create_only`,`'`'`)\
+`{`!`@eq`(`$arg_nfield`,`'`'`)\
+   if( !is_null( get_obj( ).`{`$arg_nfield`}( ) ) )\
+`}`,\
+   if( is_create`{`!`@eq`(`$arg_nfield`,`'`'`) && !is_null( get_obj( ).`{`$arg_nfield`}( ) )`} )\
+`}
+   {
+`{`@eq`(`$arg_key_suffix`,`'`'`)\
+      string child_key( get_obj( ).get_key( ) + "_C" );\
+`,\
+      string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );\
+`}
+`{`!`@eq`(`$arg_clone_field`,`'`'`)\
+      if( !is_null( get_obj( ).`{`$arg_clone_field`}( ) ) )
+         child_key += " " + get_obj( ).`{`$arg_clone_field`}( ).get_key( );
+`}
+      get_obj( ).child_`{`$arg_cclass`}( ).op_create( child_key );
+
+      get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
+`{`!`@eq`(`$arg_field`,`'`'`)\
+      get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_field`}( `{`$arg_value`} );
+`}
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+      get_obj( ).child_`{`$arg_cclass`}( ).\\0( get_obj( ).\\1( ) );
+`]`}
+      get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
+   }
+   // [(finish create_child)]
+`}

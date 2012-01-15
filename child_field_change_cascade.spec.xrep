@@ -1,0 +1,35 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start child_field_change_cascade)]
+   if( !is_create )
+   {
+      string original_value( to_string(
+       get_obj( ).get_original_field_value( get_obj( ).get_field_num( "`{`$arg_field`}" ) ) ) );
+
+      if( to_string( get_obj( ).`{`$arg_field`}( ) ) != original_value
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            get_obj( ).child_`{`$arg_child`}( ).op_update( );
+`{`@eq`(`$arg_exact_match`,`'true`'`)
+            string new_str( get_obj( ).`{`$arg_field`}( ) );
+            if( to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cfield`}( ) ) == original_value )\
+`,
+            string str( to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cfield`}( ) ) );
+            string new_str( search_replace( str, original_value, to_string( get_obj( ).`{`$arg_field`}( ) ) ) );
+
+            if( new_str != str )\
+`}
+            {
+               // FUTURE: To handle non-string types would need to use a "from_string" call here.
+               get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cfield`}( new_str );
+               get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+            }
+            else
+               get_obj( ).child_`{`$arg_child`}( ).op_cancel( );
+
+         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish child_field_change_cascade)]
+`}

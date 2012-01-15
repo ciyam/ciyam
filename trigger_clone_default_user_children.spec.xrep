@@ -1,0 +1,21 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_clone_default_user_children)]
+   if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
+   {
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_empty_user( e_create_instance );
+      if( cp_empty_user->child_`{`$arg_child`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            string next_key( cp_empty_user->child_`{`$arg_child`}( ).get_key( ) );
+            string key_info( get_obj( ).get_key( ) + "_" + next_key + " " + next_key );
+
+            get_obj( ).child_`{`$arg_child`}( ).op_create( key_info );
+            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ufield`}( get_obj( ).get_key( ) );
+            get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+
+         } while( cp_empty_user->child_`{`$arg_child`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish trigger_clone_default_user_children)]
+`}   

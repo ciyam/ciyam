@@ -21,7 +21,7 @@
 #  include <utility>
 #endif
 
-#define CAT_BASE_IMPL
+#define CIYAM_BASE_IMPL
 
 #include "storable_file.h"
 

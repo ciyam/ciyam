@@ -1,0 +1,291 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start for_word_group_test)]
+#include "`{`$module_name`}_`{`$arg_wclass`}.h"
+#include "`{`$module_name`}_`{`$arg_wgclass`}.h"
+// [(finish for_word_group_test)]
+`}
+`{`@eq`(`'anonymous`'`,`$section`)\
+// [(start for_word_group_test)]
+const char* const c_decorated_map_name = "decorated";
+// [(finish for_word_group_test)]
+`}
+`{`@eq`(`'check_procedure`'`,`$section`)\
+   // [(start for_word_group_test)]
+   if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_keys`}( ).empty( ) )
+   {
+      deque< string > keys;
+      split_string( get_obj( ).`{`$arg_keys`}( ), keys );
+
+      string test_value;
+      if( !get_obj( ).`{`$arg_epinyin`}( ).empty( ) )
+      {
+         vector< string > parts;
+         split_string( get_obj( ).`{`$arg_epinyin`}( ), parts, ' ' );
+
+         for( size_t i = 0; i < parts.size( ); i++ )
+         {
+            if( !test_value.empty( ) )
+               test_value += ' ';
+
+            string next_part( parts[ i ] );
+            if( next_part.length( ) )
+            {
+               char last_ch = next_part[ next_part.length( ) - 1 ];
+               if( last_ch == ',' || last_ch == '.' || last_ch == '?' || last_ch == '!' )
+                  next_part.erase( next_part.length( ) - 1 );
+            }
+
+            string next_mapped = get_class_map_value(
+             `{`$module_name`}_`{`$arg_wclass`}::static_class_id( ), c_decorated_map_name, next_part );
+
+            if( next_mapped.empty( ) )
+               test_value += next_part;
+            else
+               test_value += next_mapped;
+         }
+
+         if( test_value == get_obj( ).`{`$arg_tpinyin`}( ) )
+         {
+            // FUTURE: This should be a module string.
+            `{`$arg_check_output`} = "Correct!";
+            if( keys.size( ) > 1 )
+            {
+               // FUTURE: This should be a module string.
+               `{`$arg_check_output`} += " Now for the next part...";
+               set_session_variable( get_obj( ).get_key( ), "next" );
+            }
+            else
+            {
+               // FUTURE: This should be a module string.
+               `{`$arg_check_output`} += " All parts completed.";
+               set_session_variable( get_obj( ).get_key( ), "done" );
+            }
+         }
+         else
+         {
+            MODULE_TRACE( "testing: " + test_value );
+            MODULE_TRACE( "against: " + get_obj( ).`{`$arg_tpinyin`}( ) );
+
+            set_session_variable( get_obj( ).get_key( ), "again" );
+            // FUTURE: This should be a module string.
+            throw runtime_error( "Incorrect - please try that again..." );
+         }
+      }
+      else
+      {
+         // FUTURE: This should be a module string.
+         `{`$arg_check_output`} = "Answer is: " + get_obj( ).`{`$arg_tpinyin`}( );
+         set_session_variable( get_obj( ).get_key( ), "shown" );
+      }
+   }
+   // [(finish for_word_group_test)]
+`}
+`{`@eq`(`'next_test_procedure`'`,`$section`)\
+   // [(start for_word_group_test)]
+   if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_keys`}( ).empty( ) )
+   {
+      string key_info( c_field_id_`{`$arg_level`} );
+      key_info += ',' + to_string( c_field_id_`{`$arg_group`} );
+      key_info += ',' + to_string( c_field_id_`{`$arg_number`} );
+      key_info += ' ' + to_string( get_obj( ).`{`$arg_level`}( ) );
+      key_info += ',' + to_string( get_obj( ).`{`$arg_group`}( ) );
+      key_info += ',' + to_string( get_obj( ).`{`$arg_number`}( ) );
+
+      if( get_obj( ).iterate_forwards( key_info, false, 1 ) )
+      {
+         `{`$arg_next_test_output`} = "{" + get_obj( ).get_key( ) + "}";
+         get_obj( ).iterate_stop( );
+
+         set_session_variable( get_obj( ).get_key( ), "redo" );
+      }
+      else
+      {
+         // FUTURE: This should be a module string.
+         `{`$arg_next_test_output`} = "All tests completed.";
+         set_session_variable( get_obj( ).get_key( ), "stop" );
+      }
+   }
+   // [(finish for_word_group_test)]
+`}
+`{`@eq`(`'redo_procedure`'`,`$section`)\
+   // [(start for_word_group_test)]
+   if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_keys`}( ).empty( ) )
+   {
+      // FUTURE: This should be a module string.
+      `{`$arg_redo_output`} = "Okay - now try this variation.";
+      set_session_variable( get_obj( ).get_key( ), "redo" );
+   }
+   // [(finish for_word_group_test)]
+`}
+`{`@eq`(`'redo_all_procedure`'`,`$section`)\
+   // [(start for_word_group_test)]
+   if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_first_key`}( ).empty( ) )
+   {
+      `{`$arg_redo_all_output`} = "{" + get_obj( ).`{`$arg_first_key`}( ) + "}";
+      set_session_variable( get_obj( ).`{`$arg_first_key`}( ), "redo" );
+   }
+   // [(finish for_word_group_test)]
+`}
+`{`@eq`(`'skip_procedure`'`,`$section`)\
+   // [(start for_word_group_test)]
+   if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_keys`}( ).empty( ) )
+   {
+      deque< string > keys;
+      split_string( get_obj( ).`{`$arg_keys`}( ), keys );
+
+      // FUTURE: This should be a module string.
+      `{`$arg_skip_output`} = "Skipped.";
+      if( keys.size( ) > 1 )
+      {
+         // FUTURE: This should be a module string.
+         `{`$arg_skip_output`} += " Now for the next part...";
+         set_session_variable( get_obj( ).get_key( ), "next" );
+      }
+      else
+      {
+         // FUTURE: This should be a module string.
+         `{`$arg_skip_output`} += " All parts completed.";
+         set_session_variable( get_obj( ).get_key( ), "done" );
+      }
+   }
+   // [(finish for_word_group_test)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_word_group_test)]
+   if( !storage_locked_for_admin( ) )
+   {
+      bool is_redo = false;
+      bool is_new_test = false;
+
+      if( get_session_variable( get_obj( ).get_key( ) ) == "redo"
+       || get_session_variable( get_obj( ).get_key( ) ) == "redo2" )
+         is_redo = true;
+
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_wgclass`}, `{`$arg_wgorder`} ) );
+      key_info += ' ';
+
+      if( !get_obj( ).get_is_iterating( )
+       && !get_obj( ).get_is_executing( )
+       && get_obj( ).`{`$arg_epinyin`}( ).empty( )
+       && !is_null( get_obj( ).`{`$arg_topic`}( ) )
+       && get_obj( ).get_variable( "@trigger" ).empty( )
+       && ( is_redo || get_obj( ).`{`$arg_keys`}( ).empty( ) )
+       && ( is_redo || get_session_variable( get_obj( ).get_key( ) ).empty( ) )
+       && get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).iterate_forwards( key_info ) )
+      {
+         string keys;
+         do
+         {
+            if( !keys.empty( ) )
+               keys += ',';
+            keys += get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).get_key( );
+         } while( get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).iterate_next( ) );
+
+         is_new_test = true;
+         get_obj( ).`{`$arg_keys`}( keys );
+      }
+
+      if( !get_obj( ).get_is_executing( ) && !get_obj( ).`{`$arg_keys`}( ).empty( ) )
+      {
+         deque< string > keys;
+         split_string( get_obj( ).`{`$arg_keys`}( ), keys );
+
+         bool is_done = false;
+         string result = get_session_variable( get_obj( ).get_key( ) );
+
+         if( !get_obj( ).get_variable( "@trigger" ).empty( ) )
+         {
+            if( get_obj( ).`{`$arg_tchinese`}( ).empty( ) )
+               is_done = true;
+         }
+
+         if( get_obj( ).`{`$arg_first_key`}( ).empty( ) )
+            get_obj( ).`{`$arg_first_key`}( get_obj( ).get_key( ) );
+
+         if( !result.empty( ) )
+         {
+            if( result == "next" )
+            {
+               keys.pop_front( );
+
+               string new_keys;
+               for( size_t i = 0; i < keys.size( ); i++ )
+               {
+                  if( !new_keys.empty( ) )
+                     new_keys += ',';
+                  new_keys += keys[ i ];
+               }
+
+               get_obj( ).`{`$arg_keys`}( new_keys );
+
+               is_new_test = true;
+               get_obj( ).`{`$arg_epinyin`}( "" );
+            }
+            else if( is_redo )
+            {
+               is_new_test = true;
+               get_obj( ).`{`$arg_epinyin`}( "" );
+            }
+            else
+            {
+               is_new_test = false;
+               if( result == "done" || result == "stop" )
+               {
+                  is_done = true;
+                  get_obj( ).`{`$arg_tpinyin`}( "" );
+                  get_obj( ).`{`$arg_tchinese`}( "" );
+                  get_obj( ).`{`$arg_epinyin`}( "" );
+                  get_obj( ).`{`$arg_ttranslation`}( "" );
+                  get_obj( ).`{`$arg_showtrans`}( false );
+               }
+            }
+
+            if( result == "redo" )
+               set_session_variable( get_obj( ).get_key( ), "redo2" );
+            else
+               set_session_variable( get_obj( ).get_key( ), "" );
+         }
+
+         if( !is_done )
+         {
+            if( result == "shown" )
+               get_obj( ).`{`$arg_actions`}( "_" + to_string( c_procedure_id_`{`$arg_check_proc`} ) + ",>_" + to_string( c_procedure_id_`{`$arg_skip_proc`} ) );
+            else
+               get_obj( ).`{`$arg_actions`}( ">_" + to_string( c_procedure_id_`{`$arg_check_proc`} ) + ",_" + to_string( c_procedure_id_`{`$arg_skip_proc`} ) );
+         }
+         else if( result != "stop" )
+         {
+            if( get_obj( ).`{`$arg_this_only`}( ) )
+               get_obj( ).`{`$arg_actions`}( ">_" + to_string( c_procedure_id_`{`$arg_redo_proc`} ) );
+            else
+               get_obj( ).`{`$arg_actions`}( ">_" + to_string( c_procedure_id_`{`$arg_next_test_proc`} ) + ",_" + to_string( c_procedure_id_`{`$arg_redo_proc`} ) );
+         }
+         else
+         {
+            if( get_obj( ).get_key( ) == get_obj( ).`{`$arg_first_key`}( ) )
+               get_obj( ).`{`$arg_actions`}( ">_" + to_string( c_procedure_id_`{`$arg_redo_proc`} ) );
+            else
+               get_obj( ).`{`$arg_actions`}( ">_" + to_string( c_procedure_id_`{`$arg_redo_all_proc`} ) + ",_" + to_string( c_procedure_id_`{`$arg_redo_proc`} ) );
+         }
+
+         if( !is_done && is_new_test && !keys.empty( ) )
+         {
+            get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).perform_fetch( keys[ 0 ] );
+
+            get_obj( ).`{`$arg_showtrans`}( false );
+
+            string test_pinyin, test_chinese, test_translation;
+            get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).`{`$arg_wggen_proc`}( test_pinyin, test_chinese, test_translation );
+
+            get_obj( ).`{`$arg_pinyin`}( get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).`{`$arg_wgpinyin`}( ) );
+            get_obj( ).`{`$arg_chinese`}( get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).`{`$arg_wgchinese`}( ) );
+            get_obj( ).`{`$arg_translation`}( get_obj( ).`{`$arg_topic`}( ).child_`{`$arg_wgroup`}( ).`{`$arg_wgtranslation`}( ) );
+
+            get_obj( ).`{`$arg_tpinyin`}( test_pinyin );
+            get_obj( ).`{`$arg_tchinese`}( test_chinese );
+            get_obj( ).`{`$arg_ttranslation`}( test_translation );
+         }
+      }
+   }
+   // [(finish for_word_group_test)]
+`}

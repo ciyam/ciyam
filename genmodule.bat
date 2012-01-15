@@ -37,11 +37,11 @@ if errorlevel 1 goto end
 :skip_extract
 if exist %1.user.xrep set user_vars=%1.spec.vars.xrep user_source=%1.user.xrep
 
-xrep @cat_main.cpp.xrep user_vars=%user_vars% >%1.cpp.new
+xrep @ciyam_main.cpp.xrep user_vars=%user_vars% >%1.cpp.new
 if errorlevel 1 goto end
 call update.bat %1.cpp %1.cpp.new
 
-xrep @cat_main.cms.xrep user_vars=%user_vars% >%1.cms.new
+xrep @ciyam_main.cms.xrep user_vars=%user_vars% >%1.cms.new
 if errorlevel 1 goto end
 call update.bat %1.cms %1.cms.new
 

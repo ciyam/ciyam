@@ -1,0 +1,28 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start unactionable_field_value)]
+`{`@eq`(`$arg_value`,`'`'`)\
+   if( `{`!`@eq`(`$arg_not_eq`,`'`')!`}is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )\
+`,\
+   if( to_string( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) )\
+ `{`!`@eq`(`$arg_not_eq`,`'`'`)!=`,==`} "`{`$arg_value`}" )`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}\
+`}
+      state |= c_state_unactionable;
+   // [(finish unactionable_field_value)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start unactionable_field_value)]
+`{`@eq`(`$arg_pfield`,`'`'`)\
+   dependents.insert( "`{`$arg_field`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );\
+`,\
+   dependents.insert( "`{`$arg_pfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+      names.insert( "`{`$arg_pfield`}" );\
+`}
+   // [(finish unactionable_field_value)]
+`}

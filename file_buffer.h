@@ -20,8 +20,8 @@
 #     include <string>
 #  endif
 
-#  ifdef CAT_BASE_LIB
-#     ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_LIB
+#     ifdef CIYAM_BASE_IMPL
 #        define FILE_BUFFER_DECL_SPEC DYNAMIC_EXPORT
 #     else
 #        define FILE_BUFFER_DECL_SPEC DYNAMIC_IMPORT

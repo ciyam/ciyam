@@ -1,0 +1,113 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start prior_version)]
+   if( !is_create`{`!`@eq`(`$arg_test_field`,`'`'`) \
+&& get_obj( ).`{`$arg_test_field`}( ).has_changed( ) && to_string( get_obj( ).`{`$arg_test_field`}( ) ) == "`{`$arg_test_value`}"`} )
+   {
+      string new_key( get_obj( ).get_key( ) );
+
+`{`!`@eq`(`$arg_major_only`,`'`'`)\
+      string major_ver = to_string( get_obj( ).`{`$arg_ver_field`}( ) );
+`,\
+      string::size_type pos = get_obj( ).`{`$arg_ver_field`}( ).find( '.' );
+      string major_ver = get_obj( ).`{`$arg_ver_field`}( ).substr( 0, pos );
+      string minor_ver;
+
+      if( pos != string::npos )
+         minor_ver = get_obj( ).`{`$arg_ver_field`}( ).substr( pos + 1 );
+`}
+      if( major_ver.size( ) < 4 )
+         major_ver = string( 4 - major_ver.size( ), '0' ) + major_ver;
+
+`{`!`@eq`(`$arg_major_only`,`'`'`)\
+      new_key += major_ver;
+`,\
+      if( minor_ver.size( ) < 4 )
+         minor_ver = string( 4 - minor_ver.size( ), '0' ) + minor_ver;
+
+      new_key += major_ver + minor_ver;
+`}
+      get_obj( ).child_`{`$arg_pv_class`}( ).op_create( new_key );
+
+      get_obj( ).child_`{`$arg_pv_class`}( ).`{`$class_name`}( get_obj( ).get_key( ) );
+
+`{`[`$arg_field_list`%,`,\
+      get_obj( ).child_`{`$arg_pv_class`}( ).\\0( get_obj( ).\\0( )`{`!`@eq`(`'\\1`'`,`'`'`).\\1( )`} );
+`]`}`{`!`@eq`(`$arg_test2_field`,`'`'`)
+      get_obj( ).child_`{`$arg_pv_class`}( ).`{`$arg_test2_field`}( get_obj( ).`{`$arg_test_field`}( ).get_original_key( ) == "`{`$arg_test2_value`}" );
+`}`{`!`@eq`(`$arg_parent_pv_field`,`'`'`)
+      `{`$full_class_name`}* p_parent = dynamic_cast< `{`$full_class_name`}* >( get_obj( ).get_graph_parent( ) );
+      if( p_parent )
+         get_obj( ).child_`{`$arg_pv_class`}( ).`{`$arg_parent_pv_field`}( p_parent->child_`{`$arg_pv_class`}( ).get_key( ) );
+`}`{`!`@eq`(`$arg_file_field`,`'`'`)
+      string file_name( get_obj( ).`{`$arg_file_field`}( ) );
+      if( !file_name.empty( ) )
+      {
+         string old_file( get_obj( ).get_attached_file_path( file_name ) );
+         string new_file( get_obj( ).child_`{`$arg_pv_class`}( ).get_attached_file_path( "" ) );
+
+         new_file += "/" + new_key + get_ext( file_name );
+
+         if( !storage_locked_for_admin( ) && exists_file( old_file ) )
+            copy_file( old_file, new_file );
+
+         get_obj( ).child_`{`$arg_pv_class`}( ).`{`$arg_file_field`}( new_key + get_ext( file_name ) );
+      }
+`}
+`{`!`@eq`(`$arg_major_only`,`'`'`)\
+      get_obj( ).`{`$arg_ver_field`}( get_obj( ).`{`$arg_ver_field`}( ) + 1 );
+`,\
+      pos = get_obj( ).`{`$arg_ver_field`}( ).find( '.' );
+      int major_vernum = atoi( get_obj( ).`{`$arg_ver_field`}( ).substr( 0, pos ).c_str( ) );
+      int new_minor_vernum = ( pos == string::npos ) ?
+       1 : atoi( get_obj( ).`{`$arg_ver_field`}( ).substr( pos + 1 ).c_str( ) ) + 1;
+
+      get_obj( ).`{`$arg_ver_field`}( to_string( major_vernum ) + "." + to_string( new_minor_vernum ) );
+`}`{`!`@eq`(`$arg_dtm_field`,`'`'`)\
+
+      get_obj( ).`{`$arg_dtm_field`}( get_dtm( ) );
+`}`{`!`@eq`(`$arg_dtm2_field`,`'`'`)\
+      get_obj( ).`{`$arg_dtm2_field`}( get_dtm( ) );
+`}\
+`{`!`@eq`(`$arg_uid_field`,`'`'`)\
+
+      get_obj( ).`{`$arg_uid_field`}( get_uid( ) );
+`}`{`!`@eq`(`$arg_uid2_field`,`'`'`)\
+      get_obj( ).`{`$arg_uid2_field`}( get_uid( ) );
+`}
+      get_obj( ).child_`{`$arg_pv_class`}( ).op_apply( );
+`{`!`@eq`(`$arg_task_class`,`'`'`)
+      if( get_obj( ).child_`{`$arg_task_class`}( ).iterate_forwards( ) )
+      {
+         `{`$module_name`}_`{`$arg_task_class`}* p_parent_task = dynamic_cast< `{`$module_name`}_`{`$arg_task_class`}* >( get_obj( ).get_graph_parent( ) );
+         do
+         {
+            if( p_parent_task
+             && p_parent_task->get_is_updating( )
+             && p_parent_task->get_key( ) == get_obj( ).child_`{`$arg_task_class`}( ).get_key( ) )
+               p_parent_task->`{`$arg_task_pv_field`}( new_key );
+            else
+            {
+               get_obj( ).child_`{`$arg_task_class`}( ).op_update( );
+               if( string( get_obj( ).child_`{`$arg_task_class`}( ).`{`$arg_task_pv_field`}( ) ).empty( ) )
+               {
+                  get_obj( ).child_`{`$arg_task_class`}( ).`{`$arg_task_pv_field`}( new_key );
+                  get_obj( ).child_`{`$arg_task_class`}( ).op_apply( );
+               }
+               else
+                  get_obj( ).child_`{`$arg_task_class`}( ).op_cancel( );
+            }
+         } while( get_obj( ).child_`{`$arg_task_class`}( ).iterate_next( ) );
+      }
+`}\
+   }
+`{`!`@eq`(`$arg_test2_field`,`'`'`)
+   if( !is_create && get_obj( ).`{`$arg_test_field`}( ).has_changed( ) && to_string( get_obj( ).`{`$arg_test_field`}( ) ) == "`{`$arg_test2_value`}" )
+   {
+      string::size_type pos = get_obj( ).`{`$arg_ver_field`}( ).find( '.' );
+      int new_major_vernum = atoi( get_obj( ).`{`$arg_ver_field`}( ).substr( 0, pos ).c_str( ) ) + 1;
+
+      get_obj( ).`{`$arg_ver_field`}( to_string( new_major_vernum ) );
+   }
+`}\
+   // [(finish prior_version)]
+`}

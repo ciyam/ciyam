@@ -1,0 +1,263 @@
+`{`@eq`(`'empty_trash`'`,`$section`)\
+   // [(start for_email_folder)]
+   transaction_start( );
+   try
+   {
+      get_obj( ).op_update( );
+
+      if( get_obj( ).child_`{`$arg_email`}( ).iterate_forwards( ) )
+      {
+         get_obj( ).child_`{`$arg_email`}( ).set_variable( "email_folder_bulk", "true" );
+         do
+         {
+            get_obj( ).child_`{`$arg_email`}( ).op_destroy( );
+            get_obj( ).child_`{`$arg_email`}( ).op_apply( );
+
+         } while( get_obj( ).child_`{`$arg_email`}( ).iterate_next( ) );
+
+         get_obj( ).child_`{`$arg_email`}( ).set_variable( "email_folder_bulk", "" );
+      }
+
+      get_obj( ).`{`$arg_total`}( 0 );
+      get_obj( ).`{`$arg_unread`}( 0 );
+
+      get_obj( ).op_apply( );
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'fetch_messages`'`,`$section`)\
+   // [(start for_email_folder)]
+   if( !storage_locked_for_admin( ) )
+   {
+      get_obj( ).op_update( );
+
+      get_obj( ).`{`$arg_changing`}( true );
+
+      // FUTURE: This message should be a module string.
+      get_obj( ).`{`$arg_details`}( "Now checking for new messages..." );
+
+      get_obj( ).op_apply( );
+
+      set_session_variable( "@key", " " );
+      set_session_variable( "@class", "`{`$arg_eclass_id`}" );
+
+      run_script( "`{`$module_name`}_`{`$arg_eclass`}_`{`$arg_efetch`}" );
+   }
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'mark_all_as_read`'`,`$section`)\
+   // [(start for_email_folder)]
+   transaction_start( );
+   try
+   {
+      get_obj( ).op_update( );
+
+      if( get_obj( ).child_`{`$arg_email`}( ).iterate_forwards( ) )
+      {
+         get_obj( ).child_`{`$arg_email`}( ).set_variable( "email_folder_bulk", "true" );
+         do
+         {
+            get_obj( ).child_`{`$arg_email`}( ).op_update( );
+
+            if( get_obj( ).child_`{`$arg_email`}( ).`{`$arg_read`}( ) )
+               get_obj( ).child_`{`$arg_email`}( ).op_cancel( );
+            else
+            {
+               get_obj( ).child_`{`$arg_email`}( ).`{`$arg_read`}( true );
+               get_obj( ).child_`{`$arg_email`}( ).op_apply( );
+            }
+         } while( get_obj( ).child_`{`$arg_email`}( ).iterate_next( ) );
+
+         get_obj( ).child_`{`$arg_email`}( ).set_variable( "email_folder_bulk", "" );
+      }
+
+      get_obj( ).`{`$arg_unread`}( 0 );
+
+      get_obj( ).op_apply( );
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'move_all_to_trash`'`,`$section`)\
+   // [(start for_email_folder)]
+   transaction_start( );
+   try
+   {
+      get_obj( ).op_update( );
+
+      int total = 0;
+
+      if( get_obj( ).child_`{`$arg_email`}( ).iterate_forwards( ) )
+      {
+         get_obj( ).child_`{`$arg_email`}( ).set_variable( "email_folder_bulk", "true" );
+         do
+         {
+            ++total;
+            get_obj( ).child_`{`$arg_email`}( ).op_update( );
+
+            get_obj( ).child_`{`$arg_email`}( ).`{`$arg_read`}( true );
+            get_obj( ).child_`{`$arg_email`}( ).`{`$arg_folder`}( get_uid( ) + "_trash" );
+
+            get_obj( ).child_`{`$arg_email`}( ).op_apply( );
+
+         } while( get_obj( ).child_`{`$arg_email`}( ).iterate_next( ) );
+
+         get_obj( ).child_`{`$arg_email`}( ).set_variable( "email_folder_bulk", "" );
+      }
+
+      get_obj( ).`{`$arg_total`}( 0 );
+      get_obj( ).`{`$arg_unread`}( 0 );
+
+      get_obj( ).op_apply( );
+
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_trash( e_create_instance );
+
+      cp_trash->op_update( get_uid( ) + "_trash" );
+
+      cp_trash->`{`$arg_total`}( cp_trash->`{`$arg_total`}( ) + total );
+
+      cp_trash->op_apply( );
+
+      transaction_commit( );
+   }
+   catch( ... )
+   {
+      transaction_rollback( );
+      throw;
+   }
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start for_email_folder)]
+   if( get_obj( ).`{`$arg_inbox`}( ) || get_obj( ).`{`$arg_junk`}( ) || get_obj( ).`{`$arg_trash`}( ) )
+      state |= c_modifier_`{`$arg_inbox_or_junk_or_trash`};
+
+   if( is_null( get_obj( ).`{`$arg_pfolder`}( ) ) )
+      state |= c_state_uneditable;
+
+   if( get_obj( ).`{`$arg_changing`}( ) )
+      state |= c_state_is_changing;
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start for_email_folder)]
+   if( !get_obj( ).`{`$arg_changing`}( ) )
+   {
+      string details;
+
+      if( get_obj( ).`{`$arg_drafts`}( ) )
+         // FUTURE: This message should be a module string.
+         details = "Contains " + to_string( get_obj( ).`{`$arg_unread`}( ) ) + " unsent message(s).";
+      else
+      {
+         // FUTURE: This message should be a module string.
+         details = "Contains ";
+         if( get_obj( ).`{`$arg_unread`}( ) )
+            details += to_string( get_obj( ).`{`$arg_unread`}( ) ) + " unread message(s) and ";
+         details += to_string( get_obj( ).`{`$arg_total`}( ) ) + " message(s) in total.";
+      }
+
+      get_obj( ).`{`$arg_details`}( details );
+
+      if( get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) )
+      {
+         string actions;
+         if( get_obj( ).`{`$arg_inbox`}( ) && is_null( get_obj( ).`{`$arg_pfolder`}( ) ) )
+            actions = string( c_procedure_id_`{`$arg_fetch`} );
+
+         if( get_obj( ).`{`$arg_unread`}( ) && !get_obj( ).`{`$arg_drafts`}( ) )
+         {
+            if( !actions.empty( ) )
+               actions += ",";
+            actions += string( c_procedure_id_`{`$arg_mark_read`} );
+         }
+
+         if( get_obj( ).`{`$arg_junk`}( ) && get_obj( ).`{`$arg_total`}( ) )
+         {
+            if( !actions.empty( ) )
+               actions += ",";
+            actions += "<" + to_string( c_procedure_id_`{`$arg_move_trash`} );
+         }
+
+         if( get_obj( ).`{`$arg_trash`}( ) && get_obj( ).`{`$arg_total`}( ) )
+         {
+            if( !actions.empty( ) )
+               actions += ",";
+            actions += "<" + to_string( c_procedure_id_`{`$arg_empty_trash`} );
+         }
+
+         get_obj( ).`{`$arg_actions`}( actions );
+      }
+   }
+   else
+   {
+      if( get_obj( ).`{`$arg_inbox`}( ) )
+      // FUTURE: This message should be a module string.
+         get_obj( ).`{`$arg_details`}( "Now checking for new messages..."  );
+      else
+      // FUTURE: This message should be a module string.
+         get_obj( ).`{`$arg_details`}( "Now sending message..."  );
+   }
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start for_email_folder)]
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_total`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_total`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_total`} ) ) )
+         names.insert( "`{`$arg_total`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_unread`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_unread`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_unread`} ) ) )
+         names.insert( "`{`$arg_unread`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_details`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_total`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_total`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_total`} ) ) )
+         names.insert( "`{`$arg_total`}" );
+   }
+
+   if( needs_field_value( "`{`$arg_details`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_unread`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_unread`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_unread`} ) ) )
+         names.insert( "`{`$arg_unread`}" );
+   }
+   // [(finish for_email_folder)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start for_email_folder)]
+   dependents.insert( "`{`$arg_changing`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_changing`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_changing`} ) ) )
+      names.insert( "`{`$arg_changing`}" );
+   // [(finish for_email_folder)]
+`}

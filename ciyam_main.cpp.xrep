@@ -1,0 +1,185 @@
+`{`;Usage: xrep @ciyam_main.cpp.xrep user_vars=model.vars.xrep`}
+`{`}
+`{`#$user_vars @`}
+`{`}
+`{`;(mandatory)$model_name='mname'`}
+`{`;(mandatory)$model_perm='pname'`}
+`{`;(mandatory)$model_version='0.1'`}
+`{`;(mandatory)$year_created='2002'`}
+`{`}
+// Copyright (c) `{`$year_created`}
+//
+// CIYAM Pty. Ltd.
+// ACN 093 704 539
+//
+// ALL RIGHTS RESERVED
+//
+// Permission to use this software for non-commercial purposes is hereby granted. Permission to
+// distribute this software privately is granted provided that the source code is unaltered and
+// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
+// usage of this software is not permitted without first obtaining a license for such a purpose
+// from CIYAM. This software may not be publicly distributed unless written permission to do so
+// has been obtained from CIYAM.
+
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <map>
+#  include <string>
+#  include <sstream>
+#  include <fstream>
+#  include <iostream>
+#  include <exception>
+#endif
+
+#define MODULE_`{`@upper`(`$model_name`)`}_IMPL
+
+#include "utilities.h"
+#include "ciyam_base.h"
+#include "ciyam_macros.h"
+#include "module_strings.h"
+#include "command_handler.h"
+
+#include "module_interface.cpp"
+
+`{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'stats`'`)\
+`{`#home_message_stats.spec.xrep section=includes model_name=$model_name\
+ arg_primary_class=$specification_home_message_primary_class\
+ arg_primary_stats1_cclass=$specification_home_message_primary_stats1_cclass\
+ arg_primary_stats1_class1=$specification_home_message_primary_stats1_class1\
+ arg_primary_stats1_class2=$specification_home_message_primary_stats1_class2\
+ arg_primary_stats2_cclass=$specification_home_message_primary_stats2_cclass\
+ arg_primary_stats2_class1=$specification_home_message_primary_stats2_class1\
+ arg_primary_stats2_class2=$specification_home_message_primary_stats2_class2\
+ arg_secondary_class=$specification_home_message_secondary_class\
+ arg_secondary_stats1_cclass=$specification_home_message_secondary_stats1_cclass\
+ arg_secondary_stats1_class1=$specification_home_message_secondary_stats1_class1\
+ arg_secondary_stats1_class2=$specification_home_message_secondary_stats1_class2\
+ arg_secondary_stats2_cclass=$specification_home_message_secondary_stats2_cclass\
+ arg_secondary_stats2_class1=$specification_home_message_secondary_stats2_class1\
+ arg_secondary_stats2_class2=$specification_home_message_secondary_stats2_class2`}
+`}
+`{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'top_n`'`)\
+`{`#home_message_top_n.spec.xrep section=includes model_name=$model_name\
+ arg_class=$specification_home_message_class`}
+`}
+// [<start includes>]
+`{`(`?`$user_source`)`#$user_source section=includes`}
+// [<finish includes>]
+
+module_details g_module_details =
+{
+   "`{`$model_id`}",
+   "`{`$model_version`}",
+   "`{`$model_name`}"
+};
+
+namespace
+{
+
+#include "`{`$model_name`}.cmh"
+
+}
+
+void obtain_module_details( const module_details*& p_info )
+{
+   p_info = &g_module_details;
+}
+
+class module_`{`$model_name`}_command_functor : public command_functor
+{
+   public:
+   module_`{`$model_name`}_command_functor( command_handler& handler )
+    : command_functor( handler )
+   {
+   }
+
+   void operator ( )( const string& command, const parameter_info& parameters );
+};
+
+void module_`{`$model_name`}_command_functor::operator ( )( const string& command, const parameter_info& parameters )
+{
+   ( void )parameters;
+
+   try
+   {
+      ostringstream osstr;
+
+      if( command == c_cmd_`{`$model_name`}_ver )
+         osstr << get_module_string( "title" );
+`{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'stats`'`)\
+`{`#home_message_stats.spec.xrep section=commands_impl model_name=$model_name id=$specification_home_message_id\
+ arg_primary_class=$specification_home_message_primary_class\
+ arg_secondary_class=$specification_home_message_secondary_class\
+ arg_primary_stats1_cclass=$specification_home_message_primary_stats1_cclass\
+ arg_primary_stats1_cfield=$specification_home_message_primary_stats1_cfield\
+ arg_primary_stats1_field1=$specification_home_message_primary_stats1_field1\
+ arg_primary_stats1_value1=$specification_home_message_primary_stats1_value1\
+ arg_primary_stats1_field2=$specification_home_message_primary_stats1_field2\
+ arg_primary_stats1_value2=$specification_home_message_primary_stats1_value2\
+ arg_primary_stats2_cclass=$specification_home_message_primary_stats2_cclass\
+ arg_primary_stats2_cfield=$specification_home_message_primary_stats2_cfield\
+ arg_primary_stats2_field1=$specification_home_message_primary_stats2_field1\
+ arg_primary_stats2_value1=$specification_home_message_primary_stats2_value1\
+ arg_primary_stats2_field2=$specification_home_message_primary_stats2_field2\
+ arg_primary_stats2_value2=$specification_home_message_primary_stats2_value2\
+ arg_secondary_stats1_cclass=$specification_home_message_secondary_stats1_cclass\
+ arg_secondary_stats1_cfield=$specification_home_message_secondary_stats1_cfield\
+ arg_secondary_stats1_field1=$specification_home_message_secondary_stats1_field1\
+ arg_secondary_stats1_value1=$specification_home_message_secondary_stats1_value1\
+ arg_secondary_stats1_field2=$specification_home_message_secondary_stats1_field2\
+ arg_secondary_stats1_value2=$specification_home_message_secondary_stats1_value2\
+ arg_secondary_stats2_cclass=$specification_home_message_secondary_stats2_cclass\
+ arg_secondary_stats2_cfield=$specification_home_message_secondary_stats2_cfield\
+ arg_secondary_stats2_field1=$specification_home_message_secondary_stats2_field1\
+ arg_secondary_stats2_value1=$specification_home_message_secondary_stats2_value1\
+ arg_secondary_stats2_field2=$specification_home_message_secondary_stats2_field2\
+ arg_secondary_stats2_value2=$specification_home_message_secondary_stats2_value2`}`}
+`{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'top_n`'`)\
+`{`#home_message_top_n.spec.xrep section=commands_impl model_name=$model_name\
+ arg_class=$specification_home_message_class arg_limit=$specification_home_message_limit\
+ arg_field=$specification_home_message_field arg_ofield=$specification_home_message_ofield`}`}
+      // [<start commands_impl>]
+`{`(`?`$user_source`)`#$user_source section=commands_impl`}
+      // [<finish commands_impl>]
+
+      handler.issue_command_reponse( osstr.str( ) );
+   }
+   catch( exception& x )
+   {
+      handler.issue_command_reponse( string( "(error) " ) + x.what( ), true );
+   }
+}
+
+command_functor* module_`{`$model_name`}_command_functor_factory( const string& /*name*/, command_handler& handler )
+{
+   return new module_`{`$model_name`}_command_functor( handler );
+}
+
+void obtain_externals( externals_container*& p_externals )
+{
+   static vector< string > externals;
+`{`(`?`$all_externals`)
+   if( externals.empty( ) )
+   {
+`{`[`$all_externals`,\
+      externals.push_back( "\\$" );\
+`+\n`]`}
+   }\
+`}
+
+   p_externals = &externals;
+}
+
+void obtain_module_commands(
+ command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands )
+{
+   p_functor_creator = &module_`{`$model_name`}_command_functor_factory;
+
+   p_definitions = `{`$model_name`}_command_definitions;
+   *p_num_commands = ARRAY_SIZE( `{`$model_name`}_command_definitions );
+}
+

@@ -1,0 +1,44 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+`{`$op`=`'`'`}`{`@eq`(`$arg_testop`,`'eq`'`)`$op`=`'==`'`}\
+`{`@eq`(`$arg_testop`,`'neq`'`)`$op`=`'!=`'`}`{`@eq`(`$arg_testop`,`'lt`'`)`$op`=`'<`'`}\
+`{`@eq`(`$arg_testop`,`'gt`'`)`$op`=`'>`'`}`{`@eq`(`$arg_testop`,`'lteq`'`)`$op`=`'<=`'`}\
+`{`@eq`(`$arg_testop`,`'gteq`'`)`$op`=`'>=`'`}\
+   // [(start child_field_cascade)]
+   if( !is_create )
+   {
+      if( `{`?`$arg_field_list`[`$arg_field_list`%,`,get_obj( ).has_field_changed( c_field_id_\\1 )`+
+       || `]`} )
+      {
+         if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
+         {
+            do
+            {
+               get_obj( ).child_`{`$arg_child`}( ).op_update( );
+`{`@eq`(`$arg_tfield`,`'`'`)\
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+               get_obj( ).child_`{`$arg_child`}( ).\\\\0( get_obj( ).\\\\1( ) );\
+`+\n`]`}
+               get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+`,\
+`{`@eq`(`$arg_check_orig`,`'`'`)
+               if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
+`,
+               if( to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) )
+                == get_obj( ).get_original_field_value( c_field_name_`{`$arg_tfield`} )
+                || get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
+`}\
+               {
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+                  get_obj( ).child_`{`$arg_child`}( ).\\\\0( get_obj( ).\\\\1( ) );\
+`+\n`]`}
+                  get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+               }
+               else
+                  get_obj( ).child_`{`$arg_child`}( ).op_cancel( );
+`}
+            } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+         }
+      }
+   }
+   // [(finish child_field_cascade)]
+`}

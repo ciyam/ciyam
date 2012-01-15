@@ -26,9 +26,9 @@
 #  endif
 
 #  include "ptypes.h"
-#  include "cat_common.h"
+#  include "ciyam_common.h"
 
-#  ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_IMPL
 #     define CLASS_BASE_DECL_SPEC DYNAMIC_EXPORT
 #  else
 #     define CLASS_BASE_DECL_SPEC DYNAMIC_IMPORT

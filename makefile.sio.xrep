@@ -51,7 +51,7 @@
   </libs>
   <dyn_libs/>
    <dyn_lib/>
-    <name>cat_base
+    <name>ciyam_base
     <sockets>true
     <openssl>`{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)false`,true`}
     <libharu>true
@@ -62,12 +62,12 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
-     <filename>cat_base.cpp
-     <filename>cat_base_command_handler.cpp
-     <filename>cat_base_date_time.cpp
-     <filename>cat_base_file_buffer.cpp
-     <filename>cat_base_numeric.cpp
-     <filename>cat_base_ods.cpp
+     <filename>ciyam_base.cpp
+     <filename>ciyam_base_command_handler.cpp
+     <filename>ciyam_base_date_time.cpp
+     <filename>ciyam_base_file_buffer.cpp
+     <filename>ciyam_base_numeric.cpp
+     <filename>ciyam_base_ods.cpp
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp
@@ -118,7 +118,7 @@
     </cms_files>
    </executable>
    <executable/>
-    <name>cat_client
+    <name>ciyam_client
     <gen_ext>
     <threads>false
     <sockets>true
@@ -133,13 +133,13 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
-     <filename>cat_client.cpp
+     <filename>ciyam_client.cpp
     </cpp_files>
     <cms_files/>
     </cms_files>
    </executable>
    <executable/>
-    <name>cat_interface
+    <name>ciyam_interface
     <gen_ext>
     <threads>true
     <sockets>true
@@ -154,7 +154,7 @@
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
-     <filename>cat_interface.cpp
+     <filename>ciyam_interface.cpp
      <filename>fcgi_cmds.cpp
      <filename>fcgi_info.cpp
      <filename>fcgi_list.cpp
@@ -166,7 +166,7 @@
     </cms_files>
    </executable>
    <executable/>
-    <name>cat_server
+    <name>ciyam_server
     <gen_ext>
     <threads>true
     <sockets>true
@@ -179,14 +179,14 @@
     <dynamic>false
     <readline>false
     <link_libs>base
-    <dlink_libs>cat_base
+    <dlink_libs>ciyam_base
     <cpp_files/>
      <filename>auto_script.cpp
-     <filename>cat_server.cpp
-     <filename>cat_session.cpp
+     <filename>ciyam_server.cpp
+     <filename>ciyam_session.cpp
     </cpp_files>
     <cms_files/>
-     <filename>cat_session.cms
+     <filename>ciyam_session.cms
     </cms_files>
    </executable>
    <executable/>

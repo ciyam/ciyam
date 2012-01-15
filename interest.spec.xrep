@@ -1,0 +1,34 @@
+`{`@eq`(`'calculate`'`,`$section`)\
+   // [(start calculate)]
+   if( `{`$arg_calc_finish`} >= get_obj( ).`{`$arg_calc_start`}( )
+    && get_obj( ).`{`$arg_balance`}( ) > 0.0 && get_obj( ).`{`$arg_rate`}( ) > 0.0 )
+   {
+      numeric interest;
+
+      while( true )
+      {
+         days num_days;
+         bool is_current_year( false );
+
+         if( get_obj( ).`{`$arg_calc_start`}( ).get_year( ) == `{`$arg_calc_finish`}.get_year( ) )
+         {
+            is_current_year = true;
+            num_days = `{`$arg_calc_finish`}.get_date( ) - get_obj( ).`{`$arg_calc_start`}( ).get_date( ) + 1;
+         }
+         else
+            num_days = get_obj( ).`{`$arg_calc_start`}( ).days_in_year( ) - get_obj( ).`{`$arg_calc_start`}( ).get_day_of_year( ) + 1;
+
+         numeric daily_interest = ( get_obj( ).`{`$arg_balance`}( ) * `{`$arg_rate`}( ) ) / get_obj( ).`{`$arg_calc_start`}( ).days_in_year( );
+
+         interest += ( num_days * daily_interest ).round( 2 );
+
+         get_obj( ).`{`$arg_calc_start`}( ) += num_days;
+
+         if( is_current_year )
+            break;
+      }
+
+      get_obj( ).`{`$arg_balance`}( get_obj( ).`{`$arg_balance`}( ) + interest );
+   }
+   // [(finish calculate)]
+`}

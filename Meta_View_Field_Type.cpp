@@ -25,7 +25,7 @@
 #  include <stdexcept>
 #endif
 
-#define CAT_BASE_LIB
+#define CIYAM_BASE_LIB
 #define MODULE_META_IMPL
 
 // [<start macros>]
@@ -35,7 +35,7 @@
 
 #include "Meta_View_Field.h"
 
-#include "cat_base.h"
+#include "ciyam_base.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"

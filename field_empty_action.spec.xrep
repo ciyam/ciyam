@@ -1,0 +1,28 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_empty_action)]
+   if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create && `}!get_obj( ).get_key( ).empty( ) )
+   {
+`{`$prefix1`=`'!`'`}`{`@eq`(`$arg_is_neg`,`'true`'`)`$prefix1`=`'`'`}\
+`{`$prefix2`=`'`'`}`{`@eq`(`$arg_is_neg`,`'true`'`)`$prefix2`=`'!`'`}\
+`{`$testop`=`'==`'`}`{`@eq`(`$arg_is_neg`,`'true`'`)`$testop`=`'!=`'`}\
+`{`@eq`(`$arg_nvalue`,`'`'`)\
+`{`!`@eq`(`$arg_field`,`'`'`)\
+      if( `{`$prefix1`}is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )
+         get_obj( ).`{`$arg_act_field`}( `{`$arg_value`} );\
+`,\
+      get_obj( ).`{`$arg_act_field`}( `{`$arg_value`} );\
+`}\
+`,\
+`{`@eq`(`$arg_is_testval`,`'true`'`)\
+      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) `{`$testop`} `{`$arg_nvalue`} )
+         get_obj( ).`{`$arg_act_field`}( `{`$arg_value`} );\
+`,\
+      if( `{`$prefix2`}is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )
+         get_obj( ).`{`$arg_act_field`}( `{`$arg_nvalue`} );
+      else
+         get_obj( ).`{`$arg_act_field`}( `{`$arg_value`} );\
+`}\
+`}
+   }
+   // [(finish field_empty_action)]
+`}

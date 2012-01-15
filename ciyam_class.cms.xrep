@@ -1,0 +1,15 @@
+`{`;Usage: xrep @dynamic_class.cmd.xrep user_vars=model_class.vars.xrep`}
+`{`}
+`{`#$user_vars @`}
+`{`}
+`{`;$all_procedures='procedure1 ...'`}
+`{`}
+`{`;$procedure1_all_inputs='arg1,type1 arg2,type2 ...'`}
+`{`}
+key "get key value" [<opt/fixed>]
+ver "get version info"
+get "get field value" <val//field_name>
+set "set field value" <val//field_name>[<oval//field_value>]
+cmd "call field command" <val//field_name><val//cmd_and_args>
+`{`?`$all_procedures`[`$all_procedures`,\
+\$ "\$ procedure"`{`?`$\$_all_inputs`[`$\$_all_inputs`%,`' `'<oval//\\0>`]`}`+\n`]`}

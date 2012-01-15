@@ -1,0 +1,18 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_search_rep_from_child_vars)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) ) )
+   {
+      if( get_obj( ).child_`{`$arg_varchild`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            string name( "`{`$arg_lb`}" + get_obj( ).child_`{`$arg_varchild`}( ).`{`$arg_varname`}( ) + "`{`$arg_rb`}" );
+
+            get_obj( ).add_search_replacement( "`{`$arg_field`}", name, get_obj( ).child_`{`$arg_varchild`}( ).`{`$arg_varvalue`}( ) );
+         } while( get_obj( ).child_`{`$arg_varchild`}( ).iterate_next( ) );
+      }
+   }
+   // [(finish transient_search_rep_from_child_vars)]
+`}

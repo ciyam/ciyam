@@ -1,0 +1,8 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start modifier_field_required)]
+   if( ( state & c_modifier_`{`$arg_modifier`} ) && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
+   // [(finish modifier_field_required)]
+`}

@@ -23,7 +23,7 @@
 
 #  include "macros.h"
 
-#  ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_IMPL
 #     define MAIL_SOURCE_DECL_SPEC DYNAMIC_EXPORT
 #  else
 #     define MAIL_SOURCE_DECL_SPEC DYNAMIC_IMPORT

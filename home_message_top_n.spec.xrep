@@ -1,0 +1,38 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start home_message_top_n)]
+#include "`{`$model_name`}_`{`$arg_class`}.h"
+// [(finish home_message_top_n)]
+`}
+`{`@eq`(`'commands_impl`'`,`$section`)\
+      // [(start home_message_top_n)]
+      else if( command == c_cmd_`{`$model_name`}_Home_Message )
+      {
+         `{`$model_name`}_`{`$arg_class`} news;
+
+         int item = 0;
+         int limit = `{`$arg_limit`};
+
+         string key_info( FIELD_ID( `{`$model_name`}, `{`$arg_class`}, `{`$arg_ofield`} ) );
+         key_info += " ";
+
+         if( news.iterate_backwards( key_info ) )
+         {
+            do
+            {
+               if( item++ > 0 )
+                  osstr << "\\\\n\\\\n";
+
+               osstr << search_replace( news.`{`$arg_field`}( ), "\\r\\n", "\\\\n" );
+
+               if( item == limit )
+               {
+                  news.iterate_stop( );
+                  break;
+               }
+            } while( news.iterate_next( ) );
+
+            osstr << "\\\\n\\\\n";
+         }
+      }
+      // [(finish home_message_top_n)]
+`}

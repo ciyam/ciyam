@@ -1,0 +1,7 @@
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start filter_equal)]
+   if( ( filters.count( "`{`$arg_id`}" )
+    || filters.count( "`{`$arg_name`}" ) ) && check_equal( `{`$arg_field`}( ), `{`$arg_value`} ) )
+      return true;
+   // [(finish filter_equal)]
+`}

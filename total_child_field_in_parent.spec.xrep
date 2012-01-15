@@ -1,0 +1,35 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start total_child_field_in_parent)]
+   if( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )
+   {
+      get_obj( ).`{`$arg_pfield`}( ).op_update( );
+      if( !is_create )
+      {
+         `{`$module_name`}_`{`$class_name`} original;
+         original.perform_fetch( get_obj( ).get_key( ) );
+
+         if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+            get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+         else
+         {
+            original.`{`$arg_pfield`}( ).op_update( );
+            original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+            original.`{`$arg_pfield`}( ).op_apply( );
+         }
+      }
+
+      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) + get_obj( ).`{`$arg_nfield`}( ) );
+      get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+   }
+   // [(finish total_child_field_in_parent)]
+`}
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start total_child_field_in_parent)]
+   if( !get_obj( ).get_is_being_cascaded( ) )
+   {
+      get_obj( ).`{`$arg_pfield`}( ).op_update( );
+      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );
+      get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+   }
+   // [(finish total_child_field_in_parent)]
+`}

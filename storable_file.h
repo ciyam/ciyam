@@ -20,7 +20,7 @@
 #  include "utilities.h"
 #  include "file_buffer.h"
 
-#  ifdef CAT_BASE_IMPL
+#  ifdef CIYAM_BASE_IMPL
 #     define FILE_DECL_SPEC DYNAMIC_EXPORT
 #  else
 #     define FILE_DECL_SPEC DYNAMIC_IMPORT

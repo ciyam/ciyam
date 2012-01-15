@@ -1,0 +1,22 @@
+`{`@eq`(`'proc`'`,`$section`)\
+`{`$arg_value`=`$arg_value`/ `/,`}\
+`{`[`$arg_value`%,`,`{`$add_amt`=`'\\0`'`}`{`$add_typ`=`'\\1`'`}`]`}\
+`{`$add_typ`=`$add_typ`/rs`/r`/ds`/d`/es`/e`/ys`/y`/hs`/h`/ks`/k`}\
+`{`!`@eq`(`$add_typ`,`'`'`)`{`$add_typ`^`'s`'`}`}\
+`{`}\
+   // [(start field_inc_in_proc)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      class_pointer< `{`$full_class_name`} > cp_class( e_create_instance );
+      cp_class->op_update( get_obj( ).get_key( ) );
+
+`{`@eq`(`$add_amt`,`'now`'`)\
+      cp_class->`{`$arg_field`}( date_time( get_dtm( ) ) );\
+`,\
+      cp_class->`{`$arg_field`}( cp_class->`{`$arg_field`}( ) + `{`!`@eq`(`$add_typ`,`'`'`)( `{`$add_typ`} )`}`{`$add_amt`} );\
+`}
+
+      cp_class->op_apply( );
+   }
+   // [(finish field_inc_in_proc)]
+`}

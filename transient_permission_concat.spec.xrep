@@ -1,0 +1,29 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_permission_concat)]
+   if( !get_obj( ).get_key( ).empty( ) )
+   {
+      string value( get_obj( ).`{`$arg_field`}( ) );
+
+      if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} )
+      {
+         if( !value.empty( ) )
+            value += ',';
+         value += "`{`$arg_perm`}";
+
+         get_obj( ).`{`$arg_field`}( value );
+      }
+   }
+   // [(finish transient_permission_concat)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_permission_concat)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+   }
+   // [(finish transient_permission_concat)]
+`}

@@ -1,0 +1,28 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start for_schedule_item_create_all)]
+   if( is_create && get_obj( ).`{`$arg_field`}( ) )
+   {
+      class_pointer< `{`$module_name`}_`{`$arg_gclass`} > cp_group( e_create_instance );
+
+      vector< string > groups;
+      if( cp_group->iterate_forwards( ) )
+      {
+         do
+         {
+            if( cp_group->get_key( ) != get_obj( ).`{`$arg_gfield`}( ).get_key( ) )
+               groups.push_back( cp_group->get_key( ) );
+         } while( cp_group->iterate_next( ) );
+      }
+
+      for( size_t i = 0; i < groups.size( ); i++ )
+      {
+         string child_key( construct_key_from_int( get_obj( ).get_key( ), i ) );
+
+         get_obj( ).child_`{`$arg_ogroup`}( ).op_create( child_key );
+         get_obj( ).child_`{`$arg_ogroup`}( ).`{`$arg_oggfield`}( groups[ i ] );
+         get_obj( ).child_`{`$arg_ogroup`}( ).`{`$arg_ogsfield`}( get_obj( ).get_key( ) );
+         get_obj( ).child_`{`$arg_ogroup`}( ).op_apply( );
+      }
+   }
+   // [(finish for_schedule_item_create_all)]
+`}

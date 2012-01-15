@@ -1,0 +1,10 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_has_child)]
+   if( !get_obj( ).get_key( ).empty( )
+    && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( "", c_key_field, true, 1, e_sql_optimisation_unordered ) )
+   {
+      get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
+      get_obj( ).`{`$arg_field`}( `{`$arg_value`} );
+   }
+   // [(finish transient_has_child)]
+`}

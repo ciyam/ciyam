@@ -1,0 +1,34 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start check_no_repeats)]
+   {
+      size_t old_size = 0;
+      set< string > values;
+      vector< pair< string, string > > duplicate_fields;
+`{`[`$arg_field_list`,\
+`{`@eq`(`$arg_skip_nulls`,`'true`'`)
+      if( !is_null( get_obj( ).\\$( ) ) )
+      {
+         values.insert( to_string( get_obj( ).\\$( ) ) );
+         if( values.size( ) > old_size )
+            old_size = values.size( );
+         else
+            duplicate_fields.push_back( make_pair( c_field_name_\\$, c_field_display_name_\\$ ) );
+      }\
+`,\
+      values.insert( to_string( get_obj( ).\\$( ) ) );\
+      if( values.size( ) > old_size )
+         old_size = values.size( );
+      else
+         duplicate_fields.push_back( make_pair( c_field_name_\\$, c_field_display_name_\\$ ) );\
+`}`+\n`]`}
+
+      for( size_t i = 0; i < duplicate_fields.size( ); i++ )
+      {
+         p_validation_errors->insert( validation_error_value_type( duplicate_fields[ i ].first,
+          get_string_message( GS( c_str_invalid_duplicate_field_value ), make_pair(
+          c_str_parm_invalid_duplicate_field_value_field, get_module_string( duplicate_fields[ i ].second ) ) ) ) );
+
+      }
+   }
+   // [(finish check_no_repeats)]
+`}

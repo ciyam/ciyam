@@ -1,0 +1,96 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_event_overlap)]
+   // NOTE: The graph variable is required to prevent infinite recusion.
+   if( get_obj( ).get_variable( "event_overlap" ).empty( )
+    && required_transients.count( "`{`$arg_field`}" ) && get_obj( ).`{`$arg_duration`}( ) > 0 )
+   {
+      string key_info( c_field_id_`{`$arg_finish`} );
+      key_info += " U" + get_obj( ).`{`$arg_when`}( ).as_string( true );
+
+      date_time finish( get_obj( ).`{`$arg_when`}( ) );
+      finish += ( seconds )get_obj( ).`{`$arg_duration`}( );
+
+      class_pointer< `{`$full_class_name`} > cp_other( e_create_instance );
+      cp_other->set_variable( "event_overlap", "true" );
+
+      if( cp_other->iterate_forwards( key_info, false ) )
+      {
+         do
+         {
+`{`!`@eq`(`$arg_group`,`'`'`)\
+`{`!`@eq`(`$arg_user`,`'`'`)\
+            // NOTE: Normally the `{`$arg_user`} must match if not null but if the variable
+            // "event_overlap_all_users" is set then this test will be true regardless.
+            // Also normally the `{`$arg_group`} must match if not null but if the variable
+            // "event_overlap_all_groups" is set then this test will be true regardless.
+            if( get_obj( ).get_key( ) != cp_other->get_key( )
+             && cp_other->`{`$arg_duration`}( ) > 0 && cp_other->`{`$arg_when`}( ) < finish
+             && ( !get_obj( ).get_variable( "event_overlap_all_users" ).empty( )
+             || is_null( cp_other->`{`$arg_user`}( ) ) || get_obj( ).`{`$arg_user`}( ) == cp_other->`{`$arg_user`}( ) )
+             && ( !get_obj( ).get_variable( "event_overlap_all_groups" ).empty( )
+             || is_null( get_obj( ).`{`$arg_group`}( ) ) || get_obj( ).`{`$arg_group`}( ) == cp_other->`{`$arg_group`}( ) ) )\
+`,\
+            // NOTE: Normally the `{`$arg_group`} must match if not null but if the variable
+            // "event_overlap_all_groups" is set then this test will be true regardless.
+            if( get_obj( ).get_key( ) != cp_other->get_key( )
+             && cp_other->`{`$arg_duration`}( ) > 0 && cp_other->`{`$arg_when`}( ) < finish
+             && ( !get_obj( ).get_variable( "event_overlap_all_groups" ).empty( )
+             || is_null( get_obj( ).`{`$arg_group`}( ) ) || get_obj( ).`{`$arg_group`}( ) == cp_other->`{`$arg_group`}( ) ) )\
+`}`,\
+`!`@eq`(`$arg_user`,`'`'`)
+            // NOTE: Normally the `{`$arg_user`} must match if not null but if the variable
+            // "event_overlap_all_users" is set then this test will be true regardless.
+            if( get_obj( ).get_key( ) != cp_other->get_key( )
+             && cp_other->`{`$arg_duration`}( ) > 0 && cp_other->`{`$arg_when`}( ) < finish
+             && ( !get_obj( ).get_variable( "event_overlap_all_users" ).empty( )
+             || is_null( cp_other->`{`$arg_user`}( ) ) || get_obj( ).`{`$arg_user`}( ) == cp_other->`{`$arg_user`}( ) ) )\
+`,\
+            if( get_obj( ).get_key( ) != cp_other->get_key( )
+             && cp_other->`{`$arg_duration`}( ) > 0 && cp_other->`{`$arg_when`}( ) < finish )\
+`}
+            {
+               get_obj( ).`{`$arg_field`}( true );
+               cp_other->iterate_stop( );
+               break;
+            }
+         } while( cp_other->iterate_next( ) );
+      }
+   }
+   // [(finish transient_event_overlap)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_event_overlap)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_when`}" );
+      dependents.insert( "`{`$arg_duration`}" );
+      dependents.insert( "`{`$arg_finish`}" );
+`{`!`@eq`(`$arg_user`,`'`'`)\
+      dependents.insert( "`{`$arg_user`}" );
+`}`{`!`@eq`(`$arg_group`,`'`'`)\
+      dependents.insert( "`{`$arg_group`}" );
+`}
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_when`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_when`} ) ) )
+         names.insert( "`{`$arg_when`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_duration`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_duration`} ) ) )
+         names.insert( "`{`$arg_duration`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_finish`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_finish`} ) ) )
+         names.insert( "`{`$arg_finish`}" );
+`{`!`@eq`(`$arg_user`,`'`'`)
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_user`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_user`} ) ) )
+         names.insert( "`{`$arg_user`}" );\
+`}
+`{`!`@eq`(`$arg_group`,`'`'`)
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_group`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_group`} ) ) )
+         names.insert( "`{`$arg_group`}" );\
+`}
+   }
+   // [(finish transient_event_overlap)]
+`}

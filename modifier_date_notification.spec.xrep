@@ -1,0 +1,33 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+`{`$type`=`$arg_type`}\
+`{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\
+`{`@eq`(`$type`,`'hour`'`)`$type`=`'hours`'`}\
+`{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
+`{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
+   // [(start modifier_date_notification)]
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) ) )
+   {
+      udate test_date( udate::standard( ) );
+`{`@eq`(`$arg_annual`,`'true`'`)
+      years year_diff = test_date.get_year( ) - get_obj( ).`{`$arg_field`}( ).get_year( );
+      test_date -= year_diff;
+`}
+      udate date_to( get_obj( ).`{`$arg_field`}( ) );
+      udate date_from( date_to );
+
+      date_from -= ( `{`$type`} )`{`$arg_period`};
+
+      if( test_date >= date_from && test_date <= date_to )
+         state |= c_modifier_`{`$arg_modifier`};
+   }
+   // [(finish modifier_date_notification)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start modifier_date_notification)]
+   dependents.insert( "`{`$arg_field`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );
+   // [(finish modifier_date_notification)]
+`}

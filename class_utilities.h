@@ -20,7 +20,7 @@
 #  endif
 
 #  include "utilities.h"
-#  include "cat_macros.h"
+#  include "ciyam_macros.h"
 #  include "command_handler.h"
 
 inline bool is_null( const std::string& s ) { return s.empty( ); }

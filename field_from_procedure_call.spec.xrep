@@ -1,0 +1,30 @@
+`{`@eq`(`'finalise_fetch`'`,`$section`)\
+   // [(start field_from_procedure_call)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) ) )
+   {
+      string str;
+`{`@eq`(`$arg_value`,`'`'`)\
+      get_obj( ).`{`$arg_procedure`}( str );\
+`,\
+      get_obj( ).`{`$arg_procedure`}( str, `{`$arg_value`} );\
+`}
+      get_obj( ).`{`$arg_field`}( str );
+   }
+   // [(finish field_from_procedure_call)]
+`}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_from_procedure_call)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      string str;
+`{`@eq`(`$arg_value`,`'`'`)\
+      get_obj( ).`{`$arg_procedure`}( str );\
+`,\
+      get_obj( ).`{`$arg_procedure`}( str, `{`$arg_value`} );\
+`}
+      get_obj( ).`{`$arg_field`}( str );
+   }
+   // [(finish field_from_procedure_call)]
+`}

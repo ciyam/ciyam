@@ -1,0 +1,31 @@
+`{`@eq`(`'at_create`'`,`$section`)\
+   // [(start file_attachment)]
+   // NOTE: This is being done to ensure that clones won't end up owning another instance's file.
+   get_obj( ).`{`$arg_field`}( "" );
+   // [(finish file_attachment)]
+`}
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start file_attachment)]
+   if( get_obj( ).`{`$arg_field`}( ).empty( ) )
+      get_obj( ).`{`$arg_sfield`}( 0 );
+   else
+   {
+      string filename = get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_field`}( ) );
+
+      // NOTE: When files are being attached they do not have a file extension (so that if
+      // the database update fails then the previous file would still be present even when
+      // it has the same name) so need to first look for a file with no extension.
+      string::size_type pos = filename.find_last_of( "." );
+      if( pos != string::npos && exists_file( filename.substr( 0, pos ) ) )
+         get_obj( ).`{`$arg_sfield`}( size_file( filename.substr( 0, pos ) ) );
+      else
+         get_obj( ).`{`$arg_sfield`}( size_file( filename ) );
+   }
+   // [(start finish_attachment)]
+`}
+`{`@eq`(`'for_destroy`'`,`$section`)\
+   // [(start file_attachment)]
+   if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_field`}( ).empty( ) )
+      remove_file( get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_field`}( ) ) );
+   // [(finish file_attachment)]
+`}

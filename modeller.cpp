@@ -34,7 +34,7 @@
 #include "sql_db.h"
 #include "utilities.h"
 #include "date_time.h"
-#include "cat_common.h"
+#include "ciyam_common.h"
 #include "console_commands.h"
 
 using namespace std;
@@ -894,7 +894,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             specf << "`{`$all_classes`=`'";
 
             vector< string > externals;
-            externals.push_back( "cat_base" );
+            externals.push_back( "ciyam_base" );
             g_model.get_external_module_names( externals );
             makef  << "`{`$" << g_model.get_name( ) << "_dylk`=`'" << string_list( externals ) << "`'`}\n";
 
@@ -975,7 +975,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
 
             specf << "`'`}\n";
 
-            // NOTE: Remove "cat_base" which was inserted at the start of the vector above.
+            // NOTE: Remove "ciyam_base" which was inserted at the start of the vector above.
             externals.erase( externals.begin( ) );
 
             if( !externals.empty( ) )
