@@ -11,12 +11,12 @@
 ##
 ##             base                 make libbase.a target
 ##             commands             make libcommands.a target
-##             cat_base             make cat_base.so target
+##             ciyam_base           make ciyam_base.so target
 ##             Meta                 make Meta.so target
 ##             bundle               make bundle target
-##             cat_client           make cat_client target
-##             cat_interface        make cat_interface target
-##             cat_server           make cat_server target
+##             ciyam_client         make ciyam_client target
+##             ciyam_interface      make ciyam_interface target
+##             ciyam_server         make ciyam_server target
 ##             construct            make construct target
 ##             diff                 make diff target
 ##             diffp                make diffp target
@@ -91,12 +91,12 @@ ZLIB_LIBS = -lz
 # Targets
 TARGET_BASE = libbase.a
 TARGET_COMMANDS = libcommands.a
-TARGET_CAT_BASE = cat_base.so
+TARGET_CIYAM_BASE = ciyam_base.so
 TARGET_META = Meta.so
 TARGET_BUNDLE = bundle
-TARGET_CAT_CLIENT = cat_client
-TARGET_CAT_INTERFACE = cat_interface
-TARGET_CAT_SERVER = cat_server
+TARGET_CIYAM_CLIENT = ciyam_client
+TARGET_CIYAM_INTERFACE = ciyam_interface
+TARGET_CIYAM_SERVER = ciyam_server
 TARGET_CONSTRUCT = construct
 TARGET_DIFF = diff
 TARGET_DIFFP = diffp
@@ -158,20 +158,20 @@ TARGET_COMMANDS_CPPS = command_parser.cpp\
  utilities.cpp
 TARGET_COMMANDS_OBJS = $(TARGET_COMMANDS_CPPS:.cpp=.o)
 
-target_opts_cat_base.so = -fpic
-TARGET_CAT_BASE_CPPS = cat_base.cpp\
- cat_base_command_handler.cpp\
- cat_base_date_time.cpp\
- cat_base_file_buffer.cpp\
- cat_base_numeric.cpp\
- cat_base_ods.cpp\
+target_opts_ciyam_base.so = -fpic
+TARGET_CIYAM_BASE_CPPS = ciyam_base.cpp\
+ ciyam_base_command_handler.cpp\
+ ciyam_base_date_time.cpp\
+ ciyam_base_file_buffer.cpp\
+ ciyam_base_numeric.cpp\
+ ciyam_base_ods.cpp\
  class_base.cpp\
  commands_date_time.cpp\
  commands_numeric.cpp\
  mail_source.cpp\
  module_management.cpp
-TARGET_CAT_BASE_OBJS = $(TARGET_CAT_BASE_CPPS:.cpp=.o)
-TARGET_CAT_BASE_CMHS = date_time.cmh\
+TARGET_CIYAM_BASE_OBJS = $(TARGET_CIYAM_BASE_CPPS:.cpp=.o)
+TARGET_CIYAM_BASE_CMHS = date_time.cmh\
  numeric.cmh
 
 target_opts_Meta.so = -fpic
@@ -254,23 +254,23 @@ TARGET_META_CMHS = Meta.cmh\
 TARGET_BUNDLE_CPPS = bundle.cpp
 TARGET_BUNDLE_OBJS = $(TARGET_BUNDLE_CPPS:.cpp=.o)
 
-TARGET_CAT_CLIENT_CPPS = cat_client.cpp
-TARGET_CAT_CLIENT_OBJS = $(TARGET_CAT_CLIENT_CPPS:.cpp=.o)
+TARGET_CIYAM_CLIENT_CPPS = ciyam_client.cpp
+TARGET_CIYAM_CLIENT_OBJS = $(TARGET_CIYAM_CLIENT_CPPS:.cpp=.o)
 
-TARGET_CAT_INTERFACE_CPPS = cat_interface.cpp\
+TARGET_CIYAM_INTERFACE_CPPS = ciyam_interface.cpp\
  fcgi_cmds.cpp\
  fcgi_info.cpp\
  fcgi_list.cpp\
  fcgi_parser.cpp\
  fcgi_utils.cpp\
  fcgi_view.cpp
-TARGET_CAT_INTERFACE_OBJS = $(TARGET_CAT_INTERFACE_CPPS:.cpp=.o)
+TARGET_CIYAM_INTERFACE_OBJS = $(TARGET_CIYAM_INTERFACE_CPPS:.cpp=.o)
 
-TARGET_CAT_SERVER_CPPS = auto_script.cpp\
- cat_server.cpp\
- cat_session.cpp
-TARGET_CAT_SERVER_OBJS = $(TARGET_CAT_SERVER_CPPS:.cpp=.o)
-TARGET_CAT_SERVER_CMHS = cat_session.cmh
+TARGET_CIYAM_SERVER_CPPS = auto_script.cpp\
+ ciyam_server.cpp\
+ ciyam_session.cpp
+TARGET_CIYAM_SERVER_OBJS = $(TARGET_CIYAM_SERVER_CPPS:.cpp=.o)
+TARGET_CIYAM_SERVER_CMHS = ciyam_session.cmh
 
 TARGET_CONSTRUCT_CPPS = construct.cpp
 TARGET_CONSTRUCT_OBJS = $(TARGET_CONSTRUCT_CPPS:.cpp=.o)
@@ -341,12 +341,12 @@ TARGET_XVARS_OBJS = $(TARGET_XVARS_CPPS:.cpp=.o)
 ALL_TARGETS =\
  $(TARGET_BASE)\
  $(TARGET_COMMANDS)\
- $(TARGET_CAT_BASE)\
+ $(TARGET_CIYAM_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
- $(TARGET_CAT_CLIENT)\
- $(TARGET_CAT_INTERFACE)\
- $(TARGET_CAT_SERVER)\
+ $(TARGET_CIYAM_CLIENT)\
+ $(TARGET_CIYAM_INTERFACE)\
+ $(TARGET_CIYAM_SERVER)\
  $(TARGET_CONSTRUCT)\
  $(TARGET_DIFF)\
  $(TARGET_DIFFP)\
@@ -370,12 +370,12 @@ ALL_TARGETS =\
 ALL_CPP_FILES =\
  $(TARGET_BASE_CPPS)\
  $(TARGET_COMMANDS_CPPS)\
- $(TARGET_CAT_BASE_CPPS)\
+ $(TARGET_CIYAM_BASE_CPPS)\
  $(TARGET_META_CPPS)\
  $(TARGET_BUNDLE_CPPS)\
- $(TARGET_CAT_CLIENT_CPPS)\
- $(TARGET_CAT_INTERFACE_CPPS)\
- $(TARGET_CAT_SERVER_CPPS)\
+ $(TARGET_CIYAM_CLIENT_CPPS)\
+ $(TARGET_CIYAM_INTERFACE_CPPS)\
+ $(TARGET_CIYAM_SERVER_CPPS)\
  $(TARGET_CONSTRUCT_CPPS)\
  $(TARGET_DIFF_CPPS)\
  $(TARGET_DIFFP_CPPS)\
@@ -399,12 +399,12 @@ ALL_CPP_FILES =\
 ALL_OBJ_FILES =\
  $(TARGET_BASE_OBJS)\
  $(TARGET_COMMANDS_OBJS)\
- $(TARGET_CAT_BASE_OBJS)\
+ $(TARGET_CIYAM_BASE_OBJS)\
  $(TARGET_META_OBJS)\
  $(TARGET_BUNDLE_OBJS)\
- $(TARGET_CAT_CLIENT_OBJS)\
- $(TARGET_CAT_INTERFACE_OBJS)\
- $(TARGET_CAT_SERVER_OBJS)\
+ $(TARGET_CIYAM_CLIENT_OBJS)\
+ $(TARGET_CIYAM_INTERFACE_OBJS)\
+ $(TARGET_CIYAM_SERVER_OBJS)\
  $(TARGET_CONSTRUCT_OBJS)\
  $(TARGET_DIFF_OBJS)\
  $(TARGET_DIFFP_OBJS)\
@@ -426,9 +426,9 @@ ALL_OBJ_FILES =\
  $(TARGET_XVARS_OBJS)
 
 ALL_CMH_FILES =\
- $(TARGET_CAT_BASE_CMHS)\
+ $(TARGET_CIYAM_BASE_CMHS)\
  $(TARGET_META_CMHS)\
- $(TARGET_CAT_SERVER_CMHS)\
+ $(TARGET_CIYAM_SERVER_CMHS)\
  $(TARGET_MODELLER_CMHS)\
  $(TARGET_TEST_CACHE_CMHS)\
  $(TARGET_TEST_NUMERIC_CMHS)\
@@ -444,19 +444,19 @@ base: $(TARGET_BASE)
 
 commands: $(TARGET_COMMANDS)
 
-cat_base: $(TARGET_CAT_BASE)
+ciyam_base: $(TARGET_CIYAM_BASE)
 
 Meta: $(TARGET_META)
 
 all:\
  $(TARGET_BASE)\
  $(TARGET_COMMANDS)\
- $(TARGET_CAT_BASE)\
+ $(TARGET_CIYAM_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
- $(TARGET_CAT_CLIENT)\
- $(TARGET_CAT_INTERFACE)\
- $(TARGET_CAT_SERVER)\
+ $(TARGET_CIYAM_CLIENT)\
+ $(TARGET_CIYAM_INTERFACE)\
+ $(TARGET_CIYAM_SERVER)\
  $(TARGET_CONSTRUCT)\
  $(TARGET_DIFF)\
  $(TARGET_DIFFP)\
@@ -493,35 +493,35 @@ $(TARGET_COMMANDS):: $(TARGET_COMMANDS).compile
 $(TARGET_COMMANDS):: $(TARGET_COMMANDS_OBJS)
 	$(BIND_NORMAL) $(TARGET_COMMANDS_OBJS)
 
-$(TARGET_CAT_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_BASE_CMHS) $(TARGET_CAT_BASE).compile
+$(TARGET_CIYAM_BASE):: $(TARGET_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CIYAM_BASE_CMHS) $(TARGET_CIYAM_BASE).compile
 
-$(TARGET_CAT_BASE):: $(TARGET_CAT_BASE_OBJS) $(TARGET_BASE)
-	$(LINK_DYNAMIC) $(TARGET_CAT_BASE_OBJS) $(READLINE_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(MYSQL_LIBS) -L. -lbase
+$(TARGET_CIYAM_BASE):: $(TARGET_CIYAM_BASE_OBJS) $(TARGET_BASE)
+	$(LINK_DYNAMIC) $(TARGET_CIYAM_BASE_OBJS) $(READLINE_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) $(MYSQL_LIBS) -L. -lbase
 
-$(TARGET_META):: $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_META_CMHS) $(TARGET_META).compile
+$(TARGET_META):: $(TARGET_CIYAM_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_META_CMHS) $(TARGET_META).compile
 
-$(TARGET_META):: $(TARGET_META_OBJS) $(TARGET_CAT_BASE)
-	$(LINK_DYNAMIC) $(TARGET_META_OBJS) -ldl -Wl,-rpath,. $(TARGET_CAT_BASE)
+$(TARGET_META):: $(TARGET_META_OBJS) $(TARGET_CIYAM_BASE)
+	$(LINK_DYNAMIC) $(TARGET_META_OBJS) -ldl -Wl,-rpath,. $(TARGET_CIYAM_BASE)
 
 $(TARGET_BUNDLE):: $(TARGET_BASE) $(TARGET_BUNDLE).compile
 
 $(TARGET_BUNDLE):: $(TARGET_BUNDLE_OBJS) $(TARGET_BASE)
 	$(LINK_NORMAL) $(TARGET_BUNDLE_OBJS) $(ZLIB_LIBS) -L. -lbase
 
-$(TARGET_CAT_CLIENT):: $(TARGET_BASE) $(TARGET_CAT_CLIENT).compile
+$(TARGET_CIYAM_CLIENT):: $(TARGET_BASE) $(TARGET_CIYAM_CLIENT).compile
 
-$(TARGET_CAT_CLIENT):: $(TARGET_CAT_CLIENT_OBJS) $(TARGET_BASE)
-	$(LINK_NORMAL) $(TARGET_CAT_CLIENT_OBJS) $(READLINE_LIBS) -L. -lbase
+$(TARGET_CIYAM_CLIENT):: $(TARGET_CIYAM_CLIENT_OBJS) $(TARGET_BASE)
+	$(LINK_NORMAL) $(TARGET_CIYAM_CLIENT_OBJS) $(READLINE_LIBS) -L. -lbase
 
-$(TARGET_CAT_INTERFACE):: $(TARGET_BASE) $(TARGET_CAT_INTERFACE).compile
+$(TARGET_CIYAM_INTERFACE):: $(TARGET_BASE) $(TARGET_CIYAM_INTERFACE).compile
 
-$(TARGET_CAT_INTERFACE):: $(TARGET_CAT_INTERFACE_OBJS) $(TARGET_BASE)
-	$(LINK_NORMAL) $(TARGET_CAT_INTERFACE_OBJS) $(THREAD_LIBS) $(READLINE_LIBS) $(LIBFCGI_LIBS) -L. -lbase
+$(TARGET_CIYAM_INTERFACE):: $(TARGET_CIYAM_INTERFACE_OBJS) $(TARGET_BASE)
+	$(LINK_NORMAL) $(TARGET_CIYAM_INTERFACE_OBJS) $(THREAD_LIBS) $(READLINE_LIBS) $(LIBFCGI_LIBS) -L. -lbase
 
-$(TARGET_CAT_SERVER):: $(TARGET_BASE) $(TARGET_CAT_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CAT_SERVER_CMHS) $(TARGET_CAT_SERVER).compile
+$(TARGET_CIYAM_SERVER):: $(TARGET_BASE) $(TARGET_CIYAM_BASE) $(TARGET_GENERATE_COMMANDS) $(TARGET_CIYAM_SERVER_CMHS) $(TARGET_CIYAM_SERVER).compile
 
-$(TARGET_CAT_SERVER):: $(TARGET_CAT_SERVER_OBJS) $(TARGET_BASE) $(TARGET_CAT_BASE)
-	$(LINK_NORMAL) $(TARGET_CAT_SERVER_OBJS) $(THREAD_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) -L. -lbase -ldl -Wl,-rpath,. $(TARGET_CAT_BASE)
+$(TARGET_CIYAM_SERVER):: $(TARGET_CIYAM_SERVER_OBJS) $(TARGET_BASE) $(TARGET_CIYAM_BASE)
+	$(LINK_NORMAL) $(TARGET_CIYAM_SERVER_OBJS) $(THREAD_LIBS) $(LIBHARU_LIBS) $(LIBICONV_LIBS) -L. -lbase -ldl -Wl,-rpath,. $(TARGET_CIYAM_BASE)
 
 $(TARGET_CONSTRUCT):: $(TARGET_BASE) $(TARGET_CONSTRUCT).compile
 
