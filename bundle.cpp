@@ -238,12 +238,12 @@ void output_directory( set< string >& file_names,
       md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
       md5.finalize( );
 
-      string digest( md5.hex_digest( ) );
+      auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
       ostringstream osstr;
-      osstr << "D " << level << ' ' << perms << ' ' << path_name << ' ' << digest;
+      osstr << "D " << level << ' ' << perms << ' ' << path_name << ' ' << ap_digest.get( );
 
-      g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
+      g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
 
 #ifndef ZLIB_SUPPORT
       outf << osstr.str( ) << '\n';
@@ -423,14 +423,14 @@ void process_directory( const string& directory,
                ++num;
          }
 
-         string digest( md5.hex_digest( ) );
+         auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
          ostringstream osstr;
-         osstr << "F " << num << ' ' << perms << ' ' << fname << ' ' << digest;
+         osstr << "F " << num << ' ' << perms << ' ' << fname << ' ' << ap_digest.get( );
 
          file_names.insert( ffsi.get_name( ) );
 
-         g_md5.update( ( unsigned char* )digest.c_str( ), digest.length( ) );
+         g_md5.update( ( unsigned char* )ap_digest.get( ), 32 );
 
 #ifndef ZLIB_SUPPORT
          outf << osstr.str( ) << '\n';
@@ -1143,7 +1143,9 @@ int main( int argc, char* argv[ ] )
 
          g_md5.finalize( );
          ostringstream osstr;
-         osstr << "C " << g_md5.hex_digest( );
+         auto_ptr< char > ap_digest( g_md5.hex_digest( ) );
+
+         osstr << "C " << ap_digest.get( );
 
 #ifndef ZLIB_SUPPORT
          outf << osstr.str( ) << '\n';

@@ -262,15 +262,17 @@ string determine_challenge_response( const string& challenge, const string& user
    md5_ipad.update( ( unsigned char* )nonce.c_str( ), nonce.length( ) );
    md5_ipad.finalize( );
 
-   string digest( ( char* )md5_ipad.raw_digest( ) );
+   auto_ptr< char > ap_idigest( md5_ipad.raw_digest( ) );
 
    MD5 md5_opad;
    md5_opad.update( opad_buf, 64 );
-   md5_opad.update( ( unsigned char* )digest.c_str( ), 16 );
+   md5_opad.update( ( unsigned char* )ap_idigest.get( ), 16 );
    md5_opad.finalize( );
 
+   auto_ptr< char > ap_odigest( md5_opad.hex_digest( ) );
+
    string response( user + " " );
-   response += string( ( char* )md5_opad.hex_digest( ) );
+   response += string( ap_odigest.get( ) );
 
    return base64::encode( response );
 }

@@ -29,6 +29,15 @@
 #include "md5.h"
 #include "base64.h"
 
+#ifdef SSL_SUPPORT
+#  include <openssl/aes.h>
+   // KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
+   // the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
+#  ifdef _MSC_VER
+#     pragma warning (disable: 4996)
+#  endif
+#endif
+
 using namespace std;
 
 const size_t c_max_key_size = 128;
@@ -92,6 +101,39 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
    memset( key, '\0', c_max_key_size );
 }
 
+#ifdef SSL_SUPPORT
+void crypt_stream( iostream& io, const char* p_key, size_t key_length, crypt_op op )
+{
+   int num, bytes_read, bytes_written;
+
+   unsigned char indata[ AES_BLOCK_SIZE ];
+   unsigned char outdata[ AES_BLOCK_SIZE ];
+
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )p_key ).hex_digest( ) );
+
+   unsigned char* p_ckey = ( unsigned char* )ap_digest.get( );
+   unsigned char* p_ivec = ( unsigned char* )ap_digest.get( ) + 16;
+
+   AES_KEY key;
+   AES_set_encrypt_key( p_ckey, 128, &key );
+
+   while( true )
+   {
+      fstream::pos_type pos = io.tellg( );
+      bytes_read = io.rdbuf( )->sgetn( ( char* )indata, AES_BLOCK_SIZE );
+
+      AES_cfb128_encrypt( indata, outdata,
+       bytes_read, &key, p_ivec, &num, op == e_crypt_op_decrypt ? AES_DECRYPT : AES_ENCRYPT );
+
+      io.seekp( pos );
+      bytes_written = io.rdbuf( )->sputn( ( char* )outdata, bytes_read );
+
+      if( bytes_read < AES_BLOCK_SIZE )
+         break;
+   }
+}
+#endif
+
 string password_encrypt( const string& password, const string& keyval )
 {
    string s( password );
@@ -110,9 +152,13 @@ string password_encrypt( const string& password, const string& keyval )
 
    stringstream ss( s );
 
-   string key( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
 
-   crypt_stream( ss, key.c_str( ), key.length( ) );
+#ifndef SSL_SUPPORT
+   crypt_stream( ss, ap_digest.get( ), 32 );
+#else
+   crypt_stream( ss, ap_digest.get( ), 32, e_crypt_op_encrypt );
+#endif
    s = base64::encode( ss.str( ) );
 
    return s;
@@ -123,9 +169,13 @@ string password_decrypt( const string& password, const string& keyval )
    string s;
    stringstream ss( base64::decode( password ) );
 
-   string key( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
 
-   crypt_stream( ss, key.c_str( ), key.length( ) );
+#ifndef SSL_SUPPORT
+   crypt_stream( ss, ap_digest.get( ), 32 );
+#else
+   crypt_stream( ss, ap_digest.get( ), 32, e_crypt_op_decrypt );
+#endif
    s = ss.str( );
 
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
