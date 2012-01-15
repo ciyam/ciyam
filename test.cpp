@@ -28,6 +28,7 @@
 #     include <unistd.h>
 #  endif
 #  include <cstdio>
+#  include <set>
 #  include <memory>
 #  include <vector>
 #  include <string>
@@ -42,6 +43,7 @@
 #endif
 
 #include "sio.h"
+#include "utilities.h"
 
 using namespace std;
 
@@ -581,12 +583,22 @@ int main( int argc, char* argv[ ] )
          return 1;
       }
 
+      set< string > step_names;
+      set< string > test_names;
+      set< string > group_names;
+
       sio_reader reader( inpf );
       reader.start_section( c_section_groups );
       while( reader.has_started_section( c_section_group ) )
       {
          group g;
          g.name = reader.read_attribute( c_group_name_value );
+
+         if( group_names.count( g.name ) )
+            throw runtime_error( "repeated group name '"
+             + g.name + "' found in line #" + to_string( reader.get_last_line_num( ) ) );
+
+         group_names.insert( g.name );
 
          reader.start_section( c_section_tests );
          while( reader.has_started_section( c_section_test ) )
@@ -595,6 +607,13 @@ int main( int argc, char* argv[ ] )
             string s;
 
             t.name = reader.read_attribute( c_test_name_value );
+
+            if( test_names.count( g.name + '.' + t.name ) )
+               throw runtime_error( "repeated test name '"
+                + t.name + "' found in line #" + to_string( reader.get_last_line_num( ) ) );
+
+            test_names.insert( g.name + '.' + t.name );
+
             t.description = reader.read_attribute( c_test_description_value );
 
             while( reader.has_read_attribute( c_test_step_kill_value, s ) )
@@ -605,6 +624,13 @@ int main( int argc, char* argv[ ] )
                test_step ts;
 
                ts.name = reader.read_attribute( c_test_step_name_value );
+
+               if( step_names.count( g.name + '.' + t.name + '.' + ts.name ) )
+                  throw runtime_error( "repeated test step name '"
+                   + ts.name + "' found in line #" + to_string( reader.get_last_line_num( ) ) );
+
+               step_names.insert( g.name + '.' + t.name + '.' + ts.name );
+
                ts.exec = reader.read_attribute( c_test_step_exec_value );
 
                s = reader.read_attribute( c_test_step_input_value );

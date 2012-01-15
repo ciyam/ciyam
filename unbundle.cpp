@@ -493,12 +493,23 @@ int main( int argc, char* argv[ ] )
                      cout.flush( );
                   }
 
+                  md5.update( ( unsigned char* )buffer, count );
+
                   ap_ofstream->rdbuf( )->sputn( buffer, count );
                   if( !ap_ofstream->good( ) )
                      throw runtime_error( "unexpected bad output file stream" );
 
                   raw_file_size -= count;
                }
+
+               md5.finalize( );
+               string digest( md5.hex_digest( ) );
+
+               if( next_md5 != digest )
+                  cerr << "*** error: file '" << next_file << "' failed MD5 digest check ***" << endl;
+
+               ap_ofstream.reset( );
+               file_perms( next_file, rwx_perms );
 
                if( !is_quieter )
                   cout << endl;
@@ -589,6 +600,7 @@ int main( int argc, char* argv[ ] )
                      throw runtime_error( "flush failed for file '" + next_file + "'" );
                   ap_ofstream->close( );
 
+                  ap_ofstream.reset( );
                   file_perms( next_file, rwx_perms );
 
                   md5.finalize( );
@@ -660,6 +672,9 @@ int main( int argc, char* argv[ ] )
                next_file = destination_directory + next;
             else
                next_file = destination_directory + test_file;
+
+            md5.update( ( unsigned char* )rwx_perms.c_str( ), rwx_perms.length( ) );
+            md5.update( ( unsigned char* )next.c_str( ), next.length( ) );
 
             bool matched = false;
             if( filename_filters.empty( ) )
@@ -810,6 +825,7 @@ int main( int argc, char* argv[ ] )
                top_level_directory = path_name;
 
             MD5 md5;
+            md5.update( ( unsigned char* )rwx_perms.c_str( ), rwx_perms.length( ) );
             md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
             md5.finalize( );
 

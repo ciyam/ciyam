@@ -5,7 +5,7 @@
    <tests/>
     <test/>
      <name>1
-     <description>Create and update a base64 encoded bundle.
+     <description>Create and update and verify contents of a base64 encoded bundle.
      <kill>test.bun
      <kill>~temp.jpg
      <kill>~temp.png
@@ -138,6 +138,30 @@
      <test_step/>
       <name>v
       <exec>unbundle -l -q test
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>w
+      <exec>unbundle -o -q test
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>x
+      <exec>bundle -q -b64 -ngz test ~temp.jpg
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>y
+      <exec>bundle -q -b64 -ngz test ~temp.png
+      <input>false
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>z
+      <exec>print test.bun
       <input>false
       <output>generate
      </test_step>
