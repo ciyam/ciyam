@@ -226,18 +226,19 @@ void output_directory( set< string >& file_names,
 
    if( !file_names.count( path_name ) )
    {
-      MD5 md5;
-      md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
-      md5.finalize( );
-
-      string digest( md5.hex_digest( ) );
-
       string rel_path( "." );
       string::size_type pos = path_name.find( '/' );
       if( pos != string::npos )
          rel_path += path_name.substr( pos );
 
       string perms = file_perms( rel_path );
+
+      MD5 md5;
+      md5.update( ( unsigned char* )perms.c_str( ), perms.length( ) );
+      md5.update( ( unsigned char* )path_name.c_str( ), path_name.length( ) );
+      md5.finalize( );
+
+      string digest( md5.hex_digest( ) );
 
       ostringstream osstr;
       osstr << "D " << level << ' ' << perms << ' ' << path_name << ' ' << digest;
@@ -379,12 +380,17 @@ void process_directory( const string& directory,
          int64_t size = file_size( ffsi.get_full_name( ) );
          string perms = file_perms( ffsi.get_full_name( ) );
 
+         string fname( ffsi.get_name( ) );
+
          ifstream inpf( ffsi.get_full_name( ).c_str( ), ios::in | ios::binary );
          if( !inpf )
             throw runtime_error( "unable to open file '" + ffsi.get_full_name( ) + "' for input" );
 
          MD5 md5;
          unsigned char buffer[ c_buffer_size ];
+
+         md5.update( ( unsigned char* )perms.c_str( ), perms.length( ) );
+         md5.update( ( unsigned char* )fname.c_str( ), fname.length( ) );
 
          int64_t size_left = size;
          while( size_left )
@@ -420,7 +426,7 @@ void process_directory( const string& directory,
          string digest( md5.hex_digest( ) );
 
          ostringstream osstr;
-         osstr << "F " << num << ' ' << perms << ' ' << ffsi.get_name( ) << ' ' << digest;
+         osstr << "F " << num << ' ' << perms << ' ' << fname << ' ' << digest;
 
          file_names.insert( ffsi.get_name( ) );
 
