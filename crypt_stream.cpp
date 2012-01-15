@@ -29,10 +29,22 @@
 #include "md5.h"
 #include "base64.h"
 
+#ifdef _WIN32
+// KLUDGE: Although applink.c has been included and CRYPTO_malloc_init is called as per the
+// OpenSSL FAQ calls to crypt_stream (sometimes the first but sometimes the second) results
+// in an access violation so for now only the home grown encryption algorithm is used under
+// Windows.
+#  undef SSL_SUPPORT
+#endif
+
 #ifdef SSL_SUPPORT
 #  include <openssl/aes.h>
-   // KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
-   // the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
+#  ifdef _WIN32
+#     include <openssl/ssl.h>
+#     include <openssl/applink.c>
+#  endif
+// KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
+// the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
 #  ifdef _MSC_VER
 #     pragma warning (disable: 4996)
 #  endif
@@ -104,6 +116,16 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 #ifdef SSL_SUPPORT
 void crypt_stream( iostream& io, const char* p_key, size_t key_length, crypt_op op )
 {
+#  ifdef _WIN32
+   static bool initialised = false;
+
+   if( !initialised )
+   {
+      initialised = true;
+      CRYPTO_malloc_init( );
+   }
+#  endif
+
    int num, bytes_read, bytes_written;
 
    unsigned char indata[ AES_BLOCK_SIZE ];
@@ -116,6 +138,8 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length, crypt_op 
 
    AES_KEY key;
    AES_set_encrypt_key( p_ckey, 128, &key );
+
+   io.seekg( 0, ios::beg );
 
    while( true )
    {
@@ -151,6 +175,7 @@ string password_encrypt( const string& password, const string& keyval )
    }
 
    stringstream ss( s );
+   ss.seekp( 0 );
 
    auto_ptr< char > ap_digest( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
 
