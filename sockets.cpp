@@ -30,6 +30,9 @@
 #  endif
 #endif
 
+//idk
+#include <iostream>
+
 #include "sockets.h"
 
 using namespace std;
@@ -146,9 +149,42 @@ bool tcp_socket::bind( const ip_address& addr )
    return ::bind( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
 }
 
-bool tcp_socket::connect( const ip_address& addr )
+bool tcp_socket::connect( const ip_address& addr, size_t timeout )
 {
-   return ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
+   if( timeout )
+   {
+      bool connected = false;
+      if( set_non_blocking( ) )
+      {
+         ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) );
+
+         fd_set fdset;
+         struct timeval tv;
+
+         tv.tv_sec = timeout / 1000;
+         tv.tv_usec = ( timeout % 1000 ) * 1000;
+         
+         FD_ZERO( &fdset );
+         FD_SET( socket, &fdset );
+         if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
+         {
+            int so_error = 1;
+            socklen_type len = sizeof( so_error );
+
+            ::getsockopt( socket, SOL_SOCKET, SO_ERROR, ( char* )&so_error, &len );
+
+            if( !so_error )
+            {
+               set_blocking( );
+               connected = true;
+            }
+         }
+      }
+
+      return connected;
+   }
+   else
+      return ::connect( socket, ( const sockaddr* )&addr, sizeof( sockaddr ) ) != SOCKET_ERROR;
 }
 
 bool tcp_socket::listen( )
@@ -244,7 +280,7 @@ bool tcp_socket::has_input( size_t timeout ) const
    FD_ZERO( &rfds );
    FD_SET( socket, &rfds );
 
-   // NOTE: This function will indicate success even if the "select" return code has
+   // NOTE: This function will indicate success eve   n if the "select" return code has
    // an error as it is expected that the error will occur during the receive itself.
    okay = ::select( socket + 1, &rfds, 0, 0, &tv ) != 0;
 

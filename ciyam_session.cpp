@@ -3008,6 +3008,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( !headers.empty( ) )
             split( headers, email_headers );
 
+         handler.output_progress( ";checkmail..." );
          response = check_email_headers( email_headers, create_script );
       }
       else if( command == c_cmd_ciyam_session_runscript )
