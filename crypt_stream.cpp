@@ -29,20 +29,9 @@
 #include "md5.h"
 #include "base64.h"
 
-#ifdef _WIN32
-// KLUDGE: Although applink.c has been included and CRYPTO_malloc_init is called as per the
-// OpenSSL FAQ calls to crypt_stream (sometimes the first but sometimes the second) results
-// in an access violation so for now only the home grown encryption algorithm is used under
-// Windows.
-#  undef SSL_SUPPORT
-#endif
-
 #ifdef SSL_SUPPORT
 #  include <openssl/aes.h>
-#  ifdef _WIN32
-#     include <openssl/ssl.h>
-#     include <openssl/applink.c>
-#  endif
+#  include <openssl/ssl.h>
 // KLUDGE: Suppress the "function now deprecated" warning as it is being incorrectly issued for
 // the "sgetn" I/O function (an issue at least with the VS Express 2005 version of VC8).
 #  ifdef _MSC_VER
@@ -55,6 +44,9 @@ using namespace std;
 const size_t c_max_key_size = 128;
 const size_t c_file_buf_size = 32768;
 
+// NOTE: This algorithm is an XOR approach for encrypting a stream in place
+// and is very quick, however, it is not considered "strong encryption" and
+// therefore should not be used for encryptiong very sensitive information.
 void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
@@ -114,56 +106,52 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 }
 
 #ifdef SSL_SUPPORT
-void crypt_stream( iostream& io, const char* p_key, size_t key_length, crypt_op op )
+string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_op op )
 {
-#  ifdef _WIN32
-   static bool initialised = false;
+   string output( s.length( ) + AES_BLOCK_SIZE, '\0' );
+   unsigned char* p_output = ( unsigned char* )output.data( );
 
-   if( !initialised )
-   {
-      initialised = true;
-      CRYPTO_malloc_init( );
-   }
-#  endif
-
-   int num, bytes_read, bytes_written;
-
-   unsigned char indata[ AES_BLOCK_SIZE ];
-   unsigned char outdata[ AES_BLOCK_SIZE ];
-
+   // NOTE: Use an MD5 hash of the key as ckey and ivec must be 16 bytes each.
    auto_ptr< char > ap_digest( MD5( ( unsigned char* )p_key ).hex_digest( ) );
 
    unsigned char* p_ckey = ( unsigned char* )ap_digest.get( );
    unsigned char* p_ivec = ( unsigned char* )ap_digest.get( ) + 16;
 
-   AES_KEY key;
-   AES_set_encrypt_key( p_ckey, 128, &key );
+   EVP_CIPHER_CTX ctx;
+   EVP_CIPHER_CTX_init( &ctx );
 
-   io.seekg( 0, ios::beg );
+   if( op == e_crypt_op_encrypt )
+      EVP_EncryptInit_ex( &ctx, EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+   else
+      EVP_DecryptInit_ex( &ctx, EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
 
-   while( true )
-   {
-      fstream::pos_type pos = io.tellg( );
-      bytes_read = io.rdbuf( )->sgetn( ( char* )indata, AES_BLOCK_SIZE );
+   int num = 0;
+   if( op == e_crypt_op_encrypt )
+      EVP_EncryptUpdate( &ctx, p_output, &num, ( const unsigned char* )s.data( ), s.size( ) );
+   else
+      EVP_DecryptUpdate( &ctx, p_output, &num, ( const unsigned char* )s.data( ), s.size( ) );
 
-      AES_cfb128_encrypt( indata, outdata,
-       bytes_read, &key, p_ivec, &num, op == e_crypt_op_decrypt ? AES_DECRYPT : AES_ENCRYPT );
+   int tlen = 0;
+   if( op == e_crypt_op_encrypt )
+      EVP_EncryptFinal_ex( &ctx, p_output + num, &tlen );
+   else
+      EVP_DecryptFinal_ex( &ctx, p_output + num, &tlen );
 
-      io.seekp( pos );
-      bytes_written = io.rdbuf( )->sputn( ( char* )outdata, bytes_read );
+   EVP_CIPHER_CTX_cleanup( &ctx );
 
-      if( bytes_read < AES_BLOCK_SIZE )
-         break;
-   }
+   output.resize( num + tlen );
+
+   return output;
 }
 #endif
 
-string password_encrypt( const string& password, const string& keyval )
+string password_encrypt( const string& password, const string& key )
 {
    string s( password );
 
    srand( time( 0 ) );
 
+#ifndef SSL_SUPPORT
    // NOTE: If the password is less than 20 characters then append a '\0' followed
    // by as many random characters as needed so that the length of the password is
    // disguised from non-technical user observation.
@@ -173,35 +161,36 @@ string password_encrypt( const string& password, const string& keyval )
       s += c;
       c = rand( ) % 256;
    }
+#endif
 
    stringstream ss( s );
    ss.seekp( 0 );
 
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )key.c_str( ) ).hex_digest( ) );
 
 #ifndef SSL_SUPPORT
    crypt_stream( ss, ap_digest.get( ), 32 );
-#else
-   crypt_stream( ss, ap_digest.get( ), 32, e_crypt_op_encrypt );
-#endif
    s = base64::encode( ss.str( ) );
+#else
+   s = base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
+#endif
 
    return s;
 }
 
-string password_decrypt( const string& password, const string& keyval )
+string password_decrypt( const string& password, const string& key )
 {
    string s;
    stringstream ss( base64::decode( password ) );
 
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )keyval.c_str( ) ).hex_digest( ) );
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )key.c_str( ) ).hex_digest( ) );
 
 #ifndef SSL_SUPPORT
    crypt_stream( ss, ap_digest.get( ), 32 );
-#else
-   crypt_stream( ss, ap_digest.get( ), 32, e_crypt_op_decrypt );
-#endif
    s = ss.str( );
+#else
+   s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt );
+#endif
 
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
 }
