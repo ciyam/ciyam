@@ -146,7 +146,6 @@ TARGET_BASE_CPPS = base64.cpp\
  sha1.cpp\
  smtp.cpp\
  sockets.cpp\
- ssl_socket.cpp\
  storable_file.cpp\
  sql_db.cpp\
  tcp_read_write_buffer.cpp\
