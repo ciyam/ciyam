@@ -33,7 +33,9 @@
      <filename>sha1.cpp
      <filename>smtp.cpp
      <filename>sockets.cpp
-     <filename>ssl_socket.cpp
+`{`(`?`$use_ssl`)`&`(`@eq`(`$use_ssl`,`'1`'`)`|`@eq`(`$use_ssl`,`'true`'`)`)\
+     <filename>ssl_socket.cpp\
+`}
      <filename>storable_file.cpp
      <filename>sql_db.cpp
      <filename>tcp_read_write_buffer.cpp

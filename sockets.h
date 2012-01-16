@@ -69,7 +69,7 @@ class tcp_socket
    void close( );
 
    bool bind( const ip_address& addr );
-   bool connect( const ip_address& addr );
+   bool connect( const ip_address& addr, size_t timeout = 0 );
 
    bool listen( );
    SOCKET accept( ip_address& addr, size_t timeout = 0 ) const;
