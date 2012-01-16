@@ -31,10 +31,10 @@ enum crypt_op
    e_crypt_op_decrypt
 };
 
-void crypt_stream( std::iostream& io, const char* p_key, size_t key_length, crypt_op op );
+std::string aes_crypt( const std::string& s, const char* p_key, size_t key_length, crypt_op op );
 #  endif
 
-std::string password_encrypt( const std::string& password, const std::string& keyval );
-std::string password_decrypt( const std::string& password, const std::string& keyval );
+std::string password_encrypt( const std::string& password, const std::string& key );
+std::string password_decrypt( const std::string& password, const std::string& key );
 
 #endif
