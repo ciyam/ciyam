@@ -70,6 +70,8 @@ mutex g_mutex;
 
 const int c_pdf_default_limit = 5000;
 
+const char* const c_protocol_version = "0.1";
+
 const char* const c_response_okay = "(okay)";
 const char* const c_response_okay_more = "(okay more)";
 const char* const c_response_not_found = "(not found)";
@@ -927,6 +929,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
       if( command == c_cmd_ciyam_session_license )
          response = get_license( true, true );
+      else if( command == c_cmd_ciyam_session_version )
+         response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );
@@ -2957,9 +2961,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_encrypt )
       {
+         bool no_ssl( has_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_no_ssl ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_password ) );
 
-         response = encrypt_password( password );
+         response = encrypt_password( password, no_ssl );
       }
       else if( command == c_cmd_ciyam_session_sendmail )
       {

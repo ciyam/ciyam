@@ -128,8 +128,6 @@ const char* const c_output_type_none = "none";
 const char* const c_output_type_generate = "generate";
 const char* const c_output_type_automatic = "automatic";
 
-const char* const c_exec_special_diff = "$diff";
-
 #ifdef _WIN32
 const char* const c_null_device_name = "nul";
 #else
@@ -396,25 +394,17 @@ void perform_test_step( const test_step& s, const string& test_name )
       expecting_failure = true;
    }
 
+   bool is_async = false;
+   if( !exec.empty( ) && exec[ 0 ] == '*' )
+   {
+      is_async = true;
+      exec.erase( 0, 1 );
+   }
+
    if( !exec.empty( ) && exec[ 0 ] == '$' )
    {
-      string::size_type pos = exec.find( ' ' );
-      string cmd( exec.substr( 0, pos ) );
-
-      if( cmd == c_exec_special_diff )
-      {
-         if( pos == string::npos )
-            throw runtime_error( "unexpected special exec diff command missing args" );
-
-#ifdef _WIN32
-         cmd = string( "diff " );
-#else
-         cmd = string( "./diff " );
-#endif
-         exec = cmd + exec.substr( pos + 1 );
-      }
-      else
-         throw runtime_error( "unknown special exec command '" + cmd + "'" );
+      command.erase( );
+      exec.erase( 0, 1 );
    }
 
    command += exec;
@@ -446,6 +436,15 @@ void perform_test_step( const test_step& s, const string& test_name )
    else
       command += c_null_device_name;
 
+   if( is_async )
+   {
+#ifdef _WIN32
+      command = "start " + command;
+#else
+      command += " &";
+#endif
+   }
+
    if( !s.exec.empty( ) )
    {
 #ifdef DEBUG
@@ -454,6 +453,9 @@ void perform_test_step( const test_step& s, const string& test_name )
       if( system( command.c_str( ) ) != 0 && !expecting_failure )
          throw runtime_error( "unexpected system failure" );
    }
+
+   if( is_async )
+      msleep( 250 );
 
    if( !test_output_file_name.empty( ) )
    {

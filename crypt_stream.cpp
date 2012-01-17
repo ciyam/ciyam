@@ -145,51 +145,68 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
 }
 #endif
 
-string password_encrypt( const string& password, const string& key )
+string password_encrypt( const string& password, const string& key, bool use_ssl )
 {
    string s( password );
 
    srand( time( 0 ) );
 
 #ifndef SSL_SUPPORT
+   use_ssl = false;
+#endif
+
    // NOTE: If the password is less than 20 characters then append a '\0' followed
    // by as many random characters as needed so that the length of the password is
    // disguised from non-technical user observation.
-   char c( '\0' );
-   while( s.length( ) < 20 )
+   if( !use_ssl )
    {
-      s += c;
-      c = rand( ) % 256;
+      char c( '\0' );
+      while( s.length( ) < 20 )
+      {
+         s += c;
+         c = rand( ) % 256;
+      }
    }
-#endif
 
    stringstream ss( s );
    ss.seekp( 0 );
 
    auto_ptr< char > ap_digest( MD5( ( unsigned char* )key.c_str( ) ).hex_digest( ) );
 
-#ifndef SSL_SUPPORT
-   crypt_stream( ss, ap_digest.get( ), 32 );
-   s = base64::encode( ss.str( ) );
-#else
-   s = base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
+   if( !use_ssl )
+   {
+      crypt_stream( ss, ap_digest.get( ), 32 );
+      s = base64::encode( ss.str( ) );
+   }
+
+#ifdef SSL_SUPPORT
+   if( use_ssl )
+      s = base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
 #endif
 
    return s;
 }
 
-string password_decrypt( const string& password, const string& key )
+string password_decrypt( const string& password, const string& key, bool use_ssl )
 {
    string s;
    stringstream ss( base64::decode( password ) );
 
+#ifndef SSL_SUPPORT
+   use_ssl = false;
+#endif
+
    auto_ptr< char > ap_digest( MD5( ( unsigned char* )key.c_str( ) ).hex_digest( ) );
 
-#ifndef SSL_SUPPORT
-   crypt_stream( ss, ap_digest.get( ), 32 );
-   s = ss.str( );
-#else
-   s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt );
+   if( !use_ssl )
+   {
+      crypt_stream( ss, ap_digest.get( ), 32 );
+      s = ss.str( );
+   }
+
+#ifdef SSL_SUPPORT
+   if( use_ssl )
+      s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt );
 #endif
 
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.

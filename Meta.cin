@@ -649,6 +649,9 @@ procedure_add -id=127410 Application Generate
 procedure_add -id=127420 Application Generate_Modules
 procedure_add -id=127430 Application Generate_File_Links
 procedure_add -id=127440 Application Generate_Upgrade_DDL
+procedure_add -id=127497 Application Test_Proc_1
+procedure_add -id=127498 Application Test_Proc_2
+procedure_arg_add -id=127499 Application Test_Proc_2 Input string in
 class_add -id=128100 Specification_Field_Action Specification_Field_Actions Specification
 field_add -id=128101 Specification_Field_Action Clone_Key str100 opt
 field_add -id=128102 Specification_Field_Action Create_Type int mand -def=0 -e=field_action_create_type

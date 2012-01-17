@@ -227,6 +227,8 @@ bool g_is_daemon = false;
 
 int g_port = c_default_ciyam_port;
 
+const char* const c_shutdown_signal_file = "ciyam_server.stop";
+
 string application_title( app_info_request request )
 {
    if( request == e_app_info_request_title )
@@ -554,7 +556,12 @@ int main( int argc, char* argv[ ] )
                   ciyam_session* p_session = new ciyam_session( ap_socket );
                   p_session->start( );
                }
+
+               if( file_exists( c_shutdown_signal_file ) )
+                  g_server_shutdown = true;
             }
+
+            file_remove( c_shutdown_signal_file );
 
             cout << "server shutdown (due to interrupt) now completed..." << endl;
             TRACE_LOG( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
