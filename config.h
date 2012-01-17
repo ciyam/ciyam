@@ -19,5 +19,9 @@
 #  define ZLIB_SUPPORT
 #  define ICONV_SUPPORT
 
+const int c_default_ciyam_port = 11011;
+
+const char* const c_default_ciyam_host = "localhost";
+
 #endif
 

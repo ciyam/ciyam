@@ -58,6 +58,7 @@
 
 #include "md5.h"
 #include "sha1.h"
+#include "config.h"
 #include "format.h"
 #include "ptypes.h"
 #include "numeric.h"
@@ -898,7 +899,7 @@ void request_handler::process_request( )
 
                if( p_session_info->p_socket->open( ) )
                {
-                  ip_address address( "localhost", 11011 );
+                  ip_address address( c_default_ciyam_host, c_default_ciyam_port );
                   if( p_session_info->p_socket->connect( address ) )
                   {
                      p_session_info->p_socket->set_no_delay( );

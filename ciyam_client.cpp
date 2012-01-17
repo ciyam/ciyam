@@ -33,6 +33,7 @@
 #  define _putenv putenv
 #endif
 
+#include "config.h"
 #include "macros.h"
 #include "sockets.h"
 #include "console.h"
@@ -54,9 +55,6 @@ const char* const c_app_version = "0.1";
 
 const size_t c_command_timeout = 60000;
 const size_t c_greeting_timeout = 10000;
-
-const int c_default_ciyam_port = 11011;
-const char* const c_default_ciyam_host = "localhost";
 
 const char* const c_env_var_error = "ERROR";
 

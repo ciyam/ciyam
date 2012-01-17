@@ -1,5 +1,0 @@
-if [ $# -eq 1 ]; then
- ./test -q tests.sio test_$1
-else
- ./test -q tests.sio
-fi

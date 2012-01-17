@@ -3737,7 +3737,7 @@ size_t session_id( )
    return rc;
 }
 
-void list_sessions( ostream& os )
+void list_sessions( ostream& os, bool inc_dtms )
 {
    guard g( g_mutex );
 
@@ -3750,8 +3750,13 @@ void list_sessions( ostream& os )
          if( gtp_session && gtp_session->id == g_sessions[ i ]->id )
             os << '*';
 
-         os << ' ' << g_sessions[ i ]->dtm_created.as_string( true, false ) << ' '
-          << g_sessions[ i ]->dtm_last_cmd.as_string( true, false ) << ' ' << g_sessions[ i ]->last_cmd;
+         if( inc_dtms )
+         {
+            os << ' ' << g_sessions[ i ]->dtm_created.as_string( true, false )
+             << ' ' << g_sessions[ i ]->dtm_last_cmd.as_string( true, false );
+         }
+
+         os  << ' ' << g_sessions[ i ]->last_cmd;
 
          os << ' ' << g_sessions[ i ]->p_storage_handler->get_name( );
          if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )

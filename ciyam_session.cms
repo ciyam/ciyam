@@ -32,7 +32,7 @@ perform_execute "execute a method for a persistent instance" <val//uid><val//dtm
 perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<val//filename>[<opt/-destroy/destroy_records>|<list/-export=/export_fields>[<val/-t=/search_text>][<val/-q=/search_query>]|<list//fixed_field_values>]
 perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
 perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
-session_list "list active sessions"
+session_list "list active sessions" [<opt/-min/minimal>]
 session_kill "kill one or more sessions" {<opt/*/all>|<list//sess_ids>}[<val//seconds>]
 session_lock "capture/release one or more sessions" {<opt/-capture/capture>|<opt/-release/release>}<opt/*/all>|<list//sess_ids>
 session_timeout "get/set server session timeout" [<val//seconds>]

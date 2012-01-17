@@ -2226,7 +2226,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_list )
       {
-         list_sessions( osstr );
+         bool minimal( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_list_minimal ) );
+
+         list_sessions( osstr, !minimal );
          output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_session_kill )
