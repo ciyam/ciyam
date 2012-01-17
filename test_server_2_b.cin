@@ -17,6 +17,14 @@ object_create Meta Workgroup
 object_create Meta User
 object_create Meta Application
 object_create Meta Workgroup
+object_execute 4 set "Name \"Test App Name\""
+object_variable 4 test_var "One"
+object_execute 4 Test_Proc_1
+object_variable 4 test_var "Two"
+session_variable test_var "Here"
+object_execute 4 "Test_Proc_2 \"Is Over\""
+session_variable test_var "Found"
+object_execute 4 "Test_Proc_2 \"Is Soon\""
 object_list
 object_destroy 1
 object_list
