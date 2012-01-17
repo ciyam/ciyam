@@ -59,6 +59,7 @@
 #  include "mac.h"
 #  include "sha1.h"
 #endif
+#include "config.h"
 #include "sql_db.h"
 #include "sockets.h"
 #include "utilities.h"
@@ -166,8 +167,6 @@ namespace
 {
 
 bool start_autoscript = true;
-
-const int c_default_ciyam_port = 11011;
 
 #ifdef _WIN32
 BOOL CtrlHandler( DWORD fdwCtrlType )

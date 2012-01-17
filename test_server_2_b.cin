@@ -25,6 +25,7 @@ session_variable test_var "Here"
 object_execute 4 "Test_Proc_2 \"Is Over\""
 session_variable test_var "Found"
 object_execute 4 "Test_Proc_2 \"Is Soon\""
+session_list -min
 object_list
 object_destroy 1
 object_list

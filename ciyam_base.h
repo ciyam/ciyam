@@ -136,7 +136,7 @@ void CIYAM_BASE_DECL_SPEC term_session( );
 
 size_t CIYAM_BASE_DECL_SPEC session_id( );
 
-void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os );
+void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true );
 
 command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
 

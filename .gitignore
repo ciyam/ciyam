@@ -56,12 +56,6 @@ compile.bat
 makefile.sio
 makefile.vars.xrep
 
-# Ignore various generated files.
-Meta.sio
-Meta.txt
-Meta.fcgi.sio
-Meta.spec.vars.xrep
-
 # Except libraries that are included in the repository.
 !iconv.dll
 !iconv.lib

@@ -74,6 +74,9 @@ Found
 > object_execute 4 "Test_Proc_2 \"Is Soon\""
 Two Test App Name Is Soon Found
 
+> session_list -min
+3* session_list <none> <unknown> 5:5 0
+
 > object_list
 1 Meta User
 2 Meta Workgroup
