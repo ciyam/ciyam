@@ -286,6 +286,8 @@ const char* const c_procedure_id_Generate = "127410";
 const char* const c_procedure_id_Generate_File_Links = "127430";
 const char* const c_procedure_id_Generate_Modules = "127420";
 const char* const c_procedure_id_Generate_Upgrade_DDL = "127440";
+const char* const c_procedure_id_Test_Proc_1 = "127497";
+const char* const c_procedure_id_Test_Proc_2 = "127498";
 
 const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x100 );
 
@@ -910,6 +912,19 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
 
       cmd_handler.retval.erase( );
    }
+   else if( command == c_cmd_Meta_Application_Test_Proc_1 )
+   {
+      cmd_handler.p_Meta_Application->Test_Proc_1( );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Application_Test_Proc_2 )
+   {
+      string Input( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_Application_Test_Proc_2_Input ) );
+      cmd_handler.p_Meta_Application->Test_Proc_2( Input );
+
+      cmd_handler.retval.erase( );
+   }
 }
 
 struct Meta_Application::impl : public Meta_Application_command_handler
@@ -1077,6 +1092,10 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void impl_Generate_Modules( );
 
    void impl_Generate_Upgrade_DDL( );
+
+   void impl_Test_Proc_1( );
+
+   void impl_Test_Proc_2( const string& Input );
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
@@ -1752,6 +1771,18 @@ void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
       }
    }
    // [<finish Generate_Upgrade_DDL_impl>]
+}
+
+void Meta_Application::impl::impl_Test_Proc_1( )
+{
+   // [<start Test_Proc_1_impl>]
+   // [<finish Test_Proc_1_impl>]
+}
+
+void Meta_Application::impl::impl_Test_Proc_2( const string& Input )
+{
+   // [<start Test_Proc_2_impl>]
+   // [<finish Test_Proc_2_impl>]
 }
 
 string Meta_Application::impl::get_field_value( int field ) const
@@ -2788,6 +2819,16 @@ void Meta_Application::Generate_Modules(  )
 void Meta_Application::Generate_Upgrade_DDL(  )
 {
    p_impl->impl_Generate_Upgrade_DDL(  );
+}
+
+void Meta_Application::Test_Proc_1(  )
+{
+   p_impl->impl_Test_Proc_1(  );
+}
+
+void Meta_Application::Test_Proc_2( const string& Input )
+{
+   p_impl->impl_Test_Proc_2( Input );
 }
 
 string Meta_Application::get_field_value( int field ) const
@@ -4335,6 +4376,8 @@ procedure_info_container& Meta_Application::static_get_procedure_info( )
       procedures.insert( make_pair( "127430", "Generate_File_Links" ) );
       procedures.insert( make_pair( "127420", "Generate_Modules" ) );
       procedures.insert( make_pair( "127440", "Generate_Upgrade_DDL" ) );
+      procedures.insert( make_pair( "127497", "Test_Proc_1" ) );
+      procedures.insert( make_pair( "127498", "Test_Proc_2" ) );
    }
 
    return procedures;

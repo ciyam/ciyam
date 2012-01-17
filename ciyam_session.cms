@@ -1,4 +1,5 @@
 license "display license info"
+version "display protocol version"
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>
@@ -53,7 +54,7 @@ storage_trans_rollback "rollback a transaction in the current storage"
 system_variable "get/set a system variable" <val//var_name>[<oval//new_value>]
 trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
-encrypt "encrypt a password" <val//password>
+encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>]<val//password>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_abbr>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 schedule "display autoscript schedule"
 timezone "display timezone abbreviation"

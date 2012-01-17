@@ -120,8 +120,8 @@ std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
 int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
 int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
 
-std::string CIYAM_BASE_DECL_SPEC encrypt_password( const std::string& password );
-std::string CIYAM_BASE_DECL_SPEC decrypt_password( const std::string& password );
+std::string CIYAM_BASE_DECL_SPEC encrypt_password( const std::string& password, bool no_ssl = false );
+std::string CIYAM_BASE_DECL_SPEC decrypt_password( const std::string& password, bool no_ssl = false );
 
 int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false );
 

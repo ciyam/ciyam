@@ -3480,14 +3480,14 @@ int64_t get_smtp_max_attached_data( )
    return g_smtp_max_attached_data;
 }
 
-string encrypt_password( const string& password )
+string encrypt_password( const string& password, bool no_ssl )
 {
-   return password_encrypt( password, g_sid );
+   return password_encrypt( password, g_sid, !no_ssl );
 }
 
-string decrypt_password( const string& password )
+string decrypt_password( const string& password, bool no_ssl )
 {
-   return password_decrypt( password, g_sid );
+   return password_decrypt( password, g_sid, !no_ssl );
 }
 
 int exec_system( const string& cmd, bool async )

@@ -1,0 +1,4 @@
+version
+license
+encrypt -no_ssl for_testing_password
+.quit

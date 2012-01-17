@@ -561,5 +561,48 @@
     </test>
    </tests>
   </group>
+  <group/>
+   <name>test_server
+   <tests/>
+    <test/>
+     <name>1
+     <description>Test version, license and encrypt server operations.
+     <test_step/>
+      <name>init
+      <exec>*ciyam_server 12345
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>a
+      <exec>ciyam_client -echo -quiet 12345
+      <input>true
+      <output>generate
+     </test_step>
+    </test>
+    <test/>
+     <name>2
+     <description>Test the loading the Meta model, viewing various artifacts and basic object operations.
+     <test_step/>
+      <name>a
+      <exec>ciyam_client -echo -quiet 12345
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>ciyam_client -echo -quiet 12345
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>$touch ciyam_server.stop
+      <input>false
+      <output>none
+     </test_step>
+    </test>
+   </tests>
+  </group>
  </groups>
 </sio>

@@ -7,3 +7,5 @@ Generate "Generate procedure"
 Generate_File_Links "Generate_File_Links procedure"
 Generate_Modules "Generate_Modules procedure"
 Generate_Upgrade_DDL "Generate_Upgrade_DDL procedure"
+Test_Proc_1 "Test_Proc_1 procedure"
+Test_Proc_2 "Test_Proc_2 procedure" <oval//Input>

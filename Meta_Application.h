@@ -180,6 +180,10 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    virtual void Generate_Upgrade_DDL( );
 
+   virtual void Test_Proc_1( );
+
+   virtual void Test_Proc_2( const std::string& Input );
+
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
 
