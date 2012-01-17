@@ -52,6 +52,28 @@ second value
 > object_create Meta Workgroup
 5
 
+> object_execute 4 set "Name \"Test App Name\""
+okay
+
+> object_variable 4 test_var "One"
+
+> object_execute 4 Test_Proc_1
+One Test App Name
+
+> object_variable 4 test_var "Two"
+
+> session_variable test_var "Here"
+Here
+
+> object_execute 4 "Test_Proc_2 \"Is Over\""
+Two Test App Name Is Over Here
+
+> session_variable test_var "Found"
+Found
+
+> object_execute 4 "Test_Proc_2 \"Is Soon\""
+Two Test App Name Is Soon Found
+
 > object_list
 1 Meta User
 2 Meta Workgroup
