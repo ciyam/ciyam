@@ -45,8 +45,9 @@ xvars
 # Ignore generated header files.
 *.cmh
 
-# Ignore log files.
+# Ignore log files and lock files.
 *.log
+*.lck
 
 # Ignore generated compile script.
 compile.sh
@@ -55,6 +56,12 @@ compile.bat
 # Ignore makefile generation temp files.
 makefile.sio
 makefile.vars.xrep
+
+# Ignore ciyam test storage files.
+ciyam.dat
+ciyam.hdr
+ciyam.idx
+ciyam.sql
 
 # Ignore customised environment init file.
 ciyam_init_cmd.bat
