@@ -24,5 +24,10 @@ const int c_default_ciyam_port = 11011;
 
 const char* const c_default_ciyam_host = "localhost";
 
+const int c_protocol_major_version = 0;
+const int c_protocol_minor_version = 1;
+
+const char* const c_protocol_version = "0.1";
+
 #endif
 

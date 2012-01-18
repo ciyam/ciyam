@@ -1266,7 +1266,7 @@ void Meta_Application::impl::impl_Generate( )
 
 #ifdef _WIN32
       outs << "@echo off\n";
-      outs << "call cat_init_cmd.bat\n";
+      outs << "call ciyam_init_cmd.bat\n";
       outs << "set WEBDIR=" << get_web_root( ) << "\n\n";
       outs << "if not exist \"%WEBDIR%/" << app_dir << "\" call setup.bat "
        << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n\n";
@@ -1405,10 +1405,10 @@ void Meta_Application::impl::impl_Generate( )
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_UI_Only )
       {
 #ifdef _WIN32
-         outs << "cat_client -quiet -no_prompt < "
+         outs << "ciyam_client -quiet -no_prompt < "
           << get_obj( ).Name( ) << ".generate.1.cin >>" << generate_log_file << "\n";
 #else
-         outs << "./cat_client -quiet -no_prompt < "
+         outs << "./ciyam_client -quiet -no_prompt < "
           << get_obj( ).Name( ) << ".generate.1.cin >>" << generate_log_file << "\n";
 #endif
       }
@@ -1472,9 +1472,9 @@ void Meta_Application::impl::impl_Generate( )
       {
          outs << "\necho Updating Links... >>" << generate_log_file << "\n";
 #ifdef _WIN32
-         outs << "cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.2.cin\n";
+         outs << "ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.2.cin\n";
 #else
-         outs << "./cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.2.cin\n";
+         outs << "./ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.2.cin\n";
 #endif
       }
 
@@ -1488,11 +1488,11 @@ void Meta_Application::impl::impl_Generate( )
       {
          outs << "\necho Starting Make... >>" << generate_log_file << "\n";
 #ifdef _WIN32
-         outs << "cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.3.cin\n";
+         outs << "ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.3.cin\n";
          outs << "if exist make.dtm del make.dtm\n";
          outs << "call make.bat " << all_modules << " dtm >>" << generate_log_file << " 2>&1\n";
 #else
-         outs << "./cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.3.cin\n";
+         outs << "./ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.3.cin\n";
          outs << "if [ -f make.dtm ]; then\n";
          outs << " rm make.dtm\n";
          outs << "fi\n";
@@ -1549,7 +1549,7 @@ void Meta_Application::impl::impl_Generate( )
          }
          outs << "if not exist " << get_obj( ).Name( ) << ".log copy app.log " << get_obj( ).Name( ) << ".log >nul\n";
          outs << "if exist manuscript.sio.new call update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
-         outs << "\ncat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.4.cin\n";
+         outs << "\nciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.4.cin\n";
 #else
          outs << "if [ -f make.dtm ]; then\n";
          if( !get_obj( ).Keep_Existing_Data( ) )
@@ -1567,14 +1567,14 @@ void Meta_Application::impl::impl_Generate( )
          outs << " if [ -f manuscript.sio.new ]; then\n";
          outs << "  ./update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
          outs << " fi\n";
-         outs << " ./cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.4.cin\n";
+         outs << " ./ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.4.cin\n";
 #endif
 
 #ifdef _WIN32
-         outs << "cat_client -echo -quiet -no_prompt < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
+         outs << "ciyam_client -echo -quiet -no_prompt < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
          outs << "\n:skip_upgrade\n";
 #else
-         outs << " ./cat_client -echo -quiet -no_prompt < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
+         outs << " ./ciyam_client -echo -quiet -no_prompt < " << get_obj( ).Name( ) << ".upgrade.cin >>" << generate_log_file << "\n";
          outs << "fi\n";
 #endif
       }
@@ -1592,9 +1592,9 @@ void Meta_Application::impl::impl_Generate( )
       outssx << "quit\n";
 
 #ifdef _WIN32
-      outs << "cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.x.cin\n";
+      outs << "ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.x.cin\n";
 #else
-      outs << "\n./cat_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.x.cin\n";
+      outs << "\n./ciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.x.cin\n";
 #endif
 
       outs << "echo Finished Generate... >>" << generate_log_file << "\n";
