@@ -30,9 +30,6 @@
 #  endif
 #endif
 
-//idk
-#include <iostream>
-
 #include "sockets.h"
 
 using namespace std;
@@ -89,6 +86,30 @@ void ip_address::resolve( const char* p_address, int port )
    }
 
    sin_port = htons( ( u_short )port );
+}
+
+string ip_address::get_addr_string( ) const
+{
+   char buf[ 64 ];
+#ifndef _WIN32
+   ::inet_ntop( AF_INET, &( sin_addr ), buf, sizeof( buf ) ); // NOTE: use AF_INET ==> AF_INET6 for ipv6
+#else
+   DWORD addr_size = sizeof( buf );
+   ::WSAAddressToString( ( LPSOCKADDR )this, sizeof( ip_address ), 0, buf, &addr_size );
+
+   int dots = 0;
+   for( size_t i = 0; i < sizeof( buf ); i++ )
+   {
+      if( buf[ i ] == '.' )
+         ++dots;
+      else if( buf[ i ] == ':' && dots == 3 )
+      {
+         buf[ i ] = '\0';
+         break;
+      }
+   }
+#endif
+   return string( buf );
 }
 
 tcp_socket::tcp_socket( )

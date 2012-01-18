@@ -19,6 +19,7 @@
 #     define STRICT // Needed for "windows.h" by various Borland headers.
 #  endif
 #  define NO_MINMAX
+#  define _WINSOCKAPI_
 #  include <windows.h>
 #endif
 
