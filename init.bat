@@ -2,11 +2,13 @@
 setlocal
 if '%1' == '' goto usage
 
-del %1.modules.lst %1.log %1.dat %1.idx %1.hdr >nul
 set CIYAM_MODEL=%1
 set CIYAM_STORAGE=%1
 if not '%2' == '' set CIYAM_STORAGE=%2
-cat_client -quiet -no_prompt < init.cin
+del %CIYAM_STORAGE%.log %CIYAM_STORAGE%.dat %CIYAM_STORAGE%.idx %CIYAM_STORAGE%.hdr >nul
+start ciyam_server 12345
+ciyam_client -quiet -no_prompt 12345 < init.cin
+touch ciyam_server.stop
 goto end
 
 :usage

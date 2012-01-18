@@ -1,7 +1,7 @@
-storage_init -admin %CAT_STORAGE%
+storage_init -admin %CIYAM_STORAGE%
 module_load Meta
 storage_term
-storage_init %CAT_STORAGE%
+storage_init %CIYAM_STORAGE%
 perform_create sys 20080101 Meta 102100 string "102101=string,102102=0,102109=1,102111=T000"
 perform_create sys 20080101 Meta 102100 bool "102101=bool,102102=6,102109=1,102111=T001"
 perform_create sys 20080101 Meta 102100 int "102101=int,102102=5,102109=1,102111=T002"

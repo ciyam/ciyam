@@ -6,6 +6,8 @@ else
  if [ $# -gt 1 ]; then
   export CIYAM_STORAGE=$2
  fi
- rm -f $1.modules.lst $1.log $1.dat $1.idx $1.hdr >/dev/null
- ./cat_client -quiet -no_prompt < init.cin
+ rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
+ ./ciyam_server 12345 &
+ ./ciyam_client -quiet -no_prompt 12345 < init.cin
+ touch ciyam_server.stop
 fi
