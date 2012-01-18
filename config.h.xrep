@@ -20,7 +20,7 @@
 `{`!`(`?`$use_zlib`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_zlib`,`'false`'`)//`}#  define ZLIB_SUPPORT
 `{`!`(`?`$use_iconv`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)//`}#  define ICONV_SUPPORT
 
-const int c_default_ciyam_port = 11011;
+const int c_default_ciyam_port = `{`$port`};
 
 const char* const c_default_ciyam_host = "localhost";
 

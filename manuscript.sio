@@ -2,7 +2,7 @@
  <script/>
   <name>install_package
   <filename>*script*
-  <arguments>install_package.cin @name
+  <arguments>install_package.cin @storage @name
  </script>
  <script/>
   <name>checkmail

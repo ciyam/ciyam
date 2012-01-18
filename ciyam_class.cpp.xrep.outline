@@ -262,6 +262,7 @@
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)\
 `{`#meta_relationship_field.spec.xrep section=includes module_name=$module_name\
  arg_fclass=$specification_\0_fclass arg_gclass=$specification_\0_gclass`}
+### includes
 `}`]`}
 // [<start includes>]
 `{`(`?`$user_source`)`#$user_source section=includes`}
@@ -433,10 +434,7 @@ string get_enum_string_\0( \1 val )
  arg_pgtitle=$specification_\0_pgtitle arg_plchild=$specification_\0_plchild arg_plclass=$specification_\0_plclass\
  arg_plorder=$specification_\0_plorder arg_plpage=$specification_\0_plpage arg_vclass=$specification_\0_vclass\
  arg_vname=$specification_\0_vname arg_vvalue=$specification_\0_vvalue`}
-`,\
-`@eq`(`'\1`'`,`'for_user_account_invitation`'`)\
-`{`#for_user_account_invitation.spec.xrep section=anonymous module_name=$module_name\
- arg_uclass=$specification_\0_uclass arg_dfield=$specification_\0_dfield arg_idfield=$specification_\0_idfield`}
+### anonymous
 `}`]`}
 // [<start anonymous>]
 `{`(`?`$user_source`)`#$user_source section=anonymous`}
@@ -832,24 +830,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  class_name=$class_name module_name=$module_name arg_field=$specification_\\0_field\
  arg_pclass=$specification_\\0_pclass arg_efield=$specification_\\0_efield arg_pfield=$specification_\\0_pfield\
  arg_dn_fields=$specification_\\0_dn_fields arg_dn_values=$specification_\\0_dn_values`}\
-`,\
-`@eq`(`'\\1`'`,`'for_user_account_invitation`'`)`&`@eq`(`'\$`'`,`$specification_\\0_act_proc`)
-`{`#for_user_account_invitation.spec.xrep section=act_procedure module_name=$module_name class_name=$class_name\
- arg_ufield=$specification_\\0_ufield arg_afield=$specification_\\0_afield`}\
-`,\
-`@eq`(`'\\1`'`,`'for_user_account_invitation`'`)`&`@eq`(`'\$`'`,`$specification_\\0_send_proc`)
-`{`#for_user_account_invitation.spec.xrep section=send_procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
- arg_sfield=$specification_\\0_sfield arg_enum=$specification_\\0_enum arg_inactive=$specification_\\0_inactive\
- arg_needs_invitation=$specification_\\0_needs_invitation arg_sending_invitation=$specification_\\0_sending_invitation\
- arg_ufield=$specification_\\0_ufield arg_ofield=$specification_\\0_ofield arg_dfield=$specification_\\0_dfield\
- arg_actfield=$specification_\\0_actfield arg_mfield=$specification_\\0_mfield arg_efield=$specification_\\0_efield\
- arg_send_proc=$specification_\\0_send_proc`}\
-`,\
-`@eq`(`'\\1`'`,`'for_user_account_mark`'`)`&`@eq`(`'\$`'`,`$specification_\\0_mark_proc`)
-`{`#for_user_account_mark.spec.xrep section=mark_procedure module_name=$module_name class_name=$class_name\
- arg_actions=$specification_\\0_actions arg_lsfield=$specification_\\0_lsfield arg_mark_proc=$specification_\\0_mark_proc\
- arg_mfield=$specification_\\0_mfield arg_owner=$specification_\\0_owner arg_pfield=$specification_\\0_pfield\
- arg_rfield=$specification_\\0_rfield arg_ufield=$specification_\\0_ufield arg_umchild=$specification_\\0_umchild arg_umclass=$specification_\\0_umclass`}\
+### procedure
 `}`]`}
    // [<start \$_impl>]
 `{`(`?`$user_source`)`#$user_source section=\$_impl`}\
@@ -954,6 +935,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`#unactionable_field_value.spec.xrep section=get_state\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
  arg_value=$specification_\0_value arg_evalue=$specification_\0_evalue arg_not_eq=$specification_\0_not_eq`}\
+### get_state
 `}`]`}
 
    // [<start get_state>]
@@ -1071,10 +1053,7 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `@eq`(`'\1`'`,`'parent_auto_int_inc`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)
 `{`#parent_auto_int_inc.spec.xrep section=value_will_be_provided module_name=$module_name\
  arg_field=$specification_\0_field`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account`'`)
-`{`#for_user_account.spec.xrep section=value_will_be_provided class_name=$class_name\
- arg_ufield=$specification_\0_ufield arg_create_user=$specification_\0_create_user`}\
+### value_will_be_provided
 `}`]`}
 
    // [<start value_will_be_provided>]
@@ -1182,6 +1161,7 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `@eq`(`'\1`'`,`'modifier_field_required`'`)
 `{`#modifier_field_required.spec.xrep section=validate class_name=$class_name\
  arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier`}\
+### validate
 `}`]`}
 
    // [<start validate>]
@@ -1284,22 +1264,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_search_rep_from_child_vars.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_varchild=$specification_\0_varchild arg_varname=$specification_\0_varname\
  arg_varvalue=$specification_\0_varvalue arg_lb=$specification_\0_lb arg_rb=$specification_\0_rb`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account`'`)
-`{`#for_user_account.spec.xrep section=after_fetch class_name=$class_name\
- arg_owner=$specification_\0_owner arg_dfield=$specification_\0_dfield\
- arg_ufield=$specification_\0_ufield arg_display_name=$specification_\0_display_name`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account_invitation`'`)
-`{`#for_user_account_invitation.spec.xrep section=after_fetch class_name=$class_name\
- arg_sfield=$specification_\0_sfield arg_actfield=$specification_\0_actfield arg_send_procedure=$specification_\0_send_proc\
- arg_act_procedure=$specification_\0_act_proc arg_enum=$specification_\0_enum arg_needs_invitation=$specification_\0_needs_invitation`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account_mark`'`)
-`{`#for_user_account_mark.spec.xrep section=after_fetch module_name=$module_name class_name=$class_name\
- arg_actions=$specification_\0_actions arg_lsfield=$specification_\0_lsfield arg_mark_proc=$specification_\0_mark_proc\
- arg_mfield=$specification_\0_mfield arg_owner=$specification_\0_owner arg_pfield=$specification_\0_pfield\
- arg_rfield=$specification_\0_rfield arg_ufield=$specification_\0_ufield arg_umchild=$specification_\0_umchild arg_umclass=$specification_\0_umclass`}\
+### after_fetch
 `}`]`}
 
    // [<start after_fetch>]
@@ -1478,6 +1443,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#modifier_set_field.spec.xrep section=to_store class_name=$class_name\
  arg_modifier=$specification_\0_modifier arg_field=$specification_\0_field\
  arg_value=$specification_\0_value arg_evalue=$specification_\0_evalue`}\
+### to_store
 `}`]`}
 
    // [<start to_store>]
@@ -1600,22 +1566,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'update_parent`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
 `{`#update_parent.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
  arg_fkfield=$specification_\0_fkfield arg_spfield=$specification_\0_spfield arg_value=$specification_\0_value`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account`'`)
-`{`#for_user_account.spec.xrep section=for_store class_name=$class_name\
- arg_ufield=$specification_\0_ufield arg_create_user=$specification_\0_create_user\
- arg_user_template=$specification_\0_user_template arg_field_list=$specification_\0_field_list`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account_invitation`'`)
-`{`#for_user_account_invitation.spec.xrep section=for_store class_name=$class_name\
- arg_cfield=$specification_\0_cfield arg_sfield=$specification_\0_sfield arg_ufield=$specification_\0_ufield\
- arg_afield=$specification_\0_afield arg_enum=$specification_\0_enum arg_inactive=$specification_\0_inactive\
- arg_needs_invitation=$specification_\0_needs_invitation`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account_user`'`)
-`{`#for_user_account_user.spec.xrep section=for_store class_name=$class_name\
- arg_field=$specification_\0_field arg_child=$specification_\0_child arg_sfield=$specification_\0_sfield arg_active=$specification_\0_active\
- arg_active_label=$specification_\0_active_label arg_inactive=$specification_\0_inactive arg_inactive_label=$specification_\0_inactive_label`}\
+### for_store
 `}`]`}
 
    // [<start for_store>]
@@ -1697,16 +1648,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#update_parent_cascade.spec.xrep section=after_store module_name=$module_name full_class_name=$full_class_name\
  arg_pclass=$specification_\0_pclass arg_pfield=$specification_\0_pfield arg_fkfield=$specification_\0_fkfield\
  arg_tvalue=$specification_\0_tvalue arg_grand_parent=$specification_\0_grand_parent`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account`'`)
-`{`#for_user_account.spec.xrep section=after_store class_name=$class_name\
- arg_ufield=$specification_\0_ufield arg_user_account=$specification_\0_user_account`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account_mark`'`)
-`{`#for_user_account_mark.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
- arg_actions=$specification_\0_actions arg_lsfield=$specification_\0_lsfield arg_mark_proc=$specification_\0_mark_proc\
- arg_mfield=$specification_\0_mfield arg_owner=$specification_\0_owner arg_pfield=$specification_\0_pfield\
- arg_rfield=$specification_\0_rfield arg_ufield=$specification_\0_ufield arg_umchild=$specification_\0_umchild arg_umclass=$specification_\0_umclass`}\
+### after_store
 `}`]`}
 
    // [<start after_store>]
@@ -1754,6 +1696,7 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name\
  arg_nfield=$specification_\0_nfield arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield`}\
+### for_destroy
 `}`]`}
 
    // [<start for_destroy>]
@@ -1773,6 +1716,7 @@ void `{`$full_class_name`}::impl::after_destroy( bool is_internal )
 `{`#update_parent_cascade.spec.xrep section=after_destroy module_name=$module_name full_class_name=$full_class_name\
  arg_pclass=$specification_\0_pclass arg_pfield=$specification_\0_pfield arg_fkfield=$specification_\0_fkfield\
  arg_tvalue=$specification_\0_tvalue arg_grand_parent=$specification_\0_grand_parent`}\
+### after_destroy
 `}`]`}
 
    // [<start after_destroy>]
@@ -2569,10 +2513,7 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'transient_permission_concat`'`)
 `{`#transient_permission_concat.spec.xrep section=get_required_field_names\
  arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account`'`)
-`{`#for_user_account.spec.xrep section=get_required_field_names class_name=$class_name\
- arg_owner=$specification_\0_owner arg_ufield=$specification_\0_ufield arg_display_name=$specification_\0_display_name`}\
+### get_required_field_names
 `}`]`}
 
    // [<start get_required_field_names>]
@@ -2633,12 +2574,7 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `@eq`(`'\1`'`,`'update_parent_cascade`'`)
 `{`#update_parent_cascade.spec.xrep section=get_always_required_field_names\
  arg_pfield=$specification_\0_pfield`}\
-`,\
-`@eq`(`'\1`'`,`'for_user_account_mark`'`)
-`{`#for_user_account_mark.spec.xrep section=get_always_required_field_names module_name=$module_name class_name=$class_name\
- arg_actions=$specification_\0_actions arg_lsfield=$specification_\0_lsfield arg_mark_proc=$specification_\0_mark_proc\
- arg_mfield=$specification_\0_mfield arg_owner=$specification_\0_owner arg_pfield=$specification_\0_pfield\
- arg_rfield=$specification_\0_rfield arg_ufield=$specification_\0_ufield arg_umchild=$specification_\0_umchild arg_umclass=$specification_\0_umclass`}\
+### get_always_required_field_names
 `}`]`}
 
    // [<start get_always_required_field_names>]
@@ -2657,6 +2593,7 @@ void `{`$full_class_name`}::get_transient_replacement_field_names( const string&
 `{`?`$all_get_transient_replacement_field_names_specifications`[`$all_get_transient_replacement_field_names_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'dummy`'`)
 `{`#dummy.spec.xrep section=get_transient_replacement_field_names module_name=$module_name class_name=$class_name`}\
+### get_transient_replacement_field_names
 `}`]`}
 
    // [<start get_transient_replacement_field_names>]
@@ -2975,9 +2912,7 @@ void `{`$full_class_name`}::static_class_init( const char* p_module_name )
 `]`}`]`}`{`?`$all_static_class_init_specifications`[`$all_static_class_init_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'dummy`'`)
 `{`#dummy.spec.xrep section=static_class_init full_class_name=$full_class_name`}
-`,\
-`@eq`(`'\1`'`,`'for_user_account_invitation`'`)
-`{`#for_user_account_invitation.spec.xrep section=static_class_init full_class_name=$full_class_name`}
+### static_class_init
 `}`]`}
    // [<start static_class_init>]
 `{`(`?`$user_source`)`#$user_source section=static_class_init`}
@@ -2998,6 +2933,7 @@ void `{`$full_class_name`}::static_class_term( const char* p_module_name )
 `{`?`$all_static_class_term_specifications`[`$all_static_class_term_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'dummy`'`)
 `{`#dummy.spec.xrep section=static_class_term full_class_name=$full_class_name`}
+### static_class_term
 `}`]`}
    // [<start static_class_term>]
 `{`(`?`$user_source`)`#$user_source section=static_class_term`}

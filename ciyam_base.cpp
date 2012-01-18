@@ -3496,9 +3496,10 @@ int exec_system( const string& cmd, bool async )
 
    // NOTE: For security against potentially malicious module code only permit system calls
    // from the autoscript session, via "run_script", or from either the "Meta" or "default"
-   // storages.
+   // (or "ciyam") storages.
    if( gtp_session && !gtp_session->running_script
     && gtp_session->p_storage_handler->get_name( ) != "Meta"
+    && gtp_session->p_storage_handler->get_name( ) != "ciyam"
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
       throw runtime_error( "invalid exec_system: " + cmd );
 

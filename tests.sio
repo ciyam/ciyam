@@ -569,13 +569,13 @@
      <description>Test version, license and encrypt server operations.
      <test_step/>
       <name>init
-      <exec>*ciyam_server 12345
+      <exec>*ciyam_server
       <input>false
       <output>none
      </test_step>
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet 12345
+      <exec>ciyam_client -echo -quiet
       <input>true
       <output>generate
      </test_step>
@@ -585,13 +585,13 @@
      <description>Test the loading the Meta model, viewing various artifacts and basic object operations.
      <test_step/>
       <name>a
-      <exec>ciyam_client -echo -quiet 12345
+      <exec>ciyam_client -echo -quiet
       <input>true
       <output>generate
      </test_step>
      <test_step/>
       <name>b
-      <exec>ciyam_client -echo -quiet 12345
+      <exec>ciyam_client -echo -quiet
       <input>true
       <output>generate
      </test_step>

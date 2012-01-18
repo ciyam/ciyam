@@ -53,15 +53,22 @@ xvars
 compile.sh
 compile.bat
 
-# Ignore makefile generation temp files.
+# Ignore makefile generation files.
 makefile.sio
 makefile.vars.xrep
 
-# Ignore ciyam test storage files.
+# Ignore all installed package files.
+*.info
+*.keys.lst
+*.specs.sio
+*.package.sio
+
+# Ignore ciyam test storage and related.
 ciyam.dat
 ciyam.hdr
 ciyam.idx
 ciyam.sql
+packages.lst
 
 # Ignore customised environment init file.
 ciyam_init_cmd.bat
