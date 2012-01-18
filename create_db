@@ -1,0 +1,30 @@
+if [ $# -lt 1 ]; then
+ echo Usage: create_db [[-rebuild]] [db name] [[password]]
+else
+ if [ "$1" = "-rebuild" ]; then
+  export db_name=$2
+  export rebuild=true
+  export password=$3
+ else
+  export db_name=$1
+  export rebuild=false
+  export password=$2
+ fi
+
+ echo DROP DATABASE IF EXISTS $db_name\;>~create_db
+ echo CREATE DATABASE $db_name\;>>~create_db
+# NOTE: UTF-8 is not being used here due to index length issues with MySQL versions.
+#echo CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_bin\;>>~create_db
+
+ if [ "$rebuild" = "true" ]; then
+  echo GRANT USAGE ON \*.\* TO \'$db_name\'@\'localhost\'\;>>~create_db
+  echo DROP USER \'$db_name\'@\'localhost\'\;>>~create_db
+ fi
+
+ echo CREATE USER \'$db_name\'@\'localhost\'\;>>~create_db
+ echo GRANT ALL PRIVILEGES ON $db_name.\* TO \'$db_name\'@\'localhost\'\;>>~create_db
+ echo quit>>~create_db
+
+ mysql -uroot -p$password<~create_db
+ rm ~create_db
+fi
