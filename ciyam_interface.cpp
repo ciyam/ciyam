@@ -916,10 +916,16 @@ void request_handler::process_request( )
                         throw runtime_error( error );
                      }
 
-                     // FUTURE: The greeting should contain protocol version information so that
-                     // this client can determine if it is compatible with the application server.
-                     if( greeting != string( c_response_okay ) )
+                     version_info ver_info;
+                     if( get_version_info( greeting, ver_info ) != string( c_response_okay ) )
                         throw runtime_error( greeting );
+
+                     // FUTURE: Some sort of "upgrade available" message should probably be displayed
+                     // if the client is using an older minor protocol version than the app server.
+                     bool is_older;
+                     if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version, &is_older ) )
+                        throw runtime_error( "incompatible protocol version "
+                         + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
 
                      string license_info;
                      if( !simple_command( *p_session_info, "license", &license_info ) )

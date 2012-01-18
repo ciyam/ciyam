@@ -3190,10 +3190,7 @@ void ciyam_session::on_start( )
 
       cmd_handler.set_sess_id( init_session( cmd_handler ) );
 
-      // FUTURE: Currently an "okay" response is being sent as a greeting to the client.
-      // The greeting message should instead contain protocol version information so the
-      // client can therefore determine if it is compatible with the application server.
-      ap_socket->write_line( string( c_response_okay ) );
+      ap_socket->write_line( string( c_protocol_version ) + '\n' + string( c_response_okay ) );
 
       socket_command_processor processor( *ap_socket, cmd_handler );
       processor.process_commands( );

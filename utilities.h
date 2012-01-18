@@ -593,6 +593,18 @@ inline std::string raw_join( const std::vector< std::string >& c ) { return join
 
 std::string join( const std::vector< std::string >& c, const std::string& sep );
 
+struct version_info
+{
+   int major;
+   int minor;
+
+   std::string ver;
+};
+
+std::string get_version_info( const std::string& s, version_info& ver_info );
+
+bool check_version_info( const version_info& ver_info, int major_version, int minor_version, bool* p_old = 0 );
+
 size_t setup_arguments( const char* p_input,
  std::vector< std::string >& arguments, char esc = c_esc, const char* p_specials = c_special_characters );
 

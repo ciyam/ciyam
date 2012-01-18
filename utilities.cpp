@@ -952,6 +952,52 @@ string join( const vector< string >& c, const string& sep )
    return s;   
 }
 
+string get_version_info( const string& s, version_info& ver_info )
+{
+   string rs;
+   string str( s );
+
+   string::size_type pos = str.find( '\n' );
+   if( pos != string::npos )
+   {
+      rs = str.substr( pos + 1 );
+      str.erase( pos );
+   }
+
+   ver_info.ver = str;
+
+   ver_info.major = 0;
+   ver_info.minor = 0;
+
+   pos = str.find( '.' );
+   if( pos != string::npos )
+      ver_info.minor = atoi( str.substr( pos + 1 ).c_str( ) );
+
+   ver_info.major = atoi( str.substr( 0, pos ).c_str( ) );
+
+   return rs;
+}
+
+bool check_version_info( const version_info& ver_info, int major_version, int minor_version, bool* p_old )
+{
+   bool okay = true;
+
+   if( p_old )
+      *p_old = false;
+
+   if( major_version != ver_info.major )
+      okay = false;
+   else if( minor_version > ver_info.minor )
+      okay = false;
+   else if( minor_version < ver_info.minor )
+   {
+      if( p_old )
+         *p_old = true;
+   }
+
+   return okay;
+}
+
 size_t setup_arguments( const char* p_input, vector< string >& arguments, char esc, const char* p_specials )
 {
    arguments.clear( );
