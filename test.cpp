@@ -94,7 +94,7 @@ size_t num_test_steps_attempted = 0;
 size_t num_test_steps_succeeded = 0;
 size_t num_test_steps_mismatched = 0;
 
-error_stop_point error_stop( e_error_stop_point_none );
+error_stop_point error_stop( e_error_stop_point_step );
 
 vector< group > groups;
 typedef vector< group >::size_type group_size_type;
