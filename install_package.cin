@@ -1,0 +1,4 @@
+.storage_init %1
+#Installing Package Type %2
+.perform_package_import admin @now Meta %2.specs.sio
+.quit

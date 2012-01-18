@@ -1,0 +1,14 @@
+Model:*
+Workgroup:*
+View_Type:*
+View_Field_Type:*
+List_Type:*
+List_Field_Type:*
+Specification_Type:*
+Type:Internal=0
+Field:Source_Field=
+Class:Source_Class=;alias
+Modifier:Source_Modifier=
+Procedure:Source_Procedure=
+Relationship:Source_Relationship=
+Modifier_Affect:Source_Modifier_Affect=

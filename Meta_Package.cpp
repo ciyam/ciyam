@@ -947,9 +947,9 @@ void Meta_Package::impl::impl_Install( )
             throw runtime_error( "unable to open '" + script_filename + "' for output" );
 #ifdef _WIN32
          outs << "@echo off\n";
-         outs << "cat_client -quiet -no_prompt < ";
+         outs << "ciyam_client -quiet -no_prompt < ";
 #else
-         outs << "./cat_client -quiet -no_prompt < ";
+         outs << "./ciyam_client -quiet -no_prompt < ";
 #endif
          outs << commands_filename << " >>" << install_log << "\n";
          outs << "echo Finished Install..." << ">>" << install_log << "\n"; // FUTURE: Should be a module string...
@@ -963,7 +963,7 @@ void Meta_Package::impl::impl_Install( )
          if( !outc )
             throw runtime_error( "unable to open '" + commands_filename + "' for output" );
 
-         outc << ".storage_init " << get_obj( ).module_name( ) << "\n";
+         outc << ".storage_init " << storage_name( ) << "\n";
          outc << ".session_variable @package " << temp_name << "\n";
 
          outc << "perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
@@ -1167,9 +1167,9 @@ void Meta_Package::impl::impl_Remove( )
                throw runtime_error( "unable to open '" + script_filename + "' for output" );
 #ifdef _WIN32
             outs << "@echo off\n";
-            outs << "cat_client -quiet -no_prompt < ";
+            outs << "ciyam_client -quiet -no_prompt < ";
 #else
-            outs << "./cat_client -quiet -no_prompt < ";
+            outs << "./ciyam_client -quiet -no_prompt < ";
 #endif
             outs << commands_filename << " >>" << install_log << "\n";
 #ifdef _WIN32

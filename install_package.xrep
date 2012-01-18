@@ -1,0 +1,2 @@
+`{`$new_packages`=`@sort`(`$packages`+`$name`)`}
+`{`[`$new_packages`,\$`+\n`]`}

@@ -1041,8 +1041,13 @@ string get_app_file( const string& module_name )
 
 string class_base::get_attached_file_path( const string& file_name )
 {
-   string path( storage_web_root( true ) );
-   path += "/" + string( c_files_directory ) + "/" + string( module_id( ) ) + "/" + string( class_id( ) );
+   string path( get_session_variable( "@attached_file_path" ) );
+
+   if( path.empty( ) )
+   {
+      path = storage_web_root( true );
+      path += "/" + string( c_files_directory ) + "/" + string( module_id( ) ) + "/" + string( class_id( ) );
+   }   
 
    if( !file_name.empty( ) )
       path += "/" + file_name;

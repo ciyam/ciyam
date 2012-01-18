@@ -1386,7 +1386,7 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
 
-      outss1 << "storage_init " << get_obj( ).module_name( ) << "\n";
+      outss1 << "storage_init " << storage_name( ) << "\n";
       outss1 << "perform_execute sys 20080101 " << get_obj( ).module_id( )
        << " " << get_obj( ).class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_Modules ) << "\n";
@@ -1459,7 +1459,7 @@ void Meta_Application::impl::impl_Generate( )
          }
       }
 
-      outss2 << "storage_init " << get_obj( ).module_name( ) << "\n";
+      outss2 << "storage_init " << storage_name( ) << "\n";
       outss2 << "perform_update sys 20080101 " << get_obj( ).module_id( )
        << " " << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Updating Links...\"\n";
@@ -1478,7 +1478,7 @@ void Meta_Application::impl::impl_Generate( )
 #endif
       }
 
-      outss3 << "storage_init " << get_obj( ).module_name( ) << "\n";
+      outss3 << "storage_init " << storage_name( ) << "\n";
       outss3 << "perform_update sys 20080101 " << get_obj( ).module_id( )
        << " " << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Performing Make...\"\n";
@@ -1522,7 +1522,7 @@ void Meta_Application::impl::impl_Generate( )
 #endif
       }
 
-      outss4 << "storage_init " << get_obj( ).module_name( )<< "\n";
+      outss4 << "storage_init " << storage_name( ) << "\n";
 
       outss4 << "perform_execute sys 20080101 " << get_obj( ).module_id( )
        << " " << get_obj( ).class_id( ) << " " << get_obj( ).get_key( )
@@ -1579,7 +1579,7 @@ void Meta_Application::impl::impl_Generate( )
 #endif
       }
 
-      outssx << "storage_init " << get_obj( ).module_name( ) << "\n";
+      outssx << "storage_init " << storage_name( ) << "\n";
       outssx << "perform_update sys 20080101 " << get_obj( ).module_id( )
        << " " << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Actions ) << "=127410,"

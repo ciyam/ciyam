@@ -450,12 +450,16 @@ void Meta_Package_Type::impl::impl_Install( )
    {
       package_file = get_obj( ).get_attached_file_path( get_obj( ).File( ) );
 
-      string cmd( "unzip -o " );
+#ifdef _WIN32
+      string cmd( "unbundle -o " );
+#else
+      string cmd( "./unbundle -o " );
+#endif
       cmd += package_file;
 
       exec_system( cmd, false );
       if( !exists_file( info_filename ) )
-         throw runtime_error( "Missing package information file (corrupt or incorrect zip file?)." );
+         throw runtime_error( "Missing package information file (corrupt or incorrect bundle?)." );
    }
 
    vector< string > lines;
