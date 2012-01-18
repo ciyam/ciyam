@@ -39,6 +39,7 @@
 #ifdef _WIN32
 #  define _WIN32_WINNT 0x0500 // Needed for the CreateHardLink API function.
 #  define NOMINMAX
+#  define _WINSOCKAPI_
 #  include <windows.h>
 #  include <tchar.h>
 #  include <direct.h>
@@ -4150,6 +4151,9 @@ int main( int argc, char* argv[ ] )
       get_log( ) << "unexpected exception caught" << endl;
       rc = 2;
    }
+
+   if( file_exists( c_kill_script ) )
+      file_remove( c_kill_script );
 
    return rc;
 }

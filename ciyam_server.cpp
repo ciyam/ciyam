@@ -30,6 +30,7 @@
 #        define STRICT // Needed for "windows.h" by various Borland headers.
 #     endif
 #     define NOMINMAX
+#     define _WINSOCKAPI_
 #     include <windows.h>
 #  else
 #     include <pthread.h>

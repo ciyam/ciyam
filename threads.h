@@ -23,6 +23,7 @@
 #     include <pthread.h>
 #  else
 #     define NOMINMAX
+#     define _WINSOCKAPI_
 #     include <windows.h>
 #  endif
 

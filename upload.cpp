@@ -374,34 +374,40 @@ int main( int /*argc*/, char* argv[ ] )
    if( !g_exe_path.empty( ) )
       _chdir( g_exe_path.c_str( ) );
 
-   pid_handler( ).start( );
+   // NOTE: Scope for pid handler temporary object.
+   {
+      pid_handler( ).start( );
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-   FCGX_Init( );
+      FCGX_Init( );
 
-   // KLUDGE: For some unknown reason when this FCGI interface is started automatically by Apache
-   // (under Windows) it can crash, however, with the delay here this problem seems to be avoided.
-   msleep( 500 );
+      // KLUDGE: For some unknown reason when this FCGI interface is started automatically by Apache
+      // (under Windows) it can crash, however, with the delay here this problem seems to be avoided.
+      msleep( 500 );
 
-   // FUTURE: Currently Apache's "mod_fcgid" only supports single threaded FCGI servers and under
-   // Windows it is simply unable to get back a request that has been handled by any thread other
-   // than the main one. Thus rather than force single threaded compilation a check is being made
-   // to see if "mod_fastcgi" is in use before starting any other request handling threads.
+      // FUTURE: Currently Apache's "mod_fcgid" only supports single threaded FCGI servers and under
+      // Windows it is simply unable to get back a request that has been handled by any thread other
+      // than the main one. Thus rather than force single threaded compilation a check is being made
+      // to see if "mod_fastcgi" is in use before starting any other request handling threads.
 #  ifdef USE_MOD_FASTCGI_KLUDGE
-   if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
+      if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
 #  endif
-   {
-      // Start all but one as separate threads - the main thread runs the final handler.
-      for( size_t i = 1; i < c_num_handlers; i++ )
       {
-         request_handler* p_request_handler = new request_handler;
-         p_request_handler->start( );
+         // Start all but one as separate threads - the main thread runs the final handler.
+         for( size_t i = 1; i < c_num_handlers; i++ )
+         {
+            request_handler* p_request_handler = new request_handler;
+            p_request_handler->start( );
+         }
       }
-   }
 #endif
 
-   request_handler* p_request_handler = new request_handler;
-   p_request_handler->on_start( );
+      request_handler* p_request_handler = new request_handler;
+      p_request_handler->on_start( );
+   }   
+
+   if( file_exists( c_kill_script ) )
+      file_remove( c_kill_script );
 
    return 0;
 }

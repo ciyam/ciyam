@@ -19,7 +19,7 @@
 #     include <string>
 #     ifdef _WIN32
 #        define NOMINMAX
-#        include <winsock.h>
+#        include <winsock2.h>
 #     else
 #        include <sys/socket.h>
 #        include <arpa/inet.h>
@@ -52,6 +52,8 @@ class ip_address : public sockaddr_in
    ip_address( int port = 0 );
    ip_address( const char* p_address, int port = 0 );
    ip_address& operator =( const char* p_address );
+
+   std::string get_addr_string( ) const;
 
    protected:
    void resolve( const char* p_address, int port = 0 );

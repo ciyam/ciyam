@@ -30,7 +30,7 @@
 #  include "sqlite3.h"
 #else
 #  ifdef _WIN32
-#     include <winsock.h> // NOTE: Required to get around a MySQL include issue...
+#     include <winsock2.h> // NOTE: Required to get around a MySQL include issue...
 #     include <mysql.h>
 #  else
 #     include <mysql/mysql.h>
