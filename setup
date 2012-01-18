@@ -1,0 +1,49 @@
+if [ $# -lt 2 ]; then
+ echo Usage: setup [app name] [app dir] [[web dir]]
+else
+ if [ $# -gt 2 ]; then
+  export WEBDIR=$3
+ fi
+ if [ "$WEBDIR" = "" ]; then
+  echo Error: Missing environment variable 'WEBDIR'.
+ else
+  [ -d $WEBDIR/$2 ] ||
+  {
+   echo Creating $WEBDIR/$2...
+   mkdir $WEBDIR/$2
+   chmod a+rwx $WEBDIR/$2
+  }
+  [ -d $WEBDIR/$2/images ] ||
+  {
+   mkdir $WEBDIR/$2/images
+   unzip -q images -d $WEBDIR/$2/images
+  }
+  [ -d $WEBDIR/$2/popups ] ||
+  {
+   mkdir $WEBDIR/$2/popups
+   unzip -q popups -d $WEBDIR/$2/popups
+  }
+  [ -d $WEBDIR/$2/scripts ] ||
+  {
+   mkdir $WEBDIR/$2/scripts
+   unzip -q scripts -d $WEBDIR/$2/scripts
+  }
+  [ -f $WEBDIR/$2/requirements.html ] ||
+  {
+   ../xrep @requirements.html.xrep application=$1>$WEBDIR/$2/requirements.html
+  }
+  [ -f $WEBDIR/$2/fcgi.sio ] ||
+  {
+   cp fcgi.sio $WEBDIR/$2
+  }
+  [ -f $WEBDIR/$2/upload.fcgi ] ||
+  {
+   cp upload $WEBDIR/$2/upload.fcgi
+  }
+  [ -f $WEBDIR/$2/ciyam_interface.fcgi ] ||
+  {
+   cp ciyam_interface $WEBDIR/$2/ciyam_interface.fcgi
+  }
+  cat setup_files | xargs -I % cp % $WEBDIR/$2
+ fi
+fi
