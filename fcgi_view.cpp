@@ -1893,7 +1893,7 @@ bool output_view_form( ostream& os, const string& act,
                      }
                      else
                         os << "<a href=\"" << tmp_link_path
-                         << "\" target=\"_blank\"><img src=\"" << file_name
+                         << "\" target=\"_blank\"><img src=\"" << tmp_link_path
                          << "\" width=\"" << image_width << "\" height=\"" << image_height
                          << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\"></a>";
                   }

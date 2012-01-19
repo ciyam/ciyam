@@ -439,7 +439,7 @@ void perform_test_step( const test_step& s, const string& test_name )
    if( is_async )
    {
 #ifdef _WIN32
-      command = "start " + command;
+      command = "start /min " + command;
 #else
       command += " &";
 #endif

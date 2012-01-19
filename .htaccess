@@ -1,0 +1,10 @@
+<Files ~ "\.(htms|sio|bat|sh)$">
+ order allow,deny
+ deny from all
+</Files>
+
+<Files licence.txt>
+ order allow,deny
+ deny from all
+</Files>
+

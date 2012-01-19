@@ -17,6 +17,10 @@ echo Creating %install_path%...
 mkdir "%install_path%"
 
 :skip_dir
+if exist "%install_path%\.htaccess" goto skip_access
+copy .htaccess "%install_path%" >nul
+
+:skip_access
 if exist "%install_path%\images" goto skip_images
 mkdir "%install_path%\images"
 unzip -q images -d "%install_path%\images"
