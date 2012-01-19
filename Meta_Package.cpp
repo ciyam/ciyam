@@ -985,14 +985,19 @@ void Meta_Package::impl::impl_Install( )
       string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
       set_system_variable( model_key, "Installing package '" + get_obj( ).Name( ) + "'..." ); // FUTURE: Should be a module string...
 
+      bool async = true;
+      if( get_obj( ).get_variable( "@async" ) == "0" || get_obj( ).get_variable( "@async" ) == "false" )
+         async = false;
+
 #ifdef _WIN32
       // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
       // killing this session until the asychronous operations have been completed.
-      capture_session( session_id( ) );
-      exec_system( "run_temp " + script_filename, true );
+      if( async )
+         capture_session( session_id( ) );
+      exec_system( "run_temp " + script_filename, async );
 #else
       chmod( script_filename.c_str( ), 0777 );
-      exec_system( "./run_temp " + script_filename, true );
+      exec_system( "./run_temp " + script_filename, async );
 #endif
    }
    // [<finish Install_impl>]
