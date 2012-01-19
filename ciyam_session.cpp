@@ -2034,6 +2034,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   instance_set_variable( handle, "", i->first, i->second );
             }
 
+            string client_message = instance_get_variable( handle, "", "@message" );
+            if( !client_message.empty( ) )
+               handler.output_progress( client_message );
+
             vector< string > all_keys;
             vector< string > all_vers;
 
