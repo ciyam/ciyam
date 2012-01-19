@@ -1,0 +1,9 @@
+if [ $# -lt 1 ]; then
+ echo Usage: script [script args file] [[script name]]
+else
+ if [ $# -gt 1 ]; then
+  echo $(date) [$2] >>script.log
+ fi
+ ./ciyam__client -echo -quiet -no_prompt < $1 >>script.log
+ rm $1
+fi

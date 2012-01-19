@@ -1,0 +1,6 @@
+if [ $# -ne 1 ]; then
+ echo Usage: run_temp [temp script]
+else
+ ./$1
+ rm $1
+fi
