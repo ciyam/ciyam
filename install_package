@@ -1,0 +1,13 @@
+if [ $# -ne 1 ]; then
+ echo Usage: install_package [name]
+else
+ [ -f packages.lst ] ||
+ {
+  touch packages.lst
+ }
+ ./xrep @install_package.xrep name=$1 packages=@packages.lst >packages.lst.new
+ if [ $? -eq 0 ]; then
+  ./update packages.lst packages.lst.new
+  ./construct @packages.lst ciyam_class.cpp.xrep
+ fi
+fi

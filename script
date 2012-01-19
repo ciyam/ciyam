@@ -4,6 +4,6 @@ else
  if [ $# -gt 1 ]; then
   echo $(date) [$2] >>script.log
  fi
- ./ciyam__client -echo -quiet -no_prompt < $1 >>script.log
+ ./ciyam_client -echo -quiet -no_prompt < $1 >>script.log
  rm $1
 fi
