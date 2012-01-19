@@ -268,9 +268,13 @@ int main( int argc, char* argv[ ] )
       {
          ip_address address( cmd_handler.get_host( ), cmd_handler.get_port( ) );
 
+         bool is_default = false;
+         if( string( cmd_handler.get_host( ) ) == c_default_ciyam_host )
+            is_default = true;
+
          // NOTE: If the server was started asynchronously in a script immediately prior
          // to the client then wait a quarter of a second and then try again to be sure.
-         if( socket.connect( address ) || ( msleep( 250 ), socket.connect( address ) ) )
+         if( socket.connect( address ) || ( is_default && ( msleep( 250 ), socket.connect( address ) ) ) )
          {
 #ifdef USE_NO_DELAY
             if( !socket.set_no_delay( ) )
