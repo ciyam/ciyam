@@ -1011,7 +1011,16 @@ void setup_directories( )
          string name( *si );
 
          if( _chdir( name.c_str( ) ) == 0 )
+         {
+            if( !file_exists( ".htaccess" ) )
+            {
+               ofstream htaf( ".htaccess", ios::out | ios::binary );
+               htaf << "<Files *>\n";
+               htaf << " deny from all\n";
+               htaf << "</Files>\n";
+            }
             _chdir( ".." );
+         }
          else
          {
 #ifdef _WIN32
@@ -1022,6 +1031,11 @@ void setup_directories( )
 
             if( _chdir( name.c_str( ) ) != 0 )
                throw runtime_error( "unable to _chdir to '" + name + "'" );
+
+            ofstream htaf( ".htaccess", ios::out | ios::binary );
+            htaf << "<Files *>\n";
+            htaf << " deny from all\n";
+            htaf << "</Files>\n";
 
             ofstream outf( "_NOTE_.TXT" );
             outf << "NOTE: The files in this directory are tied to a DB and therefore should not be manually added or removed.";
