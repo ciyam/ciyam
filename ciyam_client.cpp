@@ -267,7 +267,10 @@ int main( int argc, char* argv[ ] )
       if( socket.open( ) )
       {
          ip_address address( cmd_handler.get_host( ), cmd_handler.get_port( ) );
-         if( socket.connect( address ) )
+
+         // NOTE: If the server was started asynchronously in a script immediately prior
+         // to the client then wait a quarter of a second and then try again to be sure.
+         if( socket.connect( address ) || ( msleep( 250 ), socket.connect( address ) ) )
          {
 #ifdef USE_NO_DELAY
             if( !socket.set_no_delay( ) )
