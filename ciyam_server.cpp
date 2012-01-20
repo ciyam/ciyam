@@ -536,6 +536,9 @@ int main( int argc, char* argv[ ] )
             bool reported_shutdown = false;
             while( s && ( !g_server_shutdown || g_active_sessions ) )
             {
+               if( !g_server_shutdown && file_exists( c_shutdown_signal_file ) )
+                  ++g_server_shutdown;
+
                if( g_server_shutdown && !reported_shutdown )
                {
                   reported_shutdown = true;
@@ -550,9 +553,6 @@ int main( int argc, char* argv[ ] )
                   ciyam_session* p_session = new ciyam_session( ap_socket );
                   p_session->start( );
                }
-
-               if( file_exists( c_shutdown_signal_file ) )
-                  g_server_shutdown = true;
             }
 
             s.close( );
