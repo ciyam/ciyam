@@ -261,6 +261,9 @@ struct session
 
    stack< ods::transaction* > transactions;
 
+   set< size_t > release_sessions;
+   map< size_t, date_time > condemned_sessions;
+
    module_commands_registry_container commands_registry;
    object_instance_registry_container instance_registry;
 };
@@ -3706,6 +3709,13 @@ void term_session( )
       {
          if( gtp_session == g_sessions[ i ] )
          {
+            set< size_t >::iterator j;
+            for( j= gtp_session->release_sessions.begin( ); j != gtp_session->release_sessions.end( ); ++j )
+               release_session( *j, false );
+
+            g_condemned_sessions.insert(
+             gtp_session->condemned_sessions.begin( ), gtp_session->condemned_sessions.end( ) );
+
             delete g_sessions[ i ];
             g_sessions[ i ] = 0;
             gtp_session = 0;
@@ -3804,14 +3814,32 @@ void set_last_session_cmd( const string& cmd )
    }
 }
 
-void condemn_session( size_t sess_id, int num_seconds )
+void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term )
 {
    guard g( g_mutex );
 
-   g_condemned_sessions.insert( make_pair( sess_id, date_time::local( ) + ( seconds )num_seconds ) );
+   // NOTE: This function is not designed to be used to self terminate.
+   if( gtp_session && sess_id == gtp_session->id )
+      return;
+
+   date_time dtm( date_time::local( ) + ( seconds )num_seconds );
+
+   for( size_t i = 0; i < g_max_sessions; i++ )
+   {
+      if( g_sessions[ i ] && g_sessions[ i ]->id == sess_id )
+      {
+         if( force_uncapture )
+            g_sessions[ i ]->is_captured = false;
+
+         if( !wait_until_term )
+            g_condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+         else
+            gtp_session->condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+      }
+   }
 }
 
-void condemn_all_other_sessions( int num_seconds )
+void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term )
 {
    guard g( g_mutex );
 
@@ -3824,7 +3852,15 @@ void condemn_all_other_sessions( int num_seconds )
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ] && g_sessions[ i ]->id != sess_id )
-         g_condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+      {
+         if( force_uncapture )
+            g_sessions[ i ]->is_captured = false;
+
+         if( !wait_until_term )
+            g_condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+         else
+            gtp_session->condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
+      }
    }
 }
 
@@ -3873,7 +3909,7 @@ bool is_captured_session( )
    return gtp_session && gtp_session->is_captured;
 }
 
-void release_session( size_t sess_id )
+void release_session( size_t sess_id, bool wait_until_term )
 {
    guard g( g_mutex );
 
@@ -3881,13 +3917,17 @@ void release_session( size_t sess_id )
    {
       if( g_sessions[ i ] && g_sessions[ i ]->id == sess_id )
       {
-         g_sessions[ i ]->is_captured = false;
+         if( !wait_until_term )
+            g_sessions[ i ]->is_captured = false;
+         else
+            gtp_session->release_sessions.insert( sess_id );
+
          break;
       }
    }
 }
 
-void release_all_other_sessions( )
+void release_all_other_sessions( bool wait_until_term )
 {
    guard g( g_mutex );
 
@@ -3898,7 +3938,12 @@ void release_all_other_sessions( )
    for( size_t i = 0; i < g_max_sessions; i++ )
    {
       if( g_sessions[ i ] && g_sessions[ i ]->id != sess_id )
-         g_sessions[ i ]->is_captured = false;
+      {
+         if( !wait_until_term )
+            g_sessions[ i ]->is_captured = false;
+         else
+            gtp_session->release_sessions.insert( sess_id );
+      }
    }
 }
 

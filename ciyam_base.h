@@ -140,15 +140,17 @@ command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
 
 void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
 
-void CIYAM_BASE_DECL_SPEC condemn_session( size_t sess_id, int num_seconds );
-void CIYAM_BASE_DECL_SPEC condemn_all_other_sessions( int num_seconds );
+void CIYAM_BASE_DECL_SPEC condemn_session(
+ size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );
+
+void CIYAM_BASE_DECL_SPEC condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term );
 bool CIYAM_BASE_DECL_SPEC is_condemned_session( );
 
 void CIYAM_BASE_DECL_SPEC capture_session( size_t sess_id );
 void CIYAM_BASE_DECL_SPEC capture_all_other_sessions( );
 bool CIYAM_BASE_DECL_SPEC is_captured_session( );
-void CIYAM_BASE_DECL_SPEC release_session( size_t sess_id );
-void CIYAM_BASE_DECL_SPEC release_all_other_sessions( );
+void CIYAM_BASE_DECL_SPEC release_session( size_t sess_id, bool wait_until_term );
+void CIYAM_BASE_DECL_SPEC release_all_other_sessions( bool wait_until_term );
 
 bool CIYAM_BASE_DECL_SPEC session_skip_fk_fetches( );
 void CIYAM_BASE_DECL_SPEC session_skip_fk_fetches( bool skip_fk_fetches );

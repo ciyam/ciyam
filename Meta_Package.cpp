@@ -972,9 +972,7 @@ void Meta_Package::impl::impl_Install( )
          outc << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
           << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136430\n";
 
-#ifdef _WIN32
-         outc << ".session_lock -release " << session_id( ) << "\n"; // see NOTE below...
-#endif
+         outc << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
          outc << ".quit\n";
       }
 
