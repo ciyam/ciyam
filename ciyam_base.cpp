@@ -3818,7 +3818,7 @@ void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, boo
 {
    guard g( g_mutex );
 
-   // NOTE: This function is not designed to be used to self terminate.
+   // NOTE: This function is not designed to be used to self terminate (use condemn_this_session).
    if( gtp_session && sess_id == gtp_session->id )
       return;
 
@@ -3837,6 +3837,14 @@ void condemn_session( size_t sess_id, int num_seconds, bool force_uncapture, boo
             gtp_session->condemned_sessions.insert( make_pair( g_sessions[ i ]->id, dtm ) );
       }
    }
+}
+
+void condemn_this_session( )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+      g_condemned_sessions.insert( make_pair( gtp_session->id, date_time::local( ) ) );
 }
 
 void condemn_all_other_sessions( int num_seconds, bool force_uncapture, bool wait_until_term )

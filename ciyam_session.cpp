@@ -3057,7 +3057,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          if( !is_captured_session( ) )
             handler.set_finished( );
-         socket.close( );
+         else if( !is_condemned_session( ) )
+            condemn_this_session( );
+
          return;
       }
    }
@@ -3202,6 +3204,8 @@ void ciyam_session::on_start( )
 
       socket_command_processor processor( *ap_socket, cmd_handler );
       processor.process_commands( );
+
+      ap_socket->close( );
 
       term_storage( cmd_handler );
       module_unload_all( cmd_handler );
