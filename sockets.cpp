@@ -210,7 +210,7 @@ bool tcp_socket::connect( const ip_address& addr, size_t timeout )
 
 bool tcp_socket::listen( )
 {
-   return ::listen( socket, 5 ) != SOCKET_ERROR;
+   return ::listen( socket, SOMAXCONN ) != SOCKET_ERROR;
 }
 
 SOCKET tcp_socket::accept( ip_address& addr, size_t timeout ) const
