@@ -978,6 +978,7 @@ void Meta_Package::impl::impl_Install( )
 
          if( async )
             outc << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
+
          outc << ".quit\n";
       }
 
