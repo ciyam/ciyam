@@ -1126,9 +1126,9 @@ void request_handler::process_request( )
 #endif
 
                   string user_password( user_data[ 1 ] );
-                  // NOTE: Password fields that are <= 25 characters are assumed to have not been
+                  // NOTE: Password fields that are < 20 characters are assumed to have not been
                   // either hashed or encrypted.
-                  if( user_password.length( ) <= 25 )
+                  if( user_password.length( ) < 20 )
                   {
                      p_session_info->clear_password = user_password;
                      user_password = lower( sha1( g_id + user_password ).get_digest_as_string( ) );
@@ -2216,8 +2216,8 @@ void request_handler::process_request( )
                      if( view.field_ids[ i ] == c_key_field )
                         continue;
 
-                     // NOTE: Password fields that are <= 25 characters are assumed to not have been encrypted.
-                     if( item_values[ field_num ].length( ) > 25
+                     // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
+                     if( item_values[ field_num ].length( ) >= 20
                       && ( view.password_fields.count( view.field_ids[ i ] )
                       || view.epassword_fields.count( view.field_ids[ i ] )
                       || view.hpassword_fields.count( view.field_ids[ i ] ) ) )

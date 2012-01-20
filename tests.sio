@@ -568,7 +568,7 @@
      <name>1
      <description>Test version, license and encrypt server operations.
      <test_step/>
-      <name>init
+      <name>*init*
       <exec>*ciyam_server
       <input>false
       <output>none
@@ -582,7 +582,7 @@
     </test>
     <test/>
      <name>2
-     <description>Test the loading the Meta model, viewing various artifacts and basic object operations.
+     <description>Test loading the Meta model, viewing various artifacts and performing basic object operations.
      <test_step/>
       <name>a
       <exec>ciyam_client -echo -quiet

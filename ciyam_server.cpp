@@ -87,7 +87,7 @@ size_t g_active_sessions;
 volatile sig_atomic_t g_server_shutdown;
 
 #ifdef _WIN32
-LPSTR lpServiceName = "Cat Server";
+LPSTR lpServiceName = "CIYAM Server";
 
 VOID WINAPI ServiceMain( DWORD argc, LPTSTR* argv )
 {
@@ -205,6 +205,8 @@ const char* const c_cmd_parm_chdir_directory = "directory";
 const char* const c_cmd_trace = "trace";
 const char* const c_cmd_parm_trace_flags = "flags";
 
+const char* const c_cmd_quiet = "quiet";
+
 const char* const c_cmd_no_auto = "no_auto";
 
 #ifdef USE_MAC_LICENSE
@@ -217,6 +219,7 @@ const char* const c_cmd_svcrem = "svcrem";
 const char* const c_cmd_svcrun = "svcrun";
 #endif
 
+bool g_is_quiet = false;
 bool g_had_exiting_command = false;
 
 #ifdef __GNUG__
@@ -292,10 +295,6 @@ class ciyam_server_startup_functor : public command_functor
 
          _chdir( directory.c_str( ) );
       }
-      else if( command == c_cmd_no_auto )
-      {
-         start_autoscript = false;
-      }
       else if( command == c_cmd_trace )
       {
          string flags( get_parm_val( parameters, c_cmd_parm_trace_flags ) );
@@ -306,21 +305,17 @@ class ciyam_server_startup_functor : public command_functor
 
          set_trace_flags( trace_flags );
       }
+      else if( command == c_cmd_quiet )
+         g_is_quiet = true;
+      else if( command == c_cmd_no_auto )
+      {
+         start_autoscript = false;
+      }
 #ifdef USE_MAC_LICENSE
       else if( command == c_cmd_register )
       {
          g_had_exiting_command = true;
-
-         string mac_addr( get_mac_addr( ) );
-
-         sha1 hash( get_license_salt( ) + mac_addr );
-         vector< string > sha1_quads;
-         split( hash.get_digest_as_string( ',' ), sha1_quads );
-
-         if( sha1_quads.size( ) != 5 )
-            throw runtime_error( "unexpected hash result" );
-
-         cout << "Registration Key: " << upper( sha1_quads[ 2 ] ) << endl;
+         cout << "Registration Key: " << get_checksum( get_mac_addr( ) ) << endl;
       }
 #endif
 #ifdef _WIN32
@@ -361,7 +356,8 @@ class ciyam_server_startup_functor : public command_functor
             if( scHandle )
             {
                DeleteService( scHandle );
-               cout << "'" << lpServiceName << "' service has now been removed" << endl;
+               if( !g_is_quiet )
+                  cout << "'" << lpServiceName << "' service has now been removed" << endl;
             }
             else
                cerr << "error: unable to remove service (not present?)" << endl;
@@ -403,27 +399,30 @@ int main( int argc, char* argv[ ] )
          cmd_handler.add_command( c_cmd_trace, 0,
           "<val//flags>", "set server trace flags", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_no_auto, 0,
+         cmd_handler.add_command( c_cmd_quiet, 1,
+          "", "switch on quiet operating mode", new ciyam_server_startup_functor( cmd_handler ) );
+
+         cmd_handler.add_command( c_cmd_no_auto, 1,
           "", "switch off autoscript support", new ciyam_server_startup_functor( cmd_handler ) );
 
 #ifdef _WIN32
-         cmd_handler.add_command( c_cmd_svcins, 1,
+         cmd_handler.add_command( c_cmd_svcins, 2,
           "", "install Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_svcrem, 1,
+         cmd_handler.add_command( c_cmd_svcrem, 2,
           "", "remove Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 
-         cmd_handler.add_command( c_cmd_svcrun, 1,
+         cmd_handler.add_command( c_cmd_svcrun, 2,
           "", "start as Win32 service", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
 #ifdef __GNUG__
-         cmd_handler.add_command( c_cmd_daemon, 1,
+         cmd_handler.add_command( c_cmd_daemon, 2,
           "", "run server as a daemon", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
 
 #ifdef USE_MAC_LICENSE
-         cmd_handler.add_command( c_cmd_register, 2,
+         cmd_handler.add_command( c_cmd_register, 3,
           "", "get registration key", new ciyam_server_startup_functor( cmd_handler ) );
 #endif
          processor.process_commands( );
@@ -476,16 +475,7 @@ int main( int argc, char* argv[ ] )
 
 #ifdef USE_MAC_LICENSE
       // NOTE: Make sure that server has the correct license key.
-      string mac_addr( get_mac_addr( ) );
-
-      sha1 hash( get_license_salt( ) + mac_addr );
-      vector< string > sha1_quads;
-      split( hash.get_digest_as_string( ',' ), sha1_quads );
-
-      if( sha1_quads.size( ) != 5 )
-         throw runtime_error( "unexpected hash result" );
-
-      string license_hash( sha1_quads[ 2 ] );
+      string license_hash( get_checksum( get_mac_addr( ) ) );
 
       bool is_licensed = false;
       for( int i = 0; i < 100; i++ )
@@ -522,7 +512,7 @@ int main( int argc, char* argv[ ] )
       ip_address address( g_port );
       if( okay )
       {
-         if( !s.set_reuse_addr( ) )
+         if( !g_is_quiet && !s.set_reuse_addr( ) )
             cout << "warning: set_reuse_addr failed..." << endl;
 
          okay = s.bind( address );
@@ -530,7 +520,8 @@ int main( int argc, char* argv[ ] )
          {
             s.listen( );
 
-            cout << "server now listening on port " << g_port << "..." << endl;
+            if( !g_is_quiet )
+               cout << "server now listening on port " << g_port << "..." << endl;
             TRACE_LOG( TRACE_ANYTHING,
              "server started on port " + to_string( g_port ) + " (pid = " + to_string( get_pid( ) ) + ")" );
 
@@ -546,7 +537,8 @@ int main( int argc, char* argv[ ] )
                if( g_server_shutdown && !reported_shutdown )
                {
                   reported_shutdown = true;
-                  cout << "server shutdown (due to interrupt) now underway..." << endl;
+                  if( !g_is_quiet )
+                     cout << "server shutdown (due to interrupt) now underway..." << endl;
                }
 
                // NOTE: Check for accepts (timeout after 250ms if none occur) and create sessions.
@@ -563,7 +555,8 @@ int main( int argc, char* argv[ ] )
 
             file_remove( c_shutdown_signal_file );
 
-            cout << "server shutdown (due to interrupt) now completed..." << endl;
+            if( !g_is_quiet )
+               cout << "server shutdown (due to interrupt) now completed..." << endl;
             TRACE_LOG( TRACE_ANYTHING, "server shutdown (due to interrupt)" );
          }
          else

@@ -1015,6 +1015,10 @@ void replace_mail_merge_token( string& html_content, const string& token, const 
    // [(start for_email)]
    if( !is_internal )
    {
+      if( get_obj( ).`{`$arg_subject`}( ).empty( ) )
+         // FUTURE: This should be a module string.
+         get_obj( ).`{`$arg_subject`}( "(no subject)" );
+
       if( is_create && !get_dtm( ).empty( ) )
          get_obj( ).`{`$arg_when`}( date_time( get_dtm( ) ) );
 
@@ -1046,10 +1050,10 @@ void replace_mail_merge_token( string& html_content, const string& token, const 
             get_obj( ).`{`$arg_to`}( "" );
             get_obj( ).`{`$arg_cc`}( "" );
             get_obj( ).`{`$arg_bcc`}( "" );
-         }
 
-         if( get_obj( ).`{`$arg_is_html_message`}( ) )
-            get_obj( ).`{`$arg_html_message`}( get_obj( ).`{`$arg_html_injected`}( ) );
+            if( get_obj( ).`{`$arg_is_html_message`}( ) )
+               get_obj( ).`{`$arg_html_message`}( get_obj( ).`{`$arg_html_injected`}( ) );
+         }
       }
 
       if( is_create && get_obj( ).`{`$arg_type`}( ) != c_enum_`{`$arg_type_enum`}_`{`$arg_normal`} )
@@ -1411,7 +1415,9 @@ void replace_mail_merge_token( string& html_content, const string& token, const 
    }
 
    if( get_obj( ).`{`$arg_is_html_message`}( )
-    && get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`} && get_obj( ).get_variable( "email_folder_bulk" ).empty( ) )
+    && ( get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_draft`}
+    || get_obj( ).`{`$arg_status`}( ) == c_enum_`{`$arg_status_enum`}_`{`$arg_status_failed`} )
+    && get_obj( ).get_variable( "email_folder_bulk" ).empty( ) )
    {
       string html_file( to_string( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".html" ) ) );
 
