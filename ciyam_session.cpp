@@ -913,7 +913,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    tcp_socket& socket( socket_handler.get_socket( ) );
 
-   if( !socket_handler.is_restoring( ) && !socket.set_delay( ) )
+   if( command != c_cmd_ciyam_session_quit && !socket_handler.is_restoring( ) && !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
    srand( time( 0 ) );
@@ -3118,9 +3118,10 @@ string socket_command_processor::get_cmd_and_args( )
    {
       if( socket.read_line( request, c_request_timeout ) <= 0 )
       {
-         if( g_server_shutdown || is_condemned_session( ) || ( !is_captured_session( ) && !socket.had_timeout( ) ) )
+         if( is_condemned_session( )
+          || ( !is_captured_session( ) && ( g_server_shutdown || !socket.had_timeout( ) ) ) )
          {
-            // NOTE: If the server is being shutdown or this session has been condemned
+            // NOTE: If the session has been condemned or if the server is being shutdown
             // or its socket has died (whilst not captured) then force a "quit" to occur.
             request = "quit";
             break;

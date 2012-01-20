@@ -989,11 +989,14 @@ void Meta_Package::impl::impl_Install( )
       if( get_obj( ).get_variable( "@async" ) == "0" || get_obj( ).get_variable( "@async" ) == "false" )
          async = false;
 
-#ifdef _WIN32
-      // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
-      // killing this session until the asychronous operations have been completed.
+      // NOTE: If the thread that has spawned the child process is terminated (due
+      // to client deciding to finish its session) then this can potentially cause
+      // big troubles due to resource inheritance so the session is captured prior
+      // to the async request and will be released at the end of the script.
       if( async )
          capture_session( session_id( ) );
+
+#ifdef _WIN32
       exec_system( "run_temp " + script_filename, async );
 #else
       chmod( script_filename.c_str( ), 0777 );

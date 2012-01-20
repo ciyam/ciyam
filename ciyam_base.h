@@ -69,8 +69,6 @@ void CIYAM_BASE_DECL_SPEC log_trace_message( int flag, const std::string& messag
 void CIYAM_BASE_DECL_SPEC init_globals( );
 void CIYAM_BASE_DECL_SPEC term_globals( );
 
-std::string CIYAM_BASE_DECL_SPEC get_license_salt( );
-
 std::string CIYAM_BASE_DECL_SPEC get_string( const std::string& key );
 
 std::string CIYAM_BASE_DECL_SPEC get_string_message(

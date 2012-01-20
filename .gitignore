@@ -62,6 +62,12 @@ makefile.vars.xrep
 *.keys.lst
 *.specs.sio
 *.package.sio
+for_*.spec.xrep
+*.ciyam_class.cpp.xrep
+
+# Except specs with matching file names.
+!for_clone.spec.xrep
+!for_cms_gen.spec.xrep
 
 # Ignore ciyam test storage and related.
 ciyam.dat

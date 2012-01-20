@@ -2699,8 +2699,8 @@ void send_email_message( const user_account& account,
 
    string password( account.password );
 
-   // NOTE: If password length > 25 then assume it has been encrypted.
-   if( password.length( ) > 25 )
+   // NOTE: If password length > 20 then assume it has been encrypted.
+   if( password.length( ) > 20 )
        password = decrypt_password( password );
 
    smtp_user_info user_info( account.sender,
@@ -2883,8 +2883,8 @@ void fetch_email_messages( const user_account& account,
 
    string password( account.password );
 
-   // NOTE: If password length > 25 then assume it has been encrypted.
-   if( password.length( ) > 25 )
+   // NOTE: If password length > 20 then assume it has been encrypted.
+   if( password.length( ) > 20 )
        password = decrypt_password( password );
 
    if( !get_mbox_path( ).empty( ) && ( pos == string::npos

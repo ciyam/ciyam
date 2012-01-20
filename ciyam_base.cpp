@@ -70,11 +70,6 @@ namespace
 
 const string c_nul_key( 1, '\0' );
 
-// FUTURE: As this "salt" should be different for every development site it would make sense for it
-// to be placed into its own header file that is not part of the distributed source but instead can
-// be automatically generated during installation or via make.
-const char* const c_license_salt = "a6HIs7NN";
-
 const char c_module_prefix_separator = '_';
 
 const int c_identity_burn = 100;
@@ -3077,11 +3072,6 @@ void fetch_instance_from_row_cache( class_base& instance )
    instance_accessor.perform_after_fetch( );
 }
 
-}
-
-string get_license_salt( )
-{
-   return c_license_salt;
 }
 
 size_t g_trace_flags;

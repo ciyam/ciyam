@@ -7,7 +7,7 @@ else
   export CIYAM_STORAGE=$2
  fi
  rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
- ./ciyam_server &
+ ./ciyam_server -quiet &
  ./ciyam_client -quiet -no_prompt < init.cin
  touch ciyam_server.stop
 fi
