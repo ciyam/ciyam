@@ -307,10 +307,9 @@ int main( int argc, char* argv[ ] )
             if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version ) )
             {
                socket.close( );
-
                throw runtime_error( "incompatible protocol version "
                 + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
-            }    
+            }
 
             console_command_processor processor( cmd_handler );
             processor.process_commands( );
