@@ -2237,6 +2237,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_session_kill )
       {
+         bool force( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_kill_force ) );
+         bool at_term( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_kill_at_term ) );
          bool kill_all( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_kill_all ) );
          string sess_ids( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_kill_sess_ids ) );
          string seconds( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_kill_seconds ) );
@@ -2246,20 +2248,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             num_seconds = atoi( seconds.c_str( ) );
 
          if( kill_all )
-            condemn_all_other_sessions( num_seconds );
+            condemn_all_other_sessions( num_seconds, force, at_term );
          else if( !sess_ids.empty( ) )
          {
             vector< string > session_ids;
             split( sess_ids, session_ids );
 
             for( size_t i = 0; i < session_ids.size( ); i++ )
-               condemn_session( atoi( session_ids[ i ].c_str( ) ), num_seconds );
+               condemn_session( atoi( session_ids[ i ].c_str( ) ), num_seconds, force, at_term );
          }
       }
       else if( command == c_cmd_ciyam_session_session_lock )
       {
          bool lock_capture( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_lock_capture ) );
          bool lock_release( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_lock_release ) );
+         bool at_term( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_lock_at_term ) );
          bool lock_all( has_parm_val( parameters, c_cmd_parm_ciyam_session_session_lock_all ) );
          string sess_ids( get_parm_val( parameters, c_cmd_parm_ciyam_session_session_lock_sess_ids ) );
 
@@ -2268,7 +2271,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             if( lock_capture )
                capture_all_other_sessions( );
             else
-               release_all_other_sessions( );
+               release_all_other_sessions( at_term );
          }
          else if( !sess_ids.empty( ) )
          {
@@ -2280,7 +2283,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( lock_capture )
                   capture_session( atoi( session_ids[ i ].c_str( ) ) );
                else
-                  release_session( atoi( session_ids[ i ].c_str( ) ) );
+                  release_session( atoi( session_ids[ i ].c_str( ) ), at_term );
             }
          }
       }
@@ -3118,11 +3121,11 @@ string socket_command_processor::get_cmd_and_args( )
    {
       if( socket.read_line( request, c_request_timeout ) <= 0 )
       {
-         if( is_condemned_session( )
-          || ( !is_captured_session( ) && ( g_server_shutdown || !socket.had_timeout( ) ) ) )
+         if( !is_captured_session( )
+          && ( is_condemned_session( ) || g_server_shutdown || !socket.had_timeout( ) ) )
          {
-            // NOTE: If the session has been condemned or if the server is being shutdown
-            // or its socket has died (whilst not captured) then force a "quit" to occur.
+            // NOTE: If the session is not captured and it has either been condemned or
+            // the server is shutting down, or its socket has died then force a "quit".
             request = "quit";
             break;
          }

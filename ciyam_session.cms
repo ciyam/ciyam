@@ -33,8 +33,8 @@ perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//mo
 perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
 perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
 session_list "list active sessions" [<opt/-min/minimal>]
-session_kill "kill one or more sessions" {<opt/*/all>|<list//sess_ids>}[<val//seconds>]
-session_lock "capture/release one or more sessions" {<opt/-capture/capture>|<opt/-release/release>}<opt/*/all>|<list//sess_ids>
+session_kill "kill one or more sessions" [<opt/-force/force>][<opt/-at_term/at_term>]{<opt/*/all>|<list//sess_ids>}[<val//seconds>]
+session_lock "capture/release one or more sessions" {<opt/-capture/capture>|{<opt/-release/release>[<opt/-at_term/at_term>]}}<opt/*/all>|<list//sess_ids>
 session_timeout "get/set server session timeout" [<val//seconds>]
 session_variable "get/set a session variable" <val//var_name>[<oval//new_value>]
 storage_info "name and other information about the currently linked storage"
