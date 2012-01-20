@@ -553,6 +553,7 @@ int main( int argc, char* argv[ ] )
                   g_server_shutdown = true;
             }
 
+            s.close( );
             file_remove( c_shutdown_signal_file );
 
             if( !g_is_quiet )
@@ -561,11 +562,11 @@ int main( int argc, char* argv[ ] )
          }
          else
          {
-            cerr << "error: unexpected socket error" << endl;
-            TRACE_LOG( TRACE_ANYTHING, "error: unexpected socket error" );
-
             rc = 1;
             s.close( );
+
+            cerr << "error: unexpected socket error" << endl;
+            TRACE_LOG( TRACE_ANYTHING, "error: unexpected socket error" );
          }
       }
 
@@ -573,17 +574,17 @@ int main( int argc, char* argv[ ] )
    }
    catch( exception& x )
    {
+      rc = 2;
+
       cerr << "error: " << x.what( ) << endl;
       TRACE_LOG( TRACE_ANYTHING, "error: " + string( x.what( ) ) );
-
-      rc = 2;
    }
    catch( ... )
    {
+      rc = 3;
+
       cerr << "error: unexpected unknown exception caught" << endl;
       TRACE_LOG( TRACE_ANYTHING, "error: unexpected unknown exception caught" );
-
-      rc = 3;
    }
 
    return rc;

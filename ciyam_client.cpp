@@ -272,9 +272,13 @@ int main( int argc, char* argv[ ] )
          if( string( cmd_handler.get_host( ) ) == c_default_ciyam_host )
             is_default = true;
 
+#ifdef _WIN32
+         if( socket.connect( address ) )
+#else
          // NOTE: If the server was started asynchronously in a script immediately prior
-         // to the client then wait a quarter of a second and then try again to be sure.
-         if( socket.connect( address ) || ( is_default && ( msleep( 250 ), socket.connect( address ) ) ) )
+         // to the client then wait for half a second and then try again just to be sure.
+         if( socket.connect( address ) || ( is_default && ( msleep( 500 ), socket.connect( address ) ) ) )
+#endif
          {
 #ifdef USE_NO_DELAY
             if( !socket.set_no_delay( ) )
