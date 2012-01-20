@@ -525,6 +525,8 @@ int main( int argc, char* argv[ ] )
             TRACE_LOG( TRACE_ANYTHING,
              "server started on port " + to_string( g_port ) + " (pid = " + to_string( get_pid( ) ) + ")" );
 
+            file_remove( c_shutdown_signal_file );
+
             if( start_autoscript )
             {
                autoscript_session* p_autoscript_session = new autoscript_session;
