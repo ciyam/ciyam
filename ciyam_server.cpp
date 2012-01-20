@@ -512,7 +512,7 @@ int main( int argc, char* argv[ ] )
       ip_address address( g_port );
       if( okay )
       {
-         if( !g_is_quiet && !s.set_reuse_addr( ) )
+         if( !s.set_reuse_addr( ) && !g_is_quiet )
             cout << "warning: set_reuse_addr failed..." << endl;
 
          okay = s.bind( address );
