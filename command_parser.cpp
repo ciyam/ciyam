@@ -572,6 +572,7 @@ void command_parser::impl::do_parse_syntax( node* p_node, const char*& p_input )
    if( end_of_input )
       cout << "==> end_of_input" << endl;
 #endif
+
    if( !had_invalid && had_begin && had_finish && !p_node->expression.empty( ) )
    {
       if( !p_node->is_alt || ( p_node->is_alt && ( p_node->p_prev_node || p_node->p_next_node ) ) )
@@ -613,6 +614,10 @@ void command_parser::impl::do_parse_syntax( node* p_node, const char*& p_input )
        || *p_input == c_opt_branch_begin || *p_input == c_alternative_separator )
          add_right_link = true;
    }
+
+   if( !had_invalid && !had_begin && !end_of_input && p_node->p_match_node && !p_node->p_next_node
+    && ( *p_input == c_token_begin || *p_input == c_opt_branch_begin || *p_input == c_alternative_separator ) )
+      add_right_link = true;
 
    if( !end_of_input || ( opt_node_stack.empty( ) && match_node_stack.empty( ) ) )
    {
