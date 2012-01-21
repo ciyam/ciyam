@@ -3099,6 +3099,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "fld_vals" ); // TRACE_FLD_VALS
    flag_names.push_back( "lock_ops" ); // TRACE_LOCK_OPS
    flag_names.push_back( "ctr_dtrs" ); // TRACE_CTR_DTRS
+   flag_names.push_back( "sessions" ); // TRACE_SESSIONS
 }
 
 void log_trace_message( int flag, const string& message )
@@ -3144,6 +3145,10 @@ void log_trace_message( int flag, const string& message )
 
       case TRACE_CTR_DTRS:
       type = "ctr_dtr";
+      break;
+
+      case TRACE_SESSIONS:
+      type = "session";
       break;
 
       case TRACE_ANYTHING:

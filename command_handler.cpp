@@ -169,6 +169,8 @@ void command_handler::execute_command( const string& cmd_and_args )
          else
             handle_invalid_command( *ci->second.p_parser, s );
       }
+
+      postprocess_command_and_args( s );
    }
 }
 

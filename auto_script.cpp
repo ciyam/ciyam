@@ -325,6 +325,8 @@ void autoscript_session::on_start( )
       if( !script_reconfig )
          changed = true;
 
+      TRACE_LOG( TRACE_SESSIONS, "started autoscript session" );
+
       while( true )
       {
          msleep( 1000 );
@@ -428,6 +430,8 @@ void autoscript_session::on_start( )
 
          g_script_schedule.insert( new_schedule_items.begin( ), new_schedule_items.end( ) );
       }
+
+      TRACE_LOG( TRACE_SESSIONS, "finished autoscript session" );
    }
    catch( exception& x )
    {

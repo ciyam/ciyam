@@ -112,7 +112,7 @@ inline void issue_warning( const string& message )
 #ifdef DEBUG
    cout << "session warning: " << message << endl;
 #else
-   TRACE_LOG( TRACE_ANYTHING, string( "session warning: " ) + message );
+   TRACE_LOG( TRACE_SESSIONS, string( "session warning: " ) + message );
 #endif
 }
 
@@ -803,6 +803,8 @@ class socket_command_handler : public command_handler
    private:
    string preprocess_command_and_args( const string& cmd_and_args );
 
+   void postprocess_command_and_args( const string& cmd_and_args );
+
    void handle_unknown_command( const string& command )
    {
       socket.write_line( string( c_response_error_prefix ) + "unknown command '" + command + "'" );
@@ -865,6 +867,12 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
       next_command = str;
 
    return str;
+}
+
+void socket_command_handler::postprocess_command_and_args( const string& cmd_and_args )
+{
+   if( cmd_and_args == "quit" )
+      TRACE_LOG( TRACE_SESSIONS, "finished session" );
 }
 
 void socket_command_handler::handle_command_response( const string& response, bool is_special )
@@ -3100,13 +3108,16 @@ class socket_command_processor : public command_processor
    socket_command_processor( tcp_socket& socket, command_handler& handler )
     : command_processor( handler ),
     socket( socket ),
-    handler( handler )
+    handler( handler ),
+    is_first_command( true )
    {
    }
 
    private:
    tcp_socket& socket;
    command_handler& handler;
+
+   bool is_first_command;
 
    bool is_still_processing( ) { return is_captured_session( ) || socket.okay( ); }
 
@@ -3118,6 +3129,12 @@ class socket_command_processor : public command_processor
 string socket_command_processor::get_cmd_and_args( )
 {
    string request;
+
+   if( is_first_command )
+   {
+      is_first_command = false;
+      TRACE_LOG( TRACE_SESSIONS, "started session" );
+   }
 
    while( true )
    {

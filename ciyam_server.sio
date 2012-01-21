@@ -2,7 +2,7 @@
 # <license>11F38888
  <timezone>GMT
  <web_root>/webroot
- <set_trace>100
+ <set_trace>1000
 # <use_https>true
 # <pem_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
 # <sql_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
