@@ -871,7 +871,7 @@ string socket_command_handler::preprocess_command_and_args( const string& cmd_an
 
 void socket_command_handler::postprocess_command_and_args( const string& cmd_and_args )
 {
-   if( cmd_and_args == "quit" )
+   if( has_finished( ) )
       TRACE_LOG( TRACE_SESSIONS, "finished session" );
 }
 
