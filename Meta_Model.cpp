@@ -1347,7 +1347,7 @@ void Meta_Model::impl::impl_Generate( )
          outf << "\x60'\x60}\n";
       }
 
-      outm << "\x60{\x60$" << get_obj( ).Name( ) << "_dylk\x60=\x60'cat_base";
+      outm << "\x60{\x60$" << get_obj( ).Name( ) << "_dylk\x60=\x60'ciyam_base";
       for( set< string >::iterator i = external_modules.begin( ); i != external_modules.end( ); ++i )
          outm << " " << *i;
       outm << "\x60'\x60}\n";
