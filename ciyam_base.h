@@ -48,6 +48,7 @@ class command_handler;
 #  define TRACE_FLD_VALS   0x0020
 #  define TRACE_LOCK_OPS   0x0040
 #  define TRACE_CTR_DTRS   0x0080
+#  define TRACE_SESSIONS   0x0100
 #  define TRACE_ANYTHING   0xffff
 
 #  define IF_IS_TRACING( flags )\
