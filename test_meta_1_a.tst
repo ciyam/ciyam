@@ -26,4 +26,38 @@ Reference,M001C100F102
 Message,M001C100F103
 Actions,M001C100F104
 
+> perform_fetch Meta Enum "" Name,Id -min
+Day_Type,E100
+Customary_Event,E101
+Month,E102
+Day_Of_Month,E103
+Day_Number,E104
+Day_Set,E105
+Date_Cycle,E106
+Day_Of_Week,E107
+Occurrence,E108
+Orientation,E109
+primitive,E000
+primitive,E000
+
+> perform_fetch Meta Type "" Name,Id -min
+time,T100
+bytes,T101
+str010,T102
+str030,T103
+str100,T104
+year,T105
+duration,T106
+0..100,T107
+datetime,T108
+date,T109
+bool,T001
+foreign_key,T003
+bool,T001
+foreign_key,T003
+int,T002
+string,T000
+int,T002
+string,T000
+
 > 
