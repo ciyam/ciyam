@@ -2595,6 +2595,13 @@ void read_server_configuration( )
       g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
 
       g_web_root = reader.read_attribute( c_attribute_web_root );
+      if( !g_web_root.empty( ) )
+      {
+         if( g_web_root[ 0 ] == '$' )
+            g_web_root = string( getenv( g_web_root.substr( 1 ).c_str( ) ) );
+         else if( g_web_root[ 0 ] == '%' && g_web_root.size( ) > 2 && g_web_root[ g_web_root.size( ) - 1 ] == '%' )
+            g_web_root = string( getenv( g_web_root.substr( 1, g_web_root.size( ) - 2 ).c_str( ) ) );
+      }
 
       g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );
       if( !g_set_trace.empty( ) )
@@ -3509,6 +3516,8 @@ int exec_system( const string& cmd, bool async )
       s += " &";
 #endif
    }
+
+   TRACE_LOG( TRACE_SESSIONS, s );
 
    return system( s.c_str( ) );
 }
