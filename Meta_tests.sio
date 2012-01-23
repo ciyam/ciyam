@@ -1,0 +1,31 @@
+<sio/>
+ <groups/>
+  <group/>
+   <name>test_meta
+   <tests/>
+    <test/>
+     <name>1
+     <description>Test version, license and encrypt server operations.
+     <test_step/>
+      <name>*init*
+      <exec>*ciyam_server -quiet
+      <input>false
+      <output>none
+     </test_step>
+     <test_step/>
+      <name>a
+      <exec>ciyam_client -echo -quiet
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>$touch ciyam_server.stop
+      <input>false
+      <output>none
+     </test_step>
+    </test>
+   </tests>
+  </group>
+ </groups>
+</sio>
