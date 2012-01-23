@@ -569,7 +569,7 @@
      <description>Test version, license and encrypt server operations.
      <test_step/>
       <name>*init*
-      <exec>*ciyam_server
+      <exec>*ciyam_server -quiet
       <input>false
       <output>none
      </test_step>
