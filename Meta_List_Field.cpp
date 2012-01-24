@@ -640,6 +640,7 @@ string get_enum_string_list_field_label_class( int val )
 
 const int c_enum_list_field_label_source_field( 0 );
 const int c_enum_list_field_label_source_list( 1 );
+const int c_enum_list_field_label_source_omit_label( 2 );
 
 string get_enum_string_list_field_label_source( int val )
 {
@@ -651,6 +652,8 @@ string get_enum_string_list_field_label_source( int val )
       string_name = "enum_list_field_label_source_field";
    else if( to_string( val ) == to_string( "1" ) )
       string_name = "enum_list_field_label_source_list";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_list_field_label_source_omit_label";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_label_source" );
 
@@ -7108,6 +7111,7 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
 
    pairs.push_back( make_pair( "enum_list_field_label_source_0", get_enum_string_list_field_label_source( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_label_source_1", get_enum_string_list_field_label_source( 1 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_label_source_2", get_enum_string_list_field_label_source( 2 ) ) );
 
    pairs.push_back( make_pair( "enum_list_field_link_restrict_0", get_enum_string_list_field_link_restrict( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_link_restrict_1", get_enum_string_list_field_link_restrict( 1 ) ) );
@@ -7217,6 +7221,7 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_label_class_enum.insert( 1 );
    g_list_field_label_source_enum.insert( 0 );
    g_list_field_label_source_enum.insert( 1 );
+   g_list_field_label_source_enum.insert( 2 );
    g_list_field_link_restrict_enum.insert( 0 );
    g_list_field_link_restrict_enum.insert( 1 );
    g_list_field_link_restrict_enum.insert( 2 );

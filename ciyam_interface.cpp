@@ -1721,6 +1721,7 @@ void request_handler::process_request( )
          string pdf_view_file_name;
          string pdf_list_file_name;
 
+         map< string, int > child_names;
          vector< list_source > child_lists;
          map< string, row_error_container > child_row_errors;
 
@@ -2629,6 +2630,9 @@ void request_handler::process_request( )
                   if( !had_send_or_recv_error && !is_new_record && act != c_act_edit && cmd != c_cmd_pview )
                   {
                      int num = 0;
+                     map< string, list_info_const_iterator > children;
+
+                     // NOTE: First determine the order of child tabs according to name.
                      for( lici = mod_info.list_info.begin( ); lici != mod_info.list_info.end( ); ++lici )
                      {
                         if( lici->second->pclass == view.cid
@@ -2638,62 +2642,70 @@ void request_handler::process_request( )
                          || lici->second->type == c_list_type_child_owner
                          || lici->second->type == c_list_type_child_admin_owner ) )
                         {
-                           list_source child_list;
-                           child_list.id = c_list_prefix + to_string( child_lists.size( ) );
-
-                           child_list.module_id = module_id;
-                           child_list.module_ref = module_ref;
-
-                           child_list.lici = lici;
-
-                           setup_list_fields( child_list, data, module_name, *p_session_info );
-
-                           string class_view_id;
-                           bool class_does_not_match = false;
-
-                           // NOTE: For derived classes a child list intended to display instances of
-                           // a base class may use a parent self relationship to the derived class so
-                           // the correct view needs to be determined by checking the class id's.
-                           view_info_const_iterator vici;
-                           for( vici = mod_info.view_info.begin( ); vici != mod_info.view_info.end( ); ++vici )
-                           {
-                              if( ( vici->second )->cid == ( lici->second )->cid )
-                                 class_view_id = ( vici->second )->id;
-
-                              if( ( vici->second )->id == ( lici->second )->view
-                               && ( vici->second )->cid != ( lici->second )->cid )
-                                 class_does_not_match = true;
-                           }
-
-                           if( !class_view_id.empty( ) && class_does_not_match )
-                              child_list.view = class_view_id;
-
-                           if( listarg == child_list.id )
-                              child_list.row_errors = child_row_errors[ listarg ];
-
-                           string child_list_info( c_list_prefix + to_string( child_lists.size( ) ) + c_info_suffix );
-                           if( input_data.count( child_list_info ) )
-                              child_list_info = input_data[ child_list_info ];
-                           else
-                              child_list_info.erase( );
-
-                           string child_list_sort( c_list_prefix + to_string( child_lists.size( ) ) + c_sort_suffix );
-                           if( input_data.count( child_list_sort ) )
-                              child_list_sort = input_data[ child_list_sort ];
-                           else
-                              child_list_sort.erase( );
-
-                           // NOTE: Only fetch data from the application server for the active child tab.
-                           if( ++num == vtabc_num )
-                           {
-                              if( !populate_list_info( child_list, list_selections,
-                               list_search_text, list_search_values, child_list_info, child_list_sort, data,
-                               ( cmd == c_cmd_pview ), view.cid, child_list.new_pfield, 0, *p_session_info ) )
-                                 had_send_or_recv_error = true;
-                           }
-
-                           child_lists.push_back( child_list );
+                           children.insert( make_pair( mod_info.get_string( lici->second->name ), lici ) );
                         }
+                     }
+
+                     for( map< string, list_info_const_iterator >::iterator i = children.begin( ); i != children.end( ); ++i )
+                     {
+                        list_info_const_iterator lici = i->second;
+
+                        list_source child_list;
+                        child_list.id = c_list_prefix + to_string( child_lists.size( ) );
+
+                        child_list.module_id = module_id;
+                        child_list.module_ref = module_ref;
+
+                        child_list.lici = lici;
+
+                        setup_list_fields( child_list, data, module_name, *p_session_info );
+
+                        string class_view_id;
+                        bool class_does_not_match = false;
+
+                        // NOTE: For derived classes a child list intended to display instances of
+                        // a base class may use a parent self relationship to the derived class so
+                        // the correct view needs to be determined by checking the class id's.
+                        view_info_const_iterator vici;
+                        for( vici = mod_info.view_info.begin( ); vici != mod_info.view_info.end( ); ++vici )
+                        {
+                           if( ( vici->second )->cid == ( lici->second )->cid )
+                              class_view_id = ( vici->second )->id;
+
+                           if( ( vici->second )->id == ( lici->second )->view
+                            && ( vici->second )->cid != ( lici->second )->cid )
+                              class_does_not_match = true;
+                        }
+
+                        if( !class_view_id.empty( ) && class_does_not_match )
+                           child_list.view = class_view_id;
+
+                        if( listarg == child_list.id )
+                           child_list.row_errors = child_row_errors[ listarg ];
+
+                        string child_list_info( c_list_prefix + to_string( child_lists.size( ) ) + c_info_suffix );
+                        if( input_data.count( child_list_info ) )
+                           child_list_info = input_data[ child_list_info ];
+                        else
+                           child_list_info.erase( );
+
+                        string child_list_sort( c_list_prefix + to_string( child_lists.size( ) ) + c_sort_suffix );
+                        if( input_data.count( child_list_sort ) )
+                           child_list_sort = input_data[ child_list_sort ];
+                        else
+                           child_list_sort.erase( );
+
+                        // NOTE: Only fetch data from the application server for the active child tab.
+                        if( ++num == vtabc_num )
+                        {
+                           if( !populate_list_info( child_list, list_selections,
+                            list_search_text, list_search_values, child_list_info, child_list_sort, data,
+                            ( cmd == c_cmd_pview ), view.cid, child_list.new_pfield, 0, *p_session_info ) )
+                              had_send_or_recv_error = true;
+                        }
+
+                        child_lists.push_back( child_list );
+                        child_names.insert( make_pair( mod_info.get_string( child_lists.back( ).name ), child_lists.size( ) - 1 ) );
                      }
                   }
 
@@ -3337,11 +3349,12 @@ void request_handler::process_request( )
                      extra_content << "<thead>\n";
                      extra_content << "<tr>\n";
 
-                     for( size_t i = 0; i < child_lists.size( ); i++ )
+                     int n = 0;
+                     for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                      {
-                        string list_type = child_lists[ i ].lici->second->type;
+                        string list_type = child_lists[ i->second ].lici->second->type;
 
-                        bool is_okay = has_permission( child_lists[ i ].perm, *p_session_info );
+                        bool is_okay = has_permission( child_lists[ i->second ].perm, *p_session_info );
                         if( !is_okay )
                         {
                            if( is_owner
@@ -3362,9 +3375,10 @@ void request_handler::process_request( )
                         if( !is_okay )
                            continue;
 
-                        if( i + 1 == vtabc_num )
-                           extra_content << "<th class=\"tab\" align=\"center\">"
-                            << mod_info.get_string( child_lists[ i ].name ) << "</th>\n";
+                        string name( get_display_name( mod_info.get_string( child_lists[ i->second ].name ) ) );
+
+                        if( ++n == vtabc_num )
+                           extra_content << "<th class=\"tab\" align=\"center\">" << name << "</th>\n";
                         else
                         {
                            extra_content << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
@@ -3378,8 +3392,7 @@ void request_handler::process_request( )
                                << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
                            }
 
-                           extra_content << "query_update( 'vtabc', '" << ( i + 1 )
-                            << "' );\">" << mod_info.get_string( child_lists[ i ].name ) << "</a></td>\n";
+                           extra_content << "query_update( 'vtabc', '" << n << "' );\">" << name << "</a></td>\n";
                         }
                      }
 
@@ -3388,14 +3401,15 @@ void request_handler::process_request( )
 
                      extra_content << "</table>\n";
 
-                     for( size_t i = 0; i < child_lists.size( ); i++ )
+                     n = 0;
+                     for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                      {
-                        if( i + 1 != vtabc_num )
+                        if( ++n != vtabc_num )
                            continue;
 
-                        string list_type = child_lists[ i ].lici->second->type;
+                        string list_type = child_lists[ i->second ].lici->second->type;
 
-                        bool is_okay = has_permission( child_lists[ i ].perm, *p_session_info );
+                        bool is_okay = has_permission( child_lists[ i->second ].perm, *p_session_info );
                         if( !is_okay )
                         {
                            if( is_owner
@@ -3416,7 +3430,7 @@ void request_handler::process_request( )
                         if( !is_okay )
                            continue;
 
-                        output_list_form( extra_content, child_lists[ i ],
+                        output_list_form( extra_content, child_lists[ i->second ],
                          session_id, uselect, "", ( cmd == c_cmd_pview ), cookies_permitted,
                          true, ( act == c_act_edit ), list_selections, list_search_text, list_search_values,
                          state, true, data, keep_checks, ident, "", *p_session_info, specials, use_url_checksum, "",

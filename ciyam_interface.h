@@ -319,6 +319,7 @@ const char* const c_list_field_extra_center = "center";
 const char* const c_list_field_extra_pstate = "pstate";
 const char* const c_list_field_extra_exact_match = "exact_match";
 const char* const c_list_field_extra_label_class = "label_class";
+const char* const c_list_field_extra_omit_label = "omit_label";
 const char* const c_list_field_extra_use_list_title = "use_list_title";
 
 const char* const c_view_type_admin = "admin";

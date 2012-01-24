@@ -7324,6 +7324,12 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
    }
 }
 
+bool is_change_locked( class_base& instance )
+{
+   return gtp_session->p_storage_handler->get_lock_info(
+    instance.lock_class_id( ), instance.get_key( ) ).type >= op_lock::e_lock_type_update;
+}
+
 void instance_fetch( size_t handle, const string& context, const string& key_info, instance_fetch_rc* p_rc )
 {
    perform_instance_fetch( get_class_base_from_handle_for_op( handle, context ), key_info, p_rc );

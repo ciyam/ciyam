@@ -755,6 +755,7 @@ struct list_source : source
 
    std::map< std::string, int > notes_character_trunc;
 
+   std::set< std::string > omit_label_fields;
    std::set< std::string > use_list_title_fields;
 
    std::set< std::string > print_summary_fields;

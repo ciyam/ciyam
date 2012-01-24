@@ -394,7 +394,9 @@ void setup_list_fields( list_source& list,
          if( extra_data.count( c_list_field_extra_trunc ) )
             list.notes_character_trunc.insert( make_pair( value_id, atoi( extra_data[ c_list_field_extra_trunc ].c_str( ) ) ) );
 
-         if( extra_data.count( c_list_field_extra_use_list_title ) )
+         if( extra_data.count( c_list_field_extra_omit_label ) )
+            list.omit_label_fields.insert( value_id );
+         else if( extra_data.count( c_list_field_extra_use_list_title ) )
             list.use_list_title_fields.insert( value_id );
 
          if( extra_data.count( c_field_extra_non_prefixed ) )
@@ -2188,7 +2190,9 @@ void output_list_form( ostream& os,
       else if( source.force_center_fields.count( source.value_ids[ i ] ) )
          class_tag += " center";
 
-      if( source.use_list_title_fields.count( source.value_ids[ i ] ) )
+      if( source.omit_label_fields.count( source.value_ids[ i ] ) )
+         os << "  <th class=\"" << class_tag << "\">&nbsp;";
+      else if( source.use_list_title_fields.count( source.value_ids[ i ] ) )
          os << "  <th class=\"" << class_tag << "\">" << mod_info.get_string( source.lici->second->id + "_name" );
       else
          os << "  <th class=\"" << class_tag << "\">" << data_or_nbsp( source.display_names[ display_offset ] );
@@ -2958,8 +2962,12 @@ void output_list_form( ostream& os,
                was_output = true;
                os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
             }
-            else if( source.text_fields.count( source_value_id )
-             || source.notes_fields.count( source_value_id ) || source.content_fields.count( source_value_id ) )
+            else if( source.content_fields.count( source_value_id ) )
+            {
+               was_output = true;
+               os << unescaped( cell_data );
+            }
+            else if( source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id ) )
             {
                int character_trunc_limit = sess_info.notes_trunc;
                if( source.notes_character_trunc.count( source_value_id ) )

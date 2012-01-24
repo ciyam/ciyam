@@ -26272,7 +26272,7 @@
     <name>{Class}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601620_*
      <type>child
      <extra>no_limit
      <class_id>106100
@@ -26441,7 +26441,7 @@
     <name>{Enum_Item}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601420_*
      <type>child
      <extra>no_limit
      <actions>+!104410+@rfields+@rvalues,+!^104420+@rfields+@rvalues
@@ -26756,7 +26756,7 @@
     <name>{Field}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601720_*
      <type>child
      <extra>no_limit
      <class_id>107100
@@ -27005,7 +27005,7 @@
     <name>{Index}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601820_*
      <type>child
      <extra>no_limit
      <actions>+!108410+@rfields+@rvalues,+!^108420+@rfields+@rvalues
@@ -27086,7 +27086,7 @@
     <name>{Initial_Record_Value}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@603310_*
      <type>child
      <extra>no_new,no_erase,sort_no_limit
      <class_id>130100
@@ -27123,7 +27123,7 @@
     <name>{Initial_Record}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@603210_*
      <type>child
      <extra>no_limit
      <actions>+!130410+@rfields+@rvalues,+!^130420+@rfields+@rvalues
@@ -27769,7 +27769,7 @@
     <name>{List_Field}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602860_*
      <type>child
      <extra>no_limit
      <actions>+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues
@@ -28082,7 +28082,7 @@
     <name>{List}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602810_*
      <type>child
      <extra>no_limit
      <actions>+!122410+@rfields+@rvalues,+!^122420+@rfields+@rvalues
@@ -28366,7 +28366,7 @@
     <name>{Modifier_Affect}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602020_*
      <type>child
      <extra>sort_no_limit
      <class_id>110100
@@ -28471,7 +28471,7 @@
     <name>{Modifier}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601920_*
      <type>child
      <extra>no_limit
      <class_id>109100
@@ -28553,7 +28553,7 @@
     <name>{Module}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602950_*
      <type>child
      <extra>no_limit
      <actions>+!126410+@rfields+@rvalues,+!^126420+@rfields+@rvalues
@@ -28629,7 +28629,7 @@
     <name>{Package_Option}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601550_*
      <type>child
      <class_id>137100
      <ordering>forward
@@ -28824,7 +28824,7 @@
     <name>{Package}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601520_*
      <type>child
      <class_id>136100
      <ordering>forward
@@ -28945,7 +28945,7 @@
     <name>{Procedure_Arg}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602220_*
      <type>child
      <extra>no_limit
      <class_id>112100
@@ -29064,7 +29064,7 @@
     <name>{Procedure}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602120_*
      <type>child
      <extra>no_limit
      <class_id>111100
@@ -29233,7 +29233,7 @@
     <name>{Relationship}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602320_*
      <type>child
      <extra>sort_no_limit
      <class_id>113100
@@ -29252,7 +29252,7 @@
     <name>{Relationship}_child_list1
     <type>list
     <data/>
-     <name>Child_*
+     <name>@602321_Child_*
      <type>child
      <extra>no_new,sort_no_limit
      <class_id>113100
@@ -29591,7 +29591,7 @@
     <name>{Specification_Copy_Child_Links}_child_list0
     <type>list
     <data/>
-     <name>Child_*
+     <name>@603420_Child_*
      <type>child
      <extra>no_new,no_limit
      <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
@@ -29770,7 +29770,7 @@
     <name>{Specification_Type}_child_list0
     <type>list
     <data/>
-     <name>Child_*
+     <name>@602420_Child_*
      <type>child
      <extra>admin_new,admin_erase,no_limit
      <class_id>114100
@@ -31866,7 +31866,7 @@
     <name>{Specification}_child_list0
     <type>list
     <data/>
-     <name>Child_*
+     <name>@602530_Child_*
      <type>child
      <extra>no_new,no_limit
      <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
@@ -31883,7 +31883,7 @@
     <name>{Specification}_child_list1
     <type>list
     <data/>
-     <name>*
+     <name>@602540_*
      <type>child
      <extra>no_limit
      <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
@@ -31905,7 +31905,7 @@
     <name>{Specification}_child_list2
     <type>list
     <data/>
-     <name>*
+     <name>@602550_*
      <type>child
      <extra>no_limit
      <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
@@ -32426,7 +32426,7 @@
     <name>{User}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@601010_*
      <type>child
      <extra>no_erase
      <class_id>100100
@@ -32739,7 +32739,7 @@
     <name>{View_Field}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602720_*
      <type>child
      <extra>no_limit
      <actions>+!120410+@rfields+@rvalues,+!^120420+@rfields+@rvalues
@@ -32942,7 +32942,7 @@
     <name>{View}_child_list0
     <type>list
     <data/>
-     <name>*
+     <name>@602620_*
      <type>child
      <extra>no_limit
      <class_id>118100
@@ -33224,7 +33224,7 @@
     <id>693
     <name>list_field_label_source
     <type>int
-    <key_values>0=field,1=list
+    <key_values>0=field,1=list,2=omit_label
    </user_defined_enum>
    <user_defined_enum/>
     <id>692
