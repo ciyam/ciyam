@@ -911,6 +911,10 @@
      <data>1
      <name>enum_list_field_label_source_list
     </value>
+    <value/>
+     <data>2
+     <name>enum_list_field_label_source_omit_label
+    </value>
    </values>
   </enum>
   <enum/>

@@ -1,6 +1,6 @@
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start total_child_field_in_parent)]
-   if( !get_obj( ).get_graph_parent( ) || !get_obj( ).get_graph_parent( )->get_is_editing( ) )
+   if( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       if( !is_create )

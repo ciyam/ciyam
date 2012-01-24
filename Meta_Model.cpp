@@ -3668,6 +3668,12 @@ void Meta_Model::impl::impl_Generate( )
                            extras += "use_list_title";
                            break;
 
+                           case 2:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "omit_label";
+                           break;
+
                            default:
                            throw runtime_error( "unexpected Label_Source value #"
                             + to_string( get_obj( ).child_List( ).child_List_Field( ).Label_Source( ) )
@@ -4523,7 +4529,7 @@ void Meta_Model::impl::impl_Generate( )
                         case 0:
                         break;
 
-                        case 1: // i.e. admin
+                        case 2: // i.e. admin_only
                         actions += '@';
                         break;
 

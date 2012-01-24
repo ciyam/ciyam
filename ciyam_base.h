@@ -363,6 +363,8 @@ enum instance_check_rc
 
 void CIYAM_BASE_DECL_SPEC instance_check( class_base& instance, instance_check_rc* p_rc = 0 );
 
+bool CIYAM_BASE_DECL_SPEC is_change_locked( class_base& instance );
+
 enum instance_fetch_rc
 {
    e_instance_fetch_rc_okay,

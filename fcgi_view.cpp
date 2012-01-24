@@ -1940,12 +1940,14 @@ bool output_view_form( ostream& os, const string& act,
                {
                   value_offset = i;
 
-                  // NOTE: If a .gif file with the enum value name exists
+                  // NOTE: If an "image" with the enum value name exists
                   // then display the image rather than the string value.
                   // This only will occur if not editing as standard HTML
                   // select controls don't support the use of images.
                   if( file_exists( info.values[ i ].second + ".gif" ) )
                      enum_image_file = info.values[ i ].second + ".gif";
+                  else if( file_exists( info.values[ i ].second + ".png" ) )
+                     enum_image_file = info.values[ i ].second + ".png";
 
                   cell_data = get_display_string( info.values[ i ].second );
                   break;
