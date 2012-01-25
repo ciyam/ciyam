@@ -5853,6 +5853,43 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start meta_spec_field_pairs)]
    if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
    {
+      string str( get_obj( ).Fields( ) );
+      do
+      {
+         if( get_obj( ).child_Specification_Parent( ).Name( ) == "field_svlist" )
+         {
+            string key_info( FIELD_ID( Meta, Specification, Order ) );
+            key_info += ' ';
+            if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+            {
+               do
+               {
+                  if( !str.empty( ) )
+                     str += " ";
+
+                  str += get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).Source_Parent( ).Name( );
+                  str += get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).Source_Field( ).Name( );
+
+                  str += ",";
+                  str += get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).Source_Child( ).Name( );
+
+                  str += ",";
+                  str += get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).Value( );
+
+               } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
+            }
+            get_obj( ).child_Specification_Parent( ).iterate_stop( );
+            break;
+         }
+      } while( get_obj( ).child_Specification_Parent( ).iterate_next( ) );
+
+      get_obj( ).Fields( str );
+   }
+   // [(finish meta_spec_field_pairs)]
+
+   // [(start meta_spec_field_pairs)]
+   if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+   {
       string str( get_obj( ).Field_Pairs( ) );
       do
       {
@@ -6183,6 +6220,19 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
    // [(finish update_parent_cascade)]
 
    // [(start update_parent_cascade)]
+   if( get_obj( ).Specification_Type( ).get_key( ) == "field_source_and_value" )
+   {
+      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }
+   // [(finish update_parent_cascade)]
+
+   // [(start update_parent_cascade)]
    if( get_obj( ).Specification_Type( ).get_key( ) == "home_message_stats_info" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
@@ -6280,6 +6330,19 @@ void Meta_Specification::impl::after_destroy( bool is_internal )
 
    // [(start update_parent_cascade)]
    if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_restrict" )
+   {
+      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }
+   // [(finish update_parent_cascade)]
+
+   // [(start update_parent_cascade)]
+   if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field_source_and_value" )
    {
       class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
 
@@ -10884,6 +10947,14 @@ void Meta_Specification::get_always_required_field_names(
     || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
       names.insert( "Specification_Type" );
    // [(finish modifier_field_value)]
+
+   // [(start update_parent_cascade)]
+   dependents.insert( "Parent_Specification" );
+
+   if( ( required_transients && is_field_transient( e_field_id_Parent_Specification ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Parent_Specification ) ) )
+      names.insert( "Parent_Specification" );
+   // [(finish update_parent_cascade)]
 
    // [(start update_parent_cascade)]
    dependents.insert( "Parent_Specification" );

@@ -1224,7 +1224,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#field_from_search_replace.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
  arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield\
  arg_cfield=$specification_\0_cfield arg_field_list=$specification_\0_field_list\
- arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
+ arg_keyrep=$specification_\0_keyrep arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
  arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb`}\
 `,\
 `@eq`(`'\1`'`,`'for_cms_gen`'`)
@@ -1424,7 +1424,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_from_search_replace.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield\
  arg_cfield=$specification_\0_cfield arg_field_list=$specification_\0_field_list\
- arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
+ arg_keyrep=$specification_\0_keyrep arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
  arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb`}\
 `,\
 `@eq`(`'\1`'`,`'field_values_from_graph_parent`'`)

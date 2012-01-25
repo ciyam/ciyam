@@ -2965,7 +2965,18 @@ void output_list_form( ostream& os,
             else if( source.content_fields.count( source_value_id ) )
             {
                was_output = true;
-               os << unescaped( cell_data );
+
+               replace_links_and_output( cell_data, source.view,
+                source.module, source.module_ref, os, true, !is_printable,
+                session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum );
+            }
+            else if( source.manual_link_fields.count( source_value_id ) )
+            {
+               was_output = true;
+
+               replace_links_and_output( cell_data, source.view,
+                source.module, source.module_ref, os, false, !is_printable,
+                session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum );
             }
             else if( source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id ) )
             {

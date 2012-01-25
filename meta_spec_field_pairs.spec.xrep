@@ -16,8 +16,18 @@
                   if( !str.empty( ) )
                      str += " ";
 
+`{`@eq`(`$arg_tvalue`,`'field_svlist`'`)\
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Parent( ).Name( );
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Field( ).Name( );
+
+                  str += ",";
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Child( ).Name( );
+
+                  str += ",";
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Value( );
+`,\
                   str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Field( ).Name( );
-`{`@eq`(`$arg_tvalue`,`'field_pair_list`'`)`|`@eq`(`$arg_tvalue`,`'field_pair2_list`'`)`|`@eq`(`$arg_tvalue`,`'field_pair_g_list`'`)
+`}`{`@eq`(`$arg_tvalue`,`'field_pair_list`'`)`|`@eq`(`$arg_tvalue`,`'field_pair2_list`'`)`|`@eq`(`$arg_tvalue`,`'field_pair_g_list`'`)
                   str += ",";
 `{`@eq`(`$arg_tvalue`,`'field_pair2_list`'`)\
                   str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Field( ).Name( );

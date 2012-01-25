@@ -174,6 +174,9 @@ void setup_view_fields( view_source& view,
             if( extra_data.count( c_field_extra_manual_link ) )
                view.manual_link_fields.insert( value_id );
 
+            if( extra_data.count( c_field_extra_ignore_links ) )
+               view.manual_link_ignores.insert( value_id );
+
             // NOTE: It is expected that only one actions and owning user field will exist in a view.
             if( extra_data.count( c_view_field_extra_actions ) )
                view.actions_field = field_id;
@@ -1791,7 +1794,16 @@ bool output_view_form( ostream& os, const string& act,
             else
             {
                if( cell_data.find( "</HTML>" ) == string::npos && cell_data.find( "</html>" ) == string::npos )
-                  os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( cell_data, "", "" ) ) );
+               {
+                  bool output_hrefs = true;
+                  if( is_in_edit || is_printable
+                   || source.manual_link_ignores.count( source_value_id ) )
+                     output_hrefs = false;
+
+                  replace_links_and_output( cell_data, source.vici->second->id,
+                   source.module, source.module_ref, os, true, output_hrefs, session_id,
+                   sess_info, user_select_key, using_session_cookie, use_url_checksum );
+               }
                else
                {
                   // NOTE: If found content that is actually a complete HTML page then create a temporary
@@ -2380,74 +2392,18 @@ bool output_view_form( ostream& os, const string& act,
                }
             }
 
-            // NOTE: The "manual link" fields are currently only supported for views.
             if( source.manual_link_fields.count( source_value_id ) )
             {
-               string::size_type lpos;
-               while( ( lpos = cell_data.find( '{' ) ) != string::npos )
-               {
-                  if( lpos != 0 )
-                  {
-                     os << data_or_nbsp( escape_markup( unescaped( cell_data.substr( 0, lpos ) ) ) );
-                     cell_data.erase( 0, lpos );
-                  }
+               bool output_hrefs = true;
+               if( is_in_edit || is_printable
+                || source.manual_link_ignores.count( source_value_id ) )
+                  output_hrefs = false;
 
-                  string::size_type rpos = cell_data.find( '}' );
-                  if( rpos == string::npos )
-                     throw runtime_error( "unexpected parent path format in '" + cell_data + "'" );
+               replace_links_and_output( cell_data, source.vici->second->id,
+                source.module, source.module_ref, os, false, output_hrefs, session_id,
+                sess_info, user_select_key, using_session_cookie, use_url_checksum );
 
-                  string::size_type npos = cell_data.find( ':' );
-                  if( npos == string::npos || npos > rpos )
-                     throw runtime_error( "unexpected parent path format in '" + cell_data + "'" );
-
-                  string next( cell_data.substr( 1, rpos - 1 ) );
-                  cell_data.erase( 0, rpos + 1 );
-
-                  string next_key( next.substr( 0, npos - 1 ) );
-
-                  string cid;
-                  string::size_type cpos = next_key.find( '$' );
-                  if( cpos != string::npos )
-                  {
-                     cid = next_key.substr( 0, cpos );
-                     next_key.erase( 0, cpos + 1 );
-                  }
-
-                  bool is_href = false;
-                  if( !is_printable && !is_in_edit )
-                  {
-                     is_href = true;
-                     os << "<a href=\"" << get_module_page_name( source.module_ref )
-                      << "?cmd=" << c_cmd_view << "&data=" << next_key << "&ident=";
-
-                     if( cid.empty( ) )
-                        os << source.vici->second->id;
-                     else
-                        os << mod_info.view_cids.find( cid )->second;
-
-                     if( !user_select_key.empty( ) )
-                        os << "&" << c_param_uselect << "=" << user_select_key;
-
-                     if( !using_session_cookie )
-                        os << "&session=" << session_id;
-
-                     if( use_url_checksum )
-                     {
-                        string checksum_values(
-                         string( c_cmd_view ) + next_key + source.vici->second->id + user_select_key );
-
-                        os << "&" << c_param_chksum << "=" << get_checksum( sess_info, checksum_values );
-                     }
-
-                     os << "\">";
-                  }
-
-                  os << data_or_nbsp( unescaped(
-                   replace_crlfs_and_spaces( escape_markup( next.substr( npos ) ), "<br/>", "&nbsp;" ) ) );
-
-                  if( is_href )
-                     os << "</a>";
-               }
+               cell_data.erase( );
             }
 
             // NOTE: If a fixed parent field is one of the fields in the view its display value is

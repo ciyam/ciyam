@@ -6047,10 +6047,12 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
    string options_field_name;
    if( !options_field_id.empty( ) )
       options_field_name = get_field_name_for_id( m, class_name, options_field_id );
-   spec_data.data_pairs.push_back( make_pair( string( c_data_ofield ), options_field_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_ofield, options_field_name ) );
 
-   spec_data.data_pairs.push_back( make_pair( string( c_data_oleftb ), options_left_bracket ) );
-   spec_data.data_pairs.push_back( make_pair( string( c_data_orightb ), options_right_bracket ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_oleftb, options_left_bracket ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_orightb, options_right_bracket ) );
+
+   spec_data.data_pairs.push_back( make_pair( "keyrep", "" ) );
 }
 
 string field_from_search_replace_specification::static_class_name( ) { return "field_from_search_replace"; }

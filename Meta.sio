@@ -12178,6 +12178,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600200a
+      <item>class
+     </specification>
+     <specification/>
       <id>600201
       <item>class
      </specification>
@@ -12367,6 +12371,10 @@
      </specification>
      <specification/>
       <id>670194
+      <item>class
+     </specification>
+     <specification/>
+      <id>680194
       <item>class
      </specification>
     </specifications>
@@ -12910,6 +12918,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600200a
+        <item>field
+       </specification>
+       <specification/>
         <id>600204
         <item>field
        </specification>
@@ -13005,6 +13017,10 @@
        </specification>
        <specification/>
         <id>600200
+        <item>sfield
+       </specification>
+       <specification/>
+        <id>600200a
         <item>sfield
        </specification>
        <specification/>
@@ -13463,6 +13479,10 @@
         <item>cfield
        </specification>
        <specification/>
+        <id>600200a
+        <item>cfield
+       </specification>
+       <specification/>
         <id>600201
         <item>cfield
        </specification>
@@ -13504,6 +13524,10 @@
        </specification>
        <specification/>
         <id>670194
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>680194
         <item>pfield
        </specification>
       </specifications>
@@ -15793,6 +15817,10 @@
        </specification>
        <specification/>
         <id>670194
+        <item>fkfield
+       </specification>
+       <specification/>
+        <id>680194
         <item>fkfield
        </specification>
       </specifications>
@@ -22868,6 +22896,35 @@
       <modifiers/>
        <modifier/>
         <id>500710
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>120126
+      <name>Ignore_Manual_Links
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500706
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
         <affect>relegate
        </modifier>
       </modifiers>
@@ -30137,6 +30194,20 @@
     </data>
    </specification>
    <specification/>
+    <id>600200a
+    <name>{Specification}_Fields_meta2
+    <type>meta_spec_field_pairs
+    <data/>
+     <class_id>115100
+     <cclass_id>115100
+     <field_id>115126
+     <ofield_id>115105
+     <sfield_id>115101
+     <test_value>field_svlist
+     <cfield_id>301405
+    </data>
+   </specification>
+   <specification/>
     <id>600122
     <name>{Specification}_Hide_Child_Relationship
     <type>modifier_field_value
@@ -31237,6 +31308,19 @@
    <specification/>
     <id>670194
     <name>{Specification}_Parent_{Specification}_update_5
+    <type>update_parent_cascade
+    <data/>
+     <class_id>115100
+     <pclass_id>115100
+     <pfield_id>301405
+     <fkfield_id>301410
+     <test_value>field_source_and_value
+     <is_grand_parent>true
+    </data>
+   </specification>
+   <specification/>
+    <id>680194
+    <name>{Specification}_Parent_{Specification}_update_6
     <type>update_parent_cascade
     <data/>
      <class_id>115100
@@ -32801,6 +32885,7 @@
      <field_info>120118;enum=678
      <field_info>120125;enum=635
      <field_info>120121
+     <field_info>120126
      <field_info>120116
      <field_info>120108;enum=663
      <field_info>120119;enum=661
