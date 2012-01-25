@@ -588,6 +588,7 @@ struct source
    std::set< std::string > print_only_fields;
    std::set< std::string > manual_link_fields;
    std::set< std::string > non_fk_link_fields;
+   std::set< std::string > manual_link_ignores;
    std::set< std::string > replace_underbar_fields;
    std::set< std::string > default_other_link_fields;
 

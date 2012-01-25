@@ -75,6 +75,18 @@ const char* const c_extkeys_file = "extkeys.txt";
 const char* const c_action_clone_key_id = "@id";
 const char* const c_action_child_key_user = "@user";
 
+const char* const c_nbsp = "&nbsp;";
+
+string g_nbsp( c_nbsp );
+
+inline const string& data_or_nbsp( const string& input )
+{
+   if( !input.empty( ) )
+      return input;
+   else
+      return g_nbsp;
+}
+
 }
 
 ostream& get_log( )
@@ -1130,6 +1142,100 @@ void replace_action_parms( string& id, string& action,
       }
 
       action += ":" + str;
+   }
+}
+
+void replace_links_and_output( const string& s,
+ const string& id, const string& module, const string& module_ref,
+ ostream& os, bool is_content, bool output_hrefs, const string& session_id,
+ const session_info& sess_info, const string& user_select_key, bool using_session_cookie, bool use_url_checksum )
+{
+   const module_info& mod_info( *get_storage_info( ).modules_index.find( module )->second );
+
+   string cell_data( s );
+
+   string::size_type lpos;
+   while( ( lpos = cell_data.find( '{' ) ) != string::npos )
+   {
+      if( lpos != 0 )
+      {
+         if( is_content )
+            os << unescaped( cell_data.substr( 0, lpos ) );
+         else
+            os << data_or_nbsp( escape_markup( unescaped( cell_data.substr( 0, lpos ) ) ) );
+
+         cell_data.erase( 0, lpos );
+      }
+
+      string::size_type rpos = cell_data.find( '}' );
+      if( rpos == string::npos )
+         throw runtime_error( "unexpected parent path format in '" + cell_data + "'" );
+
+      string::size_type npos = cell_data.find( ':' );
+      if( npos == string::npos || npos > rpos )
+         throw runtime_error( "unexpected parent path format in '" + cell_data + "'" );
+
+      string next( cell_data.substr( 1, rpos - 1 ) );
+      cell_data.erase( 0, rpos + 1 );
+
+      string next_key( next.substr( 0, npos - 1 ) );
+
+      string cid;
+      string::size_type cpos = next_key.find( '$' );
+      if( cpos != string::npos )
+      {
+         cid = next_key.substr( 0, cpos );
+         next_key.erase( 0, cpos + 1 );
+      }
+
+      bool is_href = false;
+      if( output_hrefs )
+      {
+         is_href = true;
+         os << "<a href=\"" << get_module_page_name( module_ref )
+          << "?cmd=" << c_cmd_view << "&data=" << next_key << "&ident=";
+
+         if( cid.empty( ) )
+            os << id;
+         else
+            os << mod_info.view_cids.find( cid )->second;
+
+         if( !user_select_key.empty( ) )
+            os << "&" << c_param_uselect << "=" << user_select_key;
+
+         if( !using_session_cookie )
+            os << "&session=" << session_id;
+
+         if( use_url_checksum )
+         {
+            string checksum_values(
+             string( c_cmd_view ) + next_key + id + user_select_key );
+
+            os << "&" << c_param_chksum << "=" << get_checksum( sess_info, checksum_values );
+         }
+
+         os << "\">";
+      }
+
+      if( is_content )
+         os << unescaped(
+          replace_crlfs_and_spaces( next.substr( npos ), "<br/>", "&nbsp;" ) );
+      else
+         os << data_or_nbsp( unescaped(
+          replace_crlfs_and_spaces( escape_markup( next.substr( npos ) ), "<br/>", "&nbsp;" ) ) );
+
+      if( is_href )
+         os << "</a>";
+   }
+
+   if( !cell_data.empty( ) )
+   {
+      if( is_content )
+         os << unescaped(
+          replace_crlfs_and_spaces( cell_data, "<br/>", "&nbsp;" ) );
+      else
+         os << data_or_nbsp( unescaped(
+          replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
    }
 }
 

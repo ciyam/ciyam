@@ -2653,6 +2653,13 @@ void Meta_Model::impl::impl_Generate( )
                         extras += "full_width";
                      }
 
+                     if( get_obj( ).child_View( ).child_View_Field( ).Ignore_Manual_Links( ) )
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "ignore_links";
+                     }
+
                      if( get_obj( ).child_View( ).child_View_Field( ).Show_Hide_Start_Point( ) )
                      {
                         if( !extras.empty( ) )

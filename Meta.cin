@@ -491,6 +491,7 @@ field_add -id=120122 View_Field Trigger_For_State int mand -def=0 -e=view_field_
 field_add -id=120123 View_Field Enum_Starts_At int mand -def=0 -e=view_field_enum_at
 field_add -id=120124 View_Field Enum_Finishes_At int mand -def=0 -e=view_field_enum_at
 field_add -id=120125 View_Field Font_Size int mand -def=0 -e=font_size
+field_add -id=120126 View_Field Ignore_Manual_Links bool mand -def=0
 procedure_add -id=120410 View_Field Move_Up
 procedure_arg_add -id=120411 View_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=120412 View_Field Move_Up Restrict_Values string in
@@ -1013,7 +1014,7 @@ modifier_add -id=500704 View PDF_View_Is_Custom PDF_Font_Type:relegate
 modifier_add -id=500705 View_Field Is_Field Tab_Name:relegate
 modifier_add -id=500706 View_Field Is_Print_Version Type:relegate,Source_Edit_Child:relegate,Sort_Manually:relegate\
 ,Restriction_Spec:relegate,New_Source:relegate,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate\
-,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate,Mandatory_Option:relegate,Show_Hide_Start_Point:relegate\
+,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate,Mandatory_Option:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate\
 ,Enum_Starts_At:relegate,Enum_Finishes_At:relegate,Link_Restriction:relegate,Access_Scope:relegate,Change_Scope:relegate\
 ,Change_Restriction:relegate,Change_{Permission}:relegate
 modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:relegate,Access_Restriction:relegate\
@@ -1021,10 +1022,10 @@ modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:rel
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Enum_Starts_At:relegate,Enum_Finishes_At:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate\
-,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Show_Hide_Start_Point:relegate
+,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate
 modifier_add -id=500715 View_Field Is_Key Mandatory_Option:relegate,Date_Precision_Option:relegate\
 ,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate\
-,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate\
+,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Ignore_Manual_Links:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Tab_Name:relegate
 modifier_add -id=500716 View_Field Is_Not_Date Date_Precision_Option:relegate
@@ -1419,7 +1420,8 @@ specification_add -id=630194 {Specification}_Parent_{Specification}_update_1 upd
 specification_add -id=640194 {Specification}_Parent_{Specification}_update_2 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_pair2 -grand_parent"
 specification_add -id=650194 {Specification}_Parent_{Specification}_update_3 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_pair_g -grand_parent"
 specification_add -id=660194 {Specification}_Parent_{Specification}_update_4 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_restrict -grand_parent"
-specification_add -id=670194 {Specification}_Parent_{Specification}_update_5 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=home_message_stats_info"
+specification_add -id=670194 {Specification}_Parent_{Specification}_update_5 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_source_and_value -grand_parent"
+specification_add -id=680194 {Specification}_Parent_{Specification}_update_6 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=home_message_stats_info"
 specification_add -id=610195 {Specification}_Parent_Specification_Actions parent_field_from_other\
  "Specification Parent_{Specification} Actions {Specification_Type}:Next_Specification_Actions -test=Has_Next_Specification_Info=true"
 specification_add -id=620195 {Specification}_Parent_Specification_Child_Specification_Type parent_field_from_other\
@@ -1436,6 +1438,8 @@ specification_add -id=600198 {Specification}_Fields_clear field_clear "Specifica
 specification_add -id=600199 {Specification}_Field_Pairs_clear field_clear "Specification Field_Pairs"
 specification_add -id=600200 {Specification}_Fields_meta meta_spec_field_pairs "Specification\
  Fields Order Specification:Parent_{Specification} Name=field_list"
+specification_add -id=600200a {Specification}_Fields_meta2 meta_spec_field_pairs "Specification\
+ Fields Order Specification:Parent_{Specification} Name=field_svlist"
 specification_add -id=600201 {Specification}_Field_Pairs_meta meta_spec_field_pairs "Specification\
  Field_Pairs Order Specification:Parent_{Specification} Name=field_pair_list"
 specification_add -id=600202 {Specification}_Field_Pairs_meta2 meta_spec_field_pairs "Specification\
@@ -1807,7 +1811,7 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
-,Mandatory_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Show_Hide_Start_Point,Link_Restriction,Access_Scope\
+,Mandatory_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Ignore_Manual_Links,Show_Hide_Start_Point,Link_Restriction,Access_Scope\
 ,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name"
 specification_add -id=602720 {View_Field}_child_list0 list "@602720_* child:no_limit\
