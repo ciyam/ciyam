@@ -1,6 +1,6 @@
 `{`@eq`(`'to_store`'`,`$section`)\
    // [(start default_from_key)]
-`{`@eq`(`$arg_chk_null`,`'`'`)`&`@eq`(`$arg_not_dflt`,`'`'`)
+`{`@eq`(`$arg_chk_null`,`'`'`)`&`@eq`(`$arg_not_dflt`,`'`'`)\
    if( is_create )\
 `,\
 `{`@eq`(`$arg_inc_clones`,`'true`'`)\
