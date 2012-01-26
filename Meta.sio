@@ -793,10 +793,6 @@
       <item>class
      </specification>
      <specification/>
-      <id>600028
-      <item>class
-     </specification>
-     <specification/>
       <id>600029
       <item>class
      </specification>
@@ -1180,10 +1176,6 @@
        </specification>
        <specification/>
         <id>600027
-        <item>tfield
-       </specification>
-       <specification/>
-        <id>600028
         <item>tfield
        </specification>
        <specification/>
@@ -4315,18 +4307,9 @@
     <name>List
     <plural>Lists
     <version>
-    <extra>ordered
     <specifications/>
      <specification/>
       <id>600400
-      <item>class
-     </specification>
-     <specification/>
-      <id>600401
-      <item>class
-     </specification>
-     <specification/>
-      <id>600402
       <item>class
      </specification>
      <specification/>
@@ -5005,35 +4988,6 @@
       </specifications>
      </field>
      <field/>
-      <id>122108
-      <name>Order
-      <type>string
-      <mandatory>true
-      <extra>order
-      <indexes/>
-       <index/>
-        <id>400800
-        <num>1
-       </index>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600401
-        <item>field
-       </specification>
-       <specification/>
-        <id>600402
-        <item>field
-       </specification>
-       <specification/>
-        <id>602810
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
       <id>122137
       <name>PDF_Font_Type
       <type>int
@@ -5397,10 +5351,6 @@
       <relationship_id>201990
       <indexes/>
        <index/>
-        <id>400800
-        <num>0
-       </index>
-       <index/>
         <id>400820
         <num>0
        </index>
@@ -5408,10 +5358,6 @@
       <modifiers/>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>600402
-        <item>parent_field
-       </specification>
        <specification/>
         <id>600418
         <item>pfield
@@ -5427,11 +5373,6 @@
      <index/>
       <id>400820
       <name>[{Model}],[Id]
-      <unique>true
-     </index>
-     <index/>
-      <id>400800
-      <name>[{Model}],[Order]
       <unique>true
      </index>
     </indexes>
@@ -5486,78 +5427,6 @@
         <type>int
         <output>false
         <specifications/>
-        </specifications>
-       </arg>
-      </args>
-     </procedure>
-     <procedure/>
-      <id>122420
-      <name>Move_Down
-      <specifications/>
-       <specification/>
-        <id>600402
-        <item>down_procedure
-       </specification>
-      </specifications>
-      <args/>
-       <arg/>
-        <id>122421
-        <name>Restrict_Fields
-        <type>string
-        <output>false
-        <specifications/>
-         <specification/>
-          <id>600402
-          <item>down_fields_arg
-         </specification>
-        </specifications>
-       </arg>
-       <arg/>
-        <id>122422
-        <name>Restrict_Values
-        <type>string
-        <output>false
-        <specifications/>
-         <specification/>
-          <id>600402
-          <item>down_values_arg
-         </specification>
-        </specifications>
-       </arg>
-      </args>
-     </procedure>
-     <procedure/>
-      <id>122410
-      <name>Move_Up
-      <specifications/>
-       <specification/>
-        <id>600402
-        <item>up_procedure
-       </specification>
-      </specifications>
-      <args/>
-       <arg/>
-        <id>122411
-        <name>Restrict_Fields
-        <type>string
-        <output>false
-        <specifications/>
-         <specification/>
-          <id>600402
-          <item>up_fields_arg
-         </specification>
-        </specifications>
-       </arg>
-       <arg/>
-        <id>122412
-        <name>Restrict_Values
-        <type>string
-        <output>false
-        <specifications/>
-         <specification/>
-          <id>600402
-          <item>up_values_arg
-         </specification>
         </specifications>
        </arg>
       </args>
@@ -8127,10 +7996,6 @@
      <specification/>
       <id>600315
       <item>pclass
-     </specification>
-     <specification/>
-      <id>600402
-      <item>parent_class
      </specification>
      <specification/>
       <id>600418
@@ -21972,10 +21837,6 @@
     <version>
     <specifications/>
      <specification/>
-      <id>600028
-      <item>cclass
-     </specification>
-     <specification/>
       <id>600300
       <item>class
      </specification>
@@ -22187,12 +22048,9 @@
       <id>118101
       <name>Name
       <type>1020
-      <mandatory>true
+      <mandatory>false
+      <transient>true
       <indexes/>
-       <index/>
-        <id>400700
-        <num>1
-       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -22414,10 +22272,6 @@
       <relationship_id>201800
       <indexes/>
        <index/>
-        <id>400700
-        <num>0
-       </index>
-       <index/>
         <id>400710
         <num>0
        </index>
@@ -22440,11 +22294,6 @@
      <index/>
       <id>400710
       <name>[{Model}],[Id]
-      <unique>true
-     </index>
-     <index/>
-      <id>400700
-      <name>[{Model}],[Name]
       <unique>true
      </index>
     </indexes>
@@ -26444,16 +26293,6 @@
     </data>
    </specification>
    <specification/>
-    <id>600028
-    <name>{Class}_{View}_update_children
-    <type>update_children
-    <data/>
-     <class_id>106100
-     <cclass_id>118100
-     <tfield_id>106101
-    </data>
-   </specification>
-   <specification/>
     <id>600022
     <name>{Enum_Item}_Internal_default
     <type>field_from_changed_fk
@@ -27863,7 +27702,7 @@
      <name>?
      <type>standard
      <class_id>124100
-     <field_info>302100:122101!122108;no_edit+link+max_size=100
+     <field_info>302100:122101;no_edit+link+max_size=100
      <field_info>302110;hidden+fkey1
      <field_info>124102;no_edit
      <field_info>302120:123101;force+new_edit+max_size=30
@@ -28050,14 +27889,6 @@
     </data>
    </specification>
    <specification/>
-    <id>600401
-    <name>{List}_Order_default
-    <type>default_from_key
-    <data/>
-     <check_null>true
-    </data>
-   </specification>
-   <specification/>
     <id>600428
     <name>{List}_PDF_List_Is_Custom
     <type>modifier_field_value
@@ -28141,33 +27972,14 @@
     <data/>
      <name>@602810_*
      <type>child
-     <extra>no_limit
-     <actions>+!122410+@rfields+@rvalues,+!^122420+@rfields+@rvalues
+     <extra>sort_no_limit
      <class_id>122100
      <ordering>forward
      <pclass_id>105100
      <pfield_id>301990
-     <field_info>122108;hidden
      <field_info>122101
      <field_info>122103;enum=680
      <field_info>301991:121101;max_size=30
-    </data>
-   </specification>
-   <specification/>
-    <id>600402
-    <name>{List}_move_up_and_down
-    <type>move_up_and_down
-    <data/>
-     <class_id>122100
-     <pclass_id>105100
-     <field_id>122108
-     <pfield_id>301990
-     <move_up_procedure_id>122410
-     <move_up_fields_args_id>122411
-     <move_up_values_args_id>122412
-     <move_down_procedure_id>122420
-     <move_down_fields_args_id>122421
-     <move_down_values_args_id>122422
     </data>
    </specification>
    <specification/>
@@ -32968,6 +32780,7 @@
      <cfield_id>117102
      <field_info>301820:106101;106100={class}
      <separator>_
+     <is_transient>true
     </data>
    </specification>
    <specification/>
@@ -33029,7 +32842,7 @@
     <data/>
      <name>@602620_*
      <type>child
-     <extra>no_limit
+     <extra>sort_no_limit
      <class_id>118100
      <ordering>forward
      <pclass_id>105100

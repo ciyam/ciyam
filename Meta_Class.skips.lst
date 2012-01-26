@@ -1,7 +1,6 @@
 Enum:Id
 Permission:Id
 List:Id
-List:Order
 List_Field:Order
 Type:Id
 View:Id

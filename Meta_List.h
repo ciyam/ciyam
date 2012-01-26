@@ -77,20 +77,19 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Multiline_Truncate_For_Print = 26,
       e_field_id_Name = 27,
       e_field_id_Number_Multiple_Pages = 28,
-      e_field_id_Order = 29,
-      e_field_id_PDF_Font_Type = 30,
-      e_field_id_PDF_List_Type = 31,
-      e_field_id_Parent_Class = 32,
-      e_field_id_Parent_Field = 33,
-      e_field_id_Print_Restriction = 34,
-      e_field_id_Print_Without_Highlight = 35,
-      e_field_id_Search_Option_Limit = 36,
-      e_field_id_Sort_Rows_In_UI = 37,
-      e_field_id_Style = 38,
-      e_field_id_Text_Match_Highlight = 39,
-      e_field_id_Title = 40,
-      e_field_id_Type = 41,
-      e_field_id_Variation_Name = 42
+      e_field_id_PDF_Font_Type = 29,
+      e_field_id_PDF_List_Type = 30,
+      e_field_id_Parent_Class = 31,
+      e_field_id_Parent_Field = 32,
+      e_field_id_Print_Restriction = 33,
+      e_field_id_Print_Without_Highlight = 34,
+      e_field_id_Search_Option_Limit = 35,
+      e_field_id_Sort_Rows_In_UI = 36,
+      e_field_id_Style = 37,
+      e_field_id_Text_Match_Highlight = 38,
+      e_field_id_Title = 39,
+      e_field_id_Type = 40,
+      e_field_id_Variation_Name = 41
    };
 
    Meta_List( );
@@ -165,9 +164,6 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    bool Number_Multiple_Pages( ) const;
    void Number_Multiple_Pages( bool Number_Multiple_Pages );
 
-   const std::string& Order( ) const;
-   void Order( const std::string& Order );
-
    int PDF_Font_Type( ) const;
    void PDF_Font_Type( int PDF_Font_Type );
 
@@ -234,10 +230,6 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    const Meta_List_Field& child_List_Field( ) const;
 
    virtual void Generate_PDF_List( int Variation_Num );
-
-   virtual void Move_Down( const std::string& Restrict_Fields, const std::string& Restrict_Values );
-
-   virtual void Move_Up( const std::string& Restrict_Fields, const std::string& Restrict_Values );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );
