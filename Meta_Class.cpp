@@ -3312,19 +3312,6 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
    }
    // [(finish update_children)]
 
-   // [(start update_children)]
-   if( !is_create
-    && get_obj( ).has_field_changed( c_field_id_Name )
-    && get_obj( ).child_View( ).iterate_forwards( ) )
-   {
-      do
-      {
-         get_obj( ).child_View( ).op_update( );
-         get_obj( ).child_View( ).op_apply( );
-      } while( get_obj( ).child_View( ).iterate_next( ) );
-   }
-   // [(finish update_children)]
-
    // [(start clone_children_from_fk)]
    if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
    {

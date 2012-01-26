@@ -210,9 +210,27 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 0;
+const int c_num_transient_fields = 1;
 
-bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
+const char* const c_transient_sorted_field_ids[ ] =
+{
+   "118101"
+};
+
+const char* const c_transient_sorted_field_names[ ] =
+{
+   "Name"
+};
+
+inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
+
+inline bool is_transient_field( const string& field )
+{
+   return binary_search( c_transient_sorted_field_ids,
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    || binary_search( c_transient_sorted_field_names,
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+}
 
 const char* const c_procedure_id_Generate_PDF_View = "118410";
 
@@ -1665,11 +1683,6 @@ void Meta_View::impl::validate( unsigned state, bool is_internal, validation_err
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
 
-   if( is_null( v_Name ) && !value_will_be_provided( c_field_name_Name ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
-       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
-
    if( is_null( v_Title ) && !value_will_be_provided( c_field_name_Title ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Title,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
@@ -1762,6 +1775,21 @@ void Meta_View::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
+   // [(start field_from_search_replace)]
+   if( !get_obj( ).get_key( ).empty( )
+    && ( get_obj( ).needs_field_value( "Name" )
+    || required_transients.count( "Name" ) ) )
+   {
+      string str( get_obj( ).Type( ).View_Name( ) );
+
+      get_obj( ).Name( str );
+
+      get_obj( ).add_search_replacement( "Name", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
+
+      get_obj( ).set_search_replace_separator( "Name", '_' );
+   }
+   // [(finish field_from_search_replace)]
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
@@ -1804,19 +1832,6 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
    get_obj( ).Type_Key( get_obj( ).Type( ) );
    // [(finish field_from_other_field)]
 
-   // [(start field_from_search_replace)]
-   if( get_obj( ).get_is_editing( ) )
-   {
-      string str( get_obj( ).Type( ).View_Name( ) );
-
-      get_obj( ).Name( str );
-
-      get_obj( ).add_search_replacement( "Name", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
-
-      get_obj( ).set_search_replace_separator( "Name", '_' );
-   }
-   // [(finish field_from_search_replace)]
-
    // [<start to_store>]
    // [<finish to_store>]
 }
@@ -1848,6 +1863,32 @@ void Meta_View::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
+//idk
+   // NOTE: Due to being transient detecting a duplicate Name can
+   // only done after the record is stored (as its value is given
+   // to it in after_fetch).
+   if( !session_skip_validation( ) )
+   {
+      class_pointer< Meta_Model > cp_parent( e_create_instance );
+
+      if( !get_obj( ).Model( ).get_key( ).empty( ) )
+      {
+         cp_parent->perform_fetch( get_obj( ).Model( ).get_key( ) );
+
+         if( cp_parent->child_View( ).iterate_forwards( ) )
+         {
+            set< string > names;
+            do
+            {
+               if( names.count( cp_parent->child_View( ).Name( ) ) )
+                  throw runtime_error( "This View has already been created." );
+
+               names.insert( cp_parent->child_View( ).Name( ) );
+
+            } while( cp_parent->child_View( ).iterate_next( ) );
+         }
+      }
+   }
    // [<finish after_store>]
 }
 
@@ -2843,7 +2884,6 @@ void Meta_View::get_sql_column_names(
    names.push_back( "C_Class" );
    names.push_back( "C_Id" );
    names.push_back( "C_Model" );
-   names.push_back( "C_Name" );
    names.push_back( "C_PDF_Font_Type" );
    names.push_back( "C_PDF_View_Type" );
    names.push_back( "C_Print_Without_Highlight" );
@@ -2870,7 +2910,6 @@ void Meta_View::get_sql_column_values(
    values.push_back( sql_quote( to_string( Class( ) ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
    values.push_back( sql_quote( to_string( Model( ) ) ) );
-   values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( to_string( PDF_Font_Type( ) ) );
    values.push_back( to_string( PDF_View_Type( ) ) );
    values.push_back( to_string( Print_Without_Highlight( ) ) );
@@ -2889,6 +2928,26 @@ void Meta_View::get_required_field_names(
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
    get_always_required_field_names( names, required_transients, dependents );
+
+   // [(start field_from_search_replace)]
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Class ) ) )
+         names.insert( "Class" );
+   }
+
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+         names.insert( "Type" );
+   }
+   // [(finish field_from_search_replace)]
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -3261,7 +3320,6 @@ string Meta_View::static_get_sql_columns( )
     "C_Class VARCHAR(64) NOT NULL,"
     "C_Id VARCHAR(128) NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
     "C_PDF_Font_Type INTEGER NOT NULL,"
     "C_PDF_View_Type INTEGER NOT NULL,"
     "C_Print_Without_Highlight INTEGER NOT NULL,"
@@ -3304,13 +3362,11 @@ void Meta_View::static_get_all_enum_pairs( vector< pair< string, string > >& pai
 void Meta_View::static_get_sql_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Model,C_Id" );
-   indexes.push_back( "C_Model,C_Name" );
 }
 
 void Meta_View::static_get_sql_unique_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Model,C_Id" );
-   indexes.push_back( "C_Model,C_Name" );
 }
 
 void Meta_View::static_insert_derivation( const string& module_and_class_id )

@@ -149,7 +149,6 @@ const char* const c_field_id_Model = "301990";
 const char* const c_field_id_Multiline_Truncate_For_Print = "122143";
 const char* const c_field_id_Name = "122101";
 const char* const c_field_id_Number_Multiple_Pages = "122144";
-const char* const c_field_id_Order = "122108";
 const char* const c_field_id_PDF_Font_Type = "122137";
 const char* const c_field_id_PDF_List_Type = "122136";
 const char* const c_field_id_Parent_Class = "301997";
@@ -192,7 +191,6 @@ const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Multiline_Truncate_For_Print = "Multiline_Truncate_For_Print";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Number_Multiple_Pages = "Number_Multiple_Pages";
-const char* const c_field_name_Order = "Order";
 const char* const c_field_name_PDF_Font_Type = "PDF_Font_Type";
 const char* const c_field_name_PDF_List_Type = "PDF_List_Type";
 const char* const c_field_name_Parent_Class = "Parent_Class";
@@ -235,7 +233,6 @@ const char* const c_field_display_name_Model = "field_list_model";
 const char* const c_field_display_name_Multiline_Truncate_For_Print = "field_list_multiline_truncate_for_print";
 const char* const c_field_display_name_Name = "field_list_name";
 const char* const c_field_display_name_Number_Multiple_Pages = "field_list_number_multiple_pages";
-const char* const c_field_display_name_Order = "field_list_order";
 const char* const c_field_display_name_PDF_Font_Type = "field_list_pdf_font_type";
 const char* const c_field_display_name_PDF_List_Type = "field_list_pdf_list_type";
 const char* const c_field_display_name_Parent_Class = "field_list_parent_class";
@@ -250,7 +247,7 @@ const char* const c_field_display_name_Title = "field_list_title";
 const char* const c_field_display_name_Type = "field_list_type";
 const char* const c_field_display_name_Variation_Name = "field_list_variation_name";
 
-const int c_num_fields = 42;
+const int c_num_fields = 41;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -261,7 +258,6 @@ const char* const c_all_sorted_field_ids[ ] =
    "122105",
    "122106",
    "122107",
-   "122108",
    "122109",
    "122110",
    "122111",
@@ -328,7 +324,6 @@ const char* const c_all_sorted_field_names[ ] =
    "Multiline_Truncate_For_Print",
    "Name",
    "Number_Multiple_Pages",
-   "Order",
    "PDF_Font_Type",
    "PDF_List_Type",
    "Parent_Class",
@@ -375,8 +370,6 @@ inline bool is_transient_field( const string& field )
 }
 
 const char* const c_procedure_id_Generate_PDF_List = "122430";
-const char* const c_procedure_id_Move_Down = "122420";
-const char* const c_procedure_id_Move_Up = "122410";
 
 const uint64_t c_modifier_Cannot_Text_Search = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Child = UINT64_C( 0x200 );
@@ -430,7 +423,6 @@ bool gv_default_Limit_Scroll_And_New = bool( 0 );
 bool gv_default_Multiline_Truncate_For_Print = bool( 1 );
 string gv_default_Name = string( );
 bool gv_default_Number_Multiple_Pages = bool( 1 );
-string gv_default_Order = string( );
 int gv_default_PDF_Font_Type = int( 0 );
 int gv_default_PDF_List_Type = int( 0 );
 int gv_default_Print_Restriction = int( 0 );
@@ -863,8 +855,6 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
          string_getter< string >( cmd_handler.p_Meta_List->Name( ), cmd_handler.retval );
       else if( field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
          string_getter< bool >( cmd_handler.p_Meta_List->Number_Multiple_Pages( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
-         string_getter< string >( cmd_handler.p_Meta_List->Order( ), cmd_handler.retval );
       else if( field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
          string_getter< int >( cmd_handler.p_Meta_List->PDF_Font_Type( ), cmd_handler.retval );
       else if( field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
@@ -985,9 +975,6 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
       else if( field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Number_Multiple_Pages, field_value );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
-         func_string_setter< Meta_List, string >(
-          *cmd_handler.p_Meta_List, &Meta_List::Order, field_value );
       else if( field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::PDF_Font_Type, field_value );
@@ -1064,22 +1051,6 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    {
       int Variation_Num( get_parm_val_from_string< int >( parameters, c_cmd_parm_Meta_List_Generate_PDF_List_Variation_Num ) );
       cmd_handler.p_Meta_List->Generate_PDF_List( Variation_Num );
-
-      cmd_handler.retval.erase( );
-   }
-   else if( command == c_cmd_Meta_List_Move_Down )
-   {
-      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Move_Down_Restrict_Fields ) );
-      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Move_Down_Restrict_Values ) );
-      cmd_handler.p_Meta_List->Move_Down( Restrict_Fields, Restrict_Values );
-
-      cmd_handler.retval.erase( );
-   }
-   else if( command == c_cmd_Meta_List_Move_Up )
-   {
-      string Restrict_Fields( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Move_Up_Restrict_Fields ) );
-      string Restrict_Values( get_parm_val_from_string< string >( parameters, c_cmd_parm_Meta_List_Move_Up_Restrict_Values ) );
-      cmd_handler.p_Meta_List->Move_Up( Restrict_Fields, Restrict_Values );
 
       cmd_handler.retval.erase( );
    }
@@ -1172,9 +1143,6 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    bool impl_Number_Multiple_Pages( ) const { return lazy_fetch( p_obj ), v_Number_Multiple_Pages; }
    void impl_Number_Multiple_Pages( bool Number_Multiple_Pages ) { v_Number_Multiple_Pages = Number_Multiple_Pages; }
-
-   const string& impl_Order( ) const { return lazy_fetch( p_obj ), v_Order; }
-   void impl_Order( const string& Order ) { v_Order = Order; }
 
    int impl_PDF_Font_Type( ) const { return lazy_fetch( p_obj ), v_PDF_Font_Type; }
    void impl_PDF_Font_Type( int PDF_Font_Type ) { v_PDF_Font_Type = PDF_Font_Type; }
@@ -1470,10 +1438,6 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    void impl_Generate_PDF_List( int Variation_Num );
 
-   void impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values );
-
-   void impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values );
-
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
 
@@ -1543,7 +1507,6 @@ struct Meta_List::impl : public Meta_List_command_handler
    bool v_Multiline_Truncate_For_Print;
    string v_Name;
    bool v_Number_Multiple_Pages;
-   string v_Order;
    int v_PDF_Font_Type;
    int v_PDF_List_Type;
    int v_Print_Restriction;
@@ -2419,208 +2382,6 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
    // [<finish Generate_PDF_List_impl>]
 }
 
-void Meta_List::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
-{
-   // [(start move_up_and_down)]
-   transaction_start( );
-   try
-   {
-      if( !Restrict_Fields.empty( ) )
-      {
-         get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
-
-         class_pointer< Meta_List > cp_other( e_create_instance );
-
-         int num_fixed = 0;
-         if( !Restrict_Fields.empty( ) )
-            num_fixed = split_count( Restrict_Fields );
-
-         string key_info( Restrict_Fields );
-         if( num_fixed )
-            key_info += ',';
-         key_info += string( c_field_id_Order );
-
-         if( !num_fixed )
-            key_info += ' ' + get_obj( ).Order( );
-         else
-         {
-            key_info += '#' + to_string( num_fixed );
-            key_info += ' ' + Restrict_Values + ',' + get_obj( ).Order( );
-         }
-
-         // NOTE: Only the first record is required so set the row limit to 1.
-         if( cp_other->iterate_forwards( key_info, string( c_field_name_Order ), false, 1 ) )
-         {
-            string old_val( get_obj( ).Order( ) );
-            string new_val( cp_other->Order( ) );
-
-            get_obj( ).Order( gen_key( ) );
-            get_obj( ).op_apply( );
-
-            get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
-
-            cp_other->op_update( cp_other->get_key( ), c_field_name_Order );
-            cp_other->Order( old_val );
-            cp_other->op_apply( );
-
-            get_obj( ).Order( new_val );
-            get_obj( ).op_apply( );
-
-            cp_other->iterate_stop( );
-         }
-         else
-            get_obj( ).op_cancel( );
-      }
-      else
-      {
-         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
-         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
-         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
-         get_obj( ).op_update( get_obj( ).get_key( ) );
-
-         Meta_Model parent;
-         parent.perform_fetch( get_obj( ).Model( ) );
-
-         string key_info( c_field_id_Order );
-         key_info += ' ' + get_obj( ).Order( );
-         // NOTE: Only the first record is required so set the row limit to 1.
-         if( parent.child_List( ).iterate_forwards( key_info, false, 1 ) )
-         {
-            string old_val( get_obj( ).Order( ) );
-            string new_val( parent.child_List( ).Order( ) );
-
-            get_obj( ).Order( gen_key( ) );
-            get_obj( ).op_apply( );
-
-            get_obj( ).op_update( );
-
-            parent.child_List( ).op_update( );
-            parent.child_List( ).Order( old_val );
-            parent.child_List( ).op_apply( );
-
-            get_obj( ).Order( new_val );
-            get_obj( ).op_apply( );
-
-            parent.child_List( ).iterate_stop( );
-         }
-         else
-            get_obj( ).op_cancel( );
-      }
-
-      transaction_commit( );
-   }
-   catch( ... )
-   {
-      transaction_rollback( );
-      throw;
-   }
-   // [(finish move_up_and_down)]
-
-   // [<start Move_Down_impl>]
-   // [<finish Move_Down_impl>]
-}
-
-void Meta_List::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
-{
-   // [(start move_up_and_down)]
-   transaction_start( );
-   try
-   {
-      if( !Restrict_Fields.empty( ) )
-      {
-         get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
-
-         class_pointer< Meta_List > cp_other( e_create_instance );
-
-         int num_fixed = 0;
-         if( !Restrict_Fields.empty( ) )
-            num_fixed = split_count( Restrict_Fields );
-
-         string key_info( Restrict_Fields );
-         if( num_fixed )
-            key_info += ',';
-         key_info += string( c_field_id_Order );
-
-         if( !num_fixed )
-            key_info += ' ' + get_obj( ).Order( );
-         else
-         {
-            key_info += '#' + to_string( num_fixed );
-            key_info += ' ' + Restrict_Values + ',' + get_obj( ).Order( );
-         }
-
-         // NOTE: Only the first record is required so set the row limit to 1.
-         if( cp_other->iterate_backwards( key_info, string( c_field_name_Order ), false, 1 ) )
-         {
-            string old_val( get_obj( ).Order( ) );
-            string new_val( cp_other->Order( ) );
-
-            get_obj( ).Order( gen_key( ) );
-            get_obj( ).op_apply( );
-
-            get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
-
-            cp_other->op_update( cp_other->get_key( ), c_field_name_Order );
-            cp_other->Order( old_val );
-            cp_other->op_apply( );
-
-            get_obj( ).Order( new_val );
-            get_obj( ).op_apply( );
-
-            cp_other->iterate_stop( );
-         }
-         else
-            get_obj( ).op_cancel( );
-      }
-      else
-      {
-         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
-         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
-         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
-         get_obj( ).op_update( get_obj( ).get_key( ) );
-
-         Meta_Model parent;
-         parent.perform_fetch( get_obj( ).Model( ) );
-
-         string key_info( c_field_id_Order );
-         key_info += ' ' + get_obj( ).Order( );
-         // NOTE: Only the first record is required so set the row limit to 1.
-         if( parent.child_List( ).iterate_backwards( key_info, false, 1 ) )
-         {
-            string old_val( get_obj( ).Order( ) );
-            string new_val( parent.child_List( ).Order( ) );
-
-            get_obj( ).Order( gen_key( ) );
-            get_obj( ).op_apply( );
-
-            get_obj( ).op_update( );
-
-            parent.child_List( ).op_update( );
-            parent.child_List( ).Order( old_val );
-            parent.child_List( ).op_apply( );
-
-            get_obj( ).Order( new_val );
-            get_obj( ).op_apply( );
-
-            parent.child_List( ).iterate_stop( );
-         }
-         else
-            get_obj( ).op_cancel( );
-      }
-
-      transaction_commit( );
-   }
-   catch( ... )
-   {
-      transaction_rollback( );
-      throw;
-   }
-   // [(finish move_up_and_down)]
-
-   // [<start Move_Up_impl>]
-   // [<finish Move_Up_impl>]
-}
-
 string Meta_List::impl::get_field_value( int field ) const
 {
    string retval;
@@ -2740,58 +2501,54 @@ string Meta_List::impl::get_field_value( int field ) const
       break;
 
       case 28:
-      retval = to_string( impl_Order( ) );
-      break;
-
-      case 29:
       retval = to_string( impl_PDF_Font_Type( ) );
       break;
 
-      case 30:
+      case 29:
       retval = to_string( impl_PDF_List_Type( ) );
       break;
 
-      case 31:
+      case 30:
       retval = to_string( impl_Parent_Class( ) );
       break;
 
-      case 32:
+      case 31:
       retval = to_string( impl_Parent_Field( ) );
       break;
 
-      case 33:
+      case 32:
       retval = to_string( impl_Print_Restriction( ) );
       break;
 
-      case 34:
+      case 33:
       retval = to_string( impl_Print_Without_Highlight( ) );
       break;
 
-      case 35:
+      case 34:
       retval = to_string( impl_Search_Option_Limit( ) );
       break;
 
-      case 36:
+      case 35:
       retval = to_string( impl_Sort_Rows_In_UI( ) );
       break;
 
-      case 37:
+      case 36:
       retval = to_string( impl_Style( ) );
       break;
 
-      case 38:
+      case 37:
       retval = to_string( impl_Text_Match_Highlight( ) );
       break;
 
-      case 39:
+      case 38:
       retval = to_string( impl_Title( ) );
       break;
 
-      case 40:
+      case 39:
       retval = to_string( impl_Type( ) );
       break;
 
-      case 41:
+      case 40:
       retval = to_string( impl_Variation_Name( ) );
       break;
 
@@ -2919,58 +2676,54 @@ void Meta_List::impl::set_field_value( int field, const string& value )
       break;
 
       case 28:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Order, value );
-      break;
-
-      case 29:
       func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_Font_Type, value );
       break;
 
-      case 30:
+      case 29:
       func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_List_Type, value );
       break;
 
-      case 31:
+      case 30:
       func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Parent_Class, value );
       break;
 
-      case 32:
+      case 31:
       func_string_setter< Meta_List::impl, Meta_Field >( *this, &Meta_List::impl::impl_Parent_Field, value );
       break;
 
-      case 33:
+      case 32:
       func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Print_Restriction, value );
       break;
 
-      case 34:
+      case 33:
       func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Print_Without_Highlight, value );
       break;
 
-      case 35:
+      case 34:
       func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Search_Option_Limit, value );
       break;
 
-      case 36:
+      case 35:
       func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Sort_Rows_In_UI, value );
       break;
 
-      case 37:
+      case 36:
       func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Style, value );
       break;
 
-      case 38:
+      case 37:
       func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Text_Match_Highlight, value );
       break;
 
-      case 39:
+      case 38:
       func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Title, value );
       break;
 
-      case 40:
+      case 39:
       func_string_setter< Meta_List::impl, Meta_List_Type >( *this, &Meta_List::impl::impl_Type, value );
       break;
 
-      case 41:
+      case 40:
       func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Variation_Name, value );
       break;
 
@@ -3149,7 +2902,6 @@ void Meta_List::impl::clear( )
    v_Multiline_Truncate_For_Print = gv_default_Multiline_Truncate_For_Print;
    v_Name = gv_default_Name;
    v_Number_Multiple_Pages = gv_default_Number_Multiple_Pages;
-   v_Order = gv_default_Order;
    v_PDF_Font_Type = gv_default_PDF_Font_Type;
    v_PDF_List_Type = gv_default_PDF_List_Type;
    v_Print_Restriction = gv_default_Print_Restriction;
@@ -3221,11 +2973,6 @@ void Meta_List::impl::validate( unsigned state, bool is_internal, validation_err
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Id ) ) ) ) );
-
-   if( is_null( v_Order ) && !value_will_be_provided( c_field_name_Order ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Order,
-       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
-       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Order ) ) ) ) );
 
    if( is_null( v_Title ) && !value_will_be_provided( c_field_name_Title ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Title,
@@ -3421,11 +3168,6 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   // [(start default_from_key)]
-   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
-      get_obj( ).Order( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
 
    // [(start field_from_other_field)]
    if( get_obj( ).Is_Variation( ) == true )
@@ -3793,16 +3535,6 @@ void Meta_List::Number_Multiple_Pages( bool Number_Multiple_Pages )
    p_impl->impl_Number_Multiple_Pages( Number_Multiple_Pages );
 }
 
-const string& Meta_List::Order( ) const
-{
-   return p_impl->impl_Order( );
-}
-
-void Meta_List::Order( const string& Order )
-{
-   p_impl->impl_Order( Order );
-}
-
 int Meta_List::PDF_Font_Type( ) const
 {
    return p_impl->impl_PDF_Font_Type( );
@@ -4036,16 +3768,6 @@ const Meta_List_Field& Meta_List::child_List_Field( ) const
 void Meta_List::Generate_PDF_List( int Variation_Num )
 {
    p_impl->impl_Generate_PDF_List( Variation_Num );
-}
-
-void Meta_List::Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
-{
-   p_impl->impl_Move_Down( Restrict_Fields, Restrict_Values );
-}
-
-void Meta_List::Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
-{
-   p_impl->impl_Move_Up( Restrict_Fields, Restrict_Values );
 }
 
 string Meta_List::get_field_value( int field ) const
@@ -4448,16 +4170,6 @@ const char* Meta_List::get_field_id(
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
-   }
-   else if( name == c_field_name_Order )
-   {
-      p_id = c_field_id_Order;
-
-      if( p_type_name )
-         *p_type_name = "string";
-
-      if( p_sql_numeric )
-         *p_sql_numeric = false;
    }
    else if( name == c_field_name_PDF_Font_Type )
    {
@@ -4880,16 +4592,6 @@ const char* Meta_List::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Order )
-   {
-      p_name = c_field_name_Order;
-
-      if( p_type_name )
-         *p_type_name = "string";
-
-      if( p_sql_numeric )
-         *p_sql_numeric = false;
-   }
    else if( id == c_field_id_PDF_Font_Type )
    {
       p_name = c_field_name_PDF_Font_Type;
@@ -5086,8 +4788,6 @@ string Meta_List::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Name );
    else if( id == c_field_id_Number_Multiple_Pages )
       display_name = get_module_string( c_field_display_name_Number_Multiple_Pages );
-   else if( id == c_field_id_Order )
-      display_name = get_module_string( c_field_display_name_Order );
    else if( id == c_field_id_PDF_Font_Type )
       display_name = get_module_string( c_field_display_name_PDF_Font_Type );
    else if( id == c_field_id_PDF_List_Type )
@@ -5391,7 +5091,6 @@ void Meta_List::get_sql_column_names(
    names.push_back( "C_Model" );
    names.push_back( "C_Multiline_Truncate_For_Print" );
    names.push_back( "C_Number_Multiple_Pages" );
-   names.push_back( "C_Order" );
    names.push_back( "C_PDF_Font_Type" );
    names.push_back( "C_PDF_List_Type" );
    names.push_back( "C_Parent_Class" );
@@ -5443,7 +5142,6 @@ void Meta_List::get_sql_column_values(
    values.push_back( sql_quote( to_string( Model( ) ) ) );
    values.push_back( to_string( Multiline_Truncate_For_Print( ) ) );
    values.push_back( to_string( Number_Multiple_Pages( ) ) );
-   values.push_back( sql_quote( to_string( Order( ) ) ) );
    values.push_back( to_string( PDF_Font_Type( ) ) );
    values.push_back( to_string( PDF_List_Type( ) ) );
    values.push_back( sql_quote( to_string( Parent_Class( ) ) ) );
@@ -5518,14 +5216,6 @@ void Meta_List::get_always_required_field_names(
    ( void )names;
    ( void )dependents;
    ( void )required_transients;
-
-   // [(start move_up_and_down)]
-   dependents.insert( "Order" );
-
-   if( ( required_transients && is_field_transient( e_field_id_Order ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Order ) ) )
-      names.insert( "Order" );
-   // [(finish move_up_and_down)]
 
    // [(start modifier_field_value)]
    dependents.insert( "PDF_List_Type" ); // (for PDF_List_Is_None modifier)
@@ -5677,7 +5367,6 @@ void Meta_List::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "122143", "Multiline_Truncate_For_Print", "bool", false ) );
    all_field_info.push_back( field_info( "122101", "Name", "string", false ) );
    all_field_info.push_back( field_info( "122144", "Number_Multiple_Pages", "bool", false ) );
-   all_field_info.push_back( field_info( "122108", "Order", "string", false ) );
    all_field_info.push_back( field_info( "122137", "PDF_Font_Type", "int", false ) );
    all_field_info.push_back( field_info( "122136", "PDF_List_Type", "int", false ) );
    all_field_info.push_back( field_info( "301997", "Parent_Class", "Meta_Class", false ) );
@@ -5839,58 +5528,54 @@ const char* Meta_List::static_get_field_id( field_id id )
       break;
 
       case 29:
-      p_id = "122108";
-      break;
-
-      case 30:
       p_id = "122137";
       break;
 
-      case 31:
+      case 30:
       p_id = "122136";
       break;
 
-      case 32:
+      case 31:
       p_id = "301997";
       break;
 
-      case 33:
+      case 32:
       p_id = "301996";
       break;
 
-      case 34:
+      case 33:
       p_id = "122123";
       break;
 
-      case 35:
+      case 34:
       p_id = "122118";
       break;
 
-      case 36:
+      case 35:
       p_id = "122117";
       break;
 
-      case 37:
+      case 36:
       p_id = "122122";
       break;
 
-      case 38:
+      case 37:
       p_id = "122107";
       break;
 
-      case 39:
+      case 38:
       p_id = "122115";
       break;
 
-      case 40:
+      case 39:
       p_id = "122106";
       break;
 
-      case 41:
+      case 40:
       p_id = "301991";
       break;
 
-      case 42:
+      case 41:
       p_id = "122109";
       break;
    }
@@ -6020,58 +5705,54 @@ const char* Meta_List::static_get_field_name( field_id id )
       break;
 
       case 29:
-      p_id = "Order";
-      break;
-
-      case 30:
       p_id = "PDF_Font_Type";
       break;
 
-      case 31:
+      case 30:
       p_id = "PDF_List_Type";
       break;
 
-      case 32:
+      case 31:
       p_id = "Parent_Class";
       break;
 
-      case 33:
+      case 32:
       p_id = "Parent_Field";
       break;
 
-      case 34:
+      case 33:
       p_id = "Print_Restriction";
       break;
 
-      case 35:
+      case 34:
       p_id = "Print_Without_Highlight";
       break;
 
-      case 36:
+      case 35:
       p_id = "Search_Option_Limit";
       break;
 
-      case 37:
+      case 36:
       p_id = "Sort_Rows_In_UI";
       break;
 
-      case 38:
+      case 37:
       p_id = "Style";
       break;
 
-      case 39:
+      case 38:
       p_id = "Text_Match_Highlight";
       break;
 
-      case 40:
+      case 39:
       p_id = "Title";
       break;
 
-      case 41:
+      case 40:
       p_id = "Type";
       break;
 
-      case 42:
+      case 41:
       p_id = "Variation_Name";
       break;
    }
@@ -6144,34 +5825,32 @@ int Meta_List::static_get_field_num( const string& field )
       rc += 27;
    else if( field == c_field_id_Number_Multiple_Pages || field == c_field_name_Number_Multiple_Pages )
       rc += 28;
-   else if( field == c_field_id_Order || field == c_field_name_Order )
-      rc += 29;
    else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
-      rc += 30;
+      rc += 29;
    else if( field == c_field_id_PDF_List_Type || field == c_field_name_PDF_List_Type )
-      rc += 31;
+      rc += 30;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
-      rc += 32;
+      rc += 31;
    else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
-      rc += 33;
+      rc += 32;
    else if( field == c_field_id_Print_Restriction || field == c_field_name_Print_Restriction )
-      rc += 34;
+      rc += 33;
    else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
-      rc += 35;
+      rc += 34;
    else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
-      rc += 36;
+      rc += 35;
    else if( field == c_field_id_Sort_Rows_In_UI || field == c_field_name_Sort_Rows_In_UI )
-      rc += 37;
+      rc += 36;
    else if( field == c_field_id_Style || field == c_field_name_Style )
-      rc += 38;
+      rc += 37;
    else if( field == c_field_id_Text_Match_Highlight || field == c_field_name_Text_Match_Highlight )
-      rc += 39;
+      rc += 38;
    else if( field == c_field_id_Title || field == c_field_name_Title )
-      rc += 40;
+      rc += 39;
    else if( field == c_field_id_Type || field == c_field_name_Type )
-      rc += 41;
+      rc += 40;
    else if( field == c_field_id_Variation_Name || field == c_field_name_Variation_Name )
-      rc += 42;
+      rc += 41;
 
    return rc - 1;
 }
@@ -6185,8 +5864,6 @@ procedure_info_container& Meta_List::static_get_procedure_info( )
    {
       initialised = true;
       procedures.insert( make_pair( "122430", "Generate_PDF_List" ) );
-      procedures.insert( make_pair( "122420", "Move_Down" ) );
-      procedures.insert( make_pair( "122410", "Move_Up" ) );
    }
 
    return procedures;
@@ -6228,7 +5905,6 @@ string Meta_List::static_get_sql_columns( )
     "C_Model VARCHAR(64) NOT NULL,"
     "C_Multiline_Truncate_For_Print INTEGER NOT NULL,"
     "C_Number_Multiple_Pages INTEGER NOT NULL,"
-    "C_Order VARCHAR(128) NOT NULL,"
     "C_PDF_Font_Type INTEGER NOT NULL,"
     "C_PDF_List_Type INTEGER NOT NULL,"
     "C_Parent_Class VARCHAR(64) NOT NULL,"
@@ -6320,13 +5996,11 @@ void Meta_List::static_get_all_enum_pairs( vector< pair< string, string > >& pai
 void Meta_List::static_get_sql_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Model,C_Id" );
-   indexes.push_back( "C_Model,C_Order" );
 }
 
 void Meta_List::static_get_sql_unique_indexes( vector< string >& indexes )
 {
    indexes.push_back( "C_Model,C_Id" );
-   indexes.push_back( "C_Model,C_Order" );
 }
 
 void Meta_List::static_insert_derivation( const string& module_and_class_id )

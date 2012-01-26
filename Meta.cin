@@ -450,7 +450,7 @@ field_add -id=117101 View_Type Name str30 mand
 field_add -id=117102 View_Type View_Name str100 mand
 index_add -id=117201 View_Type Name unique
 class_add -id=118100 View Views
-field_add -id=118101 View Name str100 mand
+field_add -id=118101 View Name str100 opt -transient
 field_add -id=118102 View Access_Restriction int mand -def=0 -e=view_access_restrict
 field_add -id=118103 View Change_Restriction int mand -def=0 -e=view_change_restrict
 field_add -id=118104 View Title str100 mand -def=?
@@ -504,7 +504,7 @@ field_add -id=121102 List_Type List_Name str100 mand
 field_add -id=121103 List_Type Is_Child bool mand -def=0
 field_add -id=121104 List_Type Is_Home bool mand -def=0
 index_add -id=121201 List_Type Name unique
-class_add -id=122100 List Lists -x=ordered
+class_add -id=122100 List Lists
 field_add -id=122101 List Name str100 opt -transient
 field_add -id=122102 List Is_Child bool mand -def=0
 field_add -id=122103 List Access_Restriction int mand -def=0 -e=list_restrict
@@ -512,7 +512,6 @@ field_add -id=122104 List Create_Restriction int mand -def=0 -e=list_restrict
 field_add -id=122105 List Destroy_Restriction int mand -def=0 -e=list_restrict
 field_add -id=122106 List Title str100 mand -def=*
 field_add -id=122107 List Style int mand -def=0 -e=list_style
-field_add -id=122108 List Order string mand -x=order
 field_add -id=122109 List Variation_Name str100 opt
 field_add -id=122110 List Is_Variation bool mand -def=0
 field_add -id=122111 List Id identifier mand
@@ -539,12 +538,6 @@ field_add -id=122141 List Display_Only_If_Default_Other bool mand -def=0
 field_add -id=122142 List Destroy_Only_If_Default_Other bool mand -def=0
 field_add -id=122143 List Multiline_Truncate_For_Print bool mand -def=1
 field_add -id=122144 List Number_Multiple_Pages bool mand -def=1
-procedure_add -id=122410 List Move_Up
-procedure_arg_add -id=122411 List Move_Up Restrict_Fields string in
-procedure_arg_add -id=122412 List Move_Up Restrict_Values string in
-procedure_add -id=122420 List Move_Down
-procedure_arg_add -id=122421 List Move_Down Restrict_Fields string in
-procedure_arg_add -id=122422 List Move_Down Restrict_Values string in
 procedure_add -id=122430 List Generate_PDF_List
 procedure_arg_add -id=122431 List Generate_PDF_List Variation_Num int in
 class_add -id=123100 List_Field_Type List_Field_Types
@@ -937,10 +930,8 @@ index_add -id=401500 Permission {Workgroup},Name unique
 index_add -id=401510 Permission {Workgroup},Id unique
 index_add -id=401600 Specification_Type Parent_{Specification_Type},Name unique
 index_add -id=401610 Specification_Type Is_Child_Only,Parent_{Specification_Type},Name unique
-index_add -id=400700 View {Model},Name unique
 index_add -id=400710 View {Model},Id unique
 index_add -id=400750 View_Field {View},Order unique
-index_add -id=400800 List {Model},Order unique
 index_add -id=400820 List {Model},Id unique
 index_add -id=400850 List_Field {List},Order unique
 index_add -id=400900 Module {Application},Order unique
@@ -1153,7 +1144,6 @@ specification_add -id=630026 {Class}_Extra field_from_other_field "Class Source_
 specification_add -id=640026 {Class}_Static_Instance_Key field_from_other_field "Class Source_{Class}:Static_Instance_Key Static_Instance_Key -create_only -check_null"
 specification_add -id=600027 {Class}_{Specification}_update_children update_children "Class Specification Name"
 specification_add -id=610027 {Class}_{Relationship}_update_children update_children "Class Relationship:Child_Class Name"
-specification_add -id=600028 {Class}_{View}_update_children update_children "Class View Name"
 specification_add -id=600029 {Class}_Name_{Relationship}_change child_field_change_cascade "Class Name Relationship:Parent_Class"
 specification_add -id=600030 {Class}_Source_{Class}_check check_null_match "Class Source_{Class} Source_{Model}"
 specification_add -id=600032 {Class}_Is_Alias modifier_field_null "Class Is_Alias Source_{Model} -negative"
@@ -1550,7 +1540,7 @@ specification_add -id=600300 {View}_Type_default fk_default "View Type normal"
 specification_add -id=600310 {View}_Name_default default_to_field "View Name Type:View_Name"
 specification_add -id=600311 {View}_Type_Key field_from_other_field "View Type Type_Key"
 specification_add -id=600315 {View}_Id_auto_inc parent_auto_int_inc "View Id {Model} Next_View_Id"
-specification_add -id=600320 {View}_Name_from_search_replace field_from_search_replace "View Name Type:View_Name {Class}:Name={class} -sep=_"
+specification_add -id=600320 {View}_Name_from_search_replace field_from_search_replace "View Name Type:View_Name {Class}:Name={class} -sep=_ -transient"
 specification_add -id=600330 {View}_Is_Print_Version modifier_field_value "View Is_Print_Version Type print"
 specification_add -id=600335 {View}_Is_Not_Print_Version modifier_field_value "View Is_Not_Print_Version Type print -not_equal"
 specification_add -id=600340 {View}_Printing_Disallowed modifier_field_value "View Printing_Disallowed Allow_Printable_Version false"
@@ -1582,8 +1572,6 @@ specification_add -id=600396 {View_Field}_Is_Not_Date_1 modifier_field_value "Vi
 specification_add -id=600397 {View_Field}_Is_Not_Date_2 modifier_field_value "View_Field Is_Not_Date Source_Child:Primitive date -enum=primitive -not_equal -test=Use_Source_Parent=1"
 specification_add -id=600398 {View_Field}_Is_Not_Enum modifier_field_null "View_Field Is_Not_Enum Source_Field:Enum"
 specification_add -id=600400 {List}_Type_default fk_default "List Type normal"
-specification_add -id=600401 {List}_Order_default default_from_key "List Order -check_null"
-specification_add -id=600402 {List}_move_up_and_down move_up_and_down "List Move_Up Move_Down Restrict_Fields Restrict_Values Order {Model}"
 specification_add -id=600415 {List}_Variation_Name field_from_other_field "List Title Variation_Name \"\" -test=Is_Variation=true"
 specification_add -id=600418 {List}_Id_auto_inc parent_auto_int_inc "List Id {Model} Next_List_Id"
 specification_add -id=600420 {List}_Name_from_search_replace field_from_search_replace "List Name Type:List_Name\
@@ -1802,7 +1790,7 @@ specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_e
 ,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
 ,@tab:Advanced_UI_Options,Allow_Copy_Action,Allow_Printable_Version;force,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type"
-specification_add -id=602620 {View}_child_list0 list "@602620_* child:no_limit View Name,Type:Name {Model}"
+specification_add -id=602620 {View}_child_list0 list "@602620_* child:sort_no_limit View Name,Type:Name {Model}"
 specification_add -id=602710 {View_Field}_view view "? standard View_Field {View}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
 ,Source_Parent_Class:Name;hidden+fkey2+forced,Source_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
@@ -1830,8 +1818,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,@tab:Advanced_UI_Options\
 ,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_Unactionable_Records\
 ,Display_Security_Level,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
-specification_add -id=602810 {List}_child_list0 list "@602810_* child:no_limit List\
- Name,Access_Restriction,Type:Name -act=+!122410+@rfields+@rvalues,+!^122420+@rfields+@rvalues {Model}"
+specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction,Type:Name {Model}"
 specification_add -id=602850 {List_Field}_view view "? standard List_Field {List}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
 ,Source_Parent_Class:Name;hidden+fkey2,Source_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link+force\

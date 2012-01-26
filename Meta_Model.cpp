@@ -1443,11 +1443,23 @@ void Meta_Model::impl::impl_Generate( )
          } while( get_obj( ).child_Specification( ).iterate_next( ) );
       }
 
-      string view_key_info( to_string( Meta_View::static_get_field_id( Meta_View::e_field_id_Name ) ) + ' ' );
-      if( get_obj( ).child_View( ).iterate_forwards( view_key_info ) )
+      // NOTE: To ensure consistency views are processed in name order but as this is transient
+      // first determine the key order from a map.
+      map< string, string > view_records;
+      if( get_obj( ).child_View( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
       {
          do
          {
+            view_records.insert( make_pair( get_obj( ).child_View( ).Name( ), get_obj( ).child_View( ).get_key( ) ) );
+         } while( get_obj( ).child_View( ).iterate_next( ) );
+      }
+
+      if( !view_records.empty( ) )
+      {
+         for( map< string, string >::iterator vi = view_records.begin( ); vi != view_records.end( ); ++vi )
+         {
+            get_obj( ).child_View( ).perform_fetch( vi->second );
+
             string specification_name( get_obj( ).child_View( ).Class( ).Name( ) + '_' );
 
             string type;
@@ -2843,17 +2855,29 @@ void Meta_Model::impl::impl_Generate( )
                       + "_prxtr" << fnum << "\x60=\x60'" << parent_field_extra[ i + 1 ] << "\x60'\x60}\n";
                }
             }
-         } while( get_obj( ).child_View( ).iterate_next( ) );
+         }
       }
 
-      string list_key_info( to_string( Meta_List::static_get_field_id( Meta_List::e_field_id_Order ) ) + ' ' );
-      if( get_obj( ).child_List( ).iterate_forwards( list_key_info ) )
+      // NOTE: As the list names are transient determine the key order from a map (the lists need to be
+      // processed in such a manner so that variations can be found immediately after the original list).
+      map< string, string > list_records;
+      if( get_obj( ).child_List( ).iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
+      {
+         do
+         {
+            list_records.insert( make_pair( get_obj( ).child_List( ).Name( ), get_obj( ).child_List( ).get_key( ) ) );
+         } while( get_obj( ).child_List( ).iterate_next( ) );
+      }
+
+      if( !list_records.empty( ) )
       {
          int variation = 0;
          map< string, int > child_lists;
 
-         do
+         for( map< string, string >::iterator li = list_records.begin( ); li != list_records.end( ); ++li )
          {
+            get_obj( ).child_List( ).perform_fetch( li->second );
+
             if( get_obj( ).child_List( ).Access_Restriction( ) == 4 ) // i.e. denied_always
                continue;
 
@@ -4887,8 +4911,7 @@ void Meta_Model::impl::impl_Generate( )
                    << get_mapped_id( model_name, column_parent_fields[ field_keys[ i ] ].first ) << "\x60'\x60}\n";
                }
             }
-
-         } while( get_obj( ).child_List( ).iterate_next( ) );
+         }
       }
 
       for( size_t i = 0; i < class_num; i++ )

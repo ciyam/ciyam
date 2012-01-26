@@ -3349,7 +3349,7 @@
      <pclass>122100
      <pfield>122101
      <pfname>field_list_name
-     <pextra>122108
+     <pextra>
     </field>
     <field/>
      <name>field_list_field_class
@@ -7115,7 +7115,7 @@
      <field>118101
      <ftype>string
      <extra>no_edit+max_size=100
-     <mandatory>true
+     <mandatory>false
      <modifiers>
     </field>
     <field/>
@@ -8104,8 +8104,8 @@
    <cid>122100
    <name>602810_name
    <type>child
-   <extra>no_limit
-   <actions>+!122410+@rfields+@rvalues,+!^122420+@rfields+@rvalues
+   <extra>sort_no_limit
+   <actions>
    <modifiers>
    <view>602800
    <class>List
@@ -8116,15 +8116,6 @@
    <pfldnm>Model
    <module>Meta
    <columns/>
-    <column/>
-     <name>field_list_order
-     <field>122108
-     <ftype>string
-     <extra>hidden+order
-     <modifiers>
-     <unique>true
-     <indexed>true
-    </column>
     <column/>
      <name>field_list_name
      <field>122101
@@ -9239,7 +9230,7 @@
    <cid>118100
    <name>602620_name
    <type>child
-   <extra>no_limit
+   <extra>sort_no_limit
    <actions>
    <modifiers>
    <view>602610
@@ -9257,8 +9248,8 @@
      <ftype>string
      <extra>max_size=100
      <modifiers>
-     <unique>true
-     <indexed>true
+     <unique>false
+     <indexed>false
     </column>
     <column/>
      <name>field_view_type
