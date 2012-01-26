@@ -5,26 +5,24 @@ if not exist xvars.exe goto error3
 
 xrep @makefile.sio.xrep modules=@modules.lst >makefile.sio
 
-if '%CPPENV%' == 'bcb6' goto bcb
-if '%CPPENV%' == 'BCB6' goto bcb
-if '%CPPENV%' == 'vc71' goto mvc
-if '%CPPENV%' == 'VC71' goto mvc
-if '%CPPENV%' == 'vc80' goto mvc
-if '%CPPENV%' == 'VC80' goto mvc
+if '%CPPENV%' == 'bcb' goto bcb
+if '%CPPENV%' == 'BCB' goto bcb
+if '%CPPENV%' == 'mvc' goto mvc
+if '%CPPENV%' == 'MVC' goto mvc
 goto error1
-
-:mvc
-xvars >makefile.vars.xrep
-if errorlevel 1 goto end
-xrep @makefile.mvc.xrep >makefile.mvc.new
-call update makefile.mvc makefile.mvc.new
-goto end
 
 :bcb
 xvars >makefile.vars.xrep
 if errorlevel 1 goto end
 xrep @makefile.bcb.xrep >makefile.bcb.new
 call update makefile.bcb makefile.bcb.new
+goto end
+
+:mvc
+xvars >makefile.vars.xrep
+if errorlevel 1 goto end
+xrep @makefile.mvc.xrep >makefile.mvc.new
+call update makefile.mvc makefile.mvc.new
 goto end
 
 :error1

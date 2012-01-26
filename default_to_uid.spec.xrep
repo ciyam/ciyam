@@ -4,6 +4,12 @@
       return true;
    // [(finish default_to_uid)]
 `}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start default_to_uid)]
+   if( is_create && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+      get_obj( ).`{`$arg_field`}( get_uid( ) );
+   // [(finish default_to_uid)]
+`}
 `{`@eq`(`'for_store`'`,`$section`)\
    // [(start default_to_uid)]
    if( is_create && is_null( get_obj( ).`{`$arg_field`}( ) ) )
