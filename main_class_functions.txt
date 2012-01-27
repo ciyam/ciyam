@@ -1,0 +1,137 @@
+Understanding the Main Class Functions
+--------------------------------------
+
+The following document identifies the main functions that are called (and in which order that they are called
+in) for objects that are derived from the standard "class_base" base class (i.e. all Meta "Class" objects).
+
+-------------------------------------------------------------------------------------------------------------
+1) Creating a new record:
+
+Protocol: perform_create <uid> <dtm> <module> <mclass> <key> field1=value1,field2=value2...
+(where <key> is " " for an automatically created key and for clone "[<new_key>] <clone_key>")
+
+C++ Code:
+object.op_create( <key_info> );
+object.<field1>( <value1> );
+object.<field2>( <value2> );
+...
+object.op_apply( );
+
+Function       Lock Before   Lock After   Description
+-------------------------------------------------------------------------------------------------------------
+                                          (op_create - <key> [<clone_key>])
+at_create      Create        Create       Record is in an "empty" or cloned state. This function is available
+                                          to provide different default field values, although it is generally
+                                          only use to erase unwanted clone values when cloning. Assuming that
+                                          no error occurs (the most likely being that an attempt to create an
+                                          already existing record occurred) then the record will be ready for
+                                          the setting of field values prior to the call to "op_apply".
+
+                                          (op_apply)
+to_store       Create        Create       This function is available to provide values for fields that depend
+                                          upon other field values (that were "set" between the commencment of
+                                          the "op_create" and the call to "op_apply"). This is the main place
+                                          to put things like "calculated" field values or to set/clear values
+                                          due to other values. After the function returns it is expected that
+                                          the record should be valid for storing.
+
+validate       Create        Create       Prior to any attempt to store the record in the DB this function is
+                                          called to perform all record validation and to provide feedback for
+                                          end users of any validation issues.
+
+for_store      Create        Update       If the "validate" call found no issues then this function will next
+[starts a tx if not already in one]       be called prior to the record itself being stored. This function is
+                                          mostly intended for making necessary changes to other records (when
+                                          such other records do not require this record to have actually been
+                                          created in the DB) and to provid calculated values that depend upon
+                                          other DB records. Provided no exception occurs in this function the
+                                          record will be stored in the DB with the lock being tranformed into
+                                          an "update" lock (necessary for the next function).
+
+after_store    Update        <none>       Assuming no error has occurred previously this function is the last
+[commits the tx if one was started]       step in the create process which allows further operations that are
+                                          expecting the record to exist in the DB to be performed. Often such
+                                          operations will be the creating or updating of some related "child"
+                                          records, but also could include things like dealing with "external"
+                                          files.
+-------------------------------------------------------------------------------------------------------------
+
+2) Updating an existing record:
+
+Protocol: perform_update <uid> <dtm> <module> <mclass> <key> [=<ver_info>] field1=value1,field2=value2...
+
+C++ Code:
+object.op_update( <key> );
+object.<field1>( <value1> );
+object.<field2>( <value2> );
+...
+object.op_apply( );
+
+Function       Lock Before   Lock After   Description
+-------------------------------------------------------------------------------------------------------------
+                                          (op_update - <key>)
+after_fetch    Update        Update       The lock is acquired before the record is fetched. If both the lock
+                                          is acquired and the record is found then this function is generally
+                                          used in order to determine the value of transient fields which need
+                                          to use other field (or other record field) values.
+
+                                          (op_apply)
+to_store       Update        Update       This function is available to provide values for fields that depend
+                                          upon other field values (that were "set" between the commencment of
+                                          the "op_update" and the call to "op_apply"). This is the main place
+                                          to put things like "calculated" field values or to set/clear values
+                                          due to other values. After the function returns it is expected that
+                                          the record should be valid for storing.
+
+validate       Update        Update       Prior to any attempt to store the record in the DB this function is
+                                          called to perform all record validation and to provide feedback for
+                                          end users of any validation issues.
+
+for_store      Update        Update       If the "validate" call found no issues then this function will next
+[starts a tx if not already in one]       be called prior to the record itself being stored. This function is
+                                          mostly intended for making necessary changes to other records (when
+                                          such other records do not require this record to have actually been
+                                          created in the DB) and to provid calculated values that depend upon
+                                          other DB records.
+
+after_store    Update        <none>       Assuming no error has occurred previously this function is the last
+[commits the tx if one was started]       step in the update process which allows further operations that are
+                                          expecting the record to exist in the DB to be performed. Often such
+                                          operations will be the creating or updating of some related "child"
+                                          records, but also could include things like dealing with "external"
+                                          files.
+-------------------------------------------------------------------------------------------------------------
+
+3) Deleting an existing record:
+
+Protocol: perform_destroy <uid> <dtm> <module> <mclass> <key> [=<ver_info>]
+
+C++ Code:
+object.op_destroy( <key> );
+object.op_apply( );
+
+Function       Lock Before   Lock After   Description
+-------------------------------------------------------------------------------------------------------------
+                                          (op_destroy - <key>)
+after_fetch    Destroy       Destroy      The lock is acquired before the record is fetched and if the record
+                                          has any related child records then either cascade locks to all such
+                                          records will also have been acquired or an error will have occurred
+                                          either due to a cascade restriction or record locking. It should be
+                                          noted that the existence of the record will be checked prior to any
+                                          cascade checks. If no error has occurred this function is generally
+                                          used in order to determine the value of transient fields which need
+                                          to use other field (or other record field) values.
+
+                                          (op_apply)
+for_destroy    Destroy       Destroy      This function is intended for making necessary changes (normally as
+[starts a tx if not already in one]       updates) to other records that are not simple cascades (such as the
+                                          increment or decrement of parent totals). At the point of this call
+                                          the record still exists in the DB.
+
+after_destroy  Destroy       <none>       Assuming no error has occurred previously this function is the last
+[commits the tx if one was started]       to step in the delete process which permits further operations that
+                                          expect the record to have been deleted in the DB to occur. Normally
+                                          this function is used to clean up "external" files or for some type
+                                          of special conditional cascading.
+-------------------------------------------------------------------------------------------------------------
+                                          
