@@ -50,16 +50,6 @@ const char* const c_date_tomorrow = "@tomorrow";
 
 const char* const c_clone_key = "_clone_";
 
-const uint64_t c_state_normal = 0;
-const uint64_t c_state_uneditable = UINT64_C( 0x01 );
-const uint64_t c_state_undeletable = UINT64_C( 0x02 );
-const uint64_t c_state_is_changing = UINT64_C( 0x04 );
-const uint64_t c_state_unactionable = UINT64_C( 0x08 );
-const uint64_t c_state_ignore_uneditable = UINT64_C( 0x10 );
-
-const uint64_t c_sys_state_flags = UINT64_C( 0x00000000000000ff );
-const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
-
 struct class_cascade;
 struct class_pointer_base;
 struct class_base_accessor;

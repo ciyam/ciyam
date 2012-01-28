@@ -30,11 +30,7 @@ class tcp_socket;
 
 #  include "ptypes.h"
 #  include "threads.h"
-
-const uint64_t c_state_uneditable = UINT64_C( 0x01 );
-const uint64_t c_state_undeletable = UINT64_C( 0x02 );
-const uint64_t c_state_is_changing = UINT64_C( 0x04 );
-const uint64_t c_state_unactionable = UINT64_C( 0x08 );
+#  include "ciyam_common.h"
 
 const uint64_t c_state_modifier_00 = UINT64_C( 0x0000000000000100 );
 const uint64_t c_state_modifier_01 = UINT64_C( 0x0000000000000200 );

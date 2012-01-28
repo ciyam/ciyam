@@ -486,7 +486,8 @@ void output_list_form( ostream& os,
 
    if( is_no_new || !allow_list_actions
     || ( is_owner_new && !has_owner_parent )
-    || source.view.empty( ) || ( ( parent_state & c_state_uneditable ) && !ignore_parent_state )
+    || source.view.empty( ) || ( ( parent_state & c_state_uneditable )
+    && ( !ignore_parent_state || !( parent_state & c_state_ignore_uneditable ) ) )
     || ( is_admin_owner_new && !has_owner_parent && !sess_info.is_admin_user )
     || ( !sess_info.is_admin_user && ( is_admin_new || list_type == c_list_type_admin ) ) )
       allow_new_record = false;
