@@ -309,10 +309,12 @@ function process( )
    if( document.getElementById( 'extra_content_func' ) != null )
       eval( document.getElementById( 'extra_content_func' ).value );
 
-   if( jump_back )
+   if( jump_back && !had_act_error )
       history.back( );
    else
    {
+      jump_back = false;
+
       fade_in( 0 );
       // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
       setTimeout( "focus_on_first_text( )", 50 );
