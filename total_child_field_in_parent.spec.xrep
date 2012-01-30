@@ -8,20 +8,30 @@
          `{`$module_name`}_`{`$class_name`} original;
          original.perform_fetch( get_obj( ).get_key( ) );
 
+`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
+         if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+         {
+            get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+            get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+         }
+`,\
          if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
             get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+`}\
          else
          {
             original.`{`$arg_pfield`}( ).op_update( );
             original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
+            original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+`}\
             original.`{`$arg_pfield`}( ).op_apply( );
          }
       }
-`{`!`@eq`(`$arg_pfkfield`,`'`'`)
-      if( is_create )
-         get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pfkfield`}( get_obj( ).get_key( ) );
-`}
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) + get_obj( ).`{`$arg_nfield`}( ) );
+`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
+      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) + get_obj( ).`{`$arg_n2field`}( ) );
+`}\
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
    // [(finish total_child_field_in_parent)]
@@ -32,6 +42,9 @@
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );
+`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
+      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - get_obj( ).`{`$arg_n2field`}( ) );
+`}\
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
    // [(finish total_child_field_in_parent)]
