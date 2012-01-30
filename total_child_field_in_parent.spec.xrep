@@ -1,4 +1,4 @@
-`{`@eq`(`'for_store`'`,`$section`)\
+`{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)]
    if( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
@@ -17,13 +17,16 @@
             original.`{`$arg_pfield`}( ).op_apply( );
          }
       }
-
+`{`!`@eq`(`$arg_pfkfield`,`'`'`)
+      if( is_create )
+         get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pfkfield`}( get_obj( ).get_key( ) );
+`}
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) + get_obj( ).`{`$arg_nfield`}( ) );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
    // [(finish total_child_field_in_parent)]
 `}
-`{`@eq`(`'for_destroy`'`,`$section`)\
+`{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)]
    if( !get_obj( ).get_is_being_cascaded( ) )
    {

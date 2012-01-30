@@ -1,19 +1,4 @@
-`{`@eq`(`'to_store`'`,`$section`)\
-   // [(start field_clear)]
-`{`!`@eq`(`$arg_sfield`,`'`'`)\
-`{`@eq`(`$arg_tfield`,`'`'`)\
-   if( `{`@eq`(`$arg_is_neg`,`'true`'`)!`}get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) )
-      get_obj( ).`{`$arg_field`}( "" );\
-`,\
-   if( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( )\
-`{`!`@eq`(`$arg_tfield`,`'`'`) && `{`@eq`(`$arg_is_neg`,`'true`'`)!`}get_obj( ).`{`$arg_tfield`}( )`} )
-      get_obj( ).`{`$arg_field`}( "" );\
-`}`,\
-   get_obj( ).`{`$arg_field`}( "" );\
-`}
-   // [(finish field_clear)]
-`}
-`{`@eq`(`'for_store`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_clear)]
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\

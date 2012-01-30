@@ -1,4 +1,10 @@
-`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start default_from_key)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish default_from_key)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start default_from_key)]
 `{`@eq`(`$arg_chk_null`,`'`'`)`&`@eq`(`$arg_not_dflt`,`'`'`)\
    if( is_create )\
@@ -10,10 +16,15 @@
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create`{`!`@eq`(`$arg_chk_null`,`'`'`)\
  && is_null( get_obj( ).`{`$arg_field`}( ) )`}`{`!`@eq`(`$arg_not_dflt`,`'`'`) && !get_obj( ).get_key( ).empty( )`} ) )\
 `}`}
-`{`@eq`(`$arg_func`,`'`'`)\
-      get_obj( ).`{`$arg_field`}( get_obj( ).get_key( ) );\
+`{`@eq`(`$arg_skip_fk_handling`,`'true`'`)\
+   {
+      get_obj( ).`{`$arg_field`}( ).set_variable( c_object_variable_skip_fk_handling, "1" );
+`}`{`@eq`(`$arg_func`,`'`'`)\
+      get_obj( ).`{`$arg_field`}( get_obj( ).get_key( )`{`!`@eq`(`$arg_append`,`'`'`) + "`{`$arg_append`}"`} );\
 `,\
-      get_obj( ).`{`$arg_field`}( `{`$arg_func`}( get_obj( ).`{`$arg_field`}( ), get_obj( ) ) );\
+      get_obj( ).`{`$arg_field`}( `{`$arg_func`}( get_obj( ).`{`$arg_field`}( ), get_obj( ) )`{`!`@eq`(`$arg_append`,`'`'`) + "`{`$arg_append`}"`} );\
+`}`{`@eq`(`$arg_skip_fk_handling`,`'true`'`)
+   }\
 `}
    // [(finish default_from_key)]
 `}

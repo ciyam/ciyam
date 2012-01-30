@@ -8134,18 +8134,6 @@
      <unique>false
      <indexed>false
     </column>
-    <column/>
-     <name>field_list_type
-     <field>301991
-     <ftype>@class
-     <extra>max_size=30
-     <modifiers>
-     <pclass>121100
-     <pfield>121101
-     <pfname>field_list_type_name
-     <unique>false
-     <indexed>false
-    </column>
    </columns>
    <parents/>
    </parents>
@@ -9252,14 +9240,11 @@
      <indexed>false
     </column>
     <column/>
-     <name>field_view_type
-     <field>301810
-     <ftype>@class
-     <extra>max_size=30
+     <name>field_view_access_restriction
+     <field>118102
+     <ftype>int
+     <extra>enum=655
      <modifiers>
-     <pclass>117100
-     <pfield>117101
-     <pfname>field_view_type_name
      <unique>false
      <indexed>false
     </column>

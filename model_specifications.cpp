@@ -3441,7 +3441,7 @@ struct default_from_key_specification : specification
 {
    void add( model& m, const vector< string >& args, vector< specification_detail >& details );
 
-   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_model; }
+   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_non_model; }
 
    void read_data( sio_reader& reader );
    void write_data( sio_writer& writer ) const;
@@ -3450,8 +3450,13 @@ struct default_from_key_specification : specification
 
    static string static_class_name( );
 
+   string class_id;
+   string field_id;
+
+   string append_value;
    string transform_func;
 
+   bool for_store;
    bool check_null;
    bool not_default;
    bool include_clones;
@@ -3462,12 +3467,10 @@ void default_from_key_specification::add( model& m, const vector< string >& args
    if( args.size( ) < 2 )
       throw runtime_error( "unexpected number of args < 2 for 'default_from_key' specification" );
 
-   string class_id;
-   string field_id;
-
    string arg_class_name( args[ 0 ] );
    string arg_field_name( args[ 1 ] );
 
+   for_store = false;
    check_null = false;
    not_default = false;
    include_clones = false;
@@ -3476,12 +3479,16 @@ void default_from_key_specification::add( model& m, const vector< string >& args
    {
       string next_arg( args[ arg ] );
 
-      if( next_arg == c_arg_check_null )
+      if( next_arg == c_arg_for_store )
+         for_store = true;
+      else if( next_arg == c_arg_check_null )
          check_null = true;
       else if( next_arg == c_arg_not_default )
          not_default = true;
       else if( next_arg == c_arg_include_clones )
          include_clones = true;
+      else if( next_arg.find( c_arg_append_prefix ) == 0 )
+         append_value = next_arg.substr( strlen( c_arg_append_prefix ) );
       else if( next_arg.find( c_arg_func_prefix ) == 0 )
          transform_func = next_arg.substr( strlen( c_arg_func_prefix ) );
       else
@@ -3490,9 +3497,17 @@ void default_from_key_specification::add( model& m, const vector< string >& args
 
    class_id = get_class_id_for_name( m, arg_class_name );
 
-   field_id = get_field_id_for_name( m, arg_class_name, arg_field_name );
+   string field_type;
+   field_id = get_field_id_for_name( m, arg_class_name, arg_field_name, &field_type, true );
    if( field_id.empty( ) )
       throw runtime_error( "unknown field '" + arg_field_name + "' for class '" + arg_class_name + "'" );
+
+   if( !append_value.empty( ) )
+   {
+      bool is_non_string( is_non_string_type( field_type ) );
+      if( !is_non_string )
+         append_value = '"' + append_value + '"';
+   }
 
    details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
    details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
@@ -3500,29 +3515,52 @@ void default_from_key_specification::add( model& m, const vector< string >& args
 
 void default_from_key_specification::read_data( sio_reader& reader )
 {
+   class_id = reader.read_attribute( c_attribute_class_id );
+   field_id = reader.read_attribute( c_attribute_field_id );
+
+   for_store = ( reader.read_opt_attribute( c_attribute_for_store ) == c_true );
    check_null = ( reader.read_opt_attribute( c_attribute_check_null ) == c_true );
    not_default = ( reader.read_opt_attribute( c_attribute_not_default ) == c_true );
    include_clones = ( reader.read_opt_attribute( c_attribute_include_clones ) == c_true );
 
+   append_value = reader.read_opt_attribute( c_attribute_append_value );
    transform_func = reader.read_opt_attribute( c_attribute_function );
 }
 
 void default_from_key_specification::write_data( sio_writer& writer ) const
 {
+   writer.write_attribute( c_attribute_class_id, class_id );
+   writer.write_attribute( c_attribute_field_id, field_id );
+
+   writer.write_opt_attribute( c_attribute_for_store, for_store ? c_true : "" );
    writer.write_opt_attribute( c_attribute_check_null, check_null ? c_true : "" );
    writer.write_opt_attribute( c_attribute_not_default, not_default ? c_true : "" );
    writer.write_opt_attribute( c_attribute_include_clones, include_clones ? c_true : "" );
 
+   writer.write_opt_attribute( c_attribute_append_value, append_value );
    writer.write_opt_attribute( c_attribute_function, transform_func );
 }
 
 void default_from_key_specification::add_specification_data( model& m, specification_data& spec_data ) const
 {
+   string class_name = get_class_name_for_id( m, class_id );
+   spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
+
+   bool is_mandatory;
+   string field_type;
+   string field_name = get_field_name_for_id( m, class_name, field_id, &field_type, false, false, &is_mandatory );
+   spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
+
+   spec_data.data_pairs.push_back( make_pair( c_data_for_store, for_store ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_chk_null, check_null ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, not_default ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_inc_clones, include_clones ? c_true : "" ) );
 
+   spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );
+
+   spec_data.data_pairs.push_back( make_pair( c_data_append, append_value ) );
    spec_data.data_pairs.push_back( make_pair( c_data_func, transform_func ) );
+   spec_data.data_pairs.push_back( make_pair( "skip_fk_handling", "" ) );
 }
 
 string default_from_key_specification::static_class_name( ) { return "default_from_key"; }
@@ -3850,7 +3888,6 @@ void default_to_field_specification::write_data( sio_writer& writer ) const
 void default_to_field_specification::add_specification_data( model& m, specification_data& spec_data ) const
 {
    string class_name = get_class_name_for_id( m, class_id );
-
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
 
    bool is_mandatory;
@@ -6547,6 +6584,7 @@ struct fk_link_first_child_specification : specification
    string status_field_id;
    string status_value;
 
+   bool reverse;
    bool new_only;
    bool not_create;
 };
@@ -6573,6 +6611,8 @@ void fk_link_first_child_specification::add( model& m, const vector< string >& a
          arg_order_info = next_arg.substr( strlen( c_arg_order_prefix ) );
       else if( next_arg.find( c_arg_status_prefix ) == 0 )
          arg_status_info = next_arg.substr( strlen( c_arg_status_prefix ) );
+      else if( next_arg == c_arg_reverse )
+         reverse = true;
       else if( next_arg == c_arg_new_only )
          new_only = true;
       else if( next_arg == c_arg_not_create )
@@ -6675,6 +6715,7 @@ void fk_link_first_child_specification::read_data( sio_reader& reader )
    status_field_id = reader.read_opt_attribute( c_attribute_status_field_id );
    status_value = reader.read_opt_attribute( c_attribute_status_value );
 
+   reverse = ( reader.read_opt_attribute( c_attribute_is_reverse ) == c_true );
    new_only = ( reader.read_opt_attribute( c_attribute_new_only ) == c_true );
    not_create = ( reader.read_opt_attribute( c_attribute_not_create ) == c_true );
 }
@@ -6692,6 +6733,7 @@ void fk_link_first_child_specification::write_data( sio_writer& writer ) const
    writer.write_opt_attribute( c_attribute_status_field_id, status_field_id );
    writer.write_opt_attribute( c_attribute_status_value, status_value );
 
+   writer.write_opt_attribute( c_attribute_is_reverse, reverse ? c_true : "" );
    writer.write_opt_attribute( c_attribute_new_only, new_only ? c_true : "" );
    writer.write_opt_attribute( c_attribute_not_create, not_create ? c_true : "" );
 }
@@ -6729,6 +6771,7 @@ void fk_link_first_child_specification::add_specification_data( model& m, specif
 
    spec_data.data_pairs.push_back( make_pair( c_data_status_value, status_value ) );
 
+   spec_data.data_pairs.push_back( make_pair( c_data_reverse, reverse ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_new_only, new_only ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
 }
@@ -11417,6 +11460,7 @@ void total_child_field_in_parent_specification::add_specification_data( model& m
    spec_data.data_pairs.push_back( make_pair( c_data_nfield, nfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pnfield, pnfield_name ) );
+   spec_data.data_pairs.push_back( make_pair( "pfkfield", "" ) );
 }
 
 string total_child_field_in_parent_specification::static_class_name( ) { return "total_child_field_in_parent"; }

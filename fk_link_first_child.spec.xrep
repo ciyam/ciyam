@@ -15,9 +15,14 @@
 `,\
       string key_info;
 `}\
-      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_forwards( key_info ) )
+`{`@eq`(`$arg_reverse`,`'`'`)\
+      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_forwards( key_info, "", true, 1 ) )
+`,\
+      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_backwards( key_info, "", true, 1 ) )
+`}\
       {
-         get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).\
+         if( !is_destroy_locked( get_obj( ).child_`{`$arg_child_class`}( ) ) )
+            get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).\
 `{`!`@eq`(`$arg_child_field`,`'`'`)`{`$arg_child_field`}`,get_key`}( ) );
          get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_stop( );
       }

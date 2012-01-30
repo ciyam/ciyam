@@ -5290,10 +5290,6 @@
         <id>602800
         <item>field
        </specification>
-       <specification/>
-        <id>602810
-        <item>field
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -21914,6 +21910,10 @@
         <id>602610
         <item>field
        </specification>
+       <specification/>
+        <id>602620
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -22209,10 +22209,6 @@
        </specification>
        <specification/>
         <id>602610
-        <item>field
-       </specification>
-       <specification/>
-        <id>602620
         <item>field
        </specification>
       </specifications>
@@ -26329,6 +26325,8 @@
     <name>{Enum_Item}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>104100
+     <field_id>104103
      <check_null>true
     </data>
    </specification>
@@ -26878,6 +26876,8 @@
     <name>{Index}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>108100
+     <field_id>108103
      <check_null>true
      <include_clones>true
     </data>
@@ -27011,6 +27011,8 @@
     <name>{Initial_Record}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>129100
+     <field_id>129103
      <check_null>true
     </data>
    </specification>
@@ -27498,6 +27500,8 @@
     <name>{List_Field}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>124100
+     <field_id>124101
      <check_null>true
     </data>
    </specification>
@@ -27979,7 +27983,6 @@
      <pfield_id>301990
      <field_info>122101
      <field_info>122103;enum=680
-     <field_info>301991:121101;max_size=30
     </data>
    </specification>
    <specification/>
@@ -28414,6 +28417,8 @@
     <name>{Module}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>126100
+     <field_id>126101
      <check_null>true
     </data>
    </specification>
@@ -28659,6 +28664,8 @@
     <name>{Package}_Key_default
     <type>default_from_key
     <data/>
+     <class_id>136100
+     <field_id>136105
      <check_null>true
     </data>
    </specification>
@@ -28806,6 +28813,8 @@
     <name>{Procedure_Arg}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>112100
+     <field_id>112105
      <check_null>true
     </data>
    </specification>
@@ -30969,6 +30978,8 @@
     <name>{Specification}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>115100
+     <field_id>115105
      <check_null>true
     </data>
    </specification>
@@ -32529,6 +32540,8 @@
     <name>{View_Field}_Order_default
     <type>default_from_key
     <data/>
+     <class_id>120100
+     <field_id>120101
      <check_null>true
     </data>
    </specification>
@@ -32848,7 +32861,7 @@
      <pclass_id>105100
      <pfield_id>301800
      <field_info>118101
-     <field_info>301810:117101;max_size=30
+     <field_info>118102;enum=655
     </data>
    </specification>
    <specification/>

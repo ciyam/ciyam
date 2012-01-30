@@ -1,22 +1,4 @@
-`{`@eq`(`'for_store`'`,`$section`)\
-   // [(start update_parent)]
-`{`@eq`(`$arg_spfield`,`'`'`)\
-   if( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) )
-   {
-      get_obj( ).`{`$arg_fkfield`}( ).op_update( );
-      get_obj( ).`{`$arg_fkfield`}( ).op_apply( );
-   }\
-`,\
-   if( get_obj( ).`{`$arg_spfield`}( ).has_changed( )`{`!`@eq`(`$arg_value`,`'`'`) && get_obj( ).`{`$arg_spfield`}( ).get_key( ) == "`{`$arg_value`}"`}
-    && ( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) ) )
-   {
-      get_obj( ).`{`$arg_fkfield`}( ).op_update( );
-      get_obj( ).`{`$arg_fkfield`}( ).op_apply( );
-   }\
-`}
-   // [(finish update_parent)]
-`}
-`{`@eq`(`'after_store`'`,`$section`)\
+`{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start update_parent)]
 `{`@eq`(`$arg_spfield`,`'`'`)\
    if( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) )
