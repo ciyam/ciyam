@@ -2243,28 +2243,28 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Primitive )
       {
          if( !Parent_Class.empty( ) )
-            Error = GMS( field_specification_type_field_type ) + " must be a primitive"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a primitive"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Relationship )
       {
          if( Parent_Class.empty( ) )
-            Error = GMS( field_specification_type_field_type ) + " must be a relationship"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Self_Relationship )
       {
          if( Parent_Class.empty( ) || Parent_Class != Class )
-            Error = GMS( field_specification_type_field_type ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Non_Self_Relationship )
       {
          if( Parent_Class.empty( ) || Parent_Class == Class )
-            Error = GMS( field_specification_type_field_type ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Text_Type )
       {
          if( Primitive == c_enum_field_type_bool
           || Primitive == c_enum_field_type_int || Primitive == c_enum_field_type_numeric )
-            Error = GMS( field_specification_type_field_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Scalar_Type )
       {
@@ -2278,7 +2278,7 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          }
 
          if( in_error )
-            Error = GMS( field_specification_type_field_type ) + " must be a scalar type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a scalar type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Math_Type )
       {
@@ -2290,7 +2290,7 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          }
 
          if( in_error )
-            Error = GMS( field_specification_type_field_type ) + " must be a math type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a math type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) == c_enum_field_type_Calendar_Type )
       {
@@ -2302,7 +2302,7 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          }
 
          if( in_error )
-            Error = GMS( field_specification_type_field_type ) + " must be a calendar type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a calendar type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Field_type( ) < c_enum_field_type_Any_Text_Type ) // i.e. all primitives
       {
@@ -2312,21 +2312,21 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
             string primitive_name;
 
             if( get_obj( ).Field_type( ) == c_enum_field_type_string )
-               primitive_name = GMS( enum_field_type_string );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_string ) );
             else if( get_obj( ).Field_type( ) == c_enum_field_type_datetime )
-               primitive_name = GMS( enum_field_type_datetime );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_datetime ) );
             else if( get_obj( ).Field_type( ) == c_enum_field_type_date )
-               primitive_name = GMS( enum_field_type_date );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_date ) );
             else if( get_obj( ).Field_type( ) == c_enum_field_type_time )
-               primitive_name = GMS( enum_field_type_time );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_time ) );
             else if( get_obj( ).Field_type( ) == c_enum_field_type_numeric )
-               primitive_name = GMS( enum_field_type_numeric );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_numeric ) );
             else if( get_obj( ).Field_type( ) == c_enum_field_type_int )
-               primitive_name = GMS( enum_field_type_int );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_int ) );
             else if( get_obj( ).Field_type( ) == c_enum_field_type_bool )
-               primitive_name = GMS( enum_field_type_bool );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_field_type_bool ) );
 
-            Error = GMS( field_specification_type_field_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Field_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
          }
       }
       else
@@ -2340,12 +2340,12 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       if( get_obj( ).Source_type( ) == c_enum_source_type_Any_Text_Type )
       {
          if( Source_Primitive >= c_enum_source_type_numeric )
-            Error = GMS( field_specification_type_source_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Source_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Source_type( ) == c_enum_source_type_Any_Conditional )
       {
          if( Source_Primitive < c_enum_source_type_int || Source_Primitive > c_enum_source_type_bool )
-            Error = GMS( field_specification_type_source_type ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Source_type ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Source_type( ) < c_enum_source_type_Any_Text_Type ) // i.e. all primitives
       {
@@ -2354,21 +2354,21 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
             string primitive_name;
 
             if( get_obj( ).Source_type( ) == c_enum_source_type_string )
-               primitive_name = GMS( enum_source_type_string );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_string ) );
             else if( get_obj( ).Source_type( ) == c_enum_source_type_datetime )
-               primitive_name = GMS( enum_source_type_datetime );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_datetime ) );
             else if( get_obj( ).Source_type( ) == c_enum_source_type_date )
-               primitive_name = GMS( enum_source_type_date );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_date ) );
             else if( get_obj( ).Source_type( ) == c_enum_source_type_time )
-               primitive_name = GMS( enum_source_type_time );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_time ) );
             else if( get_obj( ).Source_type( ) == c_enum_source_type_numeric )
-               primitive_name = GMS( enum_source_type_numeric );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_numeric ) );
             else if( get_obj( ).Source_type( ) == c_enum_source_type_int )
-               primitive_name = GMS( enum_source_type_int );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_int ) );
             else if( get_obj( ).Source_type( ) == c_enum_source_type_bool )
-               primitive_name = GMS( enum_source_type_bool );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_source_type_bool ) );
 
-            Error = GMS( field_specification_type_source_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Source_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
          }
       }
       else
@@ -2382,18 +2382,18 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Text_Type )
       {
          if( Test_Primitive >= c_enum_test_field_type_numeric )
-            Error = GMS( field_specification_type_test_field_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Test_Field_type ) + " must be a text type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Conditional )
       {
          if( Test_Primitive < c_enum_test_field_type_int || Test_Primitive > c_enum_test_field_type_bool )
-            Error = GMS( field_specification_type_test_field_type ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Test_Field_type ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Value_Or_Conditional )
       {
          if( Test_Value.empty( )
           && ( Test_Primitive < c_enum_test_field_type_int || Test_Primitive > c_enum_test_field_type_bool ) )
-            Error = GMS( field_specification_type_test_field_type ) + " must be a conditional type if no value provided"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Test_Field_type ) + " must be a conditional type if no value provided"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Test_Field_type( ) < c_enum_test_field_type_Any_Text_Type ) // i.e. all primitives
       {
@@ -2402,21 +2402,21 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
             string primitive_name;
 
             if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_string )
-               primitive_name = GMS( enum_test_field_type_string );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_string ) );
             else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_datetime )
-               primitive_name = GMS( enum_test_field_type_datetime );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_datetime ) );
             else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_date )
-               primitive_name = GMS( enum_test_field_type_date );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_date ) );
             else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_time )
-               primitive_name = GMS( enum_test_field_type_time );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_time ) );
             else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_numeric )
-               primitive_name = GMS( enum_test_field_type_numeric );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_numeric ) );
             else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_int )
-               primitive_name = GMS( enum_test_field_type_int );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_int ) );
             else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_bool )
-               primitive_name = GMS( enum_test_field_type_bool );
+               primitive_name = GMS( get_enum_string_field_type( c_enum_test_field_type_bool ) );
 
-            Error = GMS( field_specification_type_test_field_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Test_Field_type ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
          }
       }
       else
@@ -2430,12 +2430,12 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       if( get_obj( ).Source_Parent_type( ) == c_enum_source_parent_type_Self_Relationship )
       {
          if( !Source_Parent_Class.empty( ) && Source_Parent_Class != Class )
-            Error = GMS( field_specification_type_source_parent_type ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Source_Parent_type ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Source_Parent_type( ) == c_enum_source_parent_type_Non_Self_Relationship )
       {
          if( !Source_Parent_Class.empty( ) && Source_Parent_Class == Class )
-            Error = GMS( field_specification_type_source_parent_type ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
+            Error = GMS( c_field_id_Source_Parent_type ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
       }
       else
          throw runtime_error( "unexpected Source_Parent_type value " + to_string( get_obj( ).Source_Parent_type( ) ) + " in Is_Valid_Field_Type" );
@@ -2450,21 +2450,21 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          string primitive_name;
 
          if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_string )
-            primitive_name = GMS( enum_procedure_arg_primitive_string );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_string ) );
          else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_datetime )
-            primitive_name = GMS( enum_procedure_arg_primitive_datetime );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_datetime ) );
          else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_date )
-            primitive_name = GMS( enum_procedure_arg_primitive_date );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_date ) );
          else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_time )
-            primitive_name = GMS( enum_procedure_arg_primitive_time );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_time ) );
          else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_numeric )
-            primitive_name = GMS( enum_procedure_arg_primitive_numeric );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_numeric ) );
          else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_int )
-            primitive_name = GMS( enum_procedure_arg_primitive_int );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_int ) );
          else if( get_obj( ).Procedure_Arg_primitive( ) == c_enum_procedure_arg_primitive_bool )
-            primitive_name = GMS( enum_procedure_arg_primitive_bool );
+            primitive_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_primitive_bool ) );
 
-         Error = GMS( field_specification_type_procedure_arg_primitive ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+         Error = GMS( c_field_id_Procedure_Arg_primitive ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
       }
    }
    // [(finish meta_trait_val_proc)]
@@ -2477,11 +2477,11 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          string type_name;
 
          if( get_obj( ).Procedure_Arg_type( ) == c_enum_procedure_arg_type_in )
-            type_name = GMS( enum_procedure_arg_type_in );
+            type_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_type_in ) );
          else if( get_obj( ).Procedure_Arg_type( ) == c_enum_procedure_arg_type_out )
-            type_name = GMS( enum_procedure_arg_type_out );
+            type_name = GMS( get_enum_string_field_type( c_enum_procedure_arg_type_out ) );
 
-         Error = GMS( field_specification_type_procedure_arg_type ) + " must be type " + type_name; // FUTURE: Should be in module_strings...
+         Error = GMS( c_field_id_Procedure_Arg_type ) + " must be type " + type_name; // FUTURE: Should be in module_strings...
       }
    }
    // [(finish meta_trait_val_proc)]

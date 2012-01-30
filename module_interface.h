@@ -30,7 +30,7 @@
 #     define MODULE_INTERFACE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-#  define GMS( s ) get_module_string( STRINGIZE( s ) )
+#  define GMS( s ) get_module_string( s )
 
 struct module_details
 {

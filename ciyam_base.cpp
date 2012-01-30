@@ -292,19 +292,21 @@ struct op_lock
     transaction_id( 0 ),
     transaction_level( 0 ),
     p_session( 0 ),
-    p_class_base( 0 )
+    p_class_base( 0 ),
+    p_root_class( 0 )
    {
    }
 
-   op_lock( size_t handle, lock_type type,
-    int_t transaction_id, int_t transaction_level, session* p_session, class_base* p_class_base )
+   op_lock( size_t handle, lock_type type, int_t transaction_id,
+    int_t transaction_level, session* p_session, class_base* p_class_base, class_base* p_root_class )
     :
     handle( handle ),
     type( type ),
     transaction_id( transaction_id ),
     transaction_level( transaction_level ),
     p_session( p_session ),
-    p_class_base( p_class_base )
+    p_class_base( p_class_base ),
+    p_root_class( p_root_class )
    {
       if( transaction_level )
          tx_type = type;
@@ -324,6 +326,7 @@ struct op_lock
 
    session* p_session;
    class_base* p_class_base;
+   class_base* p_root_class;
 };
 
 bool operator ==( op_lock& lhs, op_lock& rhs )
@@ -586,8 +589,8 @@ class storage_handler
 
    void dump_locks( ostream& os ) const;
 
-   bool obtain_lock( size_t& handle, const string& lock_class,
-    const string& lock_instance, op_lock::lock_type type, session* p_session, class_base* p_class_base = 0 );
+   bool obtain_lock( size_t& handle, const string& lock_class, const string& lock_instance,
+    op_lock::lock_type type, session* p_session, class_base* p_class_base = 0, class_base* p_root_class_base = 0 );
 
    void transform_lock( size_t handle, op_lock::lock_type new_type );
 
@@ -638,8 +641,8 @@ class storage_handler
 
 void storage_handler::dump_locks( ostream& os ) const
 {
-   os << "handle key (lock_class:instance)                     type       tx_type    tran_id    tran_level p_session p_class_base\n";
-   os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- --------- ------------\n";
+   os << "handle key (lock_class:instance)                     type       tx_type    tran_id    tran_level p_session p_class_base p_root_class\n";
+   os << "------ --------------------------------------------- ---------- ---------- ---------- ---------- --------- ------------ ------------\n";
 
    lock_index_const_iterator lici;
    for( lici = lock_index.begin( ); lici != lock_index.end( ); ++lici )
@@ -653,14 +656,14 @@ void storage_handler::dump_locks( ostream& os ) const
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.type )
        << ' ' << setw( 10 ) << op_lock::lock_type_name( next_lock.tx_type )
        << ' ' << setw( 10 ) << next_lock.transaction_id
-       << ' ' << setw( 10 ) << next_lock.transaction_level
-       << ' ' << next_lock.p_session << "  " << next_lock.p_class_base << '\n';
+       << ' ' << setw( 10 ) << next_lock.transaction_level << ' ' << next_lock.p_session
+       << "  " << next_lock.p_class_base << "     " << next_lock.p_root_class << '\n';
    }
 }
 
 bool storage_handler::obtain_lock( size_t& handle,
  const string& lock_class, const string& lock_instance,
- op_lock::lock_type type, session* p_session, class_base* p_class_base )
+ op_lock::lock_type type, session* p_session, class_base* p_class_base, class_base* p_root_class )
 {
    int attempts = c_max_lock_attempts;
 
@@ -751,7 +754,9 @@ bool storage_handler::obtain_lock( size_t& handle,
             int_t tran_id( p_ods->get_transaction_id( ) );
             int_t tran_level( p_ods->get_transaction_level( ) );
 
-            li = locks.insert( lock_value_type( key, op_lock( ++next_lock_handle, type, tran_id, tran_level, p_session, p_class_base ) ) );
+            li = locks.insert( lock_value_type( key,
+             op_lock( ++next_lock_handle, type, tran_id, tran_level, p_session, p_class_base, p_root_class ) ) );
+
             lock_index.insert( lock_index_value_type( next_lock_handle, li ) );
 
             handle = next_lock_handle;
@@ -879,7 +884,7 @@ op_lock storage_handler::get_lock_info_for_owner( const string& lock_class, cons
       if( lci->first != key )
          break;
 
-      if( lci->second.p_class_base == &owner )
+      if( lci->second.p_root_class == &owner )
       {
          lock = lci->second;
          break;
@@ -901,12 +906,12 @@ void storage_handler::release_locks_for_owner( class_base& owner, bool force_rem
    {
       op_lock& next_lock( lii->second->second );
 
-      if( next_lock.p_class_base == &owner )
+      if( next_lock.p_root_class == &owner )
       {
          if( !force_removal && next_lock.transaction_level > 0 )
          {
             next_lock.type = op_lock::e_lock_type_none;
-            next_lock.p_class_base = 0;
+            next_lock.p_root_class = 0;
          }
          else
          {
@@ -1505,13 +1510,13 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                   if( next_op == e_cascade_op_unlink )
                   {
                      if( !handler.obtain_lock( lock_handle, p_class_base->lock_class_id( ),
-                      p_class_base->get_key( ), op_lock::e_lock_type_update, gtp_session, &root_instance ) )
+                      p_class_base->get_key( ), op_lock::e_lock_type_update, gtp_session, &instance, &root_instance ) )
                         return false;
                   }
                   else
                   {
                      if( handler.obtain_lock( lock_handle, p_class_base->lock_class_id( ),
-                      p_class_base->get_key( ), op_lock::e_lock_type_destroy, gtp_session, &root_instance ) )
+                      p_class_base->get_key( ), op_lock::e_lock_type_destroy, gtp_session, &instance, &root_instance ) )
                      {
                         // NOTE: If the child instance is actually a derived class then get the derived object.
                         sql.erase( );
@@ -7330,6 +7335,35 @@ bool is_change_locked( class_base& instance )
     instance.lock_class_id( ), instance.get_key( ) ).type >= op_lock::e_lock_type_update;
 }
 
+bool is_destroy_locked( class_base& instance )
+{
+   return gtp_session->p_storage_handler->get_lock_info(
+    instance.lock_class_id( ), instance.get_key( ) ).type == op_lock::e_lock_type_destroy;
+}
+
+bool is_create_locked_by_own_session( class_base& instance, const char* p_key, bool copy_field_values )
+{
+   op_lock lock;
+   bool rc = false;
+
+   lock = gtp_session->p_storage_handler->get_lock_info(
+    instance.lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
+
+   if( lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_create )
+   {
+      rc = true;
+      if( copy_field_values )
+      {
+         if( !lock.p_class_base )
+            rc = false;
+         else
+            instance.copy_all_field_values( *lock.p_class_base );
+      }
+   }
+
+   return rc;
+}
+
 void instance_fetch( size_t handle, const string& context, const string& key_info, instance_fetch_rc* p_rc )
 {
    perform_instance_fetch( get_class_base_from_handle_for_op( handle, context ), key_info, p_rc );
@@ -7694,11 +7728,11 @@ void begin_instance_op( instance_op op, class_base& instance,
       bool obtained_lock = false;
 
       if( op == e_instance_op_review
-       && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_review, gtp_session ) )
+       && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_review, gtp_session, &instance ) )
          obtained_lock = true;
 
       if( op == e_instance_op_create
-       && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_create, gtp_session ) )
+       && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_create, gtp_session, &instance ) )
          obtained_lock = true;
 
       if( op == e_instance_op_update || op == e_instance_op_destroy )
@@ -7712,11 +7746,11 @@ void begin_instance_op( instance_op op, class_base& instance,
          if( !obtained_lock )
          {
             if( op == e_instance_op_update
-             && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_update, gtp_session ) )
+             && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_update, gtp_session, &instance ) )
                obtained_lock = true;
 
             if( op == e_instance_op_destroy
-             && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_destroy, gtp_session ) )
+             && handler.obtain_lock( lock_handle, lock_class_id, key_for_op, op_lock::e_lock_type_destroy, gtp_session, &instance ) )
                obtained_lock = true;
          }
       }
@@ -7824,7 +7858,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          const op_lock& lock_info = handler.get_lock_info( lock_class_id, clone_key );
 
          if( ( lock_info.handle && lock_info.type >= op_lock::e_lock_type_review && lock_info.p_session == gtp_session )
-          || handler.obtain_lock( xlock_handle, lock_class_id, clone_key, op_lock::e_lock_type_review, gtp_session ) )
+          || handler.obtain_lock( xlock_handle, lock_class_id, clone_key, op_lock::e_lock_type_review, gtp_session, &instance ) )
          {
             guard g( g_mutex );
 
