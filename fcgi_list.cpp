@@ -195,6 +195,8 @@ void setup_list_fields( list_source& list,
             list.notes_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_content ) )
             list.content_fields.insert( value_id );
+         else if( extra_data.count( c_list_type_extra_actions ) )
+            ( list.lici->second )->extras.insert( make_pair( c_list_type_extra_actions, field_id ) );
 
          if( extra_data.count( c_field_extra_url ) )
             list.url_fields.insert( value_id );
@@ -2578,8 +2580,16 @@ void output_list_form( ostream& os,
          {
             os << "  <td class=\"list center\">";
 
+            string cmd( c_cmd_list );
+            string ident( source.lici->second->id );
+            if( !parent_key.empty( ) )
+            {
+               cmd = c_cmd_view;
+               ident = pident;
+            }
+
             if( !is_printable && allow_list_actions && !cell_data.empty( ) )
-               output_actions( os, source, c_cmd_list, "", sess_info, source.lici->second->id,
+               output_actions( os, source, cmd, parent_key, sess_info, ident,
                 key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data,
                 "", session_id, user_select_key, using_session_cookie, use_url_checksum, has_hashval );
             else
