@@ -691,6 +691,7 @@ field_add -id=136104 Package Install_Details string opt -x=notes -transient
 field_add -id=136105 Package Key string mand
 field_add -id=136106 Package Usage_Count int mand -def=0
 field_add -id=136107 Package Plural identifier mand
+field_add -id=136108 Package Type_Name string opt -transient
 modifier_add -id=136310 Package Is_In_Use @class:lowlight1;list
 procedure_add -id=136410 Package Install
 procedure_add -id=136420 Package Remove
@@ -1533,6 +1534,7 @@ specification_add -id=600282 {Specification_Copy_Child_Links}_Vars_from_search_r
 ,Source_Child_File_Field:Name={scffield} -options=Options,{} -transient"
 specification_add -id=600288 {Specification_Content_Page}_Hide_File_Fields modifier_field_value\
  "Specification_Copy_Child_Links Hide_File_Fields {Specification_Type} trigger_create_children_for_fk_children"
+specification_add -id=600289 {Package}_Type_Name field_from_other_field "Package {Package_Type}:Name Type_Name"
 specification_add -id=600290 {Permission}_Id_auto_inc parent_auto_int_inc "Permission Id {Workgroup} Next_Permission_Id"
 specification_add -id=600295 {Auto_Code}_auto_increment for_auto_code "Auto_Code Increment Next_Value Mask Next Exhausted"
 specification_add -id=600298 {Permission}_{Specification}_update_children update_children "Permission Specification Name"

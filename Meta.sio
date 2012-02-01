@@ -9227,6 +9227,10 @@
     <version>
     <specifications/>
      <specification/>
+      <id>600289
+      <item>class
+     </specification>
+     <specification/>
       <id>600850
       <item>class
      </specification>
@@ -9410,6 +9414,23 @@
       </specifications>
      </field>
      <field/>
+      <id>136108
+      <name>Type_Name
+      <type>string
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600289
+        <item>dest_field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>136106
       <name>Usage_Count
       <type>int
@@ -9468,6 +9489,10 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600289
+        <item>src_pfield
+       </specification>
        <specification/>
         <id>600850
         <item>pfield
@@ -9809,6 +9834,10 @@
     <version>
     <specifications/>
      <specification/>
+      <id>600289
+      <item>sclass
+     </specification>
+     <specification/>
       <id>600800
       <item>class
      </specification>
@@ -9982,6 +10011,10 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600289
+        <item>src_field
+       </specification>
        <specification/>
         <id>600850
         <item>sfield
@@ -28693,6 +28726,18 @@
      <dfield_id>136107
      <sfield_id>135108
      <new_only>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600289
+    <name>{Package}_Type_Name
+    <type>field_from_other_field
+    <data/>
+     <class_id>136100
+     <sclass_id>135100
+     <sfield_id>135101
+     <pfield_id>302810
+     <dfield_id>136108
     </data>
    </specification>
    <specification/>

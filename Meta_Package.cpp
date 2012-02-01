@@ -108,6 +108,7 @@ const char* const c_field_id_Model = "302800";
 const char* const c_field_id_Name = "136101";
 const char* const c_field_id_Package_Type = "302810";
 const char* const c_field_id_Plural = "136107";
+const char* const c_field_id_Type_Name = "136108";
 const char* const c_field_id_Usage_Count = "136106";
 
 const char* const c_field_name_Actions = "Actions";
@@ -118,6 +119,7 @@ const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Package_Type = "Package_Type";
 const char* const c_field_name_Plural = "Plural";
+const char* const c_field_name_Type_Name = "Type_Name";
 const char* const c_field_name_Usage_Count = "Usage_Count";
 
 const char* const c_field_display_name_Actions = "field_package_actions";
@@ -128,9 +130,10 @@ const char* const c_field_display_name_Model = "field_package_model";
 const char* const c_field_display_name_Name = "field_package_name";
 const char* const c_field_display_name_Package_Type = "field_package_package_type";
 const char* const c_field_display_name_Plural = "field_package_plural";
+const char* const c_field_display_name_Type_Name = "field_package_type_name";
 const char* const c_field_display_name_Usage_Count = "field_package_usage_count";
 
-const int c_num_fields = 9;
+const int c_num_fields = 10;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -141,6 +144,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "136105",
    "136106",
    "136107",
+   "136108",
    "302800",
    "302810"
 };
@@ -155,6 +159,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Name",
    "Package_Type",
    "Plural",
+   "Type_Name",
    "Usage_Count"
 };
 
@@ -166,16 +171,18 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 1;
+const int c_num_transient_fields = 2;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
-   "136104"
+   "136104",
+   "136108"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
-   "Install_Details"
+   "Install_Details",
+   "Type_Name"
 };
 
 inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -222,6 +229,7 @@ bool gv_default_Installed = bool( 0 );
 string gv_default_Key = string( );
 string gv_default_Name = string( );
 string gv_default_Plural = string( );
+string gv_default_Type_Name = string( );
 int gv_default_Usage_Count = int( 0 );
 
 // [<start anonymous>]
@@ -319,6 +327,8 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
          string_getter< Meta_Package_Type >( cmd_handler.p_Meta_Package->Package_Type( ), cmd_handler.retval );
       else if( field_name == c_field_id_Plural || field_name == c_field_name_Plural )
          string_getter< string >( cmd_handler.p_Meta_Package->Plural( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Type_Name || field_name == c_field_name_Type_Name )
+         string_getter< string >( cmd_handler.p_Meta_Package->Type_Name( ), cmd_handler.retval );
       else if( field_name == c_field_id_Usage_Count || field_name == c_field_name_Usage_Count )
          string_getter< int >( cmd_handler.p_Meta_Package->Usage_Count( ), cmd_handler.retval );
       else
@@ -355,6 +365,9 @@ void Meta_Package_command_functor::operator ( )( const string& command, const pa
       else if( field_name == c_field_id_Plural || field_name == c_field_name_Plural )
          func_string_setter< Meta_Package, string >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Plural, field_value );
+      else if( field_name == c_field_id_Type_Name || field_name == c_field_name_Type_Name )
+         func_string_setter< Meta_Package, string >(
+          *cmd_handler.p_Meta_Package, &Meta_Package::Type_Name, field_value );
       else if( field_name == c_field_id_Usage_Count || field_name == c_field_name_Usage_Count )
          func_string_setter< Meta_Package, int >(
           *cmd_handler.p_Meta_Package, &Meta_Package::Usage_Count, field_value );
@@ -447,6 +460,9 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
    const string& impl_Plural( ) const { return lazy_fetch( p_obj ), v_Plural; }
    void impl_Plural( const string& Plural ) { v_Plural = Plural; }
+
+   const string& impl_Type_Name( ) const { return lazy_fetch( p_obj ), v_Type_Name; }
+   void impl_Type_Name( const string& Type_Name ) { v_Type_Name = Type_Name; }
 
    int impl_Usage_Count( ) const { return lazy_fetch( p_obj ), v_Usage_Count; }
    void impl_Usage_Count( int Usage_Count ) { v_Usage_Count = Usage_Count; }
@@ -639,6 +655,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
    string v_Key;
    string v_Name;
    string v_Plural;
+   string v_Type_Name;
    int v_Usage_Count;
 
    string v_Model;
@@ -1252,6 +1269,10 @@ string Meta_Package::impl::get_field_value( int field ) const
       break;
 
       case 8:
+      retval = to_string( impl_Type_Name( ) );
+      break;
+
+      case 9:
       retval = to_string( impl_Usage_Count( ) );
       break;
 
@@ -1299,6 +1320,10 @@ void Meta_Package::impl::set_field_value( int field, const string& value )
       break;
 
       case 8:
+      func_string_setter< Meta_Package::impl, string >( *this, &Meta_Package::impl::impl_Type_Name, value );
+      break;
+
+      case 9:
       func_string_setter< Meta_Package::impl, int >( *this, &Meta_Package::impl::impl_Usage_Count, value );
       break;
 
@@ -1391,6 +1416,7 @@ void Meta_Package::impl::clear( )
    v_Key = gv_default_Key;
    v_Name = gv_default_Name;
    v_Plural = gv_default_Plural;
+   v_Type_Name = gv_default_Type_Name;
    v_Usage_Count = gv_default_Usage_Count;
 
    v_Model = string( );
@@ -1475,6 +1501,10 @@ void Meta_Package::impl::after_fetch( )
 
    if( cp_Package_Type )
       p_obj->setup_foreign_key( *cp_Package_Type, v_Package_Type );
+
+   // [(start field_from_other_field)]
+   get_obj( ).Type_Name( get_obj( ).Package_Type( ).Name( ) );
+   // [(finish field_from_other_field)]
 
    // [(start transient_field_from_file)]
    if( !get_obj( ).get_key( ).empty( )
@@ -1794,6 +1824,16 @@ void Meta_Package::Plural( const string& Plural )
    p_impl->impl_Plural( Plural );
 }
 
+const string& Meta_Package::Type_Name( ) const
+{
+   return p_impl->impl_Type_Name( );
+}
+
+void Meta_Package::Type_Name( const string& Type_Name )
+{
+   p_impl->impl_Type_Name( Type_Name );
+}
+
 int Meta_Package::Usage_Count( ) const
 {
    return p_impl->impl_Usage_Count( );
@@ -2090,6 +2130,16 @@ const char* Meta_Package::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Type_Name )
+   {
+      p_id = c_field_id_Type_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Usage_Count )
    {
       p_id = c_field_id_Usage_Count;
@@ -2191,6 +2241,16 @@ const char* Meta_Package::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Type_Name )
+   {
+      p_name = c_field_name_Type_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Usage_Count )
    {
       p_name = c_field_name_Usage_Count;
@@ -2227,6 +2287,8 @@ string Meta_Package::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Package_Type );
    else if( id == c_field_id_Plural )
       display_name = get_module_string( c_field_display_name_Plural );
+   else if( id == c_field_id_Type_Name )
+      display_name = get_module_string( c_field_display_name_Type_Name );
    else if( id == c_field_id_Usage_Count )
       display_name = get_module_string( c_field_display_name_Usage_Count );
 
@@ -2595,6 +2657,7 @@ void Meta_Package::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "136101", "Name", "string", false ) );
    all_field_info.push_back( field_info( "302810", "Package_Type", "Meta_Package_Type", true ) );
    all_field_info.push_back( field_info( "136107", "Plural", "string", false ) );
+   all_field_info.push_back( field_info( "136108", "Type_Name", "string", false ) );
    all_field_info.push_back( field_info( "136106", "Usage_Count", "int", false ) );
 }
 
@@ -2658,6 +2721,10 @@ const char* Meta_Package::static_get_field_id( field_id id )
       break;
 
       case 9:
+      p_id = "136108";
+      break;
+
+      case 10:
       p_id = "136106";
       break;
    }
@@ -2707,6 +2774,10 @@ const char* Meta_Package::static_get_field_name( field_id id )
       break;
 
       case 9:
+      p_id = "Type_Name";
+      break;
+
+      case 10:
       p_id = "Usage_Count";
       break;
    }
@@ -2739,8 +2810,10 @@ int Meta_Package::static_get_field_num( const string& field )
       rc += 7;
    else if( field == c_field_id_Plural || field == c_field_name_Plural )
       rc += 8;
-   else if( field == c_field_id_Usage_Count || field == c_field_name_Usage_Count )
+   else if( field == c_field_id_Type_Name || field == c_field_name_Type_Name )
       rc += 9;
+   else if( field == c_field_id_Usage_Count || field == c_field_name_Usage_Count )
+      rc += 10;
 
    return rc - 1;
 }

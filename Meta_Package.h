@@ -53,7 +53,8 @@ class META_PACKAGE_DECL_SPEC Meta_Package : public class_base
       e_field_id_Name = 6,
       e_field_id_Package_Type = 7,
       e_field_id_Plural = 8,
-      e_field_id_Usage_Count = 9
+      e_field_id_Type_Name = 9,
+      e_field_id_Usage_Count = 10
    };
 
    Meta_Package( );
@@ -76,6 +77,9 @@ class META_PACKAGE_DECL_SPEC Meta_Package : public class_base
 
    const std::string& Plural( ) const;
    void Plural( const std::string& Plural );
+
+   const std::string& Type_Name( ) const;
+   void Type_Name( const std::string& Type_Name );
 
    int Usage_Count( ) const;
    void Usage_Count( int Usage_Count );

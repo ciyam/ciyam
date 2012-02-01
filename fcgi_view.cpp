@@ -1130,7 +1130,6 @@ bool output_view_form( ostream& os, const string& act,
        || ( !is_in_edit
        && ( source.file_fields.count( source_value_id )
        || source.image_fields.count( source_value_id )
-       || source.content_fields.count( source_value_id )
        || source_field_id == source.attached_file_field ) ) )
       {
          os << "   <td class=\"list\">";
