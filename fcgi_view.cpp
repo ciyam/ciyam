@@ -2083,7 +2083,7 @@ bool output_view_form( ostream& os, const string& act,
 
             if( !enum_image_file.empty( ) )
                os << "<img src=\"" << enum_image_file << "\" border=\"0\">";
-            else
+            else if( !add_to_field_list )
                os << data_or_nbsp( escape_markup( cell_data ) );
          }
          else if( source.bool_fields.count( source_value_id ) )
