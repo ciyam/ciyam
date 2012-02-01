@@ -52,6 +52,7 @@
 #include "Meta_Class.h"
 #include "Meta_Field.h"
 #include "Meta_Model.h"
+#include "Meta_Package.h"
 #include "Meta_Initial_Record.h"
 #include "Meta_Initial_Record_Value.h"
 #ifndef _WIN32
@@ -1211,6 +1212,11 @@ void Meta_Application::impl::impl_Generate( )
    // NOTE: Empty block for scope purposes (to ensure script file is closed before being executed).
    {
       string app_dir( lower( get_obj( ).Name( ) ) );
+#ifndef _WIN32
+      string web_dir_var( "$WEBDIR" );
+#else
+      string web_dir_var( "%WEBDIR%" );
+#endif
       string app_vars( get_obj( ).Name( ) + ".app.vars.xrep" );
       string modules_list( get_obj( ).Name( ) + ".modules.lst" );
 
@@ -1268,11 +1274,11 @@ void Meta_Application::impl::impl_Generate( )
       outs << "@echo off\n";
       outs << "call ciyam_init_cmd.bat\n";
       outs << "set WEBDIR=" << get_web_root( ) << "\n\n";
-      outs << "if not exist \"%WEBDIR%/" << app_dir << "\" call setup.bat "
+      outs << "if not exist \"" << web_dir_var << "/" << app_dir << "\" call setup.bat "
        << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file << "\n\n";
 #else
       outs << "export WEBDIR=" << get_web_root( ) << "\n\n";
-      outs << "if [ ! -d $WEBDIR/" << app_dir << " ]; then\n"
+      outs << "if [ ! -d " << web_dir_var << "/" << app_dir << " ]; then\n"
        << " ./setup " << get_obj( ).Name( ) << " " << app_dir << " >>" << generate_log_file
        << "\nfi\n\n";
 #endif
@@ -1347,6 +1353,7 @@ void Meta_Application::impl::impl_Generate( )
       string all_modules;
       vector< string > modules;
       set< string > active_modules;
+      map< string, string > module_packages;
 
       string key_info( FIELD_ID( Meta, Module, Order ) );
       key_info += ' ';
@@ -1356,6 +1363,16 @@ void Meta_Application::impl::impl_Generate( )
          do
          {
             bool is_active = false;
+
+            if( get_obj( ).child_Module( ).Model( ).child_Package( ).iterate_forwards( ) )
+            {
+               do
+               {
+                  module_packages.insert(
+                   make_pair( get_obj( ).child_Module( ).Model( ).child_Package( ).Name( ),
+                   get_obj( ).child_Module( ).Model( ).child_Package( ).Type_Name( ) ) );
+               } while( get_obj( ).child_Module( ).Model( ).child_Package( ).iterate_next( ) );
+            }
 
             if( old_modules.count( get_obj( ).child_Module( ).Model( ).Name( ) ) )
                old_modules.erase( get_obj( ).child_Module( ).Model( ).Name( ) );
@@ -1384,6 +1401,22 @@ void Meta_Application::impl::impl_Generate( )
          } while( get_obj( ).child_Module( ).iterate_next( ) );
       }
 
+#ifdef _WIN32
+      string script_prefix( "call " );
+      string script_suffix( ".bat" );
+#else
+      string script_prefix( "./" );
+      string script_suffix;
+#endif
+      for( map< string, string >::iterator i = module_packages.begin( ); i != module_packages.end( ); ++i )
+      {
+         outs << script_prefix << "copy_icons" << script_suffix << " " << i->first << " "
+          << i->second << " " << app_dir << " " << web_dir_var << " >>" << generate_log_file << "\n";
+      }
+
+      if( !module_packages.empty( ) )
+         outs << '\n';
+
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
 
       outss1 << "storage_init " << storage_name( ) << "\n";
@@ -1395,13 +1428,6 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generating Source...\"\n";
       outss1 << "quit\n";
 
-#ifdef _WIN32
-      string script_prefix( "call " );
-      string script_suffix( ".bat" );
-#else
-      string script_prefix( "./" );
-      string script_suffix;
-#endif
       if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_UI_Only )
       {
 #ifdef _WIN32

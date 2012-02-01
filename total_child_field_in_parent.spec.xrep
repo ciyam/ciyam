@@ -1,6 +1,6 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)]
-   if( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       if( !is_create )
@@ -38,7 +38,7 @@
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)]
-   if( !get_obj( ).get_is_being_cascaded( ) )
+   if( !get_obj( ).get_is_being_cascaded( ) && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );
