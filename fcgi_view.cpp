@@ -2076,8 +2076,12 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                os << "</select>";
+
+               if( !enum_image_file.empty( ) )
+                  os << "&nbsp;&nbsp;";
             }
-            else if( !enum_image_file.empty( ) )
+
+            if( !enum_image_file.empty( ) )
                os << "<img src=\"" << enum_image_file << "\" border=\"0\">";
             else
                os << data_or_nbsp( escape_markup( cell_data ) );
