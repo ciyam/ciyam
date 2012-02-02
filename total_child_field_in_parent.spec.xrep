@@ -1,6 +1,6 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)]
-   if( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) && !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       if( !is_create )
@@ -47,5 +47,28 @@
 `}\
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
+   // [(finish total_child_field_in_parent)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start total_child_field_in_parent)]
+   dependents.insert( "`{`$arg_pfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+      names.insert( "`{`$arg_pfield`}" );
+
+   dependents.insert( "`{`$arg_nfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_nfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_nfield`} ) ) )
+      names.insert( "`{`$arg_nfield`}" );
+`{`!`@eq`(`$arg_n2field`,`'`'`)\
+
+   dependents.insert( "`{`$arg_n2field`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_n2field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_n2field`} ) ) )
+      names.insert( "`{`$arg_n2field`}" );
+`}\
    // [(finish total_child_field_in_parent)]
 `}
