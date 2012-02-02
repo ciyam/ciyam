@@ -2662,6 +2662,10 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`#$specification_\0_spec_file section=get_always_required_field_names name=\0\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield`}\
 `,\
+`@eq`(`'\1`'`,`'total_child_field_in_parent`'`)
+`{`#total_child_field_in_parent.spec.xrep section=get_always_required_field_names class_name=$class_name\
+ arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_pfield=$specification_\0_pfield`}\
+`,\
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
 `{`#unactionable_field_value.spec.xrep section=get_always_required_field_names\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_value=$specification_\0_value`}\

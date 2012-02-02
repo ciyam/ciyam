@@ -2627,6 +2627,10 @@ void output_list_form( ostream& os,
                }
             }
 
+            bool is_href = false;
+            bool is_image = false;
+            bool was_output = false;
+
             string class_tag( "list" );
             if( display_effect == c_modifier_effect_lowlight )
                class_tag += " lowlight";
@@ -2656,16 +2660,29 @@ void output_list_form( ostream& os,
                align_top = true;
 
             if( !align_top )
-               os << "   <td class=\"" << class_tag << "\">";
+               os << "   <td class=\"" << class_tag << "\"";
             else
-               os << "   <td class=\"" << class_tag << "\" style=\"vertical-align:top\">";
+               os << "   <td class=\"" << class_tag << "\" style=\"vertical-align:top\"";
+
+            // NOTE: If column appears to be for icons then shrink the size and make it centered.
+            if( source.enum_fields.count( source_value_id ) )
+            {
+               const enum_info& info(
+                sinfo.enums.find( source.enum_fields.find( source_value_id )->second )->second );
+
+               if( !info.values.empty( )
+                && ( file_exists( info.values[ 0 ].second + ".gif" )
+                || file_exists( info.values[ 0 ].second + ".png" ) ) )
+               {
+                  is_image = true;
+                  os << " width=\"25\" align=\"center\"";
+               }
+            }
+
+            os << ">";
 
             string view_id( source.view );
             string view_key( key );
-
-            bool is_href = false;
-            bool is_image = false;
-            bool was_output = false;
 
             // NOTE: Foreign key field values were appended to the field list and are now extracted
             // so that the hyperlink will be attached to the parent record rather than to the child.
@@ -2852,13 +2869,16 @@ void output_list_form( ostream& os,
                {
                   if( info.values[ i ].first == cell_data )
                   {
+                     string enum_image_file;
+                     if( file_exists( info.values[ i ].second + ".gif" ) )
+                        enum_image_file = info.values[ i ].second + ".gif";
+                     else if( file_exists( info.values[ i ].second + ".png" ) )
+                        enum_image_file = info.values[ i ].second + ".png";
+
                      // NOTE: If a .gif file with the enum value name exists
                      // then display the image rather than the string value.
-                     if( file_exists( info.values[ i ].second + ".gif" ) )
-                     {
-                        is_image = true;
-                        os << "<img src=\"" << info.values[ i ].second << ".gif\" border=\"0\">";
-                     }
+                     if( !enum_image_file.empty( ) )
+                        os << "<img src=\"" << enum_image_file << "\" border=\"0\">";
 
                      cell_data = get_display_string( info.values[ i ].second );
                      break;
