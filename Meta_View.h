@@ -62,7 +62,8 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
       e_field_id_Print_Without_Highlight = 13,
       e_field_id_Title = 14,
       e_field_id_Type = 15,
-      e_field_id_Type_Key = 16
+      e_field_id_Type_Key = 16,
+      e_field_id_Use_First_Row_As_Header = 17
    };
 
    Meta_View( );
@@ -100,6 +101,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
 
    const std::string& Type_Key( ) const;
    void Type_Key( const std::string& Type_Key );
+
+   bool Use_First_Row_As_Header( ) const;
+   void Use_First_Row_As_Header( bool Use_First_Row_As_Header );
 
    Meta_Permission& Access_Permission( );
    const Meta_Permission& Access_Permission( ) const;
