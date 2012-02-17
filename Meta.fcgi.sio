@@ -7254,6 +7254,14 @@
      <mandatory>true
      <modifiers>100:relegate,800:relegate,400:relegate
     </field>
+    <field/>
+     <name>field_view_use_first_row_as_header
+     <field>118114
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
    </fields>
   </view>
   <view/>

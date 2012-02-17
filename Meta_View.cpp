@@ -125,6 +125,7 @@ const char* const c_field_id_Print_Without_Highlight = "118106";
 const char* const c_field_id_Title = "118104";
 const char* const c_field_id_Type = "301810";
 const char* const c_field_id_Type_Key = "118110";
+const char* const c_field_id_Use_First_Row_As_Header = "118114";
 
 const char* const c_field_name_Access_Permission = "Access_Permission";
 const char* const c_field_name_Access_Restriction = "Access_Restriction";
@@ -142,6 +143,7 @@ const char* const c_field_name_Print_Without_Highlight = "Print_Without_Highligh
 const char* const c_field_name_Title = "Title";
 const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Type_Key = "Type_Key";
+const char* const c_field_name_Use_First_Row_As_Header = "Use_First_Row_As_Header";
 
 const char* const c_field_display_name_Access_Permission = "field_view_access_permission";
 const char* const c_field_display_name_Access_Restriction = "field_view_access_restriction";
@@ -159,8 +161,9 @@ const char* const c_field_display_name_Print_Without_Highlight = "field_view_pri
 const char* const c_field_display_name_Title = "field_view_title";
 const char* const c_field_display_name_Type = "field_view_type";
 const char* const c_field_display_name_Type_Key = "field_view_type_key";
+const char* const c_field_display_name_Use_First_Row_As_Header = "field_view_use_first_row_as_header";
 
-const int c_num_fields = 16;
+const int c_num_fields = 17;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -175,6 +178,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "118111",
    "118112",
    "118113",
+   "118114",
    "301800",
    "301810",
    "301820",
@@ -199,7 +203,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Print_Without_Highlight",
    "Title",
    "Type",
-   "Type_Key"
+   "Type_Key",
+   "Use_First_Row_As_Header"
 };
 
 inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -269,6 +274,7 @@ int gv_default_PDF_View_Type = int( 0 );
 bool gv_default_Print_Without_Highlight = bool( 0 );
 string gv_default_Title = string( "?" );
 string gv_default_Type_Key = string( );
+bool gv_default_Use_First_Row_As_Header = bool( 0 );
 
 set< int > g_view_access_restrict_enum;
 set< int > g_view_change_restrict_enum;
@@ -486,6 +492,8 @@ void Meta_View_command_functor::operator ( )( const string& command, const param
          string_getter< Meta_View_Type >( cmd_handler.p_Meta_View->Type( ), cmd_handler.retval );
       else if( field_name == c_field_id_Type_Key || field_name == c_field_name_Type_Key )
          string_getter< string >( cmd_handler.p_Meta_View->Type_Key( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_First_Row_As_Header || field_name == c_field_name_Use_First_Row_As_Header )
+         string_getter< bool >( cmd_handler.p_Meta_View->Use_First_Row_As_Header( ), cmd_handler.retval );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
@@ -544,6 +552,9 @@ void Meta_View_command_functor::operator ( )( const string& command, const param
       else if( field_name == c_field_id_Type_Key || field_name == c_field_name_Type_Key )
          func_string_setter< Meta_View, string >(
           *cmd_handler.p_Meta_View, &Meta_View::Type_Key, field_value );
+      else if( field_name == c_field_id_Use_First_Row_As_Header || field_name == c_field_name_Use_First_Row_As_Header )
+         func_string_setter< Meta_View, bool >(
+          *cmd_handler.p_Meta_View, &Meta_View::Use_First_Row_As_Header, field_value );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
@@ -630,6 +641,9 @@ struct Meta_View::impl : public Meta_View_command_handler
 
    const string& impl_Type_Key( ) const { return lazy_fetch( p_obj ), v_Type_Key; }
    void impl_Type_Key( const string& Type_Key ) { v_Type_Key = Type_Key; }
+
+   bool impl_Use_First_Row_As_Header( ) const { return lazy_fetch( p_obj ), v_Use_First_Row_As_Header; }
+   void impl_Use_First_Row_As_Header( bool Use_First_Row_As_Header ) { v_Use_First_Row_As_Header = Use_First_Row_As_Header; }
 
    Meta_Permission& impl_Access_Permission( )
    {
@@ -862,6 +876,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    bool v_Print_Without_Highlight;
    string v_Title;
    string v_Type_Key;
+   bool v_Use_First_Row_As_Header;
 
    string v_Access_Permission;
    mutable class_pointer< Meta_Permission > cp_Access_Permission;
@@ -1436,6 +1451,10 @@ string Meta_View::impl::get_field_value( int field ) const
       retval = to_string( impl_Type_Key( ) );
       break;
 
+      case 16:
+      retval = to_string( impl_Use_First_Row_As_Header( ) );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range" );
    }
@@ -1509,6 +1528,10 @@ void Meta_View::impl::set_field_value( int field, const string& value )
 
       case 15:
       func_string_setter< Meta_View::impl, string >( *this, &Meta_View::impl::impl_Type_Key, value );
+      break;
+
+      case 16:
+      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Use_First_Row_As_Header, value );
       break;
 
       default:
@@ -1633,6 +1656,7 @@ void Meta_View::impl::clear( )
    v_Print_Without_Highlight = gv_default_Print_Without_Highlight;
    v_Title = gv_default_Title;
    v_Type_Key = gv_default_Type_Key;
+   v_Use_First_Row_As_Header = gv_default_Use_First_Row_As_Header;
 
    v_Access_Permission = string( );
    if( cp_Access_Permission )
@@ -2059,6 +2083,16 @@ void Meta_View::Type_Key( const string& Type_Key )
    p_impl->impl_Type_Key( Type_Key );
 }
 
+bool Meta_View::Use_First_Row_As_Header( ) const
+{
+   return p_impl->impl_Use_First_Row_As_Header( );
+}
+
+void Meta_View::Use_First_Row_As_Header( bool Use_First_Row_As_Header )
+{
+   p_impl->impl_Use_First_Row_As_Header( Use_First_Row_As_Header );
+}
+
 Meta_Permission& Meta_View::Access_Permission( )
 {
    return p_impl->impl_Access_Permission( );
@@ -2430,6 +2464,16 @@ const char* Meta_View::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Use_First_Row_As_Header )
+   {
+      p_id = c_field_id_Use_First_Row_As_Header;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
 
    return p_id;
 }
@@ -2601,6 +2645,16 @@ const char* Meta_View::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Use_First_Row_As_Header )
+   {
+      p_name = c_field_name_Use_First_Row_As_Header;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
 
    return p_name;
 }
@@ -2643,6 +2697,8 @@ string Meta_View::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Type );
    else if( id == c_field_id_Type_Key )
       display_name = get_module_string( c_field_display_name_Type_Key );
+   else if( id == c_field_id_Use_First_Row_As_Header )
+      display_name = get_module_string( c_field_display_name_Use_First_Row_As_Header );
 
    return display_name;
 }
@@ -2890,6 +2946,7 @@ void Meta_View::get_sql_column_names(
    names.push_back( "C_Title" );
    names.push_back( "C_Type" );
    names.push_back( "C_Type_Key" );
+   names.push_back( "C_Use_First_Row_As_Header" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
       *p_done = true;
@@ -2916,6 +2973,7 @@ void Meta_View::get_sql_column_values(
    values.push_back( sql_quote( to_string( Title( ) ) ) );
    values.push_back( sql_quote( to_string( Type( ) ) ) );
    values.push_back( sql_quote( to_string( Type_Key( ) ) ) );
+   values.push_back( to_string( Use_First_Row_As_Header( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
       *p_done = true;
@@ -3066,6 +3124,7 @@ void Meta_View::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "118104", "Title", "string", false ) );
    all_field_info.push_back( field_info( "301810", "Type", "Meta_View_Type", true ) );
    all_field_info.push_back( field_info( "118110", "Type_Key", "string", false ) );
+   all_field_info.push_back( field_info( "118114", "Use_First_Row_As_Header", "bool", false ) );
 }
 
 void Meta_View::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
@@ -3161,6 +3220,10 @@ const char* Meta_View::static_get_field_id( field_id id )
       case 16:
       p_id = "118110";
       break;
+
+      case 17:
+      p_id = "118114";
+      break;
    }
 
    if( !p_id )
@@ -3238,6 +3301,10 @@ const char* Meta_View::static_get_field_name( field_id id )
       case 16:
       p_id = "Type_Key";
       break;
+
+      case 17:
+      p_id = "Use_First_Row_As_Header";
+      break;
    }
 
    if( !p_id )
@@ -3284,6 +3351,8 @@ int Meta_View::static_get_field_num( const string& field )
       rc += 15;
    else if( field == c_field_id_Type_Key || field == c_field_name_Type_Key )
       rc += 16;
+   else if( field == c_field_id_Use_First_Row_As_Header || field == c_field_name_Use_First_Row_As_Header )
+      rc += 17;
 
    return rc - 1;
 }
@@ -3326,6 +3395,7 @@ string Meta_View::static_get_sql_columns( )
     "C_Title VARCHAR(128) NOT NULL,"
     "C_Type VARCHAR(64) NOT NULL,"
     "C_Type_Key VARCHAR(128) NOT NULL,"
+    "C_Use_First_Row_As_Header INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

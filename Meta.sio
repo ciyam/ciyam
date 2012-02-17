@@ -22267,6 +22267,23 @@
       </specifications>
      </field>
      <field/>
+      <id>118114
+      <name>Use_First_Row_As_Header
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>301820
       <name>{Class}
       <type>@class
@@ -32934,6 +32951,7 @@
      <field_info>118106
      <field_info>118111;force+enum=658
      <field_info>118112;enum=654
+     <field_info>118114
     </data>
    </specification>
    <specification/>

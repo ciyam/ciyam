@@ -800,18 +800,23 @@ bool output_view_form( ostream& os, const string& act,
 
    os << "<table class=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n";
 
-   // NOTE: For a printable version do not bother with the field name/value column headings.
-   if( !is_printable )
-   {
+   if( view_extras.count( c_view_type_extra_use_first_row_as_header ) )
       os << "<thead>\n";
-      os << "<tr>\n";
-      os << "   <th class=\"list\" width=\"30%\">" << GDS( c_display_field_name ) << "</th>\n";
-      os << "   <th class=\"list\" >" << GDS( c_display_field_value ) << "</th>\n";
-      os << "</tr>\n";
-      os << "</thead>\n";
-   }
+   else
+   {
+      // NOTE: For a printable version do not bother with the field name/value column headings.
+      if( !is_printable )
+      {
+         os << "<thead>\n";
+         os << "<tr>\n";
+         os << "   <th class=\"list\" width=\"30%\">" << GDS( c_display_field_name ) << "</th>\n";
+         os << "   <th class=\"list\" >" << GDS( c_display_field_value ) << "</th>\n";
+         os << "</tr>\n";
+         os << "</thead>\n";
+      }
 
-   os << "<tbody>\n";
+      os << "<tbody>\n";
+   }
 
    bool has_attached_file_link = false;
 
@@ -1106,6 +1111,8 @@ bool output_view_form( ostream& os, const string& act,
       if( source.field_values.count( source_value_id ) )
          cell_data = source.field_values.find( source_value_id )->second;
 
+      string td_type( "td" );
+
       // NOTE: Hide rows that don't belong to the "active" tab (this only applies when editing)
       // as well as the "security level" field if the user has only the minimum security level.
       if( is_in_edit && ( ( skip_tab_num == source.field_tab_ids[ i ] )
@@ -1117,12 +1124,17 @@ bool output_view_form( ostream& os, const string& act,
          else
             os << "<tr class=\"odd_invisible\">\n";
       }
-      else
+      else if( i != 0 || !view_extras.count( c_view_type_extra_use_first_row_as_header ) )
       {
          if( ++num_displayed % 2 == 1 )
             os << "<tr class=\"list\">\n";
          else
             os << "<tr class=\"list odd_data\">\n";
+      }
+      else
+      {
+         os << "<tr>\n";
+         td_type = "th";
       }
 
       string td_extra;
@@ -1132,11 +1144,11 @@ bool output_view_form( ostream& os, const string& act,
        || source.image_fields.count( source_value_id )
        || source_field_id == source.attached_file_field ) ) )
       {
-         os << "   <td class=\"list\">";
+         os << "   <" << td_type << " class=\"list\">";
          os << escape_markup( is_in_edit ? source.edit_display_names[ i ] : source.display_names[ i ] );
          if( source.uom_fields.count( source_value_id ) )
             os << " (" << source.uom_fields.find( source_value_id )->second << ")";
-         os << "</td>\n";
+         os << "</" << td_type << ">\n";
       }
       else
          td_extra = " colspan=\"2\"";
@@ -1152,15 +1164,15 @@ bool output_view_form( ostream& os, const string& act,
          class_extra += " smaller";
 
       if( !is_in_edit && display_effect == c_modifier_effect_lowlight )
-         os << "   <td class=\"lowlight" << class_extra << "\"" << td_extra << ">";
+         os << "   <" << td_type << " class=\"lowlight" << class_extra << "\"" << td_extra << ">";
       else if( !is_in_edit && display_effect == c_modifier_effect_lowlight1 )
-         os << "   <td class=\"lowlight1" << class_extra << "\"" << td_extra << ">";
+         os << "   <" << td_type << " class=\"lowlight1" << class_extra << "\"" << td_extra << ">";
       else if( !is_in_edit && display_effect == c_modifier_effect_highlight )
-         os << "   <td class=\"highlight" << class_extra << "\"" << td_extra << ">";
+         os << "   <" << td_type << " class=\"highlight" << class_extra << "\"" << td_extra << ">";
       else if( !is_in_edit && display_effect == c_modifier_effect_highlight1 )
-         os << "   <td class=\"highlight1" << class_extra << "\"" << td_extra << ">";
+         os << "   <" << td_type << " class=\"highlight1" << class_extra << "\"" << td_extra << ">";
       else
-         os << "   <td class=\"list" << class_extra << "\"" << td_extra << ">";
+         os << "   <" << td_type << " class=\"list" << class_extra << "\"" << td_extra << ">";
 
       if( source_field_id == pfield
        || source_field_id == source.attached_file_field
@@ -2459,8 +2471,14 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
-      os << "</td>\n";
+      os << "</" << td_type << ">\n";
       os << "</tr>\n";
+
+      if( view_extras.count( c_view_type_extra_use_first_row_as_header ) )
+      {
+         os << "</thead>\n";
+         os << "<tbody>\n";
+      }
    }
    os << "</tbody>\n";
    os << "</table>\n";

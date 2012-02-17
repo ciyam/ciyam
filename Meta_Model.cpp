@@ -1594,6 +1594,13 @@ void Meta_Model::impl::impl_Generate( )
                extras += "print_no_highlight";
             }
 
+            if( get_obj( ).child_View( ).Use_First_Row_As_Header( ) )
+            {
+               if( !extras.empty( ) )
+                  extras += ",";
+               extras += "first_row_as_header";
+            }
+
             if( !is_null( get_obj( ).child_View( ).Class( ).Static_Instance_Key( ) ) )
             {
                if( !extras.empty( ) )

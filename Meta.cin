@@ -461,6 +461,7 @@ field_add -id=118110 View Type_Key string mand
 field_add -id=118111 View PDF_View_Type int mand -def=0 -e=view_pdf_view_type
 field_add -id=118112 View PDF_Font_Type int mand -def=0 -e=pdf_font_type
 field_add -id=118113 View Allow_Copy_Action bool mand -def=0
+field_add -id=118114 View Use_First_Row_As_Header bool mand -def=0
 procedure_add -id=118410 View Generate_PDF_View
 class_add -id=119100 View_Field_Type View_Field_Types
 field_add -id=119101 View_Field_Type Name str30 mand
@@ -1791,7 +1792,7 @@ specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_e
 ,Name;no_edit,Id;no_edit+edit_only,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link,Title\
 ,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
-,@tab:Advanced_UI_Options,Allow_Copy_Action,Allow_Printable_Version;force,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type"
+,@tab:Advanced_UI_Options,Allow_Copy_Action,Allow_Printable_Version;force,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header"
 specification_add -id=602620 {View}_child_list0 list "@602620_* child:sort_no_limit View Name,Access_Restriction {Model}"
 specification_add -id=602710 {View_Field}_view view "? standard View_Field {View}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
