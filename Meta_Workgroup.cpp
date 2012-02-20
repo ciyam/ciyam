@@ -557,7 +557,7 @@ struct Meta_Workgroup::impl : public Meta_Workgroup_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Workgroup* p_obj;
    class_pointer< Meta_Workgroup > cp_obj;
@@ -981,10 +981,8 @@ void Meta_Workgroup::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Workgroup::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Workgroup::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1251,9 +1249,9 @@ void Meta_Workgroup::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Workgroup::is_filtered( const set< string >& filters ) const
+bool Meta_Workgroup::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Workgroup::get_field_id(

@@ -411,7 +411,7 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Initial_Record* p_obj;
    class_pointer< Meta_Initial_Record > cp_obj;
@@ -848,10 +848,8 @@ void Meta_Initial_Record::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Initial_Record::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Initial_Record::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1048,9 +1046,9 @@ void Meta_Initial_Record::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Initial_Record::is_filtered( const set< string >& filters ) const
+bool Meta_Initial_Record::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Initial_Record::get_field_id(

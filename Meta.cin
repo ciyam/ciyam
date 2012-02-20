@@ -1450,10 +1450,10 @@ specification_add -id=600204 {Specification}_Name_from_search_replace field_from
 specification_add -id=600205 {Specification}_All_Vars_dependency field_dependency "Specification All_Vars Vars"
 specification_add -id=600206 {Specification}_All_Strings_dependency field_dependency "Specification All_Strings Strings"
 specification_add -id=600207 {Specification}_Vars_from_search_replace field_from_search_replace "Specification Vars\
- {Specification_Type}:Specification_Vars {Model}:Name={model},{Model}:Id={model_id}\
+ {Specification_Type}:Specification_Vars Id={id},{Model}:Name={model},{Model}:Id={model_id}\
 ,{Class}:Name={class},{Class}:Id={class_id},Other_Class:Name={oclass},Other_Class:Id={oclass_id}\
 ,{Field}:Name={field},Field_Class:Name={fclass},{Field}:Id={field_id},{Field}:Mandatory={fmandatory}\
-,{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
+,{Field}:Transient={ftransient},{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
 ,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
 ,{Modifier}:Name={modifier},Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield}\
 ,Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass},Source_Child:Name={scfield},Source_Child:Id={scfield_id}\

@@ -748,7 +748,7 @@ struct Meta_Specification_Copy_Child_Links::impl : public Meta_Specification_Cop
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Specification_Copy_Child_Links* p_obj;
    class_pointer< Meta_Specification_Copy_Child_Links > cp_obj;
@@ -1123,10 +1123,8 @@ void Meta_Specification_Copy_Child_Links::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Specification_Copy_Child_Links::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Specification_Copy_Child_Links::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1361,11 +1359,12 @@ void Meta_Specification_Copy_Child_Links::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Specification_Copy_Child_Links::is_filtered( const set< string >& filters ) const
+bool Meta_Specification_Copy_Child_Links::is_filtered( ) const
 {
-   if( parent_class_type::is_filtered( filters ) )
+   if( parent_class_type::is_filtered( ) )
       return true;
-   return p_impl->is_filtered( filters );
+
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Specification_Copy_Child_Links::get_field_id(

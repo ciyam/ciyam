@@ -13,7 +13,7 @@ guest_model
 > perform_create guest 20120102 100 136100 guest_standard "136101=Standard,136107=Standard,302810=standard,302800=guest_model"
 guest_standard
 
-> perform_execute guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 136410
+> perform_execute guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
 Installing Standard Package...
 
 > perform_fetch Meta Class "" Name,Plural,Id -min

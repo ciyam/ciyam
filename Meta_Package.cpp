@@ -639,7 +639,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Package* p_obj;
    class_pointer< Meta_Package > cp_obj;
@@ -718,8 +718,9 @@ void Meta_Package::impl::impl_Check_Install( )
             was_okay = false;
 
          remove_file( temp_map_filename );
-         remove_file( temp_new_filename );
       }
+
+      remove_file( temp_new_filename );
    }
 
    if( !was_okay )
@@ -1738,10 +1739,8 @@ void Meta_Package::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Package::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Package::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -2038,9 +2037,9 @@ void Meta_Package::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Package::is_filtered( const set< string >& filters ) const
+bool Meta_Package::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Package::get_field_id(

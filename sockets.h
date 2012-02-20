@@ -46,6 +46,8 @@ typedef size_t socklen_type;
 #  define INVALID_SOCKET -1
 #endif
 
+const size_t c_default_connect_timeout = 30000;
+
 class ip_address : public sockaddr_in
 {
    public:
@@ -71,7 +73,7 @@ class tcp_socket
    void close( );
 
    bool bind( const ip_address& addr );
-   bool connect( const ip_address& addr, size_t timeout = 0 );
+   bool connect( const ip_address& addr, size_t timeout = c_default_connect_timeout );
 
    bool listen( );
    SOCKET accept( ip_address& addr, size_t timeout = 0 ) const;

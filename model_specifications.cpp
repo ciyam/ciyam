@@ -195,7 +195,6 @@ const char* const c_attribute_field_value = "field_value";
 const char* const c_attribute_dfield_prim = "dfield_prim";
 const char* const c_attribute_dfield_type = "dfield_type";
 const char* const c_attribute_modifier_id = "modifier_id";
-const char* const c_attribute_filter_spec = "filter_spec";
 const char* const c_attribute_sftfield_id = "sftfield_id";
 const char* const c_attribute_act_field_id = "act_field_id";
 const char* const c_attribute_append_value = "append_value";
@@ -225,7 +224,6 @@ const char* const c_attribute_pw_enum_2_name = "pw_enum_2_name";
 const char* const c_attribute_pw_enum_value = "pw_enum_value";
 const char* const c_attribute_ug_enum_value = "ug_enum_value";
 const char* const c_attribute_action_value = "action_value";
-const char* const c_attribute_filter_value = "filter_value";
 const char* const c_attribute_status_value = "status_value";
 const char* const c_attribute_options_left = "options_left";
 const char* const c_attribute_protect_spec = "protect_spec";
@@ -463,6 +461,7 @@ const char* const c_data_procedure = "procedure";
 const char* const c_data_spec_file = "spec_file";
 const char* const c_data_crgpmfield = "crgpmfield";
 const char* const c_data_fmandatory = "fmandatory";
+const char* const c_data_ftransient = "ftransient";
 const char* const c_data_is_testval = "is_testval";
 const char* const c_data_link_class = "link_class";
 const char* const c_data_mask_field = "mask_field";
@@ -3071,8 +3070,6 @@ string clone_default_for_group_specification::static_class_name( ) { return "clo
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, clone_default_for_group_specification, static_class_name );
 
-// FUTURE: This class is identical to the previous one (with a different source template being used during
-// source code generation) and so should be combined just as the "filter" and "protect" specifications are.
 struct clone_default_group_children_specification : specification
 {
    void add( model& m, const vector< string >& args, vector< specification_detail >& details );
@@ -6078,7 +6075,7 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
 
    spec_data.data_pairs.push_back( make_pair( c_data_separator, separator ) );
 
-   spec_data.data_pairs.push_back( make_pair( c_data_transient, is_transient ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_ftransient, is_transient ? "1" : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_opt_prefix, has_opt_prefix ? c_true : "" ) );
 
    string options_field_name;
@@ -6382,126 +6379,6 @@ void file_link_specification::add_specification_data( model& m, specification_da
 string file_link_specification::static_class_name( ) { return "file_link"; }
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, file_link_specification, static_class_name );
-
-struct filter_specification : specification
-{
-   void add( model& m, const vector< string >& args, vector< specification_detail >& details );
-
-   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_model; }
-
-   void read_data( sio_reader& reader );
-   void write_data( sio_writer& writer ) const;
-
-   void add_specification_data( model& m, specification_data& spec_data ) const;
-
-   static string static_class_name( );
-
-   string filter_spec;
-   string filter_value;
-};
-
-void filter_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
-{
-   if( args.size( ) < 3 )
-      throw runtime_error( "unexpected number of args < 3 for 'filter' specification" );
-
-   string arg_type_name( args[ 0 ] );
-   string arg_class_name( args[ 1 ] );
-   string arg_field_name( args[ 2 ] );
-
-   string class_id = get_class_id_for_name( m, arg_class_name );
-
-   bool has_filter_value = false;
-
-   if( arg_type_name == "null" )
-   {
-      filter_spec = "filter_null.spec.xrep";
-
-      if( args.size( ) > 3 )
-         throw runtime_error( "unexpected extra args for 'null filter' specification" );
-   }
-   else if( arg_type_name == "non_null" )
-   {
-      filter_spec = "filter_non_null.spec.xrep";
-
-      if( args.size( ) > 3 )
-         throw runtime_error( "unexpected extra args for 'non-null filter' specification" );
-   }
-   else if( arg_type_name == "equal" )
-   {
-      filter_spec = "filter_equal.spec.xrep";
-
-      if( args.size( ) < 4 )
-         throw runtime_error( "unexpected missing value arg for 'equal filter' specification" );
-
-      if( args.size( ) > 4 )
-         throw runtime_error( "unexpected extra args for 'equal filter' specification" );
-
-      has_filter_value = true;
-   }
-   else if( arg_type_name == "not_equal" )
-   {
-      filter_spec = "filter_not_equal.spec.xrep";
-
-      if( args.size( ) < 4 )
-         throw runtime_error( "unexpected missing value arg for 'not equal filter' specification" );
-
-      if( args.size( ) > 4 )
-         throw runtime_error( "unexpected extra args for 'not equal filter' specification" );
-
-      has_filter_value = true;
-   }
-   else if( arg_type_name == "perm_restricted" )
-   {
-      filter_spec = "filter_perm_restricted.spec.xrep";
-
-      if( args.size( ) > 3 )
-         throw runtime_error( "unexpected extra args for 'non-null filter' specification" );
-   }
-   else
-      throw runtime_error( "unknown filter type '" + arg_type_name + "'" );
-
-   string field_id, field_type;
-   field_id = get_field_id_for_name( m, arg_class_name, arg_field_name, &field_type, true );
-
-   if( field_id.empty( ) )
-      throw runtime_error( "unknown field name '" + arg_field_name + "' for class '" + arg_class_name + "'" );
-
-   if( has_filter_value )
-   {
-      bool is_non_string( is_non_string_type( field_type ) );
-
-      if( is_non_string )
-         filter_value = args[ 3 ];
-      else
-         filter_value = '"' + args[ 3 ] + '"';
-   }
-
-   details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
-   details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
-}
-
-void filter_specification::read_data( sio_reader& reader )
-{
-   filter_spec = reader.read_attribute( c_attribute_filter_spec );
-   filter_value = reader.read_opt_attribute( c_attribute_filter_value );
-}
-
-void filter_specification::write_data( sio_writer& writer ) const
-{
-   writer.write_attribute( c_attribute_filter_spec, filter_spec );
-   writer.write_opt_attribute( c_attribute_filter_value, filter_value );
-}
-
-void filter_specification::add_specification_data( model& /*m*/, specification_data& spec_data ) const
-{
-   spec_data.data_pairs.push_back( make_pair( c_data_spec_file, filter_spec ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_spec_value, filter_value ) );
-}
-
-string filter_specification::static_class_name( ) { return "filter"; }
-
-DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, filter_specification, static_class_name );
 
 struct fk_default_specification : specification
 {
@@ -10286,101 +10163,6 @@ string move_up_and_down_specification::static_class_name( ) { return "move_up_an
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, move_up_and_down_specification, static_class_name );
 
-struct non_uid_filter_specification : specification
-{
-   void add( model& m, const vector< string >& args, vector< specification_detail >& details );
-
-   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_non_model; }
-
-   bool has_specification_data_for_class( const string& id ) const { return id == class_id; }
-
-   void read_data( sio_reader& reader );
-   void write_data( sio_writer& writer ) const;
-
-   void add_specification_data( model& m, specification_data& spec_data ) const;
-
-   static string static_class_name( );
-
-   string class_id;
-   string pclass_id;
-
-   string pfield_id;
-   string cfield_id;
-};
-
-void non_uid_filter_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
-{
-   if( args.size( ) != 3 )
-      throw runtime_error( "unexpected number of args != 3 for 'non_uid_filter' specification" );
-
-   string arg_class_name( args[ 0 ] );
-   string arg_pfield_name( args[ 1 ] );
-   string arg_cfield_name( args[ 2 ] );
-
-   class_id = get_class_id_for_name( m, arg_class_name );
-
-   string pfield_type;
-   pfield_id = get_field_id_for_name( m, arg_class_name, arg_pfield_name, &pfield_type, true );
-
-   if( pfield_id.empty( ) )
-      throw runtime_error( "unknown field '" + arg_pfield_name + "' for class '" + arg_class_name + "'" );
-
-   string pclass_name( get_class_name_from_field_type( m, arg_class_name, arg_pfield_name, pfield_type ) );
-
-   bool is_external_alias;
-   pclass_id = get_class_id_for_name( m, pclass_name, &is_external_alias );
-
-   cfield_id = get_field_id_for_name( m, pclass_name, arg_cfield_name, 0, false, false, true );
-   if( cfield_id.empty( ) )
-      throw runtime_error( "unknown field '" + arg_cfield_name + "' for class '" + pclass_name + "'" );
-
-   details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
-   if( !pclass_id.empty( ) && pclass_id != class_id )
-      details.push_back( specification_detail( pclass_id, "pclass", e_model_element_type_class ) );
-
-   details.push_back( specification_detail( pfield_id, "pfield", e_model_element_type_field ) );
-
-   if( !is_external_alias )
-      details.push_back( specification_detail( cfield_id, "cfield", e_model_element_type_field ) );
-}
-
-void non_uid_filter_specification::read_data( sio_reader& reader )
-{
-   class_id = reader.read_attribute( c_attribute_class_id );
-   pclass_id = reader.read_attribute( c_attribute_pclass_id );
-
-   pfield_id = reader.read_attribute( c_attribute_pfield_id );
-   cfield_id = reader.read_attribute( c_attribute_cfield_id );
-}
-
-void non_uid_filter_specification::write_data( sio_writer& writer ) const
-{
-   writer.write_attribute( c_attribute_class_id, class_id );
-   writer.write_attribute( c_attribute_pclass_id, pclass_id );
-
-   writer.write_attribute( c_attribute_pfield_id, pfield_id );
-   writer.write_attribute( c_attribute_cfield_id, cfield_id );
-}
-
-void non_uid_filter_specification::add_specification_data( model& m, specification_data& spec_data ) const
-{
-   string class_name = get_class_name_for_id( m, class_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
-
-   string pclass_name = get_class_name_for_id( m, pclass_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_pclass, pclass_name ) );
-
-   string pfield_name = get_field_name_for_id( m, class_name, pfield_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
-
-   string cfield_name = get_field_name_for_id( m, pclass_name, cfield_id, 0, true );
-   spec_data.data_pairs.push_back( make_pair( c_data_cfield, cfield_name ) );
-}
-
-string non_uid_filter_specification::static_class_name( ) { return "non_uid_filter"; }
-
-DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, non_uid_filter_specification, static_class_name );
-
 struct parent_auto_int_inc_specification : specification
 {
    void add( model& m, const vector< string >& args, vector< specification_detail >& details );
@@ -11111,114 +10893,6 @@ string prior_version_specification::static_class_name( ) { return "prior_version
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, prior_version_specification, static_class_name );
 
-struct prior_version_filter_specification : specification
-{
-   void add( model& m, const vector< string >& args, vector< specification_detail >& details );
-
-   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_non_model; }
-
-   bool has_specification_data_for_class( const string& id ) const { return id == class_id; }
-
-   void read_data( sio_reader& reader );
-   void write_data( sio_writer& writer ) const;
-
-   void add_specification_data( model& m, specification_data& spec_data ) const;
-
-   static string static_class_name( );
-
-   string class_id;
-   string source_class_id;
-   string source_field_id;
-   string version_field_id;
-   string source_field_cid;
-   string source_field_value;
-};
-
-void prior_version_filter_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
-{
-   if( args.size( ) < 5 )
-      throw runtime_error( "prior_version_filter specification requires "
-       "'prior version class', 'version field', 'source class', 'source field' and 'field value'" );
-
-   string arg_class_name( args[ 0 ] );
-   string arg_version_field_name( args[ 1 ] );
-   string arg_source_class_name( args[ 2 ] );
-   string arg_source_field_name( args[ 3 ] );
-   string arg_source_field_value( args[ 4 ] );
-
-   class_id = get_class_id_for_name( m, arg_class_name );
-   source_class_id = get_class_id_for_name( m, arg_source_class_name );
-
-   version_field_id = get_field_id_for_name( m, arg_class_name, arg_version_field_name );
-
-   if( version_field_id.empty( ) )
-      throw runtime_error( "unknown field '" + arg_version_field_name + "' for class '" + arg_class_name + "'" );
-
-   if( get_field_id_for_name( m, arg_source_class_name, arg_version_field_name ).empty( ) )
-      throw runtime_error( "version field '" + arg_version_field_name + "' not found in class '" + arg_source_class_name + "'" );
-
-   string source_field_type;
-   source_field_id = get_field_id_for_name( m, arg_source_class_name, arg_source_field_name, &source_field_type, true );
-
-   source_field_cid = get_class_id_for_name( m,
-    get_class_name_from_field_type( m, arg_source_class_name, arg_source_field_name, source_field_type ) );
-
-   if( source_field_id.empty( ) )
-      throw runtime_error( "unknown field '" + arg_source_field_name + "' for class '" + arg_source_class_name + "'" );
-
-   if( source_field_cid.empty( ) )
-      throw runtime_error( "field '" + arg_source_field_name + "' is not a foreign key" );
-
-   source_field_value = arg_source_field_value;
-
-   details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
-   details.push_back( specification_detail( source_class_id, "source_class", e_model_element_type_class ) );
-   details.push_back( specification_detail( source_field_cid, "source_field_class", e_model_element_type_class ) );
-
-   details.push_back( specification_detail( version_field_id, "version_field", e_model_element_type_field ) );
-   details.push_back( specification_detail( source_field_id, "source_field", e_model_element_type_field ) );
-}
-
-void prior_version_filter_specification::read_data( sio_reader& reader )
-{
-   class_id = reader.read_attribute( c_attribute_class_id );
-   source_class_id = reader.read_attribute( c_attribute_source_class_id );
-   version_field_id = reader.read_attribute( c_attribute_version_field_id );
-   source_field_cid = reader.read_attribute( c_attribute_source_field_cid );
-   source_field_value = reader.read_attribute( c_attribute_source_field_value );
-}
-
-void prior_version_filter_specification::write_data( sio_writer& writer ) const
-{
-   writer.write_attribute( c_attribute_class_id, class_id );
-   writer.write_attribute( c_attribute_source_class_id, source_class_id );
-   writer.write_attribute( c_attribute_version_field_id, version_field_id );
-   writer.write_attribute( c_attribute_source_field_cid, source_field_cid );
-   writer.write_attribute( c_attribute_source_field_value, source_field_value );
-}
-
-void prior_version_filter_specification::add_specification_data( model& m, specification_data& spec_data ) const
-{
-   string class_name = get_class_name_for_id( m, class_id );
-   string source_class_name = get_class_name_for_id( m, source_class_id );
-   spec_data.data_pairs.push_back( make_pair( string( c_data_sclass ), source_class_name ) );
-
-   string version_field_name = get_field_name_for_id( m, class_name, version_field_id );
-   spec_data.data_pairs.push_back( make_pair( string( c_data_ver_field ), version_field_name ) );
-
-   string source_field_name = get_field_name_for_id( m, source_class_name, source_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_sfield, source_field_name ) );
-
-   string source_field_class_name = get_class_name_for_id( m, source_field_cid );
-   spec_data.data_pairs.push_back( make_pair( c_data_sfclass, source_field_class_name ) );
-
-   spec_data.data_pairs.push_back( make_pair( c_data_sfvalue, source_field_value ) );
-}
-
-string prior_version_filter_specification::static_class_name( ) { return "prior_version_filter"; }
-
-DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, prior_version_filter_specification, static_class_name );
-
 struct state_protect_specification : specification
 {
    void add( model& m, const vector< string >& args, vector< specification_detail >& details );
@@ -11320,47 +10994,6 @@ void state_protect_specification::add_specification_data( model& /*m*/, specific
 string state_protect_specification::static_class_name( ) { return "state_protect"; }
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, state_protect_specification, static_class_name );
-
-struct term_filter_specification : specification
-{
-   void add( model& m, const vector< string >& args, vector< specification_detail >& details );
-
-   specification_data_source get_specification_data_source( ) const { return e_specification_data_source_model; }
-
-   bool is_facet_specification( ) const { return true; }
-
-   static string static_class_name( );
-};
-
-void term_filter_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
-{
-   if( args.size( ) != 2 )
-      throw runtime_error( "unexpected number of args != 2 for 'term_filter' specification" );
-
-   string arg_class_name( args[ 0 ] );
-   string arg_field_name( args[ 1 ] );
-
-   vector< specification_data > all_spec_data;
-   m.get_specification_data( arg_class_name, all_spec_data );
-   for( size_t i = 0; i < all_spec_data.size( ); i++ )
-   {
-      if( all_spec_data[ i ].type == static_class_name( ) )
-         throw runtime_error( "specification type '" + static_class_name( ) + "' can only be used once per class" );
-   }
-
-   string class_id = get_class_id_for_name( m, arg_class_name );
-   string field_id = get_field_id_for_name( m, arg_class_name, arg_field_name );
-
-   if( field_id.empty( ) )
-      throw runtime_error( "unknown field name '" + arg_field_name + "' for class '" + arg_class_name + "'" );
-
-   details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
-   details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
-}
-
-string term_filter_specification::static_class_name( ) { return "term_filter"; }
-
-DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, term_filter_specification, static_class_name );
 
 struct total_child_field_in_parent_specification : specification
 {

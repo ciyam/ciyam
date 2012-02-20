@@ -660,7 +660,7 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Procedure_Arg* p_obj;
    class_pointer< Meta_Procedure_Arg > cp_obj;
@@ -1255,10 +1255,8 @@ void Meta_Procedure_Arg::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Procedure_Arg::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Procedure_Arg::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1540,9 +1538,9 @@ void Meta_Procedure_Arg::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Procedure_Arg::is_filtered( const set< string >& filters ) const
+bool Meta_Procedure_Arg::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Procedure_Arg::get_field_id(

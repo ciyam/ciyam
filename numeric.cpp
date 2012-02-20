@@ -37,7 +37,7 @@ using namespace std;
 namespace
 {
 
-/* NOTE: This should be implemented as a regression test...
+/* NOTE: This should always be a part of the regression tests...
 
    Test Rounding Results Table:
 
@@ -92,7 +92,7 @@ const uint8_t c_decimals_mask = 0x7f;
 
 const uint64_t c_zero = UINT64_C( 0 );
 
-const uint64_t c_max_mantissa = UINT64_C( 9999999999999999999 );
+const uint64_t c_max_mantissa = UINT64_C( 999999999999999999 );
 
 const char c_opt = '#';
 const char c_mand = '0';
@@ -132,7 +132,7 @@ inline void level_decimals( numeric& n1, numeric& n2 )
    {
       uint8_t d( n1.decimals - n2.decimals );
 
-      if( n2.mantissa >= power10[ numeric::e_max_digits - d - 1 ] )
+      if( n2.mantissa >= power10[ numeric::e_max_digits - d ] )
          throw runtime_error( "overflow occurred" );
 
       n2.mantissa *= power10[ d ];
@@ -142,8 +142,8 @@ inline void level_decimals( numeric& n1, numeric& n2 )
    {
       uint8_t d( n2.decimals - n1.decimals );
 
-      if( n1.mantissa >= power10[ numeric::e_max_digits - d - 1 ] )
-         throw runtime_error( "overflow occurred" );
+      if( n1.mantissa >= power10[ numeric::e_max_digits - d ] )
+         throw runtime_error( "underflow occurred" );
 
       n1.mantissa *= power10[ d ];
       n1.decimals = n2.decimals;
@@ -430,15 +430,34 @@ numeric& numeric::operator *=( numeric n )
    if( mantissa != c_zero && n.mantissa != c_zero )
    {
       uint64_t m( mantissa );
+      uint8_t d( decimals & c_decimals_mask );
+
+      if( n.mantissa )
+      {
+         while( d && n.mantissa % 10 == 0 )
+         {
+            --d;
+            n.mantissa /= 10;
+         }
+      }
+
       m *= n.mantissa;
 
-      if( m / n.mantissa != mantissa || m > c_max_mantissa )
+      if( m / n.mantissa != mantissa )
          throw runtime_error( "overflow occurred" );
 
       uint8_t negative_flag = ( decimals & c_negative_flag ) ^ ( n.decimals & c_negative_flag );
 
-      uint8_t d( decimals & c_decimals_mask );
-      d += n.decimals & c_decimals_mask;
+      if( d && m > c_max_mantissa )
+      {
+         --d;
+         m /= 10;
+      }
+
+      if( m > c_max_mantissa )
+         throw runtime_error( "overflow occurred" );
+
+      d += ( n.decimals & c_decimals_mask );
 
       if( d > e_max_digits )
          throw runtime_error( "underflow occurred" );
@@ -473,20 +492,35 @@ numeric& numeric::operator /=( numeric n )
 
    if( mantissa != c_zero )
    {
-      while( mantissa < power10[ e_max_digits - 1 ] )
+      while( mantissa < power10[ e_max_digits ] )
       {
          ++d;
          mantissa *= 10;
       }
 
+      if( ( n.decimals & c_decimals_mask ) > d )
+         throw runtime_error( "underflow occurred" );
+
       uint64_t m( mantissa );
       m /= n.mantissa;
 
-      if( ( n.decimals & c_decimals_mask ) > d )
-         throw runtime_error( "overflow occurred" );
-
       mantissa = m;
+      if( mantissa % 10 == 0 )
+      {
+         --d;
+         mantissa /= 10;
+      }
+
       d -= ( n.decimals & c_decimals_mask );
+
+      while( d && mantissa > c_max_mantissa )
+      {
+         --d;
+         mantissa /= 10;
+      }
+
+      if( d > e_max_digits || mantissa > c_max_mantissa )
+         throw runtime_error( "underflow occurred" );
 
       while( d > 0 && mantissa % 10 == 0 )
       {

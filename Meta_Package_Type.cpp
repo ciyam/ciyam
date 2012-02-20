@@ -415,7 +415,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Package_Type* p_obj;
    class_pointer< Meta_Package_Type > cp_obj;
@@ -496,6 +496,7 @@ void Meta_Package_Type::impl::impl_Install( )
    else if( lower( details ) != "single" )
       throw runtime_error( "unexpected package details: " + lines[ 0 ] );
 
+   string key( get_obj( ).get_key( ) );
    map< string, int > package_versions;
    if( !storage_locked_for_admin( ) && get_obj( ).iterate_forwards( ) )
    {
@@ -506,7 +507,7 @@ void Meta_Package_Type::impl::impl_Install( )
       } while( get_obj( ).iterate_next( ) );
    }
 
-   get_obj( ).op_update( );
+   get_obj( ).op_update( key );
 
    get_obj( ).Name( name );
    get_obj( ).Plural( plural );
@@ -880,10 +881,8 @@ void Meta_Package_Type::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Package_Type::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Package_Type::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1110,9 +1109,9 @@ void Meta_Package_Type::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Package_Type::is_filtered( const set< string >& filters ) const
+bool Meta_Package_Type::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Package_Type::get_field_id(

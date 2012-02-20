@@ -530,7 +530,7 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Package_Option* p_obj;
    class_pointer< Meta_Package_Option > cp_obj;
@@ -922,10 +922,8 @@ void Meta_Package_Option::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Package_Option::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Package_Option::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1172,9 +1170,9 @@ void Meta_Package_Option::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Package_Option::is_filtered( const set< string >& filters ) const
+bool Meta_Package_Option::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Package_Option::get_field_id(

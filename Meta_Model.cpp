@@ -983,7 +983,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Model* p_obj;
    class_pointer< Meta_Model > cp_obj;
@@ -5966,10 +5966,8 @@ void Meta_Model::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Model::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Model::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -6386,9 +6384,9 @@ void Meta_Model::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Model::is_filtered( const set< string >& filters ) const
+bool Meta_Model::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Model::get_field_id(

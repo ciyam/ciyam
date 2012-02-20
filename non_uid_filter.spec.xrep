@@ -1,6 +1,6 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
    // [(start non_uid_filter)]
-   if( filters.count( "uid" ) )
+   if( get_obj( ).has_filter( "uid" ) )
    {
       `{`$module_name`}_`{`$arg_pclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_pclass`}* >( get_obj( ).get_graph_parent( ) );
 

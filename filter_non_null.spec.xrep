@@ -1,6 +1,0 @@
-`{`@eq`(`'is_filtered`'`,`$section`)\
-   // [(start filter_non_null)]
-   if( ( filters.count( "`{`$arg_id`}" ) || filters.count( "`{`$arg_name`}" ) ) && !is_null( `{`$arg_field`}( ) ) )
-      return true;
-   // [(finish filter_non_null)]
-`}

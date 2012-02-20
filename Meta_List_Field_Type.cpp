@@ -539,7 +539,7 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_List_Field_Type* p_obj;
    class_pointer< Meta_List_Field_Type > cp_obj;
@@ -938,10 +938,8 @@ void Meta_List_Field_Type::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_List_Field_Type::impl::is_filtered( const set< string >& filters ) const
+bool Meta_List_Field_Type::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1263,9 +1261,9 @@ void Meta_List_Field_Type::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_List_Field_Type::is_filtered( const set< string >& filters ) const
+bool Meta_List_Field_Type::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_List_Field_Type::get_field_id(

@@ -1,9 +1,22 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
    // [(start filter_perm_restricted)]
-   if( ( filters.count( "`{`$arg_id`}" ) || filters.count( "`{`$arg_name`}" ) ) && !get_obj( ).`{`$arg_field`}( ).empty( ) )
+   if( !get_obj( ).`{`$arg_field`}( ).empty( )
+    && ( get_obj( ).has_filter( "`{`$arg_id`}" ) || get_obj( ).has_filter( "`{`$arg_name`}" ) ) )
    {
       if( !get_perms( ).count( get_obj( ).`{`$arg_field`}( ) ) )
          return true;
+   }
+   // [(finish filter_perm_restricted)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start filter_perm_restricted)]
+   if( has_filter( "`{`$arg_id`}" ) || has_filter( "`{`$arg_name`}" ) )
+   {
+      dependents.insert( "`{`$arg_field`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+         names.insert( "`{`$arg_field`}" );
    }
    // [(finish filter_perm_restricted)]
 `}

@@ -1474,7 +1474,7 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_List* p_obj;
    class_pointer< Meta_List > cp_obj;
@@ -3279,10 +3279,8 @@ void Meta_List::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_List::impl::is_filtered( const set< string >& filters ) const
+bool Meta_List::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -3879,9 +3877,9 @@ void Meta_List::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_List::is_filtered( const set< string >& filters ) const
+bool Meta_List::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_List::get_field_id(

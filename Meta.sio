@@ -3287,6 +3287,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>601710
         <item>field
        </specification>
@@ -12844,6 +12848,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>602500
         <item>field
        </specification>
@@ -14875,6 +14883,10 @@
        </specification>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -31756,6 +31768,7 @@
      <dfield_id>115114
      <sfield_id>301410
      <cfield_id>114158
+     <field_info>115117={id}
      <field_info>301400:105101;105100={model}
      <field_info>301400:105104;105100={model_id}
      <field_info>301420:106101;106100={class}
@@ -31766,6 +31779,7 @@
      <field_info>301492:106101;106100={fclass}
      <field_info>301430:107110;107100={field_id}
      <field_info>301430:107105;107100={fmandatory}
+     <field_info>301430:107112;107100={ftransient}
      <field_info>301430:107109;107100={fistexttype}
      <field_info>301430:107113;107100={fpclass}
      <field_info>301435:107101;107100={ofield}

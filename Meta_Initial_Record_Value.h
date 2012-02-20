@@ -95,7 +95,7 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
 
    void set_default_values( );
 
-   bool is_filtered( const std::set< std::string >& filters ) const;
+   bool is_filtered( ) const;
 
    const char* class_id( ) const;
    const char* class_name( ) const;

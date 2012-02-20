@@ -2853,7 +2853,7 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Specification* p_obj;
    class_pointer< Meta_Specification > cp_obj;
@@ -5331,6 +5331,7 @@ void Meta_Specification::impl::after_fetch( )
 
       get_obj( ).Vars( str );
 
+      get_obj( ).add_search_replacement( "Vars", "{id}", to_string( get_obj( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{model}", to_string( get_obj( ).Model( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{model_id}", to_string( get_obj( ).Model( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
@@ -5341,6 +5342,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{fclass}", to_string( get_obj( ).Field_Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{field_id}", to_string( get_obj( ).Field( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fmandatory}", to_string( get_obj( ).Field( ).Mandatory( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{ftransient}", to_string( get_obj( ).Field( ).Transient( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fistexttype}", to_string( get_obj( ).Field( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fpclass}", to_string( get_obj( ).Field( ).Parent_Class_Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ofield}", to_string( get_obj( ).Other_Field( ).Name( ) ) );
@@ -6376,10 +6378,8 @@ void Meta_Specification::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Specification::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Specification::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -7536,9 +7536,9 @@ void Meta_Specification::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Specification::is_filtered( const set< string >& filters ) const
+bool Meta_Specification::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Specification::get_field_id(
@@ -9708,6 +9708,15 @@ void Meta_Specification::get_required_field_names(
    // [(start field_from_search_replace)]
    if( needs_field_value( "Vars", dependents ) )
    {
+      dependents.insert( "Id" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Id ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Id ) ) )
+         names.insert( "Id" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
       dependents.insert( "Model" );
 
       if( ( required_transients && is_field_transient( e_field_id_Model ) )
@@ -9776,6 +9785,15 @@ void Meta_Specification::get_required_field_names(
       if( ( required_transients && is_field_transient( e_field_id_Field_Class ) )
        || ( !required_transients && !is_field_transient( e_field_id_Field_Class ) ) )
          names.insert( "Field_Class" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Field ) ) )
+         names.insert( "Field" );
    }
 
    if( needs_field_value( "Vars", dependents ) )

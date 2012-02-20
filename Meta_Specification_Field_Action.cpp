@@ -789,7 +789,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Specification_Field_Action* p_obj;
    class_pointer< Meta_Specification_Field_Action > cp_obj;
@@ -1213,10 +1213,8 @@ void Meta_Specification_Field_Action::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Specification_Field_Action::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Specification_Field_Action::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1466,11 +1464,12 @@ void Meta_Specification_Field_Action::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Specification_Field_Action::is_filtered( const set< string >& filters ) const
+bool Meta_Specification_Field_Action::is_filtered( ) const
 {
-   if( parent_class_type::is_filtered( filters ) )
+   if( parent_class_type::is_filtered( ) )
       return true;
-   return p_impl->is_filtered( filters );
+
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Specification_Field_Action::get_field_id(

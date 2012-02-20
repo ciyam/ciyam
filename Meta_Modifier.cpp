@@ -496,7 +496,7 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Modifier* p_obj;
    class_pointer< Meta_Modifier > cp_obj;
@@ -871,10 +871,8 @@ void Meta_Modifier::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Modifier::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Modifier::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1096,9 +1094,9 @@ void Meta_Modifier::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Modifier::is_filtered( const set< string >& filters ) const
+bool Meta_Modifier::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Modifier::get_field_id(

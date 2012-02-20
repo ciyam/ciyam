@@ -1366,16 +1366,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                }
 
-               // NOTE: Because filtering can exclude records from the DB fetch the limit must be
-               // omitted if any filters have been supplied.
                if( instance_iterate( handle, context,
                 key_info, normal_fields, search_text, search_query, security_info,
                 is_reverse ? e_iter_direction_backwards : e_iter_direction_forwards,
-                true, !filter_set.empty( ) ? 0 : num_limit, e_sql_optimisation_none ) )
+                true, num_limit, e_sql_optimisation_none, !filter_set.empty( ) ? &filter_set : 0 ) )
                {
                   do
                   {
-                     if( !filter_set.empty( ) && instance_filtered( handle, context, filter_set ) )
+                     if( !filter_set.empty( ) && instance_filtered( handle, context ) )
                         continue;
 
                      for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
@@ -2017,6 +2015,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      execute_args = new_first_arg + execute_args.substr( pos );
                   }
                }
+
                method_name_and_args += ' ' + execute_args;
             }
             else
