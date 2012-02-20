@@ -519,6 +519,12 @@ numeric& numeric::operator /=( numeric n )
          mantissa /= 10;
       }
 
+      while( d > e_max_digits && mantissa % 10 == 0 )
+      {
+         --d;
+         mantissa /= 10;
+      }
+
       if( d > e_max_digits || mantissa > c_max_mantissa )
          throw runtime_error( "underflow occurred" );
 

@@ -143,4 +143,10 @@ None Up Down Normal Bankers
  2.6  3    2      3       3
 
 
+> set -0.01
+-0.01
+
+> div 100
+-0.0001
+
 > 
