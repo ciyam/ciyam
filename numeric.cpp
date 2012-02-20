@@ -32,6 +32,8 @@
 
 #include "read_write_stream.h"
 
+//#define ALLOW_ADJUST_TO_ZERO
+
 using namespace std;
 
 namespace
@@ -448,11 +450,27 @@ numeric& numeric::operator *=( numeric n )
 
       uint8_t negative_flag = ( decimals & c_negative_flag ) ^ ( n.decimals & c_negative_flag );
 
-      if( d && m > c_max_mantissa )
+      while( d && m > c_max_mantissa )
       {
          --d;
          m /= 10;
       }
+
+      bool adjusted = false;
+      if( d )
+      {
+         while( d > e_max_digits )
+         {
+            --d;
+            m /= 10;
+            adjusted = true;
+         }
+      }
+
+#ifndef ALLOW_ADJUST_TO_ZERO
+      if( adjusted && !m )
+         throw runtime_error( "underflow occurred" );
+#endif
 
       if( m > c_max_mantissa )
          throw runtime_error( "overflow occurred" );
@@ -492,47 +510,65 @@ numeric& numeric::operator /=( numeric n )
 
    if( mantissa != c_zero )
    {
-      while( mantissa < power10[ e_max_digits ] )
+      uint64_t m( mantissa );
+
+      while( m < power10[ e_max_digits ] )
       {
          ++d;
-         mantissa *= 10;
+         m *= 10;
       }
 
       if( ( n.decimals & c_decimals_mask ) > d )
          throw runtime_error( "underflow occurred" );
 
-      uint64_t m( mantissa );
       m /= n.mantissa;
 
-      mantissa = m;
-      if( mantissa % 10 == 0 )
+      if( m % 10 == 0 )
       {
          --d;
-         mantissa /= 10;
+         m /= 10;
       }
 
       d -= ( n.decimals & c_decimals_mask );
 
-      while( d && mantissa > c_max_mantissa )
+      while( d && m > c_max_mantissa )
       {
          --d;
-         mantissa /= 10;
+         m /= 10;
       }
 
-      while( d > e_max_digits && mantissa % 10 == 0 )
+      while( d > e_max_digits && m % 10 == 0 )
       {
          --d;
-         mantissa /= 10;
+         m /= 10;
       }
+
+      bool adjusted = false;
+      if( d )
+      {
+         while( d > e_max_digits )
+         {
+            --d;
+            m /= 10;
+            adjusted = true;
+         }
+      }
+
+#ifndef ALLOW_ADJUST_TO_ZERO
+      if( adjusted && !m )
+         throw runtime_error( "underflow occurred" );
+#endif
 
       if( d > e_max_digits || mantissa > c_max_mantissa )
          throw runtime_error( "underflow occurred" );
 
-      while( d > 0 && mantissa % 10 == 0 )
+      while( d > 0 && m % 10 == 0 )
       {
          --d;
-         mantissa /= 10;
+         m /= 10;
       }
+
+      mantissa = m;
    }
 
    negative_flag = ( negative_flag == ( n.decimals & c_negative_flag ) ) ? 0 : c_negative_flag;
