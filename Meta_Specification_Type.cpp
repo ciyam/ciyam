@@ -2113,7 +2113,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Specification_Type* p_obj;
    class_pointer< Meta_Specification_Type > cp_obj;
@@ -3671,10 +3671,8 @@ void Meta_Specification_Type::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Specification_Type::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Specification_Type::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -4856,9 +4854,9 @@ void Meta_Specification_Type::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Specification_Type::is_filtered( const set< string >& filters ) const
+bool Meta_Specification_Type::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Specification_Type::get_field_id(

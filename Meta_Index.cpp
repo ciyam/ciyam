@@ -681,7 +681,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Index* p_obj;
    class_pointer< Meta_Index > cp_obj;
@@ -1443,10 +1443,8 @@ void Meta_Index::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Index::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Index::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1733,9 +1731,9 @@ void Meta_Index::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Index::is_filtered( const set< string >& filters ) const
+bool Meta_Index::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Index::get_field_id(

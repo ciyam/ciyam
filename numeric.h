@@ -52,7 +52,7 @@ class NUMERIC_DECL_SPEC numeric
    public:
    enum
    {
-      e_max_digits = 19,
+      e_max_digits = 18,
       e_default_decimals = 5
    };
 

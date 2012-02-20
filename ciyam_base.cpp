@@ -3531,6 +3531,10 @@ int run_script( const string& script_name, bool async )
 {
    int rc;
 
+   // NOTE: The session variable @async can be used to force non-async execution.
+   if( get_session_variable( "@async" ) == "0" || get_session_variable( "@async" ) == "false" )
+      async = false;
+
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
       read_script_info( );
 
@@ -7396,13 +7400,14 @@ string instance_execute( size_t handle,
    return instance.execute( method_name_and_args );
 }
 
-bool instance_iterate( size_t handle, const string& context, const string& key_info,
- const string& fields, const string& text, const string& query, const string& security_info,
- iter_direction direction, bool inclusive, int row_limit, sql_optimisation optimisation )
+bool instance_iterate( size_t handle, const string& context,
+ const string& key_info, const string& fields, const string& text,
+ const string& query, const string& security_info, iter_direction direction,
+ bool inclusive, int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
 {
    return perform_instance_iterate(
     get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_none,
-    false ), key_info, fields, text, query, security_info, direction, inclusive, row_limit, optimisation );
+    false ), key_info, fields, text, query, security_info, direction, inclusive, row_limit, optimisation, p_filters );
 }
 
 bool instance_iterate_next( size_t handle, const string& context )
@@ -7426,9 +7431,9 @@ void instance_review_finish( size_t handle, const string& context )
    get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_review ).finish_review( );
 }
 
-bool instance_filtered( size_t handle, const string& context, const set< string >& filters )
+bool instance_filtered( size_t handle, const string& context )
 {
-   return get_class_base_from_handle( handle, context ).filtered( filters );
+   return get_class_base_from_handle( handle, context ).filtered( );
 }
 
 void op_instance_create( size_t handle,
@@ -8273,9 +8278,10 @@ void perform_instance_fetch( class_base& instance,
    }
 }
 
-bool perform_instance_iterate( class_base& instance, const string& key_info,
- const string& fields, const string& text, const string& query, const string& security_info,
- iter_direction direction, bool inclusive, int row_limit, sql_optimisation optimisation )
+bool perform_instance_iterate( class_base& instance,
+ const string& key_info, const string& fields, const string& text,
+ const string& query, const string& security_info, iter_direction direction,
+ bool inclusive, int row_limit, sql_optimisation optimisation, const set< string >* p_filters )
 {
    bool found = false;
 
@@ -8291,6 +8297,14 @@ bool perform_instance_iterate( class_base& instance, const string& key_info,
 
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
+
+   // NOTE: Because filtering can exclude records from the DB fetch the limit must be
+   // omitted if any filters have been supplied.
+   if( p_filters )
+   {
+      row_limit = 0;
+      instance_accessor.filters( ) = *p_filters;
+   }
 
    if( instance.get_is_in_op( ) )
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );

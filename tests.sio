@@ -460,6 +460,39 @@
    </tests>
   </group>
   <group/>
+   <name>test_numeric
+   <tests/>
+    <test/>
+     <name>1
+     <description>Perform various basic numeric operations.
+     <test_step/>
+      <name>a
+      <exec>test_numeric -quiet -echo
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>b
+      <exec>test_numeric -quiet -echo
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>c
+      <exec>test_numeric -quiet -echo
+      <input>true
+      <output>generate
+     </test_step>
+     <test_step/>
+      <name>d
+      <exec>test_numeric -quiet -echo
+      <input>true
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_ods
    <tests/>
     <test/>

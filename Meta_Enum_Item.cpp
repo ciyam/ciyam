@@ -511,7 +511,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Enum_Item* p_obj;
    class_pointer< Meta_Enum_Item > cp_obj;
@@ -1042,10 +1042,8 @@ void Meta_Enum_Item::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Enum_Item::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Enum_Item::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1292,9 +1290,9 @@ void Meta_Enum_Item::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Enum_Item::is_filtered( const set< string >& filters ) const
+bool Meta_Enum_Item::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Enum_Item::get_field_id(

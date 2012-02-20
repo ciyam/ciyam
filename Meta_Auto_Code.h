@@ -89,7 +89,7 @@ class META_AUTO_CODE_DECL_SPEC Meta_Auto_Code : public class_base
 
    void set_default_values( );
 
-   bool is_filtered( const std::set< std::string >& filters ) const;
+   bool is_filtered( ) const;
 
    const char* class_id( ) const;
    const char* class_name( ) const;

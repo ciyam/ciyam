@@ -877,7 +877,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Relationship* p_obj;
    class_pointer< Meta_Relationship > cp_obj;
@@ -1569,10 +1569,8 @@ void Meta_Relationship::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Relationship::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Relationship::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1944,9 +1942,9 @@ void Meta_Relationship::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Relationship::is_filtered( const set< string >& filters ) const
+bool Meta_Relationship::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Relationship::get_field_id(

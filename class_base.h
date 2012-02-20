@@ -243,7 +243,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    void copy_all_field_values( const class_base& src );
 
-   bool filtered( const std::set< std::string >& filters ) const { return is_filtered( filters ); }
+   bool filtered( ) const { return is_filtered( ); }
 
    std::string get_validation_errors( validation_errors_type type = e_validation_errors_type_all );
 
@@ -431,6 +431,7 @@ class CLASS_BASE_DECL_SPEC class_base
    std::vector< int > select_columns;
    std::map< int, int > select_fields;
 
+   std::set< std::string > filters;
    std::set< std::string > fetch_field_names;
 
    std::deque< std::vector< std::string > > row_cache;
@@ -495,7 +496,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual void set_default_values( ) = 0;
 
-   virtual bool is_filtered( const std::set< std::string >& filters ) const = 0;
+   virtual bool is_filtered( ) const = 0;
 
    void cleanup_dynamic_instance( );
    void destroy_dynamic_instance( );
@@ -550,6 +551,8 @@ class CLASS_BASE_DECL_SPEC class_base
    validation_error_container validation_errors;
 
    void cleanup( );
+
+   bool has_filter( const std::string& id_or_name ) const { return filters.count( id_or_name ) > 0; }
 
    void add_search_replacement( const std::string& field, const std::string& search, const std::string& replace );
 
@@ -650,6 +653,8 @@ struct class_base_accessor
 
    std::vector< int >& select_columns( ) { return cb.select_columns; }
    std::map< int, int >& select_fields( ) { return cb.select_fields; }
+
+   std::set< std::string >& filters( ) { return cb.filters; }
 
    std::set< std::string >& fetch_field_names( ) { return cb.fetch_field_names; }
 

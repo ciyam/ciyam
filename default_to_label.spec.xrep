@@ -1,0 +1,12 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start default_to_label)]
+   if( is_null( get_obj( ).`{`$arg_field`}( ) ) )
+      get_obj( ).`{`$arg_field`}( GMS( "`{`$arg_label_str`}" ) );
+   // [(finish default_to_label)]
+`}
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start default_to_label)]
+   if( is_create && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+      get_obj( ).`{`$arg_field`}( GMS( "`{`$arg_label_str`}" ) );
+   // [(finish default_to_label)]
+`}

@@ -1656,7 +1656,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_View_Field* p_obj;
    class_pointer< Meta_View_Field > cp_obj;
@@ -2854,10 +2854,8 @@ void Meta_View_Field::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_View_Field::impl::is_filtered( const set< string >& filters ) const
+bool Meta_View_Field::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -3414,9 +3412,9 @@ void Meta_View_Field::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_View_Field::is_filtered( const set< string >& filters ) const
+bool Meta_View_Field::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_View_Field::get_field_id(

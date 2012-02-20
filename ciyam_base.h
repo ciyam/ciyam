@@ -390,14 +390,15 @@ enum iter_direction
 };
 
 bool CIYAM_BASE_DECL_SPEC instance_iterate( size_t handle,
- const std::string& context, const std::string& key_info, const std::string& fields,
- const std::string& text, const std::string& query, const std::string& security_info,
- iter_direction direction, bool inclusive, int row_limit = 0, sql_optimisation optimisation = e_sql_optimisation_none );
+ const std::string& context, const std::string& key_info,
+ const std::string& fields, const std::string& text, const std::string& query,
+ const std::string& security_info, iter_direction direction, bool inclusive, int row_limit = 0,
+ sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
 bool CIYAM_BASE_DECL_SPEC instance_iterate_next( size_t handle, const std::string& context );
 void CIYAM_BASE_DECL_SPEC instance_iterate_stop( size_t handle, const std::string& context );
 
-bool CIYAM_BASE_DECL_SPEC instance_filtered( size_t handle, const std::string& context, const std::set< std::string >& filters );
+bool CIYAM_BASE_DECL_SPEC instance_filtered( size_t handle, const std::string& context );
 
 void CIYAM_BASE_DECL_SPEC instance_review_begin( size_t handle, const std::string& context, const std::string& key );
 void CIYAM_BASE_DECL_SPEC instance_review_finish( size_t handle, const std::string& context );
@@ -485,8 +486,9 @@ void CIYAM_BASE_DECL_SPEC perform_instance_fetch(
 bool CIYAM_BASE_DECL_SPEC perform_instance_iterate(
  class_base& instance, const std::string& key_info,
  const std::string& fields, const std::string& text,
- const std::string& query, const std::string& security_info, iter_direction direction,
- bool inclusive = true, int row_limit = 0, sql_optimisation optimisation = e_sql_optimisation_none );
+ const std::string& query, const std::string& security_info,
+ iter_direction direction, bool inclusive = true, int row_limit = 0,
+ sql_optimisation optimisation = e_sql_optimisation_none, const std::set< std::string >* p_filters = 0 );
 
 bool CIYAM_BASE_DECL_SPEC perform_instance_iterate_next( class_base& instance );
 void CIYAM_BASE_DECL_SPEC perform_instance_iterate_stop( class_base& instance );

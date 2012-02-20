@@ -595,7 +595,7 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Permission* p_obj;
    class_pointer< Meta_Permission > cp_obj;
@@ -903,10 +903,8 @@ void Meta_Permission::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Permission::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Permission::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1183,9 +1181,9 @@ void Meta_Permission::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Permission::is_filtered( const set< string >& filters ) const
+bool Meta_Permission::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Permission::get_field_id(

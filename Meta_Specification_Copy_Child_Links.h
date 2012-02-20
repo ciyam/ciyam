@@ -111,7 +111,7 @@ class META_SPECIFICATION_COPY_CHILD_LINKS_DECL_SPEC Meta_Specification_Copy_Chil
 
    void set_default_values( );
 
-   bool is_filtered( const std::set< std::string >& filters ) const;
+   bool is_filtered( ) const;
 
    const char* class_id( ) const;
    const char* class_name( ) const;

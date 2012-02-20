@@ -634,7 +634,7 @@ struct Meta_Modifier_Affect::impl : public Meta_Modifier_Affect_command_handler
 
    void set_default_values( );
 
-   bool is_filtered( const set< string >& filters ) const;
+   bool is_filtered( ) const;
 
    Meta_Modifier_Affect* p_obj;
    class_pointer< Meta_Modifier_Affect > cp_obj;
@@ -1059,10 +1059,8 @@ void Meta_Modifier_Affect::impl::set_default_values( )
    clear( );
 }
 
-bool Meta_Modifier_Affect::impl::is_filtered( const set< string >& filters ) const
+bool Meta_Modifier_Affect::impl::is_filtered( ) const
 {
-   ( void )filters;
-
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
@@ -1304,9 +1302,9 @@ void Meta_Modifier_Affect::set_default_values( )
    p_impl->set_default_values( );
 }
 
-bool Meta_Modifier_Affect::is_filtered( const set< string >& filters ) const
+bool Meta_Modifier_Affect::is_filtered( ) const
 {
-   return p_impl->is_filtered( filters );
+   return p_impl->is_filtered( );
 }
 
 const char* Meta_Modifier_Affect::get_field_id(
