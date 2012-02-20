@@ -39,3 +39,5 @@ mul -1
 div 999999999999999999
 sub 1
 round_table
+set -0.01
+div 100
