@@ -6944,7 +6944,7 @@
      <name>field_type_numeric_digits
      <field>102106
      <ftype>int
-     <extra>range=0..19
+     <extra>range=0..16
      <mandatory>true
      <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate
     </field>
@@ -6952,7 +6952,7 @@
      <name>field_type_numeric_decimals
      <field>102107
      <ftype>int
-     <extra>range=0..19
+     <extra>range=0..16
      <mandatory>true
      <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate
     </field>

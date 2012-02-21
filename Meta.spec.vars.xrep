@@ -5254,13 +5254,13 @@
 `{`$specification_Type_view_fmand05`=`'false`'`}
 `{`$specification_Type_view_field06`=`'102106`'`}
 `{`$specification_Type_view_ftype06`=`'int`'`}
-`{`$specification_Type_view_extra06`=`'range=0..19`'`}
+`{`$specification_Type_view_extra06`=`'range=0..16`'`}
 `{`$specification_Type_view_fmods06`=`'10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate`'`}
 `{`$specification_Type_view_fname06`=`'field_type_numeric_digits`'`}
 `{`$specification_Type_view_fmand06`=`'true`'`}
 `{`$specification_Type_view_field07`=`'102107`'`}
 `{`$specification_Type_view_ftype07`=`'int`'`}
-`{`$specification_Type_view_extra07`=`'range=0..19`'`}
+`{`$specification_Type_view_extra07`=`'range=0..16`'`}
 `{`$specification_Type_view_fmods07`=`'10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate`'`}
 `{`$specification_Type_view_fname07`=`'field_type_numeric_decimals`'`}
 `{`$specification_Type_view_fmand07`=`'true`'`}
