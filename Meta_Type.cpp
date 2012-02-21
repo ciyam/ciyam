@@ -205,8 +205,8 @@ domain_int_range< 0, 99999 > g_Max_Size_domain;
 domain_string_max_size< 30 > g_Max_Value_domain;
 domain_string_max_size< 30 > g_Min_Value_domain;
 domain_string_max_size< 100 > g_Name_domain;
-domain_int_range< 0, 19 > g_Numeric_Decimals_domain;
-domain_int_range< 0, 19 > g_Numeric_Digits_domain;
+domain_int_range< 0, 16 > g_Numeric_Decimals_domain;
+domain_int_range< 0, 16 > g_Numeric_Digits_domain;
 
 set< string > g_derivations;
 

@@ -33511,7 +33511,7 @@
     <domain/>
      <name>range
      <minimum>0
-     <maximum>19
+     <maximum>16
     </domain>
    </user_defined_type>
    <user_defined_type/>
