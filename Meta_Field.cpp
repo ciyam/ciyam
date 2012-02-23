@@ -48,6 +48,8 @@
 #include "Meta_Field.h"
 #include "Meta_Type.h"
 
+#include "numeric_helper.h"
+
 #include "ciyam_base.h"
 #include "class_domains.h"
 #include "module_strings.h"
@@ -133,6 +135,7 @@ const char* const c_field_id_Is_Foreign_Key = "107108";
 const char* const c_field_id_Is_Text_Type = "107109";
 const char* const c_field_id_Mandatory = "107105";
 const char* const c_field_id_Name = "107101";
+const char* const c_field_id_Numeric_Decimals = "107114";
 const char* const c_field_id_Parent_Class = "300730";
 const char* const c_field_id_Parent_Class_Name = "107113";
 const char* const c_field_id_Primitive = "107107";
@@ -152,6 +155,7 @@ const char* const c_field_name_Is_Foreign_Key = "Is_Foreign_Key";
 const char* const c_field_name_Is_Text_Type = "Is_Text_Type";
 const char* const c_field_name_Mandatory = "Mandatory";
 const char* const c_field_name_Name = "Name";
+const char* const c_field_name_Numeric_Decimals = "Numeric_Decimals";
 const char* const c_field_name_Parent_Class = "Parent_Class";
 const char* const c_field_name_Parent_Class_Name = "Parent_Class_Name";
 const char* const c_field_name_Primitive = "Primitive";
@@ -171,6 +175,7 @@ const char* const c_field_display_name_Is_Foreign_Key = "field_field_is_foreign_
 const char* const c_field_display_name_Is_Text_Type = "field_field_is_text_type";
 const char* const c_field_display_name_Mandatory = "field_field_mandatory";
 const char* const c_field_display_name_Name = "field_field_name";
+const char* const c_field_display_name_Numeric_Decimals = "field_field_numeric_decimals";
 const char* const c_field_display_name_Parent_Class = "field_field_parent_class";
 const char* const c_field_display_name_Parent_Class_Name = "field_field_parent_class_name";
 const char* const c_field_display_name_Primitive = "field_field_primitive";
@@ -180,7 +185,7 @@ const char* const c_field_display_name_Type = "field_field_type";
 const char* const c_field_display_name_UOM = "field_field_uom";
 const char* const c_field_display_name_Use_In_Text_Search = "field_field_use_in_text_search";
 
-const int c_num_fields = 18;
+const int c_num_fields = 19;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -197,6 +202,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "107111",
    "107112",
    "107113",
+   "107114",
    "300700",
    "300710",
    "300720",
@@ -216,6 +222,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Is_Text_Type",
    "Mandatory",
    "Name",
+   "Numeric_Decimals",
    "Parent_Class",
    "Parent_Class_Name",
    "Primitive",
@@ -234,15 +241,17 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 1;
+const int c_num_transient_fields = 2;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
-   "107113"
+   "107113",
+   "107114"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
+   "Numeric_Decimals",
    "Parent_Class_Name"
 };
 
@@ -294,6 +303,7 @@ bool gv_default_Is_Foreign_Key = bool( 0 );
 bool gv_default_Is_Text_Type = bool( 1 );
 bool gv_default_Mandatory = bool( 1 );
 string gv_default_Name = string( );
+numeric gv_default_Numeric_Decimals = numeric( 0 );
 string gv_default_Parent_Class_Name = string( );
 int gv_default_Primitive = int( 0 );
 bool gv_default_Transient = bool( 0 );
@@ -586,6 +596,8 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          string_getter< bool >( cmd_handler.p_Meta_Field->Mandatory( ), cmd_handler.retval );
       else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
          string_getter< string >( cmd_handler.p_Meta_Field->Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+         string_getter< numeric >( cmd_handler.p_Meta_Field->Numeric_Decimals( ), cmd_handler.retval );
       else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
          string_getter< Meta_Class >( cmd_handler.p_Meta_Field->Parent_Class( ), cmd_handler.retval );
       else if( field_name == c_field_id_Parent_Class_Name || field_name == c_field_name_Parent_Class_Name )
@@ -642,6 +654,9 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
       else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Name, field_value );
+      else if( field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+         func_string_setter< Meta_Field, numeric >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Numeric_Decimals, field_value );
       else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
          func_string_setter< Meta_Field, Meta_Class >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Parent_Class, field_value );
@@ -680,6 +695,12 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      {
+         numeric Numeric_Decimals( cmd_handler.p_Meta_Field->Numeric_Decimals( ) );
+         execute_command( Numeric_Decimals, cmd_and_args, cmd_handler.retval );
+         cmd_handler.p_Meta_Field->Numeric_Decimals( Numeric_Decimals );
+      }
       else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
          cmd_handler.retval = cmd_handler.p_Meta_Field->Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
@@ -745,6 +766,9 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
    void impl_Name( const string& Name ) { v_Name = Name; }
+
+   const numeric& impl_Numeric_Decimals( ) const { return lazy_fetch( p_obj ), v_Numeric_Decimals; }
+   void impl_Numeric_Decimals( const numeric& Numeric_Decimals ) { v_Numeric_Decimals = Numeric_Decimals; }
 
    const string& impl_Parent_Class_Name( ) const { return lazy_fetch( p_obj ), v_Parent_Class_Name; }
    void impl_Parent_Class_Name( const string& Parent_Class_Name ) { v_Parent_Class_Name = Parent_Class_Name; }
@@ -2463,6 +2487,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    bool v_Is_Text_Type;
    bool v_Mandatory;
    string v_Name;
+   numeric v_Numeric_Decimals;
    string v_Parent_Class_Name;
    int v_Primitive;
    bool v_Transient;
@@ -2624,34 +2649,38 @@ string Meta_Field::impl::get_field_value( int field ) const
       break;
 
       case 10:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Parent_Class_Name( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Parent_Class_Name( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Transient( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Transient( ) );
       break;
 
       case 16:
-      retval = to_string( impl_UOM( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 17:
+      retval = to_string( impl_UOM( ) );
+      break;
+
+      case 18:
       retval = to_string( impl_Use_In_Text_Search( ) );
       break;
 
@@ -2707,34 +2736,38 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 10:
-      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
+      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
+      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
       break;
 
       case 17:
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      break;
+
+      case 18:
       func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Use_In_Text_Search, value );
       break;
 
@@ -2867,6 +2900,7 @@ void Meta_Field::impl::clear( )
    v_Is_Text_Type = gv_default_Is_Text_Type;
    v_Mandatory = gv_default_Mandatory;
    v_Name = gv_default_Name;
+   v_Numeric_Decimals = gv_default_Numeric_Decimals;
    v_Parent_Class_Name = gv_default_Parent_Class_Name;
    v_Primitive = gv_default_Primitive;
    v_Transient = gv_default_Transient;
@@ -3062,6 +3096,12 @@ void Meta_Field::impl::after_fetch( )
    // [(start field_from_other_field)]
    get_obj( ).Parent_Class_Name( get_obj( ).Parent_Class( ).Name( ) );
    // [(finish field_from_other_field)]
+
+   // [(start transient_field_alias)]
+   if( get_obj( ).needs_field_value( "Numeric_Decimals" )
+    || required_transients.count( "Numeric_Decimals" ) )
+      get_obj( ).Numeric_Decimals( get_obj( ).Type( ).Numeric_Decimals( ) );
+   // [(finish transient_field_alias)]
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -3506,6 +3546,16 @@ const string& Meta_Field::Name( ) const
 void Meta_Field::Name( const string& Name )
 {
    p_impl->impl_Name( Name );
+}
+
+const numeric& Meta_Field::Numeric_Decimals( ) const
+{
+   return p_impl->impl_Numeric_Decimals( );
+}
+
+void Meta_Field::Numeric_Decimals( const numeric& Numeric_Decimals )
+{
+   p_impl->impl_Numeric_Decimals( Numeric_Decimals );
 }
 
 const string& Meta_Field::Parent_Class_Name( ) const
@@ -4539,6 +4589,16 @@ const char* Meta_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Numeric_Decimals )
+   {
+      p_id = c_field_id_Numeric_Decimals;
+
+      if( p_type_name )
+         *p_type_name = "numeric";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Parent_Class )
    {
       p_id = c_field_id_Parent_Class;
@@ -4730,6 +4790,16 @@ const char* Meta_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Numeric_Decimals )
+   {
+      p_name = c_field_name_Numeric_Decimals;
+
+      if( p_type_name )
+         *p_type_name = "numeric";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Parent_Class )
    {
       p_name = c_field_name_Parent_Class;
@@ -4840,6 +4910,8 @@ string Meta_Field::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Mandatory );
    else if( id == c_field_id_Name )
       display_name = get_module_string( c_field_display_name_Name );
+   else if( id == c_field_id_Numeric_Decimals )
+      display_name = get_module_string( c_field_display_name_Numeric_Decimals );
    else if( id == c_field_id_Parent_Class )
       display_name = get_module_string( c_field_display_name_Parent_Class );
    else if( id == c_field_id_Parent_Class_Name )
@@ -5871,6 +5943,17 @@ void Meta_Field::get_required_field_names(
 
    get_always_required_field_names( names, required_transients, dependents );
 
+   // [(start transient_field_alias)]
+   if( needs_field_value( "Numeric_Decimals", dependents ) )
+   {
+      dependents.insert( "Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+         names.insert( "Type" );
+   }
+   // [(finish transient_field_alias)]
+
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }
@@ -5998,6 +6081,7 @@ void Meta_Field::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "107109", "Is_Text_Type", "bool", false ) );
    all_field_info.push_back( field_info( "107105", "Mandatory", "bool", false ) );
    all_field_info.push_back( field_info( "107101", "Name", "string", false ) );
+   all_field_info.push_back( field_info( "107114", "Numeric_Decimals", "numeric", false ) );
    all_field_info.push_back( field_info( "300730", "Parent_Class", "Meta_Class", false ) );
    all_field_info.push_back( field_info( "107113", "Parent_Class_Name", "string", false ) );
    all_field_info.push_back( field_info( "107107", "Primitive", "int", false ) );
@@ -6079,34 +6163,38 @@ const char* Meta_Field::static_get_field_id( field_id id )
       break;
 
       case 11:
-      p_id = "300730";
+      p_id = "107114";
       break;
 
       case 12:
-      p_id = "107113";
+      p_id = "300730";
       break;
 
       case 13:
-      p_id = "107107";
+      p_id = "107113";
       break;
 
       case 14:
-      p_id = "300740";
+      p_id = "107107";
       break;
 
       case 15:
-      p_id = "107112";
+      p_id = "300740";
       break;
 
       case 16:
-      p_id = "300710";
+      p_id = "107112";
       break;
 
       case 17:
-      p_id = "107104";
+      p_id = "300710";
       break;
 
       case 18:
+      p_id = "107104";
+      break;
+
+      case 19:
       p_id = "107111";
       break;
    }
@@ -6164,34 +6252,38 @@ const char* Meta_Field::static_get_field_name( field_id id )
       break;
 
       case 11:
-      p_id = "Parent_Class";
+      p_id = "Numeric_Decimals";
       break;
 
       case 12:
-      p_id = "Parent_Class_Name";
+      p_id = "Parent_Class";
       break;
 
       case 13:
-      p_id = "Primitive";
+      p_id = "Parent_Class_Name";
       break;
 
       case 14:
-      p_id = "Source_Field";
+      p_id = "Primitive";
       break;
 
       case 15:
-      p_id = "Transient";
+      p_id = "Source_Field";
       break;
 
       case 16:
-      p_id = "Type";
+      p_id = "Transient";
       break;
 
       case 17:
-      p_id = "UOM";
+      p_id = "Type";
       break;
 
       case 18:
+      p_id = "UOM";
+      break;
+
+      case 19:
       p_id = "Use_In_Text_Search";
       break;
    }
@@ -6228,22 +6320,24 @@ int Meta_Field::static_get_field_num( const string& field )
       rc += 9;
    else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 10;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 11;
-   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 12;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
       rc += 13;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 14;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 15;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
       rc += 16;
-   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 17;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( field == c_field_id_UOM || field == c_field_name_UOM )
       rc += 18;
+   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+      rc += 19;
 
    return rc - 1;
 }

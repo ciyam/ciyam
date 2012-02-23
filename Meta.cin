@@ -226,6 +226,7 @@ field_add -id=107110 Field Id identifier mand
 field_add -id=107111 Field Use_In_Text_Search bool mand -def=0
 field_add -id=107112 Field Transient bool mand -def=0
 field_add -id=107113 Field Parent_Class_Name identifier opt -transient
+field_add -id=107114 Field Numeric_Decimals numeric mand -def=0 -transient
 modifier_add -id=107310 Field Is_Type_bool UOM:relegate
 modifier_add -id=107315 Field Is_Any_Non_Text_Type Mandatory:protect,Use_In_Text_Search:relegate
 modifier_add -id=107320 Field Is_Transient Use_In_Text_Search:relegate,@class:lowlight1
@@ -1190,6 +1191,7 @@ specification_add -id=610065 {Field}_Is_Text_Type_if_not_Is_Any_Non_Text_Type mo
 specification_add -id=620065 {Field}_Id_auto_inc parent_auto_int_inc "Field Id {Class} Next_Field_Id"
 specification_add -id=630065 {Field}_create_{Initial_Record_Value}_records clone_children_for_create\
  "Field {Class} {Field} Initial_Record Initial_Record_Value {Initial_Record} Default-Value -combine_keys"
+specification_add -id=640065 {Field}_Numeric_Decimals transient_field_alias "Field Numeric_Decimals {Type}:Numeric_Decimals"
 specification_add -id=600066 {Index}_Field2_Field3_check check_null_match "Index Field_2 Field_3"
 specification_add -id=600067 {Index}_Field3_Field4_check check_null_match "Index Field_3 Field_4"
 specification_add -id=600068 {Index}_Field4_Field5_check check_null_match "Index Field_4 Field_5"
@@ -1453,7 +1455,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
  {Specification_Type}:Specification_Vars Id={id},{Model}:Name={model},{Model}:Id={model_id}\
 ,{Class}:Name={class},{Class}:Id={class_id},Other_Class:Name={oclass},Other_Class:Id={oclass_id}\
 ,{Field}:Name={field},Field_Class:Name={fclass},{Field}:Id={field_id},{Field}:Mandatory={fmandatory}\
-,{Field}:Transient={ftransient},{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
+,{Field}:Transient={ftransient},{Field}:Numeric_Decimals={fdecimals},{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
 ,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
 ,{Modifier}:Name={modifier},Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield}\
 ,Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass},Source_Child:Name={scfield},Source_Child:Id={scfield_id}\

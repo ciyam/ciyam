@@ -2488,6 +2488,10 @@
       <id>630395
       <item>pclass
      </specification>
+     <specification/>
+      <id>640065
+      <item>class
+     </specification>
     </specifications>
     <fields/>
      <field/>
@@ -3097,6 +3101,28 @@
       </specifications>
      </field>
      <field/>
+      <id>107114
+      <name>Numeric_Decimals
+      <type>numeric
+      <mandatory>true
+      <transient>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>640065
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>300730
       <name>Parent_Class
       <type>@class
@@ -3474,6 +3500,10 @@
        <specification/>
         <id>620050
         <item>field
+       </specification>
+       <specification/>
+        <id>640065
+        <item>sfield
        </specification>
       </specifications>
      </field>
@@ -14914,6 +14944,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600208
         <item>field
        </specification>
@@ -20763,6 +20797,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>640065
+      <item>sclass
+     </specification>
+     <specification/>
       <id>650009
       <item>class
      </specification>
@@ -21130,6 +21168,10 @@
        <specification/>
         <id>601210
         <item>field
+       </specification>
+       <specification/>
+        <id>640065
+        <item>scfield
        </specification>
       </specifications>
      </field>
@@ -26684,6 +26726,18 @@
     </data>
    </specification>
    <specification/>
+    <id>640065
+    <name>{Field}_Numeric_Decimals
+    <type>transient_field_alias
+    <data/>
+     <class_id>107100
+     <sclass_id>102100
+     <field_id>107114
+     <sfield_id>300710
+     <scfield_id>102107
+    </data>
+   </specification>
+   <specification/>
     <id>600053a
     <name>{Field}_Parent_Class_Name
     <type>field_from_other_field
@@ -31780,6 +31834,7 @@
      <field_info>301430:107110;107100={field_id}
      <field_info>301430:107105;107100={fmandatory}
      <field_info>301430:107112;107100={ftransient}
+     <field_info>301430:107114;107100={fdecimals}
      <field_info>301430:107109;107100={fistexttype}
      <field_info>301430:107113;107100={fpclass}
      <field_info>301435:107101;107100={ofield}

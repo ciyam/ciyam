@@ -1,0 +1,10 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`$arg_method`,`'`'`)`$arg_method`=`'normal`'`}\
+   // [(start field_to_rounded)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      numeric n( get_obj( ).`{`$arg_field`}( ) );
+      get_obj( ).`{`$arg_field`}( n.round( `{`$arg_decimals`}, numeric::e_round_method_`{`$arg_method`} ) );
+   }
+   // [(start field_to_rounded)]
+`}
