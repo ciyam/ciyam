@@ -766,6 +766,16 @@ template< typename CBD > class class_pointer : class_pointer_base
 
 std::string CLASS_BASE_DECL_SPEC sql_quote( const std::string& s );
 
+bool CLASS_BASE_DECL_SPEC is_valid_int( const std::string& s );
+bool CLASS_BASE_DECL_SPEC is_valid_bool( const std::string& s );
+bool CLASS_BASE_DECL_SPEC is_valid_date( const std::string& s );
+bool CLASS_BASE_DECL_SPEC is_valid_time( const std::string& s );
+bool CLASS_BASE_DECL_SPEC is_valid_numeric( const std::string& s );
+bool CLASS_BASE_DECL_SPEC is_valid_date_time( const std::string& s );
+
+bool CLASS_BASE_DECL_SPEC is_valid_value( const std::string& s, primitive p,
+ unsigned int max_size = 0, const char* p_min_value = 0, const char* p_max_value = 0 );
+
 inline std::string to_string( const class_base& cb ) { return cb.get_key( ); }
 
 inline bool operator ==( const class_base& cb, const std::string& s ) { return s == to_string( cb ); }

@@ -44,6 +44,8 @@
 #include "module_interface.h"
 
 // [<start includes>]
+//idk
+#include "Meta_Type.h"
 // [<finish includes>]
 
 using namespace std;
@@ -556,6 +558,13 @@ void Meta_Initial_Record_Value::impl::validate( unsigned state, bool is_internal
        get_module_string( c_field_display_name_Value ) + " " + error_message ) );
 
    // [<start validate>]
+//idk
+   if( !get_obj( ).Value( ).empty( ) && !is_valid_value( get_obj( ).Value( ),
+    ( primitive )get_obj( ).Field( ).Type( ).Primitive( ), get_obj( ).Field( ).Type( ).Max_Size( ),
+    get_obj( ).Field( ).Type( ).Min_Value( ).c_str( ), get_obj( ).Field( ).Type( ).Max_Value( ).c_str( ) ) )
+      p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+       c_field_name_Value, get_module_string( c_field_display_name_Value )
+       + " is not a valid " + get_obj( ).Field( ).Type( ).Name( ) + "." ) );
    // [<finish validate>]
 }
 

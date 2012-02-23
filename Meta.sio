@@ -33494,13 +33494,13 @@
   <user_defined_types/>
    <user_defined_type/>
     <id>1030
-    <name>0..99999
+    <name>0..999999
     <type>int
     <sys_type>int
     <domain/>
      <name>range
      <minimum>0
-     <maximum>99999
+     <maximum>999999
     </domain>
    </user_defined_type>
    <user_defined_type/>
