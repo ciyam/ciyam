@@ -44,6 +44,13 @@
 #include "module_interface.h"
 
 // [<start includes>]
+//idk
+#include "numeric.h"
+#include "date_time.h"
+#include "mtime_helper.h"
+#include "udate_helper.h"
+#include "numeric_helper.h"
+#include "date_time_helper.h"
 // [<finish includes>]
 
 using namespace std;
@@ -201,7 +208,7 @@ const uint64_t c_modifier_Is_Time = UINT64_C( 0x20000 );
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Id_domain;
-domain_int_range< 0, 99999 > g_Max_Size_domain;
+domain_int_range< 0, 999999 > g_Max_Size_domain;
 domain_string_max_size< 30 > g_Max_Value_domain;
 domain_string_max_size< 30 > g_Min_Value_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -1251,6 +1258,167 @@ void Meta_Type::impl::validate( unsigned state, bool is_internal, validation_err
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Zero_Padding ) ) ) ) );
 
    // [<start validate>]
+//idk
+   if( get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
+      p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+       c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must not be empty." ) );
+
+   if( !get_obj( ).Min_Value( ).empty( ) && get_obj( ).Max_Value( ).empty( ) )
+      p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+       c_field_name_Max_Value, get_module_string( c_field_display_name_Max_Value ) + " must not be empty." ) );
+
+   if( get_obj( ).Primitive( ) == c_enum_primitive_numeric )
+   {
+      if( get_obj( ).Numeric_Digits( ) < get_obj( ).Numeric_Decimals( ) )
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Numeric_Decimals, get_module_string( c_field_display_name_Numeric_Decimals )
+          + " must be <= " + get_module_string( c_field_display_name_Numeric_Digits ) + "." ) );
+
+      bool has_invalid = false;
+      if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< numeric >( get_obj( ).Min_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must be a valid numeric." ) );
+      }
+
+      if( !get_obj( ).Max_Value( ).empty( ) && !is_valid_str_val< numeric >( get_obj( ).Max_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Max_Value, get_module_string( c_field_display_name_Max_Value ) + " must be a valid numeric." ) );
+      }
+
+      if( !has_invalid && !get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
+      {
+         numeric min = from_string< numeric >( get_obj( ).Min_Value( ) );
+         numeric max = from_string< numeric >( get_obj( ).Max_Value( ) );
+
+         if( min >= max )
+            p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+             c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value )
+             + " must be less than " + get_module_string( c_field_display_name_Max_Value ) + "." ) );
+      }
+   }
+   else if( get_obj( ).Primitive( ) == c_enum_primitive_int )
+   {
+      if( get_obj( ).Max_Size( ) > c_int_digits10 )
+      {
+         p_validation_errors->insert(
+          validation_error_value_type( c_field_name_Max_Size, // FUTURE: Should be in module_strings...
+          get_module_string( c_field_display_name_Max_Size ) + " must be <= " + to_string( c_int_digits10 ) + "." ) );
+      }
+
+      bool has_invalid = false;
+      if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< int >( get_obj( ).Min_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must be a valid int." ) );
+      }
+
+      if( !get_obj( ).Max_Value( ).empty( ) && !is_valid_str_val< int >( get_obj( ).Max_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Max_Value, get_module_string( c_field_display_name_Max_Value ) + " must be a valid int." ) );
+      }
+
+      if( !has_invalid && !get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
+      {
+         int min = from_string< int >( get_obj( ).Min_Value( ) );
+         int max = from_string< int >( get_obj( ).Max_Value( ) );
+
+         if( min >= max )
+            p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+             c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value )
+             + " must be less than " + get_module_string( c_field_display_name_Max_Value ) + "." ) );
+      }
+   }
+   else if( get_obj( ).Primitive( ) == c_enum_primitive_date )
+   {
+      bool has_invalid = false;
+      if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< udate >( get_obj( ).Min_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must be a valid date." ) );
+      }
+
+      if( !get_obj( ).Max_Value( ).empty( ) && !is_valid_str_val< udate >( get_obj( ).Max_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Max_Value, get_module_string( c_field_display_name_Max_Value ) + " must be a valid date." ) );
+      }
+
+      if( !has_invalid && !get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
+      {
+         udate min = from_string< udate >( get_obj( ).Min_Value( ) );
+         udate max = from_string< udate >( get_obj( ).Max_Value( ) );
+
+         if( min >= max )
+            p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+             c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value )
+             + " must be less than " + get_module_string( c_field_display_name_Max_Value ) + "." ) );
+      }
+   }
+   else if( get_obj( ).Primitive( ) == c_enum_primitive_time )
+   {
+      bool has_invalid = false;
+      if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< mtime >( get_obj( ).Min_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must be a valid time." ) );
+      }
+
+      if( !get_obj( ).Max_Value( ).empty( ) && !is_valid_str_val< mtime >( get_obj( ).Max_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Max_Value, get_module_string( c_field_display_name_Max_Value ) + " must be a valid time." ) );
+      }
+
+      if( !has_invalid && !get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
+      {
+         mtime min = from_string< mtime >( get_obj( ).Min_Value( ) );
+         mtime max = from_string< mtime >( get_obj( ).Max_Value( ) );
+
+         if( min >= max )
+            p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+             c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value )
+             + " must be less than " + get_module_string( c_field_display_name_Max_Value ) + "." ) );
+      }
+   }
+   else if( get_obj( ).Primitive( ) == c_enum_primitive_datetime )
+   {
+      bool has_invalid = false;
+      if( !get_obj( ).Min_Value( ).empty( ) && !is_valid_str_val< date_time >( get_obj( ).Min_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must be a valid datetime." ) );
+      }
+
+      if( !get_obj( ).Max_Value( ).empty( ) && !is_valid_str_val< date_time >( get_obj( ).Max_Value( ) ) )
+      {
+         has_invalid = true;
+         p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+          c_field_name_Max_Value, get_module_string( c_field_display_name_Max_Value ) + " must be a valid datetime." ) );
+      }
+
+      if( !has_invalid && !get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
+      {
+         date_time min = from_string< date_time >( get_obj( ).Min_Value( ) );
+         date_time max = from_string< date_time >( get_obj( ).Max_Value( ) );
+
+         if( min >= max )
+            p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
+             c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value )
+             + " must be less than " + get_module_string( c_field_display_name_Max_Value ) + "." ) );
+      }
+   }
    // [<finish validate>]
 }
 

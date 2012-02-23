@@ -23,6 +23,7 @@
 
 #  include "utilities.h"
 #  include "date_time.h"
+#  include "class_utilities.h"
 
 inline size_t size_determiner( const udate* ) { return sizeof( udate ); }
 
@@ -36,6 +37,8 @@ template< > inline udate from_string< udate >( const std::string& s )
       return ud;
    }
 }
+
+template< > inline bool is_valid_str_val< udate >( const std::string& s ) { return is_valid_date( s ); }
 
 #endif
 

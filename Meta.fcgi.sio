@@ -6920,7 +6920,7 @@
      <name>field_type_max_size
      <field>102103
      <ftype>int
-     <extra>range=0..99999
+     <extra>range=0..999999
      <mandatory>true
      <modifiers>400:relegate,200:relegate,20000:relegate,8000:relegate,100:relegate,2000:relegate
     </field>

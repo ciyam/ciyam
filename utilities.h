@@ -42,6 +42,8 @@ const char* const c_special_characters = "abftnvr\a\b\f\t\n\v\r";
 
 const int c_uuid_size = 16;
 
+const int c_int_digits10 = std::numeric_limits< int >::digits10;
+
 template< int I, int B = 10 > struct power
 {
    static const int result = B * power< I - 1, B >::result;

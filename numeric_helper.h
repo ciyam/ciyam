@@ -43,5 +43,7 @@ template< > inline numeric from_string< numeric >( const std::string& s )
 
 template< > inline int to_integer( const numeric& n ) { return ( int )n.as_double( ); }
 
+template< > inline bool is_valid_str_val< numeric >( const std::string& s ) { return is_valid_numeric( s ); }
+
 #endif
 

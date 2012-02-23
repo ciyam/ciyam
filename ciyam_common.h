@@ -19,6 +19,17 @@ const int c_max_fields_per_index = 5;
 
 const int c_max_indexes_per_class = 100;
 
+enum primitive
+{
+   e_primitive_string,
+   e_primitive_datetime,
+   e_primitive_date,
+   e_primitive_time,
+   e_primitive_numeric,
+   e_primitive_int,
+   e_primitive_bool
+};
+
 const uint64_t c_state_normal = 0;
 const uint64_t c_state_uneditable = UINT64_C( 0x01 );
 const uint64_t c_state_undeletable = UINT64_C( 0x02 );

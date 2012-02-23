@@ -90,7 +90,7 @@ user_defined_type_add -id=1010 str30 string "max_size 30"
 user_defined_type_add -id=1015 str50 string "max_size 50"
 user_defined_type_add -id=1020 str100 string "max_size 100"
 user_defined_type_add -id=1025 str150 string "max_size 150"
-user_defined_type_add -id=1030 0..99999 int "range 0 99999"
+user_defined_type_add -id=1030 0..999999 int "range 0 999999"
 user_defined_type_add -id=1040 digits int "range 0 16"
 user_defined_type_add -id=1045 label str30 "format label"
 user_defined_type_add -id=1050 identifier str30 "format identifier"
@@ -121,7 +121,7 @@ index_add -id=101202 Workgroup Id unique
 class_add -id=102100 Type Types
 field_add -id=102101 Type Name str100 mand
 field_add -id=102102 Type Primitive int mand -def=0 -e=primitive
-field_add -id=102103 Type Max_Size 0..99999 mand -def=0
+field_add -id=102103 Type Max_Size 0..999999 mand -def=0
 field_add -id=102104 Type Min_Value str30 opt
 field_add -id=102105 Type Max_Value str30 opt
 field_add -id=102106 Type Numeric_Digits digits mand -def=0

@@ -21,7 +21,6 @@
 #  include <cerrno>
 #  include <cstdio>
 #  include <cassert>
-#  include <limits>
 #  include <locale>
 #  include <sstream>
 #  include <fstream>
@@ -1859,6 +1858,214 @@ string construct_class_identity( const class_base& cb )
 }
 #endif
 
+bool is_valid_int( const string& s )
+{
+   bool rc = true;
+   if( s.empty( ) )
+      rc = false;
+   else
+   {
+      if( s.length( ) == 1 && s[ 0 ] == '-' )
+         rc = false;
+
+      size_t spos = 0;
+      if( s[ 0 ] == '-' )
+         ++spos;
+
+      if( s.length( ) - spos > c_int_digits10 )
+         rc = false;
+      else
+      {
+         for( size_t i = spos; i < s.length( ); i++ )
+         {
+            if( s[ i ] < '0' || s[ i ] > '9' )
+            {
+               rc = false;
+               break;
+            }
+         }
+      }
+   }
+
+   return rc;
+}
+
+bool is_valid_bool( const string& s )
+{
+   return s == "0" || s == "1";
+}
+
+bool is_valid_date( const string& s )
+{
+   bool rc = true;
+   try
+   {
+      udate ud( s );
+   }
+   catch( exception& x )
+   {
+      rc = false;
+   }
+
+   return rc;
+}
+
+bool is_valid_time( const string& s )
+{
+   bool rc = true;
+   try
+   {
+      mtime mt( s );
+   }
+   catch( exception& x )
+   {
+      rc = false;
+   }
+
+   return rc;
+}
+
+bool is_valid_numeric( const string& s )
+{
+   bool rc = true;
+   try
+   {
+      numeric n( s.c_str( ) );
+   }
+   catch( exception& x )
+   {
+      rc = false;
+   }
+
+   return rc;
+}
+
+bool is_valid_date_time( const string& s )
+{
+   bool rc = true;
+   try
+   {
+      date_time dtm( s );
+   }
+   catch( exception& x )
+   {
+      rc = false;
+   }
+
+   return rc;
+}
+
+bool is_valid_value( const string& s, primitive p,
+ unsigned int max_size, const char* p_min_value, const char* p_max_value )
+{
+   int rc = true;
+
+   bool has_min_and_max = p_min_value && p_max_value
+    && string( p_min_value ).length( ) > 0 && string( p_max_value ).length( ) > 0;
+
+   switch( p )
+   {
+      case e_primitive_string:
+      if( max_size && s.length( ) > max_size )
+         rc = false;
+      break;
+
+      case e_primitive_datetime:
+      rc = is_valid_date_time( s );
+      if( rc )
+      {
+         if( has_min_and_max )
+         {
+            date_time dtm( s );
+
+            date_time min( p_min_value );
+            date_time max( p_max_value );
+
+            if( dtm < min || dtm > max )
+               rc = false;
+         }
+      }
+      break;
+
+      case e_primitive_date:
+      rc = is_valid_date( s );
+      if( rc )
+      {
+         if( has_min_and_max )
+         {
+            udate ud( s );
+
+            udate min( p_min_value );
+            udate max( p_max_value );
+
+            if( ud < min || ud > max )
+               rc = false;
+         }
+      }
+      break;
+
+      case e_primitive_time:
+      rc = is_valid_time( s );
+      if( rc )
+      {
+         if( has_min_and_max )
+         {
+            mtime mt( s );
+
+            mtime min( p_min_value );
+            mtime max( p_max_value );
+
+            if( mt < min || mt > max )
+               rc = false;
+         }
+      }
+      break;
+
+      case e_primitive_numeric:
+      rc = is_valid_numeric( s );
+      if( rc )
+      {
+         if( has_min_and_max )
+         {
+            numeric n( s.c_str( ) );
+
+            numeric min( p_min_value );
+            numeric max( p_max_value );
+
+            if( n < min || n > max )
+               rc = false;
+         }
+      }
+      break;
+
+      case e_primitive_int:
+      rc = is_valid_int( s );
+      if( rc )
+      {
+         if( has_min_and_max )
+         {
+            int i = atoi( s.c_str( ) );
+
+            int min = atoi( p_min_value );
+            int max = atoi( p_max_value );
+
+            if( i < min || i > max )
+               rc = false;
+         }
+      }
+      break;
+
+      case e_primitive_bool:
+      rc = is_valid_bool( s );
+      break;
+
+      default:
+      throw runtime_error( "unexpected primitive value #" + to_string( p ) + " found in is_valid_value" );
+   }
+
+   return rc;
+}
+
 string sql_quote( const string& s )
 {
    // NOTE: Always use '' rather than NULL here as it is expected
@@ -1892,7 +2099,7 @@ string int_to_comparable_string( int i, bool prefix_with_sign, int max_digits )
       digits.erase( 0, 1 );
 
    if( max_digits == 0 )
-      max_digits = numeric_limits< int >::digits10 + 1;
+      max_digits = c_int_digits10 + 1;
 
    int extra = max_digits - digits.size( );
 

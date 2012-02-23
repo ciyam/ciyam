@@ -5236,7 +5236,7 @@
 `{`$specification_Type_view_fmand02`=`'true`'`}
 `{`$specification_Type_view_field03`=`'102103`'`}
 `{`$specification_Type_view_ftype03`=`'int`'`}
-`{`$specification_Type_view_extra03`=`'range=0..99999`'`}
+`{`$specification_Type_view_extra03`=`'range=0..999999`'`}
 `{`$specification_Type_view_fmods03`=`'400:relegate,200:relegate,20000:relegate,8000:relegate,100:relegate,2000:relegate`'`}
 `{`$specification_Type_view_fname03`=`'field_type_max_size`'`}
 `{`$specification_Type_view_fmand03`=`'true`'`}
