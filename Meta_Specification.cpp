@@ -5343,6 +5343,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{field_id}", to_string( get_obj( ).Field( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fmandatory}", to_string( get_obj( ).Field( ).Mandatory( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ftransient}", to_string( get_obj( ).Field( ).Transient( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fdecimals}", to_string( get_obj( ).Field( ).Numeric_Decimals( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fistexttype}", to_string( get_obj( ).Field( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fpclass}", to_string( get_obj( ).Field( ).Parent_Class_Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ofield}", to_string( get_obj( ).Other_Field( ).Name( ) ) );
@@ -9785,6 +9786,15 @@ void Meta_Specification::get_required_field_names(
       if( ( required_transients && is_field_transient( e_field_id_Field_Class ) )
        || ( !required_transients && !is_field_transient( e_field_id_Field_Class ) ) )
          names.insert( "Field_Class" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Field ) ) )
+         names.insert( "Field" );
    }
 
    if( needs_field_value( "Vars", dependents ) )

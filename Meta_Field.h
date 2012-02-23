@@ -42,6 +42,8 @@ class Meta_Enum;
 class Meta_Field;
 class Meta_Type;
 
+class numeric;
+
 class META_FIELD_DECL_SPEC Meta_Field : public class_base
 {
    friend class Meta_Specification_Content_Page;
@@ -74,14 +76,15 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
       e_field_id_Is_Text_Type = 8,
       e_field_id_Mandatory = 9,
       e_field_id_Name = 10,
-      e_field_id_Parent_Class = 11,
-      e_field_id_Parent_Class_Name = 12,
-      e_field_id_Primitive = 13,
-      e_field_id_Source_Field = 14,
-      e_field_id_Transient = 15,
-      e_field_id_Type = 16,
-      e_field_id_UOM = 17,
-      e_field_id_Use_In_Text_Search = 18
+      e_field_id_Numeric_Decimals = 11,
+      e_field_id_Parent_Class = 12,
+      e_field_id_Parent_Class_Name = 13,
+      e_field_id_Primitive = 14,
+      e_field_id_Source_Field = 15,
+      e_field_id_Transient = 16,
+      e_field_id_Type = 17,
+      e_field_id_UOM = 18,
+      e_field_id_Use_In_Text_Search = 19
    };
 
    Meta_Field( );
@@ -110,6 +113,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );
+
+   const numeric& Numeric_Decimals( ) const;
+   void Numeric_Decimals( const numeric& Numeric_Decimals );
 
    const std::string& Parent_Class_Name( ) const;
    void Parent_Class_Name( const std::string& Parent_Class_Name );
