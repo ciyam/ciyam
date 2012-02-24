@@ -3513,6 +3513,10 @@ int exec_system( const string& cmd, bool async )
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
       throw runtime_error( "invalid exec_system: " + cmd );
 
+   // NOTE: The session variable @allow_async can be used to force non-async execution.
+   if( get_session_variable( "@allow_async" ) == "0" || get_session_variable( "@allow_async" ) == "false" )
+      async = false;
+
    if( async )
    {
 #ifdef _WIN32
@@ -3530,10 +3534,6 @@ int exec_system( const string& cmd, bool async )
 int run_script( const string& script_name, bool async )
 {
    int rc;
-
-   // NOTE: The session variable @async can be used to force non-async execution.
-   if( get_session_variable( "@async" ) == "0" || get_session_variable( "@async" ) == "false" )
-      async = false;
 
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
       read_script_info( );
