@@ -500,8 +500,16 @@ bool fetch_item_info( const string& module,
 
    fetch_cmd += " \"" + item_key + "\" #1";
 
-   if( !set_field_values.empty( ) )
-      fetch_cmd += " \"-v=" + set_field_values + "\"";
+   string field_values( set_field_values );
+   if( !field_values.empty( ) )
+      field_values += ",";
+
+   field_values += "@extra1="
+    + escaped( sess_info.user_extra1, "\"" )
+    + ",@extra2=" + escaped( sess_info.user_extra2, "\"" );
+
+   if( !field_values.empty( ) )
+      fetch_cmd += " \"-v=" + field_values + "\"";
 
    if( !field_list.empty( ) )
       fetch_cmd += " " + field_list;
@@ -625,6 +633,10 @@ bool fetch_list_info( const string& module,
 
    if( row_limit > 0 )
       fetch_cmd += " #" + to_string( row_limit + 1 + ( p_prev ? ( int )*p_prev : 0 ) );
+
+   fetch_cmd += " \"-v=@extra1="
+    + escaped( sess_info.user_extra1, "\"" )
+    + ",@extra2=" + escaped( sess_info.user_extra2, "\"" ) + "\"";
 
    if( !field_list.empty( ) )
       fetch_cmd += " " + field_list;

@@ -54,6 +54,34 @@ template< int B > struct power< 0, B >
    static const int result = 1;
 };
 
+// This "typeof" implementation was written by Bill Gibbons.
+template< int N > struct typeof_class;
+template< class T > struct wrap_type { typedef T U; };
+
+#define REGISTER_TYPEOF( N, T ) \
+ template< > struct typeof_class< N > { typedef wrap_type< T >::U V; }; \
+ char ( *typeof_fct( const wrap_type< T >::U & ) )[ N ];
+
+#define typeof( x ) typeof_class< sizeof( *typeof_fct( x ) ) >::V
+
+REGISTER_TYPEOF( 1, bool )
+REGISTER_TYPEOF( 2, char )
+REGISTER_TYPEOF( 3, signed char )
+REGISTER_TYPEOF( 4, unsigned char )
+REGISTER_TYPEOF( 5, short )
+REGISTER_TYPEOF( 6, unsigned short )
+REGISTER_TYPEOF( 7, int )
+REGISTER_TYPEOF( 8, unsigned int )
+REGISTER_TYPEOF( 9, long )
+REGISTER_TYPEOF( 10, unsigned long )
+REGISTER_TYPEOF( 11, int64_t )
+REGISTER_TYPEOF( 12, uint64_t )
+REGISTER_TYPEOF( 13, float )
+REGISTER_TYPEOF( 14, double )
+REGISTER_TYPEOF( 15, wchar_t )
+REGISTER_TYPEOF( 16, int ( * )( ) )
+REGISTER_TYPEOF( 17, std::string )
+
 std::string quote( const std::string& s, char quote_char = '"', char escape_char = '\\' );
 
 inline void to_upper( std::string& s )

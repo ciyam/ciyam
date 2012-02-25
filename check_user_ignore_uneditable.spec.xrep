@@ -9,11 +9,28 @@
       bool allow_ignore = true;
       if( !is_system_uid( ) )
       {
+`{`!`@eq`(`$arg_vname`,`'`'`)\
+         string var( get_obj( ).get_variable( "`{`$arg_vname`}" ) );
+         if( !var.empty( ) )
+         {
+            if( from_string< typeof( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ) >( var ) `{`$op`} get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )
+               allow_ignore = false;
+         }
+         else
+         {
+            `{`$module_name`}_`{`$arg_spclass`} user;
+            user.perform_fetch( get_uid( ) );
+
+            if( user.`{`$arg_scfield`}( ) `{`$op`} get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )
+               allow_ignore = false;
+         }
+`,\
          `{`$module_name`}_`{`$arg_spclass`} user;
          user.perform_fetch( get_uid( ) );
 
          if( user.`{`$arg_scfield`}( ) `{`$op`} get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )
             allow_ignore = false;
+`}\
       }
 
       if( allow_ignore )

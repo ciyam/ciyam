@@ -1069,6 +1069,12 @@ void request_handler::process_request( )
                   if( !mod_info.user_perm_field_id.empty( ) )
                      field_list += "," + mod_info.user_perm_field_id;
 
+                  if( !mod_info.user_extra1_field_id.empty( ) )
+                     field_list += "," + mod_info.user_extra1_field_id;
+
+                  if( !mod_info.user_extra2_field_id.empty( ) )
+                     field_list += "," + mod_info.user_extra2_field_id;
+
                   if( !mod_info.user_group_field_id.empty( ) )
                      field_list += "," + mod_info.user_group_field_id;
 
@@ -1166,6 +1172,12 @@ void request_handler::process_request( )
                   // NOTE: If the module requires a user permission then make sure that the user has it.
                   if( !mod_info.perm.empty( ) && !p_session_info->user_perms.count( mod_info.perm ) )
                      throw runtime_error( GDS( c_display_permission_denied ) );
+
+                  if( !mod_info.user_extra1_field_id.empty( ) )
+                     p_session_info->user_extra1 = user_data[ offset++ ];
+
+                  if( !mod_info.user_extra2_field_id.empty( ) )
+                     p_session_info->user_extra2 = user_data[ offset++ ];
 
                   if( !mod_info.user_group_field_id.empty( ) )
                      p_session_info->user_group = user_data[ offset++ ];

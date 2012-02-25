@@ -23,6 +23,8 @@
 #  include "utilities.h"
 #  include "class_utilities.h"
 
+REGISTER_TYPEOF( 40, numeric )
+
 inline size_t size_determiner( const numeric* ) { return sizeof( numeric ); }
 
 inline std::string to_string( const numeric& n )

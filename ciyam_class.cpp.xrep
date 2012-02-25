@@ -903,7 +903,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`@eq`(`$specification_\0_tfield`,`'`'`)
 `{`#check_user_ignore_uneditable.spec.xrep section=get_state module_name=$module_name class_name=$class_name\
  arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
- arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_testop=$specification_\0_testop`}\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
+ arg_testop=$specification_\0_testop arg_vname=$specification_\0_vname`}\
 `,\
 `@eq`(`'\1`'`,`'folder`'`)
 `{`#folder.spec.xrep section=get_state name=\0`}\

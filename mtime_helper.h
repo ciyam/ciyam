@@ -25,6 +25,8 @@
 #  include "date_time.h"
 #  include "class_utilities.h"
 
+REGISTER_TYPEOF( 32, mtime )
+
 inline size_t size_determiner( const mtime* ) { return sizeof( mtime ); }
 
 #  ifdef NEW_BORLAND_VERSION
