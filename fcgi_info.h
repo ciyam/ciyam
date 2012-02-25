@@ -350,6 +350,8 @@ struct module_info
    std::string user_perm_field_id;
    std::string user_group_field_id;
    std::string user_other_field_id;
+   std::string user_extra1_field_id;
+   std::string user_extra2_field_id;
    std::string user_parent_field_id;
    std::string user_active_field_id;
    std::string user_security_level_id;
@@ -479,6 +481,8 @@ struct session_info
    std::string user_key;
    std::string user_group;
    std::string user_other;
+   std::string user_extra1;
+   std::string user_extra2;
    std::string user_parent;
    std::string user_module;
    std::string user_slevel;

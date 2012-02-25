@@ -119,6 +119,7 @@ const char* const c_attribute_login_opts = "login_opts";
 const char* const c_attribute_notes_rmin = "notes_rmin";
 const char* const c_attribute_notes_rmax = "notes_rmax";
 const char* const c_attribute_operations = "operations";
+const char* const c_attribute_user_extra = "user_extra";
 const char* const c_attribute_user_group = "user_group";
 const char* const c_attribute_user_other = "user_other";
 const char* const c_attribute_image_width = "image_width";
@@ -511,6 +512,17 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       }
 
       info.user_perm_field_id = reader.read_opt_attribute( c_attribute_user_perm );
+
+      string user_extra_info = reader.read_opt_attribute( c_attribute_user_extra );
+      if( !user_extra_info.empty( ) )
+      {
+         string::size_type pos = user_extra_info.find( ',' );
+         info.user_extra1_field_id = user_extra_info.substr( 0, pos );
+
+         if( pos != string::npos )
+            info.user_extra2_field_id = user_extra_info.substr( pos + 1 );
+      }
+
       info.user_group_field_id = reader.read_opt_attribute( c_attribute_user_group );
 
       string user_qlink_info = reader.read_opt_attribute( c_attribute_user_qlink );

@@ -25,6 +25,8 @@
 #  include "date_time.h"
 #  include "class_utilities.h"
 
+REGISTER_TYPEOF( 31, udate )
+
 inline size_t size_determiner( const udate* ) { return sizeof( udate ); }
 
 template< > inline udate from_string< udate >( const std::string& s )

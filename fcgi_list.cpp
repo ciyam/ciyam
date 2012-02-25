@@ -348,8 +348,13 @@ void setup_list_fields( list_source& list,
 
          if( !fld.pfield.empty( ) )
          {
-            list.field_list += "." + fld.pfield;
-            list.pfield_list += "." + fld.pfield;
+            // NOTE: If the field is hidden then don't add the parent field in order to
+            // help prevent the application server from performing unnecessary queries.
+            if( !is_hidden )
+            {
+               list.field_list += "." + fld.pfield;
+               list.pfield_list += "." + fld.pfield;
+            }
          }
          else if( fld.indexed && allow_sorting && !extra_data.count( c_field_extra_print_summary ) )
          {
