@@ -387,7 +387,7 @@ bool output_view_form( ostream& os, const string& act,
  const string& user_select_key, bool using_session_cookie,
  const map< string, string >& new_field_and_values, const session_info& sess_info,
  string& field_list, string& edit_timeout_func, string& extra_content_func, bool use_url_checksum,
- bool is_quick_link_view, const map< string, string >& show_opts, bool is_printable,
+ bool is_quick_link_view, const map< string, string >& show_opts, bool is_printable, int back_count,
  const string& pdf_view_file_name, bool& is_record_owner, string& extra_html_content, bool& is_changing )
 {
    const storage_info& sinfo( get_storage_info( ) );
@@ -715,7 +715,7 @@ bool output_view_form( ostream& os, const string& act,
          }
 
          os << "<input id=\"edit\" name=\"edit\" type=\"button\" class=\"button\"";
-         os << " value=\"" << GDS( c_display_back ) << "\" onclick=\"history.back( );\" style=\"cursor:pointer\">";
+         os << " value=\"" << GDS( c_display_back ) << "\" onclick=\"history.go( -" << back_count << " );\" style=\"cursor:pointer\">";
 
          has_started_right = true;
       }
@@ -952,6 +952,8 @@ bool output_view_form( ostream& os, const string& act,
 
          if( !is_in_edit )
          {
+            os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
             if( !show )
                os << "query_update( '" << show_opt
                 << "', '1' );\"><img src=\"" << show_more_image << "\" border=\"0\"></a>";
@@ -1010,6 +1012,7 @@ bool output_view_form( ostream& os, const string& act,
                      os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
                   }
 
+                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
                   os << "query_update( 'vtab', '" << ( i + 1 )
                    << "' );\">" << mod_info.get_string( source.tab_names[ i ] ) << "</a></td>\n";
                }

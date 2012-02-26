@@ -2226,6 +2226,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_module ) );
          string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_filename ) );
          bool new_only( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_new_only ) );
+         bool for_remove( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_for_remove ) );
          string key_prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_key_prefix ) );
          string replace_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_replace_info ) );
          string skip_field_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_package_import_skip_field_info ) );
@@ -2233,7 +2234,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( dtm == c_dtm_now )
             dtm = date_time::standard( ).as_string( );
 
-         import_package( module, uid, dtm, filename, key_prefix, replace_info, skip_field_info, new_only );
+         import_package( module, uid, dtm, filename, key_prefix, replace_info, skip_field_info, new_only, for_remove );
       }
       else if( command == c_cmd_ciyam_session_session_list )
       {

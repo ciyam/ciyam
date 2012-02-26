@@ -347,7 +347,7 @@ void CIYAM_BASE_DECL_SPEC import_package(
  const std::string& module, const std::string& uid,
  const std::string& dtm, const std::string& filename,
  const std::string& key_prefix, const std::string& replace_info,
- const std::string& skip_field_info, bool new_only = false );
+ const std::string& skip_field_info, bool new_only = false, bool for_remove = false );
 
 std::string CIYAM_BASE_DECL_SPEC instance_class( size_t handle, const std::string& context );
 std::string CIYAM_BASE_DECL_SPEC instance_key_info( size_t handle, const std::string& context, bool key_only = false );

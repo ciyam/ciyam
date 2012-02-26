@@ -1132,6 +1132,15 @@ void Meta_Package::impl::impl_Remove( )
             outf << ".storage_trans_start\n";
             outf << "@endif\n";
 
+            // NOTE: Packages could contain updates of external artifacts (such as specifications) which
+            // need to be "undone" as updates (rather than occurring automatically via cascades) so here
+            // the package will be processed for just this purpose (the keys for such updates are marked
+            // specifically for this purpose).
+            string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
+            if( exists_file( map_filename ) )
+               outf << ".perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
+                << " " << get_obj( ).Package_Type( ).Name( ) << ".package.sio -for_remove -r=@" << map_filename << "\n";
+
             vector< string > ordered;
             string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );
             read_file_lines( acyclic_filename, ordered );

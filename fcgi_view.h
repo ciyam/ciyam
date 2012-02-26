@@ -40,7 +40,7 @@ bool output_view_form( std::ostream& os, const std::string& act,
  const std::string& user_select_key, bool using_session_cookie,
  const std::map< std::string, std::string >& new_field_and_values, const session_info& sess_info,
  std::string& field_list, std::string& edit_timeout_func, std::string& extra_content_func, bool use_url_checksum,
- bool is_quick_link_view, const std::map< std::string, std::string >& show_opts, bool is_printable,
+ bool is_quick_link_view, const std::map< std::string, std::string >& show_opts, bool is_printable, int back_count,
  const std::string& pdf_view_file_name, bool& is_record_owner, std::string& extra_html_content, bool& is_changing );
 
 #endif
