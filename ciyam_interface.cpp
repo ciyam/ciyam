@@ -1351,6 +1351,7 @@ void request_handler::process_request( )
          string flags( input_data[ c_param_flags ] );
          string ident( input_data[ c_param_ident ] );
          string qlink( input_data[ c_param_qlink ] );
+         string bcount( input_data[ c_param_bcount ] );
          string scrollx( input_data[ c_param_scrollx ] );
          string scrolly( input_data[ c_param_scrolly ] );
          string special( input_data[ c_param_special ] );
@@ -1377,6 +1378,14 @@ void request_handler::process_request( )
          bool keep_checks = false;
          if( keepchecks == "1" )
             keep_checks = true;
+
+         int back_count = 1;
+         if( !bcount.empty( ) )
+         {
+            back_count = atoi( bcount.c_str( ) );
+            if( back_count < 1 )
+               back_count = 1;
+         }
 
          bool use_url_checksum = ( url_opts.count( c_url_opt_use_checksum ) > 0 );
 
@@ -3334,10 +3343,12 @@ void request_handler::process_request( )
                   bool is_owner;
                   string extra_html_content;
 
-                  bool is_editable = output_view_form( extra_content, act, was_invalid, user_field_info, exec,
-                   cont, data, error_message, extra, field, view, vtab_num, session_id, uselect, cookies_permitted,
-                   new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func, extra_content_func, use_url_checksum,
-                   !qlink.empty( ), show_opts, cmd == c_cmd_pview, pdf_view_file_name, is_owner, extra_html_content, has_any_changing_records );
+                  bool is_editable = output_view_form( extra_content,
+                   act, was_invalid, user_field_info, exec, cont, data, error_message,
+                   extra, field, view, vtab_num, session_id, uselect, cookies_permitted,
+                   new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func,
+                   extra_content_func, use_url_checksum, !qlink.empty( ), show_opts, cmd == c_cmd_pview,
+                   back_count, pdf_view_file_name, is_owner, extra_html_content, has_any_changing_records );
 
                   extra_content_func += "dataFieldList = '" + edit_field_list + "';\n";
 
@@ -3404,6 +3415,7 @@ void request_handler::process_request( )
                                << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
                            }
 
+                           extra_content << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
                            extra_content << "query_update( 'vtabc', '" << n << "' );\">" << name << "</a></td>\n";
                         }
                      }

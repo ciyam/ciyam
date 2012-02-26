@@ -6865,8 +6865,8 @@ void export_package( const string& module,
 }
 
 void import_package( const string& module,
- const string& uid, const string& dtm, const string& filename,
- const string& key_prefix, const string& replace_info, const string& skip_field_info, bool new_only )
+ const string& uid, const string& dtm, const string& filename, const string& key_prefix,
+ const string& replace_info, const string& skip_field_info, bool new_only, bool for_remove )
 {
    string module_id( module );
    if( !gtp_session->modules_by_id.count( module ) )
@@ -7013,7 +7013,7 @@ void import_package( const string& module,
          }
       }
 
-      if( has_key_list_file )
+      if( !for_remove && has_key_list_file )
       {
          string map_file_name( replace_info.substr( 1 ) + ".map" );
          ofstream outf( map_file_name.c_str( ) );
@@ -7129,6 +7129,22 @@ void import_package( const string& module,
                      keys_updating.insert( next_key );
                   }
 
+                  bool is_remove_op = false;
+                  if( !next_key.empty( ) && next_key[ 0 ] == '~' )
+                  {
+                     next_key.erase( 0, 1 );
+
+                     if( !for_remove )
+                        skip_op = true;
+                     else
+                        is_remove_op = true;
+                  }
+
+                  if( is_remove_op && !for_remove )
+                     skip_op = true;
+                  else if( for_remove && !is_remove_op )
+                     skip_op = true;
+
                   if( !skip_op )
                   {
                      string next_log_line;
@@ -7216,11 +7232,11 @@ void import_package( const string& module,
 
                      op_instance_apply( handle, "", false );
 
-                     if( !is_update )
+                     if( !is_update && !for_remove )
                         keys_created.insert( make_pair( key_value, mclass ) );
                   }
 
-                  if( !key_prefix.empty( ) )
+                  if( !for_remove && !key_prefix.empty( ) )
                   {
                      prefixed_class_keys[ mclass ].insert( next_key );
 
