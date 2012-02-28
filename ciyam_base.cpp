@@ -1090,11 +1090,14 @@ void perform_storage_op( storage_op op,
    if( name == c_default_storage_name )
       throw runtime_error( "storage name '" + name + "' cannot be used explicitly" );
 
-   if( gtp_session->p_storage_handler->get_ods( ) )
-      throw runtime_error( "current storage needs to be terminated before another can be linked to" );
+   if( !lock_for_admin && file_exists( name + ".log.new" ) )
+      throw runtime_error( "storage is under administration" );
 
    if( !gtp_session->instance_registry.empty( ) )
-      throw runtime_error( "existing object instances must be destroyed before linking to a storage" );
+      throw runtime_error( "all object instances must be destroyed before linking to a storage" );
+
+   if( gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "current storage needs to be terminated before another can be linked to" );
 
    bool was_constructed = false;
    if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
@@ -2373,46 +2376,50 @@ string construct_sql_select(
       vector< string > indexes;
       instance.get_sql_indexes( indexes );
 
-      string index_to_use;
+      vector< string > unique_indexes;
+      instance.get_sql_unique_indexes( unique_indexes );
 
-      while( true )
+      set< string > sorted_unique_indexes( unique_indexes.begin( ), unique_indexes.end( ) );
+
+      for( size_t i = use_index_fields.size( ); i < order_info.size( ); i++ )
       {
-         bool found = false;
-         for( size_t i = 0; i < indexes.size( ); i++ )
-         {
-            vector< string > index_fields;
-            split( indexes[ i ], index_fields );
-
-            if( index_fields.size( ) >= use_index_fields.size( ) )
-            {
-               for( size_t j = 0; j < use_index_fields.size( ); j++ )
-               {
-                  if( index_fields[ j ] != use_index_fields[ j ] )
-                     break;
-
-                  if( j == use_index_fields.size( ) - 1 )
-                     found = true;
-               }
-            }
-
-            if( found )
-            {
-               index_to_use = "I_" + string( instance.module_name( ) ) + "_"
-                + string( instance.class_name( ) ) + "_" + ( i < 10 ? "0" : "" ) + to_string( i );
-               break;
-            }
-         }
-
-         if( !found || use_index_fields.size( ) >= order_info.size( ) )
-            break;
-
-         // NOTE: Although an index matching all the fixed and paging fields has been found
-         // the extra ordering fields (or an initial number of them) could exist in another
-         // index so repeat the process for each extra ordering field.
-         string next_field( order_info[ use_index_fields.size( ) ] );
+         string next_field( order_info[ i ] );
          get_field_name( instance, next_field );
 
          use_index_fields.push_back( "C_" + next_field );
+      }
+
+      bool found = false;
+      string index_to_use;
+
+      for( size_t i = 0; i < indexes.size( ); i++ )
+      {
+         vector< string > index_fields;
+         split( indexes[ i ], index_fields );
+
+         // NOTE: As the "key" is always appended to the ordering (in case no unique index found)
+         // the key is appended to unique indexes so the field matching will operate as expected.
+         if( sorted_unique_indexes.count( indexes[ i ] ) )
+            index_fields.push_back( "C_Key_" );
+
+         if( index_fields.size( ) == use_index_fields.size( ) )
+         {
+            for( size_t j = 0; j < use_index_fields.size( ); j++ )
+            {
+               if( index_fields[ j ] != use_index_fields[ j ] )
+                  break;
+
+               if( j == use_index_fields.size( ) - 1 )
+                  found = true;
+            }
+         }
+
+         if( found )
+         {
+            index_to_use = "I_" + string( instance.module_name( ) ) + "_"
+             + string( instance.class_name( ) ) + "_" + ( i < 10 ? "0" : "" ) + to_string( i );
+            break;
+         }
       }
 
       if( !index_to_use.empty( ) )

@@ -2476,6 +2476,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_name ) );
          string prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_prefix ) );
          string trace_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_trace_info ) );
+         int stop_at_tx( atoi( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_stop_at_tx ).c_str( ) ) );
          bool rebuild( has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_rebuild ) );
          bool partial( has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_partial ) );
          bool quicker( has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_quicker ) );
@@ -2724,6 +2725,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                size_t tran_id = from_string< size_t >( next.substr( 1, pos - 1 ) );
                string tran_info = next.substr( pos + 1 );
+
+               if( stop_at_tx && tran_id == stop_at_tx )
+                  break;
 
                if( !in_trans && tran_id >= 5 && line >= tline )
                {

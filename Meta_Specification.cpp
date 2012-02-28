@@ -12060,9 +12060,11 @@ void Meta_Specification::static_get_sql_indexes( vector< string >& indexes )
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Order" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Id" );
+   indexes.push_back( "C_Model,C_Parent_Specification,C_Is_Required_For_UI_Gen,C_Order" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Name" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Order" );
-   indexes.push_back( "C_Parent_Specification,C_Order,C_Key_" );
+   indexes.push_back( "C_Parent_Specification,C_Key_" );
+   indexes.push_back( "C_Parent_Specification,C_Order" );
 }
 
 void Meta_Specification::static_get_sql_unique_indexes( vector< string >& indexes )
@@ -12071,8 +12073,10 @@ void Meta_Specification::static_get_sql_unique_indexes( vector< string >& indexe
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Order" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Id" );
+   indexes.push_back( "C_Model,C_Parent_Specification,C_Is_Required_For_UI_Gen,C_Order" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Name" );
    indexes.push_back( "C_Model,C_Parent_Specification,C_Order" );
+   indexes.push_back( "C_Parent_Specification,C_Order" );
 }
 
 void Meta_Specification::static_insert_derivation( const string& module_and_class_id )
