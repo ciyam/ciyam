@@ -5,6 +5,7 @@
  <title>Meta Beta
  <user_info>100100,User,100101,100103
  <user_perm>100106
+ <user_extra>
  <user_group>300100
  <user_other>
  <user_parent>
@@ -8779,7 +8780,7 @@
      <ftype>string
      <extra>hidden+order
      <modifiers>
-     <unique>false
+     <unique>true
      <indexed>true
     </column>
     <column/>

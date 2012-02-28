@@ -12910,6 +12910,10 @@
       <mandatory>true
       <default_value>0
       <indexes/>
+       <index/>
+        <id>401406
+        <num>2
+       </index>
       </indexes>
       <modifiers/>
       </modifiers>
@@ -13067,6 +13071,10 @@
        <index/>
         <id>401405
         <num>2
+       </index>
+       <index/>
+        <id>401406
+        <num>3
        </index>
        <index/>
         <id>401415
@@ -13319,6 +13327,10 @@
         <num>1
        </index>
        <index/>
+        <id>401406
+        <num>1
+       </index>
+       <index/>
         <id>401410
         <num>1
        </index>
@@ -13329,6 +13341,10 @@
        <index/>
         <id>401430
         <num>1
+       </index>
+       <index/>
+        <id>401435
+        <num>0
        </index>
       </indexes>
       <modifiers/>
@@ -14978,6 +14994,10 @@
         <num>0
        </index>
        <index/>
+        <id>401406
+        <num>0
+       </index>
+       <index/>
         <id>401410
         <num>0
        </index>
@@ -15768,9 +15788,14 @@
     </fields>
     <indexes/>
      <index/>
+      <id>401435
+      <name>[Parent_{Specification}]
+      <unique>false
+     </index>
+     <index/>
       <id>401404
       <name>[Parent_{Specification}],[Order]
-      <unique>false
+      <unique>true
      </index>
      <index/>
       <id>401415
@@ -15795,6 +15820,11 @@
      <index/>
       <id>401430
       <name>[{Model}],[Parent_{Specification}],[Id]
+      <unique>true
+     </index>
+     <index/>
+      <id>401406
+      <name>[{Model}],[Parent_{Specification}],[Is_Required_For_UI_Gen],[Order]
       <unique>true
      </index>
      <index/>
