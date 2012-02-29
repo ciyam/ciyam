@@ -36,7 +36,7 @@ using namespace std;
 namespace
 {
 
-const int c_initial_response_timeout = 60000;
+const int c_initial_response_timeout = 10000;
 const int c_subsequent_response_timeout = 2500;
 
 const char* const c_order_reverse = "reverse";
@@ -455,7 +455,7 @@ bool perform_action( const string& module_name,
    return okay;
 }
 
-bool fetch_item_info( const string& module,
+bool fetch_item_info( const string& module, const module_info& mod_info,
  const string& class_id, const string& item_key, const string& field_list,
  const string& set_field_values, const session_info& sess_info, pair< string, string >& item_info,
  const string& uinfo, const string* p_owner, const string* p_pdf_spec_name,
@@ -501,12 +501,16 @@ bool fetch_item_info( const string& module,
    fetch_cmd += " \"" + item_key + "\" #1";
 
    string field_values( set_field_values );
-   if( !field_values.empty( ) )
-      field_values += ",";
 
-   field_values += "@extra1="
-    + escaped( sess_info.user_extra1, "\"" )
-    + ",@extra2=" + escaped( sess_info.user_extra2, "\"" );
+   if( !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
+   {
+      if( !field_values.empty( ) )
+         field_values += ",";
+
+      field_values += "@extra1="
+       + escaped( sess_info.user_extra1, "\"" )
+       + ",@extra2=" + escaped( sess_info.user_extra2, "\"" );
+   }
 
    if( !field_values.empty( ) )
       fetch_cmd += " \"-v=" + field_values + "\"";
@@ -581,7 +585,7 @@ bool fetch_item_info( const string& module,
    return okay;
 }
 
-bool fetch_list_info( const string& module,
+bool fetch_list_info( const string& module, const module_info& mod_info,
  const string& class_id, const string& uinfo, const session_info& sess_info,
  bool is_reverse, int row_limit, const string& key_info, const string& field_list,
  const string& filters, const string& search_text, const string& search_query,
@@ -634,9 +638,12 @@ bool fetch_list_info( const string& module,
    if( row_limit > 0 )
       fetch_cmd += " #" + to_string( row_limit + 1 + ( p_prev ? ( int )*p_prev : 0 ) );
 
-   fetch_cmd += " \"-v=@extra1="
-    + escaped( sess_info.user_extra1, "\"" )
-    + ",@extra2=" + escaped( sess_info.user_extra2, "\"" ) + "\"";
+   if( !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
+   {
+      fetch_cmd += " \"-v=@extra1="
+       + escaped( sess_info.user_extra1, "\"" )
+       + ",@extra2=" + escaped( sess_info.user_extra2, "\"" ) + "\"";
+   }
 
    if( !field_list.empty( ) )
       fetch_cmd += " " + field_list;
@@ -724,7 +731,7 @@ bool fetch_list_info( const string& module,
    return okay;
 }
 
-bool fetch_parent_row_data( const string& module,
+bool fetch_parent_row_data( const string& module, const module_info& mod_info,
  const string& record_key, const string& field_id, const string& pclass_id,
  const string& parent_field, const string& parent_extras, const session_info& sess_info,
  const string& parent_key, data_container& parent_row_data, tcp_socket& socket,
@@ -1148,7 +1155,7 @@ bool fetch_parent_row_data( const string& module,
 
    string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
-   okay = fetch_list_info( module, pclass_id, user_info, sess_info, false, 0, key_info, pfield, filters,
+   okay = fetch_list_info( module, mod_info, pclass_id, user_info, sess_info, false, 0, key_info, pfield, filters,
     "", "", socket, parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
 
    if( sort_manually )
@@ -1475,7 +1482,7 @@ bool populate_list_info( list_source& list,
 
    list.print_limited = false;
 
-   if( !fetch_list_info( list.module_id, class_info, user_info, sess_info,
+   if( !fetch_list_info( list.module_id, mod_info, class_info, user_info, sess_info,
     is_reverse, row_limit, key_info, is_printable ? list.pfield_list : list.field_list,
     filters, search_text, search_query, socket, list.row_data, "", &prev, p_perms,
     p_security_info, 0, 0, p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
@@ -1514,7 +1521,7 @@ bool populate_list_info( list_source& list,
 
       string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
-      if( redo_fetch && !fetch_list_info( list.module_id,
+      if( redo_fetch && !fetch_list_info( list.module_id, mod_info,
        class_info, user_info, sess_info, is_reverse, row_limit, key_info,
        list.field_list, filters, search_text, search_query, socket, list.row_data, "", &prev, p_perms ) )
          okay = false;
@@ -1632,7 +1639,8 @@ bool populate_list_info( list_source& list,
             {
                data_container new_record_list;
 
-               if( !fetch_parent_row_data( list.module_id, "", "", ( list.lici->second )->nclass,
+               if( !fetch_parent_row_data( list.module_id,
+                 mod_info, "", "", ( list.lici->second )->nclass,
                 ( list.lici->second )->nfield, ( list.lici->second )->nextra, sess_info, "",
                 new_record_list, socket, 0, 0, 0, &list.new_record_list_has_view_id ) )
                   okay = false;
@@ -1705,7 +1713,7 @@ bool populate_list_info( list_source& list,
                   }
 
                   if( !fetch_parent_row_data( list.module_id,
-                   "", ( list.lici->second )->parents[ i ].field,
+                   mod_info, "", ( list.lici->second )->parents[ i ].field,
                    ( list.lici->second )->parents[ i ].pclass, ( list.lici->second )->parents[ i ].pfield,
                    ( list.lici->second )->parents[ i ].pextra, sess_info, parent_key, parent_row_data,
                    socket, 0, 0, &skey_values, 0, &( list.lici->second )->parents[ i ].exclude_keys,
@@ -1747,7 +1755,7 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
 
    string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
-   if( !fetch_list_info( mod_info.id, mod_info.user_qlink_class_id, user_info, sess_info, false,
+   if( !fetch_list_info( mod_info.id, mod_info, mod_info.user_qlink_class_id, user_info, sess_info, false,
     sess_info.quick_link_limit, key_info, field_list, "", "", "", *sess_info.p_socket, sess_info.quick_link_data, "" ) )
       throw runtime_error( "unexpected error occurred processing quick link info" );
 
@@ -2090,7 +2098,9 @@ void save_record( const string& module_id,
             string key_info( fld.pfield.substr( pos + 1 ) );
             key_info += "#1 " + next;
 
-            if( !fetch_item_info( view.module_id,
+            const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
+
+            if( !fetch_item_info( view.module_id, mod_info,
              fld.pclass, key_info, "", "", sess_info, item_info, "" ) )
                throw runtime_error( "Unexpected error occurred processing save." );
 
