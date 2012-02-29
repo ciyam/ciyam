@@ -46,13 +46,13 @@ bool perform_action( const std::string& module_name,
  const std::string& extra, row_error_container& row_errors, tcp_socket& socket,
  const std::string& user_key, const std::string& tz_abbr, int gmt_offset );
 
-bool fetch_item_info( const std::string& module,
+bool fetch_item_info( const std::string& module, const module_info& mod_info,
  const std::string& class_id, const std::string& item_key, const std::string& field_list,
  const std::string& set_field_values, const session_info& sess_info, std::pair< std::string, std::string >& item_info,
  const std::string& uinfo, const std::string* p_owner = 0, const std::string* p_pdf_spec_name = 0,
  const std::string* p_pdf_title = 0, const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0 );
 
-bool fetch_list_info( const std::string& module,
+bool fetch_list_info( const std::string& module, const module_info& mod_info,
  const std::string& class_id, const std::string& uinfo, const session_info& sess_info,
  bool is_reverse, int row_limit, const std::string& key_info, const std::string& field_list,
  const std::string& filters, const std::string& search_text, const std::string& search_query,
@@ -61,7 +61,7 @@ bool fetch_list_info( const std::string& module,
  const std::set< std::string >* p_exclude_keys = 0, const std::string* p_pdf_spec_name = 0,
  const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0 );
 
-bool fetch_parent_row_data( const std::string& module,
+bool fetch_parent_row_data( const std::string& module, const module_info& mod_info,
  const std::string& record_key, const std::string& field_id, const std::string& pclass_id,
  const std::string& parent_field, const std::string& parent_extras, const session_info& sess_info,
  const std::string& parent_key, data_container& parent_row_data, tcp_socket& socket,

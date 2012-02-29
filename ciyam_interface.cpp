@@ -1010,8 +1010,8 @@ void request_handler::process_request( )
                      bool login_okay = false;
                      pair< string, string > user_info;
 
-                     if( !fetch_item_info( module_id, mod_info.user_class_id,
-                      key_info, field_list, "", *p_session_info, user_info, "" ) )
+                     if( !fetch_item_info( module_id, mod_info,
+                      mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info, "" ) )
                         throw runtime_error( "unexpected error occurred checking activation" );
 
                      if( user_info.first.empty( ) )
@@ -1096,8 +1096,8 @@ void request_handler::process_request( )
                   bool login_okay = false;
                   pair< string, string > user_info;
 
-                  if( !fetch_item_info( module_id, mod_info.user_class_id,
-                   key_info, field_list, "", *p_session_info, user_info, "" ) )
+                  if( !fetch_item_info( module_id, mod_info,
+                   mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info, "" ) )
                      throw runtime_error( "unexpected error occurred processing login" );
 
                   if( user_info.first.empty( ) )
@@ -1255,7 +1255,8 @@ void request_handler::process_request( )
                         field_list += ",";
                      field_list += mod_info.user_select_pfield;
 
-                     if( !fetch_list_info( module_id, class_id, "", *p_session_info, false, 0, key_info,
+                     if( !fetch_list_info( module_id,
+                      mod_info, class_id, "", *p_session_info, false, 0, key_info,
                       field_list, "", "", "", *p_session_info->p_socket, p_session_info->select_data, "" ) )
                         throw runtime_error( "unexpected error occurred processing select info" );
 
@@ -2205,7 +2206,7 @@ void request_handler::process_request( )
 
             string user_info( p_session_info->user_key + ":" + p_session_info->user_id );
 
-            if( !fetch_item_info( view.module_id, view.cid, item_key,
+            if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
              view.field_list, set_field_values, *p_session_info, item_info, user_info ) )
                had_send_or_recv_error = true;
             else
@@ -2556,7 +2557,7 @@ void request_handler::process_request( )
                            // parent query information then simply copy this data rather than re-query.
                            if( previous_parents.count( info ) )
                               parent_row_data = view.parent_lists[ previous_parents[ info ] ];
-                           else if( !fetch_parent_row_data( view.module_id, data,
+                           else if( !fetch_parent_row_data( view.module_id, mod_info, data,
                             fld.field, fld.pclass, pfield, fld.pextra, *p_session_info, parent_key,
                             parent_row_data, *p_session_info->p_socket, &view.key_values, &view.fkey_values ) )
                            {
@@ -2822,7 +2823,7 @@ void request_handler::process_request( )
 
                   string pdf_title = get_view_or_list_header( qlink, view.name, mod_info, *p_session_info );
 
-                  fetch_item_info( view.module_id,
+                  fetch_item_info( view.module_id, mod_info,
                    view.cid, item_key, view.field_list, set_field_values,
                    *p_session_info, item_info, user_info, &owner,
                    &view.pdf_spec_name, &pdf_title, &filename_value, &pdf_view_file_name );
