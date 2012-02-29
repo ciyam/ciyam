@@ -455,7 +455,7 @@ void perform_test_step( const test_step& s, const string& test_name )
    }
 
    if( is_async )
-      msleep( 250 );
+      msleep( 300 );
 
    if( !test_output_file_name.empty( ) )
    {
