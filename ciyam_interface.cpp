@@ -1414,7 +1414,8 @@ void request_handler::process_request( )
                // succeed with a new (possibly random) uselextra value.
                checksum_values = session_id + uselextra;
 
-               if( uselextra == p_session_info->last_uselextra && uselect != p_session_info->user_other )
+               if( !uselect.empty( )
+                && uselextra == p_session_info->last_uselextra && uselect != p_session_info->user_other )
                   checksum_values += "invalid";
             }
             else
