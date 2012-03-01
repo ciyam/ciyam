@@ -578,6 +578,21 @@ int main( int argc, char* argv[ ] )
    {
       test_sio_reader_writer( test_set_file_name );
 
+      string::size_type pos = test_set_file_name.find( '.' );
+      string init_script( "init_" + test_set_file_name.substr( 0, pos ) );
+
+#ifdef _WIN32
+      init_script += ".bat";
+#endif
+
+      if( file_exists( init_script ) )
+      {
+#ifndef _WIN32
+         init_script = "./" + init_script;
+#endif
+         system( init_script.c_str( ) );
+      }
+
       ifstream inpf( test_set_file_name.c_str( ) );
       if( !inpf )
       {
