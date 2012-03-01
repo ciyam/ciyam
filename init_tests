@@ -1,3 +1,6 @@
+if [ ! -f packages.lst ]; then
+ echo Standard>packages.lst
+fi
 if [ ! -f ciyam_class.cpp.xrep ]; then
  ./construct @packages.lst ciyam_class.cpp.xrep
 fi
