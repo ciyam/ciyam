@@ -1,0 +1,3 @@
+if [ ! -f ciyam_class.cpp.xrep ]; then
+ ./construct @packages.lst ciyam_class.cpp.xrep
+fi
