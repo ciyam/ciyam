@@ -40,7 +40,7 @@ class sio_reader
    };
 
    public:
-   sio_reader( std::istream& is );
+   sio_reader( std::istream& is, bool include_comments = false );
 
    operator bool_test*( ) const;
 
@@ -49,6 +49,8 @@ class sio_reader
 
    std::string read_attribute( const std::string& name );
    std::string read_opt_attribute( const std::string& name, const std::string& default_value = "" );
+
+   bool has_read_comment( std::string& comment );
 
    bool has_started_section( std::string& name );
    bool has_started_section( const std::string& name );
@@ -83,6 +85,8 @@ class sio_reader
 
    std::istream& is;
 
+   bool include_comments;
+
    size_t line_num;
    std::string line;
    std::stack< std::string > sections;
@@ -105,6 +109,8 @@ class sio_writer
 
    public:
    sio_writer( std::ostream& os );
+
+   void write_comment( const std::string& comment );
 
    void start_section( const std::string& name );
    void finish_section( const std::string& name );

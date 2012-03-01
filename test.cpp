@@ -256,13 +256,17 @@ void test_sio_reader_writer( const string& file_name )
    if( !inpf )
       throw runtime_error( "unable to open file '" + file_name + "' for input" );
 
-   sio_reader reader( inpf );
+   sio_reader reader( inpf, true );
 
    ostringstream osstr;
    sio_writer writer( osstr );
 
+   string comment;
    while( reader )
    {
+      while( reader.has_read_comment( comment ) )
+         writer.write_comment( comment );
+
       string name, value;
       while( reader.has_started_section( name ) )
       {
@@ -270,11 +274,17 @@ void test_sio_reader_writer( const string& file_name )
          name.erase( );
       }
 
+      while( reader.has_read_comment( comment ) )
+         writer.write_comment( comment );
+
       while( reader.has_read_attribute( name, value ) )
       {
          writer.write_attribute( name, value );
          name.erase( );
       }
+
+      while( reader.has_read_comment( comment ) )
+         writer.write_comment( comment );
 
       while( reader.has_finished_section( name ) )
       {
