@@ -48,6 +48,8 @@ namespace
  </section>
 </sio>
 
+It should be noted that comments are not permitted before <sio/> or after </sio> (but can occur anywhere else).
+
 */
 
 const char c_basic_prefix = '<';
@@ -75,12 +77,13 @@ void write_section_attributes( sio_writer& writer, const section_node& node )
 
 }
 
-sio_reader::sio_reader( istream& is )
+sio_reader::sio_reader( istream& is, bool include_comments )
  :
  is( is ),
  line_num( 0 ),
  start_pos( 0 ),
- finish_pos( 0 )
+ finish_pos( 0 ),
+ include_comments( include_comments )
 {
    if( !is.good( ) )
       throw runtime_error( "input stream is bad" );
@@ -130,6 +133,19 @@ string sio_reader::read_opt_attribute( const string& name, const string& default
       str = default_value;
 
    return str;
+}
+
+bool sio_reader::has_read_comment( string& comment )
+{
+   string::size_type pos = line.find_first_not_of( " \t" );
+   if( pos != string::npos && line[ pos ] == '#' ) // i.e. is a comment
+   {
+      comment = line;
+      read_line( );
+      return true;
+   }
+   else
+      return false;
 }
 
 bool sio_reader::has_started_section( string& name )
@@ -238,7 +254,7 @@ void sio_reader::read_line( )
       }
 
       string::size_type pos = line.find_first_not_of( " \t" );
-      if( is.eof( ) || ( pos != string::npos && line[ pos ] != '#' ) ) // i.e. continue if is a comment
+      if( is.eof( ) || include_comments || ( pos != string::npos && line[ pos ] != '#' ) ) // i.e. continue if is a comment
          break;
    }
 }
@@ -389,6 +405,20 @@ sio_writer::sio_writer( ostream& os, const sio_graph& graph )
    start_section( c_root_section );
    write_section_attributes( *this, graph.get_root_node( ) );
    finish_sections( );
+}
+
+void sio_writer::write_comment( const std::string& comment )
+{
+   string s( comment );
+
+   string::size_type pos = s.find_first_not_of( " \t" );
+   if( pos != string::npos && s[ pos ] != '#' )
+      s = '#' + s;
+
+   os << s << '\n';
+
+   if( !os.good( ) )
+      throw runtime_error( "output stream is bad" );
 }
 
 void sio_writer::start_section( const string& name )
