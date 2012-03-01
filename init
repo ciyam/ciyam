@@ -8,6 +8,7 @@ else
  fi
  rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
  ./ciyam_server -quiet &
+ sleep 0.3
  ./ciyam_client -quiet -no_prompt < init.cin
  touch ciyam_server.stop
 fi
