@@ -457,7 +457,14 @@ void Meta_Package_Type::impl::impl_Install( )
 #endif
       cmd += package_file;
 
+      // NOTE: If is project's own environment then don't extract other files as they
+      // would be expected to already be in the source repository and therefore could
+      // cause issues with source control software.
+      if( storage_name( ) == "ciyam" )
+         cmd += " package.info";
+
       exec_system( cmd, false );
+
       if( !exists_file( info_filename ) )
          throw runtime_error( "Missing package information file (corrupt or incorrect bundle?)." );
    }
