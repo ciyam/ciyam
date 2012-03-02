@@ -1366,6 +1366,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                }
 
+               if( !set_value_items.empty( ) )
+                  instance_set_variable( handle, context, "@skip_after_fetch", "1" );
+
                if( instance_iterate( handle, context,
                 key_info, normal_fields, search_text, search_query, security_info,
                 is_reverse ? e_iter_direction_backwards : e_iter_direction_forwards,
