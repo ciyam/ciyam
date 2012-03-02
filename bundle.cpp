@@ -261,13 +261,13 @@ void output_directory( set< string >& file_names,
 }
 
 #ifndef ZLIB_SUPPORT
-void process_directory( const string& directory,
- const string& filespec_path, const vector< string >& filename_filters,
+void process_directory( const string& directory, const string& filespec_path,
+ const vector< string >& filename_filters, const vector< string >* p_filename_exclusions,
  set< string >& matched_filters, set< string >& file_names, bool recurse,
  bool prune, bool is_quieter, bool is_append, encoding_type encoding, ofstream& outf )
 #else
-void process_directory( const string& directory,
- const string& filespec_path, const vector< string >& filename_filters,
+void process_directory( const string& directory, const string& filespec_path,
+ const vector< string >& filename_filters, const vector< string >* p_filename_exclusions,
  set< string >& matched_filters, set< string >& file_names, bool recurse, bool prune,
  bool is_quieter, bool is_append, encoding_type encoding, ofstream& outf, bool use_zlib, gzFile& gzf )
 #endif
@@ -339,6 +339,34 @@ void process_directory( const string& directory,
 
          if( file_names.count( ffsi.get_name( ) ) )
             matched = false;
+
+         if( p_filename_exclusions )
+         {
+            for( int j = 0; j < p_filename_exclusions->size( ); j++ )
+            {
+               string next_filter( ( *p_filename_exclusions )[ j ] );
+
+               string::size_type pos = next_filter.find_last_of( '/' );
+               if( pos != string::npos )
+               {
+                  if( g_cwd != filespec_path )
+                     continue;
+
+                  string sub_path( directory + "/" + next_filter.substr( 0, pos ) );
+
+                  if( path_name.find( sub_path ) != 0 )
+                     continue;
+
+                  next_filter.erase( 0, pos + 1 );
+               }
+
+               if( wildcard_match( next_filter, ffsi.get_name( ) ) )
+               {
+                  matched = false;
+                  break;
+               }
+            }
+         }
 
          if( !matched )
             continue;
@@ -622,15 +650,15 @@ int main( int argc, char* argv[ ] )
 #endif
 
    if( !is_quiet )
-      cout << "bundle v0.1c\n";
+      cout << "bundle v0.1d\n";
 
    if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
 #ifndef ZLIB_SUPPORT
-      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
 #else
-      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] [-ngz] <name> [<filespec1> [<filespec2> [...]]]" << endl;
+      cout << "usage: bundle [-0|-1|-9] [-d]|[-r [-p]] [-q[q]] [-b64|-esc] [-ngz] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]]" << endl;
 #endif
 
       cout << "\nwhere: -0/-1/-9 is used for setting zero/fastest/best compression level" << endl;
@@ -641,6 +669,7 @@ int main( int argc, char* argv[ ] )
 #ifdef ZLIB_SUPPORT
       cout << "  and: -ngz in order to not preform zlib compression" << endl;
 #endif
+      cout << " also: -x identifies one or more filespecs that are to be excluded" << endl;
       return 0;
    }
 
@@ -660,6 +689,7 @@ int main( int argc, char* argv[ ] )
          throw runtime_error( "cannot created a bundle in the root directory" );
 
       map< string, vector< string > > all_filespecs;
+      map< string, vector< string > > all_exclude_filespecs;
 
       string filename( argv[ first_arg + 1 ] );
 
@@ -671,39 +701,60 @@ int main( int argc, char* argv[ ] )
       if( use_zlib )
          filename += c_zlib_extension;
 
+      bool get_exclude_filespecs = false;
       string directory = g_cwd.substr( pos + 1 );
+
       if( !is_delete )
       {
          for( int i = first_arg + 2; i < argc; i++ )
          {
-            string filespec_path;
-            if( !absolute_path( argv[ i ], filespec_path ) )
-               throw runtime_error( "unable to determine absolute path for '" + string( argv[ i ] ) + "'" );
+            string next( argv[ i ] );
 
-            if( is_root_path( filespec_path ) )
-               throw runtime_error( "cannot bundle directory '" + string( argv[ i ] ) + "' (need to specify a non-root directory)" );
+            if( !next.empty( ) && next[ 0 ] == '-' )
+            {
+               if( next == "-x" && !get_exclude_filespecs )
+               {
+                  next.erase( );
+                  get_exclude_filespecs = true;
+               }
+               else
+                  throw runtime_error( "unknown or bad option '" + next + "' use -? to see options" );
+            }
+
+            if( !next.empty( ) )
+            {
+               string filespec_path;
+               if( !absolute_path( next, filespec_path ) )
+                  throw runtime_error( "unable to determine absolute path for '" + next + "'" );
+
+               if( is_root_path( filespec_path ) )
+                  throw runtime_error( "cannot bundle directory '" + next + "' (need to specify a non-root directory)" );
 
 #ifndef _WIN32
-            string::size_type rpos = filespec_path.find_last_of( "/" );
+               string::size_type rpos = filespec_path.find_last_of( "/" );
 #else
-            string::size_type rpos = filespec_path.find_last_of( "/\\" );
+               string::size_type rpos = filespec_path.find_last_of( "/\\" );
 #endif
 
-            string filename_filter;
-            if( rpos != string::npos )
-            {
-               filename_filter = filespec_path.substr( rpos + 1 );
-               filespec_path.erase( rpos );
-            }
+               string filename_filter;
+               if( rpos != string::npos )
+               {
+                  filename_filter = filespec_path.substr( rpos + 1 );
+                  filespec_path.erase( rpos );
+               }
 
-            if( recurse == true
-             && filespec_path.length( ) > g_cwd.length( ) && filespec_path.find( g_cwd ) == 0 )
-            {
-               filename_filter = filespec_path.substr( g_cwd.length( ) + 1 ) + "/" + filename_filter;
-               filespec_path = g_cwd;
-            }
+               if( recurse == true
+                && filespec_path.length( ) > g_cwd.length( ) && filespec_path.find( g_cwd ) == 0 )
+               {
+                  filename_filter = filespec_path.substr( g_cwd.length( ) + 1 ) + "/" + filename_filter;
+                  filespec_path = g_cwd;
+               }
 
-            all_filespecs[ filespec_path ].push_back( filename_filter );
+               if( !get_exclude_filespecs )
+                  all_filespecs[ filespec_path ].push_back( filename_filter );
+               else
+                  all_exclude_filespecs[ filespec_path ].push_back( filename_filter );
+            }
          }
 
          if( all_filespecs.empty( ) )
@@ -793,11 +844,15 @@ int main( int argc, char* argv[ ] )
                string filespec_path( i->first );
                vector< string >& filename_filters( i->second );
 
+               vector< string >* p_filename_exclusions = 0;
+               if( all_exclude_filespecs.count( i->first ) )
+                  p_filename_exclusions = &all_exclude_filespecs[ i->first ];
+
 #ifndef ZLIB_SUPPORT
-               process_directory( directory, filespec_path, filename_filters,
+               process_directory( directory, filespec_path, filename_filters, p_filename_exclusions,
                 matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf );
 #else
-               process_directory( directory, filespec_path, filename_filters,
+               process_directory( directory, filespec_path, filename_filters, p_filename_exclusions,
                 matched_filters, file_names, recurse, prune, is_quieter, is_append, encoding, outf, use_zlib, gzf );
 #endif
                if( !is_quieter )

@@ -297,17 +297,18 @@ int main( int argc, char* argv[ ] )
    }
 
    if( !is_quiet )
-      cout << "unbundle v0.1c\n";
+      cout << "unbundle v0.1d\n";
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
-      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] <filename> [<filespec1> [<filespec2> [...]]] [-d <directory>]" << endl;
+      cout << "usage: unbundle [-i|-j] [-l] [-o] [-p] [-q[q]] <fname> [<fspec1> [<fspec2> [...]]] [-x <fspec1> [...]] [-d <directory>]" << endl;
 
       cout << "\nwhere: -i to include top level directory and -j to junk all directories" << endl;
       cout << "  and: -l to list rather than create all matching files and directories" << endl;
       cout << "  and: -o to overwrite existing files and -p to prune empty directories" << endl;
       cout << "  and: -q for quiet mode (-qq to suppress all output apart from errors)" << endl;
+      cout << "  and: -x identifies one or more filespecs that are to be excluded" << endl;
       cout << " also: -d <directory> to set a directory origin for output" << endl;
       return 0;
    }
@@ -364,10 +365,13 @@ int main( int argc, char* argv[ ] )
       if( !is_quiet && !list_only )
          cout << "==> started unbundling '" << filename << "'\n";
 
+      bool get_exclude_filespecs = false;
+
       string destination_directory;
       bool get_destination_directory = false;
 
       vector< string > filename_filters;
+      vector< string > exclude_filename_filters;
       for( int i = first_arg + 2; i < argc; i++ )
       {
          string next( argv[ i ] );
@@ -379,8 +383,13 @@ int main( int argc, char* argv[ ] )
                next.erase( );
                get_destination_directory = true;
             }
+            else if( next == "-x" && !get_exclude_filespecs )
+            {
+               next.erase( );
+               get_exclude_filespecs = true;
+            }
             else
-               throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
+               throw runtime_error( "unknown or bad option '" + next + "' use -? to see options" );
          }
 
          if( !next.empty( ) )
@@ -398,6 +407,8 @@ int main( int argc, char* argv[ ] )
                   destination_directory += '/';
 #endif
             }
+            else if( get_exclude_filespecs )
+               exclude_filename_filters.push_back( next );
             else
                filename_filters.push_back( next );
          }
@@ -703,6 +714,33 @@ int main( int argc, char* argv[ ] )
                      matched = true;
                      matched_filters.insert( filename_filters[ i ] );
 
+                     break;
+                  }
+               }
+            }
+
+            if( !exclude_filename_filters.empty( ) )
+            {
+               for( size_t i = 0; i < exclude_filename_filters.size( ); i++ )
+               {
+                  string wildcard( exclude_filename_filters[ i ] );
+
+                  string::size_type pos = wildcard.find( "/" );
+                  if( pos == string::npos )
+                  {
+                     pos = test_file.find_last_of( "/" );
+                     if( pos != string::npos )
+                        test_file.erase( 0, pos + 1 );
+                  }
+                  else if( junk )
+                  {
+                     if( wildcard.find( top_level_directory + "/" ) != 0 )
+                        wildcard = top_level_directory + "/" + wildcard;
+                  }
+
+                  if( wildcard_match( wildcard, test_file ) )
+                  {
+                     matched = false;
                      break;
                   }
                }
