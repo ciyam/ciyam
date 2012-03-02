@@ -724,8 +724,9 @@ void class_base::prepare( bool for_create )
    restorable< bool > tmp_is_preparing( is_preparing, true );
 
    // NOTE: As "prepare" is expected to be called after field values have been set
-   // a (possibly second) call to "perform_after_fetch" is occurring here in order
-   // to make sure that any transient values determined include those set values.
+   // the call to "perform_after_fetch" is occurring here (rather than immediately
+   // after the physical fetch) in order to make sure that transient values can be
+   // determined correctly.
    perform_after_fetch( false, true );
 
    to_store( is_create || for_create, false );

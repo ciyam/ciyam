@@ -1278,7 +1278,7 @@ void perform_storage_op( storage_op op,
 }
 
 bool fetch_instance_from_db( class_base& instance,
- const map< int, int >& fields, const vector< int >& columns )
+ const map< int, int >& fields, const vector< int >& columns, bool skip_after_fetch )
 {
    class_base_accessor instance_accessor( instance );
    sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
@@ -1291,7 +1291,8 @@ bool fetch_instance_from_db( class_base& instance,
       delete instance_accessor.p_sql_dataset( );
       instance_accessor.p_sql_dataset( ) = 0;
 
-      instance_accessor.perform_after_fetch( );
+      if( !skip_after_fetch )
+         instance_accessor.perform_after_fetch( );
    }
    else
    {
@@ -1311,7 +1312,8 @@ bool fetch_instance_from_db( class_base& instance,
          instance.set_field_value( fnum, ds.as_string( i ) );
       }
 
-      instance_accessor.perform_after_fetch( );
+      if( !skip_after_fetch )
+         instance_accessor.perform_after_fetch( );
    }
 
    return found;
@@ -3061,7 +3063,7 @@ void export_data( ostream& outs,
    destroy_object_instance( handle );
 }
 
-void fetch_instance_from_row_cache( class_base& instance )
+void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch )
 {
    class_base_accessor instance_accessor( instance );
 
@@ -3091,7 +3093,8 @@ void fetch_instance_from_row_cache( class_base& instance )
 
    instance_accessor.row_cache( ).pop_front( );
 
-   instance_accessor.perform_after_fetch( );
+   if( !skip_after_fetch )
+      instance_accessor.perform_after_fetch( );
 }
 
 }
@@ -8492,6 +8495,12 @@ bool perform_instance_iterate( class_base& instance,
          setup_select_columns( instance, field_info );
       }
 
+      bool skip_after_fetch = false;
+      string skip_after_fetch_var( instance.get_variable( "@skip_after_fetch" ) );
+
+      if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+         skip_after_fetch = true;
+
       if( row_limit < 0 )
          found = true;
       else
@@ -8502,7 +8511,7 @@ bool perform_instance_iterate( class_base& instance,
             instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
 
          found = fetch_instance_from_db( instance,
-          instance_accessor.select_fields( ), instance_accessor.select_columns( ) );
+          instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
 
          ++gtp_session->sql_count;
 
@@ -8556,7 +8565,7 @@ bool perform_instance_iterate( class_base& instance,
          instance_accessor.row_cache( ) = rows;
 
          if( key_info == c_nul_key )
-            fetch_instance_from_row_cache( instance );
+            fetch_instance_from_row_cache( instance, skip_after_fetch );
 
          if( query_finished )
          {
@@ -8604,7 +8613,14 @@ bool perform_instance_iterate_next( class_base& instance )
       else
       {
          found = true;
-         fetch_instance_from_row_cache( instance );
+
+         bool skip_after_fetch = false;
+         string skip_after_fetch_var( instance.get_variable( "@skip_after_fetch" ) );
+
+         if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+            skip_after_fetch = true;
+
+         fetch_instance_from_row_cache( instance, skip_after_fetch );
       }
    }
 
