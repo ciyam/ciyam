@@ -1,0 +1,6 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_destroy)]
+   get_obj( ).op_destroy( );
+   get_obj( ).op_apply( );
+   // [(start for_destroy)]
+`}
