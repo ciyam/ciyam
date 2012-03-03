@@ -33,7 +33,11 @@
 `}\
       }
 
+`{`@eq`(`$arg_otfield`,`'`'`)\
       if( allow_ignore )
+`,\
+      if( allow_ignore && `{`@eq`(`$arg_otest_neq`,`'true`'`)!`}get_obj( ).`{`$arg_otfield`}( ) )
+`}\
          state |= c_state_ignore_uneditable;
    }
    // [(start check_user_ignore_uneditable)]
