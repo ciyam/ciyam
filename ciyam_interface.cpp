@@ -1063,61 +1063,10 @@ void request_handler::process_request( )
                      }
                   }
 
-                  string field_list( mod_info.user_uid_field_id );
-                  field_list += "," + mod_info.user_pwd_field_id;
-
-                  if( !mod_info.user_perm_field_id.empty( ) )
-                     field_list += "," + mod_info.user_perm_field_id;
-
-                  if( !mod_info.user_extra1_field_id.empty( ) )
-                     field_list += "," + mod_info.user_extra1_field_id;
-
-                  if( !mod_info.user_extra2_field_id.empty( ) )
-                     field_list += "," + mod_info.user_extra2_field_id;
-
-                  if( !mod_info.user_group_field_id.empty( ) )
-                     field_list += "," + mod_info.user_group_field_id;
-
-                  if( !mod_info.user_other_field_id.empty( ) )
-                     field_list += "," + mod_info.user_other_field_id;
-
-                  if( !mod_info.user_parent_field_id.empty( ) )
-                     field_list += "," + mod_info.user_parent_field_id;
-
-                  if( !mod_info.user_active_field_id.empty( ) )
-                     field_list += "," + mod_info.user_active_field_id;
-
-                  if( !mod_info.user_security_level_id.empty( ) )
-                     field_list += "," + mod_info.user_security_level_id;
-
-                  string key_info( mod_info.user_uid_field_id );
-                  key_info += " " + username;
-
-                  bool login_okay = false;
-                  pair< string, string > user_info;
-
-                  if( !fetch_item_info( module_id, mod_info,
-                   mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info, "" ) )
-                     throw runtime_error( "unexpected error occurred processing login" );
-
-                  if( user_info.first.empty( ) )
-                     throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
-
-                  p_session_info->user_id = username;
-
-                  string::size_type pos = user_info.first.find( " " );
-                  p_session_info->user_key = user_info.first.substr( 0, pos );
-
-                  vector< string > user_data;
-                  split( user_info.second, user_data );
-
-                  if( user_data.size( ) < 2 )
-                     throw runtime_error( "unexpected missing user information" );
-
 #ifdef USE_UUID_FOR_LOGIN
                   // NOTE: In order to help prevent a login replay attack a UUID that was
                   // passed to the client must be appended to the password after an '@'.
-                  pos = password.find( '@' );
+                  string::size_type pos = password.find( '@' );
                   if( pos == string::npos )
                      password.erase( );
                   else
@@ -1131,80 +1080,8 @@ void request_handler::process_request( )
                   }
 #endif
 
-                  string user_password( user_data[ 1 ] );
-                  // NOTE: Password fields that are < 20 characters are assumed to have not been
-                  // either hashed or encrypted.
-                  if( user_password.length( ) < 20 )
-                  {
-                     p_session_info->clear_password = user_password;
-                     user_password = lower( sha1( g_id + user_password ).get_digest_as_string( ) );
-                  }
-                  else
-                     user_password = password_decrypt( user_password, get_server_id( ) );
-
-                  if( user_data[ 0 ] != username || ( !is_authorised && user_password != password ) )
-                     throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
-
-                  size_t offset = 2;
-
-                  p_session_info->user_perms.clear( );
-                  if( !mod_info.user_perm_field_id.empty( ) )
-                  {
-                     string user_perm_info( user_data[ offset++ ] );
-                     vector< string > user_perms;
-
-                     if( !user_perm_info.empty( ) )
-                        split( user_perm_info, user_perms );
-
-                     for( size_t i = 0; i < user_perms.size( ); i++ )
-                     {
-                        string::size_type pos = user_perms[ i ].find( '=' );
-                        string key( user_perms[ i ].substr( 0, pos ) );
-                        string data;
-
-                        if( pos != string::npos )
-                           data = user_perms[ i ].substr( pos + 1 );
-
-                        p_session_info->user_perms.insert( make_pair( key, data ) );
-                     }
-                  }
-
-                  // NOTE: If the module requires a user permission then make sure that the user has it.
-                  if( !mod_info.perm.empty( ) && !p_session_info->user_perms.count( mod_info.perm ) )
-                     throw runtime_error( GDS( c_display_permission_denied ) );
-
-                  if( !mod_info.user_extra1_field_id.empty( ) )
-                     p_session_info->user_extra1 = user_data[ offset++ ];
-
-                  if( !mod_info.user_extra2_field_id.empty( ) )
-                     p_session_info->user_extra2 = user_data[ offset++ ];
-
-                  if( !mod_info.user_group_field_id.empty( ) )
-                     p_session_info->user_group = user_data[ offset++ ];
-
-                  if( !mod_info.user_other_field_id.empty( ) )
-                     p_session_info->user_other = user_data[ offset++ ];
-
-                  p_session_info->default_user_group = p_session_info->user_group;
-                  p_session_info->default_user_other = p_session_info->user_other;
-
-                  if( !mod_info.user_parent_field_id.empty( ) )
-                     p_session_info->user_parent = user_data[ offset++ ];
-
-                  if( p_session_info->user_key == c_admin_user_key )
-                     p_session_info->is_admin_user = true;
-
-                  p_session_info->user_module = module_name;
-
-                  bool is_active = true;
-                  if( !mod_info.user_active_field_id.empty( ) )
-                     is_active = ( user_data[ offset++ ] == c_true_value );
-
-                  if( !is_active )
-                     throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
-
-                  if( !mod_info.user_security_level_id.empty( ) )
-                     p_session_info->user_slevel = user_data[ offset++ ];
+                  fetch_user_record( g_id, module_id, module_name,
+                   mod_info, *p_session_info, is_authorised, true, username, password );
 
                   bool permit_multiple_logins = false;
                   bool permit_module_switching = false;
@@ -1576,6 +1453,29 @@ void request_handler::process_request( )
 
             if( input_data.count( show_opt ) )
                show_opts.insert( make_pair( show_opt, input_data[ show_opt ] ) );
+         }
+
+         // NOTE: As the user's record could be changed at any time (and especially
+         // to ensure a session cannot continue if its account is now de-activated)
+         // the user information is checked again here.
+         try
+         {
+            if( !has_just_logged_in
+             && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
+             || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
+               fetch_user_record( g_id, module_id, module_name, mod_info,
+                *p_session_info, is_authorised, false, p_session_info->user_id, "" );
+         }
+         catch( ... )
+         {
+            // NOTE: If an exception is thrown reading the user information then it is
+            // assumed that the user is no longer valid to be logged in (perhaps being
+            // due to de-activation or module permission changes). It makes sense that
+            // at this point the user would need to try and login again so the session
+            // is being killed in the same way as would occur for an invalid login.
+            p_session_info->logged_in = false;
+            created_session = true;
+            throw;
          }
 
          // NOTE: For a save or continue edit action it is expected that a field list and
@@ -3898,7 +3798,7 @@ void request_handler::process_request( )
        << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
 
       bool is_logged_in = false;
-      if(  !created_session && p_session_info && p_session_info->logged_in )
+      if( !created_session && p_session_info && p_session_info->logged_in )
       {
          is_logged_in = true;
 

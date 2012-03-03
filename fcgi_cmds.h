@@ -77,6 +77,10 @@ bool populate_list_info( list_source& list,
  const std::string& view_pfield, const std::set< std::string >* p_specials, const session_info& sess_info,
  const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0 );
 
+void fetch_user_record( const std::string& gid,
+ const std::string& module_id, const std::string& module_name, const module_info& mod_info,
+ session_info& sess_info, bool is_authorised, bool check_password, const std::string& username, const std::string& password );
+
 void fetch_user_quick_links( const module_info& mod_info, session_info& sess_info );
 
 void add_quick_link( const std::string& module_ref,

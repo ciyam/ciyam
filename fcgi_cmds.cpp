@@ -23,6 +23,7 @@
 
 #include "fcgi_cmds.h"
 
+#include "sha1.h"
 #include "format.h"
 #include "sockets.h"
 #include "date_time.h"
@@ -1731,6 +1732,140 @@ bool populate_list_info( list_source& list,
    }
 
    return okay;
+}
+
+void fetch_user_record( const string& gid,
+ const string& module_id, const string& module_name, const module_info& mod_info,
+ session_info& sess_info, bool is_authorised, bool check_password, const string& username, const string& password )
+{
+   string field_list( mod_info.user_uid_field_id );
+   field_list += "," + mod_info.user_pwd_field_id;
+
+   if( !mod_info.user_perm_field_id.empty( ) )
+      field_list += "," + mod_info.user_perm_field_id;
+
+   if( !mod_info.user_extra1_field_id.empty( ) )
+      field_list += "," + mod_info.user_extra1_field_id;
+
+   if( !mod_info.user_extra2_field_id.empty( ) )
+      field_list += "," + mod_info.user_extra2_field_id;
+
+   if( !mod_info.user_group_field_id.empty( ) )
+      field_list += "," + mod_info.user_group_field_id;
+
+   if( !mod_info.user_other_field_id.empty( ) )
+      field_list += "," + mod_info.user_other_field_id;
+
+   if( !mod_info.user_parent_field_id.empty( ) )
+      field_list += "," + mod_info.user_parent_field_id;
+
+   if( !mod_info.user_active_field_id.empty( ) )
+      field_list += "," + mod_info.user_active_field_id;
+
+   if( !mod_info.user_security_level_id.empty( ) )
+      field_list += "," + mod_info.user_security_level_id;
+
+   string key_info( mod_info.user_uid_field_id );
+   key_info += " " + username;
+
+   bool login_okay = false;
+   pair< string, string > user_info;
+
+   if( !fetch_item_info( module_id, mod_info,
+    mod_info.user_class_id, key_info, field_list, "", sess_info, user_info, "" ) )
+      throw runtime_error( "unexpected error occurred processing login" );
+
+   if( user_info.first.empty( ) )
+      throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
+   sess_info.user_id = username;
+
+   string::size_type pos = user_info.first.find( " " );
+   sess_info.user_key = user_info.first.substr( 0, pos );
+
+   vector< string > user_data;
+   split( user_info.second, user_data );
+
+   if( user_data.size( ) < 2 )
+      throw runtime_error( "unexpected missing user information" );
+
+   if( check_password )
+   {
+      string user_password( user_data[ 1 ] );
+      // NOTE: Password fields that are < 20 characters are assumed to have not been
+      // either hashed or encrypted.
+      if( user_password.length( ) < 20 )
+      {
+         sess_info.clear_password = user_password;
+         user_password = lower( sha1( gid + user_password ).get_digest_as_string( ) );
+      }
+      else
+         user_password = password_decrypt( user_password, get_server_id( ) );
+
+      if( user_data[ 0 ] != username || ( !is_authorised && user_password != password ) )
+         throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+   }
+
+   size_t offset = 2;
+
+   sess_info.user_perms.clear( );
+   if( !mod_info.user_perm_field_id.empty( ) )
+   {
+      string user_perm_info( user_data[ offset++ ] );
+      vector< string > user_perms;
+
+      if( !user_perm_info.empty( ) )
+         split( user_perm_info, user_perms );
+
+      for( size_t i = 0; i < user_perms.size( ); i++ )
+      {
+         string::size_type pos = user_perms[ i ].find( '=' );
+         string key( user_perms[ i ].substr( 0, pos ) );
+         string data;
+
+         if( pos != string::npos )
+            data = user_perms[ i ].substr( pos + 1 );
+
+         sess_info.user_perms.insert( make_pair( key, data ) );
+      }
+   }
+
+   // NOTE: If the module requires a user permission then make sure that the user has it.
+   if( !mod_info.perm.empty( ) && !sess_info.user_perms.count( mod_info.perm ) )
+      throw runtime_error( GDS( c_display_permission_denied ) );
+
+   if( !mod_info.user_extra1_field_id.empty( ) )
+      sess_info.user_extra1 = user_data[ offset++ ];
+
+   if( !mod_info.user_extra2_field_id.empty( ) )
+      sess_info.user_extra2 = user_data[ offset++ ];
+
+   if( !mod_info.user_group_field_id.empty( ) )
+      sess_info.user_group = user_data[ offset++ ];
+
+   if( !mod_info.user_other_field_id.empty( ) )
+      sess_info.user_other = user_data[ offset++ ];
+
+   sess_info.default_user_group = sess_info.user_group;
+   sess_info.default_user_other = sess_info.user_other;
+
+   if( !mod_info.user_parent_field_id.empty( ) )
+      sess_info.user_parent = user_data[ offset++ ];
+
+   if( sess_info.user_key == c_admin_user_key )
+      sess_info.is_admin_user = true;
+
+   sess_info.user_module = module_name;
+
+   bool is_active = true;
+   if( !mod_info.user_active_field_id.empty( ) )
+      is_active = ( user_data[ offset++ ] == c_true_value );
+
+   if( !is_active )
+      throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
+   if( !mod_info.user_security_level_id.empty( ) )
+      sess_info.user_slevel = user_data[ offset++ ];
 }
 
 void fetch_user_quick_links( const module_info& mod_info, session_info& sess_info )
