@@ -841,7 +841,7 @@ const int c_enum_list_field_trigger_option_skey6( 6 );
 const int c_enum_list_field_trigger_option_skey7( 7 );
 const int c_enum_list_field_trigger_option_skey8( 8 );
 const int c_enum_list_field_trigger_option_skey9( 9 );
-const int c_enum_list_field_trigger_option_skey10( 10 );
+const int c_enum_list_field_trigger_option_skey0( 10 );
 
 string get_enum_string_list_field_trigger_option( int val )
 {
@@ -870,7 +870,7 @@ string get_enum_string_list_field_trigger_option( int val )
    else if( to_string( val ) == to_string( "9" ) )
       string_name = "enum_list_field_trigger_option_skey9";
    else if( to_string( val ) == to_string( "10" ) )
-      string_name = "enum_list_field_trigger_option_skey10";
+      string_name = "enum_list_field_trigger_option_skey0";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_trigger_option" );
 

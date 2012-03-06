@@ -453,9 +453,10 @@ string get_enum_string_view_field_restrict( int val )
 
 const int c_enum_view_field_access_scope_all( 0 );
 const int c_enum_view_field_access_scope_create_only( 1 );
-const int c_enum_view_field_access_scope_update_only( 2 );
+const int c_enum_view_field_access_scope_post_create( 2 );
 const int c_enum_view_field_access_scope_editing_only( 3 );
 const int c_enum_view_field_access_scope_viewing_only( 4 );
+const int c_enum_view_field_access_scope_updating_only( 5 );
 
 string get_enum_string_view_field_access_scope( int val )
 {
@@ -468,11 +469,13 @@ string get_enum_string_view_field_access_scope( int val )
    else if( to_string( val ) == to_string( "1" ) )
       string_name = "enum_view_field_access_scope_create_only";
    else if( to_string( val ) == to_string( "2" ) )
-      string_name = "enum_view_field_access_scope_update_only";
+      string_name = "enum_view_field_access_scope_post_create";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_view_field_access_scope_editing_only";
    else if( to_string( val ) == to_string( "4" ) )
       string_name = "enum_view_field_access_scope_viewing_only";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_view_field_access_scope_updating_only";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_access_scope" );
 
@@ -536,7 +539,7 @@ const int c_enum_view_field_enum_at_key6( 6 );
 const int c_enum_view_field_enum_at_key7( 7 );
 const int c_enum_view_field_enum_at_key8( 8 );
 const int c_enum_view_field_enum_at_key9( 9 );
-const int c_enum_view_field_enum_at_key10( 10 );
+const int c_enum_view_field_enum_at_key0( 10 );
 const int c_enum_view_field_enum_at_fkey1( 11 );
 const int c_enum_view_field_enum_at_fkey2( 12 );
 const int c_enum_view_field_enum_at_fkey3( 13 );
@@ -546,7 +549,7 @@ const int c_enum_view_field_enum_at_fkey6( 16 );
 const int c_enum_view_field_enum_at_fkey7( 17 );
 const int c_enum_view_field_enum_at_fkey8( 18 );
 const int c_enum_view_field_enum_at_fkey9( 19 );
-const int c_enum_view_field_enum_at_fkey10( 20 );
+const int c_enum_view_field_enum_at_fkey0( 20 );
 
 string get_enum_string_view_field_enum_at( int val )
 {
@@ -575,7 +578,7 @@ string get_enum_string_view_field_enum_at( int val )
    else if( to_string( val ) == to_string( "9" ) )
       string_name = "enum_view_field_enum_at_key9";
    else if( to_string( val ) == to_string( "10" ) )
-      string_name = "enum_view_field_enum_at_key10";
+      string_name = "enum_view_field_enum_at_key0";
    else if( to_string( val ) == to_string( "11" ) )
       string_name = "enum_view_field_enum_at_fkey1";
    else if( to_string( val ) == to_string( "12" ) )
@@ -595,7 +598,7 @@ string get_enum_string_view_field_enum_at( int val )
    else if( to_string( val ) == to_string( "19" ) )
       string_name = "enum_view_field_enum_at_fkey9";
    else if( to_string( val ) == to_string( "20" ) )
-      string_name = "enum_view_field_enum_at_fkey10";
+      string_name = "enum_view_field_enum_at_fkey0";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_enum_at" );
 
@@ -637,7 +640,7 @@ const int c_enum_view_field_fk_trigger_option_fkey6( 6 );
 const int c_enum_view_field_fk_trigger_option_fkey7( 7 );
 const int c_enum_view_field_fk_trigger_option_fkey8( 8 );
 const int c_enum_view_field_fk_trigger_option_fkey9( 9 );
-const int c_enum_view_field_fk_trigger_option_fkey10( 10 );
+const int c_enum_view_field_fk_trigger_option_fkey0( 10 );
 
 string get_enum_string_view_field_fk_trigger_option( int val )
 {
@@ -666,7 +669,7 @@ string get_enum_string_view_field_fk_trigger_option( int val )
    else if( to_string( val ) == to_string( "9" ) )
       string_name = "enum_view_field_fk_trigger_option_fkey9";
    else if( to_string( val ) == to_string( "10" ) )
-      string_name = "enum_view_field_fk_trigger_option_fkey10";
+      string_name = "enum_view_field_fk_trigger_option_fkey0";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_fk_trigger_option" );
 
@@ -830,7 +833,7 @@ const int c_enum_view_field_trigger_option_key6( 6 );
 const int c_enum_view_field_trigger_option_key7( 7 );
 const int c_enum_view_field_trigger_option_key8( 8 );
 const int c_enum_view_field_trigger_option_key9( 9 );
-const int c_enum_view_field_trigger_option_key10( 10 );
+const int c_enum_view_field_trigger_option_key0( 10 );
 
 string get_enum_string_view_field_trigger_option( int val )
 {
@@ -859,7 +862,7 @@ string get_enum_string_view_field_trigger_option( int val )
    else if( to_string( val ) == to_string( "9" ) )
       string_name = "enum_view_field_trigger_option_key9";
    else if( to_string( val ) == to_string( "10" ) )
-      string_name = "enum_view_field_trigger_option_key10";
+      string_name = "enum_view_field_trigger_option_key0";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_trigger_option" );
 
@@ -5325,6 +5328,7 @@ void Meta_View_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_view_field_access_scope_2", get_enum_string_view_field_access_scope( 2 ) ) );
    pairs.push_back( make_pair( "enum_view_field_access_scope_3", get_enum_string_view_field_access_scope( 3 ) ) );
    pairs.push_back( make_pair( "enum_view_field_access_scope_4", get_enum_string_view_field_access_scope( 4 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_5", get_enum_string_view_field_access_scope( 5 ) ) );
 
    pairs.push_back( make_pair( "enum_view_field_change_scope_0", get_enum_string_view_field_change_scope( 0 ) ) );
    pairs.push_back( make_pair( "enum_view_field_change_scope_1", get_enum_string_view_field_change_scope( 1 ) ) );
@@ -5466,6 +5470,7 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
    g_view_field_access_scope_enum.insert( 2 );
    g_view_field_access_scope_enum.insert( 3 );
    g_view_field_access_scope_enum.insert( 4 );
+   g_view_field_access_scope_enum.insert( 5 );
    g_view_field_change_scope_enum.insert( 0 );
    g_view_field_change_scope_enum.insert( 1 );
    g_view_field_change_scope_enum.insert( 2 );

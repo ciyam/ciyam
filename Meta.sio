@@ -19840,7 +19840,7 @@
       <name>Protect_Class_From_Update
       <type>bool
       <mandatory>true
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>
@@ -26026,7 +26026,7 @@
      <field_info>127101;new_edit
      <field_info>127120;always_editable+force+enum=905
      <field_info>127105;no_edit
-     <field_info>127129;edit_only+always_editable
+     <field_info>127129;non_new+always_editable
      <field_info>127125;new_only
      <field_info>127128;new_only
      <field_info>@tab:Generate_Details
@@ -26390,12 +26390,12 @@
      <field_info>300620:106101!@fkey1:300600+106101;new_edit+force+link
      <field_info>106101;forced
      <field_info>106102;forced
-     <field_info>106104;no_edit+edit_only
+     <field_info>106104;no_edit+non_new
      <field_info>106107;show+enum=515
      <field_info>106103;enum=520
      <field_info>106120
      <field_info>106121
-     <field_info>300630:107101!@key:300700;edit_only
+     <field_info>300630:107101!@key:300700;non_new
      <field_info>106109
      <field_info>106108
      <field_info>106110
@@ -26589,7 +26589,7 @@
      <type>standard
      <class_id>103100
      <field_info>103101
-     <field_info>103104;no_edit+edit_only
+     <field_info>103104;no_edit+non_new
      <field_info>103102;new_edit+enum=500
     </data>
    </specification>
@@ -26862,7 +26862,7 @@
      <type>standard
      <class_id>107100
      <field_info>300700:106101;no_edit+link+filename+max_size=30
-     <field_info>107110;no_edit+edit_only
+     <field_info>107110;no_edit+non_new
      <field_info>300710:102101!@group:300200+102101;force+link
      <field_info>107101
      <field_info>107112;force
@@ -28141,7 +28141,7 @@
      <class_id>122100
      <field_info>301990:105101;no_edit+link+fkey1+filename+max_size=30
      <field_info>122101;no_edit
-     <field_info>122111;no_edit+edit_only
+     <field_info>122111;no_edit+non_new
      <field_info>301991:121101;force+max_size=30
      <field_info>301992:106101!@fkey1:300600+106101;new_edit+link+fkey2
      <field_info>301996:107101!@fkey2:300700+107108=1+107101;link
@@ -28325,7 +28325,7 @@
      <type>standard
      <class_id>105100
      <field_info>105101
-     <field_info>105104;no_edit+edit_only
+     <field_info>105104;no_edit+non_new
      <field_info>105114;view_only
      <field_info>105102
      <field_info>105103;show
@@ -28922,7 +28922,7 @@
      <type>standard
      <class_id>116100
      <field_info>116101
-     <field_info>116102;no_edit+edit_only
+     <field_info>116102;no_edit+non_new
     </data>
    </specification>
    <specification/>
@@ -29158,7 +29158,7 @@
      <class_id>111100
      <field_info>301100:106101;no_edit+link+filename+max_size=30
      <field_info>111101
-     <field_info>111103;no_edit+edit_only
+     <field_info>111103;no_edit+non_new
     </data>
    </specification>
    <specification/>
@@ -29311,7 +29311,7 @@
      <class_id>113100
      <field_info>301300:105101;no_edit+link+fkey1+filename+max_size=30
      <field_info>301310:106101!@fkey1:300600+106101;link+force+new_edit
-     <field_info>113106;no_edit+edit_only
+     <field_info>113106;no_edit+non_new
      <field_info>301320:106101!@fkey1:300600+106101;link+force+new_edit
      <field_info>113101;forced
      <field_info>113102
@@ -32115,7 +32115,7 @@
      <field_info>115110;force
      <field_info>301485:107101!@fkey2:300700+107101;link
      <field_info>301487:106101;hidden+fkey6+filename+max_size=30
-     <field_info>301486:107101!@fkey2:300700+107108=1+107101;link+force
+     <field_info>301486:107101!@fkey2:300700+107108=1+107101;link+force+forced
      <field_info>301488:107101!@fkey6:300700+107101;link
      <field_info>115103
      <field_info>301499:116101!@group:301500+116101
@@ -32463,7 +32463,7 @@
      <type>standard
      <class_id>102100
      <field_info>102101
-     <field_info>102111;no_edit+edit_only
+     <field_info>102111;no_edit+non_new
      <field_info>102102;no_edit+enum=500
      <field_info>102103
      <field_info>102104
@@ -33035,7 +33035,7 @@
      <class_id>118100
      <field_info>301800:105101;no_edit+link+fkey1+filename+max_size=30
      <field_info>118101;no_edit
-     <field_info>118105;no_edit+edit_only
+     <field_info>118105;no_edit+non_new
      <field_info>301810:117101;force+max_size=30
      <field_info>301820:106101!@fkey1:300600+106101;new_edit+link
      <field_info>118104
@@ -33134,11 +33134,11 @@
      <type>admin
      <class_id>101100
      <field_info>101101
-     <field_info>101102;no_edit+edit_only
-     <field_info>101105;no_edit+edit_only
-     <field_info>101104;no_edit+edit_only
-     <field_info>101103;no_edit+edit_only
-     <field_info>101106;no_edit+edit_only
+     <field_info>101102;no_edit+non_new
+     <field_info>101105;no_edit+non_new
+     <field_info>101104;no_edit+non_new
+     <field_info>101103;no_edit+non_new
+     <field_info>101106;no_edit+non_new
     </data>
    </specification>
   </specifications>
@@ -33339,7 +33339,7 @@
     <id>694
     <name>list_field_trigger_option
     <type>int
-    <key_values>0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey10
+    <key_values>0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
    </user_defined_enum>
    <user_defined_enum/>
     <id>682
@@ -33483,7 +33483,7 @@
     <id>661
     <name>view_field_access_scope
     <type>int
-    <key_values>0=all,1=create\_only,2=update\_only,3=editing\_only,4=viewing\_only
+    <key_values>0=all,1=create\_only,2=post\_create,3=editing\_only,4=viewing\_only,5=updating\_only
    </user_defined_enum>
    <user_defined_enum/>
     <id>662
@@ -33501,7 +33501,7 @@
     <id>674
     <name>view_field_enum_at
     <type>int
-    <key_values>0=normal,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key10,11=fkey1,12=fkey2,13=fkey3,14=fkey4,15=fkey5,16=fkey6,17=fkey7,18=fkey8,19=fkey9,20=fkey10
+    <key_values>0=normal,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key0,11=fkey1,12=fkey2,13=fkey3,14=fkey4,15=fkey5,16=fkey6,17=fkey7,18=fkey8,19=fkey9,20=fkey0
    </user_defined_enum>
    <user_defined_enum/>
     <id>679
@@ -33519,7 +33519,7 @@
     <id>675
     <name>view_field_fk_trigger_option
     <type>int
-    <key_values>0=none,1=fkey1,2=fkey2,3=fkey3,4=fkey4,5=fkey5,6=fkey6,7=fkey7,8=fkey8,9=fkey9,10=fkey10
+    <key_values>0=none,1=fkey1,2=fkey2,3=fkey3,4=fkey4,5=fkey5,6=fkey6,7=fkey7,8=fkey8,9=fkey9,10=fkey0
    </user_defined_enum>
    <user_defined_enum/>
     <id>663
@@ -33561,7 +33561,7 @@
     <id>671
     <name>view_field_trigger_option
     <type>int
-    <key_values>0=none,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key10
+    <key_values>0=none,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key0
    </user_defined_enum>
    <user_defined_enum/>
     <id>658

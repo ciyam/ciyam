@@ -1064,6 +1064,66 @@ bool fetch_parent_row_data( const string& module, const module_info& mod_info,
                exclude_key_info = sess_info.user_key;
                continue;
             }
+            else if( key == c_parent_extra_xfkey0 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value0;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey1 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value1;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey2 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value2;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey3 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value3;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey4 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value4;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey5 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value5;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey6 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value6;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey7 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value7;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey8 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value8;
+               continue;
+            }
+            else if( key == c_parent_extra_xfkey9 )
+            {
+               if( p_fkey_values )
+                  exclude_key_info = p_fkey_values->value9;
+               continue;
+            }
             else if( key == c_parent_extra_xparent )
             {
                exclude_key_info = parent_key;

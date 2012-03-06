@@ -155,6 +155,8 @@ void setup_view_fields( view_source& view,
           || ( !is_new_record
           && has_perm_extra( c_view_field_extra_new_only, extra_data, sess_info ) )
           || ( is_new_record
+          && has_perm_extra( c_view_field_extra_non_new, extra_data, sess_info ) )
+          || ( ( is_new_record || !is_in_edit )
           && has_perm_extra( c_view_field_extra_edit_only, extra_data, sess_info ) )
           || ( !sess_info.is_admin_user
           && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) ) )
@@ -169,14 +171,14 @@ void setup_view_fields( view_source& view,
             view.admin_link_fields.insert( value_id );
          }
 
+         if( extra_data.count( c_field_extra_manual_link ) )
+            view.manual_link_fields.insert( value_id );
+
+         if( extra_data.count( c_field_extra_ignore_links ) )
+            view.manual_link_ignores.insert( value_id );
+
          if( fld.pclass.empty( ) )
          {
-            if( extra_data.count( c_field_extra_manual_link ) )
-               view.manual_link_fields.insert( value_id );
-
-            if( extra_data.count( c_field_extra_ignore_links ) )
-               view.manual_link_ignores.insert( value_id );
-
             // NOTE: It is expected that only one actions and owning user field will exist in a view.
             if( extra_data.count( c_view_field_extra_actions ) )
                view.actions_field = field_id;
@@ -1683,8 +1685,19 @@ bool output_view_form( ostream& os, const string& act,
                }
                else if( ( has_value && key == cell_data ) || ( !has_value && unescaped( display ) == cell_data ) )
                   os << " selected";
-               os << " value=\"" << key << "\">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
+
+               os << " value=\"" << key << "\">";
+
+               if( source.manual_link_fields.count( source_value_id ) )
+                  replace_links_and_output( display, source.vici->second->id,
+                   source.module, source.module_ref, os, false, false, session_id,
+                   sess_info, user_select_key, using_session_cookie, use_url_checksum );
+               else
+                  os << unescaped( display );
+
+               os << "&nbsp;&nbsp;</option>\n";
             }
+
             os << "</select>";
          }
       }
