@@ -95,9 +95,10 @@ const int c_num_handlers = 10;
 const size_t c_max_fcgi_input_size = 65536;
 const size_t c_max_param_input_size = 4096;
 
-const int c_greeting_timeout = 10000;
-const int c_initial_response_timeout = 60000;
-const int c_subsequent_response_timeout = 2500;
+const int c_connect_timeout = 2500;
+const int c_greeting_timeout = 2500;
+const int c_initial_response_timeout = 7500;
+const int c_subsequent_response_timeout = 2000;
 
 #ifndef _WIN32
 const int c_default_directory_perms = S_IRWXU;
@@ -901,7 +902,7 @@ void request_handler::process_request( )
                if( p_session_info->p_socket->open( ) )
                {
                   ip_address address( c_default_ciyam_host, c_default_ciyam_port );
-                  if( p_session_info->p_socket->connect( address ) )
+                  if( p_session_info->p_socket->connect( address ), c_connect_timeout )
                   {
                      p_session_info->p_socket->set_no_delay( );
 

@@ -1054,7 +1054,7 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `@eq`(`'\1`'`,`'default_from_key`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_from_key.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
-`@eq`(`'\1`'`,`'default_to_dtm`'`)
+`@eq`(`'\1`'`,`'default_to_dtm`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_dtm.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_field`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
@@ -1353,6 +1353,9 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_chk_null=$specification_\0_chk_null arg_not_dflt=$specification_\0_not_dflt arg_append=$specification_\0_append\
  arg_inc_clones=$specification_\0_inc_clones arg_skip_fk_handling=$specification_\0_skip_fk_handling`}\
 `,\
+`@eq`(`'\1`'`,`'default_to_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#default_to_dtm.spec.xrep section=to_or_for_store class_name=$class_name arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'default_to_field`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#default_to_field.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_sfield=$specification_\0_sfield\
@@ -1524,8 +1527,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_chk_null=$specification_\0_chk_null arg_not_dflt=$specification_\0_not_dflt arg_append=$specification_\0_append\
  arg_inc_clones=$specification_\0_inc_clones arg_skip_fk_handling=$specification_\0_skip_fk_handling`}\
 `,\
-`@eq`(`'\1`'`,`'default_to_dtm`'`)
-`{`#default_to_dtm.spec.xrep section=for_store class_name=$class_name arg_field=$specification_\0_field`}\
+`@eq`(`'\1`'`,`'default_to_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#default_to_dtm.spec.xrep section=to_or_for_store class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_field`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_field.spec.xrep section=to_or_for_store class_name=$class_name\
