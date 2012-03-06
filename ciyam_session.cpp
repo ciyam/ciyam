@@ -1292,6 +1292,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !parent_key.empty( ) )
                   instance_fetch( handle, "", parent_key );
 
+               set_dtm( convert_local_to_utc( date_time::standard( ).as_string( ), tz_abbr ) );
+
                if( key_info == " " )
                   init_object_instance( handle, context, true );
                else
