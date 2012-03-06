@@ -8115,7 +8115,7 @@ void finish_instance_op( class_base& instance, bool apply_changes, bool internal
 
             // NOTE: As it's possible that "for_store" might inadvertantly have made the record invalid
             // the validation call is repeated now and the first error (if any is found) will be thrown.
-            if( !instance.is_valid( internal_operation ) )
+            if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
                throw runtime_error(
                 instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
          }
@@ -8149,9 +8149,12 @@ void finish_instance_op( class_base& instance, bool apply_changes, bool internal
          if( op == class_base::e_op_type_create )
             handler.transform_lock( instance_accessor.get_lock_handle( ), op_lock::e_lock_type_update );
 
+         // NOTE: Although "after_store" is normally skipped for "minimal" updates in the case of Meta
+         // it must still be called so that "aliased" class artifacts will behave as would be expected.
          if( op == class_base::e_op_type_destroy )
             instance_accessor.after_destroy( internal_operation );
-         else if( op == class_base::e_op_type_create || op == class_base::e_op_type_update )
+         else if( op == class_base::e_op_type_create || ( op == class_base::e_op_type_update
+          && ( handler.get_name( ) == "Meta" || !instance.get_is_minimal_update( ) ) ) )
             instance_accessor.after_store( op == class_base::e_op_type_create, internal_operation );
 
          const string& key( instance.get_key( ) );

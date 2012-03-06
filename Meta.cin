@@ -41,16 +41,16 @@ user_defined_enum_add -id=655 view_access_restrict int 0=none,1=owner\\_only,2=a
 user_defined_enum_add -id=657 view_change_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=658 view_pdf_view_type int 0=none,2=Standard_2_Column,99=Customised
 user_defined_enum_add -id=660 view_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
-user_defined_enum_add -id=661 view_field_access_scope int 0=all,1=create\\_only,2=update\\_only,3=editing\\_only,4=viewing\\_only
+user_defined_enum_add -id=661 view_field_access_scope int 0=all,1=create\\_only,2=post\\_create,3=editing\\_only,4=viewing\\_only,5=updating\\_only
 user_defined_enum_add -id=662 view_field_change_scope int 0=all,1=create\\_only,2=update\\_only,3=always\\_editable
 user_defined_enum_add -id=663 view_field_link_restrict int 0=none,1=admin\\_only,2=denied\\_always
 user_defined_enum_add -id=670 view_field_new_source int 0=none,1=user,2=group,3=other,4=value
-user_defined_enum_add -id=671 view_field_trigger_option int 0=none,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key10
+user_defined_enum_add -id=671 view_field_trigger_option int 0=none,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key0
 user_defined_enum_add -id=672 view_field_trigger_behaviour int 0=normal,1=send\\_always,2=fetch\\_always,3=send\\_and\\_fetch\\_always
 user_defined_enum_add -id=673 view_field_trigger_for_state int 0=editable,1=protected,2=relegated
-user_defined_enum_add -id=674 view_field_enum_at int 0=normal,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key10\
-,11=fkey1,12=fkey2,13=fkey3,14=fkey4,15=fkey5,16=fkey6,17=fkey7,18=fkey8,19=fkey9,20=fkey10
-user_defined_enum_add -id=675 view_field_fk_trigger_option int 0=none,1=fkey1,2=fkey2,3=fkey3,4=fkey4,5=fkey5,6=fkey6,7=fkey7,8=fkey8,9=fkey9,10=fkey10
+user_defined_enum_add -id=674 view_field_enum_at int 0=normal,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key0\
+,11=fkey1,12=fkey2,13=fkey3,14=fkey4,15=fkey5,16=fkey6,17=fkey7,18=fkey8,19=fkey9,20=fkey0
+user_defined_enum_add -id=675 view_field_fk_trigger_option int 0=none,1=fkey1,2=fkey2,3=fkey3,4=fkey4,5=fkey5,6=fkey6,7=fkey7,8=fkey8,9=fkey9,10=fkey0
 user_defined_enum_add -id=676 view_field_fk_trigger_behaviour int 0=normal,1=send\\_always,2=fetch\\_always,3=send\\_and\\_fetch\\_always
 user_defined_enum_add -id=677 view_field_mandatory_option int 0=from\\_field,1=force\\_optional,2=force\\_mandatory
 user_defined_enum_add -id=678 view_field_date_precision_option int 0=from\\_field,1=force\\_months,2=force\\_decades
@@ -68,7 +68,7 @@ user_defined_enum_add -id=690 list_field_restrict int 0=none,1=owner\\_only,2=ad
 user_defined_enum_add -id=691 list_field_alignment int 0=default,1=left,2=right,3=center
 user_defined_enum_add -id=692 list_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=693 list_field_label_source int 0=field,1=list,2=omit_label
-user_defined_enum_add -id=694 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey10
+user_defined_enum_add -id=694 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
 user_defined_enum_add -id=695 list_field_switch_type int 0=checked,1=unchecked,2=checked\\_reversing,3=unchecked\\_reversing
 user_defined_enum_add -id=696 list_field_print_type int 0=standard,1=non\\_print,2=print\\_only,3=print\\_total,4=print\\_summary,5=print\\_only\\_total
 user_defined_enum_add -id=697 list_field_notes_truncation int 0=standard,30=30,40=40,50=50,80=80,100=100
@@ -320,7 +320,7 @@ field_add -id=114137 Specification_Type Protect_Source_Parent bool mand -def=0
 field_add -id=114138 Specification_Type Needs_Child_Relationship bool mand -def=0
 field_add -id=114139 Specification_Type Use_Parent_Class bool mand -def=0
 field_add -id=114140 Specification_Type Specification_Actions string opt
-field_add -id=114141 Specification_Type Protect_Class_From_Update bool mand -def=0
+field_add -id=114141 Specification_Type Protect_Class_From_Update bool mand -def=1
 field_add -id=114142 Specification_Type Allow_FK_Test_Field_Choice bool mand -def=0
 field_add -id=114144 Specification_Type Use_Parent_Source_Parent bool mand -def=0
 field_add -id=114145 Specification_Type Protect_Child_Rel_From_Update bool mand -def=0
@@ -1680,21 +1680,21 @@ specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Des
 specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"
 specification_add -id=601020 {User}_view view "? admin User User_Id,Active,Password,Description,Email,{Workgroup}:Name"
 specification_add -id=601100 {Workgroup}_list list "* admin Workgroup Name,Id"
-specification_add -id=601110 {Workgroup}_view view "? admin Workgroup Name,Id;no_edit+edit_only\
-,Next_Type_Id;no_edit+edit_only,Next_Enum_Id;no_edit+edit_only,Next_Model_Id;no_edit+edit_only,Next_Permission_Id;no_edit+edit_only"
+specification_add -id=601110 {Workgroup}_view view "? admin Workgroup Name,Id;no_edit+non_new\
+,Next_Type_Id;no_edit+non_new,Next_Enum_Id;no_edit+non_new,Next_Model_Id;no_edit+non_new,Next_Permission_Id;no_edit+non_new"
 specification_add -id=601210 {Type}_view view "? standard Type\
- Name,Id;no_edit+edit_only,Primitive;no_edit\
+ Name,Id;no_edit+non_new,Primitive;no_edit\
 ,Max_Size,Min_Value,Max_Value,Numeric_Digits,Numeric_Decimals\
 ,String_Domain,Date_Precision,Time_Precision,Show_Plus_Sign,Zero_Padding,Fraction_Limit,Int_Type;force,Numeric_Type;force"
 specification_add -id=601220 {Type}_group_list list "* group:no_limit Type Name,Id,Primitive -n=Primitive {Workgroup}"
 specification_add -id=601300 {Enum}_group_list list "* group:no_limit Enum Name,Id,Primitive {Workgroup}"
-specification_add -id=601310 {Enum}_view view "? standard Enum Name,Id;no_edit+edit_only,Primitive;new_edit"
+specification_add -id=601310 {Enum}_view view "? standard Enum Name,Id;no_edit+non_new,Primitive;new_edit"
 specification_add -id=601410 {Enum_Item}_view view "? standard Enum_Item {Enum}:Name;no_edit,Value,Label"
 specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_limit Enum_Item Value,Label\
  -act=+!104410+@rfields+@rvalues,+!^104420+@rfields+@rvalues {Enum}"
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
- Name,Id;no_edit+edit_only,Status;view_only,Version,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
+ Name,Id;no_edit+non_new,Status;view_only,Version,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
 ,Add_Packages;new_only,Source_File,Commands_File"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
@@ -1706,11 +1706,11 @@ specification_add -id=601560 {Package_Option}_view view "? standard Package_Opti
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\
 ,Source_{Model}:Name!@group:{Workgroup}+@xparent;new_edit+link+fkey1+force\
 ,Source_{Class}:Name!@fkey1:{Model}+Name;new_edit+force+link\
-,Name;forced,Plural;forced,Id;no_edit+edit_only,Type;show,Extra,Static_Instance_Key,Delay_Initial_Records\
-,Quick_Link_Field:Name!@key:{Class};edit_only,Header_File,Source_File,Commands_File"
+,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra,Static_Instance_Key,Delay_Initial_Records\
+,Quick_Link_Field:Name!@key:{Class};non_new,Header_File,Source_File,Commands_File"
 specification_add -id=601620 {Class}_child_list0 list "@601620_* child:no_limit Class Name,Id {Model}"
 specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no_edit+link\
-,Id;no_edit+edit_only,{Type}:Name!@group:{Workgroup}+Name;force+link,Name,Transient;force,Mandatory,Default\
+,Id;no_edit+non_new,{Type}:Name!@group:{Workgroup}+Name;force+link,Name,Transient;force,Mandatory,Default\
 ,Primitive;hidden+key1,Parent_Class:Name;no_edit+link,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link,Extra,UOM,Use_In_Text_Search"
 specification_add -id=601720 {Field}_child_list0 list "@601720_* child:no_limit Field\
  Name,Id,{Type}:Name;link,Mandatory,Default {Class}"
@@ -1727,15 +1727,15 @@ specification_add -id=602010 {Modifier_Affect}_view view "? standard Modifier_Af
 specification_add -id=602020 {Modifier_Affect}_child_list0 list "@602020_* child:sort_no_limit Modifier_Affect\
  Scope,Type,{Field}:Name -n=Scope {Modifier}"
 specification_add -id=602100 {Procedure}_view view "? standard Procedure\
- {Class}:Name;no_edit+link,Name,Id;no_edit+edit_only"
+ {Class}:Name;no_edit+link,Name,Id;no_edit+non_new"
 specification_add -id=602120 {Procedure}_child_list0 list "@602120_* child:no_limit Procedure Name,Id {Class}"
 specification_add -id=602200 {Procedure_Arg}_view view "? standard Procedure_Arg\
  {Procedure}:Name;no_edit+link,Name,Type,Primitive"
 specification_add -id=602220 {Procedure_Arg}_child_list0 list "@602220_* child:no_limit Procedure_Arg Name,Type,Primitive {Procedure}"
-specification_add -id=602250 {Permission}_view view "? standard Permission Name,Id;no_edit+edit_only"
+specification_add -id=602250 {Permission}_view view "? standard Permission Name,Id;no_edit+non_new"
 specification_add -id=602260 {Permission}_group_list list "* group:no_limit Permission Name,Id {Workgroup}"
 specification_add -id=602300 {Relationship}_view view "? standard Relationship\
- {Model}:Name;no_edit+link+fkey1,Child_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Field_Id;no_edit+edit_only\
+ {Model}:Name;no_edit+link+fkey1,Child_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Field_Id;no_edit+non_new\
 ,Parent_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Name;forced,Mandatory,Transient;force,Cascade_Op,Extra;forced"
 specification_add -id=602320 {Relationship}_child_list0 list "@602320_* child:sort_no_limit Relationship\
  Child_Class:Name,Parent_Class:Name,Name,Mandatory,Cascade_Op {Model}"
@@ -1782,7 +1782,7 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 ,Source_Child:Name!@fkey4:{Class}+Name;link+force,Source_Child_Class:Name;hidden+fkey8,Source_Child_2:Name!@fkey4:{Class}+Name;link\
 ,Source_Grandchild:Name!@fkey8:{Class}+Name;link,Child_Relationship:Child_Name!@fkey2:Parent_Class+@sort\
 ,Use_Test_Parent_Child;force,Test_Field:Name!@fkey2:{Class}+Name;link,Test_Parent_Class:Name;hidden+fkey6\
-,Test_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force,Test_Child:Name!@fkey6:{Class}+Name;link\
+,Test_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force+forced,Test_Child:Name!@fkey6:{Class}+Name;link\
 ,Test_Value,{Permission}:Name!@group:{Workgroup}+Name,Options,Actions,All_Vars;no_edit,All_Strings;no_edit"
 specification_add -id=602530 {Specification}_child_list0 list "@602530_Child_* child:no_new,no_limit\
  Specification Name -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues Parent_{Specification}"
@@ -1793,7 +1793,7 @@ specification_add -id=602550 {Specification}_child_list2 list "@602550_* child:n
  -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Parent_{Specification_Type}=+Is_Required_For_UI_Gen=1+Name,{Specification_Type}\
  -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Model} Parent_{Specification},@key,restricted Is_Required_For_UI_Gen,restricted:1"
 specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_edit+link+fkey1\
-,Name;no_edit,Id;no_edit+edit_only,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link,Title\
+,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link,Title\
 ,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
 ,@tab:Advanced_UI_Options,Allow_Copy_Action,Allow_Printable_Version;force,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header"
@@ -1812,7 +1812,7 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 specification_add -id=602720 {View_Field}_child_list0 list "@602720_* child:no_limit\
  View_Field Name -act=+!120410+@rfields+@rvalues,+!^120420+@rfields+@rvalues {View}"
 specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_edit+link+fkey1\
-,Name;no_edit,Id;no_edit+edit_only,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link+fkey2\
+,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link+fkey2\
 ,Parent_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link,Title,Style;force\
 ,@tab:Security_Options\
 ,Print_Restriction,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
@@ -1847,7 +1847,7 @@ specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_l
  List_Field Name -act=+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues {List}"
 specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version {Workgroup}"
 specification_add -id=602910 {Application}_view view "? standard Application\
- Name;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;edit_only+always_editable\
+ Name;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
 ,@tab:Generate_Details,Module_Prefix,Version,Generate_Details;show+no_edit\
 ,@tab:UI_Settings,Use_URL_Checksum,Auto_Login_Days,Allow_Duplicate_Logins,Allow_Module_Switching,Show_Inaccessible_Modules\

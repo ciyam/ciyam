@@ -1112,7 +1112,7 @@
     </value>
     <value/>
      <data>10
-     <name>enum_list_field_trigger_option_skey10
+     <name>enum_list_field_trigger_option_skey0
     </value>
    </values>
   </enum>
@@ -1724,7 +1724,7 @@
     </value>
     <value/>
      <data>2
-     <name>enum_view_field_access_scope_update_only
+     <name>enum_view_field_access_scope_post_create
     </value>
     <value/>
      <data>3
@@ -1733,6 +1733,10 @@
     <value/>
      <data>4
      <name>enum_view_field_access_scope_viewing_only
+    </value>
+    <value/>
+     <data>5
+     <name>enum_view_field_access_scope_updating_only
     </value>
    </values>
   </enum>
@@ -1822,7 +1826,7 @@
     </value>
     <value/>
      <data>10
-     <name>enum_view_field_enum_at_key10
+     <name>enum_view_field_enum_at_key0
     </value>
     <value/>
      <data>11
@@ -1862,7 +1866,7 @@
     </value>
     <value/>
      <data>20
-     <name>enum_view_field_enum_at_fkey10
+     <name>enum_view_field_enum_at_fkey0
     </value>
    </values>
   </enum>
@@ -1964,7 +1968,7 @@
     </value>
     <value/>
      <data>10
-     <name>enum_view_field_fk_trigger_option_fkey10
+     <name>enum_view_field_fk_trigger_option_fkey0
     </value>
    </values>
   </enum>
@@ -2142,7 +2146,7 @@
     </value>
     <value/>
      <data>10
-     <name>enum_view_field_trigger_option_key10
+     <name>enum_view_field_trigger_option_key0
     </value>
    </values>
   </enum>
@@ -2223,7 +2227,7 @@
      <name>field_application_keep_existing_data
      <field>127129
      <ftype>bool
-     <extra>edit_only+always_editable
+     <extra>non_new+always_editable
      <mandatory>true
      <modifiers>100:relegate
     </field>
@@ -2504,7 +2508,7 @@
      <name>field_class_id
      <field>106104
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -2544,7 +2548,7 @@
      <name>field_class_quick_link_field
      <field>300630
      <ftype>@class
-     <extra>edit_only
+     <extra>non_new
      <mandatory>false
      <modifiers>
      <pclass>107100
@@ -2601,7 +2605,7 @@
      <name>field_enum_id
      <field>103104
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -2683,7 +2687,7 @@
      <name>field_field_id
      <field>107110
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -3003,7 +3007,7 @@
      <name>field_list_id
      <field>122111
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -3839,7 +3843,7 @@
      <name>field_model_id
      <field>105104
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -4284,7 +4288,7 @@
      <name>field_permission_id
      <field>116102
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -4325,7 +4329,7 @@
      <name>field_procedure_id
      <field>111103
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -4419,7 +4423,7 @@
      <name>field_relationship_field_id
      <field>113106
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>false
      <modifiers>
     </field>
@@ -4924,7 +4928,7 @@
      <name>field_specification_test_parent
      <field>301486
      <ftype>@class
-     <extra>link+force
+     <extra>link+force+forced
      <mandatory>false
      <modifiers>8000000000:relegate,1000000000:relegate
      <pclass>107100
@@ -6905,7 +6909,7 @@
      <name>field_type_id
      <field>102111
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -7123,7 +7127,7 @@
      <name>field_view_id
      <field>118105
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -7622,7 +7626,7 @@
      <name>field_workgroup_id
      <field>101102
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -7630,7 +7634,7 @@
      <name>field_workgroup_next_type_id
      <field>101105
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -7638,7 +7642,7 @@
      <name>field_workgroup_next_enum_id
      <field>101104
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -7646,7 +7650,7 @@
      <name>field_workgroup_next_model_id
      <field>101103
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -7654,7 +7658,7 @@
      <name>field_workgroup_next_permission_id
      <field>101106
      <ftype>string
-     <extra>no_edit+edit_only+max_size=30
+     <extra>no_edit+non_new+max_size=30
      <mandatory>true
      <modifiers>
     </field>

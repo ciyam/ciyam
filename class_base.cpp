@@ -1318,7 +1318,7 @@ void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
      + "] key = " + key + ", is_minimal = " + to_string( is_minimal ) + ", is_for_prepare = "
      + to_string( is_for_prepare ) + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
 
-   if( !is_for_prepare )
+   if( !is_for_prepare || ( !key.empty( ) && key[ 0 ] != ' ' ) )
    {
       lazy_fetch_key.erase( );
 

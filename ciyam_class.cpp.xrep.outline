@@ -1223,7 +1223,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#field_from_acyclic_path.spec.xrep section=after_fetch full_class_name=$full_class_name\
  arg_pfield=$specification_\0_pfield arg_src_field=$specification_\0_src_field\
  arg_dest_field=$specification_\0_dest_field arg_separator=$specification_\0_separator\
- arg_embed_links=$specification_\0_embed_links`}\
+ arg_embed_links=$specification_\0_embed_links arg_external=$specification_\0_external`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`?`$transient_field_names`&`@in`(`$specification_\0_dfield`,`$transient_field_names`)
 `{`#field_from_other_field.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
