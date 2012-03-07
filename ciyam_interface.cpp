@@ -184,6 +184,7 @@ session_container g_sessions;
 #ifdef USE_UUID_FOR_LOGIN
 deque< string > g_uuids;
 #endif
+
 }
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
@@ -333,6 +334,16 @@ inline const string& data_or_nbsp( const string& input )
       return input;
    else
       return g_nbsp;
+}
+
+string hash_password( const string& salted_password )
+{
+   string s( salted_password );
+
+   for( size_t i = 0; i < c_password_hash_rounds; i++ )
+      s = sha1( s ).get_digest_as_string( );
+
+   return s;
 }
 
 string format_int_value( int i, const string& mask )
@@ -1037,13 +1048,13 @@ void request_handler::process_request( )
                      // has been repeated then just treat as a standard login if the password is correct.
                      if( user_data[ 0 ] != user_data[ 1 ] )
                      {
-                        if( activate_password == lower( sha1( g_id + user_data[ 1 ] ).get_digest_as_string( ) ) )
+                        if( activate_password == lower( hash_password( g_id + user_data[ 1 ] ) ) )
                            is_activation = false;
                         else
                            throw runtime_error( GDS( c_display_account_has_already_been_activated ) );
                      }
 
-                     if( activate_password == lower( sha1( g_id + user_data[ 0 ] ).get_digest_as_string( ) ) )
+                     if( activate_password == lower( hash_password( g_id + user_data[ 0 ] ) ) )
                      {
                         force_refresh = true;
                         throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
@@ -1830,13 +1841,13 @@ void request_handler::process_request( )
                if( pos != string::npos )
                   old_password.erase( pos );
 
-               if( new_password == lower( sha1( g_id + p_session_info->user_id ).get_digest_as_string( ) ) )
+               if( new_password == lower( hash_password( g_id + p_session_info->user_id ) ) )
                   throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
 
                // NOTE: Only use the encrypted original password if it was decrypted when logging in.
                if( p_session_info->clear_password.length( ) )
                {
-                  if( old_password == lower( sha1( g_id + p_session_info->clear_password ).get_digest_as_string( ) ) )
+                  if( old_password == lower( hash_password( g_id + p_session_info->clear_password ) ) )
                      old_password = p_session_info->clear_password;
                }
                else
@@ -3778,9 +3789,11 @@ void request_handler::process_request( )
          }
       }
 
-      extra_content_func += " serverId='" + g_id + "';";
+      extra_content_func += " hashRounds = " + to_string( c_password_hash_rounds ) + ";";
+
+      extra_content_func += " serverId = '" + g_id + "';";
 #ifdef USE_UUID_FOR_LOGIN
-      extra_content_func += " uniqueId='" + get_latest_uuid( ) + "';";
+      extra_content_func += " uniqueId = '" + get_latest_uuid( ) + "';";
 
       // NOTE: Because the server generates a new UUID every 10 seconds (and keeps the previous
       // two generated UUIDs) if the login hasn't occurred within 30 seconds then refresh.
