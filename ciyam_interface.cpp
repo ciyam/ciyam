@@ -1080,7 +1080,10 @@ void request_handler::process_request( )
                   // passed to the client must be appended to the password after an '@'.
                   string::size_type pos = password.find( '@' );
                   if( pos == string::npos )
-                     password.erase( );
+                  {
+                     if( cmd != c_cmd_status )
+                        password.erase( );
+                  }
                   else
                   {
                      string uuid = password.substr( pos + 1 );
@@ -3782,24 +3785,27 @@ void request_handler::process_request( )
             if( !edit_timeout_func.empty( ) )
                extra_content_func += "warn_refresh_func = '" + edit_timeout_func + "';\n";
             extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
-            extra_content_func += "warn_refresh( );\n";
+            extra_content_func += "warn_refresh( );";
 
             if( !scrollx.empty( ) && !scrolly.empty( ) )
-               extra_content_func += "scroll_page( " + scrollx + ", " + scrolly + " );\n";
+               extra_content_func += "\nscroll_page( " + scrollx + ", " + scrolly + " );";
          }
       }
 
-      extra_content_func += " hashRounds = " + to_string( c_password_hash_rounds ) + ";";
+      if( cmd != c_cmd_status )
+      {
+         extra_content_func += " hashRounds = " + to_string( c_password_hash_rounds ) + ";";
 
-      extra_content_func += " serverId = '" + g_id + "';";
+         extra_content_func += " serverId = '" + g_id + "';";
 #ifdef USE_UUID_FOR_LOGIN
-      extra_content_func += " uniqueId = '" + get_latest_uuid( ) + "';";
+         extra_content_func += " uniqueId = '" + get_latest_uuid( ) + "';";
 
-      // NOTE: Because the server generates a new UUID every 10 seconds (and keeps the previous
-      // two generated UUIDs) if the login hasn't occurred within 30 seconds then refresh.
-      if( is_login_screen )
-         extra_content_func += " auto_refresh_seconds = 30; auto_refresh( );";
+         // NOTE: Because the server generates a new UUID every 10 seconds (and keeps the previous
+         // two generated UUIDs) if the login hasn't occurred within 30 seconds then refresh.
+         if( is_login_screen )
+            extra_content_func += " auto_refresh_seconds = 30; auto_refresh( );";
 #endif
+      }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
    }
