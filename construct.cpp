@@ -69,54 +69,67 @@ int main( int argc, char* argv[ ] )
          }
       }
 
-      ofstream outf( target_filename.c_str( ) );
-      if( !outf )
-         throw runtime_error( "unable to open '" + target_filename + "' for output" );
+      string new_filename( target_filename + ".new" );
 
-      string next;
-      while( getline( inpf, next ) )
+      // NOTE: Empty code block for scope purposes.
       {
-         if( !next.empty( ) && !packages.empty( ) )
+         ofstream outf( new_filename.c_str( ) );
+         if( !outf )
+            throw runtime_error( "unable to open '" + new_filename + "' for output" );
+
+         string next;
+         while( getline( inpf, next ) )
          {
-            string::size_type pos = next.find( c_section_prefix );
-            if( pos == 0 )
+            if( !next.empty( ) && !packages.empty( ) )
             {
-               for( size_t i = 0; i < packages.size( ); i++ )
+               string::size_type pos = next.find( c_section_prefix );
+               if( pos == 0 )
                {
-                  if( package_details.count( packages[ i ] ) )
+                  for( size_t i = 0; i < packages.size( ); i++ )
                   {
-                     bool found_matching = false;
-                     for( size_t j = 0; j < package_details[ packages[ i ] ].size( ); j++ )
+                     if( package_details.count( packages[ i ] ) )
                      {
-                        pos = package_details[ packages[ i ] ][ j ].find( c_section_prefix );
-                        if( pos == 0 )
+                        bool found_matching = false;
+                        for( size_t j = 0; j < package_details[ packages[ i ] ].size( ); j++ )
                         {
-                           if( package_details[ packages[ i ] ][ j ] == next )
-                              found_matching = true;
-                           else
-                              found_matching = false;
+                           pos = package_details[ packages[ i ] ][ j ].find( c_section_prefix );
+                           if( pos == 0 )
+                           {
+                              if( package_details[ packages[ i ] ][ j ] == next )
+                                 found_matching = true;
+                              else
+                                 found_matching = false;
+                           }
+                           else if( found_matching )
+                              outf << package_details[ packages[ i ] ][ j ] << '\n';
                         }
-                        else if( found_matching )
-                           outf << package_details[ packages[ i ] ][ j ] << '\n';
                      }
                   }
-               }
 
-               continue;
+                  continue;
+               }
             }
+
+            outf << next << '\n';
          }
 
-         outf << next << '\n';
+         if( !inpf.eof( ) )
+            throw runtime_error( "unexpected error occurred whilst reading '" + outline_filename + "'" );
+
+         outf.flush( );
+         if( !outf.good( ) )
+            throw runtime_error( "unexpected error occurred whilst writing '" + new_filename + "'" );
+
       }
 
-      if( !inpf.eof( ) )
-         throw runtime_error( "unexpected error occurred whilst reading '" + outline_filename + "'" );
+#ifdef _WIN32
+      string cmd( "update" );
+#else
+      string cmd( "./update" );
+#endif
 
-      outf.flush( );
-      if( !outf.good( ) )
-         throw runtime_error( "unexpected error occurred whilst writing '" + target_filename + "'" );
-
-      cout << "Constructed: " << target_filename << endl;
+      cmd += " " + target_filename + " " + new_filename;
+      system( cmd.c_str( ) );
    }
    catch( exception& x )
    {
