@@ -23,6 +23,8 @@ var had_act_error = false;
 var serverId = '';
 var uniqueId = '';
 
+var hashRounds = 10000;
+
 var validation_error = '';
 
 var displayTimeout = 'Timeout occurred.';
@@ -535,6 +537,14 @@ function utc_dtm( dt )
    return output;
 }
 
+function hash_value( s, n )
+{
+   for( var i = 0; i < n; i++ )
+      s = hex_sha1( s ).toLowerCase( );
+
+   return s;
+}
+
 function hash_password( pwd, skip_id )
 {
    var retval = '';
@@ -545,7 +555,7 @@ function hash_password( pwd, skip_id )
    if( pwd.length >= 40 )
       retval = pwd;
    else
-      retval = hex_sha1( serverId + pwd ).toLowerCase( );
+      retval = hash_value( serverId + pwd, hashRounds ).toLowerCase( );
 
    if( skip_id != true && uniqueId != '' )
       retval += '@' + uniqueId;
