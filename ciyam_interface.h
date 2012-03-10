@@ -106,6 +106,7 @@ const char* const c_param_field = "field";
 const char* const c_param_flags = "flags";
 const char* const c_param_ident = "ident";
 const char* const c_param_qlink = "qlink";
+const char* const c_param_base64 = "base64";
 const char* const c_param_bcount = "bcount";
 const char* const c_param_chksum = "chksum";
 const char* const c_param_dtmoff = "dtmoff";

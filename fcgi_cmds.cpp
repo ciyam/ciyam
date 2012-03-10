@@ -1864,6 +1864,8 @@ void fetch_user_record( const string& gid,
 
       if( user_data[ 0 ] != username || ( !is_authorised && user_password != password ) )
          throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
+      sess_info.user_pwd_hash = user_password;
    }
 
    size_t offset = 2;

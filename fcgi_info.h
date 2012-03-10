@@ -475,6 +475,8 @@ struct session_info
    bool logged_in;
    tcp_socket* p_socket;
 
+   std::string ip_addr;
+
    std::string session_id;
 
    std::string user_id;
@@ -486,6 +488,8 @@ struct session_info
    std::string user_parent;
    std::string user_module;
    std::string user_slevel;
+
+   std::string user_pwd_hash;
 
    std::string default_user_group;
    std::string default_user_other;
