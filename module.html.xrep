@@ -1,0 +1,49 @@
+`{`#$model_vars @`}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+<head>
+<title>`{`$model_title`/_`/ `}</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta name="copyright" content="Copyright 2006 CIYAM Pty. Ltd. ABN 66 093 704 539"/>
+
+<meta http-equiv="Expires" content="0"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Cache-Control" content="no-cache"/>
+<meta http-equiv="Cache-Control" content="no-store"/>
+
+<meta http-equiv="Page-Enter" content="blendTrans(Duration=0.1)">
+<meta http-equiv="Page-Exit" content="blendTrans(Duration=0.1)">
+
+<script language="JavaScript" type="text/javascript" src="sha1.js"></script>
+<script language="JavaScript" type="text/javascript" src="base64.js"></script>
+<!--[if lte IE 6]>
+<script language="javascript" type="text/javascript" src="minmax.js" charset="utf-8"></script>
+<![endif]-->
+
+<script language="javascript" type="text/javascript">var module = 'module=`{`$model_name`}';</script>
+
+<link rel="stylesheet" href="ciyam_interface.css" type="text/css"/>
+<script language="javascript" type="text/javascript" src="ciyam_interface.js"></script>
+<script language="javascript" type="text/javascript" src="datetimepicker.js">
+//Date Time Picker script- by TengYong Ng of http://www.rainforestnet.com
+//Script featured on JavaScript Kit (http://www.javascriptkit.com)
+//For this script, visit http://www.javascriptkit.com 
+</script>
+<script language="javascript" type="text/javascript" src="scripts/wysiwyg.js"></script>
+<script language="javascript" type="text/javascript" src="scripts/wysiwyg-settings.js"></script>
+</head>
+
+<body onload="load( )">
+<noscript><meta http-equiv="refresh" content="0; requirements.html"/></noscript>
+
+<div id="content">
+</div>
+
+<iframe src="javascript:false;" name="hidden_frame" frameborder="0" width="1" height="1" marginheight="0" marginwidth="0">
+</iframe>
+
+</body>
+</html>
+

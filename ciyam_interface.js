@@ -10,6 +10,7 @@ var qsContext = window.location.search.substring( 1 ); //i.e. remove the ? prefi
 var qsFurther = '';
 
 var secureOnly = false;
+var encryptPosts = true;
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
    window.location.replace( 'https:' + source[ 1 ] );
@@ -17,6 +18,7 @@ if( secureOnly && source[ 0 ] != 'https' )
 var scrollTop = 0;
 var scrollLeft = 0;
 
+var loggedIn = false;
 var jump_back = false;
 var had_act_error = false;
 
@@ -207,6 +209,86 @@ function insert_scroll_info( )
    }
 }
 
+function utf8_encode( string )
+{
+   string = string.replace( /\r\n/g, "\n" );
+   var utftext = "";
+  
+   for( var n = 0, k = string.length; n < k; n++ )
+   {
+      var c = string.charCodeAt( n );
+  
+      if( c < 128 )
+         utftext += String.fromCharCode( c );
+      else if( ( c > 127 ) && ( c < 2048 ) )
+      {
+         utftext += String.fromCharCode( ( c >> 6 ) | 192 );
+         utftext += String.fromCharCode( ( c & 63 ) | 128 );
+      }
+      else
+      {
+         utftext += String.fromCharCode( ( c >> 12 ) | 224 );
+         utftext += String.fromCharCode( ( ( c >> 6 ) & 63 ) | 128 );
+         utftext += String.fromCharCode( ( c & 63 ) | 128 );
+      }
+   }
+
+   return utftext;
+}
+
+function utf8_decode( utftext )
+{
+   var string = "";
+   var i = 0;
+   var c = c1 = c2 = 0;
+  
+   while ( i < utftext.length )
+   {
+      c = utftext.charCodeAt( i );
+      if( c < 128 )
+      {
+         string += String.fromCharCode( c );
+         i++;
+      }
+      else if( ( c > 191 ) && ( c < 224 ) )
+      {
+         c2 = utftext.charCodeAt( i + 1 );
+         string += String.fromCharCode( ( ( c & 31 ) << 6 ) | ( c2 & 63 ) );
+         i += 2;
+      }
+      else
+      {
+         c2 = utftext.charCodeAt( i + 1 );
+         c3 = utftext.charCodeAt( i + 2 );
+         string += String.fromCharCode( ( ( c & 15 ) << 12 ) | ( ( c2 & 63 ) << 6 ) | ( c3 & 63 ) ) ;
+         i += 3;
+      }
+  
+   }
+
+   return string;
+}
+
+function string_to_bytes( str )
+{
+   var ch, st, re = [ ];
+   for( var i = 0; i < str.length; i++ )
+   {
+
+      ch = str.charCodeAt( i )
+      st = [ ];
+      do
+      {
+         st.push( ch & 0xFF );
+         ch = ch >> 8;
+      } while( ch );
+
+      re = re.concat( st.reverse( ) );
+   }
+
+   return re;
+}
+
 function load( )
 {
    clearTimeout( warn_refresh_timer_id );
@@ -226,17 +308,64 @@ function load( )
       xmlReq.onload = process;
    }
 
+   var session_id = '';
    var has_session = false;
    var all_cookies = document.cookie.split( ';' );
    for( i = 0; i < all_cookies.length; i++ )
    {
       var next_cookie = all_cookies[ i ].split( '=' );
       if( next_cookie[ 0 ] == 'session' )
+      {
          has_session = true;
+         var cookie_parts = next_cookie[ 1 ].split( ',' );
+         session_id = cookie_parts[ 0 ];
+         break;
+      }
    }
 
    if( !has_session )
+   {
+      session_id = 'new_session';
       document.cookie = 'session=new_session';
+   }
+
+   var qs_both = qsContext;
+   var persistent = '';
+
+   if( qs_both == '' )
+      qs_both = qsFurther;
+   else if( qsFurther != '' )
+      qs_both += '&' + qsFurther;
+
+   var is_login = false;
+   var non_cookie = false;
+   var qvars = qs_both.split( '&' );
+   for( var i = 0; i < qvars.length; i++ )
+   {
+      var uname = 'username=';
+      if( qvars[ i ].indexOf( uname ) == 0 )
+      {
+         is_login = true;
+         document.cookie = 'user=' + qvars[ i ].substring( uname.length );
+         localStorage.setItem( 'user', qvars[ i ].substring( uname.length ) );
+      }
+
+      var pname = 'persistent=true';
+      if( qvars[ i ].indexOf( pname ) == 0 )
+      {
+         persistent = 'true';
+
+         if( is_login )
+            localStorage.setItem( 'fkey', sessionStorage.getItem( 'key' ) );
+      }
+
+      var sname = 'session=';
+      if( qvars[ i ].indexOf( sname ) == 0 )
+      {
+         non_cookie = true;
+         session_id = qvars[ i ].substring( sname.length );;
+      }
+   }
 
    var full_context = module;
    if( qsContext != '' )
@@ -245,6 +374,14 @@ function load( )
          full_context += '&';
       full_context += qsContext;
    }
+
+   var dummy = 'dummy=';
+   var num_random = 10 + Math.floor( Math.random( ) * 6 );
+
+   for( var i = 0; i < num_random; i++ )
+      dummy += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
+
+   full_context += '&' + dummy;
 
    if( qsFurther != '' )
    {
@@ -260,8 +397,82 @@ function load( )
       full_context += 'fieldlist=' + dataFieldList;
    }
 
+   if( full_context != '' )
+      full_context += '&';
+   full_context += 'suffix=';
+
+   if( sessionStorage.getItem( 'key' ) == null && localStorage.getItem( 'fkey' ) != null )
+      sessionStorage.setItem( 'key', localStorage.getItem( 'fkey' ) );
+
    xmlReq.open( 'POST', ServerApp, true );
-   xmlReq.send( full_context );
+
+   if( !encryptPosts || source[ 0 ] == 'https' )
+      xmlReq.send( full_context );
+   else
+   {
+      var post_data = '';
+      var key = sessionStorage.getItem( 'key' );
+
+      if( has_session && key != null && encryptPosts )
+      {
+         var prefix = 'prefix=';
+
+         for( var i = 0; i < 22 - dummy.length; i++ )
+            prefix += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
+
+         full_context = prefix + '&' + full_context;
+
+         while( full_context.length % 40 )
+            full_context += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
+
+         var full_key = '';
+         full_key = sessionStorage.getItem( 'key' );
+         var last_key = full_key;
+
+         var all_bytes = string_to_bytes( full_context );
+
+         while( full_key.length < all_bytes.length )
+         {
+            var next = hex_sha1( last_key );
+
+            full_key += next;
+            last_key = next;
+         }
+
+         var encrypted = '';
+
+         // KLUDGE: The string is not encrypted in place as characters are UTF encoded
+         // so the encrypted string is actually a hex string. It may be instead better
+         // to use an array of bytes (which would require an extra base64 interface).
+         for( var i = 0; i < all_bytes.length; i++ )
+         {
+            var val = ( full_key.charCodeAt( i ) ^ all_bytes[ i ] );
+
+            var hex = '';
+            if( val < 16 )
+               hex += '0';
+            hex += val.toString( 16 );
+
+            encrypted += hex;
+         }
+
+         post_data = 'base64=' + Base64.encode( encrypted );
+
+         if( is_login )
+         {
+            post_data += '&cmd=login&username=' + localStorage.getItem( 'user' )
+            + '&persistent=' + persistent + '&' + module + '&session=' + session_id;
+         }
+         else if( non_cookie )
+            post_data += '&' + module + '&session=' + session_id;
+         else
+            post_data += '&' + module;
+      }
+      else
+         post_data = full_context;
+
+      xmlReq.send( post_data );
+   }
 
    if( load_form != null )
       disable_form( load_form );
@@ -277,6 +488,12 @@ function load_timeout( )
       enable_form( load_form );
 
    alert( displayTimeout );
+
+   if( encryptPosts )
+   {
+      if( sessionStorage.getItem( 'key' ) != null )
+         sessionStorage.setItem( 'key', hex_sha1( sessionStorage.getItem( 'key' ) ) );
+   }
 }
 
 function fade_in( n )
@@ -303,13 +520,61 @@ function process( )
 
    document.body.style.opacity = 25;
 
-   document.getElementById( 'content' ).innerHTML = xmlReq.responseText;
+   var response = xmlReq.responseText.substring( 2 );
+
+   var base64test = /[^A-Za-z0-9\+\/\=]/g;
+   base64test.exec( response ); // KLUDGE: Need to investigate javascript reg exps more to get rid of this.
+
+   // NOTE: If there is no whitespace found in the response then it is assumed to be base64.
+   if( base64test.exec( response ) )
+      document.getElementById( 'content' ).innerHTML = response;
+   else
+   {
+      response = Base64.decode( response );
+
+      // NOTE: Now the encrypted hex string is decoded.
+      var full_key = sessionStorage.getItem( 'key' );
+      var last_key = full_key;
+
+      while( full_key.length < response.length / 2 )
+      {
+         var next = hex_sha1( last_key );
+
+         full_key += next;
+         last_key = next;
+      }
+
+      var decrypted = '';
+      for( i = 0; i < response.length; i += 2 )
+      {
+         var hex = response.charAt( i );
+         hex += response.charAt( i + 1 );
+
+         var val = parseInt( hex, 16 );
+         val = val ^ full_key.charCodeAt( i / 2 );
+
+         decrypted += String.fromCharCode( val );
+      }
+
+      document.getElementById( 'content' ).innerHTML = utf8_decode( decrypted );
+   }
 
    if( document.getElementById( 'form_content_func' ) != null )
       eval( document.getElementById( 'form_content_func' ).value );
 
    if( document.getElementById( 'extra_content_func' ) != null )
       eval( document.getElementById( 'extra_content_func' ).value );
+
+   if( encryptPosts )
+   {
+      if( !loggedIn )
+         sessionStorage.removeItem( 'key' );
+      else if( sessionStorage.getItem( 'key' ) != null )
+         sessionStorage.setItem( 'key', hex_sha1( sessionStorage.getItem( 'key' ) ) );
+   }
+
+   if( uniqueId != '' )
+      sessionStorage.setItem( 'uuid', uniqueId );
 
    if( jump_back && !had_act_error )
       history.back( );
@@ -330,7 +595,8 @@ function dyn_load( f, extra, clearContext )
       if( clearContext )
         qsContext = ''
 
-      insert_scroll_info( );
+      if( extra.indexOf( 'username' ) != 0 )
+         insert_scroll_info( );
 
       if( extra_fields != '' )
       {
@@ -557,8 +823,17 @@ function hash_password( pwd, skip_id )
    else
       retval = hash_value( serverId + pwd, hashRounds ).toLowerCase( );
 
+   if( sessionStorage.getItem( 'uuid' ) != null )
+      uniqueId = sessionStorage.getItem( 'uuid' );
+
    if( skip_id != true && uniqueId != '' )
       retval += '@' + uniqueId;
+
+   if( encryptPosts )
+   {
+      if( sessionStorage.getItem( 'key' ) == null )
+         sessionStorage.setItem( 'key', hex_sha1( serverId + pwd ) );
+   }
 
    return retval;
 }
@@ -1352,21 +1627,27 @@ function confirm_delete( frm )
 function disable_form( f )
 {
    f.style.cursor = 'wait';
-   for( i = 0; i < f.elements.length; i++ )
+   if( f.elements )
    {
-      f.elements[ i ].was_disabled = f.elements[ i ].disabled;
-      f.elements[ i ].disabled = true;
+      for( i = 0; i < f.elements.length; i++ )
+      {
+         f.elements[ i ].was_disabled = f.elements[ i ].disabled;
+         f.elements[ i ].disabled = true;
+      }
    }
 }
 
 function enable_form( f )
 {
    f.style.cursor = 'default';
-   for( i = 0; i < f.elements.length; i++ )
+   if( f.elements )
    {
-      if( !f.elements[ i ].was_disabled )
-         f.elements[ i ].disabled = false;
-      f.elements[ i ].was_disabled = false;
+      for( i = 0; i < f.elements.length; i++ )
+      {
+         if( !f.elements[ i ].was_disabled )
+            f.elements[ i ].disabled = false;
+         f.elements[ i ].was_disabled = false;
+      }
    }
 }
 

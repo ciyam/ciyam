@@ -59,6 +59,7 @@
 
 #include "md5.h"
 #include "sha1.h"
+#include "base64.h"
 #include "config.h"
 #include "format.h"
 #include "ptypes.h"
@@ -83,6 +84,7 @@
 #ifdef _WIN32
 #  define USE_MOD_FASTCGI_KLUDGE
 #endif
+#define USE_ENCRYPTED_BASE64_OUTPUT
 #define USE_MULTIPLE_REQUEST_HANDLERS
 
 using namespace std;
@@ -123,6 +125,9 @@ const char* const c_password_persistent_file = "password_persistent.htms";
 const char* const c_printlist_file = "printlist.htms";
 const char* const c_printview_file = "printview.htms";
 
+const char* const c_dummy_param_prefix = "dummy=";
+
+const char* const c_http_param_ssl = "HTTPS";
 const char* const c_http_param_host = "HTTP_HOST";
 const char* const c_http_param_rhost = "REMOTE_HOST";
 const char* const c_http_param_raddr = "REMOTE_ADDR";
@@ -490,7 +495,74 @@ string get_latest_uuid( )
 
    return g_uuids.back( );
 }
+
+void strip_password( string& password, bool is_status_cmd )
+{
+   // NOTE: In order to help prevent a login replay attack a UUID that was
+   // passed to the client must be appended to the password after an '@'.
+   string::size_type pos = password.find( '@' );
+   if( pos == string::npos )
+   {
+      if( !is_status_cmd )
+         password.erase( );
+   }
+   else
+   {
+      string uuid = password.substr( pos + 1 );
+
+      if( !valid_uuid( uuid ) )
+         password.erase( );
+      else
+         password.erase( pos );
+   }
+}
 #endif
+
+void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true )
+{
+   // KLUDGE: As Javascript strings are UTF encoded to avoid losing data the encrypted
+   // strings are actually "hex" (refer to similar KLUDGE comment in cat_interface.js).
+   if( decode )
+   {
+      string s;
+      for( size_t i = 0; i < decoded.size( ); i += 2 )
+      {
+         unsigned char ch = hex_nibble( decoded[ i ] );
+         ch <<= 4;
+         ch |= hex_nibble( decoded[ i + 1 ] );
+
+         s += ch;
+      }
+      decoded = s;
+   }
+
+   string full_key( pwd_hash );
+   string last_hash( full_key );
+
+   while( full_key.size( ) < decoded.size( ) )
+   {
+      string next( sha1( last_hash ).get_digest_as_string( ) );
+
+      full_key += next;
+      last_hash = next;
+   }
+
+   for( size_t i = 0; i < decoded.size( ); i++ )
+      decoded[ i ] ^= ( unsigned char )full_key[ i ];
+
+   // KLUDGE: (see above)
+   if( !decode )
+   {
+      string s;
+      for( size_t i = 0; i < decoded.size( ); i++ )
+      {
+         unsigned char ch = decoded[ i ];
+         s += ascii_digit( ( ch & 0xf0 ) >> 4 );
+         s += ascii_digit( ch & 0x0f );
+      }
+      decoded = s;
+   }
+}
 
 class timeout_handler : public thread
 {
@@ -536,7 +608,8 @@ void timeout_handler::on_start( )
          {
             LOG_TRACE << "session timeout";
             LOG_TRACE << "[logout: " << si->second->user_id
-             << " at " << date_time::local( ).as_string( true, false ) << "]";
+             << " at " << date_time::local( ).as_string( true, false )
+             << " from " << si->second->ip_addr << "]";
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -656,6 +729,7 @@ void request_handler::on_start( )
 void request_handler::process_request( )
 {
    bool okay = true;
+   bool is_ssl = false;
    bool temp_session = false;
    bool force_refresh = false;
    bool created_session = false;
@@ -676,12 +750,19 @@ void request_handler::process_request( )
 
    try
    {
+      const char* p_ssl = FCGX_GetParam( c_http_param_ssl, *p_env );
       const char* p_host = FCGX_GetParam( c_http_param_host, *p_env );
       const char* p_rhost = FCGX_GetParam( c_http_param_rhost, *p_env );
       const char* p_raddr = FCGX_GetParam( c_http_param_raddr, *p_env );
       const char* p_uagent = FCGX_GetParam( c_http_param_uagent, *p_env );
 
       map< string, string > input_data;
+
+      if( p_ssl )
+      {
+         is_ssl = true;
+         input_data.insert( make_pair( c_http_param_ssl, p_ssl ) );
+      }
 
       if( p_host )
          input_data.insert( make_pair( c_http_param_host, p_host ) );
@@ -723,14 +804,48 @@ void request_handler::process_request( )
       parse_fcgi_input( p_in, input_data, '&' );
 
       string cmd( input_data[ c_param_cmd ] );
+      string username( input_data[ c_param_username ] );
+
+      session_id = input_data[ c_param_session ];
+
+      // NOTE: If an existing session is present then obtain its
+      // password hash for decrypting base64 data (if required).
+      string pwd_hash;
+      if( !session_id.empty( ) && session_id != c_new_session )
+      {
+         p_session_info = get_session_info( session_id, false );
+         if( p_session_info )
+            pwd_hash = p_session_info->user_pwd_hash;
+      }
+
+      string base64_data( input_data[ c_param_base64 ] );
+      if( !base64_data.empty( ) )
+      {
+         string decoded( base64::decode( base64_data ) );
+
+         bool check_decoded = false;
+         if( !pwd_hash.empty( ) )
+         {
+            check_decoded = true;
+            crypt_decoded( pwd_hash, decoded );
+         }
+
+         if( check_decoded )
+         {
+            size_t pos = decoded.find( c_dummy_param_prefix );
+            if( pos != string::npos )
+               parse_input( ( char* )decoded.c_str( ), decoded.size( ), input_data, '&', true );
+         }
+      }
+
       string data( input_data[ c_param_data ] );
       string keep( input_data[ c_param_keep ] );
       string chksum( input_data[ c_param_chksum ] );
       string hashval( input_data[ c_param_hashval ] );
-      string username( input_data[ c_param_username ] );
       string password( input_data[ c_param_password ] );
       string persistent( input_data[ c_param_persistent ] );
 
+      cmd = input_data[ c_param_cmd ];
       hash = input_data[ c_param_hash ];
       user = input_data[ c_param_user ];
       session_id = input_data[ c_param_session ];
@@ -833,6 +948,8 @@ void request_handler::process_request( )
 
             created_session = true;
             p_session_info->locked = true;
+            p_session_info->ip_addr = input_data[ c_http_param_raddr ];
+
             session_id = p_session_info->session_id = uuid( ).as_string( );
 
             if( !temp_session && ( is_authorised || persistent == c_true ) )
@@ -1076,27 +1193,34 @@ void request_handler::process_request( )
                   }
 
 #ifdef USE_UUID_FOR_LOGIN
-                  // NOTE: In order to help prevent a login replay attack a UUID that was
-                  // passed to the client must be appended to the password after an '@'.
-                  string::size_type pos = password.find( '@' );
-                  if( pos == string::npos )
-                  {
-                     if( cmd != c_cmd_status )
-                        password.erase( );
-                  }
-                  else
-                  {
-                     string uuid = password.substr( pos + 1 );
-
-                     if( !valid_uuid( uuid ) )
-                        password.erase( );
-                     else
-                        password.erase( pos );
-                  }
+                  strip_password( password, cmd == c_cmd_status );
 #endif
 
                   fetch_user_record( g_id, module_id, module_name,
-                   mod_info, *p_session_info, is_authorised, true, username, password );
+                   mod_info, *p_session_info, is_authorised || !base64_data.empty( ), true, username, password );
+
+                  pwd_hash = p_session_info->user_pwd_hash;
+
+                  if( !is_authorised )
+                  {
+                     if( !base64_data.empty( ) )
+                     {
+                        string decoded( base64::decode( base64_data ) );
+
+                        crypt_decoded( pwd_hash, decoded );
+
+                        size_t pos = decoded.find( c_dummy_param_prefix );
+                        if( pos != string::npos )
+                           parse_input( ( char* )decoded.c_str( ), decoded.size( ), input_data, '&', true );
+
+                        password = input_data[ c_param_password ];
+#ifdef USE_UUID_FOR_LOGIN
+                        strip_password( password, cmd == c_cmd_status );
+#endif
+                        if( password != p_session_info->user_pwd_hash )
+                           throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+                     }
+                  }
 
                   bool permit_multiple_logins = false;
                   bool permit_module_switching = false;
@@ -1226,7 +1350,8 @@ void request_handler::process_request( )
                      p_session_info->is_persistent = true;
 
                   LOG_TRACE << "[login: " << p_session_info->user_id
-                   << " at " << date_time::local( ).as_string( true, false ) << "]";
+                   << " at " << date_time::local( ).as_string( true, false )
+                   << " from " << p_session_info->ip_addr << "]";
                }
             }
          }
@@ -2883,7 +3008,8 @@ void request_handler::process_request( )
             remove_non_persistent( session_id );
 
             LOG_TRACE << "[logout: " << p_session_info->user_id
-             << " at " << date_time::local( ).as_string( true, false ) << "]";
+             << " at " << date_time::local( ).as_string( true, false )
+             << " from " << p_session_info->ip_addr << "]";
          }
          else
          {
@@ -3787,6 +3913,9 @@ void request_handler::process_request( )
             extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
             extra_content_func += "warn_refresh( );";
 
+            if( p_session_info && p_session_info->logged_in )
+               extra_content_func += "\nloggedIn = true;";
+
             if( !scrollx.empty( ) && !scrolly.empty( ) )
                extra_content_func += "\nscroll_page( " + scrollx + ", " + scrolly + " );";
          }
@@ -3794,8 +3923,6 @@ void request_handler::process_request( )
 
       if( cmd != c_cmd_status )
       {
-         extra_content_func += " hashRounds = " + to_string( c_password_hash_rounds ) + ";";
-
          extra_content_func += " serverId = '" + g_id + "';";
 #ifdef USE_UUID_FOR_LOGIN
          extra_content_func += " uniqueId = '" + get_latest_uuid( ) + "';";
@@ -3842,6 +3969,9 @@ void request_handler::process_request( )
       }
 
       output_login_logout( extra_content, osstr.str( ), !is_logged_in, true, created_session ? module_ref : "" );
+
+      if( is_logged_in )
+         extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
    }
    catch( ... )
    {
@@ -3850,10 +3980,14 @@ void request_handler::process_request( )
       LOG_TRACE << "unexpected error occurred";
 
       if( p_session_info && p_session_info->logged_in )
+      {
          extra_content << "<p align=\"center\">"
           << string_message( GDS( c_display_click_here_to_go_back ),
           make_pair( c_display_click_here_to_go_back_parm_href,
           "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>\n";
+
+         extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
+      }
       else
       {
          okay = false;
@@ -3931,6 +4065,35 @@ void request_handler::process_request( )
    }
 
    output += interface_html.substr( cpos );
+
+#ifdef USE_ENCRYPTED_BASE64_OUTPUT
+   if( !is_ssl )
+   {
+      if( p_session_info && p_session_info->logged_in )
+      {
+         // NOTE: Add some random noise to further obfuscate the encrypted
+         // output (otherwise analysis of the encrypted output with a good
+         // idea of the expected plain text output could lead to revealing
+         // the initial hash of the key).
+         string str( "<!-- " );
+         int num = 25 + rand( ) % 75;
+         for( int i = 0; i < num; i++ )
+            str += 'a' + rand( ) % 26;
+
+         str += " -->\n";
+
+         output = str + output + str;
+
+         while( output.length( ) % 40 )
+            output += ' ';
+
+         crypt_decoded( p_session_info->user_pwd_hash, output, false );
+
+         output = base64::encode( output );
+         p_session_info->user_pwd_hash = sha1( p_session_info->user_pwd_hash ).get_digest_as_string( );
+      }
+   }
+#endif
 
 #ifdef DEBUG
    ofstream outf( "debug.htms" );
