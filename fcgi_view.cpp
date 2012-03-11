@@ -25,6 +25,7 @@
 
 #include "fcgi_view.h"
 
+#include "base64.h"
 #include "format.h"
 #include "numeric.h"
 #include "date_time.h"
@@ -386,7 +387,7 @@ bool output_view_form( ostream& os, const string& act,
  const string& exec, const string& cont, const string& data,
  const string& error_message, const string& extra, const string& pfield,
  const view_source& source, int vtab_num, const string& session_id,
- const string& user_select_key, bool using_session_cookie,
+ const string& user_select_key, bool using_session_cookie, bool embed_images,
  const map< string, string >& new_field_and_values, const session_info& sess_info,
  string& field_list, string& edit_timeout_func, string& extra_content_func, bool use_url_checksum,
  bool is_quick_link_view, const map< string, string >& show_opts, bool is_printable, int back_count,
@@ -1919,6 +1920,7 @@ bool output_view_form( ostream& os, const string& act,
 
                   create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
 
+                  bool has_image = false;
                   if( !is_in_edit && !is_printable )
                   {
                      has_attached_file_link = true;
@@ -1931,10 +1933,7 @@ bool output_view_form( ostream& os, const string& act,
                          make_pair( c_display_click_here_to_view_file_parm_ext, escape_markup( file_ext ) ) ) << "</p>";
                      }
                      else
-                        os << "<a href=\"" << tmp_link_path
-                         << "\" target=\"_blank\"><img src=\"" << tmp_link_path
-                         << "\" width=\"" << image_width << "\" height=\"" << image_height
-                         << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\"></a>";
+                        has_image = true;
                   }
                   else
                   {
@@ -1942,9 +1941,35 @@ bool output_view_form( ostream& os, const string& act,
                         os << "<p>" << string_message( GDS( c_display_has_file ),
                          make_pair( c_display_has_file_parm_ext, escape_markup( file_ext ) ) ) << "</p>";
                      else
-                        os << "<img src=\"" << tmp_link_path
-                         << "\" width=\"" << image_width << "\" height=\"" << image_height
-                         << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
+                        has_image = true;
+                  }
+
+                  if( has_image )
+                  {
+                     bool is_href = false;
+                     if( !is_printable && !embed_images )
+                     {
+                        is_href = true;
+                        os << "<a href=\"" << tmp_link_path << "\" target=\"_blank\">";
+                     }
+
+                     string image_src( tmp_link_path );
+                     if( embed_images )
+                     {
+                        string buffer( buffer_file( file_name ) );
+                        image_src = "data:image/" + file_ext + ";base64," + base64::encode( buffer );
+                     }
+
+                     os << "<img src=\"" << image_src;
+
+                     // NOTE: As
+                     if( !embed_images )
+                        os << "\" width=\"" << image_width << "\" height=\"" << image_height;
+
+                     os << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
+
+                     if( is_href )
+                        os << "</a>";
                   }
                }
             }

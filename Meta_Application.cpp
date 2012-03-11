@@ -329,7 +329,7 @@ int gv_default_Default_Multiline_Max_Rows = int( 50 );
 int gv_default_Default_Multiline_Min_Rows = int( 10 );
 int gv_default_Default_Multiline_Text_Limit = int( 1000 );
 int gv_default_Default_Multiline_Text_Trunc = int( 50 );
-string gv_default_Default_Timezone_Abbr = string( "GMT" );
+string gv_default_Default_Timezone_Abbr = string( );
 string gv_default_Generate_Details = string( );
 string gv_default_Generate_Status = string( );
 int gv_default_Generate_Type = int( 0 );
@@ -2332,6 +2332,9 @@ void Meta_Application::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [<start to_store>]
+//idk
+   if( is_create && get_obj( ).Default_Timezone_Abbr( ).empty( ) )
+      get_obj( ).Default_Timezone_Abbr( get_timezone( ) );
    // [<finish to_store>]
 }
 

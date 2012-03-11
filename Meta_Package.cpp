@@ -1731,6 +1731,7 @@ void Meta_Package::impl::after_destroy( bool is_internal )
    string install_log( get_obj( ).get_key( ) + ".install.log" );
    string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
    string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
+   string map_new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map.new" ) );
 
    if( exists_file( install_log ) )
       remove_file( install_log );
@@ -1740,6 +1741,9 @@ void Meta_Package::impl::after_destroy( bool is_internal )
 
    if( exists_file( new_filename ) )
       remove_file( new_filename );
+
+   if( exists_file( map_new_filename ) )
+      remove_file( map_new_filename );
    // [<finish after_destroy>]
 }
 

@@ -3348,7 +3348,7 @@ void request_handler::process_request( )
                    list, session_id, uselect, "", false,
                    cookies_permitted, true, false, list_selections, list_search_text,
                    list_search_values, 0, false, "", false, "", oident, *p_session_info, specials, use_url_checksum,
-                   qlink, findinfo + listsrch, selected_records, !hashval.empty( ), false, has_any_changing_records );
+                   qlink, findinfo + listsrch, selected_records, !is_ssl, !hashval.empty( ), false, has_any_changing_records );
                }
             }
             else if( cmd == c_cmd_view || cmd == c_cmd_pview )
@@ -3389,7 +3389,7 @@ void request_handler::process_request( )
                   bool is_editable = output_view_form( extra_content,
                    act, was_invalid, user_field_info, exec, cont, data, error_message,
                    extra, field, view, vtab_num, session_id, uselect, cookies_permitted,
-                   new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func,
+                   !is_ssl, new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func,
                    extra_content_func, use_url_checksum, !qlink.empty( ), show_opts, cmd == c_cmd_pview,
                    back_count, pdf_view_file_name, is_owner, extra_html_content, has_any_changing_records );
 
@@ -3501,7 +3501,7 @@ void request_handler::process_request( )
                          session_id, uselect, "", ( cmd == c_cmd_pview ), cookies_permitted,
                          true, ( act == c_act_edit ), list_selections, list_search_text, list_search_values,
                          state, true, data, keep_checks, ident, "", *p_session_info, specials, use_url_checksum, "",
-                         findinfo + listsrch, selected_records, !hashval.empty( ), is_owner, has_any_changing_records );
+                         findinfo + listsrch, selected_records, !is_ssl, !hashval.empty( ), is_owner, has_any_changing_records );
                      }
 
                      extra_content << "</td></tr></table>\n";
@@ -3603,7 +3603,7 @@ void request_handler::process_request( )
                    ( cmd == c_cmd_plist ), cookies_permitted, true, false, list_selections,
                    list_search_text, list_search_values, 0, false, "", keep_checks, "", oident,
                    *p_session_info, specials, use_url_checksum, qlink, findinfo + listsrch,
-                   selected_records, !hashval.empty( ), false, has_any_changing_records, &pdf_list_file_name );
+                   selected_records, !is_ssl, !hashval.empty( ), false, has_any_changing_records, &pdf_list_file_name );
 
                   if( cmd != c_cmd_plist )
                      extra_content << "</td></tr></table>\n";

@@ -323,7 +323,6 @@
       <type>1000
       <mandatory>true
       <extra>upper
-      <default_value>GMT
       <indexes/>
       </indexes>
       <modifiers/>
