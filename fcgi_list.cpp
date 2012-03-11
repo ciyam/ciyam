@@ -25,6 +25,7 @@
 
 #include "fcgi_list.h"
 
+#include "base64.h"
 #include "format.h"
 #include "numeric.h"
 #include "date_time.h"
@@ -356,13 +357,17 @@ void setup_list_fields( list_source& list,
                list.pfield_list += "." + fld.pfield;
             }
          }
-         else if( fld.indexed && allow_sorting && !extra_data.count( c_field_extra_print_summary ) )
+         else if( fld.indexed && !extra_data.count( c_field_extra_print_summary ) )
          {
-            list.sort_fields.insert( field_id );
+            if( allow_sorting )
+               list.sort_fields.insert( field_id );
 
             string field_ids;
             for( int j = 0; j < fld.index_count; j++ )
             {
+               if( i + j >= ( list.lici->second )->fields.size( ) )
+                  break;
+
                if( !field_ids.empty( ) )
                   field_ids += ',';
                field_ids += ( list.lici->second )->fields[ i + j ].field;
@@ -459,7 +464,7 @@ void output_list_form( ostream& os,
  uint64_t parent_state, bool is_child_list, const string& parent_key, bool keep_checks,
  const string& pident, const string& oident, const session_info& sess_info,
  const set< string >& specials, bool use_url_checksum, const string& qlink,
- const string& findinfo_and_listsrch, const set< string >& selected_records,
+ const string& findinfo_and_listsrch, const set< string >& selected_records, bool embed_images,
  bool has_hashval, bool has_owner_parent, bool& has_any_changing, const string* p_pdf_file_name )
 {
    string list_type( source.lici->second->type );
@@ -2850,17 +2855,28 @@ void output_list_form( ostream& os,
 
                   create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
 
-                  if( !is_href && !is_printable )
+                  if( !is_href && !is_printable && !embed_images )
+                  {
+                     is_href = true;
                      os << "<a href=\"" << tmp_link_path << "\" target=\"_blank\">";
+                  }
 
                   if( source.file_fields.count( source_value_id ) )
                      os << file_ext;
                   else
-                     os << "<img src=\"" << tmp_link_path
+                  {
+                     string image_src( tmp_link_path );
+                     if( embed_images )
+                     {
+                        string buffer( buffer_file( file_name ) );
+                        image_src = "data:image/" + file_ext + ";base64," + base64::encode( buffer );
+                     }
+
+                     os << "<img src=\"" << image_src
                       << "\" width=\"" << width << "\" height=\""
                       << height << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
+                  }
 
-                  is_href = true;
                   is_image = true;
                }
             }

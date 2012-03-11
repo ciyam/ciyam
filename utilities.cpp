@@ -1098,7 +1098,11 @@ void setup_arguments( int argc, const char* argv[ ], vector< string >& arguments
 
 string buffer_file( const string& file_name )
 {
+#ifndef _MSC_VER
    FILE* fp = fopen( file_name.c_str( ), "rb" );
+#else
+   FILE* fp = fopen( file_name.c_str( ), "rb, ccs=UTF-8" );
+#endif
    if( !fp )
       throw runtime_error( "unable to open file '" + file_name + "' for input" );
 
