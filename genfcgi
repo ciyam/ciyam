@@ -1,0 +1,29 @@
+if [ $# -lt 2 ]; then
+ echo Usage: genfcgi [app name] [app dir] [[web dir]]
+else
+ if [ $# -gt 2 ]; then
+  export WEBDIR=$3
+ fi
+ if [ "$WEBDIR" = "" ]; then
+  echo Error: Missing environment variable 'WEBDIR'.
+ else
+  export directory=$WEBDIR/$2
+
+  if [ ! -f $1.app.vars.xrep ]; then
+   echo Error: File \'$1.app.vars.xrep\' does not exist.
+  else
+   if [ ! -d $directory ]; then
+    ./setup $1 $2 $3
+   fi
+   if [ ! -f $directory/activate.htms ]; then
+    echo Error: File \'$directory/activate.htms\' does not exist.
+   else
+    ./xrep @app.fcgi.sio.xrep include=$1.app.vars.xrep >~genfcgi.tmp
+    ./update $directory/fcgi.sio ~genfcgi.tmp
+
+    ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep >~genfcgi.tmp
+    ./update $directory/ciyam_interface.js ~genfcgi.tmp
+   fi
+  fi
+ fi
+fi
