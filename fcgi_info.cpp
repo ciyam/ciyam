@@ -130,6 +130,7 @@ const char* const c_attribute_user_parent = "user_parent";
 const char* const c_attribute_user_active = "user_active";
 const char* const c_attribute_user_select = "user_select";
 const char* const c_attribute_user_slevel = "user_slevel";
+const char* const c_attribute_encrypt_data = "encrypt_data";
 const char* const c_attribute_image_height = "image_height";
 const char* const c_attribute_storage_name = "storage_name";
 const char* const c_attribute_module_prefix = "module_prefix";
@@ -242,6 +243,7 @@ storage_info::storage_info( )
  print_limit( c_default_print_limit ),
  image_width( c_default_image_width ),
  image_height( c_default_image_height ),
+ encrypt_data( c_default_encrypt_data ),
  checkbox_bools( c_default_checkbox_bools ),
  filesize_limit( c_default_filesize_limit ),
  quick_link_limit( c_default_quick_link_limit )
@@ -259,6 +261,8 @@ void storage_info::clear( )
 
    image_width = c_default_image_width;
    image_height = c_default_image_height;
+
+   encrypt_data = c_default_encrypt_data;
 
    checkbox_bools = c_default_checkbox_bools;
 
@@ -417,6 +421,9 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       string image_height = reader.read_opt_attribute( c_attribute_image_height );
       if( !image_height.empty( ) )
          info.image_height = atoi( image_height.c_str( ) );
+
+      string encrypt_data = reader.read_opt_attribute( c_attribute_encrypt_data );
+      info.encrypt_data = ( encrypt_data == c_true );
 
       string checkbox_bools = reader.read_opt_attribute( c_attribute_checkbox_bools );
       info.checkbox_bools = ( checkbox_bools == c_true );

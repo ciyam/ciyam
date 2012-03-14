@@ -335,6 +335,23 @@
       </specifications>
      </field>
      <field/>
+      <id>127130
+      <name>Encrypt_Dynamic_Content
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>127106
       <name>Generate_Details
       <type>string
@@ -26032,10 +26049,7 @@
      <field_info>127103
      <field_info>127102
      <field_info>127106;show+no_edit
-     <field_info>@tab:UI_Settings
-     <field_info>127107
-     <field_info>127124;enum=906
-     <field_info>127108
+     <field_info>@tab:Display_Settings
      <field_info>127109
      <field_info>127110
      <field_info>127121
@@ -26051,6 +26065,11 @@
      <field_info>127119;enum=904
      <field_info>127118;enum=903
      <field_info>127127
+     <field_info>@tab:Other_Settings
+     <field_info>127107
+     <field_info>127130
+     <field_info>127124;enum=906
+     <field_info>127108
      <field_info>127104
     </data>
    </specification>

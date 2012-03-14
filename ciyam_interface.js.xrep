@@ -1,3 +1,4 @@
+`{`#$include @`}
 var isOpera = navigator.userAgent.indexOf( 'Opera' ) > -1;
 var isIE = navigator.userAgent.indexOf( 'MSIE' ) > 1 && !isOpera;
 var isMoz = navigator.userAgent.indexOf( 'Mozilla/5.' ) == 0 && !isOpera;
@@ -10,7 +11,7 @@ var qsContext = window.location.search.substring( 1 ); //i.e. remove the ? prefi
 var qsFurther = '';
 
 var secureOnly = false;
-var encryptPosts = true;
+var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
    window.location.replace( 'https:' + source[ 1 ] );
@@ -25,7 +26,7 @@ var had_act_error = false;
 var serverId = '';
 var uniqueId = '';
 
-var hashRounds = 10000;
+var hashRounds = 1000;
 
 var validation_error = '';
 

@@ -28,6 +28,7 @@ const int c_default_print_limit = 4000;
 const int c_default_image_width = 100;
 const int c_default_image_height = 75;
 
+const bool c_default_encrypt_data = false;
 const bool c_default_checkbox_bools = false;
 
 const size_t c_default_filesize_limit = 0;

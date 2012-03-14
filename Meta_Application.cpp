@@ -103,6 +103,7 @@ const char* const c_field_id_Default_Multiline_Min_Rows = "127116";
 const char* const c_field_id_Default_Multiline_Text_Limit = "127117";
 const char* const c_field_id_Default_Multiline_Text_Trunc = "127119";
 const char* const c_field_id_Default_Timezone_Abbr = "127122";
+const char* const c_field_id_Encrypt_Dynamic_Content = "127130";
 const char* const c_field_id_Generate_Details = "127106";
 const char* const c_field_id_Generate_Status = "127105";
 const char* const c_field_id_Generate_Type = "127120";
@@ -134,6 +135,7 @@ const char* const c_field_name_Default_Multiline_Min_Rows = "Default_Multiline_M
 const char* const c_field_name_Default_Multiline_Text_Limit = "Default_Multiline_Text_Limit";
 const char* const c_field_name_Default_Multiline_Text_Trunc = "Default_Multiline_Text_Trunc";
 const char* const c_field_name_Default_Timezone_Abbr = "Default_Timezone_Abbr";
+const char* const c_field_name_Encrypt_Dynamic_Content = "Encrypt_Dynamic_Content";
 const char* const c_field_name_Generate_Details = "Generate_Details";
 const char* const c_field_name_Generate_Status = "Generate_Status";
 const char* const c_field_name_Generate_Type = "Generate_Type";
@@ -165,6 +167,7 @@ const char* const c_field_display_name_Default_Multiline_Min_Rows = "field_appli
 const char* const c_field_display_name_Default_Multiline_Text_Limit = "field_application_default_multiline_text_limit";
 const char* const c_field_display_name_Default_Multiline_Text_Trunc = "field_application_default_multiline_text_trunc";
 const char* const c_field_display_name_Default_Timezone_Abbr = "field_application_default_timezone_abbr";
+const char* const c_field_display_name_Encrypt_Dynamic_Content = "field_application_encrypt_dynamic_content";
 const char* const c_field_display_name_Generate_Details = "field_application_generate_details";
 const char* const c_field_display_name_Generate_Status = "field_application_generate_status";
 const char* const c_field_display_name_Generate_Type = "field_application_generate_type";
@@ -179,7 +182,7 @@ const char* const c_field_display_name_Use_URL_Checksum = "field_application_use
 const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
 
-const int c_num_fields = 30;
+const int c_num_fields = 31;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -212,6 +215,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127127",
    "127128",
    "127129",
+   "127130",
    "302220"
 };
 
@@ -234,6 +238,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Default_Multiline_Text_Limit",
    "Default_Multiline_Text_Trunc",
    "Default_Timezone_Abbr",
+   "Encrypt_Dynamic_Content",
    "Generate_Details",
    "Generate_Status",
    "Generate_Type",
@@ -330,6 +335,7 @@ int gv_default_Default_Multiline_Min_Rows = int( 10 );
 int gv_default_Default_Multiline_Text_Limit = int( 1000 );
 int gv_default_Default_Multiline_Text_Trunc = int( 50 );
 string gv_default_Default_Timezone_Abbr = string( );
+bool gv_default_Encrypt_Dynamic_Content = bool( 0 );
 string gv_default_Generate_Details = string( );
 string gv_default_Generate_Status = string( );
 int gv_default_Generate_Type = int( 0 );
@@ -738,6 +744,8 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Text_Trunc( ), cmd_handler.retval );
       else if( field_name == c_field_id_Default_Timezone_Abbr || field_name == c_field_name_Default_Timezone_Abbr )
          string_getter< string >( cmd_handler.p_Meta_Application->Default_Timezone_Abbr( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+         string_getter< bool >( cmd_handler.p_Meta_Application->Encrypt_Dynamic_Content( ), cmd_handler.retval );
       else if( field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
          string_getter< string >( cmd_handler.p_Meta_Application->Generate_Details( ), cmd_handler.retval );
       else if( field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
@@ -825,6 +833,9 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       else if( field_name == c_field_id_Default_Timezone_Abbr || field_name == c_field_name_Default_Timezone_Abbr )
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Timezone_Abbr, field_value );
+      else if( field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+         func_string_setter< Meta_Application, bool >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Encrypt_Dynamic_Content, field_value );
       else if( field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Details, field_value );
@@ -1002,6 +1013,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    const string& impl_Default_Timezone_Abbr( ) const { return lazy_fetch( p_obj ), v_Default_Timezone_Abbr; }
    void impl_Default_Timezone_Abbr( const string& Default_Timezone_Abbr ) { v_Default_Timezone_Abbr = Default_Timezone_Abbr; }
 
+   bool impl_Encrypt_Dynamic_Content( ) const { return lazy_fetch( p_obj ), v_Encrypt_Dynamic_Content; }
+   void impl_Encrypt_Dynamic_Content( bool Encrypt_Dynamic_Content ) { v_Encrypt_Dynamic_Content = Encrypt_Dynamic_Content; }
+
    const string& impl_Generate_Details( ) const { return lazy_fetch( p_obj ), v_Generate_Details; }
    void impl_Generate_Details( const string& Generate_Details ) { v_Generate_Details = Generate_Details; }
 
@@ -1165,6 +1179,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    int v_Default_Multiline_Text_Limit;
    int v_Default_Multiline_Text_Trunc;
    string v_Default_Timezone_Abbr;
+   bool v_Encrypt_Dynamic_Content;
    string v_Generate_Details;
    string v_Generate_Status;
    int v_Generate_Type;
@@ -1324,6 +1339,10 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$filesize_limit\x60=\x60'" << get_obj( ).Default_Max_Attached_File_Size( ) << "\x60'\x60}\n";
 
+      string encrypt_data;
+      if( get_obj( ).Encrypt_Dynamic_Content( ) )
+         encrypt_data = "true";
+
       string checkbox_bools;
       if( get_obj( ).Use_Check_Boxes_for_Bools( ) )
          checkbox_bools = "true";
@@ -1344,6 +1363,8 @@ void Meta_Application::impl::impl_Generate( )
 
       outv << "\x60{\x60$image_width\x60=\x60'" << get_obj( ).Default_Image_Width( ) << "\x60'\x60}\n";
       outv << "\x60{\x60$image_height\x60=\x60'" << get_obj( ).Default_Image_Height( ) << "\x60'\x60}\n";
+
+      outv << "\x60{\x60$encrypt_data\x60=\x60'" << encrypt_data << "\x60'\x60}\n";
 
       outv << "\x60{\x60$checkbox_bools\x60=\x60'" << checkbox_bools << "\x60'\x60}\n";
 
@@ -1896,54 +1917,58 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 17:
-      retval = to_string( impl_Generate_Details( ) );
+      retval = to_string( impl_Encrypt_Dynamic_Content( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Generate_Status( ) );
+      retval = to_string( impl_Generate_Details( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Generate_Type( ) );
+      retval = to_string( impl_Generate_Status( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Keep_Existing_Data( ) );
+      retval = to_string( impl_Generate_Type( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Module_Prefix( ) );
+      retval = to_string( impl_Keep_Existing_Data( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Module_Prefix( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Print_Lists_With_Check_Boxes( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Print_Lists_With_Row_Numbers( ) );
+      retval = to_string( impl_Print_Lists_With_Check_Boxes( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Show_Inaccessible_Modules( ) );
+      retval = to_string( impl_Print_Lists_With_Row_Numbers( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
+      retval = to_string( impl_Show_Inaccessible_Modules( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Use_URL_Checksum( ) );
+      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_URL_Checksum( ) );
       break;
 
       case 29:
+      retval = to_string( impl_Version( ) );
+      break;
+
+      case 30:
       retval = to_string( impl_Workgroup( ) );
       break;
 
@@ -2027,54 +2052,58 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 17:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Details, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Encrypt_Dynamic_Content, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Status, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Details, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Generate_Type, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Generate_Status, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Keep_Existing_Data, value );
+      func_string_setter< Meta_Application::impl, int >( *this, &Meta_Application::impl::impl_Generate_Type, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Module_Prefix, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Keep_Existing_Data, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Name, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Module_Prefix, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Check_Boxes, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Name, value );
       break;
 
       case 24:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Row_Numbers, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Check_Boxes, value );
       break;
 
       case 25:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Show_Inaccessible_Modules, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Print_Lists_With_Row_Numbers, value );
       break;
 
       case 26:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Show_Inaccessible_Modules, value );
       break;
 
       case 27:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
       break;
 
       case 28:
-      func_string_setter< Meta_Application::impl, numeric >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
       break;
 
       case 29:
+      func_string_setter< Meta_Application::impl, numeric >( *this, &Meta_Application::impl::impl_Version, value );
+      break;
+
+      case 30:
       func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
       break;
 
@@ -2163,6 +2192,7 @@ void Meta_Application::impl::clear( )
    v_Default_Multiline_Text_Limit = gv_default_Default_Multiline_Text_Limit;
    v_Default_Multiline_Text_Trunc = gv_default_Default_Multiline_Text_Trunc;
    v_Default_Timezone_Abbr = gv_default_Default_Timezone_Abbr;
+   v_Encrypt_Dynamic_Content = gv_default_Encrypt_Dynamic_Content;
    v_Generate_Details = gv_default_Generate_Details;
    v_Generate_Status = gv_default_Generate_Status;
    v_Generate_Type = gv_default_Generate_Type;
@@ -2693,6 +2723,16 @@ void Meta_Application::Default_Timezone_Abbr( const string& Default_Timezone_Abb
    p_impl->impl_Default_Timezone_Abbr( Default_Timezone_Abbr );
 }
 
+bool Meta_Application::Encrypt_Dynamic_Content( ) const
+{
+   return p_impl->impl_Encrypt_Dynamic_Content( );
+}
+
+void Meta_Application::Encrypt_Dynamic_Content( bool Encrypt_Dynamic_Content )
+{
+   p_impl->impl_Encrypt_Dynamic_Content( Encrypt_Dynamic_Content );
+}
+
 const string& Meta_Application::Generate_Details( ) const
 {
    return p_impl->impl_Generate_Details( );
@@ -3159,6 +3199,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Encrypt_Dynamic_Content )
+   {
+      p_id = c_field_id_Encrypt_Dynamic_Content;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Generate_Details )
    {
       p_id = c_field_id_Generate_Details;
@@ -3470,6 +3520,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Encrypt_Dynamic_Content )
+   {
+      p_name = c_field_name_Encrypt_Dynamic_Content;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Generate_Details )
    {
       p_name = c_field_name_Generate_Details;
@@ -3644,6 +3704,8 @@ string Meta_Application::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Default_Multiline_Text_Trunc );
    else if( id == c_field_id_Default_Timezone_Abbr )
       display_name = get_module_string( c_field_display_name_Default_Timezone_Abbr );
+   else if( id == c_field_id_Encrypt_Dynamic_Content )
+      display_name = get_module_string( c_field_display_name_Encrypt_Dynamic_Content );
    else if( id == c_field_id_Generate_Details )
       display_name = get_module_string( c_field_display_name_Generate_Details );
    else if( id == c_field_id_Generate_Status )
@@ -3873,6 +3935,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Default_Multiline_Text_Limit" );
    names.push_back( "C_Default_Multiline_Text_Trunc" );
    names.push_back( "C_Default_Timezone_Abbr" );
+   names.push_back( "C_Encrypt_Dynamic_Content" );
    names.push_back( "C_Generate_Status" );
    names.push_back( "C_Generate_Type" );
    names.push_back( "C_Keep_Existing_Data" );
@@ -3911,6 +3974,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Default_Multiline_Text_Limit( ) ) );
    values.push_back( to_string( Default_Multiline_Text_Trunc( ) ) );
    values.push_back( sql_quote( to_string( Default_Timezone_Abbr( ) ) ) );
+   values.push_back( to_string( Encrypt_Dynamic_Content( ) ) );
    values.push_back( sql_quote( to_string( Generate_Status( ) ) ) );
    values.push_back( to_string( Generate_Type( ) ) );
    values.push_back( to_string( Keep_Existing_Data( ) ) );
@@ -4030,6 +4094,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127117", "Default_Multiline_Text_Limit", "int", false ) );
    all_field_info.push_back( field_info( "127119", "Default_Multiline_Text_Trunc", "int", false ) );
    all_field_info.push_back( field_info( "127122", "Default_Timezone_Abbr", "string", false ) );
+   all_field_info.push_back( field_info( "127130", "Encrypt_Dynamic_Content", "bool", false ) );
    all_field_info.push_back( field_info( "127106", "Generate_Details", "string", false ) );
    all_field_info.push_back( field_info( "127105", "Generate_Status", "string", false ) );
    all_field_info.push_back( field_info( "127120", "Generate_Type", "int", false ) );
@@ -4140,54 +4205,58 @@ const char* Meta_Application::static_get_field_id( field_id id )
       break;
 
       case 18:
-      p_id = "127106";
+      p_id = "127130";
       break;
 
       case 19:
-      p_id = "127105";
+      p_id = "127106";
       break;
 
       case 20:
-      p_id = "127120";
+      p_id = "127105";
       break;
 
       case 21:
-      p_id = "127129";
+      p_id = "127120";
       break;
 
       case 22:
-      p_id = "127103";
+      p_id = "127129";
       break;
 
       case 23:
-      p_id = "127101";
+      p_id = "127103";
       break;
 
       case 24:
-      p_id = "127111";
+      p_id = "127101";
       break;
 
       case 25:
-      p_id = "127112";
+      p_id = "127111";
       break;
 
       case 26:
-      p_id = "127110";
+      p_id = "127112";
       break;
 
       case 27:
-      p_id = "127121";
+      p_id = "127110";
       break;
 
       case 28:
-      p_id = "127107";
+      p_id = "127121";
       break;
 
       case 29:
-      p_id = "127102";
+      p_id = "127107";
       break;
 
       case 30:
+      p_id = "127102";
+      break;
+
+      case 31:
       p_id = "302220";
       break;
    }
@@ -4273,54 +4342,58 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 18:
-      p_id = "Generate_Details";
+      p_id = "Encrypt_Dynamic_Content";
       break;
 
       case 19:
-      p_id = "Generate_Status";
+      p_id = "Generate_Details";
       break;
 
       case 20:
-      p_id = "Generate_Type";
+      p_id = "Generate_Status";
       break;
 
       case 21:
-      p_id = "Keep_Existing_Data";
+      p_id = "Generate_Type";
       break;
 
       case 22:
-      p_id = "Module_Prefix";
+      p_id = "Keep_Existing_Data";
       break;
 
       case 23:
-      p_id = "Name";
+      p_id = "Module_Prefix";
       break;
 
       case 24:
-      p_id = "Print_Lists_With_Check_Boxes";
+      p_id = "Name";
       break;
 
       case 25:
-      p_id = "Print_Lists_With_Row_Numbers";
+      p_id = "Print_Lists_With_Check_Boxes";
       break;
 
       case 26:
-      p_id = "Show_Inaccessible_Modules";
+      p_id = "Print_Lists_With_Row_Numbers";
       break;
 
       case 27:
-      p_id = "Use_Check_Boxes_for_Bools";
+      p_id = "Show_Inaccessible_Modules";
       break;
 
       case 28:
-      p_id = "Use_URL_Checksum";
+      p_id = "Use_Check_Boxes_for_Bools";
       break;
 
       case 29:
-      p_id = "Version";
+      p_id = "Use_URL_Checksum";
       break;
 
       case 30:
+      p_id = "Version";
+      break;
+
+      case 31:
       p_id = "Workgroup";
       break;
    }
@@ -4371,32 +4444,34 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 16;
    else if( field == c_field_id_Default_Timezone_Abbr || field == c_field_name_Default_Timezone_Abbr )
       rc += 17;
-   else if( field == c_field_id_Generate_Details || field == c_field_name_Generate_Details )
+   else if( field == c_field_id_Encrypt_Dynamic_Content || field == c_field_name_Encrypt_Dynamic_Content )
       rc += 18;
-   else if( field == c_field_id_Generate_Status || field == c_field_name_Generate_Status )
+   else if( field == c_field_id_Generate_Details || field == c_field_name_Generate_Details )
       rc += 19;
-   else if( field == c_field_id_Generate_Type || field == c_field_name_Generate_Type )
+   else if( field == c_field_id_Generate_Status || field == c_field_name_Generate_Status )
       rc += 20;
-   else if( field == c_field_id_Keep_Existing_Data || field == c_field_name_Keep_Existing_Data )
+   else if( field == c_field_id_Generate_Type || field == c_field_name_Generate_Type )
       rc += 21;
-   else if( field == c_field_id_Module_Prefix || field == c_field_name_Module_Prefix )
+   else if( field == c_field_id_Keep_Existing_Data || field == c_field_name_Keep_Existing_Data )
       rc += 22;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Module_Prefix || field == c_field_name_Module_Prefix )
       rc += 23;
-   else if( field == c_field_id_Print_Lists_With_Check_Boxes || field == c_field_name_Print_Lists_With_Check_Boxes )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 24;
-   else if( field == c_field_id_Print_Lists_With_Row_Numbers || field == c_field_name_Print_Lists_With_Row_Numbers )
+   else if( field == c_field_id_Print_Lists_With_Check_Boxes || field == c_field_name_Print_Lists_With_Check_Boxes )
       rc += 25;
-   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
+   else if( field == c_field_id_Print_Lists_With_Row_Numbers || field == c_field_name_Print_Lists_With_Row_Numbers )
       rc += 26;
-   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
+   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
       rc += 27;
-   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
+   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
       rc += 28;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
       rc += 29;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 30;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 31;
 
    return rc - 1;
 }
@@ -4444,6 +4519,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Default_Multiline_Text_Limit INTEGER NOT NULL,"
     "C_Default_Multiline_Text_Trunc INTEGER NOT NULL,"
     "C_Default_Timezone_Abbr VARCHAR(128) NOT NULL,"
+    "C_Encrypt_Dynamic_Content INTEGER NOT NULL,"
     "C_Generate_Status VARCHAR(128) NOT NULL,"
     "C_Generate_Type INTEGER NOT NULL,"
     "C_Keep_Existing_Data INTEGER NOT NULL,"

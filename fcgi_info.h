@@ -426,6 +426,7 @@ struct storage_info
    int image_width;
    int image_height;
 
+   bool encrypt_data;
    bool checkbox_bools;
 
    size_t filesize_limit;
