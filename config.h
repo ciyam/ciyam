@@ -28,7 +28,7 @@ const int c_protocol_minor_version = 1;
 
 const char* const c_protocol_version = "0.1";
 
-const size_t c_password_hash_rounds = 10000;
+const size_t c_password_hash_rounds = 1000;
 
 #endif
 

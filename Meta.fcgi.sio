@@ -2280,35 +2280,11 @@
      <modifiers>
     </field>
     <field/>
-     <name>tab_ui_settings
+     <name>tab_display_settings
      <field>@tab
      <ftype>
      <extra>
      <mandatory>false
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_application_use_url_checksum
-     <field>127107
-     <ftype>bool
-     <extra>
-     <mandatory>true
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_application_auto_login_days
-     <field>127124
-     <ftype>int
-     <extra>enum=906
-     <mandatory>true
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_application_allow_duplicate_logins
-     <field>127108
-     <ftype>bool
-     <extra>
-     <mandatory>true
      <modifiers>
     </field>
     <field/>
@@ -2428,6 +2404,46 @@
      <field>127127
      <ftype>int
      <extra>int_type=bytes
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>tab_other_settings
+     <field>@tab
+     <ftype>
+     <extra>
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_application_use_url_checksum
+     <field>127107
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_application_encrypt_dynamic_content
+     <field>127130
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_application_auto_login_days
+     <field>127124
+     <ftype>int
+     <extra>enum=906
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_application_allow_duplicate_logins
+     <field>127108
+     <ftype>bool
+     <extra>
      <mandatory>true
      <modifiers>
     </field>

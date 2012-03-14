@@ -1,0 +1,29 @@
+`{`#$include @`}
+<sio/>
+ <tz_abbr>`{`$tz_abbr`}
+ <url_opts>`{`$url_opts`}
+ <row_limit>`{`$row_limit`}
+ <menu_opts>`{`$menu_opts`}
+ <login_days>`{`$login_days`}
+ <login_opts>`{`$login_opts`}
+ <notes_rmin>`{`$notes_rmin`}
+ <notes_rmax>`{`$notes_rmax`}
+ <notes_trunc>`{`$notes_trunc`}
+ <notes_limit>`{`$notes_limit`}
+ <print_limit>`{`$print_limit`}
+ <print_list_opts>`{`$print_list_ops`}
+ <image_width>`{`$image_width`}
+ <image_height>`{`$image_height`}
+ <encrypt_data>`{`$encrypt_data`}
+ <checkbox_bools>`{`$checkbox_bools`}
+ <filesize_limit>`{`$filesize_limit`}
+ <storage_name>`{`$storage_name`}
+ <module_prefix>`{`$module_prefix`}
+ <modules/>
+`{`[`$modules`,\
+  <module/>
+   <name>\$
+  </module>\
+`+\n`]`}
+ </modules>
+</sio>
