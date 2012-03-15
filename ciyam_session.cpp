@@ -1335,8 +1335,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             {
                size_t num_found = 0;
 
+               // NOTE: If a parent was provided then set it so that child iteration will work (but
+               // without the extra overhead of actually fetching the parent).
                if( !parent_key.empty( ) )
-                  instance_fetch( handle, "", parent_key );
+                  instance_set_parent( handle, "", parent_key );
 
                map< string, string > pdf_gen_variables;
                multimap< string, string > summary_sorted_values;

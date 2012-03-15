@@ -6,6 +6,10 @@
 
       if( p_parent )
       {
+         // NOTE: Make sure the graph parent was actually fetched (as it may not have
+         // actually occurred if iteration was begun under an initial parent context).
+         p_parent->ensure_original_fetch( );
+
          set< string > user_ids;
          split_string( p_parent->`{`$arg_cfield`}( ), user_ids );
 
