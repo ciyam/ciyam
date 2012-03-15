@@ -1,4 +1,10 @@
-`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start fk_link_first_child)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish fk_link_first_child)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start fk_link_first_child)]
 `{`@eq`(`$arg_new_only`,`'`'`)`&`@eq`(`$arg_not_create`,`'`'`)`&`@eq`(`$arg_status_field`,`'`'`)\
    // NOTE: Empty code block for scope purposes.
