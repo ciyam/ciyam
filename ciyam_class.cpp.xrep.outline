@@ -1816,11 +1816,11 @@ void `{`$full_class_name`}::impl::set_default_values( )
 bool `{`$full_class_name`}::impl::is_filtered( ) const
 {
 `{`?`$all_is_filtered_specifications`[`$all_is_filtered_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'filter_perm_restricted`'`)
+`{`@eq`(`'\1`'`,`'filter_perm_restricted`'`)\
 `{`#filter_perm_restricted.spec.xrep section=is_filtered arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}
 `,\
-`@eq`(`'\1`'`,`'non_uid_filter`'`)
+`@eq`(`'\1`'`,`'non_uid_filter`'`)\
 `{`#non_uid_filter.spec.xrep section=is_filtered\
  class_name=$class_name module_name=$module_name\
  arg_pclass=$specification_\0_pclass arg_cfield=$specification_\0_cfield`}

@@ -885,6 +885,16 @@ void class_base::perform_lazy_fetch( )
    }
 }
 
+void class_base::ensure_original_fetch( )
+{
+   // NOTE: For the purpose of iterating child records without unnecessary fetching
+   // a parent's key can simply be set - so to ensure the record will be fetched if
+   // this has occurred (and a field is later requested) the lazy fetch key will be
+   // set here.
+   if( !key.empty( ) && original_identity.empty( ) )
+      lazy_fetch_key = key;
+}
+
 bool class_base::iterate_forwards( bool inclusive, int row_limit, sql_optimisation optimisation )
 {
    return perform_instance_iterate( *this, "", "", "", "", "",

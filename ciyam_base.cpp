@@ -7399,6 +7399,14 @@ void instance_fetch( size_t handle, const string& context, const string& key_inf
    perform_instance_fetch( get_class_base_from_handle_for_op( handle, context ), key_info, p_rc );
 }
 
+void instance_set_parent( size_t handle, const string& context, const string& new_key )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+   class_base_accessor instance_accessor( instance );
+
+   instance_accessor.set_key( new_key );
+}
+
 void instance_prepare_execute( size_t handle, const string& context, const string& key, const string& ver_info )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );

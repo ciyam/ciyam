@@ -377,6 +377,9 @@ enum instance_fetch_rc
 void CIYAM_BASE_DECL_SPEC instance_fetch( size_t handle,
  const std::string& context, const std::string& key_info, instance_fetch_rc* p_rc = 0 );
 
+void CIYAM_BASE_DECL_SPEC instance_set_parent( size_t handle,
+ const std::string& context, const std::string& new_key );
+
 void CIYAM_BASE_DECL_SPEC instance_prepare_execute( size_t handle,
  const std::string& context, const std::string& key, const std::string& ver_info );
 

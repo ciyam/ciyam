@@ -217,6 +217,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void perform_fetch( const std::string& key_info, perform_fetch_rc* p_rc = 0 );
 
    void perform_lazy_fetch( );
+   void ensure_original_fetch( );
 
    bool iterate_forwards( bool inclusive = true,
     int row_limit = 0, sql_optimisation optimisation = e_sql_optimisation_none );
