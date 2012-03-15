@@ -1,4 +1,10 @@
-`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_changed_fk)]
+   if( field_name == "`{`$arg_dfield`}" )
+      return true;
+   // [(finish field_from_changed_fk)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start field_from_changed_fk)]
    if( `{`@eq`(`$arg_new_only`,`'true`'`)get_obj( ).get_key( ).empty( ) && `}\
 `{`@eq`(`$arg_inc_dflt`,`'true`'`)get_obj( ).get_key( ).empty( ) || `}get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
