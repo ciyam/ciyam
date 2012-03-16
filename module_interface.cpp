@@ -25,16 +25,27 @@
 
 using namespace std;
 
+string& get_module_directory( )
+{
+   static string g_md;
+   return g_md;
+}
+
 module_strings_container& get_module_strings( )
 {
-   static module_strings_container ms;
-   return ms;
+   static module_strings_container g_ms;
+   return g_ms;
 }
 
 class_registry_container& get_class_registry( )
 {
-   static class_registry_container cr;
-   return cr;
+   static class_registry_container g_cr;
+   return g_cr;
+}
+
+void init_dir( const char* p_dir )
+{
+   get_module_directory( ) = p_dir;
 }
 
 bool load_strings( const char* p_name )
@@ -45,6 +56,10 @@ bool load_strings( const char* p_name )
    {
       string file_name( p_name );
       file_name += ".txt";
+
+      string directory( get_module_directory( ) );
+      if( !directory.empty( ) )
+         file_name = directory + file_name;
 
       ifstream inpf( file_name.c_str( ) );
 

@@ -948,7 +948,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_module_load_module ) );
 
-         module_load( module, "", handler, true );
+         module_load( module, handler, true );
       }
       else if( command == c_cmd_ciyam_session_module_unload )
       {
@@ -2622,7 +2622,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                for( size_t i = 0; i < module_list.size( ); i++ )
                {
-                  module_load( module_list[ i ], prefix, handler, false, false );
+                  module_load( module_list[ i ], handler, false, false );
                   module_tx_info.push_back( "[1];module ==> " + module_list[ i ] );
                }
 

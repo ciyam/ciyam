@@ -78,6 +78,8 @@ typedef std::map< std::string, registration_base* > class_registry_container;
 typedef class_registry_container::value_type class_registry_value_type;
 typedef class_registry_container::const_iterator class_registry_const_iterator;
 
+std::string& get_module_directory( );
+
 module_strings_container& get_module_strings( );
 class_registry_container& get_class_registry( );
 
@@ -124,6 +126,7 @@ typedef command_functor* command_functor_creator( const std::string& name, comma
 
 typedef std::vector< std::string > externals_container;
 
+extern "C" void MODULE_INTERFACE_DECL_SPEC init_dir( const char* p_dir );
 extern "C" bool MODULE_INTERFACE_DECL_SPEC load_strings( const char* p_name );
 extern "C" void MODULE_INTERFACE_DECL_SPEC init_classes( const char* p_name );
 extern "C" void MODULE_INTERFACE_DECL_SPEC term_classes( const char* p_name );
@@ -136,6 +139,7 @@ extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_strings( const module_s
 extern "C" void MODULE_INTERFACE_DECL_SPEC obtain_module_commands(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 
+typedef void ( *fp_init_dir_func )( const char* p_dir );
 typedef bool ( *fp_load_strings_func )( const char* p_name );
 typedef void ( *fp_init_classes_func )( const char* p_name );
 typedef void ( *fp_term_classes_func )( const char* p_name );
@@ -149,6 +153,7 @@ typedef void ( *fp_obtain_module_commands_func )(
  command_functor_creator*& p_functor_creator, command_definition*& p_definitions, size_t* p_num_commands );
 
 #  ifndef __BORLANDC__
+const char* const c_init_dir_func_name = "init_dir";
 const char* const c_load_strings_func_name = "load_strings";
 const char* const c_init_classes_func_name = "init_classes";
 const char* const c_term_classes_func_name = "term_classes";
@@ -160,6 +165,7 @@ const char* const c_obtain_module_details_func_name = "obtain_module_details";
 const char* const c_obtain_module_strings_func_name = "obtain_module_strings";
 const char* const c_obtain_module_commands_func_name = "obtain_module_commands";
 #  else
+const char* const c_load_strings_func_name = "_init_dir";
 const char* const c_load_strings_func_name = "_load_strings";
 const char* const c_init_classes_func_name = "_init_classes";
 const char* const c_term_classes_func_name = "_term_classes";

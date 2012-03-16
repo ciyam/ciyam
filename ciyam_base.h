@@ -264,7 +264,7 @@ void CIYAM_BASE_DECL_SPEC module_class_fields_list(
  const std::string& module, const std::string& class_id_or_name, std::ostream& os );
 
 void CIYAM_BASE_DECL_SPEC module_load( const std::string& module_name,
- const std::string& prefix_name, command_handler& cmd_handler, bool log_tx_comment = false, bool append_to_module_list = true );
+ command_handler& cmd_handler, bool log_tx_comment = false, bool append_to_module_list = true );
 void CIYAM_BASE_DECL_SPEC module_unload( const std::string& module_name, command_handler& cmd_handler, bool check_controlled = false );
 void CIYAM_BASE_DECL_SPEC module_unload_all( command_handler& cmd_handler );
 
