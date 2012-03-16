@@ -85,7 +85,7 @@ void* dynamic_library::bind_to_function( const string& func_name )
    if( !p_proc_addr )
    {
       ::FormatMessage( FORMAT_MESSAGE_FROM_SYSTEM, 0, ::GetLastError( ), 0, buf, 128, 0 );
-      error = string( buf );
+      error = string( buf ) + " (" + func_name + ")";
    }
    else
       p_func = ( void* )p_proc_addr;

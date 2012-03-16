@@ -96,8 +96,12 @@ inline string module_id_from_id_or_name( const string& module_id_or_name )
 {
    string module_id( module_id_or_name );
 
-   if( g_module_names.count( module_id_or_name ) )
-      module_id = g_module_names[ module_id_or_name ];
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   if( g_module_names.count( directory + module_id_or_name ) )
+      module_id = g_module_names[ directory + module_id_or_name ];
 
    return module_id;
 }
@@ -106,8 +110,12 @@ inline string module_name_from_id_or_name( const string& module_id_or_name )
 {
    string module_name( module_id_or_name );
 
-   if( g_module_ids.count( module_id_or_name ) )
-      module_name = g_module_ids[ module_id_or_name ];
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   if( g_module_ids.count( directory + module_id_or_name ) )
+      module_name = g_module_ids[ directory + module_id_or_name ];
 
    return module_name;
 }
@@ -117,7 +125,11 @@ module_class_list_error list_module_classes_impl( const string& module_id_or_nam
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       return e_module_class_list_error_name_unknown;
 
@@ -149,11 +161,30 @@ module_class_list_error list_module_classes_impl( const string& module_id_or_nam
    return e_module_class_list_error_none;
 }
 
-module_load_error load_module_impl( const string& module_name, const string& prefix_name )
+}
+
+string module_directory( const string* p_new_directory )
+{
+   static TLS( string )* gtp_directory;
+
+   if( !gtp_directory )
+      gtp_directory = new string;
+
+   if( p_new_directory )
+      *gtp_directory = *p_new_directory;
+
+   return *gtp_directory;
+}
+
+module_load_error load_module( const string& module_name )
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_name ) );
    if( mi != g_modules.end( ) )
    {
       ++( mi->second ).ref_count;
@@ -163,7 +194,7 @@ module_load_error load_module_impl( const string& module_name, const string& pre
 
       for( size_t i = 0; i < p_externals->size( ); i++ )
       {
-         module_iterator xmi = g_modules.find( module_id_from_id_or_name( ( *p_externals )[ i ] ) );
+         module_iterator xmi = g_modules.find( directory + module_id_from_id_or_name( ( *p_externals )[ i ] ) );
          if( xmi != g_modules.end( ) )
             ++( xmi->second ).ref_count;
          else
@@ -179,9 +210,7 @@ module_load_error load_module_impl( const string& module_name, const string& pre
    string dyn_lib_name( "./" );
 #endif
 
-   if( !prefix_name.empty( ) )
-      dyn_lib_name += prefix_name + ".";
-   dyn_lib_name += module_name;
+   dyn_lib_name += directory + module_name;
 
 #ifdef _WIN32
    dyn_lib_name += string( ".dll" );
@@ -193,6 +222,9 @@ module_load_error load_module_impl( const string& module_name, const string& pre
       return e_module_load_error_file_does_not_exist;
 
    auto_ptr< dynamic_library > ap_dynamic_library( new dynamic_library( dyn_lib_name, module_name ) );
+
+   fp_init_dir_func init_dir_func;
+   init_dir_func = ( fp_init_dir_func )ap_dynamic_library->bind_to_function( c_init_dir_func_name );
 
    fp_load_strings_func load_strings_func;
    load_strings_func = ( fp_load_strings_func )ap_dynamic_library->bind_to_function( c_load_strings_func_name );
@@ -212,8 +244,11 @@ module_load_error load_module_impl( const string& module_name, const string& pre
    const module_details* p_details;
    ( *obtain_module_details_func )( p_details );
 
+   ( *init_dir_func )( directory.c_str( ) );
+
    if( !( *load_strings_func )( p_details->p_name ) )
-      throw runtime_error( "unexpected error loading module strings (due to bad formatting?)" );
+      throw runtime_error( "unexpected error loading module strings for '"
+       + directory + p_details->p_name + "' (file missing or contains bad formatting?)" );
 
    ( *init_classes_func )( p_details->p_id );
 
@@ -222,49 +257,41 @@ module_load_error load_module_impl( const string& module_name, const string& pre
 
    for( size_t i = 0; i < p_externals->size( ); i++ )
    {
-      module_iterator xmi = g_modules.find( module_id_from_id_or_name( ( *p_externals )[ i ] ) );
+      module_iterator xmi = g_modules.find( directory + module_id_from_id_or_name( ( *p_externals )[ i ] ) );
       if( xmi != g_modules.end( ) )
          ++( xmi->second ).ref_count;
       else
          return e_module_load_error_external_module_failure;
    }
 
-   if( g_module_ids.count( p_details->p_id ) )
+   if( g_module_ids.count( directory + p_details->p_id ) )
    {
       ( *term_classes_func )( p_details->p_id );
 
       throw runtime_error( "module id '" + string( p_details->p_id )
-       + "' is already being used by '" + g_module_ids[ p_details->p_id ] + "'" );
+       + "' is already being used by '" + g_module_ids[ directory + p_details->p_id ] + "'" );
    }
 
-   g_modules.insert( module_value_type( p_details->p_id,
+   g_modules.insert( module_value_type( directory + p_details->p_id,
     module_library_info( p_details, ap_dynamic_library.get( ), term_classes_func, obtain_externals_func ) ) );
 
-   g_module_ids.insert( make_pair( p_details->p_id, p_details->p_name ) );
-   g_module_names.insert( make_pair( p_details->p_name, p_details->p_id ) );
+   g_module_ids.insert( make_pair( directory + p_details->p_id, p_details->p_name ) );
+   g_module_names.insert( make_pair( directory + p_details->p_name, p_details->p_id ) );
 
    ap_dynamic_library.release( );
 
    return e_module_load_error_none;
 }
 
-}
-
-module_load_error load_module( const string& module_name )
-{
-   return load_module_impl( module_name, "" );
-}
-
-module_load_error load_module( const string& module_name, const string& prefix_name )
-{
-   return load_module_impl( module_name, prefix_name );
-}
-
 module_unload_error unload_module( const string& module_id_or_name )
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       return e_module_unload_error_name_unknown;
 
@@ -273,7 +300,7 @@ module_unload_error unload_module( const string& module_id_or_name )
 
    for( size_t i = 0; i < p_externals->size( ); i++ )
    {
-      module_iterator xmi = g_modules.find( module_id_from_id_or_name( ( *p_externals )[ i ] ) );
+      module_iterator xmi = g_modules.find( directory + module_id_from_id_or_name( ( *p_externals )[ i ] ) );
       if( xmi != g_modules.end( ) )
          --( xmi->second ).ref_count;
       else
@@ -287,15 +314,15 @@ module_unload_error unload_module( const string& module_id_or_name )
       delete ( mi->second ).p_dynamic_library;
       g_modules.erase( mi );
 
-      if( g_module_ids.count( module_id_or_name ) )
+      if( g_module_ids.count( directory + module_id_or_name ) )
       {
-         g_module_names.erase( g_module_ids[ module_id_or_name ] );
-         g_module_ids.erase( module_id_or_name );
+         g_module_names.erase( directory + g_module_ids[ directory + module_id_or_name ] );
+         g_module_ids.erase( directory + module_id_or_name );
       }
-      else if( g_module_names.count( module_id_or_name ) )
+      else if( g_module_names.count( directory + module_id_or_name ) )
       {
-         g_module_ids.erase( g_module_names[ module_id_or_name ] );
-         g_module_names.erase( module_id_or_name );
+         g_module_ids.erase( directory + g_module_names[ directory + module_id_or_name ] );
+         g_module_names.erase( directory + module_id_or_name );
       }
    }
 
@@ -393,7 +420,11 @@ module_string_list_error list_module_strings( const string& module_id_or_name, o
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       return e_module_string_list_error_name_unknown;
 
@@ -417,7 +448,11 @@ module_class_field_list_error list_module_class_fields(
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       return e_module_class_field_list_error_name_unknown;
 
@@ -485,7 +520,11 @@ size_t get_module_ref_count( const string& module_id_or_name )
 
    size_t rc = 0;
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi != g_modules.end( ) )
       rc = ( mi->second ).ref_count;
 
@@ -498,7 +537,11 @@ dynamic_library* get_module_ptr( const string& module_id_or_name )
 
    dynamic_library* p_dynamic_library( 0 );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi != g_modules.end( ) )
       p_dynamic_library = ( mi->second ).p_dynamic_library;
 
@@ -511,7 +554,11 @@ class_base* construct_object( const string& module_id_or_name, const string& cla
 
    class_base* p_class_base( 0 );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi != g_modules.end( ) )
    {
       fp_create_class_object_func create_class_object_func;
@@ -528,7 +575,11 @@ void destroy_object( const string& module_id_or_name, const string& class_id, cl
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi != g_modules.end( ) )
    {
       fp_destroy_class_object_func destroy_class_object_func;
@@ -544,7 +595,11 @@ void get_class_info_for_module_class( const string& module_id_or_name, const str
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_info_for_module_class" );
 
@@ -581,7 +636,11 @@ string get_class_id_for_id_or_name( const string& module_id_or_name, const strin
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -600,7 +659,11 @@ string get_class_name_for_id_or_name( const string& module_id_or_name, const str
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -620,7 +683,11 @@ string get_field_id_for_id_or_name(
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -650,7 +717,11 @@ string get_field_name_for_id_or_name(
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_class_id_for_id_or_name" );
 
@@ -679,7 +750,11 @@ bool get_module_class_has_derivations( const string& module_id_or_name, const st
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_module_class_has_derivations" );
 
@@ -703,7 +778,11 @@ void get_foreign_key_info_for_module_class( const string& module_id_or_name,
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_foreign_key_info_for_module_class" );
 
@@ -726,7 +805,11 @@ const procedure_info_container& get_procedure_info_for_module_class( const strin
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_procedure_info_for_module_class" );
 
@@ -751,7 +834,11 @@ string get_sql_columns_for_module_class( const string& module_id_or_name, const 
 
    string sql_columns;
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_sql_columns_for_module_class" );
 
@@ -776,7 +863,11 @@ void get_sql_indexes_for_module_class( const string& module_id_or_name, const st
 {
    guard g( g_mutex );
 
-   module_iterator mi = g_modules.find( module_id_from_id_or_name( module_id_or_name ) );
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
    if( mi == g_modules.end( ) )
       throw runtime_error( "unknown module '" + module_id_or_name + "' in get_sql_indexes_for_module_class" );
 

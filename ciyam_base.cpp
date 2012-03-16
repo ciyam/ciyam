@@ -1040,6 +1040,8 @@ const size_t c_max_sessions_limit = 1000;
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
 
+string g_empty_string;
+
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
 
@@ -1233,6 +1235,11 @@ void perform_storage_op( storage_op op,
          gtp_session->p_storage_handler = p_new_handler;
          gtp_session->p_storage_handler->inc_ref_count( );
 
+         if( module_count( ) && !p_new_handler->get_root( ).module_prefix.empty( ) )
+            throw runtime_error( "prefixed storages cannot be initialised whilst modules are already loaded" );
+
+         module_directory( &p_new_handler->get_root( ).module_prefix );
+
          // NOTE: Modules that have been registered to this storage are now automatically loaded (if not already present).
          // This is performed in the same order that the modules were registered in as dependencies may exist between them.
          size_t num_modules( p_new_handler->get_root( ).module_list.size( ) );
@@ -1241,7 +1248,7 @@ void perform_storage_op( storage_op op,
             string next_module( p_new_handler->get_root( ).module_list[ i ] );
             if( gtp_session->modules_by_name.find( next_module ) == gtp_session->modules_by_name.end( ) )
             {
-               module_load( next_module, p_new_handler->get_root( ).module_prefix, cmd_handler );
+               module_load( next_module, cmd_handler );
                gtp_session->storage_controlled_modules.push_back( next_module );
             }
          }
@@ -1253,7 +1260,11 @@ void perform_storage_op( storage_op op,
       }
       catch( ... )
       {
-         module_unload_all( cmd_handler );
+         while( !gtp_session->storage_controlled_modules.empty( ) )
+         {
+            module_unload( gtp_session->storage_controlled_modules.back( ), cmd_handler );
+            gtp_session->storage_controlled_modules.pop_back( );
+         }
 
          p_new_handler->release_bulk_write( );
          p_new_handler->release_ods( );
@@ -4528,6 +4539,8 @@ void term_storage( command_handler& cmd_handler )
          gtp_session->storage_controlled_modules.pop_back( );
       }
 
+      module_directory( &g_empty_string );
+
       if( gtp_session->p_storage_handler->dec_ref_count( ) == 0 )
       {
          g_storage_handler_index.erase( gtp_session->p_storage_handler->get_name( ) );
@@ -5248,26 +5261,13 @@ void module_class_fields_list( const string& module, const string& class_id_or_n
 }
 
 void module_load( const string& module_name,
- const string& prefix_name, command_handler& cmd_handler, bool log_tx_comment, bool append_to_module_list )
+ command_handler& cmd_handler, bool log_tx_comment, bool append_to_module_list )
 {
    if( gtp_session->modules_by_name.find( module_name ) != gtp_session->modules_by_name.end( ) )
       throw runtime_error( get_string_message( GS( c_str_module_is_loaded ),
        make_pair( c_str_parm_module_is_loaded_module, module_name ) ) );
 
-   // NOTE: If a storage is already attached then obtain the module prefix from it.
-   string module_prefix( prefix_name );
-   if( ods::instance( ) && gtp_session->p_storage_handler->get_ods( ) )
-   {
-      guard g( g_mutex );
-      storage_handler& handler( *gtp_session->p_storage_handler );
-
-      module_prefix = handler.get_root( ).module_prefix;
-
-      if( !prefix_name.empty( ) && prefix_name != module_prefix )
-         throw runtime_error( "unexpected prefix mismatch (" + prefix_name + "/" + module_prefix + ")" );
-   }
-
-   module_load_error rc = load_module( module_name, module_prefix );
+   module_load_error rc = load_module( module_name );
 
    if( rc != e_module_load_error_none )
    {
@@ -8128,6 +8128,9 @@ void finish_instance_op( class_base& instance, bool apply_changes, bool internal
                 instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
          }
 
+         // FUTURE: If updating then if only the ver/rev was changed (i.e. no field changes) in all
+         // returned statements (as a derivation might only change field values in one table but it
+         // needs ver/rev to be consistent for all) then the statements could all be discarded.
          vector< string > sql_stmts;
          if( !instance_accessor.get_sql_stmts( sql_stmts ) )
             throw runtime_error( "unexpected get_sql_stmts failure" );

@@ -1778,7 +1778,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
          size_t fk_lock_handle( 0 );
          bool found_locked_instance = false;
 
-         // NOTE: A link lock is held in the graph parent for every foreign key value that is set during
+         // NOTE: A link lock is held in the graph parent for every foreign key value that was set during
          // the create/update operation. A new lock will be obtained before replacing an existing one and
          // setting the key to an empty string will result in the foreign key's link lock (if held) being
          // released. Whether attempting to link to a new foreign key or unlinking from the current value
@@ -2822,7 +2822,7 @@ void add_class_map( const string& class_id, const string& map_id, const string& 
       map< string, string > new_map;
 
       vector< string > lines;
-      buffer_file_lines( file_name, lines );
+      buffer_file_lines( module_directory( ) + file_name, lines );
 
       for( size_t i = 0; i < lines.size( ); i++ )
       {

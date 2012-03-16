@@ -66,8 +66,9 @@ enum module_class_field_list_error
 
 class dynamic_library;
 
+std::string module_directory( const std::string* p_new_directory = 0 );
+
 module_load_error MODULE_MANAGEMENT_DECL_SPEC load_module( const std::string& module_name );
-module_load_error MODULE_MANAGEMENT_DECL_SPEC load_module( const std::string& module_name, const std::string& prefix_name );
 module_unload_error MODULE_MANAGEMENT_DECL_SPEC unload_module( const std::string& module_id_or_name );
 
 void MODULE_MANAGEMENT_DECL_SPEC list_modules( std::ostream& os );
