@@ -656,7 +656,8 @@ string get_class_name_from_field_type( model& m, const string& class_name, const
 }
 
 string get_field_id_for_name( const vector< field_data >& all_field_data,
- const string& field_name, string* p_field_type = 0, bool check_decorated_name = false, bool get_sys_type = false )
+ const string& field_name, string* p_field_type = 0, bool check_decorated_name = false,
+ bool get_sys_type = false, bool* p_is_mandatory = 0 )
 {
    string field_id;
    for( size_t i = 0; i < all_field_data.size( ); i++ )
@@ -665,8 +666,13 @@ string get_field_id_for_name( const vector< field_data >& all_field_data,
        || ( check_decorated_name && field_name == all_field_data[ i ].decorated_name ) )
       {
          field_id = all_field_data[ i ].id;
+
          if( p_field_type )
             *p_field_type = get_sys_type ? all_field_data[ i ].sys_type : all_field_data[ i ].type;
+
+         if( p_is_mandatory )
+            *p_is_mandatory = all_field_data[ i ].is_mandatory;
+
          break;
       }
    }
@@ -676,12 +682,12 @@ string get_field_id_for_name( const vector< field_data >& all_field_data,
 
 string get_field_id_for_name( model& m,
  const string& class_name, const string& field_name, string* p_field_type = 0,
- bool check_decorated_name = false, bool get_sys_type = false, bool include_base_fields = false )
+ bool check_decorated_name = false, bool get_sys_type = false, bool include_base_fields = false, bool* p_is_mandatory = 0 )
 {
    vector< field_data > all_field_data;
    m.get_field_data( class_name, all_field_data, e_get_field_type_any, include_base_fields );
 
-   return get_field_id_for_name( all_field_data, field_name, p_field_type, check_decorated_name, get_sys_type );
+   return get_field_id_for_name( all_field_data, field_name, p_field_type, check_decorated_name, get_sys_type, p_is_mandatory );
 }
 
 string get_field_name_for_id( const vector< field_data >& all_field_data,
@@ -5082,12 +5088,14 @@ struct field_from_changed_fk_specification : specification
    string parent_source_field_id;
 
    bool new_only;
+   bool for_store;
+   bool not_create;
    bool include_default;
 };
 
 void field_from_changed_fk_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
 {
-   if( args.size( ) < 3 || args.size( ) > 4 )
+   if( args.size( ) < 3 || args.size( ) > 5 )
       throw runtime_error( "unexpected number of args for 'field_from_changed_fk' specification" );
 
    string arg_class_name( args[ 0 ] );
@@ -5095,15 +5103,23 @@ void field_from_changed_fk_specification::add( model& m, const vector< string >&
    string arg_src_dest_field_info( args[ 2 ] );
 
    new_only = false;
+   for_store = false;
+   not_create = false;
    include_default = false;
-   if( args.size( ) == 4 )
+   for( size_t arg = 3; arg < args.size( ); arg++ )
    {
-      if( args[ 3 ] == c_arg_new_only )
+      string next_arg( args[ arg ] );
+
+      if( next_arg == c_arg_new_only )
          new_only = true;
-      else if( args[ 3 ] == c_arg_include_default )
+      else if( next_arg == c_arg_for_store )
+         for_store = true;
+      else if( next_arg == c_arg_not_create )
+         not_create = true;
+      else if( next_arg == c_arg_include_default )
          include_default = true;
       else
-         throw runtime_error( "unexpected arg '" + args[ 3 ] + "' for 'field_from_changed_fk' specification" );
+         throw runtime_error( "unexpected arg '" + next_arg + "' for 'field_from_changed_fk' specification" );
    }
 
    class_id = get_class_id_for_name( m, arg_class_name );
@@ -5157,6 +5173,8 @@ void field_from_changed_fk_specification::read_data( sio_reader& reader )
    parent_source_field_id = reader.read_attribute( c_attribute_sfield_id );
 
    new_only = ( reader.read_opt_attribute( c_attribute_new_only ) == c_true );
+   for_store = ( reader.read_opt_attribute( c_attribute_for_store ) == c_true );
+   not_create = ( reader.read_opt_attribute( c_attribute_not_create ) == c_true );
    include_default = ( reader.read_opt_attribute( c_attribute_include_default ) == c_true );
 }
 
@@ -5169,6 +5187,8 @@ void field_from_changed_fk_specification::write_data( sio_writer& writer ) const
    writer.write_attribute( c_attribute_sfield_id, parent_source_field_id );
 
    writer.write_opt_attribute( c_attribute_new_only, new_only ? c_true : "" );
+   writer.write_opt_attribute( c_attribute_for_store, for_store ? c_true : "" );
+   writer.write_opt_attribute( c_attribute_not_create, not_create ? c_true : "" );
    writer.write_opt_attribute( c_attribute_include_default, include_default ? c_true : "" );
 }
 
@@ -5183,13 +5203,17 @@ void field_from_changed_fk_specification::add_specification_data( model& m, spec
    string parent_field_name = get_field_name_for_id( m, class_name, parent_field_id );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, parent_field_name ) );
 
-   string destination_field_name = get_field_name_for_id( m, class_name, destination_field_id );
+   bool is_mandatory;
+   string destination_field_name = get_field_name_for_id( m, class_name, destination_field_id, 0, false, false, &is_mandatory );
    spec_data.data_pairs.push_back( make_pair( c_data_dfield, destination_field_name ) );
 
    string parent_source_field_name = get_field_name_for_id( m, parent_class_name, parent_source_field_id );
    spec_data.data_pairs.push_back( make_pair( c_data_sfield, parent_source_field_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_new_only, new_only ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_for_store, for_store ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_inc_dflt, include_default ? c_true : "" ) );
 }
 
