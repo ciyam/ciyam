@@ -22,20 +22,20 @@
       string key_info;
 `}\
 `{`@eq`(`$arg_reverse`,`'`'`)\
-      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_forwards( key_info, "", true, 1 ) )
+      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_forwards( key_info, "", true, 1 ) )
 `,\
-      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_backwards( key_info, "", true, 1 ) )
+      if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_backwards( key_info, "", true, 1 ) )
 `}\
       {
-         if( !is_destroy_locked( get_obj( ).child_`{`$arg_child_class`}( ) ) )
-            get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).\
+         if( !is_destroy_locked( get_obj( ).child_`{`$arg_child`}( ) ) )
+            get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).\
 `{`!`@eq`(`$arg_child_field`,`'`'`)`{`$arg_child_field`}`,get_key`}( ) );
-         get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).iterate_stop( );
+         get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).iterate_stop( );
       }
       else
          // FUTURE: The error message itself should be a module string.
          throw runtime_error( "Cannot provide " + GMS( c_field_display_name_`{`$arg_field`} )
-          + " without at least one " + get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child_class`}( ).get_display_name( ) + "." );
+          + " without at least one " + get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).get_display_name( ) + "." );
    }
    // [(finish fk_link_first_child)]
 `}
