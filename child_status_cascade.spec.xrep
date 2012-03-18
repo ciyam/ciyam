@@ -6,23 +6,23 @@
       string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_child_class`}, `{`$arg_order_field`} ) );
       key_info += ' ';
 `}\
-      if( get_obj( ).child_`{`$arg_child_class`}( ).iterate_forwards( key_info ) )
+      if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
       {
          do
          {
-            get_obj( ).child_`{`$arg_child_class`}( ).op_update( );
+            get_obj( ).child_`{`$arg_child`}( ).op_update( );
 
 `{`!`@eq`(`$arg_special_field`,`'`'`)\
-            if( get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_special_cfield`}( ).get_key( ) == get_obj( ).`{`$arg_special_field`}( ).get_key( ) )
-               get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_child_field`}( "`{`$arg_special_value`}" );
+            if( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_special_cfield`}( ).get_key( ) == get_obj( ).`{`$arg_special_field`}( ).get_key( ) )
+               get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_field`}( "`{`$arg_special_value`}" );
             else
-               get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_child_field`}( "`{`$arg_status_value`}" );
+               get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_field`}( "`{`$arg_status_value`}" );
 `,\
-            get_obj( ).child_`{`$arg_child_class`}( ).`{`$arg_child_field`}( "`{`$arg_status_value`}" );
+            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_child_field`}( "`{`$arg_status_value`}" );
 `}\
 
-            get_obj( ).child_`{`$arg_child_class`}( ).op_apply( );
-         } while( get_obj( ).child_`{`$arg_child_class`}( ).iterate_next( ) );
+            get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
       }
    }
    // [(finish child_status_cascade)]
