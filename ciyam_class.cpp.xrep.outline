@@ -1522,7 +1522,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'child_status_cascade`'`)
 `{`#child_status_cascade.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
- arg_status_value=$specification_\0_status_value\
+ arg_status_value=$specification_\0_status_value arg_child=$specification_\0_child\
  arg_child_class=$specification_\0_child_class arg_child_field=$specification_\0_child_field\
  arg_order_field=$specification_\0_order_field arg_special_field=$specification_\0_special_field\
  arg_special_cfield=$specification_\0_special_cfield arg_special_value=$specification_\0_special_value\
