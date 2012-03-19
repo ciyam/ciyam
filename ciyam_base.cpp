@@ -6110,6 +6110,7 @@ string exec_bulk_ops( const string& module,
    ifstream inpf;
    ofstream outf;
 
+   size_t line = 1;
    time_t ts( time( 0 ) );
    bool in_trans = false;
    bool is_export = false;
@@ -6224,7 +6225,6 @@ string exec_bulk_ops( const string& module,
          }
 
          string next;
-         size_t line = 1;
          size_t errors = 0;
          bool is_first = true;
          bool can_fetch = false;
@@ -6602,8 +6602,23 @@ string exec_bulk_ops( const string& module,
 
       destroy_object_instance( handle );
    }
+   catch( exception& x )
+   {
+      if( !is_export )
+         // FUTURE: This message should be handled as a server string message.
+         outf << "Error: Processing line #" << line << " - " << x.what( ) << endl;
+
+      if( in_trans )
+         transaction_rollback( );
+      destroy_object_instance( handle );
+      throw;
+   }
    catch( ... )
    {
+      if( !is_export )
+         // FUTURE: This message should be handled as a server string message.
+         outf << "Error: Processing line #" << line << " - unknown exception caught" << endl;
+
       if( in_trans )
          transaction_rollback( );
       destroy_object_instance( handle );
