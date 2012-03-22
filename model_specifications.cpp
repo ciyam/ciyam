@@ -10849,6 +10849,7 @@ void transient_field_alias_specification::add_specification_data( model& m, spec
 
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, "" ) );
    spec_data.data_pairs.push_back( make_pair( "def_value", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "iter_only", "" ) );
 }
 
 string transient_field_alias_specification::static_class_name( ) { return "transient_field_alias"; }
