@@ -679,6 +679,9 @@ void Meta_Package::impl::impl_Cancel_Remove( )
       get_obj( ).Actions( "136420" );
       get_obj( ).op_apply( );
    }
+
+   string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+   set_system_variable( model_key, "" );
    // [<finish Cancel_Remove_impl>]
 }
 
