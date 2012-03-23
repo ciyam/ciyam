@@ -1216,7 +1216,9 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_procedure`)
 `{`#check_user_ignore_uneditable.spec.xrep section=after_fetch class_name=$class_name\
- arg_spfield=$specification_\0_spfield arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure`}\
+ arg_spfield=$specification_\0_spfield arg_actions=$specification_\0_actions\
+ arg_procedure=$specification_\0_procedure arg_prompt=$specification_\0_prompt\
+ arg_back_for_view=$specification_\0_back_for_view`}\
 `,\
 `@eq`(`'\1`'`,`'default_for_clone`'`)
 `{`#default_for_clone.spec.xrep section=after_fetch class_name=$class_name arg_field=$specification_\0_field`}\

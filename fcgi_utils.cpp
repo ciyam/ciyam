@@ -1396,8 +1396,8 @@ void output_actions( ostream& os,
        << "\" type=\"button\" class=\"button\" value=\"" << escape_markup( next_label ) << "\" onclick=\"";
 
       if( needs_confirmation )
-         os << "confirm( '" << string_message( GDS( c_display_proceed_with_action ),
-          make_pair( c_display_proceed_with_action_parm_label, next_label ) ) << "' ) && ";
+         os << "if( confirm( '" << string_message( GDS( c_display_proceed_with_action ),
+          make_pair( c_display_proceed_with_action_parm_label, next_label ) ) << "' ) ) { ";
 
       if( child_class.empty( ) )
       {
@@ -1423,6 +1423,8 @@ void output_actions( ostream& os,
             os << "&app=" << key_and_version << "&cls=" << class_id
              << "&extra=' + get_all_field_values( document." << src.id << " ) + '";
 
+         if( go_back )
+            os << "&back=1";
          os << "&exec=" << next_action << "', false );";
 
          if( use_url_checksum )
@@ -1456,6 +1458,9 @@ void output_actions( ostream& os,
 
          os << "';";
       }
+
+      if( needs_confirmation )
+         os << " }";
 
       os << "\" style=\"cursor:pointer\">";
    }

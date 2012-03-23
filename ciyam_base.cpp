@@ -7374,16 +7374,18 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
    }
 }
 
-bool is_change_locked( class_base& instance )
+bool is_change_locked( class_base& instance, bool include_cascades )
 {
-   return gtp_session->p_storage_handler->get_lock_info(
-    instance.lock_class_id( ), instance.get_key( ) ).type >= op_lock::e_lock_type_update;
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.lock_class_id( ), instance.get_key( ) );
+
+   return lock.type >= op_lock::e_lock_type_update && ( include_cascades || !lock.p_root_class );
 }
 
-bool is_destroy_locked( class_base& instance )
+bool is_destroy_locked( class_base& instance, bool include_cascades )
 {
-   return gtp_session->p_storage_handler->get_lock_info(
-    instance.lock_class_id( ), instance.get_key( ) ).type == op_lock::e_lock_type_destroy;
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.lock_class_id( ), instance.get_key( ) );
+
+   return lock.type == op_lock::e_lock_type_destroy && ( include_cascades || !lock.p_root_class );
 }
 
 bool is_create_locked_by_own_session( class_base& instance, const char* p_key, bool copy_field_values )
