@@ -263,6 +263,7 @@ class CLASS_BASE_DECL_SPEC class_base
    bool get_is_editing( ) const { return op == e_op_type_create || op == e_op_type_update; }
    bool get_is_creating( ) const { return op == e_op_type_create; }
    bool get_is_updating( ) const { return op == e_op_type_update; }
+   bool get_is_destroying( ) const { return op == e_op_type_destroy; }
 
    bool get_is_minimal_update( ) const { return utype == e_update_type_minimal; }
 

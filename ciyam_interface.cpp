@@ -840,6 +840,7 @@ void request_handler::process_request( )
          }
       }
 
+      string back( input_data[ c_param_back ] );
       string data( input_data[ c_param_data ] );
       string keep( input_data[ c_param_keep ] );
       string chksum( input_data[ c_param_chksum ] );
@@ -3370,8 +3371,15 @@ void request_handler::process_request( )
                   user_slevel = p_session_info->other_slevels.find( p_session_info->user_other )->second;
 
                if( record_not_found_error )
-                  extra_content << "<p align=\"center\" class=\"error\">"
-                   << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
+               {
+                  // NOTE: If a "jump back" is to occur after an action then don't display
+                  // any error here (so that deleting via a view action can be supported).
+                  if( back.empty( ) )
+                  {
+                     extra_content << "<p align=\"center\" class=\"error\">"
+                      << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
+                  }
+               }
                else if( ( !view.perm.empty( ) && !p_session_info->user_perms.count( view.perm ) )
                || ( !p_session_info->is_admin_user
                && ( view.type == c_view_type_admin || view.type == c_view_type_admin_print ) )
