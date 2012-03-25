@@ -7,8 +7,8 @@
     || required_transients.count( "`{`$arg_field`}" ) )\
 `,\
    if( get_obj( ).get_is_iterating( )
-    && get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" ) )\
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+    || required_transients.count( "`{`$arg_field`}" ) ) )\
 `}`,\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( ( get_obj( ).needs_field_value( "`{`$arg_field`}" )

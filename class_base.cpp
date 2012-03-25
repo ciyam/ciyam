@@ -3783,7 +3783,7 @@ string meta_field_domain_type( const string& enum_id, int primitive, int max_siz
    return domain_type;
 }
 
-string meta_field_extras( int uom, int extra, int max_size,
+string meta_field_extras( int uom, int extra, bool transient, int max_size,
  const string& enum_id, int primitive, const string& min_value, const string& max_value,
  int numeric_digits, int numeric_decimals, int string_domain, int date_precision, int time_precision,
  bool show_plus_sign, int zero_padding, int int_type, int numeric_type )
@@ -4036,6 +4036,9 @@ string meta_field_extras( int uom, int extra, int max_size,
       default:
       throw runtime_error( "unknown numeric_type #" + to_string( numeric_type ) + " in meta_field_extras" );
    }
+
+   if( transient )
+      all_extras.push_back( "transient" );
 
    return join( all_extras, '+' );
 }
