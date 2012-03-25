@@ -590,9 +590,9 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
  const string& class_id, const string& uinfo, const session_info& sess_info,
  bool is_reverse, int row_limit, const string& key_info, const string& field_list,
  const string& filters, const string& search_text, const string& search_query,
- tcp_socket& socket, data_container& rows, const string& exclude_key_info, bool* p_prev,
- string* p_perms, const string* p_security_info, const string* p_extra_debug,
- const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
+ const string& set_field_values, tcp_socket& socket, data_container& rows,
+ const string& exclude_key_info, bool* p_prev, string* p_perms, const string* p_security_info,
+ const string* p_extra_debug, const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
  const string* p_pdf_link_filename, string* p_pdf_view_file_name )
 {
    bool okay = true;
@@ -639,11 +639,25 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
    if( row_limit > 0 )
       fetch_cmd += " #" + to_string( row_limit + 1 + ( p_prev ? ( int )*p_prev : 0 ) );
 
-   if( !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
+   if( !set_field_values.empty( )
+    || !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
    {
-      fetch_cmd += " \"-v=@extra1="
-       + escaped( sess_info.user_extra1, "\"" )
-       + ",@extra2=" + escaped( sess_info.user_extra2, "\"" ) + "\"";
+      fetch_cmd += " \"-v=";
+
+      if( !set_field_values.empty( ) )
+         fetch_cmd += escaped( set_field_values, "\"" );
+
+      if( !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
+      {
+         if( !set_field_values.empty( ) )
+            fetch_cmd += ',';
+
+         fetch_cmd += "@extra1="
+          + escaped( sess_info.user_extra1, "\"" )
+          + ",@extra2=" + escaped( sess_info.user_extra2, "\"" );
+      }
+
+      fetch_cmd += "\"";
    }
 
    if( !field_list.empty( ) )
@@ -1217,7 +1231,7 @@ bool fetch_parent_row_data( const string& module, const module_info& mod_info,
    string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
    okay = fetch_list_info( module, mod_info, pclass_id, user_info, sess_info, false, 0, key_info, pfield, filters,
-    "", "", socket, parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
+    "", "", "", socket, parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
 
    if( sort_manually )
       sort_row_data_manually( parent_row_data );
@@ -1229,10 +1243,10 @@ bool populate_list_info( list_source& list,
  const map< string, string >& list_selections,
  const map< string, string >& list_search_text,
  const map< string, string >& list_search_values,
- const string& listinfo, const string& listsort,
- const string& parent_key, bool is_printable, const string& view_cid,
- const string& view_pfield, const set< string >* p_specials, const session_info& sess_info,
- const string* p_pdf_spec_name, const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+ const string& listinfo, const string& listsort, const string& parent_key, bool is_printable,
+ const string& view_cid, const string& view_pfield, const set< string >* p_specials,
+ const session_info& sess_info, const string* p_pdf_spec_name, const string* p_pdf_link_filename,
+ string* p_pdf_view_file_name )
 {
    bool okay = true;
 
@@ -1365,8 +1379,9 @@ bool populate_list_info( list_source& list,
       fixed_parent_keyval = parent_key;
    }
 
+   string set_field_values;
    determine_fixed_query_info( fixed_fields, fixed_key_values, num_fixed_key_values,
-    is_reverse, list, fixed_parent_field, fixed_parent_keyval, list_selections, sess_info );
+    is_reverse, list, fixed_parent_field, fixed_parent_keyval, list_selections, sess_info, &set_field_values );
 
    if( listsort.size( ) == 2 )
    {
@@ -1455,6 +1470,8 @@ bool populate_list_info( list_source& list,
       key_info = parent_key + ":" + key_info;
    }
 
+   string field_list( is_printable ? list.pfield_list : list.field_list );
+
    // NOTE: A "group" list is a parent qualified list where the parent is the nominated "group" class whilst a
    // "user" list, along with its variants, are parent qualified lists where the parent is the nominated "user" class.
    if( list.type == c_list_type_group || list.type == c_list_type_nongroup )
@@ -1466,6 +1483,8 @@ bool populate_list_info( list_source& list,
 
       class_info = ( list.lici->second )->pclass;
       class_info += ":_" + ( list.lici->second )->pfield;
+
+      field_list += "," + ( list.lici->second )->pfield;
    }
    else if( list.type == c_list_type_user || list.type == c_list_type_nonuser || list.type == c_list_type_user_child )
    {
@@ -1476,9 +1495,15 @@ bool populate_list_info( list_source& list,
 
       class_info = mod_info.user_class_id;
       if( list.type != c_list_type_user_child )
+      {
+         field_list += "," + ( list.lici->second )->pfield;
          class_info += ":_" + ( list.lici->second )->pfield;
+      }
       else
+      {
+         field_list += "," + ( list.lici->second )->ufield;
          class_info += ":_" + ( list.lici->second )->ufield;
+      }
    }
 
    string old_key_info( key_info );
@@ -1544,9 +1569,9 @@ bool populate_list_info( list_source& list,
    list.print_limited = false;
 
    if( !fetch_list_info( list.module_id, mod_info, class_info, user_info, sess_info,
-    is_reverse, row_limit, key_info, is_printable ? list.pfield_list : list.field_list,
-    filters, search_text, search_query, socket, list.row_data, "", &prev, p_perms,
-    p_security_info, 0, 0, p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
+    is_reverse, row_limit, key_info, field_list, filters, search_text, search_query,
+    set_field_values, socket, list.row_data, "", &prev, p_perms, p_security_info, 0, 0,
+    p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
       okay = false;
    else if( is_printable )
    {
@@ -1583,8 +1608,8 @@ bool populate_list_info( list_source& list,
       string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
       if( redo_fetch && !fetch_list_info( list.module_id, mod_info,
-       class_info, user_info, sess_info, is_reverse, row_limit, key_info,
-       list.field_list, filters, search_text, search_query, socket, list.row_data, "", &prev, p_perms ) )
+       class_info, user_info, sess_info, is_reverse, row_limit, key_info, list.field_list,
+       filters, search_text, search_query, set_field_values, socket, list.row_data, "", &prev, p_perms ) )
          okay = false;
 
       size_t index_field = 0;
@@ -1953,7 +1978,7 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
    string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
    if( !fetch_list_info( mod_info.id, mod_info, mod_info.user_qlink_class_id, user_info, sess_info, false,
-    sess_info.quick_link_limit, key_info, field_list, "", "", "", *sess_info.p_socket, sess_info.quick_link_data, "" ) )
+    sess_info.quick_link_limit, key_info, field_list, "", "", "", "", *sess_info.p_socket, sess_info.quick_link_data, "" ) )
       throw runtime_error( "unexpected error occurred processing quick link info" );
 
    // NOTE: Get rid of extra row put in for list scrolling purposes...

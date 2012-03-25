@@ -78,8 +78,21 @@ int main( int argc, char* argv[ ] )
             throw runtime_error( "unable to open '" + new_filename + "' for output" );
 
          string next;
+         size_t line_num = 0;
          while( getline( inpf, next ) )
          {
+            // NOTE: If a text file had been treated as binary during an FTP remove trailing CR.
+            if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
+               next.erase( next.size( ) - 1 );
+
+            if( ++line_num == 1 )
+            {
+               // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
+               // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
+               if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
+                  next.erase( 0, 3 );
+            }
+
             if( !next.empty( ) && !packages.empty( ) )
             {
                string::size_type pos = next.find( c_section_prefix );

@@ -1380,9 +1380,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                {
                   do
                   {
-                     if( !filter_set.empty( ) && instance_filtered( handle, context ) )
-                        continue;
-
                      for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
                      {
                         // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -1398,6 +1395,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( !set_value_items.empty( ) )
                         prepare_object_instance( handle, context, false );
+
+                     if( !filter_set.empty( ) && instance_filtered( handle, context ) )
+                        continue;
 
                      if( create_pdf )
                         add_pdf_variables( handle, context,

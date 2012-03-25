@@ -1508,9 +1508,10 @@ void parse_key_ver_rev_state_and_type_info(
    key_and_version = str.substr( 0, pos );
 }
 
-void determine_fixed_query_info( string& fixed_fields, string& fixed_key_values,
- int& num_fixed_key_values, bool& is_reverse, const list_source& list, const string& fixed_parent_field,
- const string& fixed_parent_keyval, const map< string, string >& list_selections, const session_info& sess_info )
+void determine_fixed_query_info( string& fixed_fields,
+ string& fixed_key_values, int& num_fixed_key_values, bool& is_reverse,
+ const list_source& list, const string& fixed_parent_field, const string& fixed_parent_keyval,
+ const map< string, string >& list_selections, const session_info& sess_info, string* p_set_field_values )
 {
    if( !fixed_parent_field.empty( ) )
    {
@@ -1628,11 +1629,11 @@ void determine_fixed_query_info( string& fixed_fields, string& fixed_key_values,
 
    for( size_t i = 0; i < ( list.lici->second )->restricts.size( ); i++ )
    {
+      map< string, string > restrict_extras;
+      parse_field_extra( ( list.lici->second )->restricts[ i ].extra, restrict_extras );
+
       if( ( list.lici->second )->restricts[ i ].operations.count( c_operation_select ) )
       {
-         map< string, string > restrict_extras;
-         parse_field_extra( ( list.lici->second )->restricts[ i ].extra, restrict_extras );
-
          if( !restrict_extras.count( c_field_extra_enum ) )
             continue;
 
@@ -1737,28 +1738,42 @@ void determine_fixed_query_info( string& fixed_fields, string& fixed_key_values,
          if( ( !unchecked && !list_selections.count( name ) )
           || ( list_selections.count( name ) && list_selections.find( name )->second == c_true ) )
          {
-            ++num_fixed_key_values;
-
-            if( num_fixed_key_values > 1 )
-               fixed_fields += ",";
-            fixed_fields += ( list.lici->second )->restricts[ i ].field;
-
-            if( num_fixed_key_values > 1 )
-               fixed_key_values += ",";
-
+            string value;
             if( !unchecked )
             {
                if( !reverse_checked )
-                  fixed_key_values += ( list.lici->second )->restricts[ i ].operations[ c_operation_checked ];
+                  value = ( list.lici->second )->restricts[ i ].operations[ c_operation_checked ];
                else
-                  fixed_key_values += ( list.lici->second )->restricts[ i ].operations[ c_operation_rchecked ];
+                  value = ( list.lici->second )->restricts[ i ].operations[ c_operation_rchecked ];
             }
             else
             {
                if( !reverse_checked )
-                  fixed_key_values += ( list.lici->second )->restricts[ i ].operations[ c_operation_unchecked ];
+                  value = ( list.lici->second )->restricts[ i ].operations[ c_operation_unchecked ];
                else
-                  fixed_key_values += ( list.lici->second )->restricts[ i ].operations[ c_operation_runchecked ];
+                  value = ( list.lici->second )->restricts[ i ].operations[ c_operation_runchecked ];
+            }
+
+            if( restrict_extras.count( c_field_extra_transient ) )
+            {
+               if( p_set_field_values )
+                  *p_set_field_values = ( list.lici->second )->restricts[ i ].field + "=" + value;
+               else
+                  throw runtime_error( "unexpected transient '"
+                   + ( list.lici->second )->restricts[ i ].field + "' found in determine_fixed_query_info" );
+            }
+            else
+            {
+               ++num_fixed_key_values;
+
+               if( num_fixed_key_values > 1 )
+                  fixed_fields += ",";
+               fixed_fields += ( list.lici->second )->restricts[ i ].field;
+
+               if( num_fixed_key_values > 1 )
+                  fixed_key_values += ",";
+
+               fixed_key_values += value;
             }
          }
          else if( reverse_checked )

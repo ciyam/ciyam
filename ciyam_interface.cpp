@@ -1276,7 +1276,7 @@ void request_handler::process_request( )
 
                      if( !fetch_list_info( module_id,
                       mod_info, class_id, "", *p_session_info, false, 0, key_info,
-                      field_list, "", "", "", *p_session_info->p_socket, p_session_info->select_data, "" ) )
+                      field_list, "", "", "", "", *p_session_info->p_socket, p_session_info->select_data, "" ) )
                         throw runtime_error( "unexpected error occurred processing select info" );
 
                      if( mod_info.user_select_ofield.empty( ) )

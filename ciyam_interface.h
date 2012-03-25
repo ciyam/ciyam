@@ -195,6 +195,7 @@ const char* const c_field_extra_filename = "filename";
 const char* const c_field_extra_int_type = "int_type";
 const char* const c_field_extra_non_link = "non_link";
 const char* const c_field_extra_non_print = "non_print";
+const char* const c_field_extra_transient = "transient";
 const char* const c_field_extra_admin_link = "admin_link";
 const char* const c_field_extra_admin_only = "admin_only";
 const char* const c_field_extra_defcurrent = "defcurrent";

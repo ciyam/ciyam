@@ -2694,7 +2694,7 @@ void Meta_Model::impl::impl_Generate( )
                         p_xfield = p_field;
 
                      string other_extras( meta_field_extras( p_xfield->UOM( ),
-                      p_xfield->Extra( ), p_xfield->Type( ).Max_Size( ), p_xfield->Enum( ).Id( ),
+                      p_xfield->Extra( ), p_xfield->Transient( ), p_xfield->Type( ).Max_Size( ), p_xfield->Enum( ).Id( ),
                       p_xfield->Type( ).Primitive( ), p_xfield->Type( ).Min_Value( ), p_xfield->Type( ).Max_Value( ),
                       p_xfield->Type( ).Numeric_Digits( ), p_xfield->Type( ).Numeric_Decimals( ),
                       p_xfield->Type( ).String_Domain( ), has_date_precision ? 0 : p_xfield->Type( ).Date_Precision( ),
@@ -3788,6 +3788,7 @@ void Meta_Model::impl::impl_Generate( )
                         string other_extras( meta_field_extras(
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).UOM( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ),
+                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Transient( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Enum( ).Id( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ),
@@ -3869,6 +3870,7 @@ void Meta_Model::impl::impl_Generate( )
                            other_extras = meta_field_extras(
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).UOM( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Extra( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Transient( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Max_Size( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Enum( ).Id( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Primitive( ),
@@ -3908,6 +3910,7 @@ void Meta_Model::impl::impl_Generate( )
                            other_extras = meta_field_extras(
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).UOM( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Extra( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Transient( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Max_Size( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Enum( ).Id( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Primitive( ),
@@ -4364,7 +4367,7 @@ void Meta_Model::impl::impl_Generate( )
                       p_field->Primitive( ), p_field->Mandatory( ), "", "" ) );
 
                      string field_extras( meta_field_extras( p_field->UOM( ),
-                      p_field->Extra( ), p_field->Type( ).Max_Size( ), p_field->Enum( ).Id( ),
+                      p_field->Extra( ), p_field->Transient( ), p_field->Type( ).Max_Size( ), p_field->Enum( ).Id( ),
                       p_field->Type( ).Primitive( ), p_field->Type( ).Min_Value( ), p_field->Type( ).Max_Value( ),
                       p_field->Type( ).Numeric_Digits( ), p_field->Type( ).Numeric_Decimals( ),
                       p_field->Type( ).String_Domain( ), p_field->Type( ).Date_Precision( ),
@@ -4668,7 +4671,7 @@ void Meta_Model::impl::impl_Generate( )
                } while( get_obj( ).child_List( ).Class( ).child_Modifier( ).iterate_next( ) );
             }
 
-            // NOTE: When looking for the "uid" filter if the class is aliased then need to
+            // NOTE: When looking for general filters if the class is aliased then need to
             // instead use the Source Class.
             Meta_Class* p_sclass( &get_obj( ).child_List( ).Class( ) );
             if( !is_null( p_sclass->Source_Class( ) ) )
@@ -4679,14 +4682,13 @@ void Meta_Model::impl::impl_Generate( )
                do
                {
                   if( !get_obj( ).child_List( ).Ignore_User_Id_Filter( )
-                   && p_sclass->child_Specification( ).Specification_Type( ) == "filter_non_uid" )
+                   && ( p_sclass->child_Specification( ).Specification_Type( ) == "filter_non_uid"
+                   || p_sclass->child_Specification( ).Specification_Type( ) == "filter_field_value" ) )
                   {
                      if( !filters.empty( ) )
                         filters += ",";
-                     filters += "uid";
 
-                     p_sclass->child_Specification( ).iterate_stop( );
-                     break;
+                     filters += p_sclass->child_Specification( ).Id( );
                   }
                } while( p_sclass->child_Specification( ).iterate_next( ) );
             }

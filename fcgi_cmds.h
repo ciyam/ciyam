@@ -56,8 +56,9 @@ bool fetch_list_info( const std::string& module, const module_info& mod_info,
  const std::string& class_id, const std::string& uinfo, const session_info& sess_info,
  bool is_reverse, int row_limit, const std::string& key_info, const std::string& field_list,
  const std::string& filters, const std::string& search_text, const std::string& search_query,
- tcp_socket& socket, data_container& rows, const std::string& exclude_key, bool* p_prev = 0,
- std::string* p_perms = 0, const std::string* p_security_info = 0, const std::string* p_extra_debug = 0,
+ const std::string& set_field_values, tcp_socket& socket, data_container& rows,
+ const std::string& exclude_key, bool* p_prev = 0, std::string* p_perms = 0,
+ const std::string* p_security_info = 0, const std::string* p_extra_debug = 0,
  const std::set< std::string >* p_exclude_keys = 0, const std::string* p_pdf_spec_name = 0,
  const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0 );
 
@@ -72,10 +73,10 @@ bool populate_list_info( list_source& list,
  const std::map< std::string, std::string >& list_selections,
  const std::map< std::string, std::string >& list_search_text,
  const std::map< std::string, std::string >& list_search_values,
- const std::string& listinfo, const std::string& listsort,
- const std::string& parent_key, bool is_printable, const std::string& view_cid,
- const std::string& view_pfield, const std::set< std::string >* p_specials, const session_info& sess_info,
- const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0 );
+ const std::string& listinfo, const std::string& listsort, const std::string& parent_key, bool is_printable,
+ const std::string& view_cid, const std::string& view_pfield, const std::set< std::string >* p_specials,
+ const session_info& sess_info, const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0,
+ std::string* p_pdf_view_file_name = 0 );
 
 void fetch_user_record( const std::string& gid,
  const std::string& module_id, const std::string& module_name, const module_info& mod_info,
