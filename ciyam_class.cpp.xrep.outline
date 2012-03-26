@@ -881,7 +881,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 {
    uint64_t state = 0;
 `{`?`$all_get_state_specifications`[`$all_get_state_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`@eq`(`$specification_\0_tfield`,`'`'`)
+`{`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)
 `{`#check_user_ignore_uneditable.spec.xrep section=get_state module_name=$module_name class_name=$class_name\
  arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
@@ -1214,12 +1214,6 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_cclass=$specification_\0_cclass arg_child=$specification_\0_child arg_field=$specification_\0_field\
  arg_ofield=$specification_\0_ofield arg_cfield=$specification_\0_cfield arg_separator=$specification_\0_separator`}\
 `,\
-`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_procedure`)
-`{`#check_user_ignore_uneditable.spec.xrep section=after_fetch class_name=$class_name\
- arg_spfield=$specification_\0_spfield arg_actions=$specification_\0_actions\
- arg_procedure=$specification_\0_procedure arg_prompt=$specification_\0_prompt\
- arg_back_for_view=$specification_\0_back_for_view`}\
-`,\
 `@eq`(`'\1`'`,`'default_for_clone`'`)
 `{`#default_for_clone.spec.xrep section=after_fetch class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
@@ -1267,6 +1261,13 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_class=$specification_\0_class arg_user=$specification_\0_user arg_group=$specification_\0_group\
  arg_field=$specification_\0_field arg_when=$specification_\0_when arg_duration=$specification_\0_duration\
  arg_finish=$specification_\0_finish`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_action`'`)
+`{`#transient_field_action.spec.xrep section=after_fetch class_name=$class_name\
+ arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
+ arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield\
+ arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
+ arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -2591,6 +2592,10 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_field=$specification_\0_field arg_user=$specification_\0_user arg_group=$specification_\0_group\
  arg_when=$specification_\0_when arg_duration=$specification_\0_duration arg_finish=$specification_\0_finish`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_action`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_ufield`)`|`!`@eq`(`'`'`,`$specification_\0_tfield`)`)
+`{`#transient_field_action.spec.xrep section=get_required_field_names\
+ arg_actions=$specification_\0_actions arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=get_required_field_names\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
@@ -2625,9 +2630,9 @@ void `{`$full_class_name`}::get_always_required_field_names(
    ( void )required_transients;\
 `}
 `{`?`$all_get_always_required_field_names_specifications`[`$all_get_always_required_field_names_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`(`@eq`(`'`'`,`$specification_\0_tpfield`)`&`@eq`(`'`'`,`$specification_\0_spfield`)`)
+`{`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_tpfield`)
 `{`#check_user_ignore_uneditable.spec.xrep section=get_always_required_field_names class_name=$class_name\
- arg_tpfield=$specification_\0_tpfield arg_spfield=$specification_\0_spfield`}\
+ arg_tpfield=$specification_\0_tpfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_date_notification`'`)
 `{`#modifier_date_notification.spec.xrep section=get_always_required_field_names\
