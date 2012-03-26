@@ -1,0 +1,64 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_action)]
+`{`@eq`(`$arg_admin_always`,`'true`'`)\
+`{`@eq`(`$arg_ufield`,`'`'`)\
+   if( is_admin_uid( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+`,\
+`{`@eq`(`$arg_tfield`,`'`'`)\
+   if( is_admin_uid( ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
+`,\
+   if( get_obj( ).`{`$arg_tfield`}( )
+    && ( is_admin_uid( ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
+`}`}`,\
+`{`@eq`(`$arg_ufield`,`'`'`)\
+`{`@eq`(`$arg_tfield`,`'`'`)\
+   // NOTE: Empty code block for scope purposes.
+`,\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+`}`,\
+`{`@eq`(`$arg_tfield`,`'`'`)\
+   if( get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
+`,\
+   if( get_obj( ).`{`$arg_tfield`}( )
+    && get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
+`}`}`}\
+   {
+      string actions( get_obj( ).`{`$arg_actions`}( ) );
+
+      if( !actions.empty( ) )
+         actions += ',';
+`{`@eq`(`$arg_prompt`,`'true`'`)\
+      actions += '?';
+`}\
+`{`@eq`(`$arg_back_for_view`,`'true`'`)\
+      if( !get_obj( ).get_is_iterating( ) )
+         actions += '<';
+`}\
+      actions += c_procedure_id_`{`$arg_procedure`};
+
+      get_obj( ).`{`$arg_actions`}( actions );
+   }
+   // [(start transient_field_action)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_action)]
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+`{`!`@eq`(`$arg_ufield`,`'`'`)\
+      dependents.insert( "`{`$arg_ufield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
+         names.insert( "`{`$arg_ufield`}" );
+`{`!`@eq`(`$arg_tfield`,`'`'`)
+`}`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+`}\
+   }
+   // [(start transient_field_action)]
+`}
