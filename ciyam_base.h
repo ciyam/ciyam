@@ -189,9 +189,9 @@ void CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const st
 bool CIYAM_BASE_DECL_SPEC set_system_variable( const std::string& name, const std::string& value, const std::string& current );
 
 void CIYAM_BASE_DECL_SPEC init_storage( const std::string& name,
- const std::string& prefix, command_handler& cmd_handler, bool lock_for_admin );
+ const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
 void CIYAM_BASE_DECL_SPEC create_storage( const std::string& name,
- const std::string& prefix, command_handler& cmd_handler, bool lock_for_admin );
+ const std::string& directory, command_handler& cmd_handler, bool lock_for_admin );
 void CIYAM_BASE_DECL_SPEC attach_storage( const std::string& name, command_handler& cmd_handler, bool lock_for_admin );
 
 void CIYAM_BASE_DECL_SPEC backup_storage( command_handler& cmd_handler, int* p_truncation_count = 0 );
@@ -219,7 +219,7 @@ struct CIYAM_BASE_DECL_SPEC storage_bulk_write_pause
 
 std::string CIYAM_BASE_DECL_SPEC storage_name( );
 std::string CIYAM_BASE_DECL_SPEC storage_identity( );
-std::string CIYAM_BASE_DECL_SPEC storage_module_prefix( );
+std::string CIYAM_BASE_DECL_SPEC storage_module_directory( );
 
 std::string CIYAM_BASE_DECL_SPEC storage_web_root( bool expand );
 void CIYAM_BASE_DECL_SPEC storage_web_root( const std::string& new_root );

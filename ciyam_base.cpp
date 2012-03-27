@@ -460,7 +460,7 @@ struct storage_root
 
    string web_root;
 
-   string module_prefix;
+   string module_directory;
 
    int32_t truncation_count;
 
@@ -481,7 +481,7 @@ int_t size_of( const storage_root& sr )
 
    size += size_determiner( &sr.web_root );
 
-   size += size_determiner( &sr.module_prefix );
+   size += size_determiner( &sr.module_directory );
    size += size_determiner( &sr.truncation_count );
 
    size += size_determiner( &sr.module_list );
@@ -498,7 +498,7 @@ read_stream& operator >>( read_stream& rs, storage_root& sr )
     >> sr.version
     >> sr.identity
     >> sr.web_root
-    >> sr.module_prefix
+    >> sr.module_directory
     >> sr.truncation_count
     >> sr.module_list
     >> sr.modules
@@ -513,7 +513,7 @@ write_stream& operator <<( write_stream& ws, const storage_root& sr )
     << sr.version
     << sr.identity
     << sr.web_root
-    << sr.module_prefix
+    << sr.module_directory
     << sr.truncation_count
     << sr.module_list
     << sr.modules
@@ -1083,7 +1083,7 @@ enum storage_op
 };
 
 void perform_storage_op( storage_op op,
- const string& name, const string& prefix, command_handler& cmd_handler, bool lock_for_admin )
+ const string& name, const string& directory, command_handler& cmd_handler, bool lock_for_admin )
 {
    guard g( g_mutex );
 
@@ -1153,7 +1153,7 @@ void perform_storage_op( storage_op op,
             ods::transaction tx( *ap_ods );
 
             ap_handler->get_root( ).set_new( );
-            ap_handler->get_root( ).module_prefix = prefix;
+            ap_handler->get_root( ).module_directory = directory;
             *ap_ods << ap_handler->get_root( );
 
             // NOTE: Create the storage "identity" object then store the root object again (so that
@@ -1235,10 +1235,10 @@ void perform_storage_op( storage_op op,
          gtp_session->p_storage_handler = p_new_handler;
          gtp_session->p_storage_handler->inc_ref_count( );
 
-         if( module_count( ) && !p_new_handler->get_root( ).module_prefix.empty( ) )
-            throw runtime_error( "prefixed storages cannot be initialised whilst modules are already loaded" );
+         if( module_count( ) && !p_new_handler->get_root( ).module_directory.empty( ) )
+            throw runtime_error( "storages with a module directory cannot be initialised whilst modules are already loaded" );
 
-         module_directory( &p_new_handler->get_root( ).module_prefix );
+         module_directory( &p_new_handler->get_root( ).module_directory );
 
          // NOTE: Modules that have been registered to this storage are now automatically loaded (if not already present).
          // This is performed in the same order that the modules were registered in as dependencies may exist between them.
@@ -4260,14 +4260,16 @@ bool set_system_variable( const string& name, const string& value, const string&
    return retval;
 }
 
-void init_storage( const string& name, const string& prefix, command_handler& cmd_handler, bool lock_for_admin )
+void init_storage( const string& name,
+ const string& directory, command_handler& cmd_handler, bool lock_for_admin )
 {
-   perform_storage_op( e_storage_op_init, name, prefix, cmd_handler, lock_for_admin );
+   perform_storage_op( e_storage_op_init, name, directory, cmd_handler, lock_for_admin );
 }
 
-void create_storage( const string& name, const string& prefix, command_handler& cmd_handler, bool lock_for_admin )
+void create_storage( const string& name,
+ const string& directory, command_handler& cmd_handler, bool lock_for_admin )
 {
-   perform_storage_op( e_storage_op_create, name, prefix, cmd_handler, lock_for_admin );
+   perform_storage_op( e_storage_op_create, name, directory, cmd_handler, lock_for_admin );
 }
 
 void attach_storage( const string& name, command_handler& cmd_handler, bool lock_for_admin )
@@ -4975,9 +4977,9 @@ string storage_identity( )
    return gtp_session->p_storage_handler->get_root( ).identity;
 }
 
-string storage_module_prefix( )
+string storage_module_directory( )
 {
-   return gtp_session->p_storage_handler->get_root( ).module_prefix;
+   return gtp_session->p_storage_handler->get_root( ).module_directory;
 }
 
 string storage_web_root( bool expand )
