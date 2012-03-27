@@ -2331,24 +2331,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_info )
       {
          response = "Name: " + storage_name( ) + '\n';
-         response += "Prefix: " + storage_module_prefix( ) + '\n';
-         response += "Identity: " + storage_identity( );
+         response += "Identity: " + storage_identity( ) + '\n';
+         response += "Directory: " + storage_module_directory( );
       }
       else if( command == c_cmd_ciyam_session_storage_init )
       {
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_init_name ) );
-         string prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_init_prefix ) );
+         string directory( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_init_directory ) );
 
-         init_storage( name, prefix, handler, has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_init_admin ) );
+         init_storage( name, directory, handler, has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_init_admin ) );
       }
       else if( command == c_cmd_ciyam_session_storage_term )
          term_storage( handler );
       else if( command == c_cmd_ciyam_session_storage_create )
       {
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_create_name ) );
-         string prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_create_prefix ) );
+         string directory( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_create_directory ) );
 
-         create_storage( name, prefix, handler, has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_create_admin ) );
+         create_storage( name, directory, handler, has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_create_admin ) );
       }
       else if( command == c_cmd_ciyam_session_storage_attach )
       {
@@ -2481,7 +2481,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       else if( command == c_cmd_ciyam_session_storage_restore )
       {
          string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_name ) );
-         string prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_prefix ) );
+         string directory( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_directory ) );
          string trace_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_trace_info ) );
          int stop_at_tx( atoi( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_stop_at_tx ).c_str( ) ) );
          bool rebuild( has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_rebuild ) );
@@ -2602,7 +2602,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          int original_trace_flags( get_trace_flags( ) );
 
-         init_storage( name, prefix, handler, true );
+         init_storage( name, directory, handler, true );
 
          try
          {
