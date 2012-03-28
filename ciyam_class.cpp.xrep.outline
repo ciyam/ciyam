@@ -1272,7 +1272,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
  arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
- arg_admin_always=$specification_\0_admin_always`}\
+ arg_admin_always=$specification_\0_admin_always arg_perm=$specification_\0_perm`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
