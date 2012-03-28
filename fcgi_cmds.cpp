@@ -618,7 +618,7 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
    if( !filters.empty( ) )
       fetch_cmd += " -f=" + filters;
 
-   if( p_perms )
+   if( p_perms && !p_perms->empty( ) )
       fetch_cmd += " -p=" + *p_perms;
 
    if( p_security_info )
@@ -1526,20 +1526,13 @@ bool populate_list_info( list_source& list,
 
    string filters( list.lici->second->filters );
 
-   // NOTE: If a "permission" field was included in the field list then the set of user
-   // perms is sent to the server as it assumed they will be required for record filtering.
    string perms;
-   string* p_perms = 0;
-   if( !list.permission_field.empty( ) )
+   map< string, string >::const_iterator i;
+   for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
    {
-      map< string, string >::const_iterator i;
-      for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
-      {
-         if( !perms.empty( ) )
-            perms += ",";
-         perms += i->first;
-      }
-      p_perms = &perms;
+      if( !perms.empty( ) )
+         perms += ",";
+      perms += i->first;
    }
 
    string user_info( sess_info.user_key + ":" + sess_info.user_id );
@@ -1566,7 +1559,7 @@ bool populate_list_info( list_source& list,
 
    if( !fetch_list_info( list.module_id, mod_info, class_info, user_info, sess_info,
     is_reverse, row_limit, key_info, field_list, filters, search_text, search_query,
-    set_field_values, socket, list.row_data, "", &prev, p_perms, p_security_info, 0, 0,
+    set_field_values, socket, list.row_data, "", &prev, &perms, p_security_info, 0, 0,
     p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
       okay = false;
    else if( is_printable )
@@ -1605,7 +1598,7 @@ bool populate_list_info( list_source& list,
 
       if( redo_fetch && !fetch_list_info( list.module_id, mod_info,
        class_info, user_info, sess_info, is_reverse, row_limit, key_info, list.field_list,
-       filters, search_text, search_query, set_field_values, socket, list.row_data, "", &prev, p_perms ) )
+       filters, search_text, search_query, set_field_values, socket, list.row_data, "", &prev, &perms ) )
          okay = false;
 
       size_t index_field = 0;
