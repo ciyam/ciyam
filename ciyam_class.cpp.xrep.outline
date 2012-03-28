@@ -931,6 +931,11 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_future=$specification_\0_future\
  arg_modifier=$specification_\0_modifier`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_permission`'`)
+`{`#modifier_permission.spec.xrep section=get_state\
+ arg_modifier=$specification_\0_modifier arg_permission=$specification_\0_permission\
+ arg_ufield=$specification_\0_ufield arg_admin_always=$specification_\0_admin_always`}\
+`,\
 `@eq`(`'\1`'`,`'protect_equal`'`)
 `{`#protect_equal.spec.xrep section=get_state\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_label=$specification_\0_label\
@@ -2649,6 +2654,9 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `@eq`(`'\1`'`,`'modifier_past_date_time`'`)
 `{`#modifier_past_date_time.spec.xrep section=get_always_required_field_names\
  arg_dfield=$specification_\0_dfield arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}\
+`,\
+`@eq`(`'\1`'`,`'modifier_permission`'`)`&`!`@eq`(`'`'`,`$specification_\0_ufield`)
+`{`#modifier_permission.spec.xrep section=get_always_required_field_names arg_ufield=$specification_\0_ufield`}\
 `,\
 `@eq`(`'\1`'`,`'move_up_and_down`'`)
 `{`#move_up_and_down.spec.xrep section=get_always_required_field_names\

@@ -472,32 +472,28 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;
 
-   // NOTE: If generating a PDF spec then need to pass the user permissions.
-   if( p_pdf_spec_name )
+   string perms;
+
+   if( sess_info.is_admin_user )
+      perms = "@admin";
+
+   if( p_owner && *p_owner == sess_info.user_key )
    {
-      string perms;
-
-      if( sess_info.is_admin_user )
-         perms = "@admin";
-
-      if( p_owner && *p_owner == sess_info.user_key )
-      {
-         if( !perms.empty( ) )
-            perms += ",";
-         perms = "@owner";
-      }
-
-      map< string, string >::const_iterator i;
-      for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
-      {
-         if( !perms.empty( ) )
-            perms += ",";
-         perms += i->first;
-      }
-
       if( !perms.empty( ) )
-         fetch_cmd += " -p=" + perms;
+         perms += ",";
+      perms = "@owner";
    }
+
+   map< string, string >::const_iterator i;
+   for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
+   {
+      if( !perms.empty( ) )
+         perms += ",";
+      perms += i->first;
+   }
+
+   if( !perms.empty( ) )
+      fetch_cmd += " -p=" + perms;
 
    fetch_cmd += " \"" + item_key + "\" #1";
 

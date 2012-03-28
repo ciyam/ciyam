@@ -1,0 +1,25 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start modifier_permission)]
+`{`@eq`(`$arg_ufield`,`'`'`)\
+   if( `{`!`@eq`(`$arg_admin_always`,`'`'`)!is_admin_uid( ) && `}!get_perms( ).count( "`{`$arg_permission`}" ) )
+      state |= c_modifier_`{`$arg_modifier`};
+`,\
+`{`@eq`(`$arg_admin_always`,`'`'`)\
+   if( !( get_perms( ).count( "`{`$arg_permission`}" ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
+`,\
+   if( !is_admin_uid( )
+    && ( !( get_perms( ).count( "`{`$arg_permission`}" ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) ) )
+`}\
+      state |= c_modifier_`{`$arg_modifier`};
+`}\
+   // [(finish modifier_permission)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start modifier_permission)]
+   dependents.insert( "`{`$arg_ufield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
+     || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
+      names.insert( "`{`$arg_ufield`}" );
+   // [(start modifier_permission)]
+`}
