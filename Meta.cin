@@ -89,7 +89,7 @@ user_defined_type_add -id=1005 str10 string "max_size 10"
 user_defined_type_add -id=1010 str30 string "max_size 30"
 user_defined_type_add -id=1015 str50 string "max_size 50"
 user_defined_type_add -id=1020 str100 string "max_size 100"
-user_defined_type_add -id=1025 str150 string "max_size 150"
+user_defined_type_add -id=1025 str200 string "max_size 200"
 user_defined_type_add -id=1030 0..999999 int "range 0 999999"
 user_defined_type_add -id=1040 digits int "range 0 16"
 user_defined_type_add -id=1045 label str30 "format label"
@@ -281,7 +281,7 @@ field_add -id=113111 Relationship Transient bool mand -def=0
 modifier_add -id=113310 Relationship Is_Transient Cascade_Op:relegate,Extra:relegate,@class:lowlight1
 class_add -id=114100 Specification_Type Specification_Types
 field_add -id=114101 Specification_Type Name str100 mand
-field_add -id=114102 Specification_Type Specification_Name str150 mand
+field_add -id=114102 Specification_Type Specification_Name str200 mand
 field_add -id=114103 Specification_Type Specification_Object str100 mand
 field_add -id=114104 Specification_Type Needs_Class bool mand -def=0
 field_add -id=114105 Specification_Type Needs_Field bool mand -def=0
@@ -387,7 +387,7 @@ procedure_arg_add -id=114418 Specification_Type Is_Valid_Field_Type Test_Value s
 procedure_arg_add -id=114419 Specification_Type Is_Valid_Field_Type Procedure_Arg_Type int in
 procedure_arg_add -id=114420 Specification_Type Is_Valid_Field_Type Procedure_Arg_Primitive int in
 class_add -id=115100 Specification Specifications -x=ordered
-field_add -id=115101 Specification Name str150 mand -x=replace_underbars
+field_add -id=115101 Specification Name str200 mand -x=replace_underbars
 field_add -id=115102 Specification Value str100 opt
 field_add -id=115103 Specification Test_Value str100 opt
 field_add -id=115104 Specification Options str100 opt
@@ -415,6 +415,7 @@ field_add -id=115127 Specification Value_Numeric_String string opt
 field_add -id=115128 Specification Is_Required_For_UI_Gen bool mand -def=0
 field_add -id=115129 Specification Value_Left_Part string opt
 field_add -id=115130 Specification Value_Right_Part string opt
+field_add -id=115131 Specification Value_Label string opt
 procedure_add -id=115410 Specification Move_Up
 procedure_arg_add -id=115411 Specification Move_Up Restrict_Fields string in
 procedure_arg_add -id=115412 Specification Move_Up Restrict_Values string in
@@ -1405,6 +1406,8 @@ specification_add -id=600189 {Specification}_Value_Left_Part_from_other_field fi
  "Specification Value Value_Left_Part -func=value_leftpart -check_null"
 specification_add -id=600190 {Specification}_Value_Right_Part_from_other_field field_from_other_field\
  "Specification Value Value_Right_Part -func=value_rightpart -check_null"
+specification_add -id=600190a {Specification}_Value_Label_from_other_field field_from_other_field\
+ "Specification Value Value_Label -func=value_label -check_null"
 specification_add -id=600191 {Specification}_{Enum}_from_other_field field_from_other_field\
  "Specification {Field}:{Enum} {Enum} -test={Specification_Type}:Use_Field_Enum=true"
 specification_add -id=600192 {Specification}_Field_Class field_from_other_field "Specification {Field}:Parent_Class Field_Class"
@@ -1450,7 +1453,7 @@ specification_add -id=600204 {Specification}_Name_from_search_replace field_from
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue},{Permission}:Name={perm}\
 ,{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg}\
 ,Child_Relationship:Name={cname},Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass}\
-,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},Value={value},Value_Numeric_String={value_numstr}\
+,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},Value={value},Value_Label={value_label},Value_Numeric_String={value_numstr}\
 ,Field_Values={field_values},Fields={fields},Field_Pairs={field_pairs} -sep=_ -opt_prefix"
 specification_add -id=600205 {Specification}_All_Vars_dependency field_dependency "Specification All_Vars Vars"
 specification_add -id=600206 {Specification}_All_Strings_dependency field_dependency "Specification All_Strings Strings"

@@ -158,6 +158,7 @@ const char* const c_field_id_Test_Value = "115103";
 const char* const c_field_id_Use_Source_Parent = "115107";
 const char* const c_field_id_Use_Test_Parent_Child = "115110";
 const char* const c_field_id_Value = "115102";
+const char* const c_field_id_Value_Label = "115131";
 const char* const c_field_id_Value_Left_Part = "115129";
 const char* const c_field_id_Value_Literal = "115116";
 const char* const c_field_id_Value_Numeric_String = "115127";
@@ -236,6 +237,7 @@ const char* const c_field_name_Test_Value = "Test_Value";
 const char* const c_field_name_Use_Source_Parent = "Use_Source_Parent";
 const char* const c_field_name_Use_Test_Parent_Child = "Use_Test_Parent_Child";
 const char* const c_field_name_Value = "Value";
+const char* const c_field_name_Value_Label = "Value_Label";
 const char* const c_field_name_Value_Left_Part = "Value_Left_Part";
 const char* const c_field_name_Value_Literal = "Value_Literal";
 const char* const c_field_name_Value_Numeric_String = "Value_Numeric_String";
@@ -314,6 +316,7 @@ const char* const c_field_display_name_Test_Value = "field_specification_test_va
 const char* const c_field_display_name_Use_Source_Parent = "field_specification_use_source_parent";
 const char* const c_field_display_name_Use_Test_Parent_Child = "field_specification_use_test_parent_child";
 const char* const c_field_display_name_Value = "field_specification_value";
+const char* const c_field_display_name_Value_Label = "field_specification_value_label";
 const char* const c_field_display_name_Value_Left_Part = "field_specification_value_left_part";
 const char* const c_field_display_name_Value_Literal = "field_specification_value_literal";
 const char* const c_field_display_name_Value_Numeric_String = "field_specification_value_numeric_string";
@@ -2183,13 +2186,13 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Actions VARCHAR(128) NOT NULL,"
+    "C_Actions VARCHAR(200) NOT NULL,"
     "C_Child_Rel_Child_Class VARCHAR(64) NOT NULL,"
-    "C_Child_Rel_Field_Key VARCHAR(128) NOT NULL,"
+    "C_Child_Rel_Field_Key VARCHAR(200) NOT NULL,"
     "C_Child_Relationship VARCHAR(64) NOT NULL,"
     "C_Child_Specification_Type VARCHAR(64) NOT NULL,"
     "C_Class VARCHAR(64) NOT NULL,"
-    "C_Comments VARCHAR(128) NOT NULL,"
+    "C_Comments VARCHAR(200) NOT NULL,"
     "C_Enum VARCHAR(64) NOT NULL,"
     "C_Enum_Item VARCHAR(64) NOT NULL,"
     "C_Enum_Item_2 VARCHAR(64) NOT NULL,"
@@ -2201,13 +2204,13 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Field_Pairs TEXT NOT NULL,"
     "C_Field_Values TEXT NOT NULL,"
     "C_Fields TEXT NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Is_Required_For_UI_Gen INTEGER NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
     "C_Modifier VARCHAR(64) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
-    "C_Options VARCHAR(128) NOT NULL,"
-    "C_Order VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
+    "C_Options VARCHAR(200) NOT NULL,"
+    "C_Order VARCHAR(200) NOT NULL,"
     "C_Other_Class VARCHAR(64) NOT NULL,"
     "C_Other_Field VARCHAR(64) NOT NULL,"
     "C_Other_Field_2 VARCHAR(64) NOT NULL,"
@@ -2223,7 +2226,7 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Protect_Child_Rel INTEGER NOT NULL,"
     "C_Protect_Procedure INTEGER NOT NULL,"
     "C_Protect_Source_Parent INTEGER NOT NULL,"
-    "C_Restrict_Values VARCHAR(128) NOT NULL,"
+    "C_Restrict_Values VARCHAR(200) NOT NULL,"
     "C_Source_Child VARCHAR(64) NOT NULL,"
     "C_Source_Child_2 VARCHAR(64) NOT NULL,"
     "C_Source_Child_Class VARCHAR(64) NOT NULL,"
@@ -2239,21 +2242,22 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Test_Field_Class VARCHAR(64) NOT NULL,"
     "C_Test_Parent VARCHAR(64) NOT NULL,"
     "C_Test_Parent_Class VARCHAR(64) NOT NULL,"
-    "C_Test_Value VARCHAR(128) NOT NULL,"
+    "C_Test_Value VARCHAR(200) NOT NULL,"
     "C_Use_Source_Parent INTEGER NOT NULL,"
     "C_Use_Test_Parent_Child INTEGER NOT NULL,"
-    "C_Value VARCHAR(128) NOT NULL,"
-    "C_Value_Left_Part VARCHAR(128) NOT NULL,"
-    "C_Value_Literal VARCHAR(128) NOT NULL,"
-    "C_Value_Numeric_String VARCHAR(128) NOT NULL,"
-    "C_Value_Right_Part VARCHAR(128) NOT NULL,"
-    "C_Value_String VARCHAR(128) NOT NULL,"
+    "C_Value VARCHAR(200) NOT NULL,"
+    "C_Value_Label VARCHAR(200) NOT NULL,"
+    "C_Value_Left_Part VARCHAR(200) NOT NULL,"
+    "C_Value_Literal VARCHAR(200) NOT NULL,"
+    "C_Value_Numeric_String VARCHAR(200) NOT NULL,"
+    "C_Value_Right_Part VARCHAR(200) NOT NULL,"
+    "C_Value_String VARCHAR(200) NOT NULL,"
     "C_Access_Restriction INTEGER NOT NULL,"
-    "C_Clone_Key VARCHAR(128) NOT NULL,"
+    "C_Clone_Key VARCHAR(200) NOT NULL,"
     "C_Create_Type INTEGER NOT NULL,"
     "C_New_Record_Class VARCHAR(64) NOT NULL,"
     "C_New_Record_FK_Field VARCHAR(64) NOT NULL,"
-    "C_New_Record_FK_Value VARCHAR(128) NOT NULL,"
+    "C_New_Record_FK_Value VARCHAR(200) NOT NULL,"
     "C_Type INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

@@ -272,6 +272,7 @@ const char* const c_field_id_Test_Value = "115103";
 const char* const c_field_id_Use_Source_Parent = "115107";
 const char* const c_field_id_Use_Test_Parent_Child = "115110";
 const char* const c_field_id_Value = "115102";
+const char* const c_field_id_Value_Label = "115131";
 const char* const c_field_id_Value_Left_Part = "115129";
 const char* const c_field_id_Value_Literal = "115116";
 const char* const c_field_id_Value_Numeric_String = "115127";
@@ -342,6 +343,7 @@ const char* const c_field_name_Test_Value = "Test_Value";
 const char* const c_field_name_Use_Source_Parent = "Use_Source_Parent";
 const char* const c_field_name_Use_Test_Parent_Child = "Use_Test_Parent_Child";
 const char* const c_field_name_Value = "Value";
+const char* const c_field_name_Value_Label = "Value_Label";
 const char* const c_field_name_Value_Left_Part = "Value_Left_Part";
 const char* const c_field_name_Value_Literal = "Value_Literal";
 const char* const c_field_name_Value_Numeric_String = "Value_Numeric_String";
@@ -412,6 +414,7 @@ const char* const c_field_display_name_Test_Value = "field_specification_test_va
 const char* const c_field_display_name_Use_Source_Parent = "field_specification_use_source_parent";
 const char* const c_field_display_name_Use_Test_Parent_Child = "field_specification_use_test_parent_child";
 const char* const c_field_display_name_Value = "field_specification_value";
+const char* const c_field_display_name_Value_Label = "field_specification_value_label";
 const char* const c_field_display_name_Value_Left_Part = "field_specification_value_left_part";
 const char* const c_field_display_name_Value_Literal = "field_specification_value_literal";
 const char* const c_field_display_name_Value_Numeric_String = "field_specification_value_numeric_string";
@@ -419,7 +422,7 @@ const char* const c_field_display_name_Value_Right_Part = "field_specification_v
 const char* const c_field_display_name_Value_String = "field_specification_value_string";
 const char* const c_field_display_name_Vars = "field_specification_vars";
 
-const int c_num_fields = 69;
+const int c_num_fields = 70;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -451,6 +454,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "115128",
    "115129",
    "115130",
+   "115131",
    "301400",
    "301405",
    "301406",
@@ -559,6 +563,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Use_Source_Parent",
    "Use_Test_Parent_Child",
    "Value",
+   "Value_Label",
    "Value_Left_Part",
    "Value_Literal",
    "Value_Numeric_String",
@@ -667,7 +672,7 @@ domain_string_max_size< 100 > g_Comments_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Id_domain;
-domain_string_max_size< 150 > g_Name_domain;
+domain_string_max_size< 200 > g_Name_domain;
 domain_string_max_size< 100 > g_Options_domain;
 domain_string_max_size< 100 > g_Test_Value_domain;
 domain_string_max_size< 100 > g_Value_domain;
@@ -706,6 +711,7 @@ string gv_default_Test_Value = string( );
 bool gv_default_Use_Source_Parent = bool( 0 );
 bool gv_default_Use_Test_Parent_Child = bool( 0 );
 string gv_default_Value = string( );
+string gv_default_Value_Label = string( );
 string gv_default_Value_Left_Part = string( );
 string gv_default_Value_Literal = string( );
 string gv_default_Value_Numeric_String = string( );
@@ -918,6 +924,8 @@ void Meta_Specification_command_functor::operator ( )( const string& command, co
          string_getter< bool >( cmd_handler.p_Meta_Specification->Use_Test_Parent_Child( ), cmd_handler.retval );
       else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
          string_getter< string >( cmd_handler.p_Meta_Specification->Value( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Value_Label || field_name == c_field_name_Value_Label )
+         string_getter< string >( cmd_handler.p_Meta_Specification->Value_Label( ), cmd_handler.retval );
       else if( field_name == c_field_id_Value_Left_Part || field_name == c_field_name_Value_Left_Part )
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_Left_Part( ), cmd_handler.retval );
       else if( field_name == c_field_id_Value_Literal || field_name == c_field_name_Value_Literal )
@@ -1129,6 +1137,9 @@ void Meta_Specification_command_functor::operator ( )( const string& command, co
       else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value, field_value );
+      else if( field_name == c_field_id_Value_Label || field_name == c_field_name_Value_Label )
+         func_string_setter< Meta_Specification, string >(
+          *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Label, field_value );
       else if( field_name == c_field_id_Value_Left_Part || field_name == c_field_name_Value_Left_Part )
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Left_Part, field_value );
@@ -1462,6 +1473,9 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
    const string& impl_Value( ) const { return lazy_fetch( p_obj ), v_Value; }
    void impl_Value( const string& Value ) { v_Value = Value; }
+
+   const string& impl_Value_Label( ) const { return lazy_fetch( p_obj ), v_Value_Label; }
+   void impl_Value_Label( const string& Value_Label ) { v_Value_Label = Value_Label; }
 
    const string& impl_Value_Left_Part( ) const { return lazy_fetch( p_obj ), v_Value_Left_Part; }
    void impl_Value_Left_Part( const string& Value_Left_Part ) { v_Value_Left_Part = Value_Left_Part; }
@@ -2885,6 +2899,7 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    bool v_Use_Source_Parent;
    bool v_Use_Test_Parent_Child;
    string v_Value;
+   string v_Value_Label;
    string v_Value_Left_Part;
    string v_Value_Literal;
    string v_Value_Numeric_String;
@@ -3713,26 +3728,30 @@ string Meta_Specification::impl::get_field_value( int field ) const
       break;
 
       case 63:
-      retval = to_string( impl_Value_Left_Part( ) );
+      retval = to_string( impl_Value_Label( ) );
       break;
 
       case 64:
-      retval = to_string( impl_Value_Literal( ) );
+      retval = to_string( impl_Value_Left_Part( ) );
       break;
 
       case 65:
-      retval = to_string( impl_Value_Numeric_String( ) );
+      retval = to_string( impl_Value_Literal( ) );
       break;
 
       case 66:
-      retval = to_string( impl_Value_Right_Part( ) );
+      retval = to_string( impl_Value_Numeric_String( ) );
       break;
 
       case 67:
-      retval = to_string( impl_Value_String( ) );
+      retval = to_string( impl_Value_Right_Part( ) );
       break;
 
       case 68:
+      retval = to_string( impl_Value_String( ) );
+      break;
+
+      case 69:
       retval = to_string( impl_Vars( ) );
       break;
 
@@ -4000,26 +4019,30 @@ void Meta_Specification::impl::set_field_value( int field, const string& value )
       break;
 
       case 63:
-      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Left_Part, value );
+      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Label, value );
       break;
 
       case 64:
-      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Literal, value );
+      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Left_Part, value );
       break;
 
       case 65:
-      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Numeric_String, value );
+      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Literal, value );
       break;
 
       case 66:
-      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Right_Part, value );
+      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Numeric_String, value );
       break;
 
       case 67:
-      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_String, value );
+      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_Right_Part, value );
       break;
 
       case 68:
+      func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Value_String, value );
+      break;
+
+      case 69:
       func_string_setter< Meta_Specification::impl, string >( *this, &Meta_Specification::impl::impl_Vars, value );
       break;
 
@@ -4623,6 +4646,7 @@ void Meta_Specification::impl::clear( )
    v_Use_Source_Parent = gv_default_Use_Source_Parent;
    v_Use_Test_Parent_Child = gv_default_Use_Test_Parent_Child;
    v_Value = gv_default_Value;
+   v_Value_Label = gv_default_Value_Label;
    v_Value_Left_Part = gv_default_Value_Left_Part;
    v_Value_Literal = gv_default_Value_Literal;
    v_Value_Numeric_String = gv_default_Value_Numeric_String;
@@ -5735,6 +5759,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
+   if( !is_null( get_obj( ).Value( ) ) )
+      get_obj( ).Value_Label( value_label( get_obj( ).Value( ) ) );
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
    if( get_obj( ).Specification_Type( ).Use_Field_Enum( ) == true )
       get_obj( ).Enum( get_obj( ).Field( ).Enum( ) );
    // [(finish field_from_other_field)]
@@ -6029,6 +6058,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).add_search_replacement( "Name", "{enum}", to_string( get_obj( ).Enum( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{enum_item}", to_string( get_obj( ).Enum_Item( ).Label( ) ) );
       get_obj( ).add_search_replacement( "Name", "{value}", to_string( get_obj( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{value_label}", to_string( get_obj( ).Value_Label( ) ) );
       get_obj( ).add_search_replacement( "Name", "{value_numstr}", to_string( get_obj( ).Value_Numeric_String( ) ) );
       get_obj( ).add_search_replacement( "Name", "{field_values}", to_string( get_obj( ).Field_Values( ) ) );
       get_obj( ).add_search_replacement( "Name", "{fields}", to_string( get_obj( ).Fields( ) ) );
@@ -6126,6 +6156,9 @@ void Meta_Specification::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_field_from_other)]
 
    // [<start for_store>]
+//idk
+   if( !get_obj( ).Options( ).empty( ) )
+      get_obj( ).Name( get_obj( ).Name( ) + " " + get_obj( ).Options( ) );
    // [<finish for_store>]
 }
 
@@ -6621,6 +6654,16 @@ const string& Meta_Specification::Value( ) const
 void Meta_Specification::Value( const string& Value )
 {
    p_impl->impl_Value( Value );
+}
+
+const string& Meta_Specification::Value_Label( ) const
+{
+   return p_impl->impl_Value_Label( );
+}
+
+void Meta_Specification::Value_Label( const string& Value_Label )
+{
+   p_impl->impl_Value_Label( Value_Label );
 }
 
 const string& Meta_Specification::Value_Left_Part( ) const
@@ -8179,6 +8222,16 @@ const char* Meta_Specification::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Value_Label )
+   {
+      p_id = c_field_id_Value_Label;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Value_Left_Part )
    {
       p_id = c_field_id_Value_Left_Part;
@@ -8880,6 +8933,16 @@ const char* Meta_Specification::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Value_Label )
+   {
+      p_name = c_field_name_Value_Label;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Value_Left_Part )
    {
       p_name = c_field_name_Value_Left_Part;
@@ -9076,6 +9139,8 @@ string Meta_Specification::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Use_Test_Parent_Child );
    else if( id == c_field_id_Value )
       display_name = get_module_string( c_field_display_name_Value );
+   else if( id == c_field_id_Value_Label )
+      display_name = get_module_string( c_field_display_name_Value_Label );
    else if( id == c_field_id_Value_Left_Part )
       display_name = get_module_string( c_field_display_name_Value_Left_Part );
    else if( id == c_field_id_Value_Literal )
@@ -9590,6 +9655,7 @@ void Meta_Specification::get_sql_column_names(
    names.push_back( "C_Use_Source_Parent" );
    names.push_back( "C_Use_Test_Parent_Child" );
    names.push_back( "C_Value" );
+   names.push_back( "C_Value_Label" );
    names.push_back( "C_Value_Left_Part" );
    names.push_back( "C_Value_Literal" );
    names.push_back( "C_Value_Numeric_String" );
@@ -9666,6 +9732,7 @@ void Meta_Specification::get_sql_column_values(
    values.push_back( to_string( Use_Source_Parent( ) ) );
    values.push_back( to_string( Use_Test_Parent_Child( ) ) );
    values.push_back( sql_quote( to_string( Value( ) ) ) );
+   values.push_back( sql_quote( to_string( Value_Label( ) ) ) );
    values.push_back( sql_quote( to_string( Value_Left_Part( ) ) ) );
    values.push_back( sql_quote( to_string( Value_Literal( ) ) ) );
    values.push_back( sql_quote( to_string( Value_Numeric_String( ) ) ) );
@@ -11137,6 +11204,7 @@ void Meta_Specification::static_get_field_info( field_info_container& all_field_
    all_field_info.push_back( field_info( "115107", "Use_Source_Parent", "bool", false ) );
    all_field_info.push_back( field_info( "115110", "Use_Test_Parent_Child", "bool", false ) );
    all_field_info.push_back( field_info( "115102", "Value", "string", false ) );
+   all_field_info.push_back( field_info( "115131", "Value_Label", "string", false ) );
    all_field_info.push_back( field_info( "115129", "Value_Left_Part", "string", false ) );
    all_field_info.push_back( field_info( "115116", "Value_Literal", "string", false ) );
    all_field_info.push_back( field_info( "115127", "Value_Numeric_String", "string", false ) );
@@ -11464,26 +11532,30 @@ const char* Meta_Specification::static_get_field_id( field_id id )
       break;
 
       case 64:
-      p_id = "115129";
+      p_id = "115131";
       break;
 
       case 65:
-      p_id = "115116";
+      p_id = "115129";
       break;
 
       case 66:
-      p_id = "115127";
+      p_id = "115116";
       break;
 
       case 67:
-      p_id = "115130";
+      p_id = "115127";
       break;
 
       case 68:
-      p_id = "115125";
+      p_id = "115130";
       break;
 
       case 69:
+      p_id = "115125";
+      break;
+
+      case 70:
       p_id = "115114";
       break;
    }
@@ -11753,26 +11825,30 @@ const char* Meta_Specification::static_get_field_name( field_id id )
       break;
 
       case 64:
-      p_id = "Value_Left_Part";
+      p_id = "Value_Label";
       break;
 
       case 65:
-      p_id = "Value_Literal";
+      p_id = "Value_Left_Part";
       break;
 
       case 66:
-      p_id = "Value_Numeric_String";
+      p_id = "Value_Literal";
       break;
 
       case 67:
-      p_id = "Value_Right_Part";
+      p_id = "Value_Numeric_String";
       break;
 
       case 68:
-      p_id = "Value_String";
+      p_id = "Value_Right_Part";
       break;
 
       case 69:
+      p_id = "Value_String";
+      break;
+
+      case 70:
       p_id = "Vars";
       break;
    }
@@ -11915,18 +11991,20 @@ int Meta_Specification::static_get_field_num( const string& field )
       rc += 62;
    else if( field == c_field_id_Value || field == c_field_name_Value )
       rc += 63;
-   else if( field == c_field_id_Value_Left_Part || field == c_field_name_Value_Left_Part )
+   else if( field == c_field_id_Value_Label || field == c_field_name_Value_Label )
       rc += 64;
-   else if( field == c_field_id_Value_Literal || field == c_field_name_Value_Literal )
+   else if( field == c_field_id_Value_Left_Part || field == c_field_name_Value_Left_Part )
       rc += 65;
-   else if( field == c_field_id_Value_Numeric_String || field == c_field_name_Value_Numeric_String )
+   else if( field == c_field_id_Value_Literal || field == c_field_name_Value_Literal )
       rc += 66;
-   else if( field == c_field_id_Value_Right_Part || field == c_field_name_Value_Right_Part )
+   else if( field == c_field_id_Value_Numeric_String || field == c_field_name_Value_Numeric_String )
       rc += 67;
-   else if( field == c_field_id_Value_String || field == c_field_name_Value_String )
+   else if( field == c_field_id_Value_Right_Part || field == c_field_name_Value_Right_Part )
       rc += 68;
-   else if( field == c_field_id_Vars || field == c_field_name_Vars )
+   else if( field == c_field_id_Value_String || field == c_field_name_Value_String )
       rc += 69;
+   else if( field == c_field_id_Vars || field == c_field_name_Vars )
+      rc += 70;
 
    return rc - 1;
 }
@@ -11973,13 +12051,13 @@ string Meta_Specification::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Actions VARCHAR(128) NOT NULL,"
+    "C_Actions VARCHAR(200) NOT NULL,"
     "C_Child_Rel_Child_Class VARCHAR(64) NOT NULL,"
-    "C_Child_Rel_Field_Key VARCHAR(128) NOT NULL,"
+    "C_Child_Rel_Field_Key VARCHAR(200) NOT NULL,"
     "C_Child_Relationship VARCHAR(64) NOT NULL,"
     "C_Child_Specification_Type VARCHAR(64) NOT NULL,"
     "C_Class VARCHAR(64) NOT NULL,"
-    "C_Comments VARCHAR(128) NOT NULL,"
+    "C_Comments VARCHAR(200) NOT NULL,"
     "C_Enum VARCHAR(64) NOT NULL,"
     "C_Enum_Item VARCHAR(64) NOT NULL,"
     "C_Enum_Item_2 VARCHAR(64) NOT NULL,"
@@ -11991,13 +12069,13 @@ string Meta_Specification::static_get_sql_columns( )
     "C_Field_Pairs TEXT NOT NULL,"
     "C_Field_Values TEXT NOT NULL,"
     "C_Fields TEXT NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Is_Required_For_UI_Gen INTEGER NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
     "C_Modifier VARCHAR(64) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
-    "C_Options VARCHAR(128) NOT NULL,"
-    "C_Order VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
+    "C_Options VARCHAR(200) NOT NULL,"
+    "C_Order VARCHAR(200) NOT NULL,"
     "C_Other_Class VARCHAR(64) NOT NULL,"
     "C_Other_Field VARCHAR(64) NOT NULL,"
     "C_Other_Field_2 VARCHAR(64) NOT NULL,"
@@ -12013,7 +12091,7 @@ string Meta_Specification::static_get_sql_columns( )
     "C_Protect_Child_Rel INTEGER NOT NULL,"
     "C_Protect_Procedure INTEGER NOT NULL,"
     "C_Protect_Source_Parent INTEGER NOT NULL,"
-    "C_Restrict_Values VARCHAR(128) NOT NULL,"
+    "C_Restrict_Values VARCHAR(200) NOT NULL,"
     "C_Source_Child VARCHAR(64) NOT NULL,"
     "C_Source_Child_2 VARCHAR(64) NOT NULL,"
     "C_Source_Child_Class VARCHAR(64) NOT NULL,"
@@ -12029,15 +12107,16 @@ string Meta_Specification::static_get_sql_columns( )
     "C_Test_Field_Class VARCHAR(64) NOT NULL,"
     "C_Test_Parent VARCHAR(64) NOT NULL,"
     "C_Test_Parent_Class VARCHAR(64) NOT NULL,"
-    "C_Test_Value VARCHAR(128) NOT NULL,"
+    "C_Test_Value VARCHAR(200) NOT NULL,"
     "C_Use_Source_Parent INTEGER NOT NULL,"
     "C_Use_Test_Parent_Child INTEGER NOT NULL,"
-    "C_Value VARCHAR(128) NOT NULL,"
-    "C_Value_Left_Part VARCHAR(128) NOT NULL,"
-    "C_Value_Literal VARCHAR(128) NOT NULL,"
-    "C_Value_Numeric_String VARCHAR(128) NOT NULL,"
-    "C_Value_Right_Part VARCHAR(128) NOT NULL,"
-    "C_Value_String VARCHAR(128) NOT NULL,"
+    "C_Value VARCHAR(200) NOT NULL,"
+    "C_Value_Label VARCHAR(200) NOT NULL,"
+    "C_Value_Left_Part VARCHAR(200) NOT NULL,"
+    "C_Value_Literal VARCHAR(200) NOT NULL,"
+    "C_Value_Numeric_String VARCHAR(200) NOT NULL,"
+    "C_Value_Right_Part VARCHAR(200) NOT NULL,"
+    "C_Value_String VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

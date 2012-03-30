@@ -1483,7 +1483,7 @@ string Meta_Module::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Application VARCHAR(64) NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
-    "C_Order VARCHAR(128) NOT NULL,"
+    "C_Order VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

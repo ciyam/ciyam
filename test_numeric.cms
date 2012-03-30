@@ -2,6 +2,8 @@ inc "increment current value"
 dec "decrement current value"
 min "show minimum possible value"
 max "show maximum possible value"
+e "show value of e"
+pi "show value of pi"
 get "get current value"
 cmp "get comparable value"
 set "set numeric value" <val//num>

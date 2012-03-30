@@ -1783,13 +1783,13 @@ string Meta_Package_Type::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Actions VARCHAR(128) NOT NULL,"
+    "C_Actions VARCHAR(200) NOT NULL,"
     "C_Dependencies TEXT NOT NULL,"
-    "C_File VARCHAR(128) NOT NULL,"
+    "C_File VARCHAR(200) NOT NULL,"
     "C_Installed INTEGER NOT NULL,"
     "C_Multi INTEGER NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
-    "C_Plural VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
+    "C_Plural VARCHAR(200) NOT NULL,"
     "C_Version INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

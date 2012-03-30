@@ -4524,7 +4524,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>no_edit+replace_underbars+max_size=150
+     <extra>no_edit+replace_underbars+max_size=200
      <mandatory>true
      <modifiers>
     </field>
@@ -5045,7 +5045,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>no_edit+replace_underbars+max_size=150
+     <extra>no_edit+replace_underbars+max_size=200
      <mandatory>true
      <modifiers>
     </field>
@@ -5687,7 +5687,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>no_edit+replace_underbars+max_size=150
+     <extra>no_edit+replace_underbars+max_size=200
      <mandatory>true
      <modifiers>
     </field>
@@ -5863,7 +5863,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>no_edit+replace_underbars+max_size=150
+     <extra>no_edit+replace_underbars+max_size=200
      <mandatory>true
      <modifiers>
     </field>
@@ -6128,7 +6128,7 @@
      <name>field_specification_type_specification_name
      <field>114102
      <ftype>string
-     <extra>max_size=150
+     <extra>max_size=200
      <mandatory>true
      <modifiers>
     </field>
@@ -8807,7 +8807,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>replace_underbars+max_size=150
+     <extra>replace_underbars+max_size=200
      <modifiers>
      <unique>false
      <indexed>false
@@ -8852,7 +8852,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>replace_underbars+max_size=150
+     <extra>replace_underbars+max_size=200
      <modifiers>
      <unique>false
      <indexed>false
@@ -8907,7 +8907,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>replace_underbars+max_size=150
+     <extra>replace_underbars+max_size=200
      <modifiers>
      <unique>true
      <indexed>true
@@ -8966,7 +8966,7 @@
      <name>field_specification_name
      <field>115101
      <ftype>string
-     <extra>replace_underbars+max_size=150
+     <extra>replace_underbars+max_size=200
      <modifiers>
      <unique>false
      <indexed>false
@@ -9004,7 +9004,7 @@
      <name>field_specification_type_specification_name
      <field>114102
      <ftype>string
-     <extra>max_size=150
+     <extra>max_size=200
      <modifiers>
      <unique>false
      <indexed>false
@@ -9055,7 +9055,7 @@
      <name>field_specification_type_specification_name
      <field>114102
      <ftype>string
-     <extra>max_size=150
+     <extra>max_size=200
      <modifiers>
      <unique>false
      <indexed>false

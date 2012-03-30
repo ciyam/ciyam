@@ -595,6 +595,18 @@ numeric numeric::min( )
    return n;
 }
 
+numeric numeric::e( )
+{
+   static numeric g_e( "2.71828182845904524" );
+   return g_e;
+}
+
+numeric numeric::pi( )
+{
+   static numeric g_pi( "3.14159265358979324" );
+   return g_pi;
+}
+
 string numeric::as_string( ) const
 {
    char buf[ e_max_digits + 3 ];

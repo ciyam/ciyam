@@ -2860,13 +2860,13 @@ string Meta_Package::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Actions VARCHAR(128) NOT NULL,"
+    "C_Actions VARCHAR(200) NOT NULL,"
     "C_Installed INTEGER NOT NULL,"
-    "C_Key VARCHAR(128) NOT NULL,"
+    "C_Key VARCHAR(200) NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "C_Package_Type VARCHAR(64) NOT NULL,"
-    "C_Plural VARCHAR(128) NOT NULL,"
+    "C_Plural VARCHAR(200) NOT NULL,"
     "C_Usage_Count INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

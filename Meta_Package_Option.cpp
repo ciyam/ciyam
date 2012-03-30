@@ -1936,10 +1936,10 @@ string Meta_Package_Option::static_get_sql_columns( )
     "C_Installed INTEGER NOT NULL,"
     "C_Is_Other_Package INTEGER NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "C_Other_Package VARCHAR(64) NOT NULL,"
     "C_Other_Package_Required INTEGER NOT NULL,"
-    "C_Other_Package_Type VARCHAR(128) NOT NULL,"
+    "C_Other_Package_Type VARCHAR(200) NOT NULL,"
     "C_Package VARCHAR(64) NOT NULL,"
     "C_Use_Option INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";

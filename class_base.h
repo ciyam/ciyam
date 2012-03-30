@@ -854,6 +854,7 @@ std::string CLASS_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std:
 
 std::string CLASS_BASE_DECL_SPEC numeric_name( const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC value_label( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC value_leftpart( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC value_rightpart( const std::string& s );
 
@@ -1037,9 +1038,13 @@ void CLASS_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_
 void CLASS_BASE_DECL_SPEC meta_relationship_child_name( std::string& name,
  const std::string& child_name, const std::string& parent_name, const std::string& separator );
 
+const int c_sql_std_char_size = 128;
+const int c_sql_small_char_size = 32;
+
 enum sql_char_type
 {
    e_sql_char_type_std,
+   e_sql_char_type_small,
    e_sql_char_type_large,
    e_sql_char_type_security,
    e_sql_char_type_foreign_key,

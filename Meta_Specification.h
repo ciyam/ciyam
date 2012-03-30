@@ -129,12 +129,13 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
       e_field_id_Use_Source_Parent = 61,
       e_field_id_Use_Test_Parent_Child = 62,
       e_field_id_Value = 63,
-      e_field_id_Value_Left_Part = 64,
-      e_field_id_Value_Literal = 65,
-      e_field_id_Value_Numeric_String = 66,
-      e_field_id_Value_Right_Part = 67,
-      e_field_id_Value_String = 68,
-      e_field_id_Vars = 69
+      e_field_id_Value_Label = 64,
+      e_field_id_Value_Left_Part = 65,
+      e_field_id_Value_Literal = 66,
+      e_field_id_Value_Numeric_String = 67,
+      e_field_id_Value_Right_Part = 68,
+      e_field_id_Value_String = 69,
+      e_field_id_Vars = 70
    };
 
    Meta_Specification( );
@@ -205,6 +206,9 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
 
    const std::string& Value( ) const;
    void Value( const std::string& Value );
+
+   const std::string& Value_Label( ) const;
+   void Value_Label( const std::string& Value_Label );
 
    const std::string& Value_Left_Part( ) const;
    void Value_Left_Part( const std::string& Value_Left_Part );

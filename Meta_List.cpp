@@ -5891,7 +5891,7 @@ string Meta_List::static_get_sql_columns( )
     "C_Display_Only_If_Default_Other INTEGER NOT NULL,"
     "C_Display_Row_Limit INTEGER NOT NULL,"
     "C_Display_Security_Level INTEGER NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Ignore_Implicit_Ordering INTEGER NOT NULL,"
     "C_Ignore_Unactionable_Records INTEGER NOT NULL,"
     "C_Ignore_Uneditable_Parent INTEGER NOT NULL,"
@@ -5913,9 +5913,9 @@ string Meta_List::static_get_sql_columns( )
     "C_Sort_Rows_In_UI INTEGER NOT NULL,"
     "C_Style INTEGER NOT NULL,"
     "C_Text_Match_Highlight INTEGER NOT NULL,"
-    "C_Title VARCHAR(128) NOT NULL,"
+    "C_Title VARCHAR(200) NOT NULL,"
     "C_Type VARCHAR(64) NOT NULL,"
-    "C_Variation_Name VARCHAR(128) NOT NULL,"
+    "C_Variation_Name VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

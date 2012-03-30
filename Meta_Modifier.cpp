@@ -1692,7 +1692,7 @@ string Meta_Modifier::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Class VARCHAR(64) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "C_Source_Modifier VARCHAR(64) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
