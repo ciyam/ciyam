@@ -591,7 +591,7 @@ const char* const c_procedure_id_Is_Valid_Field_Type = "114410";
 
 domain_string_max_size< 30 > g_Child_Prefix_domain;
 domain_string_max_size< 100 > g_Name_domain;
-domain_string_max_size< 150 > g_Specification_Name_domain;
+domain_string_max_size< 200 > g_Specification_Name_domain;
 domain_string_max_size< 100 > g_Specification_Object_domain;
 domain_string_max_size< 10 > g_View_Id_domain;
 
@@ -8741,7 +8741,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Allow_Test_Field INTEGER NOT NULL,"
     "C_Allow_Test_Value INTEGER NOT NULL,"
     "C_Allow_Value INTEGER NOT NULL,"
-    "C_Child_Prefix VARCHAR(128) NOT NULL,"
+    "C_Child_Prefix VARCHAR(200) NOT NULL,"
     "C_Child_Rel_Grandparent_Match INTEGER NOT NULL,"
     "C_Child_Rel_Parent_Match INTEGER NOT NULL,"
     "C_Child_Relationship_Class_Match INTEGER NOT NULL,"
@@ -8752,7 +8752,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Is_Child_Only INTEGER NOT NULL,"
     "C_Is_Required_For_UI_Gen INTEGER NOT NULL,"
     "C_Is_System INTEGER NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "C_Needs_Child_Relationship INTEGER NOT NULL,"
     "C_Needs_Class INTEGER NOT NULL,"
     "C_Needs_Enum INTEGER NOT NULL,"
@@ -8785,7 +8785,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Next_Protect_Child_Rel INTEGER NOT NULL,"
     "C_Next_Protect_Procedure INTEGER NOT NULL,"
     "C_Next_Protect_Source_Parent INTEGER NOT NULL,"
-    "C_Next_Specification_Actions VARCHAR(128) NOT NULL,"
+    "C_Next_Specification_Actions VARCHAR(200) NOT NULL,"
     "C_Notes TEXT NOT NULL,"
     "C_Parent_Specification_Type VARCHAR(64) NOT NULL,"
     "C_Procedure_Arg_primitive INTEGER NOT NULL,"
@@ -8800,9 +8800,9 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Source_Field_Type_Match INTEGER NOT NULL,"
     "C_Source_Parent_type INTEGER NOT NULL,"
     "C_Source_type INTEGER NOT NULL,"
-    "C_Specification_Actions VARCHAR(128) NOT NULL,"
-    "C_Specification_Name VARCHAR(128) NOT NULL,"
-    "C_Specification_Object VARCHAR(128) NOT NULL,"
+    "C_Specification_Actions VARCHAR(200) NOT NULL,"
+    "C_Specification_Name VARCHAR(200) NOT NULL,"
+    "C_Specification_Object VARCHAR(200) NOT NULL,"
     "C_Specification_Strings TEXT NOT NULL,"
     "C_Specification_Vars TEXT NOT NULL,"
     "C_Test_Field_Type_Match INTEGER NOT NULL,"
@@ -8819,7 +8819,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Use_Parent_Source_Field_For_Class INTEGER NOT NULL,"
     "C_Use_Parent_Source_Parent INTEGER NOT NULL,"
     "C_Use_Parent_Source_Parent_For_Class INTEGER NOT NULL,"
-    "C_View_Id VARCHAR(128) NOT NULL,"
+    "C_View_Id VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

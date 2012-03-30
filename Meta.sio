@@ -12090,6 +12090,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600190a
+      <item>class
+     </specification>
+     <specification/>
       <id>600191
       <item>class
      </specification>
@@ -14522,6 +14526,10 @@
         <item>src_field
        </specification>
        <specification/>
+        <id>600190a
+        <item>src_field
+       </specification>
+       <specification/>
         <id>600204
         <item>field
        </specification>
@@ -14539,6 +14547,26 @@
        </specification>
        <specification/>
         <id>603100
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>115131
+      <name>Value_Label
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600190a
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600204
         <item>field
        </specification>
       </specifications>
@@ -30802,6 +30830,7 @@
      <field_info>301460:103101;103100={enum}
      <field_info>301470:104101;104100={enum_item}
      <field_info>115102={value}
+     <field_info>115131={value_label}
      <field_info>115127={value_numstr}
      <field_info>115113={field_values}
      <field_info>115126={fields}
@@ -31778,6 +31807,19 @@
      <tfield_id>114154
      <tpfield_id>301410
      <is_negative>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600190a
+    <name>{Specification}_Value_Label_from_other_field
+    <type>field_from_other_field
+    <data/>
+     <class_id>115100
+     <sclass_id>
+     <sfield_id>115102
+     <dfield_id>115131
+     <check_null>true
+     <function>value_label
     </data>
    </specification>
    <specification/>
@@ -33679,12 +33721,12 @@
    </user_defined_type>
    <user_defined_type/>
     <id>1025
-    <name>str150
+    <name>str200
     <type>string
     <sys_type>string
     <domain/>
      <name>max_size
-     <max_size>150
+     <max_size>200
     </domain>
    </user_defined_type>
    <user_defined_type/>

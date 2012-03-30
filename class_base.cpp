@@ -2483,6 +2483,21 @@ string numeric_name( const string& s )
    return retval;
 }
 
+string value_label( const string& s )
+{
+   string rs;
+   for( size_t i = 0; i < s.size( ); i++ )
+   {
+      if( s[ i ] == ' ' )
+         rs += '_';
+      else if( ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
+       || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
+         rs += s[ i ];
+   }
+
+   return rs;
+}
+
 string value_leftpart( const string& s )
 {
    string::size_type pos = s.find( ' ' );
@@ -3383,7 +3398,9 @@ string meta_sql_type( const string& field_type, bool is_mandatory, sql_char_type
    else if( field_type == "string" || char_type == e_sql_char_type_foreign_key )
    {
       if( char_type == e_sql_char_type_std )
-         sql_type = "VARCHAR(128)";
+         sql_type = "VARCHAR(" + to_string( c_sql_std_char_size ) + ")";
+      else if( char_type == e_sql_char_type_small )
+         sql_type = "VARCHAR(" + to_string( c_sql_small_char_size ) + ")";
       else if( char_type == e_sql_char_type_large )
          sql_type = "TEXT";
       else if( char_type == e_sql_char_type_security )

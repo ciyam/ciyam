@@ -1661,9 +1661,9 @@ string Meta_Enum::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
     "C_Workgroup VARCHAR(64) NOT NULL,"
     "PRIMARY KEY(C_Key_)";

@@ -1313,7 +1313,7 @@ string Meta_Initial_Record_Value::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Field VARCHAR(64) NOT NULL,"
     "C_Initial_Record VARCHAR(64) NOT NULL,"
-    "C_Value VARCHAR(128) NOT NULL,"
+    "C_Value VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

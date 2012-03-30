@@ -1528,11 +1528,11 @@ string Meta_User::static_get_sql_columns( )
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Active INTEGER NOT NULL,"
-    "C_Description VARCHAR(128) NOT NULL,"
-    "C_Email VARCHAR(128) NOT NULL,"
-    "C_Password VARCHAR(128) NOT NULL,"
-    "C_Permissions VARCHAR(128) NOT NULL,"
-    "C_User_Id VARCHAR(128) NOT NULL,"
+    "C_Description VARCHAR(200) NOT NULL,"
+    "C_Email VARCHAR(200) NOT NULL,"
+    "C_Password VARCHAR(200) NOT NULL,"
+    "C_Permissions VARCHAR(200) NOT NULL,"
+    "C_User_Id VARCHAR(200) NOT NULL,"
     "C_Workgroup VARCHAR(64) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

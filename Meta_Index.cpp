@@ -2544,7 +2544,7 @@ string Meta_Index::static_get_sql_columns( )
     "C_Field_4 VARCHAR(64) NOT NULL,"
     "C_Field_5 VARCHAR(64) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
-    "C_Order VARCHAR(128) NOT NULL,"
+    "C_Order VARCHAR(200) NOT NULL,"
     "C_Source_Index VARCHAR(64) NOT NULL,"
     "C_Unique INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";

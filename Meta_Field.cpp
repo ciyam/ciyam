@@ -2583,22 +2583,29 @@ void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 {
    // [<start Get_Text_Type_impl>]
 //idk
-   Result = 0;
+   Result = e_sql_char_type_std;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_notes )
-      Result = 1;
+      Result = e_sql_char_type_large;
+
+   if( get_obj( ).Type( ).Max_Size( )
+    && get_obj( ).Type( ).Max_Size( ) <= c_sql_small_char_size )
+      Result = e_sql_char_type_small;
+
+   if( get_obj( ).Type( ).Max_Size( ) > c_sql_std_char_size )
+      Result = e_sql_char_type_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_content )
-      Result = 1;
+      Result = e_sql_char_type_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_user_perms )
-      Result = 1;
+      Result = e_sql_char_type_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_security_level )
-      Result = 2;
+      Result = e_sql_char_type_security;
 
    if( !get_obj( ).Parent_Class( ).get_key( ).empty( ) )
-      Result = 3;
+      Result = e_sql_char_type_foreign_key;
    // [<finish Get_Text_Type_impl>]
 }
 
@@ -6366,15 +6373,15 @@ string Meta_Field::static_get_sql_columns( )
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Class VARCHAR(64) NOT NULL,"
-    "C_Default VARCHAR(128) NOT NULL,"
+    "C_Default VARCHAR(200) NOT NULL,"
     "C_Enum VARCHAR(64) NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
     "C_Is_Foreign_Key INTEGER NOT NULL,"
     "C_Is_Text_Type INTEGER NOT NULL,"
     "C_Mandatory INTEGER NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "C_Parent_Class VARCHAR(64) NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
     "C_Source_Field VARCHAR(64) NOT NULL,"

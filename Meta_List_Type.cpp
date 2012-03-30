@@ -1291,8 +1291,8 @@ string Meta_List_Type::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Is_Child INTEGER NOT NULL,"
     "C_Is_Home INTEGER NOT NULL,"
-    "C_List_Name VARCHAR(128) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
+    "C_List_Name VARCHAR(200) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

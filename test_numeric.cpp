@@ -104,6 +104,10 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
          cout << numeric::min( ) << endl;
       else if( command == c_cmd_test_numeric_max )
          cout << numeric::max( ) << endl;
+      else if( command == c_cmd_test_numeric_e )
+         cout << numeric::e( ) << endl;
+      else if( command == c_cmd_test_numeric_pi )
+         cout << numeric::pi( ) << endl;
       else if( command == c_cmd_test_numeric_get )
          cout << num << endl;
       else if( command == c_cmd_test_numeric_cmp )

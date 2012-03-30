@@ -127,6 +127,9 @@ class NUMERIC_DECL_SPEC numeric
 
    static int max_digits( ) { return e_max_digits; }
 
+   static numeric e( );
+   static numeric pi( );
+
    friend void NUMERIC_DECL_SPEC perform_add_or_subtract( numeric& n1, numeric n2, bool is_add );
 
    friend numeric NUMERIC_DECL_SPEC operator +( const numeric& lhs, const numeric& rhs );

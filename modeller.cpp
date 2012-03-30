@@ -172,7 +172,7 @@ string get_sql_type( const string& type, bool is_mandatory,
       else if( is_foreign_key )
          sql_type = "VARCHAR(64)";
       else
-         sql_type = "VARCHAR(128)";
+         sql_type = "VARCHAR(200)";
    }
 
    // NOTE: As '' is used rather than NULL by the server (and the server does not support NULL for numeric

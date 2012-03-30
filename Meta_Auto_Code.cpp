@@ -1302,8 +1302,8 @@ string Meta_Auto_Code::static_get_sql_columns( )
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Exhausted INTEGER NOT NULL,"
-    "C_Mask VARCHAR(128) NOT NULL,"
-    "C_Next VARCHAR(128) NOT NULL,"
+    "C_Mask VARCHAR(200) NOT NULL,"
+    "C_Next VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

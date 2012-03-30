@@ -3385,14 +3385,14 @@ string Meta_View::static_get_sql_columns( )
     "C_Change_Permission VARCHAR(64) NOT NULL,"
     "C_Change_Restriction INTEGER NOT NULL,"
     "C_Class VARCHAR(64) NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
     "C_PDF_Font_Type INTEGER NOT NULL,"
     "C_PDF_View_Type INTEGER NOT NULL,"
     "C_Print_Without_Highlight INTEGER NOT NULL,"
-    "C_Title VARCHAR(128) NOT NULL,"
+    "C_Title VARCHAR(200) NOT NULL,"
     "C_Type VARCHAR(64) NOT NULL,"
-    "C_Type_Key VARCHAR(128) NOT NULL,"
+    "C_Type_Key VARCHAR(200) NOT NULL,"
     "C_Use_First_Row_As_Header INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

@@ -1919,9 +1919,9 @@ string Meta_Enum_Item::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Enum VARCHAR(64) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
-    "C_Label VARCHAR(128) NOT NULL,"
-    "C_Order VARCHAR(128) NOT NULL,"
-    "C_Value VARCHAR(128) NOT NULL,"
+    "C_Label VARCHAR(200) NOT NULL,"
+    "C_Order VARCHAR(200) NOT NULL,"
+    "C_Value VARCHAR(200) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

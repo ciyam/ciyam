@@ -2540,7 +2540,12 @@ void Meta_Class::impl::impl_Generate( )
 
          if( !get_obj( ).child_Specification( ).Specification_Type( ).Is_Child_Only( ) && !get_obj( ).child_Specification( ).Vars( ).empty( ) )
          {
-            string specification_name( search_replace( get_obj( ).child_Specification( ).Name( ), " ", "_" ) );
+            string specification_name( get_obj( ).child_Specification( ).Name( ) );
+
+            string::size_type spos = specification_name.find( ' ' );
+            if( spos != string::npos )
+               specification_name.erase( spos );
+
             string specification_object( get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( ) );
 
             string gen_xrep;
@@ -5718,21 +5723,21 @@ string Meta_Class::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Commands_File VARCHAR(128) NOT NULL,"
+    "C_Commands_File VARCHAR(200) NOT NULL,"
     "C_Delay_Initial_Records INTEGER NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
-    "C_Header_File VARCHAR(128) NOT NULL,"
-    "C_Id VARCHAR(128) NOT NULL,"
+    "C_Header_File VARCHAR(200) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
-    "C_Name VARCHAR(128) NOT NULL,"
-    "C_Next_Field_Id VARCHAR(128) NOT NULL,"
-    "C_Next_Procedure_Id VARCHAR(128) NOT NULL,"
-    "C_Plural VARCHAR(128) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
+    "C_Next_Field_Id VARCHAR(200) NOT NULL,"
+    "C_Next_Procedure_Id VARCHAR(200) NOT NULL,"
+    "C_Plural VARCHAR(200) NOT NULL,"
     "C_Quick_Link_Field VARCHAR(64) NOT NULL,"
     "C_Source_Class VARCHAR(64) NOT NULL,"
-    "C_Source_File VARCHAR(128) NOT NULL,"
+    "C_Source_File VARCHAR(200) NOT NULL,"
     "C_Source_Model VARCHAR(64) NOT NULL,"
-    "C_Static_Instance_Key VARCHAR(128) NOT NULL,"
+    "C_Static_Instance_Key VARCHAR(200) NOT NULL,"
     "C_Type INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
