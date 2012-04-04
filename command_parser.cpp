@@ -29,6 +29,7 @@
 
 #include "command_parser.h"
 
+#include "regex.h"
 #include "utilities.h"
 
 //#define DEBUG
@@ -51,6 +52,7 @@ const char c_alternative_separator = '|';
 const char c_sub_expression_divider = '/';
 
 const char* const c_expr_type_opt = "opt";
+const char* const c_expr_type_pat = "pat";
 const char* const c_expr_type_val = "val";
 const char* const c_expr_type_oval = "oval";
 const char* const c_expr_type_list = "list";
@@ -193,6 +195,8 @@ class command_parser::impl
 
    bool okay( ) { return !is_invalid; }
 
+   void dump_nodes( ostream& ostr ) const;
+
    string get_usage( ) const;
    void output_usage( ostream& ostr ) const;
    void output_syntax( ostream& ostr ) const;
@@ -208,12 +212,16 @@ class command_parser::impl
    void do_parse_syntax( node* p_node, const char*& p_input );
    bool do_parse_command( node* p_node, size_t& argnum, bool is_opt, bool is_branch = false );
 
+   void do_dump_nodes( node* p_node, ostream& ostr, int indent_level = 0 ) const;
    void do_output_usage( node* p_node, ostream& ostr, bool after_match = false ) const;
    void do_output_syntax( node* p_node, ostream& ostr ) const;
 
    void do_get_parameter_names( node* p_node, vector< string >& parameters ) const;
 
    void parse_syntax_expression( node* p_node );
+
+   string::size_type search_for_pattern(
+    const string& pat, const string& input, string::size_type& length );
 
    bool parse_command_expression( node* p_node, size_t& argnum );
    bool parse_space_separator_list_items( node* p_node, size_t& argnum, string& value );
@@ -329,6 +337,12 @@ bool command_parser::impl::parse_command( const vector< string >& arguments, map
    cout << "**** finish parse_command ****" << endl;
 #endif
    return retval;
+}
+
+void command_parser::impl::dump_nodes( ostream& ostr ) const
+{
+   if( p_node )
+      do_dump_nodes( p_node, ostr );
 }
 
 string command_parser::impl::get_usage( ) const
@@ -537,8 +551,8 @@ void command_parser::impl::do_parse_syntax( node* p_node, const char*& p_input )
       }
       else if( had_begin
        && *p_input != c_token_begin && *p_input != c_token_finish
-       && *p_input != c_opt_branch_begin && *p_input != c_opt_branch_finish
-       && *p_input != c_alternative_separator && isprint( *p_input ) )
+       && *p_input != c_alternative_separator && isprint( *p_input )
+       && ( ( *p_input != c_opt_branch_begin && *p_input != c_opt_branch_finish ) || had_finish == false ) )
       {
 #ifdef DEBUG
          cout << "adding expr char '" << *p_input << "'" << endl;
@@ -850,6 +864,42 @@ bool command_parser::impl::do_parse_command( node* p_node, size_t& argnum, bool 
    return retval;
 }
 
+void command_parser::impl::do_dump_nodes( node* p_node, ostream& ostr, int indent_level ) const
+{
+   string indent( indent_level, ' ' );
+
+   ostr << '\n' << indent;
+   ostr << "[node #" << p_node->id << "]\n" << indent;
+   ostr << "type: " << p_node->type << '\n' << indent;
+   if( p_node->is_alt )
+      ostr << "* is_alt *\n" << indent;
+   ostr << "prefix: \"" << p_node->prefix << "\"\n" << indent;
+   ostr << "parameter: " << p_node->parameter << '\n' << indent;
+   ostr << "description: " << p_node->description << '\n';
+
+   if( !p_node->type.empty( ) )
+      ostr << indent << "separator: '" << p_node->separator << "'\n";
+
+   if( p_node->type == c_expr_type_list || p_node->type == c_expr_type_olist )
+      ostr << indent << "terminator: '" << p_node->terminator << "'\n";
+
+   if( p_node->p_next_node )
+      ostr << indent << "--> (next): " << p_node->p_next_node->id << '\n';
+   if( p_node->p_match_node )
+      ostr << indent << "--> (match): " << p_node->p_match_node->id << '\n';
+
+   for( vector< node* >::size_type i = 0; i < p_node->opt_branch_nodes.size( ); i++ )
+      do_dump_nodes( p_node->opt_branch_nodes[ i ], ostr, indent_level + 1 );
+
+   if( p_node->p_match_node )
+      do_dump_nodes( p_node->p_match_node, ostr, indent_level );
+
+   node* p_next_node = p_node->p_next_node;
+
+   if( p_next_node )
+      do_dump_nodes( p_next_node, ostr, indent_level );
+}
+
 void command_parser::impl::do_output_usage( node* p_node, ostream& ostr, bool after_match ) const
 {
    if( p_node->is_alt )
@@ -879,12 +929,19 @@ void command_parser::impl::do_output_usage( node* p_node, ostream& ostr, bool af
          ostr << p_node->prefix;
       else
       {
-         ostr << p_node->prefix;
+         if( p_node->type != c_expr_type_pat )
+            ostr << p_node->prefix;
+
          ostr << c_token_begin;
 
          if( p_node->type == c_expr_type_oval || p_node->type == c_expr_type_olist )
             ostr << c_opt_branch_begin;
+
          ostr << p_node->description;
+
+         if( p_node->type == c_expr_type_pat )
+            ostr << ": " << p_node->prefix;
+
          if( p_node->type == c_expr_type_oval || p_node->type == c_expr_type_olist )
             ostr << c_opt_branch_finish;
 
@@ -975,12 +1032,26 @@ void command_parser::impl::parse_syntax_expression( node* p_node )
       found_error = true;
    else
    {
-      if( p_node->type != c_expr_type_opt
+      if( p_node->type != c_expr_type_opt && p_node->type != c_expr_type_pat
        && p_node->type != c_expr_type_val && p_node->type != c_expr_type_oval
        && p_node->type != c_expr_type_list && p_node->type != c_expr_type_olist )
          found_error = true;
 
       p_node->prefix = get_next_sub_expression( expression, c_sub_expression_divider );
+
+      if( p_node->type == c_expr_type_pat )
+      {
+         // NOTE: Construct a regex object here in order to test that its syntax is valid.
+         try
+         {
+            regex expr( p_node->prefix );
+         }
+         catch( exception& )
+         {
+            found_error = true;
+         }
+      }
+
       if( !expression.empty( ) )
       {
          p_node->parameter = get_next_sub_expression( expression, c_sub_expression_divider );
@@ -1049,6 +1120,13 @@ void command_parser::impl::parse_syntax_expression( node* p_node )
       p_node->is_okay = true;
 }
 
+string::size_type command_parser::impl::search_for_pattern(
+ const string& pat, const string& input, string::size_type& length )
+{
+   regex expr( pat );
+   return expr.search( input, &length );
+}
+
 bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnum )
 {
    bool retval = false;
@@ -1080,7 +1158,8 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
          match_prefix = p_node->prefix.substr( 0, match_prefix.size( ) - 1 );
    }
 
-   if( !match_prefix.empty( ) && match_prefix.size( ) <= input.size( ) )
+   if( !match_prefix.empty( )
+    && ( match_prefix.size( ) <= input.size( ) || p_node->type == c_expr_type_pat ) )
    {
       if( p_node->type == c_expr_type_opt )
       {
@@ -1104,6 +1183,32 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
                value = parameter.substr( pos + 1 );
                parameter.erase( pos );
             }
+
+            p_parameters->insert( parameter_value_type( parameter, value ) );
+         }
+      }
+      else if( p_node->type == c_expr_type_pat )
+      {
+         string::size_type start, length;
+         if( ( start = search_for_pattern( p_node->prefix, input, length ) ) != string::npos )
+         {
+#ifdef DEBUG
+            cout << "pat matched prefix '" << match_prefix << "'" << endl;
+#endif
+            ++argnum;
+            retval = true;
+
+            string value;
+            string parameter( p_node->parameter );
+            string::size_type pos = parameter.find( c_exp_type_opt_value_separator );
+
+            if( pos != string::npos )
+            {
+               value = parameter.substr( pos + 1 );
+               parameter.erase( pos );
+            }
+
+            value += input.substr( start, length );
 
             p_parameters->insert( parameter_value_type( parameter, value ) );
          }
@@ -1352,6 +1457,11 @@ bool command_parser::parse_command( const vector< string >& arguments, map< stri
 bool command_parser::okay( )
 {
    return p_impl->okay( );
+}
+
+void command_parser::dump_nodes( ostream& ostr ) const
+{
+   return p_impl->dump_nodes( ostr );
 }
 
 string command_parser::get_usage( ) const
