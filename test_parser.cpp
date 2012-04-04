@@ -38,6 +38,7 @@ Format for node expressions:
 
 Allowed values for type are:
 opt
+pat
 val
 oval (same as val but will permit a blank value)
 list
@@ -48,7 +49,8 @@ has been provided. A terminator is only permitted for a list type and a separato
 either an option or value will be stripped of the end of the value (if was found at the end).
 
 A parameter with an empty prefix must have a name - if no name is provided then the parameter name is
-considered to be the same as its prefix.
+considered to be the same as its prefix. For "pat" type expressions the prefix is a regular expression
+pattern.
 
 If a parameter has no prefix then it cannot have an empty value unless provided via "", or through the
 use of leading/trailing/consecutive list separators, or by the use of a list terminator on its own. An
@@ -103,13 +105,16 @@ syntax_texts[ ] =
    { "|<opt/a>", false },
    { "<opt/a>|", false },
    { "[<opt/a>", false },
+   { "<pat/[0-", false },
    { "<opt/a>]", false },
    { "|<opt/a>|", false },
+   { "<pat/[0-9", false },
    { "<opt/abcd>", true },
    { "<<opt/abcd>", false },
    { "<opt/abcd>>", false },
    { "[[<opt/a>]]", false },
    { "<opt/a><opt/b>", true },
+   { "<pat/[0-*abc/>", false },
    { "<opt/a>|<opt/b>", true },
    { "[<opt/a>]<opt/b>", true },
    { "<opt/a>{<opt/b>}", true },
@@ -118,6 +123,7 @@ syntax_texts[ ] =
    { "{<opt/a><opt/b>}", true },
    { "|<opt/a>|<opt/b>", false },
    { "<opt/a>|<opt/b>|", false },
+   { "<pat/[0-9]*abc/>", true },
    { "[<opt/a>|<opt/b>]", true },
    { "{<opt/a>}|<opt/b>", true },
    { "[<opt/a>]|<opt/b>", false },
@@ -147,6 +153,7 @@ syntax_texts[ ] =
    { "[[<opt/a>]<opt/b>[<opt/c>]", false },
    { "[<opt/a>]<opt/b>[<opt/c>]]", false },
    { "<opt/a>[[<opt/b>[<opt/c>]]]", false },
+   { "<pat/^[0-9]*abc.*[a-z0-9]$/>", true },
    { "<opt/a>[<opt/b>|<opt/c>]<opt/d>", true },
    { "<opt/a>|<opt/b>|<opt/c>{<opt/d>", false },
    { "<opt/a>|<opt/b>|<opt/c>{<opt/d>}", true },
@@ -230,6 +237,17 @@ command_tests[ ] =
    { "{<opt/a>}|{<opt/b>}", "a a", false },
    { "{<opt/a>}|{<opt/b>}", "a b", false },
    { "{<opt/a>}|{<opt/b>}", "b b", false },
+   { "<pat/[0-9]*abc/test>", "abc", true },
+   { "<pat/[0-9]*abc/test>", "1abc", true },
+   { "<pat/[0-9]*abc/test>", "xabc", true },
+   { "<pat/[0-9]*abc/test>", "123abc", true },
+   { "<pat/[0-9]*abc/test>", "x123abc", true },
+   { "<pat/[0-9]*abc/test>", "x123ab", false },
+   { "<pat/[0-9].abc/test>", "abc", false },
+   { "<pat/[0-9].abc/test>", "0abc", false },
+   { "<pat/[0-9].abc/test>", "0xabc", true },
+   { "<pat/[0-9].abc/test>", "x9xabc", true },
+   { "<pat/[0-9]+abc/test>", "abc", false },
    { "<opt/a><opt/b><opt/c>", "", false },
    { "<opt/a><opt/b><opt/c>", "a", false },
    { "<opt/a><opt/b><opt/c>", "b", false },
@@ -352,6 +370,15 @@ command_tests[ ] =
    { "{[<opt/a>]<opt/b>}|<opt/c>", "a c", false },
    { "{[<opt/a>]<opt/b>}|<opt/c>", "b c", false },
    { "{[<opt/a>]<opt/b>}|<opt/c>", "a b c", false },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "abc", true },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "abd", false },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "1abc", true },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "xabc", false },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "12abc34", true },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "12abc34x", true },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "12abc34X", false },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "x12abc34x", false },
+   { "<pat/^[0-9]*abc.*[a-z0-9]*$/>", "12abc34x56", true },
    { "<opt/a>[<opt/b>|<opt/c>]<opt/d>", "", false },
    { "<opt/a>[<opt/b>|<opt/c>]<opt/d>", "a", false },
    { "<opt/a>[<opt/b>|<opt/c>]<opt/d>", "b", false },
@@ -960,6 +987,7 @@ int main( int argc, char* argv[ ] )
                cout << "commands:\n";
                cout << "=========\n";
                cout << "usage\n";
+               cout << "dump\n";
                cout << "syntax [<expr>]\n";
                cout << "command [<expr>]\n";
                cout << "exit\n";
@@ -967,6 +995,11 @@ int main( int argc, char* argv[ ] )
             else if( cmd == "usage" )
             {
                p.output_usage( cout );
+               cout << endl;
+            }
+            else if( cmd == "dump" )
+            {
+               p.dump_nodes( cout );
                cout << endl;
             }
             else if( cmd == "syntax" )

@@ -1,4 +1,4 @@
-// Copyright (c) 2003
+// Copyright (c) 2012
 //
 // CIYAM Pty. Ltd.
 // ACN 093 704 539
@@ -12,43 +12,28 @@
 // from CIYAM. This software may not be publicly distributed unless written permission to do so
 // has been obtained from CIYAM.
 
-#ifndef COMMAND_PARSER_H
-#  define COMMAND_PARSER_H
+#ifndef REGEX_H
+#  define REGEX_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
-#     include <map>
-#     include <vector>
 #     include <string>
 #     include <iosfwd>
 #  endif
 
-class command_parser
+class regex
 {
    public:
-   command_parser( );
-   virtual ~command_parser( );
+   regex( const std::string& input );
+   ~regex( );
 
-   void clear( );
+   std::string get_input( ) const;
 
-   void parse_syntax( const char* p_input );
+   int get_min_size( ) const;
+   int get_max_size( ) const;
 
-   bool parse_command(
-    const std::vector< std::string >& arguments, std::map< std::string, std::string >& parameters );
+   std::string::size_type search( const std::string& text, std::string::size_type* p_length = 0 );
 
-   bool okay( );
-
-   void dump_nodes( std::ostream& ostr ) const;
-
-   std::string get_usage( ) const;
-
-   void output_usage( std::ostream& ostr ) const;
-   void output_syntax( std::ostream& ostr ) const;
-
-   void get_parameter_names( std::vector< std::string >& parameters ) const;
-
-   size_t get_error_pos( ) const;
-
-   size_t get_num_nodes( ) const;
+   void dump( std::ostream& os );
 
    private:
    struct impl;

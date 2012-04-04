@@ -163,6 +163,7 @@ TARGET_BASE_OBJECTS=base64.obj\
  ptypes.obj\
  read_write_buffer.obj\
  read_write_buffered_stream.obj\
+ regex.obj\
  sio.obj\
  sha1.obj\
  smtp.obj\
@@ -176,7 +177,8 @@ TARGET_BASE_OBJECTS=base64.obj\
 TARGET_COMMANDS=commands.lib
 TARGET_COMMANDS_INCLUDE=commands.inc
 TARGET_COMMANDS_OBJECTS=command_parser.obj\
- utilities.obj
+ utilities.obj\
+ regex.obj
 
 TARGET_CIYAM_BASE=ciyam_base.dll
 TARGET_CIYAM_BASE_INCLUDE=ciyam_base.inc

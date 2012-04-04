@@ -29,6 +29,7 @@
      <filename>ptypes.cpp
      <filename>read_write_buffer.cpp
      <filename>read_write_buffered_stream.cpp
+     <filename>regex.cpp
      <filename>sio.cpp
      <filename>sha1.cpp
      <filename>smtp.cpp
@@ -48,6 +49,7 @@
     <cpp_files/>
      <filename>command_parser.cpp
      <filename>utilities.cpp
+     <filename>regex.cpp
     </cpp_files>
    </lib>
   </libs>
