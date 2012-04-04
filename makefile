@@ -142,6 +142,7 @@ TARGET_BASE_CPPS = base64.cpp\
  ptypes.cpp\
  read_write_buffer.cpp\
  read_write_buffered_stream.cpp\
+ regex.cpp\
  sio.cpp\
  sha1.cpp\
  smtp.cpp\
@@ -154,7 +155,8 @@ TARGET_BASE_CPPS = base64.cpp\
 TARGET_BASE_OBJS = $(TARGET_BASE_CPPS:.cpp=.o)
 
 TARGET_COMMANDS_CPPS = command_parser.cpp\
- utilities.cpp
+ utilities.cpp\
+ regex.cpp
 TARGET_COMMANDS_OBJS = $(TARGET_COMMANDS_CPPS:.cpp=.o)
 
 target_opts_ciyam_base.so = -fpic
