@@ -640,11 +640,40 @@ string::size_type regex::impl::search( const string& text, string::size_type* p_
 {
    string::size_type pos = string::npos;
 
-   // NOTE: If the expression needs to match at the end then matching is
-   // begun from the last possible starting point. If expression matches
-   // then it will next try to match from the start. If not matched then
-   // continue attempting to match one character less from both possible
-   // extremes until the longest match is found.
+   if( parts.empty( ) )
+      return pos;
+
+   // NOTE: If the expression needs to match at the start and starts with a literal
+   // or it needs to match at the end and ends with a literal then first check that
+   // the literal is present before continuing.
+   if( ( match_at_start && parts[ 0 ].type == e_part_type_lit )
+    || ( match_at_finish && parts[ parts.size( ) - 1 ].type == e_part_type_lit ) )
+   {
+      part& test_part( match_at_start ? parts[ 0 ] : parts[ parts.size( ) - 1 ] );
+
+      if( test_part.min_matches )
+      {
+         bool okay = true;
+
+         string literal;
+         for( size_t i = 0; i < test_part.min_matches; i++ )
+            literal += test_part.literal;
+
+         if( text.length( ) < literal.length( ) )
+            okay = false;
+         else if( text.substr( text.length( ) - literal.length( ) ) != literal )
+            okay = false;
+
+         if( !okay )
+            return string::npos;
+      }
+   }
+
+   // NOTE: If the expression needs to match at the end then matching is first
+   // attempted at the last possible position and from the first position. The
+   // search completes immediately if successful closest to the first position
+   // and a mid-point between the high and low is tested in order to shift one
+   // or the other positions to reduce the number of comparisons.
    if( match_at_finish && !match_at_start )
    {
       string::size_type start = text.size( ) - min_size;
@@ -655,16 +684,25 @@ string::size_type regex::impl::search( const string& text, string::size_type* p_
       while( low != high )
       {
          start = do_search( text, high, p_length );
-         if( start == string::npos )
-            break;
-         else
-            pos = start;
+         if( start != string::npos && start < high )
+            pos = high = start;
 
          start = do_search( text, low, p_length );
          if( start != string::npos )
          {
-            pos = start;
+            pos = low = start;
             break;
+         }
+
+         string::size_type mid = ( low + high ) / 2;
+
+         if( mid != pos )
+         {
+            start = do_search( text, mid, p_length );
+            if( start == string::npos )
+               low = mid;
+            else if( start < high )
+               pos = high = start;
          }
 
          ++low;
