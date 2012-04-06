@@ -154,6 +154,7 @@ const char* const c_form_content_comment = "<!-- @@form_content -->";
 const char* const c_extra_content_comment = "<!-- @@extra_content -->";
 
 const char* const c_user_key_arg = "$user";
+const char* const c_user_other_none = "~";
 
 const char* const c_dummy_server_command = "wait";
 
@@ -1434,8 +1435,12 @@ void request_handler::process_request( )
                // succeed with a new (possibly random) uselextra value.
                checksum_values = session_id + uselextra;
 
+               string user_other( p_session_info->user_other );
+               if( user_other.empty( ) )
+                  user_other = c_user_other_none;
+
                if( !uselect.empty( )
-                && uselextra == p_session_info->last_uselextra && uselect != p_session_info->user_other )
+                && uselextra == p_session_info->last_uselextra && uselect != user_other )
                   checksum_values += "invalid";
             }
             else
@@ -1756,7 +1761,7 @@ void request_handler::process_request( )
                   uselect = p_session_info->default_user_group;
                else
                {
-                  if( uselect == "~" )
+                  if( uselect == c_user_other_none )
                      p_session_info->user_group.erase( );
                   else
                      p_session_info->user_group = uselect;
@@ -1768,7 +1773,7 @@ void request_handler::process_request( )
                   uselect = p_session_info->default_user_other;
                else
                {
-                  if( uselect == "~" )
+                  if( uselect == c_user_other_none )
                      p_session_info->user_other.erase( );
                   else
                      p_session_info->user_other = uselect;
