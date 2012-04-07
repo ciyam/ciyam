@@ -1123,7 +1123,7 @@ void Meta_Model::impl::impl_Generate( )
 
       outf << "\x60{\x60$model_id\x60=\x60'" << get_obj( ).Id( ) << "\x60'\x60}\n";
       outf << "\x60{\x60$model_name\x60=\x60'" << get_obj( ).Name( ) << "\x60'\x60}\n";
-      outf << "\x60{\x60$model_perm\x60=\x60'" << get_obj( ).Permission( ).Name( ) << "\x60'\x60}\n";
+      outf << "\x60{\x60$model_perm\x60=\x60'" << get_obj( ).Permission( ).Id( ) << "\x60'\x60}\n";
 
       string model_name( get_obj( ).Name( ) );
 
