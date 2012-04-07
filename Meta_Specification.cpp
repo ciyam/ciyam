@@ -5392,7 +5392,8 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{tfield_id}", to_string( get_obj( ).Test_Field( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tfclass}", to_string( get_obj( ).Test_Field_Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tvalue}", to_string( get_obj( ).Test_Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{perm}", to_string( get_obj( ).Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{permission}", to_string( get_obj( ).Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{permission_id}", to_string( get_obj( ).Permission( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{procedure_id}", to_string( get_obj( ).Procedure( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{procedure_arg}", to_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
@@ -6049,7 +6050,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).add_search_replacement( "Name", "{tcfield}", to_string( get_obj( ).Test_Child( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{tfield}", to_string( get_obj( ).Test_Field( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{tvalue}", to_string( get_obj( ).Test_Value( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{perm}", to_string( get_obj( ).Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{permission}", to_string( get_obj( ).Permission( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{procedure_arg}", to_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{cname}", to_string( get_obj( ).Child_Relationship( ).Name( ) ) );
@@ -10105,6 +10106,15 @@ void Meta_Specification::get_required_field_names(
       if( ( required_transients && is_field_transient( e_field_id_Test_Value ) )
        || ( !required_transients && !is_field_transient( e_field_id_Test_Value ) ) )
          names.insert( "Test_Value" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Permission" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Permission ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Permission ) ) )
+         names.insert( "Permission" );
    }
 
    if( needs_field_value( "Vars", dependents ) )
