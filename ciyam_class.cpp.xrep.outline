@@ -934,7 +934,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `@eq`(`'\1`'`,`'modifier_permission`'`)
 `{`#modifier_permission.spec.xrep section=get_state\
  arg_modifier=$specification_\0_modifier arg_permission=$specification_\0_permission\
- arg_ufield=$specification_\0_ufield arg_admin_always=$specification_\0_admin_always`}\
+ arg_permission_id=$specification_\0_permission_id arg_ufield=$specification_\0_ufield\
+ arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'protect_equal`'`)
 `{`#protect_equal.spec.xrep section=get_state\
@@ -1272,7 +1273,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
  arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
- arg_admin_always=$specification_\0_admin_always arg_perm=$specification_\0_perm`}\
+ arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
+ arg_permission_id=$specification_\0_permission_id`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -1305,7 +1307,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_permission_concat`'`)
 `{`#transient_permission_concat.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
- arg_tvalue=$specification_\0_tvalue arg_perm=$specification_\0_perm`}\
+ arg_tvalue=$specification_\0_tvalue arg_permission=$specification_\0_permission\
+ arg_permission_id=$specification_\0_permission_id`}\
 `,\
 `@eq`(`'\1`'`,`'transient_search_rep_from_child_vars`'`)
 `{`#transient_search_rep_from_child_vars.spec.xrep section=after_fetch class_name=$class_name\

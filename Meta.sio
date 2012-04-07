@@ -10190,6 +10190,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600290
         <item>field
        </specification>
@@ -15163,6 +15167,10 @@
       <specifications/>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -30821,7 +30829,7 @@
      <field_info>301488:107101;107100={tcfield}
      <field_info>301485:107101;107100={tfield}
      <field_info>115103={tvalue}
-     <field_info>301499:116101;116100={perm}
+     <field_info>301499:116101;116100={permission}
      <field_info>301450:111101;111100={procedure}
      <field_info>301498:112101;112100={procedure_arg}
      <field_info>301475:113101;113100={cname}
@@ -31949,7 +31957,8 @@
      <field_info>301485:107110;107100={tfield_id}
      <field_info>301493:106101;106100={tfclass}
      <field_info>115103={tvalue}
-     <field_info>301499:116101;116100={perm}
+     <field_info>301499:116101;116100={permission}
+     <field_info>301499:116102;116100={permission_id}
      <field_info>301450:111101;111100={procedure}
      <field_info>301450:111103;111100={procedure_id}
      <field_info>301498:112101;112100={procedure_arg}

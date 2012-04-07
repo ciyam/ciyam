@@ -2,48 +2,48 @@
    // [(start transient_field_action)]
 `{`@eq`(`$arg_admin_always`,`'true`'`)\
 `{`@eq`(`$arg_ufield`,`'`'`)\
-`{`@eq`(`$arg_perm`,`'`'`)\
+`{`@eq`(`$arg_permission_id`,`'`'`)\
    if( is_admin_uid( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
 `,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
-   if( is_admin_uid( ) || get_perms( ).count( "`{`$arg_perm`}" ) )
+   if( is_admin_uid( ) || get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )
-    && ( is_admin_uid( ) || get_perms( ).count( "`{`$arg_perm`}" ) ) )
+    && ( is_admin_uid( ) || get_perms( ).count( "`{`$arg_permission_id`}" ) ) )  // i.e. `{`$arg_permission`}
 `}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_perm`,`'`'`)\
+`{`@eq`(`$arg_permission_id`,`'`'`)\
    if( is_admin_uid( ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
 `,\
    if( is_admin_uid( )
-    || get_perms( ).count( "`{`$arg_perm`}" )
+    || get_perms( ).count( "`{`$arg_permission_id`}" )  // i.e. `{`$arg_permission`}
     || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
 `}`,\
    if( get_obj( ).`{`$arg_tfield`}( )
-`{`@eq`(`$arg_perm`,`'`'`)\
+`{`@eq`(`$arg_permission_id`,`'`'`)\
     && ( is_admin_uid( ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
 `,\
     && ( is_admin_uid( )
-    || get_perms( ).count( "`{`$arg_perm`}" )
+    || get_perms( ).count( "`{`$arg_permission_id`}" )  // i.e. `{`$arg_permission`}
     || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
 `}`}`}`,\
 `{`@eq`(`$arg_ufield`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_perm`,`'`'`)\
+`{`@eq`(`$arg_permission_id`,`'`'`)\
    // NOTE: Empty code block for scope purposes.
 `,\
-   if( get_perms( ).count( "`{`$arg_perm`}" ) )
+   if( get_perms( ).count( "`{`$arg_permission_id`}" ) )  // i.e. `{`$arg_permission`}
 `}`,\
-   if( `{`!`@eq`(`$arg_perm`,`'`'`)get_perms( ).count( "`{`$arg_perm`}" ) && `}get_obj( ).`{`$arg_tfield`}( ) )
+   if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" ) && `}get_obj( ).`{`$arg_tfield`}( ) )  // i.e. `{`$arg_permission`}
 `}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )
-`{`@eq`(`$arg_perm`,`'`'`)\
+`{`@eq`(`$arg_permission_id`,`'`'`)\
     && get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
 `,\
-    && ( get_perms( ).count( "`{`$arg_perm`}" ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
+    && ( get_perms( ).count( "`{`$arg_permission_id`}" ) || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )  // i.e. `{`$arg_permission`}
 `}`}`}`}\
    {
       string actions( get_obj( ).`{`$arg_actions`}( ) );

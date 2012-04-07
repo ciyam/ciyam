@@ -1450,8 +1450,8 @@ specification_add -id=600204 {Specification}_Name_from_search_replace field_from
  {Specification_Type}:Specification_Name {Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
 ,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Source_Class:Name={sclass},Source_Parent:Name={spfield}\
 ,Source_Child:Name={scfield},Source_Child_2:Name={sc2field},Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
-,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue},{Permission}:Name={perm}\
-,{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg}\
+,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue}\
+,{Permission}:Name={permission},{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg}\
 ,Child_Relationship:Name={cname},Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass}\
 ,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},Value={value},Value_Label={value_label},Value_Numeric_String={value_numstr}\
 ,Field_Values={field_values},Fields={fields},Field_Pairs={field_pairs} -sep=_ -opt_prefix"
@@ -1468,7 +1468,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,Source_Child_2:Name={sc2field},Source_Child_2:Id={sc2field_id}\
 ,Source_Field:Name={sfield},Source_Field:Id={sfield_id},Source_Grandchild:Name={sgcfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Field:Id={tfield_id}\
-,Test_Field_Class:Name={tfclass},Test_Value={tvalue},{Permission}:Name={perm}\
+,Test_Field_Class:Name={tfclass},Test_Value={tvalue},{Permission}:Name={permission},{Permission}:Id={permission_id}\
 ,{Procedure}:Name={procedure},{Procedure}:Id={procedure_id},{Procedure_Arg}:Name={procedure_arg}\
 ,Procedure_Arg_2:Name={procedure_arg2},Procedure_Arg_3:Name={procedure_arg3}\
 ,Other_{Procedure}:Name={oprocedure},Other_{Procedure}:Id={oprocedure_id}\
