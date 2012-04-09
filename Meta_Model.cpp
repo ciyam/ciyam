@@ -1557,13 +1557,13 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             if( !is_null( get_obj( ).child_View( ).Access_Permission( ) ) )
-               type += "=" + get_obj( ).child_View( ).Access_Permission( ).Name( );
+               type += "=" + get_obj( ).child_View( ).Access_Permission( ).Id( );
 
             if( !is_null( get_obj( ).child_View( ).Change_Permission( ) ) )
             {
                if( extras.empty( ) )
                   extras = "no_edit";
-               extras += "=!" + get_obj( ).child_View( ).Change_Permission( ).Name( );
+               extras += "=!" + get_obj( ).child_View( ).Change_Permission( ).Id( );
             }
 
             if( get_obj( ).child_View( ).Allow_Copy_Action( ) )
@@ -1765,7 +1765,7 @@ void Meta_Model::impl::impl_Generate( )
                          + to_string( get_obj( ).child_View( ).child_View_Field( ).Access_Restriction( ) ) + " in Model::Generate" );
                      }
 
-                     string access_perm = get_obj( ).child_View( ).child_View_Field( ).Access_Permission( ).Name( );
+                     string access_perm = get_obj( ).child_View( ).child_View_Field( ).Access_Permission( ).Id( );
                      if( !access_perm.empty( ) )
                      {
                         if( extras.empty( ) )
@@ -1823,7 +1823,7 @@ void Meta_Model::impl::impl_Generate( )
                          + to_string( get_obj( ).child_View( ).child_View_Field( ).Change_Restriction( ) ) + " in Model::Generate" );
                      }
 
-                     string change_perm = get_obj( ).child_View( ).child_View_Field( ).Change_Permission( ).Name( );
+                     string change_perm = get_obj( ).child_View( ).child_View_Field( ).Change_Permission( ).Id( );
 
                      if( !change_perm.empty( ) )
                      {
@@ -3113,13 +3113,13 @@ void Meta_Model::impl::impl_Generate( )
                    + to_string( get_obj( ).child_List( ).Create_Restriction( ) ) + " in Model::Generate" );
 
                if( !is_null( get_obj( ).child_List( ).Create_Permission( ) ) )
-                  list_extra += "=!" + get_obj( ).child_List( ).Create_Permission( ).Name( );
+                  list_extra += "=!" + get_obj( ).child_List( ).Create_Permission( ).Id( );
             }
             else if( !is_null( get_obj( ).child_List( ).Create_Permission( ) ) )
             {
                if( !list_extra.empty( ) )
                   list_extra += ',';
-               list_extra += "no_new=!" + get_obj( ).child_List( ).Create_Permission( ).Name( );
+               list_extra += "no_new=!" + get_obj( ).child_List( ).Create_Permission( ).Id( );
             }
 
             if( get_obj( ).child_List( ).Destroy_Restriction( ) != 0 )
@@ -3162,13 +3162,13 @@ void Meta_Model::impl::impl_Generate( )
                    + to_string( get_obj( ).child_List( ).Destroy_Restriction( ) ) + " in Model::Generate" );
 
                if( !is_null( get_obj( ).child_List( ).Destroy_Permission( ) ) )
-                  list_extra += "=!" + get_obj( ).child_List( ).Destroy_Permission( ).Name( );
+                  list_extra += "=!" + get_obj( ).child_List( ).Destroy_Permission( ).Id( );
             }
             else if( !is_null( get_obj( ).child_List( ).Destroy_Permission( ) ) )
             {
                if( !list_extra.empty( ) )
                   list_extra += ',';
-               list_extra += "no_erase=!" + get_obj( ).child_List( ).Destroy_Permission( ).Name( );
+               list_extra += "no_erase=!" + get_obj( ).child_List( ).Destroy_Permission( ).Id( );
             }
 
             if( get_obj( ).child_List( ).Limit_Scroll_And_New( ) )
@@ -3323,7 +3323,7 @@ void Meta_Model::impl::impl_Generate( )
                specification_name += "_var" + to_string( variation );
 
             if( !is_null( get_obj( ).child_List( ).Access_Permission( ) ) )
-               list_type += "=" + get_obj( ).child_List( ).Access_Permission( ).Name( );
+               list_type += "=" + get_obj( ).child_List( ).Access_Permission( ).Id( );
 
             outf << "\x60{\x60}\n";
 
@@ -3463,10 +3463,10 @@ void Meta_Model::impl::impl_Generate( )
                             + " in Model::Generate" );
 
                         if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
-                           extras += "=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Name( );
+                           extras += "=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
                      }
                      else if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
-                        extras += "hidden=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Name( );
+                        extras += "hidden=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
 
                      if( extras != "hidden" )
                      {
@@ -3579,7 +3579,7 @@ void Meta_Model::impl::impl_Generate( )
                         }
 
                         if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ) ) )
-                           extras += "=!" + get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ).Name( );
+                           extras += "=!" + get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ).Id( );
 
                         switch( get_obj( ).child_List( ).child_List_Field( ).Font_Size( ) )
                         {
@@ -4224,7 +4224,7 @@ void Meta_Model::impl::impl_Generate( )
                         operations = "link";
 
                         if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
-                           operations += ":" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Name( );
+                           operations += ":" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
                      }
                      else if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_select" )
                      {
@@ -4599,7 +4599,7 @@ void Meta_Model::impl::impl_Generate( )
                         actions += "+" + search_replace( get_obj( ).child_List( ).child_List_Field( ).Procedure_Args( ), " ", "+" );
 
                      if( !get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).get_key( ).empty( ) )
-                        actions += "&" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Name( );
+                        actions += "&" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
                   }
                } while( get_obj( ).child_List( ).child_List_Field( ).iterate_next( ) );
             }
