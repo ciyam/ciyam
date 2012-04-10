@@ -41,23 +41,31 @@ primitive,E000
 primitive,E000
 
 > perform_fetch Meta Type "" Name,Id -min
-time,T100
-bytes,T101
-str010,T102
-str030,T103
-str100,T104
-year,T105
-duration,T106
-0..100,T107
-datetime,T108
-date,T109
-bool,T001
-foreign_key,T003
-bool,T001
-foreign_key,T003
-int,T002
+bytes,T100
+str010,T101
+str030,T102
+str100,T103
+year,T104
+duration,T105
+0..100,T106
+std_date,T107
+std_datetime,T109
+std_time,T108
+bool,T006
+date,T002
+datetime,T001
+foreign_key,T007
+bool,T006
+date,T002
+datetime,T001
+foreign_key,T007
+int,T005
+numeric,T004
 string,T000
-int,T002
+time,T003
+int,T005
+numeric,T004
 string,T000
+time,T003
 
 > 

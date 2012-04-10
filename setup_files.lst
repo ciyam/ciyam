@@ -1,6 +1,8 @@
 activate.htms
 background.png
 background_header.png
+backward.png
+backward_fast.png
 base64.js
 cal.gif
 ciyam_interface.css
@@ -9,6 +11,8 @@ ciyam_interface.txt
 datetimepicker.js
 footer.htms
 footer_row.gif
+forward.png
+forward_fast.png
 header_row.gif
 login.htms
 login_box.gif

@@ -3,9 +3,13 @@ module_load Meta
 storage_term
 storage_init %CIYAM_STORAGE%
 perform_create sys 20120102 Meta 102100 string "102101=string,102102=0,102109=1,102111=T000"
-perform_create sys 20120102 Meta 102100 bool "102101=bool,102102=6,102109=1,102111=T001"
-perform_create sys 20120102 Meta 102100 int "102101=int,102102=5,102109=1,102111=T002"
-perform_create sys 20120102 Meta 102100 foreign_key "102101=foreign_key,102102=0,102109=1,102111=T003"
+perform_create sys 20120102 Meta 102100 datetime "102101=datetime,102102=1,102109=1,102111=T001"
+perform_create sys 20120102 Meta 102100 date "102101=date,102102=2,102109=1,102111=T002"
+perform_create sys 20120102 Meta 102100 time "102101=time,102102=3,102109=1,102111=T003"
+perform_create sys 20120102 Meta 102100 numeric "102101=numeric,102102=4,102109=1,102111=T004"
+perform_create sys 20120102 Meta 102100 int "102101=int,102102=5,102109=1,102111=T005"
+perform_create sys 20120102 Meta 102100 bool "102101=bool,102102=6,102109=1,102111=T006"
+perform_create sys 20120102 Meta 102100 foreign_key "102101=foreign_key,102102=0,102109=1,102111=T007"
 perform_create sys 20120102 Meta 103100 primitive "103101=primitive,103102=5,103103=1,103104=E000"
 perform_create sys 20120102 Meta 104100 primitive0000000001 "104102=0,104101=string,300400=primitive"
 perform_create sys 20120102 Meta 104100 primitive0000000002 "104102=1,104101=datetime,300400=primitive"
