@@ -1650,7 +1650,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                name = get_obj( ).child_List_Field( ).Source_Field( ).Name( );
                query_fields.push_back( name );
 
-               if( get_obj( ).child_List_Field( ).Print_Type( ) == 4 ) // i.e. print_summary
+               if( get_obj( ).child_List_Field( ).Print_Type( ) == 4 // i.e. print_summary
+                || get_obj( ).child_List_Field( ).Print_Type( ) == 6 ) // i.e. print_only_summary
                   summary_fields.push_back( name );
                else
                {
@@ -1726,7 +1727,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
                name += "_" + cname;
 
-               if( get_obj( ).child_List_Field( ).Print_Type( ) == 4 ) // i.e. print_summary
+               if( get_obj( ).child_List_Field( ).Print_Type( ) == 4 // i.e. print_summary
+                || get_obj( ).child_List_Field( ).Print_Type( ) == 6 ) // i.e. print_only_summary
                   summary_fields.push_back( name );
                else
                {
@@ -1744,7 +1746,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             else
                continue;
 
-            if( get_obj( ).child_List_Field( ).Print_Type( ) != 4 ) // i.e. print_summary
+            if( get_obj( ).child_List_Field( ).Print_Type( ) != 4 // i.e. print_summary
+             && get_obj( ).child_List_Field( ).Print_Type( ) != 6 ) // i.e. print_only_summary
             {
                if( !fields.empty( ) )
                   fields += " ";

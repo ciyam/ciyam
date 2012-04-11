@@ -3680,6 +3680,12 @@ void Meta_Model::impl::impl_Generate( )
                            extras += "print_only_total";
                            break;
 
+                           case 6:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "print_only_summary";
+                           break;
+
                            default:
                            throw runtime_error( "unexpected Print_Type value #"
                             + to_string( get_obj( ).child_List( ).child_List_Field( ).Print_Type( ) )

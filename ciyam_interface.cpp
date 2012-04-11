@@ -1838,7 +1838,7 @@ void request_handler::process_request( )
                else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
                   pkey = p_session_info->user_key;
 
-               setup_list_fields( olist, pkey, module_name, *p_session_info );
+               setup_list_fields( olist, pkey, module_name, *p_session_info, cmd == c_cmd_plist );
 
                // NOTE: Repeat the setup as the current list "variation" may not be the original list.
                if( !listvar.empty( ) )
@@ -1859,7 +1859,7 @@ void request_handler::process_request( )
                else if( ( lici->second )->type == c_list_type_user || ( lici->second )->type == c_list_type_user_child )
                   pkey = p_session_info->user_key;
 
-               setup_list_fields( list, pkey, module_name, *p_session_info );
+               setup_list_fields( list, pkey, module_name, *p_session_info, cmd == c_cmd_plist );
             }
          }
 
@@ -2729,7 +2729,7 @@ void request_handler::process_request( )
 
                         child_list.lici = lici;
 
-                        setup_list_fields( child_list, data, module_name, *p_session_info );
+                        setup_list_fields( child_list, data, module_name, *p_session_info, cmd == c_cmd_pview );
 
                         string class_view_id;
                         bool class_does_not_match = false;

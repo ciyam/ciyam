@@ -33390,7 +33390,7 @@
     <id>696
     <name>list_field_print_type
     <type>int
-    <key_values>0=standard,1=non\_print,2=print\_only,3=print\_total,4=print\_summary,5=print\_only\_total
+    <key_values>0=standard,1=non\_print,2=print\_only,3=print\_total,4=print\_summary,5=print\_only\_total,6=print\_only\_summary
    </user_defined_enum>
    <user_defined_enum/>
     <id>690

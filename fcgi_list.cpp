@@ -111,7 +111,7 @@ void append_hash_values_query_update( ostream& os,
 }
 
 void setup_list_fields( list_source& list,
- const string& pkey, const string& module_name, const session_info& sess_info )
+ const string& pkey, const string& module_name, const session_info& sess_info, bool is_printable )
 {
    const module_info& mod_info( *get_storage_info( ).modules_index.find( module_name )->second );
 
@@ -172,14 +172,18 @@ void setup_list_fields( list_source& list,
          if( !list.pfield_list.empty( ) )
             list.pfield_list += ",";
 
-         if( extra_data.count( c_field_extra_print_summary ) )
+         if( is_printable
+          && ( extra_data.count( c_field_extra_print_summary )
+          || extra_data.count( c_field_extra_print_only_summary ) ) )
             list.pfield_list += "!";
 
          list.field_list += field_id;
          list.pfield_list += field_id;
 
          // NOTE: The first non-summary field will be used for ordering (if indexed).
-         if( !check_for_indexed && !extra_data.count( c_field_extra_print_summary ) )
+         if( !check_for_indexed
+          && !extra_data.count( c_field_extra_print_summary )
+          && !extra_data.count( c_field_extra_print_only_summary ) )
          {
             check_for_indexed = true;
             if( fld.indexed )
@@ -357,7 +361,9 @@ void setup_list_fields( list_source& list,
                list.pfield_list += "." + fld.pfield;
             }
          }
-         else if( fld.indexed && !extra_data.count( c_field_extra_print_summary ) )
+         else if( fld.indexed
+          && !extra_data.count( c_field_extra_print_summary )
+          && !extra_data.count( c_field_extra_print_only_summary ) )
          {
             if( allow_sorting )
                list.sort_fields.insert( field_id );
@@ -420,7 +426,14 @@ void setup_list_fields( list_source& list,
             list.print_total_fields.insert( value_id );
          }
 
-         if( extra_data.count( c_field_extra_print_summary ) )
+         if( is_printable && extra_data.count( c_field_extra_print_summary ) )
+         {
+            list.print_only_fields.insert( value_id );
+            list.print_summary_fields.insert( value_id );
+            list.print_summary_field_ids.push_back( field_id );
+         }
+
+         if( extra_data.count( c_field_extra_print_only_summary ) )
          {
             list.print_only_fields.insert( value_id );
             list.print_summary_fields.insert( value_id );
@@ -2377,21 +2390,35 @@ void output_list_form( ostream& os,
                cell_data = "*** COLUMN ERROR ***";
          }
 
+         bool skip_column = false;
+         bool is_fk_column = false;
+
+         if( source.fk_field_ids.size( ) && !fk_refs.count( source_field_id )
+          && fk_column < source.fk_field_ids.size( ) && source.fk_field_ids[ fk_column ] == source_field_id )
+            is_fk_column = true;;
+
          if( source.hidden_fields.count( source_value_id ) )
-            continue;
+            skip_column = true;
 
          if( is_printable && source.non_print_fields.count( source_value_id ) )
-            continue;
+            skip_column = true;
 
          if( !is_printable && source.print_only_fields.count( source_value_id ) )
-            continue;
+            skip_column = true;
 
          if( source.pstate_fields.count( source_value_id )
           && !( parent_state & source.pstate_fields.find( source_value_id  )->second ) )
-            continue;
+            skip_column = true;
 
          if( source_value_id == source.security_level_field )
+            skip_column = true;
+
+         if( skip_column )
+         {
+            if( is_fk_column )
+               ++fk_column;
             continue;
+         }
 
          if( source.print_total_fields.count( source_value_id ) )
          {
@@ -2582,8 +2609,12 @@ void output_list_form( ostream& os,
                os << "  <td class=\"list\" width=\"30\" align=\"center\">" << row << "</td>\n";
          }
 
-         if( source.print_summary_fields.count( source_value_id ) )
+         if( is_printable && source.print_summary_fields.count( source_value_id ) )
+         {
+            if( is_fk_column )
+               ++fk_column;
             continue;
+         }
 
          if( extras.count( c_list_type_extra_actions )
           && source_field_id == extras.find( c_list_type_extra_actions )->second )
