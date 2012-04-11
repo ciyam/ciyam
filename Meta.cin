@@ -70,7 +70,7 @@ user_defined_enum_add -id=692 list_field_link_restrict int 0=none,1=owner\\_only
 user_defined_enum_add -id=693 list_field_label_source int 0=field,1=list,2=omit_label
 user_defined_enum_add -id=694 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
 user_defined_enum_add -id=695 list_field_switch_type int 0=checked,1=unchecked,2=checked\\_reversing,3=unchecked\\_reversing
-user_defined_enum_add -id=696 list_field_print_type int 0=standard,1=non\\_print,2=print\\_only,3=print\\_total,4=print\\_summary,5=print\\_only\\_total
+user_defined_enum_add -id=696 list_field_print_type int 0=standard,1=non\\_print,2=print\\_only,3=print\\_total,4=print\\_summary,5=print\\_only\\_total,6=print\\_only\\_summary
 user_defined_enum_add -id=697 list_field_notes_truncation int 0=standard,30=30,40=40,50=50,80=80,100=100
 user_defined_enum_add -id=698 list_field_link_type int 0=foreign,1=non\\_foreign
 user_defined_enum_add -id=699 list_field_label_class int 0=child,1=parent

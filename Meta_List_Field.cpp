@@ -744,6 +744,7 @@ const int c_enum_list_field_print_type_print_only( 2 );
 const int c_enum_list_field_print_type_print_total( 3 );
 const int c_enum_list_field_print_type_print_summary( 4 );
 const int c_enum_list_field_print_type_print_only_total( 5 );
+const int c_enum_list_field_print_type_print_only_summary( 6 );
 
 string get_enum_string_list_field_print_type( int val )
 {
@@ -763,6 +764,8 @@ string get_enum_string_list_field_print_type( int val )
       string_name = "enum_list_field_print_type_print_summary";
    else if( to_string( val ) == to_string( "5" ) )
       string_name = "enum_list_field_print_type_print_only_total";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_list_field_print_type_print_only_summary";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_print_type" );
 
@@ -7133,6 +7136,7 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_print_type_3", get_enum_string_list_field_print_type( 3 ) ) );
    pairs.push_back( make_pair( "enum_list_field_print_type_4", get_enum_string_list_field_print_type( 4 ) ) );
    pairs.push_back( make_pair( "enum_list_field_print_type_5", get_enum_string_list_field_print_type( 5 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_print_type_6", get_enum_string_list_field_print_type( 6 ) ) );
 
    pairs.push_back( make_pair( "enum_list_search_opt_limit_0", get_enum_string_list_search_opt_limit( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_search_opt_limit_1", get_enum_string_list_search_opt_limit( 1 ) ) );
@@ -7239,6 +7243,7 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_print_type_enum.insert( 3 );
    g_list_field_print_type_enum.insert( 4 );
    g_list_field_print_type_enum.insert( 5 );
+   g_list_field_print_type_enum.insert( 6 );
    g_list_search_opt_limit_enum.insert( 0 );
    g_list_search_opt_limit_enum.insert( 1 );
    g_list_search_opt_limit_enum.insert( 2 );

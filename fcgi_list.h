@@ -28,7 +28,7 @@ struct list_source;
 struct session_info;
 
 void setup_list_fields( list_source& list,
- const std::string& pkey, const std::string& module_name, const session_info& sess_info );
+ const std::string& pkey, const std::string& module_name, const session_info& sess_info, bool is_printable );
 
 void output_list_form( std::ostream& os,
  const list_source& source, const std::string& session_id,

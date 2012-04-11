@@ -1016,6 +1016,10 @@
      <data>5
      <name>enum_list_field_print_type_print_only_total
     </value>
+    <value/>
+     <data>6
+     <name>enum_list_field_print_type_print_only_summary
+    </value>
    </values>
   </enum>
   <enum/>

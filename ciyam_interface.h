@@ -221,6 +221,7 @@ const char* const c_field_extra_admin_owner_only = "admin_owner_only";
 const char* const c_field_extra_print_only_total = "print_only_total";
 const char* const c_field_extra_text_search_title = "text_search_title";
 const char* const c_field_extra_replace_underbars = "replace_underbars";
+const char* const c_field_extra_print_only_summary = "print_only_summary";
 
 const char* const c_parent_extra_key = "@key";
 const char* const c_parent_extra_key0 = "@key0";
