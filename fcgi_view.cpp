@@ -288,13 +288,7 @@ void setup_view_fields( view_source& view,
             if( extra_data.count( c_field_extra_replace_underbars ) )
                view.replace_underbar_fields.insert( value_id );
 
-            // NOTE: It also expected that only one create/modify user and date/time field will exist in a view.
-            if( extra_data.count( c_view_field_extra_create_user_key ) )
-               view.create_user_key_field = field_id;
-
-            if( extra_data.count( c_view_field_extra_modify_user_key ) )
-               view.modify_user_key_field = field_id;
-
+            // NOTE: Only one create/modify datetime field is expected to exist in a view.
             if( extra_data.count( c_view_field_extra_create_datetime ) )
                view.create_datetime_field = field_id;
 
@@ -326,6 +320,13 @@ void setup_view_fields( view_source& view,
          {
             view.fk_field_ids.push_back( field_id );
             view.fk_field_classes[ field_id ] = fld.pclass;
+
+            // NOTE: Only one create/modify user field is expected to exist in a view.
+            if( extra_data.count( c_view_field_extra_create_user_key ) )
+               view.create_user_key_field = field_id;
+
+            if( extra_data.count( c_view_field_extra_modify_user_key ) )
+               view.modify_user_key_field = field_id;
 
             if( extra_data.count( c_view_field_extra_fkey0 ) )
                view.fkey_ids.id0 = field_id;
