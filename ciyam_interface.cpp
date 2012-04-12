@@ -4251,6 +4251,10 @@ int main( int argc, char* argv[ ] )
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          FCGX_Init( );
 
+         // KLUDGE: For some unknown reason when this FCGI interface is started automatically by Apache
+         // (under Windows) it can crash, however, with the delay here this problem seems to be avoided.
+         msleep( 500 );
+
          // FUTURE: Currently Apache's "mod_fcgid" only supports single threaded FCGI servers and under
          // Windows it is simply unable to get back a request that has been handled by any thread other
          // than the main one. Thus rather than force single threaded compilation a check is being made
