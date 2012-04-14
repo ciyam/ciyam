@@ -33384,7 +33384,7 @@
     <id>697
     <name>list_field_notes_truncation
     <type>int
-    <key_values>0=standard,30=30,40=40,50=50,80=80,100=100
+    <key_values>1=none,0=standard,30=30,40=40,50=50,80=80,100=100
    </user_defined_enum>
    <user_defined_enum/>
     <id>696

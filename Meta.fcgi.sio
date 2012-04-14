@@ -963,6 +963,10 @@
    <name>enum_list_field_notes_truncation
    <values/>
     <value/>
+     <data>1
+     <name>enum_list_field_notes_truncation_none
+    </value>
+    <value/>
      <data>0
      <name>enum_list_field_notes_truncation_standard
     </value>

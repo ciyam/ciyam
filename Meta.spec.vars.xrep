@@ -35,7 +35,7 @@
 `{`$enum_list_field_label_source`=`'0=field 1=list 2=omit_label`'`}
 `{`$enum_list_field_link_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner 4=denied_always`'`}
 `{`$enum_list_field_link_type`=`'0=foreign 1=non_foreign`'`}
-`{`$enum_list_field_notes_truncation`=`'0=standard 30=30 40=40 50=50 80=80 100=100`'`}
+`{`$enum_list_field_notes_truncation`=`'1=none 0=standard 30=30 40=40 50=50 80=80 100=100`'`}
 `{`$enum_list_field_print_type`=`'0=standard 1=non_print 2=print_only 3=print_total 4=print_summary 5=print_only_total 6=print_only_summary`'`}
 `{`$enum_list_field_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner 4=denied_always`'`}
 `{`$enum_list_field_switch_type`=`'0=checked 1=unchecked 2=checked_reversing 3=unchecked_reversing`'`}

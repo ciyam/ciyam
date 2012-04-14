@@ -1625,6 +1625,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          map< string, string > prefixes;
 
          map< string, string > uom_fields;
+         map< string, string > trunc_fields;
 
          map< string, string > date_fields;
          map< string, string > time_fields;
@@ -1668,7 +1669,13 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
                if( get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 4 // i.e. notes
                 || get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. content
+               {
+                  wide_fields.insert( name );
                   notes_fields.insert( name );
+
+                  trunc_fields.insert( make_pair( name,
+                   to_string( get_obj( ).child_List_Field( ).Notes_Truncation( ) ) ) );
+               }
                else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 0 // i.e. string
                 && get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ) <= 10 )
                   narrow_fields.insert( name );
@@ -1922,7 +1929,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
             case 21:
             font_name = "SimHei";
-            font_name = "SimHei,Bold";
+            font_bname = "SimHei,Bold";
             font_encoding = "GB-EUC-H";
             break;
 
@@ -2178,6 +2185,10 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
             varsf << "\x60{\x60$f" << to_string( fnum )
              << "_padding\x60=\x60'0,3\x60'\x60}\n";
+
+            if( trunc_fields.count( next_field ) )
+               varsf << "\x60{\x60$f" << to_string( fnum )
+                << "_truncate\x60=\x60'" << trunc_fields[ next_field ] << "\x60'\x60}\n";
 
             if( numeric_fields.count( next_field ) && !prefixes.count( next_field ) )
                varsf << "\x60{\x60$f" << to_string( fnum )

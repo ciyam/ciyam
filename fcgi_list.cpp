@@ -3074,80 +3074,8 @@ void output_list_form( ostream& os,
                {
                   unescape( cell_data, "rn\r\n" );
 
-                  // NOTE: Any "notes" fields used in columns will be truncated if too large.
-                  // Truncation will occur on a space if possible and an elipsis is appended.
-                  // If any CRs or LFs are found then truncate at the first such occurrence.
-                  // The truncation loop also handles decoding of UTF-8 characters included.
-                  int num_chars = 0;
-                  size_t pos = 0, tpos = 0;
-                  while( true )
-                  {
-                     int c = cell_data[ pos ];
-
-                     if( c < 0 )
-                        c += 256;
-
-                     if( c < 127 )
-                     {
-                        ++pos;
-                        ++num_chars;
-
-                        if( cell_data[ pos ] == ' ' )
-                           tpos = pos;
-                        else if( cell_data[ pos ] == '\r' || cell_data[ pos ] == '\n' )
-                        {
-                           tpos = pos;
-                           break;
-                        }
-                     }
-                     else if( c >= 192 && c <= 223 )
-                     {
-                        pos += 2;
-                        ++num_chars;
-                     }
-                     else if( c >= 224 && c <= 239 )
-                     {
-                        pos += 3;
-                        ++num_chars;
-                     }
-                     else if( c >= 240 && c <= 247 )
-                     {
-                        pos += 4;
-                        ++num_chars;
-                     }
-                     else if( c >= 248 && c <= 251 )
-                     {
-                        pos += 5;
-                        ++num_chars;
-                     }
-                     else if( c >= 252 && c <= 253 )
-                     {
-                        pos += 6;
-                        ++num_chars;
-                     }
-                     else
-                        throw runtime_error( "unexpected UTF-8 encoding found in record " + key );
-
-                     // NOTE: If total number of characters found is less than the number
-                     // after which truncation should occur then clear the truncation pos.
-                     if( pos >= cell_data.size( ) && num_chars <= character_trunc_limit )
-                        tpos = 0;
-
-                     if( pos >= cell_data.size( ) || num_chars > character_trunc_limit )
-                        break;
-                  }
-
-                  if( tpos == 0 )
-                     tpos = pos;
-
-                  if( tpos >= cell_data.size( ) )
-                     tpos = 0;
-
-                  if( tpos && tpos < cell_data.size( ) )
-                  {
-                     cell_data.erase( tpos );
-                     cell_data += "...";
-                  }
+                  if( character_trunc_limit != 1 ) // i.e. none
+                     utf8_truncate( cell_data, character_trunc_limit, "..." );
                }
             }
             else if( source.replace_underbar_fields.count( source_value_id ) )

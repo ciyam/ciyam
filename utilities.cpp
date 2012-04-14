@@ -719,6 +719,144 @@ size_t find_end_of_escaped_sequence( const string& s, size_t p, char eos, char e
    return pos;
 }
 
+string& utf8_replace( string& utf8, const char* p_findstr, const char* p_replstr )
+{
+   if( !utf8.empty( ) )
+   {
+      size_t pos = 0;
+      set< size_t > start_char_pos;
+
+      while( true )
+      {
+         int c = utf8[ pos ];
+
+         start_char_pos.insert( pos );
+
+         if( c < 0 )
+            c += 256;
+
+         if( c < 127 )
+            ++pos;
+         else if( c >= 192 && c <= 223 )
+            pos += 2;
+         else if( c >= 224 && c <= 239 )
+            pos += 3;
+         else if( c >= 240 && c <= 247 )
+            pos += 4;
+         else if( c >= 248 && c <= 251 )
+            pos += 5;
+         else if( c >= 252 && c <= 253 )
+            pos += 6;
+         else
+            throw runtime_error( "unexpected UTF-8 encoding found in: " + utf8 );
+
+         if( pos >= utf8.length( ) )
+            break;
+      }
+
+      string::size_type lpos = 0;
+      while( true )
+      {
+         string::size_type pos = utf8.find( p_findstr, lpos );
+         if( pos == string::npos )
+            break;
+
+         if( start_char_pos.count( pos ) )
+         {
+            utf8.replace( pos, strlen( p_findstr ), p_replstr );
+            lpos = pos + strlen( p_replstr );
+         }
+         else
+            lpos = pos + strlen( p_findstr );
+      }
+   }
+
+   return utf8;
+}
+
+string& utf8_truncate( string& utf8, int trunc_limit, const char* p_overflow_suffix )
+{
+   if( !utf8.empty( ) )
+   {
+      // NOTE: Truncation will occur on a space if possible and if any
+      // CR/LFs are found then truncates at the first such occurrence.
+      int num_chars = 0;
+      size_t pos = 0, tpos = 0;
+
+      while( true )
+      {
+         int c = utf8[ pos ];
+
+         if( c < 0 )
+            c += 256;
+
+         if( c < 127 )
+         {
+            ++pos;
+            ++num_chars;
+
+            if( utf8[ pos ] == ' ' )
+               tpos = pos;
+            else if( utf8[ pos ] == '\r' || utf8[ pos ] == '\n' )
+            {
+               tpos = pos;
+               break;
+            }
+         }
+         else if( c >= 192 && c <= 223 )
+         {
+            pos += 2;
+            ++num_chars;
+         }
+         else if( c >= 224 && c <= 239 )
+         {
+            pos += 3;
+            ++num_chars;
+         }
+         else if( c >= 240 && c <= 247 )
+         {
+            pos += 4;
+            ++num_chars;
+         }
+         else if( c >= 248 && c <= 251 )
+         {
+            pos += 5;
+            ++num_chars;
+         }
+         else if( c >= 252 && c <= 253 )
+         {
+            pos += 6;
+            ++num_chars;
+         }
+         else
+            throw runtime_error( "unexpected UTF-8 encoding found in: " + utf8 );
+
+         // NOTE: If total number of characters found is less than the number
+         // after which truncation should occur then clear the truncation pos.
+         if( pos >= utf8.size( ) && num_chars <= trunc_limit )
+            tpos = 0;
+
+         if( pos >= utf8.size( ) || num_chars > trunc_limit )
+            break;
+      }
+
+      if( tpos == 0 )
+         tpos = pos;
+
+      if( tpos >= utf8.size( ) )
+         tpos = 0;
+
+      if( tpos && tpos < utf8.size( ) )
+      {
+         utf8.erase( tpos );
+         if( p_overflow_suffix )
+            utf8 += p_overflow_suffix;
+      }
+   }
+
+   return utf8;
+}
+
 bool has_environment_variable( const char* p_env_var_name )
 {
    return getenv( p_env_var_name ) != 0;

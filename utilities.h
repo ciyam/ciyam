@@ -593,6 +593,10 @@ inline std::string unescaped( const std::string& s, const char* p_specials = 0, 
 
 size_t find_end_of_escaped_sequence( const std::string& s, size_t p, char eos, char esc = c_esc );
 
+std::string& utf8_replace( std::string& utf8, const char* p_findstr, const char* p_replstr );
+
+std::string& utf8_truncate( std::string& utf8, int trunc_limit, const char* p_overflow_suffix = 0 );
+
 bool has_environment_variable( const char* p_env_var_name );
 
 void replace_environment_variables( std::string& s, char bc = '%', const char* p_chars = 0, char esc = c_esc );
