@@ -707,6 +707,7 @@ string get_enum_string_list_field_link_type( int val )
    return get_module_string( lower( string_name ) );
 }
 
+const int c_enum_list_field_notes_truncation_none( 1 );
 const int c_enum_list_field_notes_truncation_standard( 0 );
 const int c_enum_list_field_notes_truncation_30( 30 );
 const int c_enum_list_field_notes_truncation_40( 40 );
@@ -720,6 +721,8 @@ string get_enum_string_list_field_notes_truncation( int val )
 
    if( to_string( val ) == "" )
       throw runtime_error( "unexpected empty enum value for list_field_notes_truncation" );
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_list_field_notes_truncation_none";
    else if( to_string( val ) == to_string( "0" ) )
       string_name = "enum_list_field_notes_truncation_standard";
    else if( to_string( val ) == to_string( "30" ) )
@@ -7123,6 +7126,7 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_link_type_0", get_enum_string_list_field_link_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_link_type_1", get_enum_string_list_field_link_type( 1 ) ) );
 
+   pairs.push_back( make_pair( "enum_list_field_notes_truncation_1", get_enum_string_list_field_notes_truncation( 1 ) ) );
    pairs.push_back( make_pair( "enum_list_field_notes_truncation_0", get_enum_string_list_field_notes_truncation( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_notes_truncation_30", get_enum_string_list_field_notes_truncation( 30 ) ) );
    pairs.push_back( make_pair( "enum_list_field_notes_truncation_40", get_enum_string_list_field_notes_truncation( 40 ) ) );
@@ -7231,6 +7235,7 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_link_restrict_enum.insert( 4 );
    g_list_field_link_type_enum.insert( 0 );
    g_list_field_link_type_enum.insert( 1 );
+   g_list_field_notes_truncation_enum.insert( 1 );
    g_list_field_notes_truncation_enum.insert( 0 );
    g_list_field_notes_truncation_enum.insert( 30 );
    g_list_field_notes_truncation_enum.insert( 40 );

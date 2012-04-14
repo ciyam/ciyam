@@ -251,6 +251,7 @@ struct pdf_gen_field_info
     bgcolor_b( -1 ),
     is_png( false ),
     is_jpg( false ),
+    truncate( -1 ),
     use_padding( false ),
     x_is_offset( false ),
     y_is_offset( false ),
@@ -311,6 +312,8 @@ struct pdf_gen_field_info
 
    bool is_png;
    bool is_jpg;
+
+   int truncate;
 
    bool use_padding;
    float padding_left;
@@ -467,6 +470,8 @@ typedef vector< ref_count_ptr< pdf_page > > page_container;
 
 const size_t c_max_data_chars = 8192;
 
+const int c_default_character_trunc_limit = 15;
+
 const char* const c_grid_variable = "@grid";
 const char* const c_page_variable = "@page";
 const char* const c_true_variable = "@true";
@@ -562,6 +567,7 @@ const char* const c_attribute_encoding = "encoding";
 const char* const c_attribute_paddingx = "paddingx";
 const char* const c_attribute_paddingy = "paddingy";
 const char* const c_attribute_pagesize = "pagesize";
+const char* const c_attribute_truncate = "truncate";
 const char* const c_attribute_alignment = "alignment";
 const char* const c_attribute_footer_size = "footer_size";
 const char* const c_attribute_header_size = "header_size";
@@ -616,63 +622,93 @@ bool wrename_file( const wstring& from, const wstring& to )
 #ifdef ICONV_SUPPORT
 string convert_utf8_to_other( const string& utf8, const string& other )
 {
-   char buf[ c_max_data_chars ];
-   memset( buf, '\0', sizeof( buf ) );
+   string str;
+   str.reserve( utf8.size( ) );
 
-   // KLUDGE: For some reason the UTF-8 copyright character cannot be
-   // converted to GB2312 so if it is found at the start of a line it
-   // is replaced with (C) instead (if no better solution to this can
-   // be found then will need to replace it wherever it appears).
    string src( utf8 );
-   if( other == "gb2312"
-    && src.size( ) > 2 && ( unsigned char )src[ 0 ] == 0xC2 && ( unsigned char )src[ 1 ] == 0xA9 )
-      src = "(C)" + src.substr( 2 );
-
-   if( src.size( ) > c_max_data_chars )
-      throw runtime_error( "buffer overflow in convert_utf8_to_other (size = "
-       + to_string( src.size( ) ) + " but max allowed = " + to_string( c_max_data_chars ) );
-
-   iconv_t cd;
-
-   cd = iconv_open( other.c_str( ), "utf-8" );
-   if( cd == ( iconv_t )-1 )
+   // KLUDGE: The UTF-8 copyright character and dash characters cannot be
+   // converted to GB2312 so these are instead replaced by ASCII characters.
+   if( other == "gb2312" )
    {
-      if( errno == EINVAL )
-         throw runtime_error( "conversion from UTF-8 to " + other + " not available" );
-      else
-         throw runtime_error( "unexpected iconv_open error" );
+      utf8_replace( src, "\xc2\xa9", "(C)" );
+      utf8_replace( src, "\xe2\x80\x94", "-" );
    }
 
-   size_t isize = src.length( );
-   size_t avail = c_max_data_chars - 1;
+   vector< string > lines;
+   split( src, lines, '\n' );
+   
+   size_t trim_after = 0;
+   for( size_t i = 0; i < lines.size( ); i++ )
+   {
+      string& next_line( lines[ i ] );
+      iconv_t cd;
 
-   char* p_buf = buf;
-   const char* p_src = src.c_str( );
+      if( trim_after )
+         next_line.erase( trim_after );
+
+      char buf[ c_max_data_chars ];
+      memset( buf, '\0', sizeof( buf ) );
+
+      if( next_line.size( ) > c_max_data_chars )
+         throw runtime_error( "buffer overflow in convert_utf8_to_other (size = "
+          + to_string( next_line.size( ) ) + " but max allowed = " + to_string( c_max_data_chars ) );
+
+      cd = iconv_open( other.c_str( ), "utf-8" );
+      if( cd == ( iconv_t )-1 )
+      {
+         if( errno == EINVAL )
+            throw runtime_error( "conversion from UTF-8 to " + other + " not available" );
+         else
+            throw runtime_error( "unexpected iconv_open error" );
+      }
+
+      size_t isize = next_line.length( );
+      size_t avail = c_max_data_chars - 1;
+
+      char* p_buf = buf;
+      const char* p_src = next_line.c_str( );
 
 #  ifdef _WIN32
-   size_t rc = iconv( cd, &p_src, &isize, &p_buf, &avail );
+      size_t rc = iconv( cd, &p_src, &isize, &p_buf, &avail );
 #  else
-   size_t rc = iconv( cd, ( char** )&p_src, &isize, &p_buf, &avail );
+      size_t rc = iconv( cd, ( char** )&p_src, &isize, &p_buf, &avail );
 #  endif
 
-   if( rc == -1 )
-   {
-      if( errno == EILSEQ )
-         throw runtime_error( "invalid " + other + " character sequence" );
-      else if( errno == E2BIG )
-         throw runtime_error( "output buffer too small for conversion" );
-      else if( errno == EINVAL )
-         throw runtime_error( "incomplete " + other + " character sequence" );
-      else if( errno == EBADF )
-         throw runtime_error( "invalid conversion descriptor" );
+      if( rc == -1 )
+      {
+         if( errno == EILSEQ )
+            throw runtime_error( "invalid " + other + " character sequence" );
+         else if( errno == E2BIG )
+            throw runtime_error( "output buffer too small for conversion" );
+         else if( errno == EINVAL )
+            throw runtime_error( "incomplete " + other + " character sequence" );
+         else if( errno == EBADF )
+            throw runtime_error( "invalid conversion descriptor" );
+
+         // NOTE: If error is unknown then will keep trimming the line
+         // in order to try and convert as much of it as is possible.
+         if( trim_after == 0 )
+            trim_after = next_line.length( ) - 1;
+         else
+            --trim_after;
+
+         if( trim_after != 0 )
+            --i;
+      }
       else
-         throw runtime_error( "unexpected iconv failure: " + to_string( errno ) );
+      {
+         trim_after = 0;
+
+         if( !str.empty( ) )
+            str += "\n";
+         str += string( buf );
+      }
+
+      if( iconv_close( cd ) != 0 )
+         throw runtime_error( "unexpected iconv_close error" );
    }
 
-   if( iconv_close( cd ) != 0 )
-      throw runtime_error( "unexpected iconv_close error" );
-
-   return string( buf );
+   return str;
 }
 #endif
 
@@ -2139,6 +2175,10 @@ void read_pdf_gen_format( const string& file_name, pdf_gen_format& format )
                   field_info.line_spacing = atof( spacing.c_str( ) );
                }
 
+               string truncate = reader.read_opt_attribute( c_attribute_truncate );
+               if( !truncate.empty( ) )
+                  field_info.truncate = atoi( truncate.c_str( ) );
+
                string alignment( reader.read_opt_attribute( c_attribute_alignment ) );
                if( !alignment.empty( ) )
                {
@@ -3301,6 +3341,7 @@ bool process_group(
          }
          else if( type == e_pdf_gen_field_type_text )
          {
+            bool is_continuation = false;
             if( row == first && ( text_overflow_present || !group_cols_processed[ group ].empty( ) ) )
             {
                bool okay = true;
@@ -3312,6 +3353,7 @@ bool process_group(
                   if( group_text_overflows.count( text_overflow_key ) )
                   {
                      is_hshrinkable = true;
+                     is_continuation = true;
                      data = group_text_overflows[ text_overflow_key ];
                      group_text_overflows.erase( text_overflow_key );
                   }
@@ -3319,6 +3361,17 @@ bool process_group(
 
                if( !okay )
                   continue;
+            }
+
+            if( !is_continuation
+             && format.fields[ j ].truncate >= 0 && format.fields[ j ].truncate != 1 ) // i.e. none
+            {
+               int character_trunc_limit = format.fields[ j ].truncate;
+
+               if( character_trunc_limit == 0 ) // i.e. standard
+                  character_trunc_limit = c_default_character_trunc_limit;
+
+               utf8_truncate( data, character_trunc_limit, "..." );
             }
 
             string font( format.fields[ j ].font );
@@ -3389,7 +3442,7 @@ bool process_group(
 #ifdef ICONV_SUPPORT
             string encoding( text_font.get_encoding( ) );
 
-            if( !encoding.empty( ) )
+            if( !encoding.empty( ) && !is_continuation )
             {
                if( text_font.get_uses_wide_chars( ) )
                {
