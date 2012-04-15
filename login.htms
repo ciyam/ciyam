@@ -1,0 +1,21 @@
+<div id="loginbox">
+   <div id="loginform">
+      <form method="POST" name="login" id="login"
+       onsubmit="var cd = new Date( );
+       return dyn_load( this, 'username=' + escape( document.login.username.value ) + '&password='
+        + hash_password( document.login.username.value, document.login.password.value ) + '&utcdtm=' + utc_dtm( cd ) + '&tzoffcur=' + escape( cd.getTimezoneOffset( ) ), false )">
+          <label for="username">
+             <input class="loginfields" type="text" name="username" tabindex="1"
+              id="username" size="25" maxlength="25" validate="reqd" onkeypress="className = 'loginfields'" />@@user_id
+          </label>
+          <label for="password">
+             <input class="loginfields" type="password" name="password" tabindex="2"
+              id="password" size="25" maxlength="25" validate="reqd" onkeypress="className = 'loginfields'" />@@password
+          </label>
+          <label for="submit" id="submit">
+             <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@login" />
+          </label>
+      </form>
+   </div>
+</div>
+

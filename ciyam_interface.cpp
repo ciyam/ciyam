@@ -932,7 +932,10 @@ void request_handler::process_request( )
                   extra_content << "<img src=\"login_header.gif\" alt=\"Login Header\"><br class=\"clear\"/>\n";
                extra_content << "</div>\n";
 
-               extra_content << g_activate_html;
+               string activate_html( g_activate_html );
+               str_replace( activate_html, c_user_id, user );
+
+               extra_content << activate_html;
 
                extra_content << "</div>\n";
             }
@@ -1169,13 +1172,13 @@ void request_handler::process_request( )
                      // has been repeated then just treat as a standard login if the password is correct.
                      if( user_data[ 0 ] != user_data[ 1 ] )
                      {
-                        if( activate_password == lower( hash_password( g_id + user_data[ 1 ] ) ) )
+                        if( activate_password == lower( hash_password( g_id + user_data[ 1 ] + user ) ) )
                            is_activation = false;
                         else
                            throw runtime_error( GDS( c_display_account_has_already_been_activated ) );
                      }
 
-                     if( activate_password == lower( hash_password( g_id + user_data[ 0 ] ) ) )
+                     if( activate_password == lower( hash_password( g_id + user_data[ 0 ] + user ) ) )
                      {
                         force_refresh = true;
                         throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
@@ -1547,6 +1550,7 @@ void request_handler::process_request( )
 
          string new_key;
          string error_message;
+         string hpassword_salt;
          string user_home_info;
          string edit_timeout_func;
 
@@ -1977,13 +1981,13 @@ void request_handler::process_request( )
                if( pos != string::npos )
                   old_password.erase( pos );
 
-               if( new_password == lower( hash_password( g_id + p_session_info->user_id ) ) )
+               if( new_password == lower( hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) ) )
                   throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
 
                // NOTE: Only use the encrypted original password if it was decrypted when logging in.
                if( p_session_info->clear_password.length( ) )
                {
-                  if( old_password == lower( hash_password( g_id + p_session_info->clear_password ) ) )
+                  if( old_password == lower( hash_password( g_id + p_session_info->clear_password + p_session_info->user_id ) ) )
                      old_password = p_session_info->clear_password;
                }
                else
@@ -2287,6 +2291,9 @@ void request_handler::process_request( )
                   {
                      if( view.field_ids[ i ] == c_key_field )
                         continue;
+
+                     if( view.field_ids[ i ] == view.hpassword_salt_field )
+                        hpassword_salt = item_values[ field_num ];
 
                      // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
                      if( item_values[ field_num ].length( ) >= 20
@@ -3333,6 +3340,8 @@ void request_handler::process_request( )
                   if( pos != string::npos )
                      str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
+                  str_replace( password_html, p_session_info->user_id.c_str( ), user );
+
                   extra_content << password_html;
                }
                else
@@ -3927,6 +3936,8 @@ void request_handler::process_request( )
                extra_content_func += "warn_refresh_func = '" + edit_timeout_func + "';\n";
             extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
             extra_content_func += "warn_refresh( );";
+
+            extra_content_func += "\npwdSalt = '" + hpassword_salt + "';";
 
             if( p_session_info && p_session_info->logged_in )
                extra_content_func += "\nloggedIn = true;";

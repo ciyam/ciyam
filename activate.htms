@@ -4,7 +4,7 @@
        onsubmit="var cd = new Date( ); var checkval = 'false';
        if( document.login.persistent.checked )
           checkval = document.login.persistent.value;
-       return dyn_load( this, 'password=' + hash_password( document.login.password.value ) + '&persistent='
+       return dyn_load( this, 'password=' + hash_password( document.login.username.value, document.login.password.value ) + '&persistent='
         + checkval + '&utcdtm=' + utc_dtm( cd ) + '&tzoffcur=' + escape( cd.getTimezoneOffset( ) ), false )">
          <label for="password">
             <input class="loginfields" type="password" name="password" tabindex="1"
@@ -20,6 +20,7 @@
             <br/>
             <input type="checkbox" name="persistent" id="persistent" tabindex="4" value="true"/>&nbsp;&nbsp;@@persistent
          </label>
+         <input type="hidden" name="username" value="@@user_id">
       </form>
    </div>
 </div>
