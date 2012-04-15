@@ -627,6 +627,26 @@ inline std::string raw_join( const std::vector< std::string >& c ) { return join
 
 std::string join( const std::vector< std::string >& c, const std::string& sep );
 
+inline void remove_utf8_bom_impl( std::string& s )
+{
+   // NOTE: UTF-8 text files will sometimes begin with an identifying sequence "EF BB BF" as the
+   // first three characters of the file (especially in Windows) so if this is found then remove.
+   if( s.size( ) >= 3 && s[ 0 ] == ( char )0xef && s[ 1 ] == ( char )0xbb && s[ 2 ] == ( char )0xbf )
+      s.erase( 0, 3 );
+}
+
+inline void remove_utf8_bom( std::string& s ) { remove_utf8_bom_impl( s ); }
+
+inline void remove_trailing_cr_from_text_file_line( std::string& s, bool also_remove_uft8_bom = false )
+{
+   // NOTE: If a text file had been treated as binary during an FTP remove trailing CR.
+   if( s.size( ) && s[ s.size( ) - 1 ] == '\r' )
+      s.erase( s.size( ) - 1 );
+
+   if( also_remove_uft8_bom )
+      remove_utf8_bom_impl( s );
+}
+
 struct version_info
 {
    int major;

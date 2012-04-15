@@ -935,9 +935,7 @@ void Meta_Package::impl::impl_Install( )
          set< string > options_processed;
          while( getline( inpf, next ) )
          {
-            // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-            if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-               next.erase( next.size( ) - 1 );
+            remove_trailing_cr_from_text_file_line( next );
 
             if( next.find( opt_prefix ) == 0 )
             {
@@ -1633,9 +1631,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
       while( getline( inpf, next ) )
       {
-         // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-         if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-            next.erase( next.size( ) - 1 );
+         remove_trailing_cr_from_text_file_line( next );
 
          if( next.find( ext_prefix ) == 0 )
          {

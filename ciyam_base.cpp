@@ -6240,9 +6240,7 @@ string exec_bulk_ops( const string& module,
 
          while( getline( inpf, next ) )
          {
-            // NOTE: In case the string file had been treated as binary during an FTP transfer remove trailing CR.
-            if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-               next.erase( next.size( ) - 1 );
+            remove_trailing_cr_from_text_file_line( next, is_first );
 
             if( is_first )
             {

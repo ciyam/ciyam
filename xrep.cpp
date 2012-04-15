@@ -3384,9 +3384,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
       {
          xi.set_handled_include( false );
 
-         // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-         if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-            next.erase( next.size( ) - 1 );
+         remove_trailing_cr_from_text_file_line( next );
 
          // NOTE: A character sequence in the form \=n (where n is a number between 1 and 9) will be replaced
          // with the appropriate number of \ characters for the level (n) of nesting (e.g. \=4 ==> \\\\\\\\).
@@ -3549,9 +3547,7 @@ int main( int argc, char* argv[ ] )
                value.erase( );
                while( getline( inpf, next ) )
                {
-                  // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-                  if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-                     next.erase( next.size( ) - 1 );
+                  remove_trailing_cr_from_text_file_line( next );
 
                   if( next.empty( ) )
                      continue;

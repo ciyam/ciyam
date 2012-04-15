@@ -606,9 +606,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
       string next_line;
       while( getline( inpf, next_line ) )
       {
-         // NOTE: In case the file had been treated as binary during an FTP remove trailing CR.
-         if( next_line.size( ) && next_line[ next_line.size( ) - 1 ] == '\r' )
-            next_line.erase( next_line.size( ) - 1 );
+         remove_trailing_cr_from_text_file_line( next_line );
 
          if( next_line.empty( ) )
             continue;
@@ -2685,19 +2683,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             bool performed_init = false;
             while( getline( inpf, next ) )
             {
-               // NOTE: In case the log file had been treated as binary during an FTP remove trailing CR.
-               if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-                  next.erase( next.size( ) - 1 );
+               remove_trailing_cr_from_text_file_line( next, is_first );
 
                if( is_first )
-               {
                   is_first = false;
-
-                  // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-                  // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-                  if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
-                     next.erase( 0, 3 );
-               }
 
                ++line;
                string::size_type pos = next.find( ']' );

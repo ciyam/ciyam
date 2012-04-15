@@ -1281,17 +1281,7 @@ void buffer_file_lines( const string& file_name,
    size_t line_num = 0;
    while( getline( inpf, next ) )
    {
-      // NOTE: If a text file had been treated as binary during an FTP remove trailing CR.
-      if( strip_extra_crs && next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-         next.erase( next.size( ) - 1 );
-
-      if( ++line_num == 1 )
-      {
-         // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-         // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-         if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
-            next.erase( 0, 3 );
-      }
+      remove_trailing_cr_from_text_file_line( next, ++line_num == 1 );
 
       if( !skip_blank_lines || !next.empty( ) )
          lines.push_back( next );
@@ -1311,17 +1301,7 @@ void buffer_file_lines( const string& file_name, set< string >& lines, bool stri
    size_t line_num = 0;
    while( getline( inpf, next ) )
    {
-      // NOTE: If a text file had been treated as binary during an FTP remove trailing CR.
-      if( strip_extra_crs && next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-         next.erase( next.size( ) - 1 );
-
-      if( ++line_num == 1 )
-      {
-         // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-         // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-         if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
-            next.erase( 0, 3 );
-      }
+      remove_trailing_cr_from_text_file_line( next, ++line_num == 1 );
 
       if( !next.empty( ) )
          lines.insert( next );

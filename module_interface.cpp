@@ -70,19 +70,10 @@ bool load_strings( const char* p_name )
       bool is_first_line = true;
       while( getline( inpf, next_line ) )
       {
-         // NOTE: In case the string file had been treated as binary during an FTP transfer remove trailing CR.
-         if( next_line.size( ) && next_line[ next_line.size( ) - 1 ] == '\r' )
-            next_line.erase( next_line.size( ) - 1 );
+         remove_trailing_cr_from_text_file_line( next_line, is_first_line );
 
          if( is_first_line )
-         {
             is_first_line = false;
-
-            // NOTE: UTF-8 text files can often begin with an identifying sequence "EF BB BF" as the
-            // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-            if( next_line.size( ) >= 3 && next_line[ 0 ] == ( char )0xef )
-               next_line.erase( 0, 3 );
-         }
 
          if( next_line.empty( ) )
             continue;

@@ -102,19 +102,10 @@ void exec_sql_from_file( sql_db& db, const string& sql_file, progress* p_progres
    bool is_first = true;
    while( getline( inpf, next ) )
    {
+      remove_trailing_cr_from_text_file_line( next, is_first );
+
       if( is_first )
-      {
          is_first = false;
-
-         // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-         // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-         if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
-            next.erase( 0, 3 );
-      }
-
-      // NOTE: If a text file had been treated as binary during an FTP remove trailing CR.
-      if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-         next.erase( next.size( ) - 1 );
 
       if( !sql.empty( ) )
          sql += "\n";
