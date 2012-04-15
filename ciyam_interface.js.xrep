@@ -23,6 +23,7 @@ var loggedIn = false;
 var jump_back = false;
 var had_act_error = false;
 
+var pwdSalt = '';
 var serverId = '';
 var uniqueId = '';
 
@@ -812,7 +813,7 @@ function hash_value( s, n )
    return s;
 }
 
-function hash_password( pwd, skip_id )
+function hash_password( salt, pwd, skip_id )
 {
    var retval = '';
 
@@ -822,7 +823,7 @@ function hash_password( pwd, skip_id )
    if( pwd.length >= 40 )
       retval = pwd;
    else
-      retval = hash_value( serverId + pwd, hashRounds ).toLowerCase( );
+      retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
 
    if( sessionStorage.getItem( 'uuid' ) != null )
       uniqueId = sessionStorage.getItem( 'uuid' );
@@ -833,7 +834,7 @@ function hash_password( pwd, skip_id )
    if( encryptPosts )
    {
       if( sessionStorage.getItem( 'key' ) == null )
-         sessionStorage.setItem( 'key', hex_sha1( serverId + pwd ) );
+         sessionStorage.setItem( 'key', hex_sha1( serverId + pwd + salt ) );
    }
 
    return retval;
@@ -1146,7 +1147,7 @@ function get_all_field_values( form )
             var value = form.elements[ i ].value;
 
             if( form.elements[ i ].getAttribute( 'hash' ) == '1' )
-               value = hash_password( value, true );
+               value = hash_password( pwdSalt, value, true );
 
             if( num++ > 0 )
                all_values += ',';

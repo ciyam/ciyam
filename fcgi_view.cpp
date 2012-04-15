@@ -180,9 +180,12 @@ void setup_view_fields( view_source& view,
 
          if( fld.pclass.empty( ) )
          {
-            // NOTE: It is expected that only one actions and owning user field will exist in a view.
+            // NOTE: It is expected that only one actions and hpassword salt field will exist in a view.
             if( extra_data.count( c_view_field_extra_actions ) )
                view.actions_field = field_id;
+
+            if( extra_data.count( c_view_field_extra_hpassword_salt ) )
+               view.hpassword_salt_field = field_id;
 
             if( extra_data.count( c_view_field_extra_password ) )
                view.password_fields.insert( value_id );

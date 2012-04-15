@@ -3936,6 +3936,10 @@ string meta_field_extras( int uom, int extra, bool transient, int max_size,
       all_extras.push_back( "hpassword" );
       break;
 
+      case 27:
+      all_extras.push_back( "hpassword_salt" );
+      break;
+
       default:
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }

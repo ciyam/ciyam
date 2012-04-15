@@ -663,6 +663,7 @@ struct view_source : source
    std::string actions_field;
    std::string owning_user_field;
    std::string attached_file_field;
+   std::string hpassword_salt_field;
    std::string create_user_key_field;
    std::string modify_user_key_field;
    std::string create_datetime_field;
