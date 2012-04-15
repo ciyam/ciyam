@@ -305,9 +305,7 @@ void test_sio_reader_writer( const string& file_name )
       int copy_lines = 0;
       while( getline( inpf, orig_line ) )
       {
-         // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-         if( orig_line.size( ) && orig_line[ orig_line.size( ) - 1 ] == '\r' )
-            orig_line.erase( orig_line.size( ) - 1 );
+         remove_trailing_cr_from_text_file_line( orig_line );
 
          if( !getline( isstr, copy_line ) )
             break;

@@ -247,9 +247,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
    set_quiet_command( false );
 
-   // NOTE: In case a redirected input file had been treated as binary during an FTP remove trailing CR.
-   if( str.size( ) && str[ str.size( ) - 1 ] == '\r' )
-      str.erase( str.size( ) - 1 );
+   remove_trailing_cr_from_text_file_line( str );
 
    if( handling_startup_options )
    {
@@ -366,19 +364,10 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
                if( next.empty( ) )
                   continue;
 
-               // NOTE: In case a redirected input file had been treated as binary during an FTP remove trailing CR.
-               if( next[ next.size( ) - 1 ] == '\r' )
-                  next.erase( next.size( ) - 1 );
+               remove_trailing_cr_from_text_file_line( next, is_first );
 
                if( is_first )
-               {
                   is_first = false;
-
-                  // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-                  // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-                  if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
-                     next.erase( 0, 3 );
-               }
 
                // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
                string::size_type pos = next.find_last_not_of( '\\' );

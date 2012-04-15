@@ -241,17 +241,7 @@ void sio_reader::read_line( )
       if( getline( is, line ) && line.empty( ) )
          throw runtime_error( "unexpected empty line #" + to_string( line_num ) );
 
-      // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-      if( line.size( ) && line[ line.size( ) - 1 ] == '\r' )
-         line.erase( line.size( ) - 1 );
-
-      if( line_num == 1 )
-      {
-         // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-         // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-         if( line.size( ) >= 3 && line[ 0 ] == ( char )0xef )
-            line.erase( 0, 3 );
-      }
+      remove_trailing_cr_from_text_file_line( line, line_num == 1 );
 
       string::size_type pos = line.find_first_not_of( " \t" );
       if( is.eof( ) || include_comments || ( pos != string::npos && line[ pos ] != '#' ) ) // i.e. continue if is a comment

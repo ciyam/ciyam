@@ -4053,10 +4053,7 @@ void request_handler::process_request( )
    else
       interface_html = buffer_file( interface_file );
 
-   // NOTE: UTF-8 text files can often begin with an identifying sequence "EF BB BF" as the
-   // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-   if( interface_html.size( ) >= 3 && interface_html[ 0 ] == ( char )0xef )
-      interface_html.erase( 0, 3 );
+   remove_utf8_bom( interface_html );
 
    string output;
    size_t pos = interface_html.find( c_title );

@@ -24,6 +24,7 @@
 #  include <iostream>
 #endif
 
+#include "utilities.h"
 #include "command_parser.h"
 
 //#define DEBUG
@@ -150,9 +151,7 @@ int main( int argc, char* argv[ ] )
    {
       ++line_number;
 
-      // NOTE: In case the input file had been treated as binary during an FTP remove trailing CR.
-      if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-         next.erase( next.size( ) - 1 );
+      remove_trailing_cr_from_text_file_line( next );
 #ifdef DEBUG
       cout << "next line is: " << next << endl;
 #endif

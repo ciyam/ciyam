@@ -19,6 +19,7 @@
 
 #include "command_processor.h"
 
+#include "utilities.h"
 #include "command_handler.h"
 
 using namespace std;
@@ -42,9 +43,7 @@ void command_processor::process_commands( )
 
       if( cmd_and_args.size( ) )
       {
-         // NOTE: In case a redirected input file had been treated as binary during an FTP remove trailing CR.
-         if( cmd_and_args[ cmd_and_args.size( ) - 1 ] == '\r' )
-            cmd_and_args.erase( cmd_and_args.size( ) - 1 );
+         remove_trailing_cr_from_text_file_line( cmd_and_args );
 
          // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
          string::size_type pos = cmd_and_args.find_last_not_of( '\\' );
