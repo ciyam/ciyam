@@ -23,7 +23,7 @@
 `{`$enum_field_action_create_access_restriction`=`'0=none 1=owner 2=admin 3=non_admin`'`}
 `{`$enum_field_action_create_type`=`'0=standard 1=confirmation 2=edit_and_save`'`}
 `{`$enum_field_action_type`=`'0=create_record 1=procedure_call`'`}
-`{`$enum_field_extra`=`'0=none 1=file 2=http 23=text 4=notes 5=order 6=active 3=image 7=mailto 21=file_link 8=actions 9=content 22=filename 10=password 11=defcurrent 17=permission 24=orientation 25=epassword 26=hpassword 13=manual_link 12=user_perms 14=current_year 18=security_level 15=create_datetime 16=modify_datetime 19=replace_underbars 20=enforce_uppercase -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
+`{`$enum_field_extra`=`'0=none 1=file 2=http 23=text 4=notes 5=order 6=active 3=image 7=mailto 21=file_link 8=actions 9=content 22=filename 10=password 11=defcurrent 17=permission 24=orientation 25=epassword 26=hpassword 27=hpassword_salt 13=manual_link 12=user_perms 14=current_year 18=security_level 15=create_datetime 16=modify_datetime 19=replace_underbars 20=enforce_uppercase -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
 `{`$enum_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 30=Any_Scalar_Type 31=Any_Math_Type 39=Any_Non_Text_Type 40=Date_Or_Time 41=Calendar_Type 45=Any_Date_Or_Time_Type 49=Any_Primitive 50=Any_Relationship 51=Self_Relationship 52=Non_Self_Relationship 99=Any_Type`'`}
 `{`$enum_font_size`=`'0=default 1=large 2=larger 6=small 7=smaller`'`}
 `{`$enum_fraction_limit`=`'0=none 2=halves 4=quarters`'`}
@@ -2266,7 +2266,7 @@
 `{`$specification_Package_Option_view_extra`=`'`'`}
 `{`$specification_Package_Option_view_mods`=`'`'`}
 `{`$specification_Package_Option_view_binfo`=`'`'`}
-`{`$specification_Package_Option_view_fnums`=`'00 01 02 03 04 05`'`}
+`{`$specification_Package_Option_view_fnums`=`'00 01 02 03 04 05 06 07 08 09 10 11`'`}
 `{`$specification_Package_Option_view_field00`=`'302820`'`}
 `{`$specification_Package_Option_view_ftype00`=`'@class`'`}
 `{`$specification_Package_Option_view_extra00`=`'no_edit+link+max_size=30`'`}
@@ -2285,37 +2285,73 @@
 `{`$specification_Package_Option_view_fmods01`=`'`'`}
 `{`$specification_Package_Option_view_fname01`=`'field_package_option_name`'`}
 `{`$specification_Package_Option_view_fmand01`=`'true`'`}
-`{`$specification_Package_Option_view_field02`=`'137102`'`}
-`{`$specification_Package_Option_view_ftype02`=`'bool`'`}
+`{`$specification_Package_Option_view_field02`=`'137109`'`}
+`{`$specification_Package_Option_view_ftype02`=`'string`'`}
 `{`$specification_Package_Option_view_extra02`=`'`'`}
-`{`$specification_Package_Option_view_fmods02`=`'200:relegate`'`}
-`{`$specification_Package_Option_view_fname02`=`'field_package_option_use_option`'`}
-`{`$specification_Package_Option_view_fmand02`=`'true`'`}
-`{`$specification_Package_Option_view_field03`=`'302830`'`}
-`{`$specification_Package_Option_view_ftype03`=`'@class`'`}
+`{`$specification_Package_Option_view_fmods02`=`'4000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname02`=`'field_package_option_string`'`}
+`{`$specification_Package_Option_view_fmand02`=`'false`'`}
+`{`$specification_Package_Option_view_field03`=`'137110`'`}
+`{`$specification_Package_Option_view_ftype03`=`'string`'`}
 `{`$specification_Package_Option_view_extra03`=`'`'`}
-`{`$specification_Package_Option_view_fmods03`=`'100:relegate`'`}
-`{`$specification_Package_Option_view_fname03`=`'field_package_option_other_package`'`}
+`{`$specification_Package_Option_view_fmods03`=`'4000:relegate,8000:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname03`=`'field_package_option_datetime`'`}
 `{`$specification_Package_Option_view_fmand03`=`'false`'`}
-`{`$specification_Package_Option_view_prcls03`=`'136100`'`}
-`{`$specification_Package_Option_view_prcnm03`=`'Package`'`}
-`{`$specification_Package_Option_view_prfld03`=`'136101`'`}
-`{`$specification_Package_Option_view_prfnm03`=`'Name`'`}
-`{`$specification_Package_Option_view_prxtr03`=`'@fkey1:302800+@key1:302810`'`}
-`{`$specification_Package_Option_view_pridx03`=`'false`'`}
-`{`$specification_Package_Option_view_field04`=`'302825`'`}
-`{`$specification_Package_Option_view_ftype04`=`'@class`'`}
-`{`$specification_Package_Option_view_extra04`=`'hidden+fkey1`'`}
-`{`$specification_Package_Option_view_fmods04`=`'`'`}
-`{`$specification_Package_Option_view_fname04`=`'field_package_option_model`'`}
-`{`$specification_Package_Option_view_fmand04`=`'true`'`}
-`{`$specification_Package_Option_view_prcls04`=`'105100`'`}
-`{`$specification_Package_Option_view_field05`=`'137106`'`}
+`{`$specification_Package_Option_view_field04`=`'137111`'`}
+`{`$specification_Package_Option_view_ftype04`=`'string`'`}
+`{`$specification_Package_Option_view_extra04`=`'`'`}
+`{`$specification_Package_Option_view_fmods04`=`'4000:relegate,8000:relegate,400:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname04`=`'field_package_option_date`'`}
+`{`$specification_Package_Option_view_fmand04`=`'false`'`}
+`{`$specification_Package_Option_view_field05`=`'137112`'`}
 `{`$specification_Package_Option_view_ftype05`=`'string`'`}
-`{`$specification_Package_Option_view_extra05`=`'hidden+key1`'`}
-`{`$specification_Package_Option_view_fmods05`=`'`'`}
-`{`$specification_Package_Option_view_fname05`=`'field_package_option_other_package_type`'`}
+`{`$specification_Package_Option_view_extra05`=`'`'`}
+`{`$specification_Package_Option_view_fmods05`=`'4000:relegate,8000:relegate,400:relegate,200:relegate,2000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname05`=`'field_package_option_time`'`}
 `{`$specification_Package_Option_view_fmand05`=`'false`'`}
+`{`$specification_Package_Option_view_field06`=`'137113`'`}
+`{`$specification_Package_Option_view_ftype06`=`'string`'`}
+`{`$specification_Package_Option_view_extra06`=`'`'`}
+`{`$specification_Package_Option_view_fmods06`=`'4000:relegate,8000:relegate,200:relegate,10000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname06`=`'field_package_option_numeric`'`}
+`{`$specification_Package_Option_view_fmand06`=`'false`'`}
+`{`$specification_Package_Option_view_field07`=`'137114`'`}
+`{`$specification_Package_Option_view_ftype07`=`'int`'`}
+`{`$specification_Package_Option_view_extra07`=`'`'`}
+`{`$specification_Package_Option_view_fmods07`=`'4000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname07`=`'field_package_option_integer`'`}
+`{`$specification_Package_Option_view_fmand07`=`'true`'`}
+`{`$specification_Package_Option_view_field08`=`'137102`'`}
+`{`$specification_Package_Option_view_ftype08`=`'bool`'`}
+`{`$specification_Package_Option_view_extra08`=`'`'`}
+`{`$specification_Package_Option_view_fmods08`=`'4000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate`'`}
+`{`$specification_Package_Option_view_fname08`=`'field_package_option_use_option`'`}
+`{`$specification_Package_Option_view_fmand08`=`'true`'`}
+`{`$specification_Package_Option_view_field09`=`'302830`'`}
+`{`$specification_Package_Option_view_ftype09`=`'@class`'`}
+`{`$specification_Package_Option_view_extra09`=`'`'`}
+`{`$specification_Package_Option_view_fmods09`=`'1000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fname09`=`'field_package_option_other_package`'`}
+`{`$specification_Package_Option_view_fmand09`=`'false`'`}
+`{`$specification_Package_Option_view_prcls09`=`'136100`'`}
+`{`$specification_Package_Option_view_prcnm09`=`'Package`'`}
+`{`$specification_Package_Option_view_prfld09`=`'136101`'`}
+`{`$specification_Package_Option_view_prfnm09`=`'Name`'`}
+`{`$specification_Package_Option_view_prxtr09`=`'@fkey1:302800+@key1:302810`'`}
+`{`$specification_Package_Option_view_pridx09`=`'false`'`}
+`{`$specification_Package_Option_view_field10`=`'302825`'`}
+`{`$specification_Package_Option_view_ftype10`=`'@class`'`}
+`{`$specification_Package_Option_view_extra10`=`'hidden+fkey1`'`}
+`{`$specification_Package_Option_view_fmods10`=`'`'`}
+`{`$specification_Package_Option_view_fname10`=`'field_package_option_model`'`}
+`{`$specification_Package_Option_view_fmand10`=`'true`'`}
+`{`$specification_Package_Option_view_prcls10`=`'105100`'`}
+`{`$specification_Package_Option_view_field11`=`'137106`'`}
+`{`$specification_Package_Option_view_ftype11`=`'string`'`}
+`{`$specification_Package_Option_view_extra11`=`'hidden+key1`'`}
+`{`$specification_Package_Option_view_fmods11`=`'`'`}
+`{`$specification_Package_Option_view_fname11`=`'field_package_option_other_package_type`'`}
+`{`$specification_Package_Option_view_fmand11`=`'false`'`}
 `{`}
 `{`$specification_Package_Type_File_id`=`'600803`'`}
 `{`$specification_Package_Type_File_field`=`'File`'`}

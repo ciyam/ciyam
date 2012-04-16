@@ -82,40 +82,61 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Date = "137111";
+const char* const c_field_id_Datetime = "137110";
 const char* const c_field_id_Installed = "137103";
+const char* const c_field_id_Integer = "137114";
 const char* const c_field_id_Is_Other_Package = "137104";
 const char* const c_field_id_Model = "302825";
 const char* const c_field_id_Name = "137101";
+const char* const c_field_id_Numeric = "137113";
 const char* const c_field_id_Other_Package = "302830";
 const char* const c_field_id_Other_Package_Required = "137105";
 const char* const c_field_id_Other_Package_Type = "137106";
 const char* const c_field_id_Package = "302820";
+const char* const c_field_id_Primitive = "137108";
+const char* const c_field_id_String = "137109";
+const char* const c_field_id_Time = "137112";
 const char* const c_field_id_Use_Option = "137102";
 const char* const c_field_id_Value = "137107";
 
+const char* const c_field_name_Date = "Date";
+const char* const c_field_name_Datetime = "Datetime";
 const char* const c_field_name_Installed = "Installed";
+const char* const c_field_name_Integer = "Integer";
 const char* const c_field_name_Is_Other_Package = "Is_Other_Package";
 const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Name = "Name";
+const char* const c_field_name_Numeric = "Numeric";
 const char* const c_field_name_Other_Package = "Other_Package";
 const char* const c_field_name_Other_Package_Required = "Other_Package_Required";
 const char* const c_field_name_Other_Package_Type = "Other_Package_Type";
 const char* const c_field_name_Package = "Package";
+const char* const c_field_name_Primitive = "Primitive";
+const char* const c_field_name_String = "String";
+const char* const c_field_name_Time = "Time";
 const char* const c_field_name_Use_Option = "Use_Option";
 const char* const c_field_name_Value = "Value";
 
+const char* const c_field_display_name_Date = "field_package_option_date";
+const char* const c_field_display_name_Datetime = "field_package_option_datetime";
 const char* const c_field_display_name_Installed = "field_package_option_installed";
+const char* const c_field_display_name_Integer = "field_package_option_integer";
 const char* const c_field_display_name_Is_Other_Package = "field_package_option_is_other_package";
 const char* const c_field_display_name_Model = "field_package_option_model";
 const char* const c_field_display_name_Name = "field_package_option_name";
+const char* const c_field_display_name_Numeric = "field_package_option_numeric";
 const char* const c_field_display_name_Other_Package = "field_package_option_other_package";
 const char* const c_field_display_name_Other_Package_Required = "field_package_option_other_package_required";
 const char* const c_field_display_name_Other_Package_Type = "field_package_option_other_package_type";
 const char* const c_field_display_name_Package = "field_package_option_package";
+const char* const c_field_display_name_Primitive = "field_package_option_primitive";
+const char* const c_field_display_name_String = "field_package_option_string";
+const char* const c_field_display_name_Time = "field_package_option_time";
 const char* const c_field_display_name_Use_Option = "field_package_option_use_option";
 const char* const c_field_display_name_Value = "field_package_option_value";
 
-const int c_num_fields = 10;
+const int c_num_fields = 17;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -126,6 +147,13 @@ const char* const c_all_sorted_field_ids[ ] =
    "137105",
    "137106",
    "137107",
+   "137108",
+   "137109",
+   "137110",
+   "137111",
+   "137112",
+   "137113",
+   "137114",
    "302820",
    "302825",
    "302830"
@@ -133,14 +161,21 @@ const char* const c_all_sorted_field_ids[ ] =
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Date",
+   "Datetime",
    "Installed",
+   "Integer",
    "Is_Other_Package",
    "Model",
    "Name",
+   "Numeric",
    "Other_Package",
    "Other_Package_Required",
    "Other_Package_Type",
    "Package",
+   "Primitive",
+   "String",
+   "Time",
    "Use_Option",
    "Value"
 };
@@ -175,8 +210,15 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
 }
 
-const uint64_t c_modifier_Is_Not_Other_Package_Option = UINT64_C( 0x100 );
-const uint64_t c_modifier_Is_Other_Package_Option = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Bool = UINT64_C( 0x100 );
+const uint64_t c_modifier_Is_Date = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Datetime = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Int = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Not_Other_Package_Option = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Is_Numeric = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Other_Package_Option = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_String = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Is_Time = UINT64_C( 0x10000 );
 
 domain_string_max_size< 100 > g_Name_domain;
 
@@ -192,13 +234,56 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Date = string( );
+string gv_default_Datetime = string( );
 bool gv_default_Installed = bool( 0 );
+int gv_default_Integer = int( 0 );
 bool gv_default_Is_Other_Package = bool( 0 );
 string gv_default_Name = string( );
+string gv_default_Numeric = string( );
 bool gv_default_Other_Package_Required = bool( 0 );
 string gv_default_Other_Package_Type = string( );
+int gv_default_Primitive = int( 6 );
+string gv_default_String = string( );
+string gv_default_Time = string( );
 bool gv_default_Use_Option = bool( 0 );
 string gv_default_Value = string( );
+
+set< int > g_primitive_enum;
+
+const int c_enum_primitive_string( 0 );
+const int c_enum_primitive_datetime( 1 );
+const int c_enum_primitive_date( 2 );
+const int c_enum_primitive_time( 3 );
+const int c_enum_primitive_numeric( 4 );
+const int c_enum_primitive_int( 5 );
+const int c_enum_primitive_bool( 6 );
+
+string get_enum_string_primitive( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for primitive" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_primitive_string";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_primitive_datetime";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_primitive_date";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_primitive_time";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_primitive_numeric";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_primitive_int";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_primitive_bool";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for primitive" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -279,14 +364,22 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Date || field_name == c_field_name_Date )
+         string_getter< string >( cmd_handler.p_Meta_Package_Option->Date( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Datetime || field_name == c_field_name_Datetime )
+         string_getter< string >( cmd_handler.p_Meta_Package_Option->Datetime( ), cmd_handler.retval );
       else if( field_name == c_field_id_Installed || field_name == c_field_name_Installed )
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Installed( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Integer || field_name == c_field_name_Integer )
+         string_getter< int >( cmd_handler.p_Meta_Package_Option->Integer( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Other_Package || field_name == c_field_name_Is_Other_Package )
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Is_Other_Package( ), cmd_handler.retval );
       else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
          string_getter< Meta_Model >( cmd_handler.p_Meta_Package_Option->Model( ), cmd_handler.retval );
       else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Numeric || field_name == c_field_name_Numeric )
+         string_getter< string >( cmd_handler.p_Meta_Package_Option->Numeric( ), cmd_handler.retval );
       else if( field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
          string_getter< Meta_Package >( cmd_handler.p_Meta_Package_Option->Other_Package( ), cmd_handler.retval );
       else if( field_name == c_field_id_Other_Package_Required || field_name == c_field_name_Other_Package_Required )
@@ -295,6 +388,12 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Other_Package_Type( ), cmd_handler.retval );
       else if( field_name == c_field_id_Package || field_name == c_field_name_Package )
          string_getter< Meta_Package >( cmd_handler.p_Meta_Package_Option->Package( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+         string_getter< int >( cmd_handler.p_Meta_Package_Option->Primitive( ), cmd_handler.retval );
+      else if( field_name == c_field_id_String || field_name == c_field_name_String )
+         string_getter< string >( cmd_handler.p_Meta_Package_Option->String( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Time || field_name == c_field_name_Time )
+         string_getter< string >( cmd_handler.p_Meta_Package_Option->Time( ), cmd_handler.retval );
       else if( field_name == c_field_id_Use_Option || field_name == c_field_name_Use_Option )
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Use_Option( ), cmd_handler.retval );
       else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
@@ -309,9 +408,18 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Date || field_name == c_field_name_Date )
+         func_string_setter< Meta_Package_Option, string >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Date, field_value );
+      else if( field_name == c_field_id_Datetime || field_name == c_field_name_Datetime )
+         func_string_setter< Meta_Package_Option, string >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Datetime, field_value );
       else if( field_name == c_field_id_Installed || field_name == c_field_name_Installed )
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Installed, field_value );
+      else if( field_name == c_field_id_Integer || field_name == c_field_name_Integer )
+         func_string_setter< Meta_Package_Option, int >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Integer, field_value );
       else if( field_name == c_field_id_Is_Other_Package || field_name == c_field_name_Is_Other_Package )
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Is_Other_Package, field_value );
@@ -321,6 +429,9 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
       else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Name, field_value );
+      else if( field_name == c_field_id_Numeric || field_name == c_field_name_Numeric )
+         func_string_setter< Meta_Package_Option, string >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Numeric, field_value );
       else if( field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
          func_string_setter< Meta_Package_Option, Meta_Package >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Other_Package, field_value );
@@ -333,6 +444,15 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
       else if( field_name == c_field_id_Package || field_name == c_field_name_Package )
          func_string_setter< Meta_Package_Option, Meta_Package >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Package, field_value );
+      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+         func_string_setter< Meta_Package_Option, int >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Primitive, field_value );
+      else if( field_name == c_field_id_String || field_name == c_field_name_String )
+         func_string_setter< Meta_Package_Option, string >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::String, field_value );
+      else if( field_name == c_field_id_Time || field_name == c_field_name_Time )
+         func_string_setter< Meta_Package_Option, string >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Time, field_value );
       else if( field_name == c_field_id_Use_Option || field_name == c_field_name_Use_Option )
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Use_Option, field_value );
@@ -383,8 +503,17 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
       return *cp_obj;
    }
 
+   const string& impl_Date( ) const { return lazy_fetch( p_obj ), v_Date; }
+   void impl_Date( const string& Date ) { v_Date = Date; }
+
+   const string& impl_Datetime( ) const { return lazy_fetch( p_obj ), v_Datetime; }
+   void impl_Datetime( const string& Datetime ) { v_Datetime = Datetime; }
+
    bool impl_Installed( ) const { return lazy_fetch( p_obj ), v_Installed; }
    void impl_Installed( bool Installed ) { v_Installed = Installed; }
+
+   int impl_Integer( ) const { return lazy_fetch( p_obj ), v_Integer; }
+   void impl_Integer( int Integer ) { v_Integer = Integer; }
 
    bool impl_Is_Other_Package( ) const { return lazy_fetch( p_obj ), v_Is_Other_Package; }
    void impl_Is_Other_Package( bool Is_Other_Package ) { v_Is_Other_Package = Is_Other_Package; }
@@ -392,11 +521,23 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
    void impl_Name( const string& Name ) { v_Name = Name; }
 
+   const string& impl_Numeric( ) const { return lazy_fetch( p_obj ), v_Numeric; }
+   void impl_Numeric( const string& Numeric ) { v_Numeric = Numeric; }
+
    bool impl_Other_Package_Required( ) const { return lazy_fetch( p_obj ), v_Other_Package_Required; }
    void impl_Other_Package_Required( bool Other_Package_Required ) { v_Other_Package_Required = Other_Package_Required; }
 
    const string& impl_Other_Package_Type( ) const { return lazy_fetch( p_obj ), v_Other_Package_Type; }
    void impl_Other_Package_Type( const string& Other_Package_Type ) { v_Other_Package_Type = Other_Package_Type; }
+
+   int impl_Primitive( ) const { return lazy_fetch( p_obj ), v_Primitive; }
+   void impl_Primitive( int Primitive ) { v_Primitive = Primitive; }
+
+   const string& impl_String( ) const { return lazy_fetch( p_obj ), v_String; }
+   void impl_String( const string& String ) { v_String = String; }
+
+   const string& impl_Time( ) const { return lazy_fetch( p_obj ), v_Time; }
+   void impl_Time( const string& Time ) { v_Time = Time; }
 
    bool impl_Use_Option( ) const { return lazy_fetch( p_obj ), v_Use_Option; }
    void impl_Use_Option( bool Use_Option ) { v_Use_Option = Use_Option; }
@@ -540,11 +681,18 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 
    size_t total_child_relationships;
 
+   string v_Date;
+   string v_Datetime;
    bool v_Installed;
+   int v_Integer;
    bool v_Is_Other_Package;
    string v_Name;
+   string v_Numeric;
    bool v_Other_Package_Required;
    string v_Other_Package_Type;
+   int v_Primitive;
+   string v_String;
+   string v_Time;
    bool v_Use_Option;
    string v_Value;
 
@@ -565,42 +713,70 @@ string Meta_Package_Option::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Installed( ) );
+      retval = to_string( impl_Date( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Is_Other_Package( ) );
+      retval = to_string( impl_Datetime( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Installed( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Integer( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Other_Package( ) );
+      retval = to_string( impl_Is_Other_Package( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Other_Package_Required( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Other_Package_Type( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Package( ) );
+      retval = to_string( impl_Numeric( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Use_Option( ) );
+      retval = to_string( impl_Other_Package( ) );
       break;
 
       case 9:
+      retval = to_string( impl_Other_Package_Required( ) );
+      break;
+
+      case 10:
+      retval = to_string( impl_Other_Package_Type( ) );
+      break;
+
+      case 11:
+      retval = to_string( impl_Package( ) );
+      break;
+
+      case 12:
+      retval = to_string( impl_Primitive( ) );
+      break;
+
+      case 13:
+      retval = to_string( impl_String( ) );
+      break;
+
+      case 14:
+      retval = to_string( impl_Time( ) );
+      break;
+
+      case 15:
+      retval = to_string( impl_Use_Option( ) );
+      break;
+
+      case 16:
       retval = to_string( impl_Value( ) );
       break;
 
@@ -616,42 +792,70 @@ void Meta_Package_Option::impl::set_field_value( int field, const string& value 
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Installed, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Date, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Other_Package, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Datetime, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Package_Option::impl, Meta_Model >( *this, &Meta_Package_Option::impl::impl_Model, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Installed, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Name, value );
+      func_string_setter< Meta_Package_Option::impl, int >( *this, &Meta_Package_Option::impl::impl_Integer, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Other_Package, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Other_Package, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Other_Package_Required, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Model >( *this, &Meta_Package_Option::impl::impl_Model, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Other_Package_Type, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Name, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Package, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Numeric, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Use_Option, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Other_Package, value );
       break;
 
       case 9:
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Other_Package_Required, value );
+      break;
+
+      case 10:
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Other_Package_Type, value );
+      break;
+
+      case 11:
+      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Package, value );
+      break;
+
+      case 12:
+      func_string_setter< Meta_Package_Option::impl, int >( *this, &Meta_Package_Option::impl::impl_Primitive, value );
+      break;
+
+      case 13:
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_String, value );
+      break;
+
+      case 14:
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Time, value );
+      break;
+
+      case 15:
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Use_Option, value );
+      break;
+
+      case 16:
       func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Value, value );
       break;
 
@@ -677,6 +881,41 @@ uint64_t Meta_Package_Option::impl::get_state( ) const
    // [(start modifier_field_value)]
    if( get_obj( ).Is_Other_Package( ) == false )
       state |= c_modifier_Is_Not_Other_Package_Option;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 0 ) // i.e. string
+      state |= c_modifier_Is_String;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 1 ) // i.e. datetime
+      state |= c_modifier_Is_Datetime;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 2 ) // i.e. date
+      state |= c_modifier_Is_Date;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 3 ) // i.e. time
+      state |= c_modifier_Is_Time;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 4 ) // i.e. numeric
+      state |= c_modifier_Is_Numeric;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 5 ) // i.e. int
+      state |= c_modifier_Is_Int;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Primitive( ) == 6 ) // i.e. bool
+      state |= c_modifier_Is_Bool;
    // [(finish modifier_field_value)]
 
    // [<start get_state>]
@@ -742,11 +981,18 @@ void Meta_Package_Option::impl::get_foreign_key_values( foreign_key_data_contain
 
 void Meta_Package_Option::impl::clear( )
 {
+   v_Date = gv_default_Date;
+   v_Datetime = gv_default_Datetime;
    v_Installed = gv_default_Installed;
+   v_Integer = gv_default_Integer;
    v_Is_Other_Package = gv_default_Is_Other_Package;
    v_Name = gv_default_Name;
+   v_Numeric = gv_default_Numeric;
    v_Other_Package_Required = gv_default_Other_Package_Required;
    v_Other_Package_Type = gv_default_Other_Package_Type;
+   v_Primitive = gv_default_Primitive;
+   v_String = gv_default_String;
+   v_Time = gv_default_Time;
    v_Use_Option = gv_default_Use_Option;
    v_Value = gv_default_Value;
 
@@ -804,6 +1050,11 @@ void Meta_Package_Option::impl::validate( unsigned state, bool is_internal, vali
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
+   if( !g_primitive_enum.count( v_Primitive ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Primitive,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Primitive ) ) ) ) );
+
    // [<start validate>]
    // [<finish validate>]
 }
@@ -827,10 +1078,43 @@ void Meta_Package_Option::impl::after_fetch( )
 //idk
    if( !get_obj( ).Is_Other_Package( ) )
    {
-      if( get_obj( ).Use_Option( ) )
-         get_obj( ).Value( "yes" );
-      else
-         get_obj( ).Value( "---" );
+      switch( get_obj( ).Primitive( ) )
+      {
+         case e_primitive_string:
+         get_obj( ).Value( get_obj( ).String( ) );
+         break;
+
+         case e_primitive_datetime:
+         get_obj( ).Value( to_string( get_obj( ).Datetime( ) ) );
+         break;
+
+         case e_primitive_date:
+         get_obj( ).Value( to_string( get_obj( ).Date( ) ) );
+         break;
+
+         case e_primitive_time:
+         get_obj( ).Value( to_string( get_obj( ).Time( ) ) );
+         break;
+
+         case e_primitive_numeric:
+         get_obj( ).Value( to_string( get_obj( ).Numeric( ) ) );
+         break;
+
+         case e_primitive_int:
+         get_obj( ).Value( to_string( get_obj( ).Integer( ) ) );
+         break;
+
+         case e_primitive_bool:
+         if( get_obj( ).Use_Option( ) )
+            get_obj( ).Value( "yes" );
+         else
+            get_obj( ).Value( "---" );
+         break;
+
+         default:
+         throw runtime_error( "unexpected primitive value #"
+          + to_string( get_obj( ).Primitive( ) ) + "in Meta_Package_Option::after_fetch" );
+      }
    }
    else
       get_obj( ).Value( get_obj( ).Other_Package( ).Name( ) );
@@ -946,6 +1230,26 @@ Meta_Package_Option::~Meta_Package_Option( )
    delete p_impl;
 }
 
+const string& Meta_Package_Option::Date( ) const
+{
+   return p_impl->impl_Date( );
+}
+
+void Meta_Package_Option::Date( const string& Date )
+{
+   p_impl->impl_Date( Date );
+}
+
+const string& Meta_Package_Option::Datetime( ) const
+{
+   return p_impl->impl_Datetime( );
+}
+
+void Meta_Package_Option::Datetime( const string& Datetime )
+{
+   p_impl->impl_Datetime( Datetime );
+}
+
 bool Meta_Package_Option::Installed( ) const
 {
    return p_impl->impl_Installed( );
@@ -954,6 +1258,16 @@ bool Meta_Package_Option::Installed( ) const
 void Meta_Package_Option::Installed( bool Installed )
 {
    p_impl->impl_Installed( Installed );
+}
+
+int Meta_Package_Option::Integer( ) const
+{
+   return p_impl->impl_Integer( );
+}
+
+void Meta_Package_Option::Integer( int Integer )
+{
+   p_impl->impl_Integer( Integer );
 }
 
 bool Meta_Package_Option::Is_Other_Package( ) const
@@ -976,6 +1290,16 @@ void Meta_Package_Option::Name( const string& Name )
    p_impl->impl_Name( Name );
 }
 
+const string& Meta_Package_Option::Numeric( ) const
+{
+   return p_impl->impl_Numeric( );
+}
+
+void Meta_Package_Option::Numeric( const string& Numeric )
+{
+   p_impl->impl_Numeric( Numeric );
+}
+
 bool Meta_Package_Option::Other_Package_Required( ) const
 {
    return p_impl->impl_Other_Package_Required( );
@@ -994,6 +1318,36 @@ const string& Meta_Package_Option::Other_Package_Type( ) const
 void Meta_Package_Option::Other_Package_Type( const string& Other_Package_Type )
 {
    p_impl->impl_Other_Package_Type( Other_Package_Type );
+}
+
+int Meta_Package_Option::Primitive( ) const
+{
+   return p_impl->impl_Primitive( );
+}
+
+void Meta_Package_Option::Primitive( int Primitive )
+{
+   p_impl->impl_Primitive( Primitive );
+}
+
+const string& Meta_Package_Option::String( ) const
+{
+   return p_impl->impl_String( );
+}
+
+void Meta_Package_Option::String( const string& String )
+{
+   p_impl->impl_String( String );
+}
+
+const string& Meta_Package_Option::Time( ) const
+{
+   return p_impl->impl_Time( );
+}
+
+void Meta_Package_Option::Time( const string& Time )
+{
+   p_impl->impl_Time( Time );
 }
 
 bool Meta_Package_Option::Use_Option( ) const
@@ -1182,12 +1536,42 @@ const char* Meta_Package_Option::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Date )
+   {
+      p_id = c_field_id_Date;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Datetime )
+   {
+      p_id = c_field_id_Datetime;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Installed )
    {
       p_id = c_field_id_Installed;
 
       if( p_type_name )
          *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Integer )
+   {
+      p_id = c_field_id_Integer;
+
+      if( p_type_name )
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -1215,6 +1599,16 @@ const char* Meta_Package_Option::get_field_id(
    else if( name == c_field_name_Name )
    {
       p_id = c_field_id_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Numeric )
+   {
+      p_id = c_field_id_Numeric;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1262,6 +1656,36 @@ const char* Meta_Package_Option::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Primitive )
+   {
+      p_id = c_field_id_Primitive;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_String )
+   {
+      p_id = c_field_id_String;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Time )
+   {
+      p_id = c_field_id_Time;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Use_Option )
    {
       p_id = c_field_id_Use_Option;
@@ -1293,12 +1717,42 @@ const char* Meta_Package_Option::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Date )
+   {
+      p_name = c_field_name_Date;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Datetime )
+   {
+      p_name = c_field_name_Datetime;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Installed )
    {
       p_name = c_field_name_Installed;
 
       if( p_type_name )
          *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Integer )
+   {
+      p_name = c_field_name_Integer;
+
+      if( p_type_name )
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -1326,6 +1780,16 @@ const char* Meta_Package_Option::get_field_name(
    else if( id == c_field_id_Name )
    {
       p_name = c_field_name_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Numeric )
+   {
+      p_name = c_field_name_Numeric;
 
       if( p_type_name )
          *p_type_name = "string";
@@ -1373,6 +1837,36 @@ const char* Meta_Package_Option::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Primitive )
+   {
+      p_name = c_field_name_Primitive;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_String )
+   {
+      p_name = c_field_name_String;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Time )
+   {
+      p_name = c_field_name_Time;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Use_Option )
    {
       p_name = c_field_name_Use_Option;
@@ -1403,14 +1897,22 @@ string Meta_Package_Option::get_field_display_name( const string& id ) const
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_display_name" );
+   else if( id == c_field_id_Date )
+      display_name = get_module_string( c_field_display_name_Date );
+   else if( id == c_field_id_Datetime )
+      display_name = get_module_string( c_field_display_name_Datetime );
    else if( id == c_field_id_Installed )
       display_name = get_module_string( c_field_display_name_Installed );
+   else if( id == c_field_id_Integer )
+      display_name = get_module_string( c_field_display_name_Integer );
    else if( id == c_field_id_Is_Other_Package )
       display_name = get_module_string( c_field_display_name_Is_Other_Package );
    else if( id == c_field_id_Model )
       display_name = get_module_string( c_field_display_name_Model );
    else if( id == c_field_id_Name )
       display_name = get_module_string( c_field_display_name_Name );
+   else if( id == c_field_id_Numeric )
+      display_name = get_module_string( c_field_display_name_Numeric );
    else if( id == c_field_id_Other_Package )
       display_name = get_module_string( c_field_display_name_Other_Package );
    else if( id == c_field_id_Other_Package_Required )
@@ -1419,6 +1921,12 @@ string Meta_Package_Option::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Other_Package_Type );
    else if( id == c_field_id_Package )
       display_name = get_module_string( c_field_display_name_Package );
+   else if( id == c_field_id_Primitive )
+      display_name = get_module_string( c_field_display_name_Primitive );
+   else if( id == c_field_id_String )
+      display_name = get_module_string( c_field_display_name_String );
+   else if( id == c_field_id_Time )
+      display_name = get_module_string( c_field_display_name_Time );
    else if( id == c_field_id_Use_Option )
       display_name = get_module_string( c_field_display_name_Use_Option );
    else if( id == c_field_id_Value )
@@ -1602,14 +2110,21 @@ void Meta_Package_Option::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Date" );
+   names.push_back( "C_Datetime" );
    names.push_back( "C_Installed" );
+   names.push_back( "C_Integer" );
    names.push_back( "C_Is_Other_Package" );
    names.push_back( "C_Model" );
    names.push_back( "C_Name" );
+   names.push_back( "C_Numeric" );
    names.push_back( "C_Other_Package" );
    names.push_back( "C_Other_Package_Required" );
    names.push_back( "C_Other_Package_Type" );
    names.push_back( "C_Package" );
+   names.push_back( "C_Primitive" );
+   names.push_back( "C_String" );
+   names.push_back( "C_Time" );
    names.push_back( "C_Use_Option" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -1622,14 +2137,21 @@ void Meta_Package_Option::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( sql_quote( to_string( Date( ) ) ) );
+   values.push_back( sql_quote( to_string( Datetime( ) ) ) );
    values.push_back( to_string( Installed( ) ) );
+   values.push_back( to_string( Integer( ) ) );
    values.push_back( to_string( Is_Other_Package( ) ) );
    values.push_back( sql_quote( to_string( Model( ) ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
+   values.push_back( sql_quote( to_string( Numeric( ) ) ) );
    values.push_back( sql_quote( to_string( Other_Package( ) ) ) );
    values.push_back( to_string( Other_Package_Required( ) ) );
    values.push_back( sql_quote( to_string( Other_Package_Type( ) ) ) );
    values.push_back( sql_quote( to_string( Package( ) ) ) );
+   values.push_back( to_string( Primitive( ) ) );
+   values.push_back( sql_quote( to_string( String( ) ) ) );
+   values.push_back( sql_quote( to_string( Time( ) ) ) );
    values.push_back( to_string( Use_Option( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -1663,6 +2185,60 @@ void Meta_Package_Option::get_required_field_names(
        || ( !required_transients && !is_field_transient( e_field_id_Other_Package ) ) )
          names.insert( "Other_Package" );
    }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
+      dependents.insert( "Primitive" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+         names.insert( "Primitive" );
+   }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
+      dependents.insert( "Datetime" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Datetime ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Datetime ) ) )
+         names.insert( "Datetime" );
+   }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
+      dependents.insert( "Date" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Date ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Date ) ) )
+         names.insert( "Date" );
+   }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
+      dependents.insert( "Time" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Time ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Time ) ) )
+         names.insert( "Time" );
+   }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
+      dependents.insert( "Numeric" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Numeric ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Numeric ) ) )
+         names.insert( "Numeric" );
+   }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
+      dependents.insert( "Integer" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Integer ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Integer ) ) )
+         names.insert( "Integer" );
+   }
    // [<finish get_required_field_names>]
 }
 
@@ -1695,6 +2271,62 @@ void Meta_Package_Option::get_always_required_field_names(
    if( ( required_transients && is_field_transient( e_field_id_Is_Other_Package ) )
     || ( !required_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
       names.insert( "Is_Other_Package" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_String modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_Datetime modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_Date modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_Time modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_Numeric modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_Int modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Primitive" ); // (for Is_Bool modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [<start get_always_required_field_names>]
@@ -1747,14 +2379,21 @@ void Meta_Package_Option::static_get_class_info( class_info_container& class_inf
 
 void Meta_Package_Option::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "137111", "Date", "string", false ) );
+   all_field_info.push_back( field_info( "137110", "Datetime", "string", false ) );
    all_field_info.push_back( field_info( "137103", "Installed", "bool", false ) );
+   all_field_info.push_back( field_info( "137114", "Integer", "int", false ) );
    all_field_info.push_back( field_info( "137104", "Is_Other_Package", "bool", false ) );
    all_field_info.push_back( field_info( "302825", "Model", "Meta_Model", true ) );
    all_field_info.push_back( field_info( "137101", "Name", "string", false ) );
+   all_field_info.push_back( field_info( "137113", "Numeric", "string", false ) );
    all_field_info.push_back( field_info( "302830", "Other_Package", "Meta_Package", false ) );
    all_field_info.push_back( field_info( "137105", "Other_Package_Required", "bool", false ) );
    all_field_info.push_back( field_info( "137106", "Other_Package_Type", "string", false ) );
    all_field_info.push_back( field_info( "302820", "Package", "Meta_Package", true ) );
+   all_field_info.push_back( field_info( "137108", "Primitive", "int", false ) );
+   all_field_info.push_back( field_info( "137109", "String", "string", false ) );
+   all_field_info.push_back( field_info( "137112", "Time", "string", false ) );
    all_field_info.push_back( field_info( "137102", "Use_Option", "bool", false ) );
    all_field_info.push_back( field_info( "137107", "Value", "string", false ) );
 }
@@ -1788,42 +2427,70 @@ const char* Meta_Package_Option::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "137103";
+      p_id = "137111";
       break;
 
       case 2:
-      p_id = "137104";
+      p_id = "137110";
       break;
 
       case 3:
-      p_id = "302825";
+      p_id = "137103";
       break;
 
       case 4:
-      p_id = "137101";
+      p_id = "137114";
       break;
 
       case 5:
-      p_id = "302830";
+      p_id = "137104";
       break;
 
       case 6:
-      p_id = "137105";
+      p_id = "302825";
       break;
 
       case 7:
-      p_id = "137106";
+      p_id = "137101";
       break;
 
       case 8:
-      p_id = "302820";
+      p_id = "137113";
       break;
 
       case 9:
-      p_id = "137102";
+      p_id = "302830";
       break;
 
       case 10:
+      p_id = "137105";
+      break;
+
+      case 11:
+      p_id = "137106";
+      break;
+
+      case 12:
+      p_id = "302820";
+      break;
+
+      case 13:
+      p_id = "137108";
+      break;
+
+      case 14:
+      p_id = "137109";
+      break;
+
+      case 15:
+      p_id = "137112";
+      break;
+
+      case 16:
+      p_id = "137102";
+      break;
+
+      case 17:
       p_id = "137107";
       break;
    }
@@ -1841,42 +2508,70 @@ const char* Meta_Package_Option::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Installed";
+      p_id = "Date";
       break;
 
       case 2:
-      p_id = "Is_Other_Package";
+      p_id = "Datetime";
       break;
 
       case 3:
-      p_id = "Model";
+      p_id = "Installed";
       break;
 
       case 4:
-      p_id = "Name";
+      p_id = "Integer";
       break;
 
       case 5:
-      p_id = "Other_Package";
+      p_id = "Is_Other_Package";
       break;
 
       case 6:
-      p_id = "Other_Package_Required";
+      p_id = "Model";
       break;
 
       case 7:
-      p_id = "Other_Package_Type";
+      p_id = "Name";
       break;
 
       case 8:
-      p_id = "Package";
+      p_id = "Numeric";
       break;
 
       case 9:
-      p_id = "Use_Option";
+      p_id = "Other_Package";
       break;
 
       case 10:
+      p_id = "Other_Package_Required";
+      break;
+
+      case 11:
+      p_id = "Other_Package_Type";
+      break;
+
+      case 12:
+      p_id = "Package";
+      break;
+
+      case 13:
+      p_id = "Primitive";
+      break;
+
+      case 14:
+      p_id = "String";
+      break;
+
+      case 15:
+      p_id = "Time";
+      break;
+
+      case 16:
+      p_id = "Use_Option";
+      break;
+
+      case 17:
       p_id = "Value";
       break;
    }
@@ -1893,26 +2588,40 @@ int Meta_Package_Option::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Installed || field == c_field_name_Installed )
+   else if( field == c_field_id_Date || field == c_field_name_Date )
       rc += 1;
-   else if( field == c_field_id_Is_Other_Package || field == c_field_name_Is_Other_Package )
+   else if( field == c_field_id_Datetime || field == c_field_name_Datetime )
       rc += 2;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Installed || field == c_field_name_Installed )
       rc += 3;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Integer || field == c_field_name_Integer )
       rc += 4;
-   else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
+   else if( field == c_field_id_Is_Other_Package || field == c_field_name_Is_Other_Package )
       rc += 5;
-   else if( field == c_field_id_Other_Package_Required || field == c_field_name_Other_Package_Required )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 6;
-   else if( field == c_field_id_Other_Package_Type || field == c_field_name_Other_Package_Type )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 7;
-   else if( field == c_field_id_Package || field == c_field_name_Package )
+   else if( field == c_field_id_Numeric || field == c_field_name_Numeric )
       rc += 8;
-   else if( field == c_field_id_Use_Option || field == c_field_name_Use_Option )
+   else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
       rc += 9;
-   else if( field == c_field_id_Value || field == c_field_name_Value )
+   else if( field == c_field_id_Other_Package_Required || field == c_field_name_Other_Package_Required )
       rc += 10;
+   else if( field == c_field_id_Other_Package_Type || field == c_field_name_Other_Package_Type )
+      rc += 11;
+   else if( field == c_field_id_Package || field == c_field_name_Package )
+      rc += 12;
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+      rc += 13;
+   else if( field == c_field_id_String || field == c_field_name_String )
+      rc += 14;
+   else if( field == c_field_id_Time || field == c_field_name_Time )
+      rc += 15;
+   else if( field == c_field_id_Use_Option || field == c_field_name_Use_Option )
+      rc += 16;
+   else if( field == c_field_id_Value || field == c_field_name_Value )
+      rc += 17;
 
    return rc - 1;
 }
@@ -1933,14 +2642,21 @@ string Meta_Package_Option::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Date VARCHAR(200) NOT NULL,"
+    "C_Datetime VARCHAR(200) NOT NULL,"
     "C_Installed INTEGER NOT NULL,"
+    "C_Integer INTEGER NOT NULL,"
     "C_Is_Other_Package INTEGER NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
+    "C_Numeric VARCHAR(200) NOT NULL,"
     "C_Other_Package VARCHAR(64) NOT NULL,"
     "C_Other_Package_Required INTEGER NOT NULL,"
     "C_Other_Package_Type VARCHAR(200) NOT NULL,"
     "C_Package VARCHAR(64) NOT NULL,"
+    "C_Primitive INTEGER NOT NULL,"
+    "C_String VARCHAR(200) NOT NULL,"
+    "C_Time VARCHAR(200) NOT NULL,"
     "C_Use_Option INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
@@ -1954,7 +2670,13 @@ void Meta_Package_Option::static_get_text_search_fields( vector< string >& field
 
 void Meta_Package_Option::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
-   ( void )pairs;
+   pairs.push_back( make_pair( "enum_primitive_0", get_enum_string_primitive( 0 ) ) );
+   pairs.push_back( make_pair( "enum_primitive_1", get_enum_string_primitive( 1 ) ) );
+   pairs.push_back( make_pair( "enum_primitive_2", get_enum_string_primitive( 2 ) ) );
+   pairs.push_back( make_pair( "enum_primitive_3", get_enum_string_primitive( 3 ) ) );
+   pairs.push_back( make_pair( "enum_primitive_4", get_enum_string_primitive( 4 ) ) );
+   pairs.push_back( make_pair( "enum_primitive_5", get_enum_string_primitive( 5 ) ) );
+   pairs.push_back( make_pair( "enum_primitive_6", get_enum_string_primitive( 6 ) ) );
 }
 
 void Meta_Package_Option::static_get_sql_indexes( vector< string >& indexes )
@@ -1996,6 +2718,14 @@ void Meta_Package_Option::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_primitive_enum.insert( 0 );
+   g_primitive_enum.insert( 1 );
+   g_primitive_enum.insert( 2 );
+   g_primitive_enum.insert( 3 );
+   g_primitive_enum.insert( 4 );
+   g_primitive_enum.insert( 5 );
+   g_primitive_enum.insert( 6 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

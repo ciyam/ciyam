@@ -13,8 +13,9 @@ Environment variables LIB and INCLUDE for VC++ will require additions for MySQL 
 
 The following are platform specific instructions for installing 3rd party libraries:
 
-NOTE: To make things easier for Windows developers some .lib and .dll files have been included (note
-that you will need to be using MVC 8 or higher).
+NOTE: To make things easier for Windows developers some .lib and .dll files have been included.
+
+Also note that you will need to be using MVC 8 or higher.
 
 
 MySQL

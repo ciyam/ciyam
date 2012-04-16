@@ -1055,6 +1055,8 @@ std::string CLASS_BASE_DECL_SPEC meta_sql_type(
 
 std::string CLASS_BASE_DECL_SPEC meta_field_uom( int uom );
 
+int CLASS_BASE_DECL_SPEC meta_field_type_primitive( const std::string& type );
+
 std::string CLASS_BASE_DECL_SPEC meta_field_type_name( int primitive,
  bool mandatory, const std::string& parent_class_name, const std::string& model_name, bool* p_is_customised = 0 );
 

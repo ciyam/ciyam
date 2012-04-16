@@ -9648,6 +9648,34 @@
       <item>class
      </specification>
      <specification/>
+      <id>600884
+      <item>class
+     </specification>
+     <specification/>
+      <id>600885
+      <item>class
+     </specification>
+     <specification/>
+      <id>600886
+      <item>class
+     </specification>
+     <specification/>
+      <id>600887
+      <item>class
+     </specification>
+     <specification/>
+      <id>600888
+      <item>class
+     </specification>
+     <specification/>
+      <id>600889
+      <item>class
+     </specification>
+     <specification/>
+      <id>600890
+      <item>class
+     </specification>
+     <specification/>
       <id>601550
       <item>class
      </specification>
@@ -9657,6 +9685,94 @@
      </specification>
     </specifications>
     <fields/>
+     <field/>
+      <id>137111
+      <name>Date
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500983
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137110
+      <name>Datetime
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
      <field/>
       <id>137103
       <name>Installed
@@ -9670,6 +9786,51 @@
       <specifications/>
        <specification/>
         <id>600880
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137114
+      <name>Integer
+      <type>int
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500983
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
         <item>field
        </specification>
       </specifications>
@@ -9720,6 +9881,46 @@
       </specifications>
      </field>
      <field/>
+      <id>137113
+      <name>Numeric
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>302830
       <name>Other_Package
       <type>@class
@@ -9731,6 +9932,34 @@
       <modifiers/>
        <modifier/>
         <id>500981
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500983
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
         <affect>relegate
        </modifier>
       </modifiers>
@@ -9771,6 +10000,136 @@
       </specifications>
      </field>
      <field/>
+      <id>137108
+      <name>Primitive
+      <type>int
+      <mandatory>true
+      <enum_id>500
+      <default_value>6
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600884
+        <item>field
+       </specification>
+       <specification/>
+        <id>600885
+        <item>field
+       </specification>
+       <specification/>
+        <id>600886
+        <item>field
+       </specification>
+       <specification/>
+        <id>600887
+        <item>field
+       </specification>
+       <specification/>
+        <id>600888
+        <item>field
+       </specification>
+       <specification/>
+        <id>600889
+        <item>field
+       </specification>
+       <specification/>
+        <id>600890
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137109
+      <name>String
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500983
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137112
+      <name>Time
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500983
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500988
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>137102
       <name>Use_Option
       <type>bool
@@ -9781,6 +10140,30 @@
       <modifiers/>
        <modifier/>
         <id>500980
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500982
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500983
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500984
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500985
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500986
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500987
         <affect>relegate
        </modifier>
       </modifiers>
@@ -9866,12 +10249,40 @@
     </indexes>
     <modifiers/>
      <modifier/>
+      <id>500988
+      <name>Is_Bool
+     </modifier>
+     <modifier/>
+      <id>500984
+      <name>Is_Date
+     </modifier>
+     <modifier/>
+      <id>500983
+      <name>Is_Datetime
+     </modifier>
+     <modifier/>
+      <id>500987
+      <name>Is_Int
+     </modifier>
+     <modifier/>
       <id>500981
       <name>Is_Not_Other_Package_Option
      </modifier>
      <modifier/>
+      <id>500986
+      <name>Is_Numeric
+     </modifier>
+     <modifier/>
       <id>500980
       <name>Is_Other_Package_Option
+     </modifier>
+     <modifier/>
+      <id>500982
+      <name>Is_String
+     </modifier>
+     <modifier/>
+      <id>500985
+      <name>Is_Time
      </modifier>
     </modifiers>
     <procedures/>
@@ -28677,6 +29088,58 @@
     </data>
    </specification>
    <specification/>
+    <id>600890
+    <name>{Package_Option}_Is_Bool
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500988
+     <enum_id>500
+     <field_id>137108
+     <field_value>bool
+     <enum_value_name>bool
+    </data>
+   </specification>
+   <specification/>
+    <id>600886
+    <name>{Package_Option}_Is_Date
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500984
+     <enum_id>500
+     <field_id>137108
+     <field_value>date
+     <enum_value_name>date
+    </data>
+   </specification>
+   <specification/>
+    <id>600885
+    <name>{Package_Option}_Is_Datetime
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500983
+     <enum_id>500
+     <field_id>137108
+     <field_value>datetime
+     <enum_value_name>datetime
+    </data>
+   </specification>
+   <specification/>
+    <id>600889
+    <name>{Package_Option}_Is_Int
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500987
+     <enum_id>500
+     <field_id>137108
+     <field_value>int
+     <enum_value_name>int
+    </data>
+   </specification>
+   <specification/>
     <id>600883
     <name>{Package_Option}_Is_Not_Other_Package_Option
     <type>modifier_field_value
@@ -28688,6 +29151,19 @@
     </data>
    </specification>
    <specification/>
+    <id>600888
+    <name>{Package_Option}_Is_Numeric
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500986
+     <enum_id>500
+     <field_id>137108
+     <field_value>numeric
+     <enum_value_name>numeric
+    </data>
+   </specification>
+   <specification/>
     <id>600882
     <name>{Package_Option}_Is_Other_Package_Option
     <type>modifier_field_value
@@ -28696,6 +29172,32 @@
      <modifier_id>500980
      <field_id>137104
      <field_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600884
+    <name>{Package_Option}_Is_String
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500982
+     <enum_id>500
+     <field_id>137108
+     <field_value>string
+     <enum_value_name>string
+    </data>
+   </specification>
+   <specification/>
+    <id>600887
+    <name>{Package_Option}_Is_Time
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500985
+     <enum_id>500
+     <field_id>137108
+     <field_value>time
+     <enum_value_name>time
     </data>
    </specification>
    <specification/>
@@ -28723,6 +29225,12 @@
      <class_id>137100
      <field_info>302820:136101;no_edit+link+max_size=30
      <field_info>137101;no_edit
+     <field_info>137109
+     <field_info>137110
+     <field_info>137111
+     <field_info>137112
+     <field_info>137113
+     <field_info>137114
      <field_info>137102
      <field_info>302830:136101!@fkey1:302800+@key1:302810
      <field_info>302825;hidden+fkey1
@@ -33312,7 +33820,7 @@
     <id>530
     <name>field_extra
     <type>int
-    <key_values>0=none,1=file,2=http,23=text,4=notes,5=order,6=active,3=image,7=mailto,21=file\_link,8=actions,9=content,22=filename,10=password,11=defcurrent,17=permission,24=orientation,25=epassword,26=hpassword,13=manual\_link,12=user\_perms,14=current\_year,18=security\_level,15=create\_datetime,16=modify\_datetime,19=replace\_underbars,20=enforce\_uppercase,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
+    <key_values>0=none,1=file,2=http,23=text,4=notes,5=order,6=active,3=image,7=mailto,21=file\_link,8=actions,9=content,22=filename,10=password,11=defcurrent,17=permission,24=orientation,25=epassword,26=hpassword,27=hpassword\_salt,13=manual\_link,12=user\_perms,14=current\_year,18=security\_level,15=create\_datetime,16=modify\_datetime,19=replace\_underbars,20=enforce\_uppercase,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
    </user_defined_enum>
    <user_defined_enum/>
     <id>600

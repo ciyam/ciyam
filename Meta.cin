@@ -710,6 +710,13 @@ field_add -id=137104 Package_Option Is_Other_Package bool mand -def=0
 field_add -id=137105 Package_Option Other_Package_Required bool mand -def=0
 field_add -id=137106 Package_Option Other_Package_Type string opt
 field_add -id=137107 Package_Option Value string opt -transient
+field_add -id=137108 Package_Option Primitive int mand -def=6 -e=primitive
+field_add -id=137109 Package_Option String string opt
+field_add -id=137110 Package_Option Datetime string opt
+field_add -id=137111 Package_Option Date string opt
+field_add -id=137112 Package_Option Time string opt
+field_add -id=137113 Package_Option Numeric string opt
+field_add -id=137114 Package_Option Integer int mand -def=0
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -1099,8 +1106,23 @@ modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
 modifier_add -id=500920 Application Is_Not_Full_Generate Keep_Existing_Data:relegate
 modifier_add -id=500950 Package_Type Is_Installed File:relegate
 modifier_add -id=500961 Package Is_Not_Installed @class:lowlight;list
-modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate
+modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate\
+,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
 modifier_add -id=500981 Package_Option Is_Not_Other_Package_Option Other_Package:relegate
+modifier_add -id=500982 Package_Option Is_String Use_Option:relegate,Other_Package:relegate\
+,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500983 Package_Option Is_Datetime Use_Option:relegate,Other_Package:relegate\
+,String:relegate,Date:relegate,Time:relegate,Integer:relegate
+modifier_add -id=500984 Package_Option Is_Date Use_Option:relegate,Other_Package:relegate\
+,String:relegate,Datetime:relegate,Time:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500985 Package_Option Is_Time Use_Option:relegate,Other_Package:relegate\
+,String:relegate,Datetime:relegate,Date:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500986 Package_Option Is_Numeric Use_Option:relegate,Other_Package:relegate\
+,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Integer:relegate
+modifier_add -id=500987 Package_Option Is_Int Use_Option:relegate,Other_Package:relegate\
+,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate
+modifier_add -id=500988 Package_Option Is_Bool Other_Package:relegate\
+,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
 specification_add -id=600001 {User}_Clear_Permissions field_clear "User Permissions"
 specification_add -id=600002 {Workgroup}_Clone_{Type}_defaults clone_default_group_children "Workgroup Type {Workgroup}"
 specification_add -id=600003 {Workgroup}_Clone_{Enum}_defaults clone_default_group_children "Workgroup Enum {Workgroup}"
@@ -1679,6 +1701,13 @@ specification_add -id=600880 {Package_Option}_Installed_protect state_protect "e
 specification_add -id=600881 {Package_Option}_{Model}_default default_to_field "Package_Option {Model} {Package}:{Model}"
 specification_add -id=600882 {Package_Option}_Is_Other_Package_Option modifier_field_value "Package_Option Is_Other_Package_Option Is_Other_Package true"
 specification_add -id=600883 {Package_Option}_Is_Not_Other_Package_Option modifier_field_value "Package_Option Is_Not_Other_Package_Option Is_Other_Package false"
+specification_add -id=600884 {Package_Option}_Is_String modifier_field_value "Package_Option Is_String Primitive string -enum=primitive"
+specification_add -id=600885 {Package_Option}_Is_Datetime modifier_field_value "Package_Option Is_Datetime Primitive datetime -enum=primitive"
+specification_add -id=600886 {Package_Option}_Is_Date modifier_field_value "Package_Option Is_Date Primitive date -enum=primitive"
+specification_add -id=600887 {Package_Option}_Is_Time modifier_field_value "Package_Option Is_Time Primitive time -enum=primitive"
+specification_add -id=600888 {Package_Option}_Is_Numeric modifier_field_value "Package_Option Is_Numeric Primitive numeric -enum=primitive"
+specification_add -id=600889 {Package_Option}_Is_Int modifier_field_value "Package_Option Is_Int Primitive int -enum=primitive"
+specification_add -id=600890 {Package_Option}_Is_Bool modifier_field_value "Package_Option Is_Bool Primitive bool -enum=primitive"
 specification_add -id=600999 user_info user_info "User User_Id Password -group={Workgroup} -active=Active -perm=Permissions"
 specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Description,{Workgroup}:Name,Active Active,checked:1"
 specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"
@@ -1705,7 +1734,8 @@ specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
 ,{Package_Type}:Name;new_edit+force,Install_Details;no_edit,Actions,Key;hidden"
 specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child Package_Option Name,Value {Package}"
-specification_add -id=601560 {Package_Option}_view view "? standard Package_Option {Package}:Name;no_edit+link,Name;no_edit,Use_Option\
+specification_add -id=601560 {Package_Option}_view view "? standard Package_Option\
+ {Package}:Name;no_edit+link,Name;no_edit,String,Datetime,Date,Time,Numeric,Integer,Use_Option\
 ,Other_Package:Name!@fkey1:{Model}+@key1:{Package_Type},{Model};hidden+fkey1,Other_Package_Type;hidden+key1"
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\
 ,Source_{Model}:Name!@group:{Workgroup}+@xparent;new_edit+link+fkey1+force\

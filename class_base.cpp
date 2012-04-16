@@ -3469,6 +3469,30 @@ string meta_field_uom( int uom )
    return str;
 }
 
+int meta_field_type_primitive( const string& type )
+{
+   int rc;
+
+   if( type == "string" )
+      rc = e_primitive_string;
+   else if( type == "datetime" || type == "tdatetime" || type == "date_time" )
+      rc = e_primitive_datetime;
+   else if( type == "date" || type == "udate" || type == "tdate" )
+      rc = e_primitive_date;
+   else if( type == "time" || type == "mtime" || type == "ttime" )
+      rc = e_primitive_time;
+   else if( type == "numeric" )
+      rc = e_primitive_numeric;
+   else if( type == "int" )
+      rc = e_primitive_int;
+   else if( type == "bool" || type == "tbool" )
+      rc = e_primitive_bool;
+   else
+      throw runtime_error( "unknown primitive type '" + type + "' in meta_primitive" );
+
+   return rc;
+}
+
 string meta_field_type_name( int primitive,
  bool mandatory, const string& parent_class_name, const string& model_name, bool* p_is_customised )
 {
@@ -3481,11 +3505,11 @@ string meta_field_type_name( int primitive,
    {
       switch( primitive )
       {
-         case 0:
+         case e_primitive_string:
          type = "string";
          break;
 
-         case 1:
+         case e_primitive_datetime:
          if( mandatory )
             type = "date_time";
          else
@@ -3493,7 +3517,7 @@ string meta_field_type_name( int primitive,
          custom = true;
          break;
 
-         case 2:
+         case e_primitive_date:
          if( mandatory )
             type = "udate";
          else
@@ -3501,7 +3525,7 @@ string meta_field_type_name( int primitive,
          custom = true;
          break;
 
-         case 3:
+         case e_primitive_time:
          if( mandatory )
             type = "mtime";
          else
@@ -3509,16 +3533,16 @@ string meta_field_type_name( int primitive,
          custom = true;
          break;
 
-         case 4:
+         case e_primitive_numeric:
          type = "numeric";
          custom = true;
          break;
 
-         case 5:
+         case e_primitive_int:
          type = "int";
          break;
 
-         case 6:
+         case e_primitive_bool:
          if( mandatory )
             type = "bool";
          else
