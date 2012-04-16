@@ -41,23 +41,39 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Installed = 1,
-      e_field_id_Is_Other_Package = 2,
-      e_field_id_Model = 3,
-      e_field_id_Name = 4,
-      e_field_id_Other_Package = 5,
-      e_field_id_Other_Package_Required = 6,
-      e_field_id_Other_Package_Type = 7,
-      e_field_id_Package = 8,
-      e_field_id_Use_Option = 9,
-      e_field_id_Value = 10
+      e_field_id_Date = 1,
+      e_field_id_Datetime = 2,
+      e_field_id_Installed = 3,
+      e_field_id_Integer = 4,
+      e_field_id_Is_Other_Package = 5,
+      e_field_id_Model = 6,
+      e_field_id_Name = 7,
+      e_field_id_Numeric = 8,
+      e_field_id_Other_Package = 9,
+      e_field_id_Other_Package_Required = 10,
+      e_field_id_Other_Package_Type = 11,
+      e_field_id_Package = 12,
+      e_field_id_Primitive = 13,
+      e_field_id_String = 14,
+      e_field_id_Time = 15,
+      e_field_id_Use_Option = 16,
+      e_field_id_Value = 17
    };
 
    Meta_Package_Option( );
    ~Meta_Package_Option( );
 
+   const std::string& Date( ) const;
+   void Date( const std::string& Date );
+
+   const std::string& Datetime( ) const;
+   void Datetime( const std::string& Datetime );
+
    bool Installed( ) const;
    void Installed( bool Installed );
+
+   int Integer( ) const;
+   void Integer( int Integer );
 
    bool Is_Other_Package( ) const;
    void Is_Other_Package( bool Is_Other_Package );
@@ -65,11 +81,23 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    const std::string& Name( ) const;
    void Name( const std::string& Name );
 
+   const std::string& Numeric( ) const;
+   void Numeric( const std::string& Numeric );
+
    bool Other_Package_Required( ) const;
    void Other_Package_Required( bool Other_Package_Required );
 
    const std::string& Other_Package_Type( ) const;
    void Other_Package_Type( const std::string& Other_Package_Type );
+
+   int Primitive( ) const;
+   void Primitive( int Primitive );
+
+   const std::string& String( ) const;
+   void String( const std::string& String );
+
+   const std::string& Time( ) const;
+   void Time( const std::string& Time );
 
    bool Use_Option( ) const;
    void Use_Option( bool Use_Option );

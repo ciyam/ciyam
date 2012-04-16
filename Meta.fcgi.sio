@@ -551,6 +551,10 @@
      <name>enum_field_extra_hpassword
     </value>
     <value/>
+     <data>27
+     <name>enum_field_extra_hpassword_salt
+    </value>
+    <value/>
      <data>13
      <name>enum_field_extra_manual_link
     </value>
@@ -4182,12 +4186,60 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_package_option_string
+     <field>137109
+     <ftype>string
+     <extra>
+     <mandatory>false
+     <modifiers>4000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_package_option_datetime
+     <field>137110
+     <ftype>string
+     <extra>
+     <mandatory>false
+     <modifiers>4000:relegate,8000:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_package_option_date
+     <field>137111
+     <ftype>string
+     <extra>
+     <mandatory>false
+     <modifiers>4000:relegate,8000:relegate,400:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_package_option_time
+     <field>137112
+     <ftype>string
+     <extra>
+     <mandatory>false
+     <modifiers>4000:relegate,8000:relegate,400:relegate,200:relegate,2000:relegate,800:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_package_option_numeric
+     <field>137113
+     <ftype>string
+     <extra>
+     <mandatory>false
+     <modifiers>4000:relegate,8000:relegate,200:relegate,10000:relegate,800:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_package_option_integer
+     <field>137114
+     <ftype>int
+     <extra>
+     <mandatory>true
+     <modifiers>4000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,100:relegate
+    </field>
+    <field/>
      <name>field_package_option_use_option
      <field>137102
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>4000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate
     </field>
     <field/>
      <name>field_package_option_other_package
@@ -4195,7 +4247,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>100:relegate
+     <modifiers>1000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate
      <pclass>136100
      <pfield>136101
      <pfname>field_package_name

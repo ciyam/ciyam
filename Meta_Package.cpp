@@ -919,13 +919,17 @@ void Meta_Package::impl::impl_Install( )
          if( get_obj( ).Name( ) != get_obj( ).Package_Type( ).Name( ) )
             outf << get_obj( ).Package_Type( ).Name( ) << "=" << get_obj( ).Name( ) << '\n';
 
-         map< string, bool > options;
+         map< string, string > options;
          if( get_obj( ).child_Package_Option( ).iterate_forwards( ) )
          {
             do
             {
-               options.insert( make_pair(
-                get_obj( ).child_Package_Option( ).Name( ), get_obj( ).child_Package_Option( ).Use_Option( ) ) );
+               if( get_obj( ).child_Package_Option( ).Primitive( ) == e_primitive_bool )
+                  options.insert( make_pair(
+                   get_obj( ).child_Package_Option( ).Name( ), get_obj( ).child_Package_Option( ).Use_Option( ) ? "1" : "" ) );
+               else
+                  options.insert( make_pair(
+                   get_obj( ).child_Package_Option( ).Name( ), get_obj( ).child_Package_Option( ).Value( ) ) );
             } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
          }
 
@@ -948,8 +952,7 @@ void Meta_Package::impl::impl_Install( )
                      next = opt_name + '=';
                      options_processed.insert( opt_name );
 
-                     if( options[ opt_name ] )
-                        next += "1";
+                     next += options[ opt_name ];
                   }
                }
             }
@@ -1663,26 +1666,74 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
             if( pos != string::npos )
             {
                string opt_name = next.substr( 0, pos );
-               if( !options.count( opt_name ) )
+               string type_and_name = opt_name.substr( opt_prefix.length( ) );
+
+               if( !type_and_name.empty( ) )
                {
-                  get_obj( ).child_Package_Option( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+                  string::size_type tpos = type_and_name.find( '_' );
+                  if( tpos == string::npos || tpos == 0 )
+                     throw runtime_error( "unexpected invalid option type_and_name: " + type_and_name );
 
-                  get_obj( ).child_Package_Option( ).Package( get_obj( ).get_key( ) );
+                  string type( type_and_name.substr( 0, tpos ) );
 
-                  get_obj( ).child_Package_Option( ).Name( opt_name );
-
-                  string value = next.substr( pos + 1 );
-                  if( value.empty( ) || value == "1" )
-                     get_obj( ).child_Package_Option( ).Use_Option( value == "1" );
-                  else
+                  if( !options.count( opt_name ) )
                   {
-                     get_obj( ).child_Package_Option( ).Is_Other_Package( true );
-                     get_obj( ).child_Package_Option( ).Other_Package_Type( package_types[ value ] );
+                     get_obj( ).child_Package_Option( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+
+                     get_obj( ).child_Package_Option( ).Package( get_obj( ).get_key( ) );
+                     get_obj( ).child_Package_Option( ).Name( opt_name );
+
+                     string value = next.substr( pos + 1 );
+
+                     if( type == "class" )
+                     {
+                        get_obj( ).child_Package_Option( ).Is_Other_Package( true );
+                        get_obj( ).child_Package_Option( ).Other_Package_Type( package_types[ value ] );
+                     }
+                     else
+                     {
+                        get_obj( ).child_Package_Option( ).Primitive( meta_field_type_primitive( type ) );
+
+                        switch( get_obj( ).child_Package_Option( ).Primitive( ) )
+                        {
+                           case e_primitive_string:
+                           get_obj( ).child_Package_Option( ).String( value );
+                           break;
+
+                           case e_primitive_datetime:
+                           get_obj( ).child_Package_Option( ).Datetime( value );
+                           break;
+
+                           case e_primitive_date:
+                           get_obj( ).child_Package_Option( ).Date( value );
+                           break;
+
+                           case e_primitive_time:
+                           get_obj( ).child_Package_Option( ).Time( value );
+                           break;
+
+                           case e_primitive_numeric:
+                           get_obj( ).child_Package_Option( ).Numeric( value );
+                           break;
+
+                           case e_primitive_int:
+                           get_obj( ).child_Package_Option( ).Integer( atoi( value.c_str( ) ) );
+                           break;
+
+                           case e_primitive_bool:
+                           get_obj( ).child_Package_Option( ).Use_Option( value == "1" || value == "true" );
+                           break;
+
+                           default:
+                           throw runtime_error( "unexpected primitive value #"
+                            + to_string( get_obj( ).child_Package_Option( ).Primitive( ) ) + "in Meta_Package::after_store" );
+                        }
+                     }
+
+                     get_obj( ).child_Package_Option( ).op_apply( );
+
+                     options.insert( opt_name );
                   }
-
-                  get_obj( ).child_Package_Option( ).op_apply( );
-
-                  options.insert( opt_name );
                }
             }   
          }
