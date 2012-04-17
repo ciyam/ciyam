@@ -552,6 +552,9 @@ int main( int argc, char* argv[ ] )
             }
          }
 
+         if( first_arg + 1 == argc )
+            break;
+
          next_arg = string( argv[ ++first_arg ] );
       }
 
