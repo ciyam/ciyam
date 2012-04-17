@@ -544,7 +544,11 @@ int main( int argc, char* argv[ ] )
 
    string open_mode( "wb" );
 
+#ifndef ZLIB_SUPPORT
+   encoding_type encoding = e_encoding_type_esc;
+#else
    encoding_type encoding = e_encoding_type_raw;
+#endif
 
    if( argc > first_arg + 1 )
    {
@@ -783,7 +787,7 @@ int main( int argc, char* argv[ ] )
       // NOTE: Empty code block for scope purposes.
       {
 #ifndef ZLIB_SUPPORT
-         ofstream outf( output_filename.c_str( ), ios::out | ios::binary );
+         ofstream outf( output_filename.c_str( ) );
          if( !outf )
             throw runtime_error( "unable to open file '" + output_filename + "' for output" );
 #else
@@ -791,7 +795,7 @@ int main( int argc, char* argv[ ] )
          ofstream outf;
 
          if( !use_zlib )
-            outf.open( output_filename.c_str( ), ios::out | ios::binary );
+            outf.open( output_filename.c_str( ) );
          else
             gzf = gzopen( output_filename.c_str( ), open_mode.c_str( ) );
 
@@ -873,14 +877,14 @@ int main( int argc, char* argv[ ] )
             ifstream inpf;
 
             if( !use_zlib )
-               inpf.open( filename.c_str( ), ios::in | ios::binary );
+               inpf.open( filename.c_str( ) );
             else
                igzf = gzopen( filename.c_str( ), "rb" );
 
             if( ( use_zlib && !igzf ) || ( !use_zlib && !inpf ) )
                throw runtime_error( "unable to open file '" + filename + "' for input" );
 #else
-            ifstream inpf( filename.c_str( ), ios::in | ios::binary );
+            ifstream inpf( filename.c_str( ) );
             if( !inpf )
                throw runtime_error( "unable to open file '" + filename + "' for input" );
 #endif
