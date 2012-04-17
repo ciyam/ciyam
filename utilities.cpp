@@ -163,7 +163,6 @@ void msleep( unsigned long amt )
 void msleep( unsigned long amt ) { ::Sleep( amt ); }
 #endif
 
-
 int get_pid( )
 {
 #ifndef _WIN32
@@ -178,9 +177,17 @@ int vmem_used( )
    int64_t size_kb = 0;
 
 #ifdef _WIN32
-   PROCESS_MEMORY_COUNTERS_EX pmc;
-   ::GetProcessMemoryInfo( ::GetCurrentProcess( ), ( PPROCESS_MEMORY_COUNTERS )&pmc, sizeof( pmc ) );
-   size_kb = ( pmc.PrivateUsage / 1024 );
+#  define GET_PMC_USAGE( PMC_STRUCT, PMC_PARAM )\
+   PMC_STRUCT pmc;\
+   ::GetProcessMemoryInfo( ::GetCurrentProcess( ), ( PPROCESS_MEMORY_COUNTERS )&pmc, sizeof( pmc ) );\
+   size_kb = ( pmc.PMC_PARAM / 1024 );
+
+   // NOTE: For newer versions of Windws PagefileUsage returns zero so use PrivateUsage instead.
+#  if( defined( NTDDI_WIN7 ) || defined( NTDDI_WS08 ) )
+      GET_PMC_USAGE( PROCESS_MEMORY_COUNTERS_EX, PrivateUsage )
+#  else
+      GET_PMC_USAGE( PROCESS_MEMORY_COUNTERS, PagefileUsage )
+#  endif
 #else
    ifstream inpf( "/proc/self/status" );
 
@@ -1371,7 +1378,7 @@ void uudecode( ostream& outs, const char* p_input, int num_bytes )
    triplets = num_bytes / 4;
    remainder = num_bytes % 4;
 
-   // Decode each of the triplets.
+   // NOTE: Decode each of the triplets.
    for( int i = 0; i < triplets; i++, p_input++ )
    {
       int j = 2;
@@ -1379,7 +1386,7 @@ void uudecode( ostream& outs, const char* p_input, int num_bytes )
           outs.put( ( *p_input - c_space ) | ( ( composite & ( c_high_mask >> j ) ) << j ) );
    }
 
-   // Decode any dangling bytes (0, 1, or 2 bytes which did not form a complete triplet).
+   // NOTE: Decode any dangling bytes (0, 1, or 2 bytes which did not form a complete triplet).
    if( remainder > 1 )
    {
       int j = 2;
@@ -1397,7 +1404,7 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
    triplets = num_bytes / 3;
    remainder = num_bytes % 3;
 
-   // Encode each of the triplets.
+   // NOTE: Encode each of the triplets.
    for( int i = 0; i < triplets; i++ )
    {
       composite = 0;
@@ -1410,7 +1417,7 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
       outs.put( composite + c_space );
    }
 
-   // Encode any dangling bytes (0, 1, or 2 bytes which do not form a complete triplet).
+   // NOTE: Encode any dangling bytes (0, 1, or 2 bytes which do not form a complete triplet).
    if( remainder )
    {
       composite = 0;
@@ -1533,19 +1540,10 @@ void read_strings( const string& filename, map< string, string >& strings,
    bool is_first = true;
    while( getline( inpf, next ) )
    {
-      // NOTE: In case the string file had been treated as binary during an FTP transfer remove trailing CR.
-      if( next.size( ) && next[ next.size( ) - 1 ] == '\r' )
-         next.erase( next.size( ) - 1 );
+      remove_trailing_cr_from_text_file_line( next, is_first );
 
       if( is_first )
-      {
          is_first = false;
-
-         // NOTE: UTF-8 text files will often begin with an identifying sequence "EF BB BF" as the
-         // first three characters of the file so if the first byte is "EF" assume UTF-8 and strip.
-         if( next.size( ) >= 3 && next[ 0 ] == ( char )0xef )
-            next.erase( 0, 3 );
-      }
 
       if( next.empty( ) )
          continue;
