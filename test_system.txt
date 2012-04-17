@@ -1,0 +1,74 @@
+Understanding the Test System
+-----------------------------
+
+Regression tests are a vital part of any software project so the test tool and its structured I/O file format
+were constructed so that performing and maintaining tests is done consistently and in a straight forward way.
+
+The most basic tests (which cover the various tools and some basic server protocol commands) can be run using
+the batch/script dotests (this testing at the very least should be done prior to making any commit).
+
+Using the Regression Test Tool
+------------------------------
+
+Regression tests are performed via the test tool which is passed a structured I/O file that contains the test
+steps and groups. To see the test tool's usage options just run it without any arguments (or argument -?).
+
+Test Structured I/O File Format
+-------------------------------
+
+The basic format for test structured I/O is as follows:
+
+<sio/>
+ <groups/>
+  <group/>
+...
+  </group>
+ </groups>
+</sio>
+
+The following is a sample group:
+
+<group/>
+ <name>test_parser
+ <tests/>
+  <test/>
+   <name>1
+   <description>Perform command syntax and usage tests.
+   <test_step/>
+    <name>a
+    <exec>test_parser /test
+    <input>false
+    <output>generate
+   </test_step>
+  </test>
+ </tests>
+</group>
+
+Each group has one or more tests that each contain one or more test steps. Each and every test step must have
+name, exec, input and output attributes. By convention the name of each test step is one lower case letter as
+it helps to provide naming consistency (and 26 steps is not an unreasonable limit for each single test).
+
+The exec attribute contains the name of an external program to run (which by default will be run in the local
+directory). One or more special "prefix" characters can also be prepended (if more than one then they must be
+ordered as follows).
+
+! - this prefix identifies that the program being executed is expected to have a non-zero return code
+* - this program will be started asyncronously
+$ - this program is not local (so under Linux will not be run with ./ prefixed)
+
+In certain cases a single program exec might create more than one new test result (test result files are text
+and are named using <group>_<test>_<step>.tst and new test results <group>_<test>_<step>.tst). For these type
+of tests subsequent test steps with an empty exec attribute can be used to compare each result separately.
+
+The input attribute must be either "true" or "false" (without quotes). If "true" then a text file is expected
+to exist named <group>_<test>_<step>.cin which will be fed via stdin to the exec program.
+
+The output attribute must be either "none", "generate" or "automatic". Typically "none" will be used by steps
+that are actually for asynchronous program starts or for general housekeeping. If "generate" is used then the
+stdout of the program run will be redirected to a file named <group>_<test>_<step>.new. If "automatic" is the
+value then the output file <group>_<test>_<step>.new is expected to be created by the program itself (or with
+empty execs by the previously run program).
+
+Note that by convention each test is named a with a number and test group names are prefixed with "test_" (if
+a specific testing tool exists such as test_program then this would be the preferred group name).
+
