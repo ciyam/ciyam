@@ -184,8 +184,13 @@ void check_file_header( ifstream& inpf, const string& filename, encoding_type& e
       encoding = e_encoding_type_b64;
    else if( header == "ESC" )
       encoding = e_encoding_type_esc;
+#ifdef ZLIB_SUPPORT
    else if( header == "RAW" )
       encoding = e_encoding_type_raw;
+#else
+   else if( header == "RAW" )
+      throw runtime_error( "*** invalid RAW bundle data encoding type found in -ngz bundle '" + filename + "' ***" );
+#endif
    else
       throw runtime_error( "*** unknown bundle data encoding type " + header + " in '" + filename + "' ***" );
 }
@@ -350,14 +355,14 @@ int main( int argc, char* argv[ ] )
       ifstream inpf;
 
       if( !use_zlib )
-         inpf.open( filename.c_str( ), ios::in | ios::binary );
+         inpf.open( filename.c_str( ) );
       else
          gzf = gzopen( filename.c_str( ), "rb" );
 
       if( ( use_zlib && !gzf ) || ( !use_zlib && !inpf ) )
          throw runtime_error( "unable to open file '" + filename + "' for input" );
 #else
-      ifstream inpf( filename.c_str( ), ios::in | ios::binary );
+      ifstream inpf( filename.c_str( ) );
       if( !inpf )
          throw runtime_error( "unable to open file '" + filename + "' for input" );
 #endif
