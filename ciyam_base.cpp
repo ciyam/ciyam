@@ -6977,6 +6977,16 @@ void import_package( const string& module,
          if( replace_items[ i ].empty( ) || replace_items[ i ][ 0 ] == ';' )
             continue;
 
+         // NOTE: If the replace info starts with an asterisk then search/replacing
+         // will be performed seach string itself (this can be useful when compound
+         // keys that contain other package keys need to be optional).
+         bool do_replaces_for_find_string = false;
+         if( replace_items[ i ][ 0 ] == '*' )
+         {
+            do_replaces_for_find_string = true;
+            replace_items[ i ].erase( 0, 1 );
+         }
+
          string::size_type pos = replace_items[ i ].find( '=' );
          if( pos == string::npos )
             throw runtime_error( "invalid replace_info item format '" + replace_items[ i ] + "'" );
@@ -7018,6 +7028,15 @@ void import_package( const string& module,
             while( search_replaces_map.count( replace_with ) )
                replace_with = search_replaces_map[ replace_with ];
          }      
+
+         if( do_replaces_for_find_string )
+         {
+            for( size_t i = 0; i < search_replaces.size( ); i++ )
+            {
+               find_string = search_replace( find_string,
+                search_replaces[ i ].first, search_replaces[ i ].second );
+            }
+         }
 
          bool exists = ( search_replaces_map.count( find_string ) > 0 );
 
