@@ -9,8 +9,8 @@ The essential components of the system are as follows:
 
 Name              Role/Description
 ---------------   --------------------------------------------------------
-ciyam_client      Single-threaded RPC style client.
-ciyam_interface   Multi-threaded FCGI application client.
+ciyam_client      Single-threaded console client.
+ciyam_interface   Multi-threaded FCGI www client.
 ciyam_server      Multi-threaded application server.
 upload            Multi-threaded FCGI file uploader.
 
@@ -35,12 +35,12 @@ generate_commands Tool to transform a .cms source file into .cmh include.
 modeller          Legacy modelling tool used to maintain the Meta model.
 test              Basic regression test utility (see test_system.txt).
 test_cache        Testbed application for the ODS caching implementation.
-test_fcgi         Testbed FCGI application (to check if FCGI is working).
+test_fcgi         Test FCGI application (to check if FCGI is working).
 test_numeric      Testbed for the numeric class.
 test_ods          Testbed for the Object Data Storage system.
 test_parser       Testbed for the (RPC) command parser.
 test_pdf_gen      Testbed for the PDF generator.
-test_sql          Simple tool for issuing SQL queries.
+test_sql          Test tool for issuing SQL queries.
 xrep              Expression replacement tool for expanding templates.
 xvars             Tool used by the make system (see make_system.txt).
 
@@ -52,8 +52,8 @@ config            Generates config.h from config.h.xrep (and config.info).
 create_db         Creates an empty DB.
 dotests           Runs basic tool and system regression tests.
 drop_db           Drops an existing DB.
-genmake           Generates a make file (see make_system.txt).
-genmodule         Used explicitly only to generate the Meta model.
+genmake           Generates the makefile (see make_system.txt).
+genmodule         Used explicitly to generate the Meta model.
 
 Various other batch/scripts that are used internally by development installations are not listed here.
 
@@ -74,8 +74,49 @@ client connection can itself only operate with the one storage at a time.
 
 As well as direct storage operations via RPC commands the application server provides a framework that allows
 class objects to be created/destroyed and sent commands. In this manner actual DB operations are performed by
-clients without involving any direct SQL (i.e. object to relational DB mapping).
+clients without invoking any direct SQL (i.e. object to relational DB mapping).
 
 In line with the CIYAM methodology all SQL queries are generated (via object methods) and therefore "raw" SQL
-should never be found coded in any module (excluding DDL/SQL generated via the class template).
+should never be found coded in any module (excluding DDL/SQL generated via the class template itself).
+
+Storage Log File
+----------------
+An essential part of the storage approach is the log file named <storage>.log which is a transaction log that
+contains every *write* operation performed with the storage. Immediately before a transaction is committed to
+the storage the log file is appended to with the relevant protocol command(s).
+
+It should be noted that storage operations arising from objects being used by code within the modules (unless
+being performed via asynchronous script) will not appear in the storage log which helps reduce the file size.
+When a storage is being "restored" the log is processed from the last known transaction id (or from the first
+if performing a "rebuild") with each protocol command logged being repeated.
+
+This may seem unnecessary when using a SQL DB but the approach actually plays an important role for upgrading
+applications in that fields that depend upon operations with other fields (or with the user and the date/time
+the operation occurred at) can be introduced at any time and behave as though they were there since the first
+transaction was occurring (e.g. you can add audit fields to a class that didn't have them and get the correct
+values for user and date/time with objects that were created/changed prior to the upgrade).
+
+This also implies that the SQL transaction log itself is not essential and indeed it's recommended that RDBMS
+settings be altered in order to automatically truncate the log (and for best possible performance tuning even
+switch it off altogether).
+
+Most essentially the storage log needs to be backed up regularly and although log truncation is permitted the
+entire log must be able to be made available in order to do a "rebuild" (which is required for an upgrade).
+
+Uploaded and Rules Created Files
+--------------------------------
+Files that application users upload are not kept in the storage (only their existence is) so another key part
+of backing up is to ensure all of the application files have been periodically backed up. The provided backup
+batch/script files can be used to include these external files, however, this is not advisable for situations
+where the amount or size of these files is expected to be significant (for such applications it would instead
+be recommended to use specialised backup software).
+
+All such storage files are kept in subdirecties below the WEBROOT/<storage>/files directory and so any backup
+software needs to be configured to backup that directory branch (excluding WEBROOT/<storage>/files/tmp branch
+which is used for creating temporary links/files).
+
+Files can be created in this directory branch even for applications that do not allow end users to upload any
+files as they may be created via application rules. For example it is essential that Email applications store
+copies of the original emails that were fetched so that the application objects will be correctly constructed
+when a "restore" is in progress.
 

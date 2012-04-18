@@ -34,20 +34,10 @@ typedef long long long_long;
 typedef unsigned long long unsigned_long_long;
 #  endif
 
-#  ifndef _MSC_VER
-#     ifdef __BORLANDC__
-typedef __int8_t int8_t;
-typedef __int16_t int16_t;
-typedef __int32_t int32_t;
-typedef __int64 int64_t;
-typedef unsigned __int8_t uint8_t;
-typedef unsigned __int16_t uint16_t;
-typedef unsigned __int32_t uint32_t;
-typedef unsigned __int64 uint64_t;
-#     else
-#        include <stdint.h>
-#     endif
+#  ifndef _WIN32
+#     include <stdint.h>
 #  else
+#     ifdef _MSC_VER
 typedef __int8 int8_t;
 typedef __int16 int16_t;
 typedef __int32 int32_t;
@@ -57,16 +47,27 @@ typedef unsigned __int8 uint8_t;
 typedef unsigned __int16 uint16_t;
 typedef unsigned __int32 uint32_t;
 typedef unsigned __int64 uint64_t;
+#        define INT8_C( x ) ( ( int8_t )x )
+#        define INT16_C( x ) ( ( int16_t )x )
+#        define INT32_C( x ) ( ( int32_t )x )
+#        define INT64_C( x ) ( ( int64_t )x )
 
-#     define INT8_C( x ) ( ( int8_t )x )
-#     define INT16_C( x ) ( ( int16_t )x )
-#     define INT32_C( x ) ( ( int32_t )x )
-#     define INT64_C( x ) ( ( int64_t )x )
+#        define UINT8_C( x ) ( ( uint8_t )x )
+#        define UINT16_C( x ) ( ( uint16_t )x )
+#        define UINT32_C( x ) ( ( uint32_t )x )
+#        define UINT64_C( x ) ( ( uint64_t )x )
+#     endif
+#     ifdef __BORLANDC__
+typedef char int8_t;
+typedef short int16_t;
+typedef int int32_t;
+typedef __int64 int64_t;
 
-#     define UINT8_C( x ) ( ( uint8_t )x )
-#     define UINT16_C( x ) ( ( uint16_t )x )
-#     define UINT32_C( x ) ( ( uint32_t )x )
-#     define UINT64_C( x ) ( ( uint64_t )x )
+typedef unsigned char uint8_t;
+typedef unsigned short uint16_t;
+typedef unsigned int uint32_t;
+typedef unsigned __int64 uint64_t;
+#     endif
 #  endif
 
 #  ifdef _WIN32
