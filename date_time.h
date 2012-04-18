@@ -17,9 +17,7 @@
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
 #     include <string>
-#     ifndef _WIN32_WCE
-#        include <iosfwd>
-#     endif
+#     include <iosfwd>
 #  endif
 
 #  include "ptypes.h"
@@ -254,9 +252,7 @@ class DATE_TIME_DECL_SPEC mtime
 
    friend bool DATE_TIME_DECL_SPEC operator ==( const mtime& lhs, const mtime& rhs );
 
-#  ifndef _WIN32_WCE
    friend std::ostream DATE_TIME_DECL_SPEC& operator <<( std::ostream& os, const mtime& src );
-#  endif
 
    friend read_stream DATE_TIME_DECL_SPEC& operator >>( read_stream& rs, mtime& dest );
    friend write_stream DATE_TIME_DECL_SPEC& operator <<( write_stream& ws, const mtime& src );
@@ -387,9 +383,7 @@ class DATE_TIME_DECL_SPEC udate
    void convert_to_daynum( );
    void convert_to_calendar( );
 
-#  ifndef _WIN32_WCE
    void print( std::ostream& os ) const;
-#  endif
 
    static udate local( );
    static udate standard( );
@@ -408,9 +402,7 @@ class DATE_TIME_DECL_SPEC udate
 
    friend bool DATE_TIME_DECL_SPEC operator ==( const udate& lhs, const udate& rhs );
 
-#  ifndef _WIN32_WCE
    friend std::ostream DATE_TIME_DECL_SPEC& operator <<( std::ostream& os, const udate& src );
-#  endif
 
    friend read_stream DATE_TIME_DECL_SPEC& operator >>( read_stream& rs, udate& dest );
    friend write_stream DATE_TIME_DECL_SPEC& operator <<( write_stream& ws, const udate& src );
@@ -631,9 +623,7 @@ class DATE_TIME_DECL_SPEC date_time
 
    friend seconds DATE_TIME_DECL_SPEC operator -( const date_time& lhs, const date_time& rhs );
 
-#  ifndef _WIN32_WCE
    friend std::ostream DATE_TIME_DECL_SPEC& operator <<( std::ostream& os, const date_time& src );
-#  endif
 
    friend read_stream DATE_TIME_DECL_SPEC& operator >>( read_stream& rs, date_time& dest );
    friend write_stream DATE_TIME_DECL_SPEC& operator <<( write_stream& ws, const date_time& src );

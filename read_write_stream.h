@@ -79,13 +79,11 @@ class read_stream
       return *this;
    }
 
-#  ifndef _WIN32_WCE
    read_stream& operator >>( wchar_t& val )
    {
       read( ( unsigned char* )&val, sizeof( wchar_t ), e_read_write_type_wchar );
       return *this;
    }
-#  endif
 
    read_stream& operator >>( short& val )
    {
@@ -183,13 +181,11 @@ class write_stream
       return *this;
    }
 
-#  ifndef _WIN32_WCE
    write_stream& operator <<( wchar_t val )
    {
       write( ( const unsigned char* )&val, sizeof( wchar_t ), e_read_write_type_wchar );
       return *this;
    }
-#  endif
 
    write_stream& operator <<( short val )
    {
@@ -414,9 +410,7 @@ inline size_t size_determiner( const bool* ) { return sizeof( bool ); }
 inline size_t size_determiner( const char* ) { return sizeof( char ); }
 inline size_t size_determiner( const signed char* ) { return sizeof( signed char ); }
 inline size_t size_determiner( const unsigned char* ) { return sizeof( unsigned char ); }
-#  ifndef _WIN32_WCE
 inline size_t size_determiner( const wchar_t* ) { return sizeof( wchar_t ); }
-#  endif
 inline size_t size_determiner( const short* ) { return sizeof( short ); }
 inline size_t size_determiner( const unsigned short* ) { return sizeof( unsigned short ); }
 inline size_t size_determiner( const int* ) { return sizeof( int ); }

@@ -35,28 +35,27 @@ typedef unsigned long long unsigned_long_long;
 #  endif
 
 #  ifndef _MSC_VER
-#     include <stdint.h>
-#  else
-#     ifdef _WIN32_WCE
-typedef char int8_t;
-typedef short int16_t;
-typedef int int32_t;
+#     ifdef __BORLANDC__
+typedef __int8_t int8_t;
+typedef __int16_t int16_t;
+typedef __int32_t int32_t;
+typedef __int64 int64_t;
+typedef unsigned __int8_t uint8_t;
+typedef unsigned __int16_t uint16_t;
+typedef unsigned __int32_t uint32_t;
+typedef unsigned __int64 uint64_t;
 #     else
+#        include <stdint.h>
+#     endif
+#  else
 typedef __int8 int8_t;
 typedef __int16 int16_t;
 typedef __int32 int32_t;
-#     endif
 typedef __int64 int64_t;
 
-#     ifdef _WIN32_WCE
-typedef unsigned char uint8_t;
-typedef unsigned short uint16_t;
-typedef unsigned int uint32_t;
-#     else
 typedef unsigned __int8 uint8_t;
 typedef unsigned __int16 uint16_t;
 typedef unsigned __int32 uint32_t;
-#     endif
 typedef unsigned __int64 uint64_t;
 
 #     define INT8_C( x ) ( ( int8_t )x )

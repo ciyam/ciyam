@@ -22,13 +22,6 @@
 #  include <memory>
 #endif
 
-#ifdef _WIN32_WCE
-#  undef min
-#  undef max
-template< typename T > inline T min( const T& x, const T& y ) { return x < y ? x : y; }
-template< typename T > inline T max( const T& x, const T& y ) { return x > y ? x : y; }
-#endif
-
 #include "read_write_buffer.h"
 
 //#define READ_WRITE_BUFFER_TESTBED

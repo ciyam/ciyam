@@ -966,8 +966,8 @@ void setup_directories( )
 
    _chdir( ".." );
 
-   for( size_t i = 0; i < dead_sessions.size( ); i++ )
-      remove_session_temp_directory( dead_sessions[ i ], ".." );
+   for( size_t x = 0; x < dead_sessions.size( ); x++ )
+      remove_session_temp_directory( dead_sessions[ x ], ".." );
 
    map< string, set< string > > module_file_class_ids;
 
