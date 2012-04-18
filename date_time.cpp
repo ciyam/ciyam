@@ -22,10 +22,8 @@
 #     include <sys/time.h>
 #  endif
 #  include <cmath>
-#  ifndef _WIN32_WCE
-#     include <ctime>
-#     include <iostream>
-#  endif
+#  include <ctime>
+#  include <iostream>
 #  include <algorithm>
 #  include <stdexcept>
 #  ifdef _WIN32
@@ -1289,7 +1287,6 @@ bool operator ==( const mtime& lhs, const mtime& rhs )
    return lhs.ms == rhs.ms;
 }
 
-#ifndef _WIN32_WCE
 ostream& operator <<( ostream& os, const mtime& src )
 {
    hour hr;
@@ -1319,7 +1316,6 @@ ostream& operator <<( ostream& os, const mtime& src )
    os << buf;
    return os;
 }
-#endif
 
 read_stream& operator >>( read_stream& rs, mtime& dest )
 {
@@ -2291,7 +2287,6 @@ void udate::convert_to_calendar( )
    }
 }
 
-#ifndef _WIN32_WCE
 void udate::print( ostream& os ) const
 {
    if( dn & c_day_number_in_use )
@@ -2302,7 +2297,6 @@ void udate::print( ostream& os ) const
    else
       os << ymd.yr << '-' << ( int )ymd.mo << '-' << ( int )ymd.dy;
 }
-#endif
 
 udate udate::local( )
 {
@@ -2458,7 +2452,6 @@ bool operator ==( const udate& lhs, const udate& rhs )
    }
 }
 
-#ifndef _WIN32_WCE
 ostream& operator <<( ostream& os, const udate& src )
 {
    year yr;
@@ -2486,7 +2479,6 @@ ostream& operator <<( ostream& os, const udate& src )
 
    return os;
 }
-#endif
 
 read_stream& operator >>( read_stream& rs, udate& dest )
 {
@@ -3119,13 +3111,11 @@ seconds operator -( const date_time& lhs, const date_time& rhs )
    return lhss - rhss;
 }
 
-#ifndef _WIN32_WCE
 ostream& operator <<( ostream& os, const date_time& src )
 {
    os << src.ud << ' ' << src.mt;
    return os;
 }
-#endif
 
 read_stream& operator >>( read_stream& rs, date_time& dest )
 {

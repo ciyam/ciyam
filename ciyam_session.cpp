@@ -2458,13 +2458,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          ostringstream osstr;
          osstr << setw( 3 ) << setfill( '0' ) << truncation_count;
 
-         if( file_exists( name + ".backup.zip" ) )
-            remove_file( name + ".backup.zip" );
+         if( file_exists( name + ".backup.bun.gz" ) )
+            remove_file( name + ".backup.bun.gz" );
 
-         exec_system( "zip -q " + name + ".backup.zip " + file_names );
+         exec_system( "bundle -q " + name + ".backup.bun.gz " + file_names );
 
          if( truncate_log )
-            exec_system( "zip -q " + name + "." + osstr.str( ) + ".zip " + name + ".log." + osstr.str( ) );
+            exec_system( "bundle -q " + name + "." + osstr.str( ) + ".bun.gz " + name + ".log." + osstr.str( ) );
 
          remove_file( name + ".sql.sav" );
          remove_file( name + ".dat.sav" );
@@ -2508,11 +2508,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             if( !file_exists( module_list_name ) )
                throw runtime_error( "need '" + module_list_name + "' to perform a rebuild" );
+
             buffer_file_lines( module_list_name, module_list );
          }
 
-         if( !rebuild && !partial && !file_exists( name + ".backup.zip" ) )
-            throw runtime_error( "need '" + name + ".backup.zip' to preform a restore" );
+         if( !rebuild && !partial && !file_exists( name + ".backup.bun.gz" ) )
+            throw runtime_error( "need '" + name + ".backup.bun.gz' to preform a restore" );
 
          if( !rebuild && !partial )
          {
@@ -2530,7 +2531,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             file_names += " " + backup_sql_name;
             file_names += " " + module_list_name;
 
-            exec_system( "unzip -o -q " + name + ".backup.zip " + file_names );
+            exec_system( "unbundle -o -q " + name + ".backup.bun.gz " + file_names );
 
             buffer_file_lines( module_list_name, module_list );
 
@@ -2539,7 +2540,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                file_names += " " + module_list[ i ] + ".init.lst";
 
             if( !file_names.empty( ) )
-               exec_system( "unzip -o -q " + name + ".backup.zip" + file_names );
+               exec_system( "unbundle -o -q " + name + ".backup.bun.gz " + file_names );
 
             file_names.erase( );
             for( size_t i = 0; i < module_list.size( ); i++ )
@@ -2558,7 +2559,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             if( !file_names.empty( ) )
-               exec_system( "unzip -o -q " + name + ".backup.zip" + file_names );
+               exec_system( "unbundle -o -q " + name + ".backup.bun.gz" + file_names );
          }
 
          if( !rebuild && !partial && ( !file_exists( sav_sql_name ) || !file_exists( sav_dat_name )

@@ -20,17 +20,17 @@ else
   [ -d $WEBDIR/$2/images ] ||
   {
    mkdir $WEBDIR/$2/images
-   unzip -q images -d $WEBDIR/$2/images
+   ./unbundle -q images -d $WEBDIR/$2/images
   }
   [ -d $WEBDIR/$2/popups ] ||
   {
    mkdir $WEBDIR/$2/popups
-   unzip -q popups -d $WEBDIR/$2/popups
+   ./unbundle -q popups -d $WEBDIR/$2/popups
   }
   [ -d $WEBDIR/$2/scripts ] ||
   {
    mkdir $WEBDIR/$2/scripts
-   unzip -q scripts -d $WEBDIR/$2/scripts
+   ./unbundle -q scripts -d $WEBDIR/$2/scripts
   }
   [ -f $WEBDIR/$2/requirements.html ] ||
   {

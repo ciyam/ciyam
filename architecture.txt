@@ -1,0 +1,81 @@
+Overview of System Architecture
+-------------------------------
+
+The CIYAM sytem consists of several key applications and tools. Most of the tools are not relevant for use in
+a production environment although the tools bundle and unbundle should be installed for usage with backing up
+and restoring application data.
+
+The essential components of the system are as follows:
+
+Name              Role/Description
+---------------   --------------------------------------------------------
+ciyam_client      Single-threaded RPC style client.
+ciyam_interface   Multi-threaded FCGI application client.
+ciyam_server      Multi-threaded application server.
+upload            Multi-threaded FCGI file uploader.
+
+The following components are optional for production but are required for development:
+
+Name              Role/Description
+---------------   --------------------------------------------------------
+bundle            Archiving tool used for packages/backups.
+unbundle          Archiving tool used for packages/restores.
+
+The following components are required for development installations only:
+
+Name              Role/Description
+---------------   --------------------------------------------------------
+Meta              Modelling/Application Generation module.
+construct         Used to construct template file outlines from packages.
+diff              Text file diff tool (similar to standard *nix tool).
+diffp             Diff patching tool (to patch one or merge two diffs).
+dump              Object Data Storage hex data dump tool.
+extract           Tool used to extract manual code from generated source.
+generate_commands Tool to transform a .cms source file into .cmh include.
+modeller          Legacy modelling tool used to maintain the Meta model.
+test              Basic regression test utility (see test_system.txt).
+test_cache        Testbed application for the ODS caching implementation.
+test_fcgi         Testbed FCGI application (to check if FCGI is working).
+test_numeric      Testbed for the numeric class.
+test_ods          Testbed for the Object Data Storage system.
+test_parser       Testbed for the (RPC) command parser.
+test_pdf_gen      Testbed for the PDF generator.
+test_sql          Simple tool for issuing SQL queries.
+xrep              Expression replacement tool for expanding templates.
+xvars             Tool used by the make system (see make_system.txt).
+
+The following batch/script files are required for development installations:
+
+Name              Role/Description
+---------------   --------------------------------------------------------
+config            Generates config.h from config.h.xrep (and config.info).
+create_db         Creates an empty DB.
+dotests           Runs basic tool and system regression tests.
+drop_db           Drops an existing DB.
+genmake           Generates a make file (see make_system.txt).
+genmodule         Used explicitly only to generate the Meta model.
+
+Various other batch/scripts that are used internally by development installations are not listed here.
+
+Module and Storage Concepts
+---------------------------
+An application instance consists of one or more modules (which are shared/dynamic libraries) plus one storage
+(which is one SQL and one ODS DB). The web interface (if present) is stored in an application directory below
+that nominated by the WEBDIR environment variable.
+
+As storage and modules are physically separate items modules can be shared by other application instances but
+it should be noted that a storage can only be used by one application instance.
+
+Application Server Basics
+-------------------------
+The application server is a multi-threaded program that concurrently handles clients that connect in order to
+invoke RPC commands. Multiple storages can be used and shared by the various connected clients, however, each
+client connection can itself only operate with the one storage at a time.
+
+As well as direct storage operations via RPC commands the application server provides a framework that allows
+class objects to be created/destroyed and sent commands. In this manner actual DB operations are performed by
+clients without involving any direct SQL (i.e. object to relational DB mapping).
+
+In line with the CIYAM methodology all SQL queries are generated (via object methods) and therefore "raw" SQL
+should never be found coded in any module (excluding DDL/SQL generated via the class template).
+
