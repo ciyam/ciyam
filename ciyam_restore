@@ -1,0 +1,33 @@
+if [ $# -lt 1 -o $# -gt 3 ]; then
+ echo Usage: ciyam_restore [[-rebuild]] [app name] [[web path]]
+else
+ export opt=
+ export CIYAM_STORAGE=$1
+ export web_path=$2
+ export backup_path=$PWD
+
+ if [ "$1" = "-rebuild" ]; then
+  export opt=$1
+  export CIYAM_STORAGE=$2
+  export web_path=$3
+ fi
+
+ if [ -f "$backup_path/$CIYAM_STORAGE.backup.bun.gz" ]; then
+  echo Starting restore...
+  echo \<ciyam_restore.cin $opt >~ciyam_restore.cin
+  ./ciyam_client -quiet -no_prompt <~ciyam_restore.cin
+  rm ~ciyam_restore.cin
+
+  if [ ! "$web_path" = "" ]; then
+   pushd $web_path
+   rm -r -f files
+   ./unbundle -o "$backup_path/$CIYAM_STORAGE.bun.gz" files/*
+   popd
+   echo
+   echo NOTE: Use "chmod -R a+rw $web_path/files" if required.
+  fi
+  echo Finished restore...
+ else
+  echo Error: Backup file \'$CIYAM_STORAGE.backup.bun.gz\' not found.
+ fi
+fi

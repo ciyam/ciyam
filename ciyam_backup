@@ -1,0 +1,28 @@
+if [ $# -lt 1 -o $# -gt 3 ]; then
+ echo Usage: ciyam_backup [[-trunc]] [app name] [[web path]]
+else
+ export opt=
+ export CIYAM_STORAGE=$1
+ export web_path=$2
+ export backup_path=$PWD
+
+ if [ "$1" = "-trunc" ]; then
+  export opt=$1
+  export CIYAM_STORAGE=$2
+  export web_path=$3
+ fi
+
+ echo Starting backup...
+ echo \<ciyam_backup.cin $opt>~ciyam_backup.cin
+ ./ciyam_client -quiet -no_prompt <~ciyam_backup.cin
+ rm ~ciyam_backup.cin
+
+ if [ ! "$web_path" = "" ]; then
+  pushd $web_path
+  echo Adding application files to backup...
+  ./bundle -q -y "$backup_path/$CIYAM_STORAGE.backup.bun.gz" -r files/*
+  popd
+ fi
+
+ echo Finished backup...
+fi
