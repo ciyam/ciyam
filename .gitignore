@@ -79,6 +79,9 @@ ciyam.idx
 ciyam.sql
 packages.lst
 
+# Ignore storage backups.
+*.backup.bun.gz
+
 # Ignore customised environment init file.
 ciyam_init_cmd.bat
 

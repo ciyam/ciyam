@@ -1,0 +1,6 @@
+storage_init ciyam
+perform_fetch Meta Class "" Name,Plural,Id -min
+perform_fetch Meta Field "" Name,Id -min
+perform_fetch Meta Enum "" Name,Id -min
+perform_fetch Meta Type "" Name,Id -min
+.quit

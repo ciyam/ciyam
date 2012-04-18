@@ -700,10 +700,12 @@ int main( int argc, char* argv[ ] )
       if( !filename.empty( ) && filename[ 0 ] == '-' )
          throw runtime_error( "unknown or bad option '" + filename + "' use -? to see options" );
 
-      filename += c_default_extension;
-
+      string ext( c_default_extension );
       if( use_zlib )
-         filename += c_zlib_extension;
+         ext += c_zlib_extension;
+
+      if( filename.find( ext ) == string::npos )
+         filename += ext;
 
       bool get_exclude_filespecs = false;
       string directory = g_cwd.substr( pos + 1 );
