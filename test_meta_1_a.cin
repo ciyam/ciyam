@@ -9,4 +9,3 @@ perform_fetch Meta Field "" Name,Id -min
 perform_fetch Meta Enum "" Name,Id -min
 perform_fetch Meta Type "" Name,Id -min
 .quit
-
