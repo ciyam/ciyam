@@ -1,0 +1,13 @@
+if [ $# -lt 3 ]; then
+ echo Usage: getmeta [meta type] [key val] [\"field1,[field2,[...]]\"] [[package key]]
+else
+
+ if [ "$4" = "" ]; then
+  echo \<getmeta.cin $1 $2 $3>~getmeta.cin
+ else
+  echo \<getmeta.cin $1 $2 $3 files/100/136100/$4.map>~getmeta.cin
+ fi
+
+ ./ciyam_client -quiet -no_prompt <~getmeta.cin
+ rm ~getmeta.cin
+fi
