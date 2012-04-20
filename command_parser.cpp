@@ -449,9 +449,8 @@ void command_parser::impl::do_parse_syntax( node* p_node, const char*& p_input )
          p_new_node->id = ++num_nodes;
          p_node->p_match_node = p_new_node;
 
-         // NOTE: The very first node is permitted to just contain a match branch.
-         if( p_node->id == 1 )
-            p_node->is_okay = true;
+         // NOTE: Any node is permitted to just contain a match branch.
+         p_node->is_okay = true;
 #ifdef DEBUG
          cout << "::: match push :::" << endl;
 #endif

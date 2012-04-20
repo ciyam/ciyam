@@ -144,11 +144,6 @@ const char* const c_session_variable_module = "@module";
 const char* const c_session_variable_storage = "@storage";
 const char* const c_session_variable_tz_abbr = "@tz_abbr";
 
-// NOTE: When trying to find an "upper bound" for a multi-part key when only provided with a partial key a
-// space is appended to the last provided part as it is not expected that trailing spaces should be present
-// in any key.
-const char* const c_partial_key_append = " ";
-
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -5863,8 +5858,9 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
 }
 
 string get_field_values( size_t handle,
- const string& parent_context, const vector< string >& field_list, const string& tz_abbr,
- bool is_default, bool as_csv, vector< string >* p_raw_values, const map< int, string >* p_inserts )
+ const string& parent_context, const vector< string >& field_list,
+ const string& tz_abbr, bool is_default, bool as_csv, vector< string >* p_raw_values,
+ const map< int, string >* p_inserts, const std::map< std::string, std::string >* p_package_map )
 {
    string field_values;
    string key_value( instance_key_info( handle, parent_context, true ) );
@@ -5899,7 +5895,12 @@ string get_field_values( size_t handle,
       if( p_inserts && p_inserts->count( i ) )
       {
          if( p_inserts->find( i )->second == c_key_field )
-            add_next_value( as_csv, key_value, field_values );
+         {
+            if( !p_package_map || p_package_map->find( key_value ) == p_package_map->end( ) )
+               add_next_value( as_csv, key_value, field_values );
+            else
+               add_next_value( as_csv, p_package_map->find( key_value )->second, field_values );
+         }
          else
             add_next_value( as_csv, p_inserts->find( i )->second, field_values );
 
@@ -5910,6 +5911,21 @@ string get_field_values( size_t handle,
          next_value = key_value;
       else if( field != c_ignore_field )
          next_value = execute_object_command( handle, context, "get " + field );
+
+      if( p_package_map )
+      {
+         for( map< string, string >::const_iterator ci = p_package_map->begin( ); ci != p_package_map->end( ); ++ci )
+         {
+            while( true )
+            {
+               string::size_type pos = next_value.find( ci->first );
+               if( pos == string::npos )
+                  break;
+
+               next_value.replace( pos, ci->first.length( ), ci->second );
+            }
+         }
+      }
 
       if( p_raw_values )
          p_raw_values->push_back( next_value );
@@ -5936,7 +5952,12 @@ string get_field_values( size_t handle,
    {
       field_values += ',';
       if( p_inserts->find( field_list.size( ) )->second == c_key_field )
-         add_next_value( as_csv, key_value, field_values );
+      {
+         if( !p_package_map || p_package_map->find( key_value ) == p_package_map->end( ) )
+            add_next_value( as_csv, key_value, field_values );
+         else
+            add_next_value( as_csv, p_package_map->find( key_value )->second, field_values );
+      }
       else
          add_next_value( as_csv, p_inserts->find( field_list.size( ) )->second, field_values );
    }

@@ -185,9 +185,10 @@ void setup_list_fields( list_source& list,
           && !extra_data.count( c_field_extra_print_summary )
           && !extra_data.count( c_field_extra_print_only_summary ) )
          {
-            check_for_indexed = true;
             if( fld.indexed )
             {
+               check_for_indexed = true;
+
                list.sort_field = 1;
                list.unique_index = fld.unique;
                list.first_index_field = field_id;
