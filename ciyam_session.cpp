@@ -1166,6 +1166,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string set_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_set_values ) );
          string fields( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_fields ) );
          bool minimal( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_minimal ) );
+         string map_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_map_file ) );
          bool create_pdf( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_create_pdf ) );
          string format_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_format_file ) );
          string output_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_output_file ) );
@@ -1256,6 +1257,43 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          map< string, string > set_value_items;
          if( !set_values.empty( ) )
             parse_field_values( module, mclass, set_values, set_value_items, &socket_handler.get_transformations( ) );
+
+         map< string, string > search_replaces;
+         if( !map_file.empty( ) )
+         {
+            string path( storage_web_root( true ) );
+            path += "/" + map_file;
+
+            ifstream inpf( path.c_str( ) );
+            if( !inpf )
+               throw runtime_error( "unable to open file '" + path + "' for input" );
+
+            string next;
+            while( getline( inpf, next ) )
+            {
+               if( next.empty( ) )
+                  continue;
+
+               string::size_type pos = next.find( '=' );
+               if( pos == string::npos )
+                  continue;
+
+               if( pos == next.size( ) - 1 )
+                  continue;
+
+               string key = next.substr( pos + 1 );
+               string data = next.substr( 0, pos );
+
+               if( data.length( ) > 3 && data.substr( 0, 4 ) == "opt_" )
+               {
+                  pos = data.find( "_class" );
+                  if( pos == string::npos || ( pos + strlen( "_class" ) != data.length( ) ) )
+                     continue;
+               }
+
+               search_replaces.insert( make_pair( key, data ) );
+            }
+         }
 
          // KLUDGE: Assume a dynamic instance is needed if a context has been supplied
          // as there is no simple way to otherwise determine this (maybe it's not even
@@ -1407,8 +1445,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         string key_output( "[" + instance_key_info( handle, context ) + "]" );
 
-                        string field_output( get_field_values( handle, context, field_list,
-                         tz_abbr, false, false, summaries.empty( ) ? 0 : &raw_values, &field_inserts ) );
+                        string field_output( get_field_values( handle, context, field_list, tz_abbr,
+                         false, false, summaries.empty( ) ? 0 : &raw_values, &field_inserts, &search_replaces ) );
 
                         if( minimal )
                            output = field_output;
