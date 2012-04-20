@@ -1,0 +1,611 @@
+Creating A New Package
+----------------------
+
+Firstly before starting to turn manually written code into a specification driven package make sure that the
+code has been well tested and has all the core features necessary for a package as it is much easier to make
+wholesale changes to manually written code than it is to do the same for templatised source.
+
+Another point to consider when moving from manual code to specifications is whether records that will end up
+being created should be global or belong to a user and/or a group (these may also end up as being options to
+add for selection during package installation).
+
+The following are a set of guidelines to help transform the manual code into a package:
+
+1) Identify all manual changes.
+
+The easiest way to do this (and most useful for generated source comparison later) is to rename the manually
+modified file(s) and perform a "generate". This will create a new copy of the file (using the original name)
+that contains no manual changes (a simple diff between the renamed and regenerated files will display all of
+the manual changes).
+
+2) Identify all model artifacts.
+
+Analyse all manual source code and find all classes, child relationships, fields, modifiers, procedures and
+procedure arguments that have been used. It is recommended to do this in a systematic way by keeping a list
+of class attributes and child relationships for each class (remembering that the same class may be used via
+foreign key fields or child relationships but its class attributes only need to be known only once).
+
+Apart from the class specific artifacts the module name, class name(s) and any Enum and Enum_Item names may
+also have been used in manual code and will need to be replaced (the module name and class name of the root
+node do not require specification support as they are always available).
+
+3) Design the specification type structure.
+
+Assuming the list of model artifacts isn't trivial a single specification record will not be sufficient for
+capturing the information then one or more child specifications (which may also contain their own children)
+will need to be created.
+
+The recommended method to devise the specification "tree" is to start with the root node (which is the main
+class for each source file) and determine what artifacts this specification will contain and then determine
+how a child specifications will relate to the root node.
+
+If the main class contains numerous fields and other artifacts that the manually written code is using then
+the one specification will probably not be enough to hold even this. In this case the first (and maybe also
+subsequent) child specification(s) will need to get its Class from the Parent Specification.
+
+When creating the actual Specification Type records that will then be used to automatically generate source
+the order needs to be from leaves to root (as each child Specification Type needs to be known to its parent
+prior to creating the actual Specification record). Therefore a suggested approach is start the list at the
+root but then grow the list "upwards" (and indent for children, children of children, etc.).
+
+Consider a class (Sample) for which the fields Name, Start, Finish, Extra are required along with a foreign
+key field Address and a child relationship Transaction. For the Address class the fields Street, Number and
+Unit are required and for the Transaction class the fields When and Amount. Clearly this information cannot
+be captured using a single Specification Type record so the approach to take is to start with the root node
+(Sample) and add child nodes as necessary in order to cover all required model artifacts.
+
+The following illustrates how the tree could be created in four passes (each pass adds a new node above the
+existing nodes).
+
+First pass:
+
+[for_sample]
+Class: Sample
+Field: Name
+Other_Field: Start
+Other_Field_2: Finish
+Source_Parent: Address
+
+second pass:
+
+   [for_sample_info]
+   Class: Sample <Class from parent>
+   Field: Extra
+   Child_Rel: Transaction
+
+[for_sample]
+Class: Sample
+Field: Name
+Other_Field: Start
+Other_Field_2: Finish
+Source_Parent: Address
+<Actions to have Add_Info to create for_sample_info>
+
+third pass:
+
+      [for_sample_info_cinfo]
+      Class: Transaction <Child_Rel from parent>
+      Field: When
+      Other_Field: Amount
+      <for_sample_info Actions to be cleared)
+
+   [for_sample_info]
+   Class: Sample <Class from parent>
+   Field: Extra
+   Child_Rel: Transaction
+   <Actions to have Add_Child_Info to create for_sample_info_cinfo>
+
+[for_sample]
+Class: Sample
+Field: Name
+Other_Field: Start
+Other_Field_2: Finish
+Source_Parent: Address
+<Add_Info to create for_sample_info>
+
+fourth pass:
+
+   [for_sample_sinfo]
+   Class: Address <Source_Parent from parent>
+   Field: Street
+   Other_Field: Number
+   Other_Field_2: Unit
+   <parent Actions to be cleared)
+
+      [for_sample_info_cinfo]
+      Class: Transaction <Child_Rel from parent>
+      Field: When
+      Other_Field: Amount
+      <parent Actions to be cleared)
+
+   [for_sample_info]
+   Class: Sample <Class from parent>
+   Field: Extra
+   Child_Rel: Transaction
+   <Actions to have Add_Child_Info to create for_sample_info_cinfo>
+   <parent Actions to have Add_Source_Info to create for_sample_sinfo>
+
+[for_sample]
+Class: Sample
+Field: Name
+Other_Field: Start
+Other_Field_2: Finish
+Source_Parent: Address
+<Actions to have Add_Info to create for_sample_info>
+
+Clearly there is no single solution to creating such a specification type tree and although in this example
+a number of available specification type fields were not used that could have been it is recommended to try
+and construct a tree that will be as clear as possible for the specification user to work with (rather than
+trying to create the minimal number of nodes possible).
+
+4) Create the specification type records.
+
+Firstly create a backup of the meta storage (i.e. ciyam_backup Meta) as a "restore" will be necessary later
+(prior to package completion) and may also be required during the package development cycle.
+
+Starting at the top of the inverted tree create a Specification Type record for each node. In order to work
+out what Specification Type fields require what values each node needs to be rewritten. The following shows
+how this was done with the previous Sample specification type tree.
+
+For child specifications you need to set Is_System and Is_Child_Only true and Protect_Class_From_Edit would
+normally also be true (as it would be expected that the class would be obtained from the parent). The Notes
+should tell the user what each of the fields being used are supposed to be assigned to as well as to remind
+the user if an action (such as Add Info) is required to continue completion of the specification.
+
+For Specification_Name generally the root would use "for_{class}" (where the {class} token will be replaced
+by the actual class name when the specification is created). Child names only need to be unique within each
+parent but the typical naming convention is to start with the root name and append an abbreviation which is
+indicative of the source of its class (e.g. "for_sample_sinfo" when the source of the child's class was its
+parent's source parent or "for_sample_cinfo" if its source was from the parent's child relationship).
+
+The Specification_Object field for the root node is set to the name of the source template file (without an
+extension). For all child nodes it is just set to "n/a". For the root node use the Default_Child_Vars value
+to hold empty values for optional child nodes (as optional variables need to be passed with empty values to
+the source specification).
+
+Although not a requirement it is recommended to use validation fields (such as Field_type) where applicable
+to ensure that the specification isn't easily given incorrect input that will lead to compilation (or worse
+yet runtime) errors.
+
+When naming the specification variables it is best to prefix names belonging to classes other than the root
+node's class with the class name or an abbreviation thereof (e.g. addr_street and addr_unit for fields that
+belong to the Address class) to ensure that no duplicate variable names are accidentally created.
+
+-----------------------------------------------------------------------------------------------------------
+Name: for_sample_sinfo
+Notes: Field is "street", Other Field is "number" and Other Field 2 is "unit".
+Specification_Name: for_sample_sinfo
+Specification_Vars: addr_street={field}
+                    addr_number={ofield}
+                    addr_unit={o2field}
+Specification_Object: n/a
+
+[Basic Fields]
+Needs_Class: true
+Allow_Field: true
+Needs_Field: true
+Allow_Other_Field: true
+Needs_Other_Field: true
+Allow_Other_Field_2: true
+Needs_Other_Field_2: true
+
+[Basic Options]
+Is_System: true
+Is_Child_Only: true
+Protect_Class_From_Edit: true
+
+[Advanced Options]
+Use_Parent_Source_Parent_For_Class: true
+Has_Next_Specification_Info: true
+Next_Protect_Source_Parent: true
+
+-----------------------------------------------------------------------------------------------------------
+Name: for_sample_info_cinfo
+Notes: Field is for "when" and Other Field is for "amount".
+Specification_Name: for_sample_info_cinfo
+Specification_Vars: trans_when={field}
+                    trans_amount={ofield}
+Specification_Object: n/a
+
+[Basic Fields]
+Needs_Class: true
+Allow_Field: true
+Needs_Field: true
+Allow_Other_Field: true
+Needs_Other_Field: true
+
+[Basic Options]
+Is_System: true
+Is_Child_Only: true
+Protect_Class_From_Edit: true
+
+[Advanced Options]
+Use_Parent_Child_Rel_For_Class: true
+Has_Next_Specification_Info: true
+Next_Protect_Child_Rel: true
+
+-----------------------------------------------------------------------------------------------------------
+Name: for_sample_info
+Notes: Field is for "extra" and Child Rel is for "transaction".
+
+       After saving click "Add Child Info" to continue.
+Specification_Name: for_sample_info
+Specification_Vars: extra={field}
+                    transactions={child}
+Specification_Object: n/a
+
+[Basic Fields]
+Needs_Class: true
+Allow_Field: true
+Needs_Field: true
+
+[Extra Fields]
+Allow_Child_Relationship: true
+Needs_Child_Relationship: true
+
+[Advanced Options]
+Use_Parent_Class: true
+Specification_Actions: 115432$115100.301405
+Child_Specification_Type: for_sample_info_cinfo
+Has_Next_Specification_Info: true
+Next_Specification_Actions: 115437$115100.301405
+Next_Child_Specification_Type: for_sample_sinfo
+
+-----------------------------------------------------------------------------------------------------------
+Name: for_sample
+Notes: Field is for "name", Other Field is for "start" and Other Field 2 is for "finish". Source Parent is for "address".
+
+       After saving click "Add Info" to continue.
+Specification_Name: for_{class}
+Specification_Vars: name={field}
+                    start={ofield}
+                    finish={o2field}
+                    address={spfield}
+Specification_Object: for_sample
+
+[Basic Fields]
+Needs_Class: true
+Allow_Field: true
+Needs_Field: true
+Allow_Other_Field: true
+Needs_Other_Field: true
+Allow_Other_Field_2: true
+Needs_Other_Field_2: true
+
+[Extra Fields]
+Allow_Source_Parent: true
+Needs_Source_Parent: true
+
+[Advanced Options]
+Specification_Actions: 115441$115100.301405
+Child_Specification_Type: for_sample_info
+
+In order for parent specifications to display "Add Info" (or Add Source Info or other) an "action" will need
+to be put into the Specification_Actions field. Although the complete action syntax has a lot of other parts
+the relevant parts for use in a Specification Type such as the above are: <pid>$<cid>.<fid> where "pid" must
+be the id of a Meta Specification Type Procedure (e.g. 115441 for Add_Info), "cid" is the Meta Specification
+class (so always 115100) and "fid" is the relationship field for the child specification to the parent (will
+always be 301405). The Specification Type of the child specification that will be created needs to be chosen
+via the Child_Specification_Type field.
+
+Once a child specification has been created via an action (such as Add Source Info) then the child will need
+to update the parent's Actions (otherwise the button could be clicked on again). This is achieved by setting
+Has_Next_Specification_Info true. If there is no further action for the parent (i.e. the child should simply
+clear the parent Actions) then just set this field true. If another action is instead desired so that two or
+more children can belong to the same parent then the child needs to put the action and child specification's
+type into Next_Specification_Actions and Next_Child_Specification_Type respectively.
+
+In order to ensure that the child specification is kept correctly in sync with the parent field that it gets
+its class from that field needs to be protected after the child record has been saved. This is done by using
+either the Next_Protect_Child_Rel or Next_Protect_Source_Parent fields (nothing is required in the case that
+the child uses the parent's class).
+
+4) Create new specification records using the new specification types.
+
+When creating each new specification check that the notes and the UI fields are matching and that after each
+save also check that the specification vars are all present and make sense (as they will be next used in the
+source template). Also make sure there are no duplicate var names and that any actions (e.g. "Add Info") are
+no longer available to the parent once the child specification they have been used to create has been saved.
+
+Prior to commencing to write the source specification it is recommended to first review the manually written
+code to check that all model artifact names are present in the root specification variables. Also if was not
+already added then make sure a "sections" variable is present in the root specification that holds the names
+of each code injection point.
+
+5) Create the new specification source template file and check source generation.
+
+After verifying all artifact names are present create a new specification source template that initially has
+just the section name checks. The relevant source outline template (e.g. ciyam_class.cpp.xrep.outline) needs
+to be edited for each of the applicable code injection sections in order to include the new source template.
+
+The recommended method is to work on one injection section at a time by first copying and pasting the manual
+source and then carefully processing this to replace all artifact names with "xrep" variable expressions and
+ensuring that these are being passed to the specification source template via the source template outline.
+
+It should be noted that later the additions being made to the source template outline will actually be moved
+into the new package as a package specific specification source template file. It is recommended to use this
+approach as it allows the source generation to be checked prior to the actual creation of the package.
+
+After completing a section the source template file needs to be reconstructed from the updated outline (this
+can be done using "construct @packages.lst ciyam_class.cpp.xrep") ensuring that new source will be generated
+by removing the saved xrep variables (e.g. del Model_Sample.vars.xrep.sav) and then regenerating the model.
+
+Assuming no errors are present in the xrep expressions the source file should have been updated and a simple
+file comparision between it and the originally saved version should show that the newly generated section is
+now present (with matching source code).
+
+These steps to add section source template code are then repeated for each section that requires injection.
+
+When completed the specification source template file will need to be reviewed to ensure all model artifacts
+have been replace by xrep expressions. This is easiest performed using regular expression searches for upper
+case letters as all model artifacts should start with an upper case letter while only a select few framework
+artifacts (such as macros or special comment markers) will contain any upper case.
+
+A more precise way to determine that the model artifacts have been correctly replaced by xrep expressions is
+to change the name of every artifact used and then regenerate the model. Another important aspect of testing
+new specifications is to ensure that correct code generation occurs (and later compiles) when artifacts that
+are optional are omitted.
+
+6) Create the specification type(s) package component.
+
+Using the console client issue a command similar to the following (if there are multiple specification types
+then replace ... with the comma separated list).
+
+> storage_init Meta
+> perform_package_export Meta Specification_Type for_sample[,...] Sample.specs.sio -x=Specification_Type:*
+
+If any of the specification types were in the form of a tree it is likely that the content of the .specs.sio
+file will contain repeated records due to the way that the package export works. This is nothing for concern
+but in order to ensure no duplicate records (due to a potential although unlikely key clash) will be created
+by a package user it is recommended that key values be replaced by each specification type's Name.
+
+The following console client command can be used to determine the search/replace values:
+
+> storage_init Meta
+> perform_fetch Meta Specification_Type -q=Name=for_sample* "" @key,Name -min
+
+Note that when performing the search/replaces there will be more than one occurrence of each key where specs
+form node trees.
+
+7) Create the model artifacts package component.
+
+The "perform_package_export" export command needs to be passed the keys of each class that will comprise the
+new package. The various "Meta_Class.*" files are used in order to ensure that the export includes all other
+related model artifacts when starting with a class key.
+
+Using the console client issue a command similar to the following (if package is to contain multiple classes
+then replace ... with the comma separated key list).
+
+> storage_init Meta
+> perform_package_export Meta Class <class_key>[,...] Sample.package.sio -t=@Meta_Class.tests.lst -x=@Meta_Class.excludes.lst -i=@Meta_Class.includes.lst
+
+The initial export file will require a number of changes in order to become a usuable package with the major
+part of this process resulting in the creation of a key mapping file (e.g. Sample.keys.lst) which will later
+be used when installing instances of the new package.
+
+An initial package key mapping file would look something like the following:
+
+[Sample.keys.lst]
+;This replace is for the group
+;key_group=<group>
+;
+;This replace is for the model
+;key_model=<model>
+;
+
+Step 1. Replace group and model keys
+
+The semi-colons are comments and so the actual mapping for "key_group" and "key_model" will be provided when
+package installation occurs, however, it is necessary to replace the actual group and model key values found
+in the .package.sio file with "key_group" and "key_model" respectively. When performing the search & replace
+it should be noted that various field types are prefixed by the group key (so you it is expected that values
+such as "key_group_string" will end up in the .package.sio file).
+
+Step 2. Remove foreign key fields
+
+Foreign key fields are automatically created when a Relationship is created therefore the Field records that
+are in the .package.sio file need to be removed. As the previous step will have changed their type prefix to
+"key_group" search on "key_group_foreign_key" and remove the matching Field records.
+
+Step 3. Replace external package keys with mapping variables and remove external artifacts
+
+Classes that belong to other packages (such as User or Group) must be removed from the .package.sio file but
+their keys will have been used for other artifacts (such as Relationships or Specifications). The format for
+external class key replacements is always "var_<package>_class" where <package> is the package name in lower
+case. The following is a sample addition to the .keys.lst file for the User class (which belongs to the User
+package).
+
+[Sample.keys.lst]
+...
+;These replaces are for the user
+;var_user_class=<user_class> (optional)
+;
+
+Note that once again this key mapping is only a comment as the actual mapping for the "var_user_class" value
+will be determined when the dependent User package is installed. Also note that artifacts such as Fields and
+perhaps even Relationships may in fact belong to the dependent package and so also will need to be carefully
+examined and if determined to not belong to the new package then removed.
+
+As well as Classes there may also be Fields and other artifacts belonging to external packages that may need
+key mapping entries. If such artifacts are not able to be identified at this stage then they will be readily
+discovered during package installation testing.
+
+Step 4. Identify and create mappings for standard types
+
+Although basically the same as the previous step this is given its own step just in case when thinking about
+external artifacts the package creator might have overlooked the usage of "standard" types.
+
+It is most likely that some of the Types used by Fields that belong to the new package's Class(es) will have
+been selected from those Types installed via the Standard package. Search for "<name>Type" and for each type
+found determine if it is a standard type and if so then replace this key where used in the .package.sio file
+with a standard type mapping (refer to Standard.keys.lst to find the mapping names for the standard types).
+
+After a standard type key has been replaced it is recommended to add a mapping comment to the .keys.lst file
+so that the dependencies are clearly documented. The "standard type" record itself must be then removed from
+the .package.sio (Types that are not "standard" ones should be left as part of the package using the package
+name in lower case followed by an underbar as their naming prefix).
+
+[Sample.keys.lst]
+...
+;These replaces are for standard enums and types
+;var_standard_str100=<str100>
+;var_standard_date_type=<date>
+;
+
+Step 5. Add any package options
+
+If the new package is intended to have one or more options that can be set prior to installation each option
+needs to be included in the .keys.lst file (note that these entries are not comments). For external packages
+the "package type" name needs to be assigned to the option variable (and for boolean options just use "opt="
+or "opt=1" depending whether the package option should be omitted or present by default).
+
+[Sample.keys.lst]
+...
+;Implementation options
+opt_sample_user=User
+;
+
+Note that if the new package has dependent packages that are "multi instance" then an "ext" mapping variable
+will be required for each such package. So if the new "sample" package required the "Event" package which is
+a multi-instance package then the .keys.lst would instead look like the following:
+
+[Sample.keys.lst]
+...
+;Required external multi instance packages
+ext_sample_event=Event
+;
+;Implementation options
+opt_sample_user=User
+;
+
+The usage of such options is only within the .keys.lst file itself so this step requires zero changes to the
+the .package.sio file.
+
+Step 6. Replace new class and other artifact keys with mapping variables
+
+In order to facilitate the usage of artifacts in the new package with packages to be developed in the future
+mapping variables need to be created for these artifacts (and the key values replaced with these mappings in
+the .package.sio file).
+
+At the very least major class names should be mapped although it is recommended to also map fields which are
+likely to used for foreign key selection (such as "name" or "description") and any "restrict specifications"
+that are also likely to be required for such selections.
+
+The more mappings that are supplied for the new package then the more usable this package will be for future
+packages, however, by the same token the less changeable the package becomes (as each mapping is effectively
+a published interface). Therefore it is recommended to consider carefully which mappings will be most useful
+to include and not to include others (if required a newer version of the package that exposes other mappings
+can always be created).
+
+[Sample.keys.lst]
+...
+var_sample_class=@key
+var_sample_name_field=@key
+;
+
+Step 7. Append all non-mapped package keys to the mapping key list
+
+In order to ensure that no key clashes can occur when installing instances of the new package every artifact
+that is created requires a key mapping. This also ensures that newly created keys are in accordance with the
+current system time (which can be helpful for future analysis).
+
+Another reason that every artifact to be created requires a mapped key is to ensure that inadvertant updates
+don't occur (any record update in the .package.sio file will require an exclamation mark at the beginning of
+its key). Any non-explicit updates will result in an error during package installation.
+
+The easiest method to extract key mappings from the .package.sio is to use the "extract" tool along with the
+command option "-p" (for package). The following console command illustrates this usage:
+
+extract -p Sample.package.sio >> Sample.keys.lst
+
+Step 8. Change any optional key mapping entries accodingly
+
+If the new package contains any options then the all applicable key mappings need to be altered according to
+the value of the option. This is achieved through the use of conditional key mappings which prefix the value
+of the mapped key. The conditional prefix format is "[?|!]<opt_name>=" where the value is only used when the
+option is non-empty (for the ? version) or empty (for the ! version).
+
+Assuming that the key "20111102180000024000" is optional according to "opt_sample_user" then the key mapping
+"20111102180000024000=@key" would instead be replaced by the following:
+
+[Sample.keys.lst]
+...
+20111102180000024000=?opt_sample_user=@key
+20111102180000024000=!opt_sample_user=
+...
+
+8) Create package source template file(s)
+
+Back in section 5 additions were made to the source template outline for the new package as this was helpful
+in order to test the source generation prior to creating the package. These additions must now be moved from
+the general source template outline into a package specific source template outline which is used during the
+package installation to construct the system specific source template outline.
+
+9) Create package archive and perform package type installation
+
+If the package contains any source template outlines then, in order to verify that they are correctly merged
+into the system specific source template outline(s), it is recommended to take a copy of original file(s) so
+they can be compared after package type installation.
+
+To complete a package a "package.info" file is required that identifies the name, version and other packages
+that the new package has as dependencies. The first line of this file contains the package name, version and
+whether the package is "multi" or "single" instance. If it intended that the one model can contain more than
+one installation of the same package type then this should be "multi" otherwise "single".
+
+Any following lines consist of a package type name and minimum version number for any packages that this new
+package has a dependency. Note that external packages that are "optional" should not be placed here.
+
+[package.info]
+Sample 1 multi
+Standard 1
+
+Once this file has been saved the package archive can then be created and will consist of this file, the key
+map and .package.sio file, any source template outlines and if it has any specifications then the .specs.sio
+file and all of its .spec.xrep files.
+
+The following is the console command required to create the "Sample" package archive.
+
+zip Sample.package.zip package.info Sample.keys.lst Sample.package.sio Sample.ciyam_class.cpp.xrep for_sample.spec.xrep
+
+At this time a restore of the meta storage backup (i.e. ciyam_restore Meta) should be executed to return the
+Meta system to how it was prior to the development of the specifications for the new package as described in
+section 4 of this document.
+
+In order for the package to be available for usage it must now be installed as a Package Type. To accomplish
+this log in to Meta as "admin" and from the Package Types list click New Record. The initial name which will
+default to "New_Package_Type" is not important as the actual name will be determined from the "package.info"
+file during installation. So after saving then attach the archive (Sample.package.zip) and then finally just
+click Install. Assuming no errors occur the new package is now ready for usage testing.
+
+10) Test package usage
+
+In order to check dependencies (and in particular those of the Standard package) it is recommended to log in
+to Meta with a user id which belongs to a group that has no information beyond what is automatically created
+when a group is added (if not already in use then the "guest" user might be useful for this).
+
+The backup originally taken prior to specification development (described in section 4) should be kept as is
+until testing is completed. After each package installation test packages should be removed (in the opposite
+order they were installed) and then deleted from the test Model so that .log and .map files that are created
+during package installation are removed.
+
+To test it is recommended to first create a new Model and then to attempt to use the new package without the
+dependencies (to make sure the dependencies were correctly placed into the package.info file). Once this has
+been verified then install all dependency packages (with only default options initially) and then check that
+the new package installs without error and that all model artifacts (i.e. the Classes, Relationships, Views,
+Lists, etc.) were all created as expected.
+
+Note that typically errors might be due to incorrect or missing mappings in the .keys.lst file or keys which
+need to be replaced with their mappings in the .package.sio file. For some cases (e.g. Initial_Record_Value)
+records actually require updating rather than creating (for this case the keys in the .package.sio file need
+to be prefixed with an exclamation mark).
+
+Once errors have been resolved the package needs to be archived with the updated files, however, there is no
+need to perform a backup restore and reinstall the Package Type (just uninstall all Packages then delete all
+of them and test again). After testing the new package with all dependencies using only "default options" it
+is then recommended to test various combinations of dependency package options (as well as the new package's
+options). Clearly a new package with a number of options and a number of depencies will require considerable
+testing before it could be considered ready for general usage.
+
+When testing is completed (and any issues resolved) then after performing a storage restore the Package Type
+should be once again installed and then a new storage backup taken (which will now include the new package).
+
