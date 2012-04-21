@@ -1,0 +1,24 @@
+<html>
+
+<head>
+<title>`{`$application`} Requirements</title>
+<link rel="stylesheet" href="cat_interface.css" type="text/css"/>
+</head>
+
+<body>
+<h1 align="center">`{`$application`} Help</h1>
+
+<h2 align="center">Minimum Requirements</h2>
+<p>
+In order to use `{`$application`} your browser must support Javascript and the Document Object Model (DOM). If you have been
+directed to here then it has been detected that Javascript is not supported.
+</p>
+
+<p>
+`{`$application`} has been verified to work with Internet Explorer v6+ and Mozilla Firefox v1.5+. If you are using one of these
+browser's and have been redirected here then please check that Javascript has not been disabled before trying again.
+</p>
+</body>
+
+</html>
+
