@@ -48,7 +48,11 @@ If all has gone well then it is time to install the IDE application which is don
 ./install_fcgi upload meta
 ./install Meta meta
 
+To use the application you'll need to make sure that the application server (ciyam_server) is running. To run
+it under Windows use "start ciyam_server" and under Linux "./ciyam_server &". Once the application server has
+started and is "listening" you are now ready to use the IDE.
+
 If all went well the you should now be able to access the IDE: http://localhost/Meta
 
-A login form should appear which can be tested using the password and user id "guest" (no quotes).
+From the login form which should have appeared use the password and user id "guest" (no quotes).
 

@@ -1,0 +1,3 @@
+`{`$new_modules`=`$modules`+`$name`}
+`{`$new_modules`=`$new_modules`~`$name`}
+`{`[`$new_modules`,\$`+\n`]`}

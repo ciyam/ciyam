@@ -1,0 +1,1 @@
+`{`[`$all_classes`,call remove_class.bat `{`$module`} \$`+\n`]`}
