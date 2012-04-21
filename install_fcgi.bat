@@ -12,8 +12,12 @@ set install_path=%WEBDIR%\%directory%
 if not exist %1.exe goto error2
 if not exist %install_path%\fcgi.sio goto error3
 
-if not '%WEBSVC%' == '' net stop %WEBSVC%
-ping 127.0.0.1 -n 2 > nul
+if exist "%WEBDIR%\%directory%\%1.kill.bat" del "%WEBDIR%\%directory%\%1.kill.bat"
+#REM Use PING to approximate a 2 second pause...
+PING 127.0.0.1 -n 3 >nul
+if exist "%WEBDIR%\%directory%\%1.kill.bat" call "%WEBDIR%\%directory%\%1.kill.bat"
+
+:next
 echo Installing %1 to %install_path%
 copy %1.exe "%install_path%\%1.fcgi"
 
@@ -24,7 +28,6 @@ copy %2 "%install_path%"
 goto extra
 
 :done
-if not '%WEBSVC%' == '' net start %WEBSVC%
 goto end
 
 :error1
