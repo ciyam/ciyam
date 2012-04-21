@@ -1,0 +1,988 @@
+html
+{
+   height:100%;
+   min-height:100%;
+}
+
+body
+{
+   font-family:verdana,helvetica;
+   font-size:12px;
+   padding:0px;
+   margin:0px;
+   height:100%;
+   min-height:100%;
+   background:#ddd;
+}
+
+input,textarea,select
+{
+   font-family:verdana,helvetica;
+   font-size:12px;
+}
+
+a
+{
+   text-decoration:underline;
+   color:#222;
+}
+
+#content
+{
+   width:100%;
+   border:0px solid red;
+   margin:0px auto;
+   text-align:center;
+   min-height:100%;
+   height:auto !important;
+   height:100%;
+}
+
+#normal_content
+{
+   background-image:url(background.png);
+   background-repeat:repeat-y;
+   background-position:center;
+   position:absolute;
+
+   width:100%;
+   border:0px solid #000;
+   height: auto !important;
+   height:100%;
+   min-height:100%;
+
+   top:0px;
+   left:0px;
+}
+
+#login_content
+{
+   position:absolute;
+   width:100%;
+   left:0px;
+   top:0px;
+   border:0px solid #000;
+   margin:0px auto;
+   text-align:center;
+   background:none;
+   background-color:#b9beba;
+   height:100%;
+   right:0px;
+}
+
+#login_content #nav
+{
+   padding-right:15px;
+   text-align:center;
+}
+
+#login_content #remainder
+{
+   background:none;
+   border:0px solid red;
+}
+
+/* NAVBAR */
+#navband
+{
+   width:973px;
+   height:35px;
+   background-color:#018611;
+   border-top:1px solid #666;
+   border-bottom:1px solid #666;
+   left:0px;
+   position:relative;
+   top:0px;
+   margin:0px auto;
+   background:url(navbar.png) center repeat-x;
+}
+
+#nav
+{
+   width:98%;
+   margin:0px auto;
+   border:0px solid #000;
+   text-align:left;
+   font-size:12px;
+   color:#fff;
+   height:35px;
+}
+
+#uselects
+{
+   margin-top:5px;
+   float:left;
+   border:0px solid #000;
+}
+
+#uselects a
+{
+   color:#fff;
+}
+
+#uselects select
+{
+   font-size:12px;
+}
+
+#nav #username
+{
+   margin-top:10px;
+   float:right;
+   border:0px solid #000;
+}
+
+#nav #username a
+{
+   color:#fff;
+}
+/* END NAVBAR */
+
+#header
+{
+   background-color:#b9beba;
+   border:0px solid red;
+   width:974px;
+   margin:0px auto;
+   background: url(background_header.png) top repeat-y;
+}
+
+#remainder
+{
+   width:990px;
+   _height: 82%; /* Kludge for display using IE 6 */
+   border:0px solid red;
+   margin:0px auto;
+}
+
+#print_remainder #main
+{
+   width:100%;
+}
+
+#print_remainder
+{
+   width:80%;
+}
+
+#sidebar
+{
+   width:210px;
+   _height: 100%; /* Kludge for display using IE 6 */
+   border:0px solid #000;
+   text-align:left;
+}
+
+#sidebar ul
+{
+   margin:0px;
+   padding:0px;
+   margin-left:0px;
+   margin-top:15px;
+   border:0px solid #000;
+   width:185px !important;
+   width:196px;
+}
+
+#sidebar li
+{
+   list-style-type:none;
+   padding:7px;
+   margin-left:10px;
+}
+
+#sidebar li a
+{
+   color:#000;
+   text-decoration:none;
+   font-size:12px;
+}
+
+.sidebar_selected
+{
+   color:#803305;
+   background-color:#fff;
+   border-top:1px solid #aaa;
+   border-bottom:1px solid #aaa;
+   border-left:1px solid #aaa;
+   font-size:12px;
+}
+
+.clear
+{
+   clear:both;
+}
+
+#main
+{
+   text-align:left;
+   border:0px solid #000;
+   width:735px;
+   float:right;
+   margin-top:15px;
+   margin-right:20px;
+   padding-bottom:40px;
+}
+
+#main h2
+{
+   border-bottom:1px solid #bbb;
+   color:#ff6600;
+   line-height:35px;
+   margin:0px;
+   padding:0px;
+   margin-bottom:15px;
+}
+
+.editdetails
+{
+   font-size:12px;
+   position:relative;
+   float:right;
+   top:-12px;
+}
+
+.editdetails a
+{
+   color:#803305;
+}
+
+.list
+{
+   border:1px solid #ccc;
+}
+
+.list tr th
+{
+   background-color:#ddd;
+   padding:6px;
+   margin:0px;
+   border:0px;
+   background:url(header_row.gif) top repeat-x;
+   color:#555;
+}
+
+.list tr.footer
+{
+   background-color:#ddd;
+   padding:6px;
+   margin:0px;
+   border:0px;
+   text-align:left;
+   background:url(footer_row.gif) bottom repeat-x;
+   color:#555;
+}
+
+.list td
+{
+   padding:6px;
+   margin:0px;
+   color: #222;
+   border:0px;
+   border-top:1px solid #ddd;
+   background-color:#fff;
+   text-align:left;
+}
+   
+.list td.center
+{
+   text-align:center;
+}
+
+.vtab
+{
+   padding:0px;
+   margin:0px;
+   position:relative;
+   top:5px;
+   float:right;
+}
+
+.nonchildtabs
+{
+   float:right;
+   top:9px;
+   position:relative;
+   border:0px solid #000;
+}
+
+.nonchildtabs .tab
+{
+   border:1px solid #bbb;
+   border-bottom:1px solid #bbb;
+}
+
+.selected_tab,.tab
+{
+   background-color:#fff;
+   padding:7px;
+   padding-right:10px;
+   border:1px solid #bbb;
+   border-bottom:1px solid #bbb;
+}
+
+.selected_tab
+{
+   font-weight:bold;
+}
+
+.tab a
+{
+   text-decoration:none;
+}
+
+th.tab
+{
+   background-color:#ddd;
+   color:#444;
+   font-weight:bold;
+   border:1px solid #bbb;
+   border-bottom:0px;
+   background:url(header_row.gif) top repeat-x;
+}
+
+th { text-align:left; }
+th.right { text-align:right; }
+th.center { text-align:center; }
+
+tr.list
+{
+   background:#9cf;
+}
+
+p.error
+{
+   color: red;
+   font-weight: bold;
+}
+
+tbody textarea
+{
+   width: 100%;
+}
+
+select.small
+{
+   font-size:10px;
+}
+
+select.smaller
+{
+   font-size:6px;
+}
+
+select.large
+{
+   font-size:16px;
+}
+
+select.larger
+{
+   font-size:20px;
+}
+
+input.small
+{
+   font-size:10px;
+}
+
+input.smaller
+{
+   font-size:6px;
+}
+
+input.large
+{
+   font-size:16px;
+}
+
+input.larger
+{
+   font-size:20px;
+}
+
+input.textinput
+{
+   width: 100%;
+}
+
+input.error
+{
+   background-color: #f00
+}
+
+input.texterror
+{
+   width: 100%;
+   background-color: #f00;
+}
+
+td.error
+{
+   color:red;
+   font-weight:bold;
+}
+
+a.button
+{
+   background-color:#ccc;
+   border:1px solid #999;
+   padding:3px 20px;
+   text-decoration:none;
+   margin:0px;
+   color:#555;
+   font-weight:bold;
+}
+
+td { text-align:left; }
+td.right { text-align:right; }
+td.center { text-align:center; }
+
+td.small
+{
+   font-size:10px;
+}
+
+td.smaller
+{
+   font-size:6px;
+}
+
+td.large
+{
+   font-size:16px;
+}
+
+td.larger
+{
+   font-size:20px;
+}
+
+.small
+{
+   font-size:10px;
+}
+
+.smaller
+{
+   font-size:6px;
+}
+
+.large
+{
+   font-size:16px;
+}
+
+.larger
+{
+   font-size:20px;
+}
+
+.disabled
+{
+   color: gray;
+}
+
+.selected_panel
+{
+   background-color:#ddd;
+   padding-top:2px;
+   padding-left:10px;
+   padding-right:10px;
+   border:1px solid #bbb;
+}
+
+.list_highlight
+{
+   background-color:#ccc;
+}
+
+.full_width
+{
+   width:100%;
+   border:1px solid #ccc;
+}
+
+#list_search td.list
+{
+   padding:3px 7px;
+}
+
+td.list
+{
+   padding:0px 7px;
+   height:28px;
+}
+
+/*LOGIN*/
+#loginbox
+{
+   padding:0px;
+   width:327px;
+   height:230px;
+   margin:100px auto;
+   background:url(login_box.gif)  no-repeat;
+   border:0px solid #000;
+   padding-top:60px;
+}
+   
+#loginform
+{
+   width:250px;
+   border:0px solid #000;
+   text-align:right;
+}
+   
+#loginform label
+{
+   display:block;
+   height:2em;
+   padding:5px;
+   color:#fff;
+   margin-right:10px;
+}
+
+#loginform .loginfields
+{
+   margin-right:0px;
+   float:right;
+   clear:right;
+   width:130px;
+   margin-left:10px;
+}
+   
+#logout_text
+{
+   margin-top:100px;
+}
+
+#submit
+{
+   margin-top:5px;
+   text-align:center;
+}
+
+/*END LOGIN*/
+
+#footer
+{
+   left: 0px;
+   bottom: 0px;
+   width: 100%;
+   font-size:10px;
+   border:0px solid #000;
+   position: absolute;
+   _position: relative; /* Kludge for display using IE 6 */
+}
+
+/* SCREEN  */
+@media screen
+{
+   tr.invisible
+   {
+      display: none;
+   }
+
+   tr.odd_invisible
+   {
+      display: none;
+   }
+
+   tbody td.lowlight
+   {
+      color: gray;
+   }
+
+   tbody td.lowlight a:link
+   {
+      color: gray;
+   }
+
+   tbody td.lowlight a:active
+   {
+      color: gray;
+   }
+
+   tbody td.lowlight a:visited
+   {
+      color: gray;
+   }
+
+   tbody td.lowlight1
+   {
+      color: #066;
+   }
+
+   tbody td.lowlight1 a:link
+   {
+      color: #066;
+   }
+
+   tbody td.lowlight1 a:active
+   {
+      color: #066;
+   }
+
+   tbody td.lowlight1 a:visited
+   {
+      color: #066;
+   }
+
+   tbody td.highlight
+   {
+      color: red;
+   }
+
+   tbody td.highlight a:link
+   {
+      color: red;
+   }
+
+   tbody td.highlight a:active
+   {
+      color: red;
+   }
+
+   tbody td.highlight a:visited
+   {
+      color: red;
+   }
+
+   tbody td.highlight1
+   {
+      color: blue;
+   }
+
+   tbody td.highlight1 a:link
+   {
+      color: blue;
+   }
+
+   tbody td.highlight1 a:active
+   {
+      color: blue;
+   }
+
+   tbody td.highlight1 a:visited
+   {
+      color: blue;
+   }
+
+   tbody th
+   {
+      background: #999;
+   }
+
+   tbody tf
+   {
+      background: #999;
+   }
+
+   tbody tr.odd td
+   {
+      background: #eee;
+   }
+
+   tbody tr.odd th
+   {
+      background: #ccc;
+   }
+
+   tbody tr.odd_data td
+   {
+      background: #eee;
+   }
+
+   tbody tr.odd_error td
+   {
+      background: #eee;
+   }
+
+   tbody tr.lowlight td
+   {
+      color: gray;
+   }
+
+   tbody tr.lowlight td a:link
+   {
+      color: gray;
+   }
+
+   tbody tr.lowlight td a:active
+   {
+      color: gray;
+   }
+
+   tbody tr.lowlight td a:visited
+   {
+      color: gray;
+   }
+
+   tbody tr.odd_lowlight td
+   {
+      color: gray;
+      background: #eee;
+   }
+
+   tbody tr.odd_lowlight td a:link
+   {
+      color: gray;
+      background: #eee;
+   }
+
+   tbody tr.odd_lowlight td a:active
+   {
+      color: gray;
+      background: #eee;
+   }
+
+   tbody tr.odd_lowlight td a:visited
+   {
+      color: gray;
+      background: #eee;
+   }
+
+   tbody tr.lowlight1 td
+   {
+      color: #066;
+   }
+
+   tbody tr.lowlight1 td a:link
+   {
+      color: #066;
+   }
+
+   tbody tr.lowlight1 td a:active
+   {
+      color: #066;
+   }
+
+   tbody tr.lowlight1 td a:visited
+   {
+      color: #066;
+   }
+
+   tbody tr.odd_lowlight1 td
+   {
+      color: #066;
+      background: #eee;
+   }
+
+   tbody tr.odd_lowlight1 td a:link
+   {
+      color: #066;
+      background: #eee;
+   }
+
+   tbody tr.odd_lowlight1 td a:active
+   {
+      color: #066;
+      background: #eee;
+   }
+
+   tbody tr.odd_lowlight1 td a:visited
+   {
+      color: #066;
+      background: #eee;
+   }
+
+   tbody tr.highlight td
+   {
+      color: red;
+   }
+
+   tbody tr.highlight td a:link
+   {
+      color: red;
+   }
+
+   tbody tr.highlight td a:active
+   {
+      color: red;
+   }
+
+   tbody tr.highlight td a:visited
+   {
+      color: red;
+   }
+
+   tbody tr.odd_highlight td
+   {
+      color: red;
+      background: #eee;
+   }
+
+   tbody tr.odd_highlight td a:link
+   {
+      color: red;
+      background: #eee;
+   }
+
+   tbody tr.odd_highlight td a:active
+   {
+      color: red;
+      background: #eee;
+   }
+
+   tbody tr.odd_highlight td a:visited
+   {
+      color: red;
+      background: #eee;
+   }
+
+   tbody tr.highlight1 td
+   {
+      color: blue;
+   }
+
+   tbody tr.highlight1 td a:link
+   {
+      color: blue;
+   }
+
+   tbody tr.highlight1 td a:active
+   {
+      color: blue;
+   }
+
+   tbody tr.highlight1 td a:visited
+   {
+      color: blue;
+   }
+
+   tbody tr.odd_highlight1 td
+   {
+      color: blue;
+      background: #eee;
+   }
+
+   tbody tr.odd_highlight1 td a:link
+   {
+      color: blue;
+      background: #eee;
+   }
+
+   tbody tr.odd_highlight1 td a:active
+   {
+      color: blue;
+      background: #eee;
+   }
+
+   tbody tr.odd_highlight1 td a:visited
+   {
+      color: blue;
+      background: #eee;
+   }
+}
+/* END SCREEN */
+
+/*  PRINT */
+@media print
+{
+   body
+   {
+      background-color:#fff;
+   }
+
+   p.footer
+   {
+      display: none;
+   }
+
+   p.screen
+   {
+      display: none;
+   }
+
+   tr.invisible
+   {
+      display: none;
+   }
+
+   tr.odd_invisible
+   {
+      display: none;
+   }
+
+   td.screen
+   {
+      display: none;
+   }
+
+   tbody td.invisible
+   {
+      display: none;
+   }
+
+   tbody td.odd_invisible
+   {
+      display: none;
+   }
+
+   tbody td.highlight
+   {
+      color: #000;
+      font-weight: bold;
+   }
+
+   tbody td.highlight1
+   {
+      color: #000;
+      font-weight: bold;
+   }
+      
+   .list .highlight
+   {
+      color:#000;
+   }
+      
+   #sidebar
+   {
+      display:none;
+   }
+      
+   #remainder
+   {
+      width:80%;
+      border:0px solid #000;
+      margin:0px auto;
+      overflow:hidden;
+   }
+      
+   #main h2
+   {
+      border-bottom:1px solid #bbb;
+      color:#000;
+      line-height:35px;
+   }
+      
+   #nav
+   {
+      width:100%;
+      margin:0px auto;
+      border:0px solid #000;
+      text-align:left;
+
+      color:#fff;
+      height:35px;
+   }
+      
+   #main
+   {
+      float:none;
+   }
+}
+
+#print_remainder
+{
+   width:80%;
+   border:0px solid #000;
+   margin:0px auto;
+   overflow:hidden;
+}
+
+#print_remainder #main
+{
+   float:none;
+}
+/* END PRINT */
