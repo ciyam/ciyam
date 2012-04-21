@@ -46,9 +46,14 @@ xrep @ciyam_interface.js.xrep include=%1.app.vars.xrep >"%install_path%\ciyam_in
 :skip_interface_javascript
 if not exist "%install_path%\fcgi.sio" copy fcgi.sio "%install_path%" >nul
 if not exist "%install_path%\libfcgi.dll" copy libfcgi.dll "%install_path%" >nul
+
+if not exist libeay32.dll goto skip_eay
 if not exist "%install_path%\libeay32.dll" copy libeay32.dll "%install_path%" >nul
+
+:skip_eay
 if not exist "%install_path%\upload.fcgi" copy upload.exe "%install_path%\upload.fcgi" >nul
 if not exist "%install_path%\ciyam_interface.fcgi" copy ciyam_interface.exe "%install_path%\ciyam_interface.fcgi" >nul
+
 xrep @setup_files.bat.xrep files=@setup_files.lst >~setup.bat
 call ~setup.bat "%install_path%"
 del ~setup.bat
