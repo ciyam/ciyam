@@ -1,0 +1,54 @@
+Getting Started
+---------------
+
+After cloning the repository use "make all" to build all targets and then run "do_tests" batch/script to test
+that all core functionality is working:
+
+make all
+./dotests
+
+(Windows users need to omit the ./ prefixes)
+
+The next step is to make sure that MySQL is installed and operating. The following steps will create a DB for
+testing the system, populate this DB with tables and data and check that all is functioning as expected:
+
+./create_db ciyam
+./init Meta ciyam
+./test Meta_tests.sio
+./drop_db ciyam
+
+The "ciyam" DB should only be used for regression test purposes (by repeating the above steps) so now another
+DB needs to be created for the IDE itself:
+
+./create_db Meta
+./init Meta Meta
+
+The next step is to make sure that the web server's FCGI is installed and operating. Run the following batch/
+script to install the FCGI testbed:
+
+./install_test_fcgi
+
+Assuming no errors occurred you should now be able to access the webpage: http://localhost/test_fcgi.html
+
+It will present a HTML form with a Perform Post Request button. To verify that FCGI is working correctly next
+click on the button. Output should look something like the following:
+
+Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
+
+If you go "back" to the page and then click the button again you should now see some like this:
+
+Found HTTP_COOKIE: TEST=TEST_COOKIE
+
+Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
+
+If all has gone well then it is time to install the IDE application which is done as follows:
+
+./setup Meta meta
+./install_fcgi ciyam_interface meta
+./install_fcgi upload meta
+./install Meta meta
+
+If all went well the you should now be able to access the IDE: http://localhost/Meta
+
+A login form should appear which can be tested using the password and user id "guest" (no quotes).
+
