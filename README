@@ -7,7 +7,6 @@ Name   Description                 Sample Value
 -----  -----------------           ------------
 CPPENV C++ Compiler (Windows only) mvc
 WEBDIR Web Document Root path      /srv/www/htdocs
-WEBSVC www service name            apache2
 
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 
