@@ -1,0 +1,19 @@
+if [ $# -lt 2 ]; then
+ echo Usage: remove_app_module [module name] [app dir] [[app name]]
+else
+ export directory=$WEBDIR/$2
+
+ if [ -f $directory/$1.jpg ]; then
+  rm $directory/$1.jpg
+ fi
+ if [ -f $directory/$1.html ]; then
+  rm $directory/$1.html
+ fi
+ if [ -f $directory/$1.fcgi.sio ]; then
+  rm $directory/$1.fcgi.sio
+ fi
+ if [ ! "$3" = "" ]; then
+  ./test_sql $3 $3 "SHOW TABLES FROM $3 LIKE 'T_$1_%'" >~remove_app_module
+  ./xrep @remove_app_module.xrep tables=@~remove_app_module >>$3.obsolete.sql
+ fi
+fi
