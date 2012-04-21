@@ -11,8 +11,8 @@ else
    if [ -f $WEBDIR/$1/upload.kill.sh ]; then
     rm $WEBDIR/$1/upload.kill.sh
    fi
-   if [ -f $WEBDIR/$1/cat_interface.kill.sh ]; then
-    rm $WEBDIR/$1/cat_interface.kill.sh
+   if [ -f $WEBDIR/$1/ciyam_interface.kill.sh ]; then
+    rm $WEBDIR/$1/ciyam_interface.kill.sh
    fi
 
    sleep 2
@@ -21,9 +21,9 @@ else
     chmod a+x $WEBDIR/$1/upload.kill.sh
     $WEBDIR/$1/upload.kill.sh
    fi
-   if [ -f $WEBDIR/$1/cat_interface.kill.sh ]; then
-    chmod a+x $WEBDIR/$1/cat_interface.kill.sh
-    $WEBDIR/$1/cat_interface.kill.sh
+   if [ -f $WEBDIR/$1/ciyam_interface.kill.sh ]; then
+    chmod a+x $WEBDIR/$1/ciyam_interface.kill.sh
+    $WEBDIR/$1/ciyam_interface.kill.sh
    fi
 
    rm -r $WEBDIR/$1
