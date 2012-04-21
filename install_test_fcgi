@@ -1,0 +1,23 @@
+if [ "$WEBDIR" = "" ]; then
+ echo Error: Missing environment variable \'WEBDIR\'.
+else
+ if [ ! -f test_fcgi ]; then
+  echo Error: File \'test_fcgi\' does not exist \(not built?\).
+ else
+  if [ ! -f test_fcgi.html ]; then
+   echo Error: File \'test_fcgi.html\' does not exist.
+  else
+   cp test_fcgi.html "$WEBDIR"
+   if [ ! -f "$WEBDIR/test_fcgi.html" ]; then
+    echo Error: Unable to copy \'test_fcgi.html\' to "$WEBDIR".
+   else
+    cp test_fcgi "$WEBDIR/test_fcgi.fcgi"
+    if [ ! -f "$WEBDIR/test_fcgi.fcgi" ]; then
+     echo Error: Unable to copy \'test_fcgi.fcgi\' to "$WEBDIR".
+    else
+     echo Installed. Use http://localhost/test_fcgi.html to test.
+    fi
+   fi
+  fi
+ fi
+fi
