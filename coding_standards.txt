@@ -1,0 +1,271 @@
+Coding Standards
+----------------
+
+All submitted source is expected to be consistent with the existing coding standards
+and these standards are also expected to apply to code generated from source templates.
+
+Format
+------
+
+- 3 space indenting, no tabs
+- leading or trailing underscores in generated code only
+- No CAPITAL letters use underscore ( e.g. my_identifier )
+- Use CAPITAL letters only for macros ( e.g. #define MY_MACRO; )
+
+Type          Prefixes   Example        
+----          --------   -------
+const         c_         const char c_ch; 
+enum          e_         enum etype e_etype_one; 
+
+globals	     g_         char* gp_ch;
+thread 	     gt_        static TLS( session )* gtp_session;
+ (these next prefixes can also be suffixes to the previous)
+pointer	     p_         char* p_ch;
+auto pointer  ap_        auto_ptr< char > ap_char; 
+ 
+Operator Space Rules
+--------------------
+
+There must always be a space either side of an operator with the following exceptions:-
+
+  No space before or after
+  ------------------------
+  .  
+  ::
+  ->
+
+  No space before
+  ---------------
+  ;  
+  ,
+  * pointer declaration ( e.g. bool function( char* p_ch ); )
+  & reference declaration ( e.g. bool function( char& ch ); )
+  postfix operators ( e.g. i++; )
+  : in case ( e.g. case doit: do_it( ); )
+  : in member access ( e.g. private: )
+  [ when accessing or declaring an array ( e.g. arr[ i ]; )
+  < when opening a template parameter list ( e.g. ref_count_ptr< T >; )
+  > when closeing an include ( e.g. #include <header>; )
+
+  No space after
+  --------------
+  ~  
+  !
+  * Indirection object pointed to ( e.g. return  *p_ch == ch; )
+  & Reference address of ( e.g. p_ch = &ch; )
+  function name, if, for and while
+  prefix operators ( e.g. ++i; )
+  ) when casting ( e.g return ( char )other_type; )  
+  operators following the reserved word 'operator' ( e.g. char obj::operator =( char ch ) )
+  < when opening an include ( e.g. #include <header>; )
+  # in non-indented macro ( e.g. #ifdef MACRO )
+
+Blank Lines
+-----------
+
+Encouraged to aid readability between blocks and statements but never use more than one blank
+between non-blank lines (this applies to generated code also).
+
+Block Style
+-----------
+
+bool function_name( int n )
+{
+   int x = 0;
+
+   for( int i = 0; i < n; i++ )
+   {
+      // NOTE: If something fails return here.
+      if( !Something( ) )
+          return false;
+      ...
+   }
+
+   switch( x )
+   {
+      case 0:
+      break; // i.e. don't indent after a case
+
+      case 1:
+      val *= 10;
+      break;
+
+      case 2:
+      val *= 100;
+      break;
+
+      default:
+      throw runtime_error( "unexpected x #" + to_string( x ) + " in function_name" );
+   }
+
+   return true;
+}
+
+Continuation
+------------
+
+// NOTE: Line continuations indent by one space only (i.e. don't indent further for nesting).
+export_data( outs, module, all_field_data[ i ].class_id,
+ all_field_data[ i ].value, last_class_id, output_fk_children, handler,
+ all_class_ids, excludes, tests, includes, exported_records, exported_children,
+ next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
+
+Lines continuation is encouraged for readability and lines should generally not exceed 110
+characters in length (in generated code lines of up to 200 characters are acceptable).
+
+try, to, keep,
+code, aligned, 
+as is possible
+
+please,
+do, not, get, wider, and,
+shorter
+
+a,
+slope,
+in, this, 
+direction, 
+is, acceptable
+
+but, it, is, not, 
+very desirable,
+to, slope, 
+in this,
+way
+
+Comments
+--------
+
+Commenting of the obvious is not desired or appreciated (code should instead be kept
+uncluttered and use easily understandable names for classes and variables).
+
+Apart from special cases in generated code comments should start with a "comment type"
+label which is one of the following:
+
+// NOTE: Something to take note of (such as unusual flow control or empty scope).
+
+// KLUDGE: Something ugly that is necessary but really should be further investigated.
+
+// FUTURE: A suggested performance or functionality improvement to be looked into later.
+
+// i.e. 10 seconds (clarification about a constant value or similar)
+
+Macros
+------
+
+#nospace
+#  twospaces
+#     fivespaces 
+#  twospaces
+#nospace
+
+#ifndef ONCE_GUARD_H
+#  define ONCE_GUARD_H
+ 
+#  ifndef HAS_PRECOMPILED_HEADERS
+#     include <header>
+#     ifdef _PLATFORM
+#        define PLATFORM_MACRO
+#        include <platform>
+#     else
+#        include <other_platform>
+#     endif
+#  endif
+...
+#endif
+
+#include <standard_header_a>
+#include <standard_header_b>
+
+#include "header_for_this_cpp_file.h"
+
+#include "local_headers_last.h"
+#include "order_smallest_to_largest_and_then_alphabeticaly.h"
+
+Class
+-----
+
+Member access order should be public, private then protected. 
+Data declrations first and methods after.
+
+class class_name
+{
+   public:
+   class_name( );
+   class_name( data_t data );
+   virtual ~class_name( );
+   ...
+
+   private:
+   struct impl;
+   impl* p_impl;
+
+/* NOTE: Use of the "p_impl" idiom is encouraged to reduce dependencies
+   and code that has been commented out such as the following should in
+   general never left when source is to be committed.
+
+   private:
+   data_t private_data;
+   data_t private_method( ) const;
+   ...
+   
+   protected:
+   data_t protected_data;
+   data_t protected_method( ) { return private_data; }
+   ...
+*/
+};
+
+Constructors
+------------
+
+class_name::class_name( int x, int y )
+ :
+ x( x ), // NOTE: One space indentation, parameter and member names are the same.
+ y( y )
+{
+   // NOTE: Use this->x if needs changing after initialization.
+   if( x > 100 && y < 100 )
+      this->x *= 10;
+}
+
+SQL
+---
+
+SQL is formatted so that it stands out from general code. 
+
+Operator space rules for commas and parenthesis are different from 
+the standard ( e.g. (nospace,nospace) )
+
+Keywods are in uppercase and names use prefixing.
+
+Prefix  Meaning
+------  -------
+T_      table
+C_      column
+I_      index
+
+string Meta_Workgroup::static_get_sql_columns( )
+{
+   string sql_columns;
+
+   sql_columns +=
+    "C_Key_ VARCHAR(64),"
+    "C_Ver_ INTEGER NOT NULL,"
+    "C_Rev_ INTEGER NOT NULL,"
+    "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Id VARCHAR(200) NOT NULL,"
+    "C_Name VARCHAR(200) NOT NULL,"
+    "C_Next_Enum_Id VARCHAR(200) NOT NULL,"
+    "C_Next_Model_Id VARCHAR(200) NOT NULL,"
+    "C_Next_Permission_Id VARCHAR(200) NOT NULL,"
+    "C_Next_Type_Id VARCHAR(200) NOT NULL,"
+    "C_Standard_Package VARCHAR(64) NOT NULL,"
+    "PRIMARY KEY(C_Key_)";
+
+   return sql_columns;
+}
+
+SELECT C_Key_,C_Ver_,C_Rev_,C_Typ_,C_User_Id,C_Password,C_Permissions,C_Workgroup,C_Active
+ FROM T_Meta_User USE INDEX (I_Meta_User_03) WHERE (C_User_Id >= 'guest') ORDER BY C_User_Id LIMIT 1
+
