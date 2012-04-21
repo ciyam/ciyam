@@ -1,0 +1,30 @@
+if [ $# -lt 2 ]; then
+ echo Usage: install_fcgi [FCGI w/o ext] [app dir] [[extra files]]
+else
+ export args=$1.fcgi
+ export directory=$WEBDIR/$2
+
+ if [ ! -f $1 ]; then
+  echo Error: File \'$1\' does not exist.
+ else
+  cp $1 $1.fcgi
+
+  if [ ! -f $args ]; then
+   echo Error: File \'$args\' does not exist.
+  elif [ ! -f $directory/fcgi.sio ]; then
+   echo Error: File \'$directory/fcgi.sio\' does not exist.
+  else
+  {
+   shift
+   shift
+
+   while [ $# -gt 0 ] ; do
+    export args="$args $1"
+    shift
+   done
+
+   cp $args $directory
+  }
+  fi
+ fi
+fi
