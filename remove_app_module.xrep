@@ -1,0 +1,2 @@
+-- NOTE: Comment added in case "tables" is empty.
+`{`[`$tables`,DROP TABLE IF EXISTS \$;`+\n`]`}
