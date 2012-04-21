@@ -1,0 +1,40 @@
+FCGI Configuration
+------------------
+
+Apache supports two different FCGI implementations. One is the module mod_fcgid which only works as a single
+threaded interface but is more suited to development because it only starts an FCGI server after the initial
+request is issued.
+
+The other mod_fastcgi is more suited to a production environment as it is a multi-threaded interface and all
+FCGI servers are started when Apache itself starts and a re-started automatically if they exit (or crash).
+
+Notes for using mod_fcgid with Apache 2.2
+-----------------------------------------
+
+1) Copy mod_fcgid.so into Apache's modules directory.
+
+2) Make the following changes to "httpd.conf" (found in Apache's "conf" directory):
+...
+LoadModule fcgid_module modules/mod_fcgid.so
+...
+#
+# This should be changed to whatever you set DocumentRoot to.
+#
+<Directory "c:/webroot">
+...
+    Options Indexes ExecCGI FollowSymLinks
+...
+    AllowOverride All
+...
+</Directory>
+...
+<IfModule fcgid_module>
+   AddHandler fcgid-script .fcgi
+   MaxProcessCount               10
+   MaxRequestLen                 10485760
+   IdleTimeOut                   3600
+   IPCConnectTimeout             20
+   IPCCommTimeout                300
+</IfModule>
+...
+
