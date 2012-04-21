@@ -79,6 +79,13 @@ ciyam.idx
 ciyam.sql
 packages.lst
 
+# Ignore Meta storage and related
+Meta.dat
+Meta.hdr
+Meta.idx
+Meta.sql
+Meta.modules.lst
+
 # Ignore storage backups.
 *.backup.bun.gz
 
