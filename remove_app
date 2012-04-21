@@ -1,0 +1,57 @@
+if [ $# -ne 1 ]; then
+ echo Usage: remove_app [app name]
+else
+ if [ -f $1.log ]; then
+  rm $1.log
+ fi
+ if [ -f $1.sql ]; then
+  rm $1.sql
+ fi
+
+ if [ -f $1.dat ]; then
+  rm $1.dat
+ fi
+ if [ -f $1.dat.lck ]; then
+  rm $1.dat.lck
+ fi
+ if [ -f $1.hdr ]; then
+  rm $1.hdr
+ fi
+ if [ -f $1.idx ]; then
+  rm $1.idx
+ fi
+ if [ -f $1.idx.lck ]; then
+  rm $1.idx.lck
+ fi
+
+ if [ -f $1.dead_keys.lst ]; then
+  rm $1.dead_keys.lst
+ fi
+
+ if [ -f $1.modules.lst ]; then
+  rm $1.modules.lst
+ fi
+ if [ -f $1.app.vars.xrep ]; then
+  rm $1.app.vars.xrep
+ fi
+
+ if [ -f $1.generate ]; then
+  rm $1.generate
+ fi
+ if [ -f $1.upgrade.cin ]; then
+  rm $1.upgrade.cin
+ fi
+ if [ -f $1.upgrade.sql ]; then
+  rm $1.upgrade.sql
+ fi
+ if [ -f $1.obsolete.sql ]; then
+  rm $1.obsolete.sql
+ fi
+
+ if [ -f $1.generate.log ]; then
+  rm $1.generate.log
+ fi
+ if [ -f $1.generate.1.cin ]; then
+  rm $1.generate.*.cin
+ fi
+fi

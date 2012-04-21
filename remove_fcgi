@@ -1,0 +1,32 @@
+if [ $# -lt 1 ]; then
+ echo Usage: remove_fcgi [app dir] [[web dir]]
+else
+ if [ $# -gt 1 ]; then
+  export WEBDIR=$2
+ fi
+ if [ "$WEBDIR" = "" ]; then
+  echo Error: Missing environment variable 'WEBDIR'.
+ else
+  if [ -d $WEBDIR/$1 ]; then
+   if [ -f $WEBDIR/$1/upload.kill.sh ]; then
+    rm $WEBDIR/$1/upload.kill.sh
+   fi
+   if [ -f $WEBDIR/$1/cat_interface.kill.sh ]; then
+    rm $WEBDIR/$1/cat_interface.kill.sh
+   fi
+
+   sleep 2
+
+   if [ -f $WEBDIR/$1/upload.kill.sh ]; then
+    chmod a+x $WEBDIR/$1/upload.kill.sh
+    $WEBDIR/$1/upload.kill.sh
+   fi
+   if [ -f $WEBDIR/$1/cat_interface.kill.sh ]; then
+    chmod a+x $WEBDIR/$1/cat_interface.kill.sh
+    $WEBDIR/$1/cat_interface.kill.sh
+   fi
+
+   rm -r $WEBDIR/$1
+  fi
+ fi
+fi

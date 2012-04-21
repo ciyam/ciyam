@@ -1,0 +1,132 @@
+if [ $# -ne 2 ]; then
+ echo Usage: remove_class [module name] [class name]
+else
+ if [ -f $1_$2.cmh ]; then
+  rm $1_$2.cmh
+ fi
+ if [ -f $1_$2.cms ]; then
+  rm $1_$2.cms
+ fi
+ if [ -f $1_$2.cpp ]; then
+  rm $1_$2.cpp
+ fi
+ if [ -f $1_$2.d ]; then
+  rm $1_$2.d
+ fi
+ if [ -f $1_$2.h ]; then
+  rm $1_$2.h
+ fi
+ if [ -f $1_$2.o ]; then
+  rm $1_$2.o
+ fi
+ if [ -f $1_$2.csv ]; then
+  rm $1_$2.csv
+ fi
+ if [ -f $1_$2.log ]; then
+  rm $1_$2.log
+ fi
+
+ if [ -f $1_$2.pdf.sio ]; then
+  rm $1_$2.pdf.sio
+ fi
+ if [ -f $1_$2.pdf.vars.xrep ]; then
+  rm $1_$2.pdf.vars.xrep
+ fi
+
+ if [ -f $1_$2.list.pdf.sio ]; then
+  rm $1_$2.list.pdf.sio
+ fi
+ if [ -f $1_$2.list.pdf.vars.xrep ]; then
+  rm $1_$2.list.pdf.vars.xrep
+ fi
+
+ for n in {1..9}
+ do
+  if [ -f $1_$2.list$n.pdf.sio ]; then
+   rm $1_$2.list$n.pdf.sio
+  fi
+  if [ -f $1_$2.list$n.pdf.vars.xrep ]; then
+   rm $1_$2.list$n.pdf.vars.xrep
+  fi
+ done
+
+ if [ -f $1_$2.glist.pdf.sio ]; then
+  rm $1_$2.glist.pdf.sio
+ fi
+ if [ -f $1_$2.glist.pdf.vars.xrep ]; then
+  rm $1_$2.glist.pdf.vars.xrep
+ fi
+
+ for n in {1..9}
+ do
+  if [ -f $1_$2.glist$n.pdf.sio ]; then
+   rm $1_$2.glist$n.pdf.sio
+  fi
+  if [ -f $1_$2.glist$n.pdf.vars.xrep ]; then
+   rm $1_$2.glist$n.pdf.vars.xrep
+  fi
+ done
+
+ if [ -f $1_$2.ulist.pdf.sio ]; then
+  rm $1_$2.ulist.pdf.sio
+ fi
+ if [ -f $1_$2.ulist.pdf.vars.xrep ]; then
+  rm $1_$2.ulist.pdf.vars.xrep
+ fi
+
+ for n in {1..9}
+ do
+  if [ -f $1_$2.ulist$n.pdf.sio ]; then
+   rm $1_$2.ulist$n.pdf.sio
+  fi
+  if [ -f $1_$2.ulist$n.pdf.vars.xrep ]; then
+   rm $1_$2.ulist$n.pdf.vars.xrep
+  fi
+ done
+
+ if [ -f $1_$2.nglist.pdf.sio ]; then
+  rm $1_$2.nglist.pdf.sio
+ fi
+ if [ -f $1_$2.nglist.pdf.vars.xrep ]; then
+  rm $1_$2.nglist.pdf.vars.xrep
+ fi
+
+ for n in {1..9}
+ do
+  if [ -f $1_$2.nglist$n.pdf.sio ]; then
+   rm $1_$2.nglist$n.pdf.sio
+  fi
+  if [ -f $1_$2.nglist$n.pdf.vars.xrep ]; then
+   rm $1_$2.nglist$n.pdf.vars.xrep
+  fi
+ done
+
+ if [ -f $1_$2.nulist.pdf.sio ]; then
+  rm $1_$2.nulist.pdf.sio
+ fi
+ if [ -f $1_$2.nulist.pdf.vars.xrep ]; then
+  rm $1_$2.nulist.pdf.vars.xrep
+ fi
+
+ for n in {1..9}
+ do
+  if [ -f $1_$2.nulist$n.pdf.sio ]; then
+   rm $1_$2.nulist$n.pdf.sio
+  fi
+  if [ -f $1_$2.nulist$n.pdf.vars.xrep ]; then
+   rm $1_$2.nulist$n.pdf.vars.xrep
+  fi
+ done
+
+ if [ -f $1_$2.vars.xrep.sav ]; then
+  rm $1_$2.vars.xrep.sav
+ fi
+
+ if [ -f $1_$2.extra.lst ]; then
+  while IFS= read -r file
+  do
+   [ -f "$file" ] && rm -f "$file"
+  done < $1_$2.extra.lst
+  rm $1_$2.extra.lst
+ fi
+fi

@@ -1,0 +1,77 @@
+if [ $# -lt 1 ]; then
+ echo Usage: remove_module [[-rdbms]] [module name]
+else
+ export mod_name=$1
+ export is_rdbms=
+
+ if [ "$1" = "-rdbms" ]; then
+  export is_rdbms=1
+  export mod_name=$2
+ fi
+
+ if [ ! "$is_rdbms" = "1" ] && [ ! -f $mod_name.cpp ]; then
+  echo Error: Module \'$mod_name\' does not exist.
+ else
+  ./xrep @remove_module.xrep name=$mod_name modules=@modules.lst >modules.lst.new
+  if [ $? -eq 0 ]; then
+   ./update modules.lst modules.lst.new
+   ./genmake
+
+   if [ "$is_rdbms" = "1" ]; then
+    cat $mod_name.classes.lst | xargs -n1 ./remove_class $mod_name
+
+    if [ -f $mod_name.cms ]; then
+     rm $mod_name.cms
+    fi
+    if [ -f $mod_name.cmh ]; then
+     rm $mod_name.cmh
+    fi
+    if [ -f $mod_name.cpp ]; then
+     rm $mod_name.cpp
+    fi
+    if [ -f $mod_name.o ]; then
+     rm $mod_name.o
+    fi
+    if [ -f $mod_name.d ]; then
+     rm $mod_name.d
+    fi
+    if [ -f $mod_name.so ]; then
+     rm $mod_name.so
+    fi
+    if [ -f $mod_name.txt ]; then
+     rm $mod_name.txt
+    fi
+    if [ -f $mod_name.sql ]; then
+     rm $mod_name.sql
+    fi
+    if [ -f $mod_name.init.lst ]; then
+     rm $mod_name.init.lst
+    fi
+    if [ -f $mod_name.fcgi.sio ]; then
+     rm $mod_name.fcgi.sio
+    fi
+    if [ -f $mod_name.vars.xrep ]; then
+     rm $mod_name.vars.xrep
+    fi
+    if [ -f $mod_name.classes.lst ]; then
+     rm $mod_name.classes.lst
+    fi
+    if [ -f $mod_name.acyclic.lst ]; then
+     rm $mod_name.acyclic.lst
+    fi
+    if [ -f $mod_name.make.vars.xrep ]; then
+     rm $mod_name.make.vars.xrep
+    fi
+    if [ -f $mod_name.spec.vars.xrep ]; then
+     rm $mod_name.spec.vars.xrep
+    fi
+    if [ -f $mod_name.spec.vars.xrep.sav ]; then
+     rm $mod_name.spec.vars.xrep.sav
+    fi
+   else
+    echo ""
+    echo \*\*\* Module has been removed \(it should now be safe to delete all applicable \'$mod_name\*\' files\).
+   fi
+  fi
+ fi
+fi

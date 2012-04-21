@@ -1,0 +1,40 @@
+if [ $# -lt 1 ]; then
+ echo Usage: create_module [[-rdbms]] [module name]
+else
+ export mod_name=$1
+ export is_rdbms=
+
+ if [ "$1" = "-rdbms" ]; then
+  export is_rdbms=1
+  export mod_name=$2
+ fi
+
+ if [ -f $mod_name.cpp ]; then
+  echo Error: Module \'$mod_name\' already exists.
+ else
+
+  if [ "$is_rdbms" = "1" ]; then
+   ./xrep @create_module.xrep name=$mod_name modules=@modules.lst >modules.lst.new
+   if [ $? -eq 0 ]; then
+    ./update modules.lst modules.lst.new
+   fi
+  else
+   if [ ! -f $mod_name.cin ]; then
+    echo "model_info -name=$mod_name -version=0.1">$mod_name.cin
+    echo model_save>>$mod_name.cin
+    echo Created \'$mod_name.cin\'.
+   fi
+
+   ./modeller < $mod_name.cin >/dev/null
+   if [ $? -eq 0 ] && [ -f $mod_name.sio ]; then
+    ./xrep @create_module.xrep name=$mod_name modules=@modules.lst >modules.lst.new
+    if [ $? -eq 0 ]; then
+     ./update modules.lst modules.lst.new
+     ./genmodule $mod_name
+    fi
+   else
+    echo Error: Running script \'$mod_name.cin\' failed to create \'$mod_name.sio\'.
+   fi
+  fi
+ fi
+fi
