@@ -1,0 +1,22 @@
+if [ $# -lt 2 ]; then
+ echo Usage: install [module name] [app dir] [[module alias]]
+else
+ export alias=$3
+ export directory=$WEBDIR/$2
+
+ if [ ! -f $1.fcgi.sio ]; then
+  echo Error: File \'$1.fcgi.sio\' does not exist.
+ elif [ ! -f $directory/fcgi.sio ]; then
+  echo Error: File \'$directory/fcgi.sio\' does not exist.
+ else
+  cp $1.fcgi.sio $directory
+
+  if [ ! -f $directory/$1.jpg ]; then
+   cp module.jpg $directory/$1.jpg
+  fi
+
+  if [ ! "$alias" = "" ]; then
+   ./xrep @module.html.xrep model_vars=$1.vars.xrep > $directory/$alias.html
+  fi
+ fi
+fi
