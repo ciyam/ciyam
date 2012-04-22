@@ -85,7 +85,7 @@ struct smtp_user_info
    smtp_user_info( const std::string& domain, const std::string& address,
     const std::string& username, const std::string& password, const date_time* p_dt,
     float utc_offset = 0.0, const std::string* p_tz_abbr = 0, const std::string* p_charset = 0,
-    bool use_ssl = false,  bool use_tls = false, smtp_auth_type auth_type = e_smtp_auth_type_login )
+    bool use_ssl = false, bool use_tls = false, smtp_auth_type auth_type = e_smtp_auth_type_login )
     :
     domain( domain ),
     address( address ),

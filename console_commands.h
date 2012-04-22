@@ -39,7 +39,7 @@ class console_command_handler : public command_handler
 
    bool is_handling_startup_options( ) const { return handling_startup_options; }
 
-   void set_prompt_prefix( const std::string& prefix ) { set_option_value( c_prompt_prefix_option, prefix );  }
+   void set_prompt_prefix( const std::string& prefix ) { set_option_value( c_prompt_prefix_option, prefix ); }
 
    void set_handling_startup_options( bool val ) { handling_startup_options = val; }
 
