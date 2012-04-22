@@ -397,7 +397,7 @@ void process_directory( const string& directory, const string& filespec_path,
                next_path.erase( 0, directory.size( ) );
                if( !next_path.empty( ) && next_path[ 0 ] == '/' )
                   next_path.erase( 0, 1 );
-            }      
+            }
 
             if( !next_path.empty( ) )
                next_path += "/";

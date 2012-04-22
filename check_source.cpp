@@ -1018,6 +1018,9 @@ int process_file( char* file_name )
          }
 
          last_ch = line[ i ];
+
+         if( last_ch != '\\' )
+            was_back_slash_literal = false;
       }
 
       if( last_ch && !was_c_style_comment && !in_c_style_comment && !in_cpp_style_comment )

@@ -124,7 +124,7 @@ void read_script_info( )
       ifstream inpf( c_autoscript_file );
 
       if( !inpf )
-         throw runtime_error( "unable to open '" + string( c_autoscript_file ) +  " for input" );
+         throw runtime_error( "unable to open '" + string( c_autoscript_file ) + " for input" );
 
       sio_reader reader( inpf );
       while( reader.has_started_section( c_section_script ) )

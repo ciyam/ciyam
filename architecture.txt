@@ -26,6 +26,7 @@ The following components are required for development installations only:
 Name              Role/Description
 ---------------   --------------------------------------------------------
 Meta              Modelling/Application Generation module.
+check_source      Tool used for pre-commit source code format checking.
 construct         Used to construct template file outlines from packages.
 diff              Text file diff tool (similar to standard *nix tool).
 diffp             Diff patching tool (to patch one or merge two diffs).
@@ -105,7 +106,7 @@ entire log must be able to be made available in order to do a "rebuild" (which i
 
 Uploaded and Rules Created Files
 --------------------------------
-Files that application users upload are not kept in the storage (only their existence is) so another key part
+Files that application users upload are not kept in the storage (only there existence is) so another key part
 of backing up is to ensure all of the application files have been periodically backed up. The provided backup
 batch/script files can be used to include these external files, however, this is not advisable for situations
 where the amount or size of these files is expected to be significant (for such applications it would instead

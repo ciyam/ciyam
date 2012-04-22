@@ -3749,7 +3749,7 @@ void term_session( )
          if( gtp_session == g_sessions[ i ] )
          {
             set< size_t >::iterator j;
-            for( j= gtp_session->release_sessions.begin( ); j != gtp_session->release_sessions.end( ); ++j )
+            for( j = gtp_session->release_sessions.begin( ); j != gtp_session->release_sessions.end( ); ++j )
                release_session( *j, false );
 
             g_condemned_sessions.insert(
@@ -3796,7 +3796,7 @@ void list_sessions( ostream& os, bool inc_dtms )
              << ' ' << g_sessions[ i ]->dtm_last_cmd.as_string( true, false );
          }
 
-         os  << ' ' << g_sessions[ i ]->last_cmd;
+         os << ' ' << g_sessions[ i ]->last_cmd;
 
          os << ' ' << g_sessions[ i ]->p_storage_handler->get_name( );
          if( g_sessions[ i ]->p_storage_handler->get_is_locked_for_admin( ) )
@@ -5454,7 +5454,7 @@ void module_load( const string& module_name,
 
                      modf << module_name << endl;
                   }
-               }   
+               }
             }
 
             if( !temp_sql_file_name.empty( ) )
@@ -5749,7 +5749,7 @@ void get_all_field_names( size_t handle, const string& context, vector< string >
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   for( int i = 0 ; i < instance.get_num_fields( ); i++ )
+   for( int i = 0; i < instance.get_num_fields( ); i++ )
       fields.push_back( instance.get_field_name( i ) );
 }
 
@@ -7048,7 +7048,7 @@ void import_package( const string& module,
          {
             while( search_replaces_map.count( replace_with ) )
                replace_with = search_replaces_map[ replace_with ];
-         }      
+         }
 
          if( do_replaces_for_find_string )
          {
