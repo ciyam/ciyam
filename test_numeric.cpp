@@ -215,6 +215,7 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
       }
       else if( command == c_cmd_test_numeric_round_table )
       {
+         //__Ignore_Block
          double values[ ] = { -2.6, -2.5, -2.4, -1.6, -1.5, -1.4,
           -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 1.4, 1.5, 1.6, 2.4, 2.5, 2.6 };
 

@@ -128,7 +128,7 @@ string replace_input_arg_values( const vector< string >& args, const string& inp
             if( all.empty( ) && str[ pos ] == ' ' ) // see above NOTE
                str.erase( pos, 1 );
          }
-      }   
+      }
 
       pos = str.find( c_environment_variable_marker, pos + 1 );
    }
@@ -372,7 +372,7 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
 
                // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
                string::size_type pos = next.find_last_not_of( '\\' );
-               if( pos != next.size( ) - 1 && ( next.size( ) - pos  - 1 ) % 2 )
+               if( pos != next.size( ) - 1 && ( next.size( ) - pos - 1 ) % 2 )
                {
                   next.erase( next.size( ) - 1 );
                   is_continuation = true;

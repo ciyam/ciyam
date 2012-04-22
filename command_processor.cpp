@@ -47,7 +47,7 @@ void command_processor::process_commands( )
 
          // NOTE: A trailing backslash (that is not escaped) is interpreted as a line continuation.
          string::size_type pos = cmd_and_args.find_last_not_of( '\\' );
-         if( pos != cmd_and_args.size( ) - 1 && ( cmd_and_args.size( ) - pos  - 1 ) % 2 )
+         if( pos != cmd_and_args.size( ) - 1 && ( cmd_and_args.size( ) - pos - 1 ) % 2 )
          {
             cmd_and_args.erase( cmd_and_args.size( ) - 1 );
             continue;

@@ -139,7 +139,7 @@ bool tcp_socket::open( )
    // NOTE: In order to stop connections from taking too long a 10 second timeout is specified
    // (other later operations such as sends and receives can have specific timeouts provided).
    struct timeval tv;
-   tv.tv_sec = 10;  // i.e. 10 seconds
+   tv.tv_sec = 10; // i.e. 10 seconds
 
    ::setsockopt( socket, SOL_SOCKET, SO_RCVTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
    ::setsockopt( socket, SOL_SOCKET, SO_SNDTIMEO, ( const char* )&tv, sizeof( struct timeval ) );
@@ -441,7 +441,7 @@ int tcp_socket::write_line( const string& str, size_t timeout )
 
    if( len >= 1 && str[ len - 1 ] == '\n' )
    {
-      if( len >= 2  && str[ len - 2 ] == '\r' )
+      if( len >= 2 && str[ len - 2 ] == '\r' )
          terminated = true;
       else
          truncate = true;

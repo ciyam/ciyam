@@ -456,12 +456,12 @@ void pdf_page::set_grey_fill_and_stroke( float fill, float stroke )
 
 void pdf_page::set_rgb_fill( float red, float green, float blue )
 {
-   HPDF_Page_SetRGBFill(  p_impl->page, red, green, blue );
+   HPDF_Page_SetRGBFill( p_impl->page, red, green, blue );
 }
 
 void pdf_page::set_rgb_stroke( float red, float green, float blue )
 {
-   HPDF_Page_SetRGBStroke(  p_impl->page, red, green, blue );
+   HPDF_Page_SetRGBStroke( p_impl->page, red, green, blue );
 }
 
 void pdf_page::set_line_cap( line_cap cap )

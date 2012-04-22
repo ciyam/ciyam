@@ -1568,7 +1568,7 @@ bool populate_list_info( list_source& list,
       {
          list.row_data.pop_back( );
          list.print_limited = true;
-      }   
+      }
    }
    else
    {
@@ -2038,7 +2038,7 @@ void add_quick_link( const string& module_ref,
    string qlink_cmd( "perform_create" );
 
    qlink_cmd += " " + sess_info.user_key
-    + " " +  date_time::standard( ).as_string( )
+    + " " + date_time::standard( ).as_string( )
     + " " + mod_info.id + " " + mod_info.user_qlink_class_id + " \"\"";
 
    escape( URL, "," );
@@ -2049,7 +2049,7 @@ void add_quick_link( const string& module_ref,
    qlink_cmd += " \"" + mod_info.user_qlink_pfield_id + "=" + sess_info.user_key;
    qlink_cmd += "," + mod_info.user_qlink_url_field_id + "=" + escaped( URL, ",\"" );
    qlink_cmd += "," + mod_info.user_qlink_name_field_id + "=" + escaped( name, ",\"" );
-   qlink_cmd += "," + mod_info.user_qlink_checksum_field_id + "=" + escaped( checksum, ",\"" ) + "\"";;
+   qlink_cmd += "," + mod_info.user_qlink_checksum_field_id + "=" + escaped( checksum, ",\"" ) + "\"";
 
    if( sess_info.p_socket->write_line( qlink_cmd ) <= 0 )
       had_send_or_recv_error = true;

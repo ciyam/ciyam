@@ -3356,7 +3356,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
       {
          get_obj( ).child_Field_Source( ).op_update( );
          string parent( get_obj( ).child_Field_Source( ).Class( ) );
-         string extra(  get_obj( ).child_Field_Source( ).Parent_Class( ) );
+         string extra( get_obj( ).child_Field_Source( ).Parent_Class( ) );
 
          get_obj( ).child_Field_Source( ).copy_all_field_values( get_obj( ) );
 

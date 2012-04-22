@@ -43,10 +43,10 @@ int main( )
 
       FCGX_FPrintF( out, "</pre>\n" );
       FCGX_FPrintF( out, "</body>\n</html>\n" );
-  }
+   }
 
-  FCGX_Finish( );
+   FCGX_Finish( );
 
-  return 0;
+   return 0;
 }
 

@@ -1081,7 +1081,7 @@ bool output_view_form( ostream& os, const string& act,
              || ( view_edit_effect.empty( ) && new_effect == c_modifier_effect_protect ) )
                view_edit_effect = new_effect;
          }
-      }   
+      }
 
       bool is_special_field = false;
 
@@ -2255,7 +2255,7 @@ bool output_view_form( ostream& os, const string& act,
                if( int_type == "bytes" )
                   cell_data = format_bytes( atoi( cell_data.c_str( ) ) );
                else if( int_type == "duration_dhm" || int_type == "duration_hms" )
-                  cell_data = format_duration( atoi( cell_data.c_str( ) ),  ( int_type == "duration_hms" ) );
+                  cell_data = format_duration( atoi( cell_data.c_str( ) ), ( int_type == "duration_hms" ) );
                else
                   throw runtime_error( "unsupported int_type '" + int_type + "'" );
             }

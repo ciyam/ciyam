@@ -404,7 +404,7 @@ int main( int /*argc*/, char* argv[ ] )
 
       request_handler* p_request_handler = new request_handler;
       p_request_handler->on_start( );
-   }   
+   }
 
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );

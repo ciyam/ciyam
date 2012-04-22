@@ -1214,7 +1214,7 @@ void output_list_form( ostream& os,
 
                      if( time_precision == "minutes" )
                      {
-                        input_size= 18;
+                        input_size = 18;
                         max_length = 16;
                      }
 
@@ -1351,7 +1351,7 @@ void output_list_form( ostream& os,
          os << "<td class=\"center\"><label>"
           << GDS( c_display_add_quick_link ) << "</label>&nbsp;&nbsp;";
 
-         os << "<input type=\"text\" "  << "size=\"40\" maxlength=\"100\""
+         os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
           << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input></td>";
       }
 
@@ -2259,12 +2259,12 @@ void output_list_form( ostream& os,
             if( source.sort_field == nextsortfield )
             {
                if( source.is_reverse )
-                  os  << "F' );\"><img src=\"sort_reverse.png\" border=\"0\"></a>";
+                  os << "F' );\"><img src=\"sort_reverse.png\" border=\"0\"></a>";
                else
-                  os  << "R' );\"><img src=\"sort_forward.png\" border=\"0\"></a>";
+                  os << "R' );\"><img src=\"sort_forward.png\" border=\"0\"></a>";
             }
             else
-               os  << "F' );\"><img src=\"sort_select.png\" border=\"0\"></a>";
+               os << "F' );\"><img src=\"sort_select.png\" border=\"0\"></a>";
          }
       }
 
@@ -2396,7 +2396,7 @@ void output_list_form( ostream& os,
 
          if( source.fk_field_ids.size( ) && !fk_refs.count( source_field_id )
           && fk_column < source.fk_field_ids.size( ) && source.fk_field_ids[ fk_column ] == source_field_id )
-            is_fk_column = true;;
+            is_fk_column = true;
 
          if( source.hidden_fields.count( source_value_id ) )
             skip_column = true;
@@ -2408,7 +2408,7 @@ void output_list_form( ostream& os,
             skip_column = true;
 
          if( source.pstate_fields.count( source_value_id )
-          && !( parent_state & source.pstate_fields.find( source_value_id  )->second ) )
+          && !( parent_state & source.pstate_fields.find( source_value_id )->second ) )
             skip_column = true;
 
          if( source_value_id == source.security_level_field )
@@ -3000,7 +3000,7 @@ void output_list_form( ostream& os,
                      mask = source.mask_fields.find( source_value_id )->second;
 
                   cell_data = format_numeric_value( numeric( cell_data.c_str( ) ), mask );
-               }   
+               }
             }
             else if( source.date_fields.count( source_value_id ) )
             {

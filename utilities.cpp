@@ -178,8 +178,8 @@ int vmem_used( )
 
 #ifdef _WIN32
 #  define GET_PMC_USAGE( PMC_STRUCT, PMC_PARAM )\
-   PMC_STRUCT pmc;\
-   ::GetProcessMemoryInfo( ::GetCurrentProcess( ), ( PPROCESS_MEMORY_COUNTERS )&pmc, sizeof( pmc ) );\
+   PMC_STRUCT pmc; \
+   ::GetProcessMemoryInfo( ::GetCurrentProcess( ), ( PPROCESS_MEMORY_COUNTERS )&pmc, sizeof( pmc ) ); \
    size_kb = ( pmc.PMC_PARAM / 1024 );
 
    // NOTE: For newer versions of Windws PagefileUsage returns zero so use PrivateUsage instead.
@@ -317,7 +317,7 @@ string file_perms( const char* p_name )
    {
       str += '-';
       extra += '-';
-   }   
+   }
 
    str += extra + extra;
 #else
@@ -975,7 +975,7 @@ size_t split( const string& s, vector< string >& c, char sep, char esc, bool une
             {
                i++;
                next += sep;
-            }   
+            }
          }
          else
             next += s[ i ];
@@ -1094,7 +1094,7 @@ string join( const vector< string >& c, const string& sep )
       s += c[ i ];
    }
 
-   return s;   
+   return s;
 }
 
 string get_version_info( const string& s, version_info& ver_info )
@@ -1391,7 +1391,7 @@ void uudecode( ostream& outs, const char* p_input, int num_bytes )
    {
       int j = 2;
       remainder--;
-      for( composite = *( p_input + remainder ) - c_space;  j <  ( 2 * remainder + 1 ); j += 2, p_input++ )
+      for( composite = *( p_input + remainder ) - c_space; j <  ( 2 * remainder + 1 ); j += 2, p_input++ )
         outs.put( ( *p_input - c_space ) | ( ( composite & ( c_high_mask >> j ) ) << j ) );
    }
 }

@@ -125,11 +125,11 @@ VOID WINAPI ServiceMain( DWORD argc, LPTSTR* argv )
       main( argc, argv );
    }
    else
-      ;// FUTURE: Need to log failure.
+      ; // FUTURE: Need to log failure.
 
    ServiceStatus.dwCurrentState = SERVICE_STOPPED;
    if( !SetServiceStatus( ServiceStatusHandle, &ServiceStatus ) )
-      ;// FUTURE: Need to log failure.
+      ; // FUTURE: Need to log failure.
 }
 
 VOID WINAPI ServiceCtrlHandler( DWORD dwControl )
@@ -154,11 +154,10 @@ VOID WINAPI ServiceCtrlHandler( DWORD dwControl )
 
       case SERVICE_CONTROL_INTERROGATE:
       break;
-    }
+   }
  
-    // Send current status. 
-    if( !SetServiceStatus( ServiceStatusHandle, &ServiceStatus ) )
-      ;// FUTURE: Need to log error.
+   if( !SetServiceStatus( ServiceStatusHandle, &ServiceStatus ) )
+      ; // FUTURE: Need to log error.
 }
 
 SERVICE_TABLE_ENTRY DispatchTable[ ] = { { lpServiceName, ServiceMain }, { 0, 0 } };
@@ -352,7 +351,7 @@ class ciyam_server_startup_functor : public command_functor
          SC_HANDLE scmHandle = OpenSCManager( 0, 0, SC_MANAGER_ALL_ACCESS );
          if( scmHandle )
          {
-		      SC_HANDLE scHandle = OpenService( scmHandle, lpServiceName, SERVICE_ALL_ACCESS );
+            SC_HANDLE scHandle = OpenService( scmHandle, lpServiceName, SERVICE_ALL_ACCESS );
             if( scHandle )
             {
                DeleteService( scHandle );
@@ -367,7 +366,7 @@ class ciyam_server_startup_functor : public command_functor
       }
       else if( command == c_cmd_svcrun )
       {
-		   if( !StartServiceCtrlDispatcher( DispatchTable ) )
+         if( !StartServiceCtrlDispatcher( DispatchTable ) )
             cerr << "error: unable to start service" << endl; // FUTURE: This message should be logged.
 
          g_had_exiting_command = true;

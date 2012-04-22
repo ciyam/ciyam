@@ -1724,7 +1724,7 @@ void read_pdf_gen_format( const string& file_name, pdf_gen_format& format )
                else if( alignx == "center" )
                   group_info.rel_group_align_x = e_pdf_gen_field_alignx_center;
                else
-                  throw runtime_error( "invalid alignx '" + alignx +"' for rel_group '" + rel_group
+                  throw runtime_error( "invalid alignx '" + alignx + "' for rel_group '" + rel_group
                    + "' in group '" + name + "' at line #" + to_string( reader.get_last_line_num( ) ) );
 
                if( aligny == "top" )
@@ -3824,7 +3824,7 @@ bool process_group(
             if( group_is_header
              && format.header_size_growable && !format.fields[ j ].group.empty( ) )
             {
-               if( text_y > normal_group_page_top  )
+               if( text_y > normal_group_page_top )
                   normal_group_page_top = text_y;
             }
 

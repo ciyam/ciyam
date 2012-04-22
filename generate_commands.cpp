@@ -237,7 +237,7 @@ int main( int argc, char* argv[ ] )
    {
       cerr << "error: unexpected error occurred whilst reading '" << input_file_name << "' for input" << endl;
       return 1;
-   }   
+   }
 
    outf << '\n' << c_output_command_definition << ' '
     << command_constant_prefix << c_output_command_definition_suffix << '\n';

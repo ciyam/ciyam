@@ -486,7 +486,7 @@ void perform_test_step( const test_step& s, const string& test_name )
                str += ' ';
                str += test_output_file_name;
                system( str.c_str( ) );
-            }   
+            }
          }
          else
          {

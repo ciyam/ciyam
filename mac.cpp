@@ -52,7 +52,7 @@ void output_buffer( ostream& os, unsigned char* p_buffer, int size, char sep )
       if( i > 0 && sep != '\0' )
          os << ':';
       os << hex << setw( 2 ) << setfill( '0' ) << ( unsigned )*p_buffer++;
-   }   
+   }
 }
 
 }
