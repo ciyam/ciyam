@@ -1934,13 +1934,13 @@ const \1& `{`$full_class_name`}::\0( ) const
 `}
 `{`?`$all_procedures`[`$all_procedures`,\
 void `{`$full_class_name`}::\$( \
-`{`?`$\$_all_args`[`$\$_all_args`%,`,\
+`{`?`$\$_all_args`&`!`@eq`(`$\$_all_args`,`'`'`)`[`$\$_all_args`%,`,\
 `{`@in`(`'\\0`'`,`$\$_all_simple_inputs`)\\1 \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_complex_inputs`)const \\1& \\0`}\
 `{`@in`(`'\\0`'`,`$\$_all_non_inputs`)\\1& \\0`}\
 `+, `] `})
 {
-   p_impl->impl_\$( `{`?`$\$_all_args`[`$\$_all_args`%,`,\\0`+, `] `});
+   p_impl->impl_\$( `{`?`$\$_all_args`&`!`@eq`(`$\$_all_args`,`'`'`)`[`$\$_all_args`%,`,\\0`+, `] `});
 }`+\n\n`]
 `}
 string `{`$full_class_name`}::get_field_value( int field ) const
@@ -2488,16 +2488,14 @@ class_base& `{`$full_class_name`}::get_or_create_graph_child( const string& cont
       throw runtime_error( "unexpected empty sub-context" );
 `{`?`$child_info`[`$child_info`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
    `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( sub_context == "_\3" || sub_context == "\0" )
-      p_class_base = &\0( );\
-`+\n`]`}
-`{`[`$parent_fields`,\
+      p_class_base = &\0( );
+`]`}`{`[`$parent_fields`,\
    else if( sub_context == c_field_id_\$ || sub_context == c_field_name_\$ )
-      p_class_base = &\$( );\
-`+\n`]`}`{`(`?`$parent_class`)\
+      p_class_base = &\$( );
+`]`}`{`(`?`$parent_class`)\
    else
-      return parent_class_type::get_or_create_graph_child( context );\
-`}
-
+      return parent_class_type::get_or_create_graph_child( context );
+`}`{`!`?`$child_info`&`!`?`$parent_class`&`@eq`(`$parent_fields`,`'`'`)`}
    if( !p_class_base )
       throw runtime_error( "unknown sub-context '" + sub_context + "'" );
 

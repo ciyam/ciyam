@@ -2176,9 +2176,9 @@ const Meta_View_Field& Meta_View::child_View_Field( ) const
    return p_impl->impl_child_View_Field( );
 }
 
-void Meta_View::Generate_PDF_View(  )
+void Meta_View::Generate_PDF_View( )
 {
-   p_impl->impl_Generate_PDF_View(  );
+   p_impl->impl_Generate_PDF_View( );
 }
 
 string Meta_View::get_field_value( int field ) const

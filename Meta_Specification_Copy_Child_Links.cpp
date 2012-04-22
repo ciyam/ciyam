@@ -1091,7 +1091,7 @@ void Meta_Specification_Copy_Child_Links::impl::after_store( bool is_create, boo
          throw runtime_error( "unexpected Specification Type '" + get_obj( ).Specification_Type( ).Name( ) + "'" );
 
       get_obj( ).child_Specification_Parent( ).op_apply( );
-   }   
+   }
    // [<finish after_store>]
 }
 
@@ -1717,7 +1717,8 @@ class_base& Meta_Specification_Copy_Child_Links::get_or_create_graph_child( cons
    else if( sub_context == c_field_id_Source_Child_Rel_Child_Class || sub_context == c_field_name_Source_Child_Rel_Child_Class )
       p_class_base = &Source_Child_Rel_Child_Class( );
    else if( sub_context == c_field_id_Source_Child_Relationship || sub_context == c_field_name_Source_Child_Relationship )
-      p_class_base = &Source_Child_Relationship( );   else
+      p_class_base = &Source_Child_Relationship( );
+   else
       return parent_class_type::get_or_create_graph_child( context );
 
    if( !p_class_base )

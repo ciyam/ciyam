@@ -122,6 +122,27 @@
     </cms_files>
    </executable>
    <executable/>
+    <name>check_source
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>
+    <dlink_libs>
+    <cpp_files/>
+     <filename>check_source.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
     <name>ciyam_client
     <gen_ext>
     <threads>false

@@ -78,7 +78,7 @@
 `,\
       if( get_obj( ).`{`$arg_mfield`}( ).get_key( ) == "`{`$arg_uikey`}"
        && ( get_obj( ).`{`$arg_tfield`}( ).`{`$arg_efield`}( ) != `{`$arg_pwvalue`} // i.e. `{`$arg_pwname`}
-       &&  get_obj( ).`{`$arg_tfield`}( ).`{`$arg_efield`}( ) != `{`$arg_pwvalue2`} ) ) // i.e. `{`$arg_pwname2`}
+       && get_obj( ).`{`$arg_tfield`}( ).`{`$arg_efield`}( ) != `{`$arg_pwvalue2`} ) ) // i.e. `{`$arg_pwname2`}
          p_validation_errors->insert( validation_error_value_type( "", "Test Field is not a valid 'password' field." ) ); // FUTURE: Should be in module_strings...
 `}\
    }

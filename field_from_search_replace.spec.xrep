@@ -32,12 +32,12 @@
          if( pos != string::npos )
             next_val = next_opt.substr( pos + 1 );
 
-         next_search = "`{`$arg_oleftb`}?"  + next_opt + "`{`$arg_orightb`}";
+         next_search = "`{`$arg_oleftb`}?" + next_opt + "`{`$arg_orightb`}";
          get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, "true" );
 
          if( pos != string::npos )
          {
-            next_search = "`{`$arg_oleftb`}#"  + next_opt.substr( 0, pos ) + "`{`$arg_orightb`}";
+            next_search = "`{`$arg_oleftb`}#" + next_opt.substr( 0, pos ) + "`{`$arg_orightb`}";
             get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, next_val );
          }
       }
@@ -83,12 +83,12 @@
          if( pos != string::npos )
             next_val = next_opt.substr( pos + 1 );
 
-         next_search = "`{`$arg_oleftb`}?"  + next_opt + "`{`$arg_orightb`}";
+         next_search = "`{`$arg_oleftb`}?" + next_opt + "`{`$arg_orightb`}";
          get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, "true" );
 
          if( pos != string::npos )
          {
-            next_search = "`{`$arg_oleftb`}#"  + next_opt.substr( 0, pos ) + "`{`$arg_orightb`}";
+            next_search = "`{`$arg_oleftb`}#" + next_opt.substr( 0, pos ) + "`{`$arg_orightb`}";
             get_obj( ).add_search_replacement( "`{`$arg_dfield`}", next_search, next_val );
          }
       }

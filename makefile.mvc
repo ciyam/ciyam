@@ -14,6 +14,7 @@
 ##             ciyam_base           make ciyam_base.dll target
 ##             Meta                 make Meta.dll target
 ##             bundle               make bundle.exe target
+##             check_source         make check_source.exe target
 ##             ciyam_client         make ciyam_client.exe target
 ##             ciyam_interface      make ciyam_interface.exe target
 ##             ciyam_server         make ciyam_server.exe target
@@ -277,6 +278,10 @@ TARGET_BUNDLE=bundle.exe
 TARGET_BUNDLE_INCLUDE=bundle.inc
 TARGET_BUNDLE_OBJECTS=bundle.obj
 
+TARGET_CHECK_SOURCE=check_source.exe
+TARGET_CHECK_SOURCE_INCLUDE=check_source.inc
+TARGET_CHECK_SOURCE_OBJECTS=check_source.obj
+
 TARGET_CIYAM_CLIENT=ciyam_client.exe
 TARGET_CIYAM_CLIENT_INCLUDE=ciyam_client.inc
 TARGET_CIYAM_CLIENT_OBJECTS=ciyam_client.obj
@@ -389,6 +394,7 @@ ALL_TARGETS=\
  $(TARGET_CIYAM_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
+ $(TARGET_CHECK_SOURCE)\
  $(TARGET_CIYAM_CLIENT)\
  $(TARGET_CIYAM_INTERFACE)\
  $(TARGET_CIYAM_SERVER)\
@@ -418,6 +424,7 @@ ALL_INCLUDES=\
  $(TARGET_CIYAM_BASE_INCLUDE)\
  $(TARGET_META_INCLUDE)\
  $(TARGET_BUNDLE_INCLUDE)\
+ $(TARGET_CHECK_SOURCE_INCLUDE)\
  $(TARGET_CIYAM_CLIENT_INCLUDE)\
  $(TARGET_CIYAM_INTERFACE_INCLUDE)\
  $(TARGET_CIYAM_SERVER_INCLUDE)\
@@ -447,6 +454,7 @@ ALL_OBJECTS=\
  $(TARGET_CIYAM_BASE_OBJECTS)\
  $(TARGET_META_OBJECTS)\
  $(TARGET_BUNDLE_OBJECTS)\
+ $(TARGET_CHECK_SOURCE_OBJECTS)\
  $(TARGET_CIYAM_CLIENT_OBJECTS)\
  $(TARGET_CIYAM_INTERFACE_OBJECTS)\
  $(TARGET_CIYAM_SERVER_OBJECTS)\
@@ -489,6 +497,7 @@ commands: $(TARGET_COMMANDS)
 ciyam_base: $(TARGET_CIYAM_BASE)
 Meta: $(TARGET_META)
 bundle: $(TARGET_BUNDLE)
+check_source: $(TARGET_CHECK_SOURCE)
 ciyam_client: $(TARGET_CIYAM_CLIENT)
 ciyam_interface: $(TARGET_CIYAM_INTERFACE)
 ciyam_server: $(TARGET_CIYAM_SERVER)
@@ -524,6 +533,7 @@ touch_incs:
  @touch.bat ciyam_base.inc
  @touch.bat Meta.inc
  @touch.bat bundle.inc
+ @touch.bat check_source.inc
  @touch.bat ciyam_client.inc
  @touch.bat ciyam_interface.inc
  @touch.bat ciyam_server.inc
@@ -639,6 +649,26 @@ $(TARGET_BUNDLE):: $(TARGET_BUNDLE_OBJECTS) $(TARGET_BASE)
 <<
 !ifdef MANIFEST
  @$(MANIFEST) $(TARGET_BUNDLE)
+!endif
+
+!ifndef NO_INC_FILES
+! include $(TARGET_CHECK_SOURCE_INCLUDE)
+!endif
+
+$(TARGET_CHECK_SOURCE:.exe=.compile):
+ @echo @call gendeps.bat %* >compile.bat
+ @echo $(CPP_NORMAL) %* >>compile.bat
+ @geninc $(TARGET_CHECK_SOURCE_OBJECTS:.obj=) >$(TARGET_CHECK_SOURCE_INCLUDE)
+
+$(TARGET_CHECK_SOURCE):: $(TARGET_CHECK_SOURCE:.exe=.compile)
+ @
+
+$(TARGET_CHECK_SOURCE):: $(TARGET_CHECK_SOURCE_OBJECTS)
+ $(LINK) @<<
+ $(LINK_NORMAL) $(COMMON_LIBS)
+<<
+!ifdef MANIFEST
+ @$(MANIFEST) $(TARGET_CHECK_SOURCE)
 !endif
 
 !ifndef NO_INC_FILES

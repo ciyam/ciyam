@@ -2380,7 +2380,7 @@ void Meta_Class::impl::impl_Generate( )
       outf << "\x60{\x60$all_unique_indexes\x60=\x60'" << all_unique_indexes << "\x60'\x60}\n";
       outf << "\x60{\x60$all_sql_indexes\x60=\x60'\\\n";
       outf << all_sql_indexes << "\x60'\x60}\n";
-      outf << "\x60{\x60$all_sql_unique_indexes\x60=\x60'" << all_sql_unique_indexes << "\x60'\x60}\n";;
+      outf << "\x60{\x60$all_sql_unique_indexes\x60=\x60'" << all_sql_unique_indexes << "\x60'\x60}\n";
       outf << "\x60{\x60}\n";
    }
 
@@ -4150,9 +4150,9 @@ const Meta_View& Meta_Class::child_View( ) const
    return p_impl->impl_child_View( );
 }
 
-void Meta_Class::Generate(  )
+void Meta_Class::Generate( )
 {
-   p_impl->impl_Generate(  );
+   p_impl->impl_Generate( );
 }
 
 string Meta_Class::get_field_value( int field ) const

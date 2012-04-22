@@ -1,0 +1,17 @@
+#!/bin/sh
+# Pre-commit hook to check correct source code formatting.
+
+git diff --cached --name-status | while read st file; do
+ # skip deleted files
+ if [ "$st" == 'D' ]; then
+  continue;
+ fi
+ if [ -f ./check_source ] || [ -f ./check_source.exe ]; then
+  if [ "${file##*.}" = "h" ] || [ "${file##*.}" = "cpp" ]; then
+   if [ ! ./check_source "$file" ]; then
+    exit 1
+   fi
+  fi
+ fi
+done
+

@@ -6171,7 +6171,8 @@ class_base& Meta_Specification_Content_Page::get_or_create_graph_child( const st
    else if( sub_context == c_field_id_Variable_Name || sub_context == c_field_name_Variable_Name )
       p_class_base = &Variable_Name( );
    else if( sub_context == c_field_id_Variable_Value || sub_context == c_field_name_Variable_Value )
-      p_class_base = &Variable_Value( );   else
+      p_class_base = &Variable_Value( );
+   else
       return parent_class_type::get_or_create_graph_child( context );
 
    if( !p_class_base )

@@ -1735,7 +1735,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                      options.insert( opt_name );
                   }
                }
-            }   
+            }
          }
       }
    }
@@ -1966,29 +1966,29 @@ const Meta_Package_Option& Meta_Package::child_Package_Option( ) const
    return p_impl->impl_child_Package_Option( );
 }
 
-void Meta_Package::Cancel_Remove(  )
+void Meta_Package::Cancel_Remove( )
 {
-   p_impl->impl_Cancel_Remove(  );
+   p_impl->impl_Cancel_Remove( );
 }
 
-void Meta_Package::Check_Install(  )
+void Meta_Package::Check_Install( )
 {
-   p_impl->impl_Check_Install(  );
+   p_impl->impl_Check_Install( );
 }
 
-void Meta_Package::Complete_Remove(  )
+void Meta_Package::Complete_Remove( )
 {
-   p_impl->impl_Complete_Remove(  );
+   p_impl->impl_Complete_Remove( );
 }
 
-void Meta_Package::Install(  )
+void Meta_Package::Install( )
 {
-   p_impl->impl_Install(  );
+   p_impl->impl_Install( );
 }
 
-void Meta_Package::Remove(  )
+void Meta_Package::Remove( )
 {
-   p_impl->impl_Remove(  );
+   p_impl->impl_Remove( );
 }
 
 string Meta_Package::get_field_value( int field ) const
