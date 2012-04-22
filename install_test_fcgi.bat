@@ -10,6 +10,9 @@ if not exist "%WEBDIR%\test_fcgi.html" goto error4
 copy test_fcgi.exe "%WEBDIR%\test_fcgi.fcgi" >nul
 if not exist "%WEBDIR%\test_fcgi.fcgi" goto error5
 
+copy libfcgi.dll "%WEBDIR%" >nul
+if not exist "%WEBDIR%\libfcgi.dll" goto error6
+
 echo.
 echo Installed. Use http://localhost/test_fcgi.html to test.
 goto end
@@ -32,6 +35,10 @@ goto end
 
 :error5
 echo Error: Unable to copy 'test_fcgi.fcgi' to '%WEBDIR%'.
+goto end
+
+:error5
+echo Error: Unable to copy 'libfcgi.dll' to '%WEBDIR%'.
 goto end
 
 :end
