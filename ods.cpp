@@ -740,7 +740,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 #endif
    }
 
-   bool lock_region( int_t start,int_t len )
+   bool lock_region( int_t start, int_t len )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
@@ -783,7 +783,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       return retval;
    }
 
-   void unlock_region( int_t start,int_t len )
+   void unlock_region( int_t start, int_t len )
    {
 #ifdef ODS_DEBUG
       ostringstream osstr;
@@ -1816,7 +1816,7 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode )
     new ods_data_cache_buffer( *this, p_impl->data_file_name,
      c_data_max_cache_items, c_data_items_per_region, c_data_num_cache_regions );
 
-   p_impl->rp_ods_index_cache_buffer =  new ods_index_cache_buffer( p_impl->index_file_name,
+   p_impl->rp_ods_index_cache_buffer = new ods_index_cache_buffer( p_impl->index_file_name,
     p_impl->rp_header_file->get_lock_offset( ), c_index_max_cache_items, c_index_items_per_region, c_index_num_cache_regions );
 
    auto_ptr< transaction_buffer > ap_trans_buffer( new transaction_buffer );

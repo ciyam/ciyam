@@ -379,7 +379,7 @@ void mime_decoder::impl::process_data( )
                   next_encoding = attributes[ 0 ];
                   if( type == "text" )
                      encoding = next_encoding;
-               }      
+               }
             }
          }
       }

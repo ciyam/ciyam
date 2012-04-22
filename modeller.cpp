@@ -896,9 +896,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             vector< string > externals;
             externals.push_back( "ciyam_base" );
             g_model.get_external_module_names( externals );
-            makef  << "`{`$" << g_model.get_name( ) << "_dylk`=`'" << string_list( externals ) << "`'`}\n";
+            makef << "`{`$" << g_model.get_name( ) << "_dylk`=`'" << string_list( externals ) << "`'`}\n";
 
-            makef  << "`{`$" << g_model.get_name( ) << "_cpps`=`'" << g_model.get_name( ) << ".cpp";
+            makef << "`{`$" << g_model.get_name( ) << "_cpps`=`'" << g_model.get_name( ) << ".cpp";
             if( !all_class_data.empty( ) )
                makef << "\\\n";
             else
@@ -981,7 +981,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             if( !externals.empty( ) )
                specf << "`{`$all_externals`=`'" << string_list( externals ) << "`'`}\n";
 
-            makef  << "`{`$" << g_model.get_name( ) << "_cmss`=`'" << g_model.get_name( ) << ".cms";
+            makef << "`{`$" << g_model.get_name( ) << "_cmss`=`'" << g_model.get_name( ) << ".cms";
             if( !all_class_data.empty( ) )
                makef << "\\\n";
             else
@@ -1442,7 +1442,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                         throw runtime_error( "unable to find field '" + rel_without_child + "' in class '" + child_class_name + "'" );
 
                      outf << "child_" << child_rel_suffix << ','
-                      << child_full_entity_name << ',' << rel_without_child  << ',' << child_fk_field_id << ',' << cascade_op_name;
+                      << child_full_entity_name << ',' << rel_without_child << ',' << child_fk_field_id << ',' << cascade_op_name;
 
                      if( i == child_rel_info.size( ) - 1 )
                         outf << "`'`}";

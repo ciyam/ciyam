@@ -174,7 +174,7 @@ void perform_add_or_subtract( numeric& n1, numeric n2, bool is_add )
          {
             n1 = orig;
             throw runtime_error( "overflow occurred" );
-         }   
+         }
 
          n1.mantissa = m;
       }
@@ -335,7 +335,7 @@ numeric::numeric( const char* p, char dec, char sep )
             if( dp )
             {
                if( ++n > e_max_digits )
-                  throw runtime_error( "max. digits overflow for '"  + string( op ) + "'" );
+                  throw runtime_error( "max. digits overflow for '" + string( op ) + "'" );
                ++d;
             }
             else if( n == 0 && *p == '0' )

@@ -641,7 +641,7 @@ void timeout_handler::on_start( )
             for( mii = get_storage_info( ).modules_index.begin( ); mii != get_storage_info( ).modules_index.end( ); ++mii )
             {
                t = last_modification_time( mii->first + c_fcgi_sio_ext );
-               if(  t != mii->second->sio_mod )
+               if( t != mii->second->sio_mod )
                {
                   has_changed = true;
                   break;
@@ -1289,7 +1289,7 @@ void request_handler::process_request( )
                      if( !mod_info.user_select_uo_field.empty( ) || !mod_info.user_select_sl_field.empty( ) )
                      {
                         deque< pair< string, string > >::iterator i;
-                        for( i  = p_session_info->select_data.begin( ); i != p_session_info->select_data.end( ); ++i )
+                        for( i = p_session_info->select_data.begin( ); i != p_session_info->select_data.end( ); ++i )
                         {
                            string key_ver_rev_state_and_type_info = i->first;
                            string key( key_ver_rev_state_and_type_info.substr( 0, key_ver_rev_state_and_type_info.find( ' ' ) ) );
@@ -1773,7 +1773,7 @@ void request_handler::process_request( )
             }
             else if( mod_info.user_select_field == mod_info.user_other_field_id )
             {
-               if( has_just_logged_in || uselect.empty( )  )
+               if( has_just_logged_in || uselect.empty( ) )
                   uselect = p_session_info->default_user_other;
                else
                {

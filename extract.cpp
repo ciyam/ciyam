@@ -29,7 +29,7 @@ int main( int argc, char* argv[ ] )
    bool is_package = false;
 
    if( argc < 2 || ( argc < 3 && string( argv[ 1 ] ) == "-p" )
-    || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?"  || string( argv[ 1 ] ) == "-?" )
+    || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
    {
       cout << "usage: extract [-p] <filename>" << endl;
       return 0;

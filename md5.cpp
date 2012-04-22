@@ -140,7 +140,7 @@ void MD5::update( uint1* input, uint4 input_length )
 
    count[ 1 ] += ( ( uint4 )input_length >> 29 );
 
-   buffer_space = 64 - buffer_index;  // how much space is left in buffer
+   buffer_space = 64 - buffer_index; // how much space is left in buffer
 
    // Transform as many times as possible.
    if( input_length >= buffer_space ) // ie. we have enough to fill the buffer
@@ -261,7 +261,7 @@ unsigned char* MD5::raw_digest( )
 char* MD5::hex_digest( )
 {
    int i;
-   char* s= new char[ 33 ];
+   char* s = new char[ 33 ];
 
    if( !finalized )
    {
@@ -277,7 +277,7 @@ char* MD5::hex_digest( )
    return s;
 }
 
-ostream& operator<<( ostream& stream, MD5 context )
+ostream& operator <<( ostream& stream, MD5 context )
 {
    stream << context.hex_digest( );
    return stream;
@@ -322,7 +322,7 @@ void MD5::transform( uint1 block[ 64 ] )
 
    decode( x, block, 64 );
 
-   assert( !finalized );  // not just a user error, since the method is private
+   assert( !finalized ); // not just a user error, since the method is private
 
    /* Round 1 */
    FF( a, b, c, d, x[ 0 ], S11, 0xd76aa478 ); /* 1 */
@@ -348,7 +348,7 @@ void MD5::transform( uint1 block[ 64 ] )
    GG( c, d, a, b, x[ 11 ], S23, 0x265e5a51 ); /* 19 */
    GG( b, c, d, a, x[ 0 ], S24, 0xe9b6c7aa ); /* 20 */
    GG( a, b, c, d, x[ 5 ], S21, 0xd62f105d ); /* 21 */
-   GG( d, a, b, c, x[ 10 ], S22,  0x2441453 ); /* 22 */
+   GG( d, a, b, c, x[ 10 ], S22, 0x2441453 ); /* 22 */
    GG( c, d, a, b, x[ 15 ], S23, 0xd8a1e681 ); /* 23 */
    GG( b, c, d, a, x[ 4 ], S24, 0xe7d3fbc8 ); /* 24 */
    GG( a, b, c, d, x[ 9 ], S21, 0x21e1cde6 ); /* 25 */
@@ -372,7 +372,7 @@ void MD5::transform( uint1 block[ 64 ] )
    HH( a, b, c, d, x[ 13 ], S31, 0x289b7ec6 ); /* 41 */
    HH( d, a, b, c, x[ 0 ], S32, 0xeaa127fa ); /* 42 */
    HH( c, d, a, b, x[ 3 ], S33, 0xd4ef3085 ); /* 43 */
-   HH( b, c, d, a, x[ 6 ], S34,  0x4881d05 ); /* 44 */
+   HH( b, c, d, a, x[ 6 ], S34, 0x4881d05 ); /* 44 */
    HH( a, b, c, d, x[ 9 ], S31, 0xd9d4d039 ); /* 45 */
    HH( d, a, b, c, x[ 12 ], S32, 0xe6db99e5 ); /* 46 */
    HH( c, d, a, b, x[ 15 ], S33, 0x1fa27cf8 ); /* 47 */

@@ -77,7 +77,7 @@ void dump_state( const string& msg, char ch, char last_ch, bool ch_used, bool is
  bool has_maximum, bool set_started, bool still_in_set )
 {
    if( !msg.empty( ) )
-      cout << msg  << endl;
+      cout << msg << endl;
 
    cout << "ch = " << ch << endl;
    cout << "last_ch = " << last_ch << endl;

@@ -939,7 +939,7 @@ int main( int argc, char* argv[ ] )
             {
                ++num_errors;
                cout << "error: command test #" << ( i + 1 )
-                << ": "  << command_tests[ i ].p_syntax << " syntax is not valid\n";
+                << ": " << command_tests[ i ].p_syntax << " syntax is not valid\n";
             }
             else
             {

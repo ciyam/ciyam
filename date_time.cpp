@@ -694,7 +694,7 @@ inline day day_in_year_for_easter_sunday( year yr )
    int ksj = int( ( 3 * jhd ) / 4 ) - 12;
    int korr = int( ( 8 * jhd + 5 ) / 25 ) - 5;
    int so = int( ( 5 * yr ) / 4 ) - ksj - 10;
-   int epakte = ( 11 * gz + 20  + korr - ksj ) % 30;
+   int epakte = ( 11 * gz + 20 + korr - ksj ) % 30;
 
    if( ( epakte == 25 && gz > 11 ) || epakte == 24 )
       ++epakte;

@@ -755,7 +755,7 @@ int process_file( char* file_name )
                      nested_c_comment_level++;
                }
             }
-            else if( line[ i ] == '*' && last_ch == '/' )
+            else if( !in_string_literal && line[ i ] == '*' && last_ch == '/' )
             {
                comment = line;
                comment_num = line_num;

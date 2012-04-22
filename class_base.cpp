@@ -1536,7 +1536,7 @@ void class_base::perform_field_search_replacements( )
       }
 
       if( search_replace_separators.count( srci->first )
-       && str.length( ) && str[ str.length( ) - 1 ] == search_replace_separators[ srci->first ]  )
+       && str.length( ) && str[ str.length( ) - 1 ] == search_replace_separators[ srci->first ] )
          str.erase( str.length( ) - 1 );
 
       set_field_value( field_num, str );
@@ -3167,7 +3167,7 @@ void fetch_email_messages( const user_account& account,
       if( p_file_name_prefix )
       {
          ostringstream osstr;
-         osstr << *p_file_name_prefix << ifmt( 4 ) << ( i + 1 )<< ".txt";
+         osstr << *p_file_name_prefix << ifmt( 4 ) << ( i + 1 ) << ".txt";
 
          ofstream outf( osstr.str( ).c_str( ) );
          ap_mail_source->get_message( i + 1, outf );

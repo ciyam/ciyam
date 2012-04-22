@@ -3431,7 +3431,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
       if( !last.empty( ) )
       {
          string::size_type pos = last.find_last_not_of( '\\' );
-         if( pos != last.size( ) - 1 && ( last.size( ) - pos  - 1 ) % 2 )
+         if( pos != last.size( ) - 1 && ( last.size( ) - pos - 1 ) % 2 )
             last.erase( last.size( ) - 1 );
          else if( !had_expression )
             last += '\n';
