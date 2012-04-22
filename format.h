@@ -84,7 +84,7 @@ class ifmt_setter
    char old_fillchar;
 };
 
-inline ifmt_setter operator<<( std::ostream& os, ifmt const& format )
+inline ifmt_setter operator <<( std::ostream& os, ifmt const& format )
 {
   return ifmt_setter( os, format );
 }
@@ -128,7 +128,7 @@ class ffmt_setter
    int old_precision;
 };
 
-inline ffmt_setter operator<<( std::ostream& os, ffmt const& format )
+inline ffmt_setter operator <<( std::ostream& os, ffmt const& format )
 {
   return ffmt_setter( os, format );
 }
