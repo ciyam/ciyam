@@ -1,0 +1,11 @@
+<sio/>
+ <row_limit>10
+ <checkbox_bools>true
+ <storage_name>Meta
+ <module_prefix>
+ <modules/>
+  <module/>
+   <name>Meta
+  </module>
+ </modules>
+</sio>
