@@ -2,6 +2,4 @@ if [ ! -f packages.lst ]; then
  echo Standard>packages.lst
 fi
 ./construct @packages.lst ciyam_class.cpp.xrep
-if [ ! -f .git/hooks/pre-commit ]; then
- cp pre-commit .git/hooks
-fi
+cp pre-commit .git/hooks
