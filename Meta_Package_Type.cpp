@@ -1002,9 +1002,9 @@ const Meta_Package& Meta_Package_Type::child_Package( ) const
    return p_impl->impl_child_Package( );
 }
 
-void Meta_Package_Type::Install(  )
+void Meta_Package_Type::Install( )
 {
-   p_impl->impl_Install(  );
+   p_impl->impl_Install( );
 }
 
 string Meta_Package_Type::get_field_value( int field ) const

@@ -1256,10 +1256,10 @@ void Meta_Model::impl::impl_Generate( )
             module_cmss += "\\\n " + get_obj( ).Name( ) + "_" + get_obj( ).child_Class( ).Name( ) + ".cms";
 
             class_strings.push_back( "class_" + lower( get_obj( ).child_Class( ).Name( ) )
-             + " \"" +  search_replace( get_obj( ).child_Class( ).Name( ), "_", " " ) + "\"" );
+             + " \"" + search_replace( get_obj( ).child_Class( ).Name( ), "_", " " ) + "\"" );
 
             class_strings.push_back( "plural_" + lower( get_obj( ).child_Class( ).Name( ) )
-             + " \"" +  search_replace( get_obj( ).child_Class( ).Plural( ), "_", " " ) + "\"" );
+             + " \"" + search_replace( get_obj( ).child_Class( ).Plural( ), "_", " " ) + "\"" );
 
             if( !all_classes.empty( ) )
                all_classes += ' ';
@@ -1307,7 +1307,7 @@ void Meta_Model::impl::impl_Generate( )
                   class_strings.push_back(
                    "field_" + lower( get_obj( ).child_Class( ).Name( ) )
                    + "_" + lower( get_obj( ).child_Class( ).child_Field( ).Name( ) )
-                   + " \"" +  search_replace( get_obj( ).child_Class( ).child_Field( ).Name( ), "_", " " ) + "\"" );
+                   + " \"" + search_replace( get_obj( ).child_Class( ).child_Field( ).Name( ), "_", " " ) + "\"" );
                } while( get_obj( ).child_Class( ).child_Field( ).iterate_next( ) );
             }
 
@@ -1320,11 +1320,11 @@ void Meta_Model::impl::impl_Generate( )
                   class_strings.push_back(
                    "procedure_" + lower( get_obj( ).child_Class( ).Name( ) )
                    + "_" + lower( get_obj( ).child_Class( ).child_Procedure( ).Name( ) )
-                   + " \"" +  search_replace( get_obj( ).child_Class( ).child_Procedure( ).Name( ), "_", " " ) + "\"" );
+                   + " \"" + search_replace( get_obj( ).child_Class( ).child_Procedure( ).Name( ), "_", " " ) + "\"" );
 
                   class_strings.push_back(
                    "procedure_" + get_obj( ).child_Class( ).child_Procedure( ).Id( )
-                   + " \"" +  search_replace( get_obj( ).child_Class( ).child_Procedure( ).Name( ), "_", " " ) + "\"" );
+                   + " \"" + search_replace( get_obj( ).child_Class( ).child_Procedure( ).Name( ), "_", " " ) + "\"" );
                } while( get_obj( ).child_Class( ).child_Procedure( ).iterate_next( ) );
             }
 
@@ -4037,7 +4037,7 @@ void Meta_Model::impl::impl_Generate( )
                    || get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_select_child_rel" )
                    && is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ) ) )
                    || ( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_switch"
-                   &&  !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).get_key( ).empty( ) ) )
+                   && !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).get_key( ).empty( ) ) )
                   {
                      Meta_Field* p_field;
                      bool is_mandatory = false;
@@ -4109,7 +4109,7 @@ void Meta_Model::impl::impl_Generate( )
 
                         switch( get_obj( ).child_List( ).child_List_Field( ).Label_Class( ) )
                         {
-                           case 0:  // i.e. child
+                           case 0: // i.e. child
                            break;
 
                            case 1:
@@ -6260,19 +6260,19 @@ const Meta_View& Meta_Model::child_View( ) const
    return p_impl->impl_child_View( );
 }
 
-void Meta_Model::Create_Module(  )
+void Meta_Model::Create_Module( )
 {
-   p_impl->impl_Create_Module(  );
+   p_impl->impl_Create_Module( );
 }
 
-void Meta_Model::Generate(  )
+void Meta_Model::Generate( )
 {
-   p_impl->impl_Generate(  );
+   p_impl->impl_Generate( );
 }
 
-void Meta_Model::Generate_File_Links(  )
+void Meta_Model::Generate_File_Links( )
 {
-   p_impl->impl_Generate_File_Links(  );
+   p_impl->impl_Generate_File_Links( );
 }
 
 void Meta_Model::Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acyclic_Class_Names, bool Check_Initial_Data )
@@ -6280,9 +6280,9 @@ void Meta_Model::Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acy
    p_impl->impl_Get_Acyclic_Class_List( Acyclic_Class_Keys, Acyclic_Class_Names, Check_Initial_Data );
 }
 
-void Meta_Model::Remove_Module(  )
+void Meta_Model::Remove_Module( )
 {
-   p_impl->impl_Remove_Module(  );
+   p_impl->impl_Remove_Module( );
 }
 
 string Meta_Model::get_field_value( int field ) const

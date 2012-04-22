@@ -2878,24 +2878,24 @@ const Meta_Module& Meta_Application::child_Module( ) const
    return p_impl->impl_child_Module( );
 }
 
-void Meta_Application::Generate(  )
+void Meta_Application::Generate( )
 {
-   p_impl->impl_Generate(  );
+   p_impl->impl_Generate( );
 }
 
-void Meta_Application::Generate_File_Links(  )
+void Meta_Application::Generate_File_Links( )
 {
-   p_impl->impl_Generate_File_Links(  );
+   p_impl->impl_Generate_File_Links( );
 }
 
-void Meta_Application::Generate_Modules(  )
+void Meta_Application::Generate_Modules( )
 {
-   p_impl->impl_Generate_Modules(  );
+   p_impl->impl_Generate_Modules( );
 }
 
-void Meta_Application::Generate_Upgrade_DDL(  )
+void Meta_Application::Generate_Upgrade_DDL( )
 {
-   p_impl->impl_Generate_Upgrade_DDL(  );
+   p_impl->impl_Generate_Upgrade_DDL( );
 }
 
 void Meta_Application::Test_Proc_1( string& Output )

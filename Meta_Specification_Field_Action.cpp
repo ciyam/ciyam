@@ -1838,7 +1838,8 @@ class_base& Meta_Specification_Field_Action::get_or_create_graph_child( const st
    else if( sub_context == c_field_id_New_Record_Class || sub_context == c_field_name_New_Record_Class )
       p_class_base = &New_Record_Class( );
    else if( sub_context == c_field_id_New_Record_FK_Field || sub_context == c_field_name_New_Record_FK_Field )
-      p_class_base = &New_Record_FK_Field( );   else
+      p_class_base = &New_Record_FK_Field( );
+   else
       return parent_class_type::get_or_create_graph_child( context );
 
    if( !p_class_base )

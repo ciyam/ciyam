@@ -5172,7 +5172,7 @@ void Meta_Specification::impl::validate( unsigned state, bool is_internal, valid
 
       if( get_obj( ).Specification_Type( ).get_key( ) == "user_info"
        && ( get_obj( ).Test_Field( ).Extra( ) != 10 // i.e. password
-       &&  get_obj( ).Test_Field( ).Extra( ) != 26 ) ) // i.e. hpassword
+       && get_obj( ).Test_Field( ).Extra( ) != 26 ) ) // i.e. hpassword
          p_validation_errors->insert( validation_error_value_type( "", "Test Field is not a valid 'password' field." ) ); // FUTURE: Should be in module_strings...
    }
    // [(finish meta_spec_field_type)]
@@ -5442,12 +5442,12 @@ void Meta_Specification::impl::after_fetch( )
          if( pos != string::npos )
             next_val = next_opt.substr( pos + 1 );
 
-         next_search = "{?"  + next_opt + "}";
+         next_search = "{?" + next_opt + "}";
          get_obj( ).add_search_replacement( "Vars", next_search, "true" );
 
          if( pos != string::npos )
          {
-            next_search = "{#"  + next_opt.substr( 0, pos ) + "}";
+            next_search = "{#" + next_opt.substr( 0, pos ) + "}";
             get_obj( ).add_search_replacement( "Vars", next_search, next_val );
          }
       }
@@ -7372,84 +7372,84 @@ const Meta_View_Field& Meta_Specification::child_View_Field_Restriction_Spec( ) 
    return p_impl->impl_child_View_Field_Restriction_Spec( );
 }
 
-void Meta_Specification::Add_Arg_1(  )
+void Meta_Specification::Add_Arg_1( )
 {
-   p_impl->impl_Add_Arg_1(  );
+   p_impl->impl_Add_Arg_1( );
 }
 
-void Meta_Specification::Add_Arg_2(  )
+void Meta_Specification::Add_Arg_2( )
 {
-   p_impl->impl_Add_Arg_2(  );
+   p_impl->impl_Add_Arg_2( );
 }
 
-void Meta_Specification::Add_Child_Info(  )
+void Meta_Specification::Add_Child_Info( )
 {
-   p_impl->impl_Add_Child_Info(  );
+   p_impl->impl_Add_Child_Info( );
 }
 
-void Meta_Specification::Add_Extra_Info(  )
+void Meta_Specification::Add_Extra_Info( )
 {
-   p_impl->impl_Add_Extra_Info(  );
+   p_impl->impl_Add_Extra_Info( );
 }
 
-void Meta_Specification::Add_Field(  )
+void Meta_Specification::Add_Field( )
 {
-   p_impl->impl_Add_Field(  );
+   p_impl->impl_Add_Field( );
 }
 
-void Meta_Specification::Add_Field_Pair(  )
+void Meta_Specification::Add_Field_Pair( )
 {
-   p_impl->impl_Add_Field_Pair(  );
+   p_impl->impl_Add_Field_Pair( );
 }
 
-void Meta_Specification::Add_Grandchild_Info(  )
+void Meta_Specification::Add_Grandchild_Info( )
 {
-   p_impl->impl_Add_Grandchild_Info(  );
+   p_impl->impl_Add_Grandchild_Info( );
 }
 
-void Meta_Specification::Add_Info(  )
+void Meta_Specification::Add_Info( )
 {
-   p_impl->impl_Add_Info(  );
+   p_impl->impl_Add_Info( );
 }
 
-void Meta_Specification::Add_Next(  )
+void Meta_Specification::Add_Next( )
 {
-   p_impl->impl_Add_Next(  );
+   p_impl->impl_Add_Next( );
 }
 
-void Meta_Specification::Add_Opt_Info(  )
+void Meta_Specification::Add_Opt_Info( )
 {
-   p_impl->impl_Add_Opt_Info(  );
+   p_impl->impl_Add_Opt_Info( );
 }
 
-void Meta_Specification::Add_Other_Info(  )
+void Meta_Specification::Add_Other_Info( )
 {
-   p_impl->impl_Add_Other_Info(  );
+   p_impl->impl_Add_Other_Info( );
 }
 
-void Meta_Specification::Add_Secondary(  )
+void Meta_Specification::Add_Secondary( )
 {
-   p_impl->impl_Add_Secondary(  );
+   p_impl->impl_Add_Secondary( );
 }
 
-void Meta_Specification::Add_Source_Info(  )
+void Meta_Specification::Add_Source_Info( )
 {
-   p_impl->impl_Add_Source_Info(  );
+   p_impl->impl_Add_Source_Info( );
 }
 
-void Meta_Specification::Add_Stats_1(  )
+void Meta_Specification::Add_Stats_1( )
 {
-   p_impl->impl_Add_Stats_1(  );
+   p_impl->impl_Add_Stats_1( );
 }
 
-void Meta_Specification::Add_Stats_2(  )
+void Meta_Specification::Add_Stats_2( )
 {
-   p_impl->impl_Add_Stats_2(  );
+   p_impl->impl_Add_Stats_2( );
 }
 
-void Meta_Specification::Add_Stats_Info(  )
+void Meta_Specification::Add_Stats_Info( )
 {
-   p_impl->impl_Add_Stats_Info(  );
+   p_impl->impl_Add_Stats_Info( );
 }
 
 void Meta_Specification::Generate_All_Strings( string& All_Strings, const string& Parent_Prefix )
