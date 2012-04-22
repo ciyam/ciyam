@@ -440,7 +440,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 void Meta_Package_Type::impl::impl_Install( )
 {
    // [<start Install_impl>]
-//idk
+//nyi
    string package_file;
    string info_filename( "package.info" );
 

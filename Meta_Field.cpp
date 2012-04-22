@@ -2585,7 +2585,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 {
    // [<start Get_Text_Type_impl>]
-//idk
+//nyi
    Result = e_sql_char_type_std;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_notes )
@@ -3026,7 +3026,7 @@ void Meta_Field::impl::validate( unsigned state, bool is_internal, validation_er
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_UOM ) ) ) ) );
 
    // [<start validate>]
-//idk
+//nyi
    if( get_obj( ).get_is_updating( ) && get_obj( ).has_field_changed( c_field_id_Type ) )
    {
       bool okay = true;
@@ -3192,7 +3192,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_auto_int_inc)]
 
    // [<start for_store>]
-//idk
+//nyi
    if( !is_create && get_obj( ).Transient( ) && get_obj( ).has_field_changed( c_field_id_Transient ) )
    {
       bool okay = true;
@@ -3400,7 +3400,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    // [(finish clone_children_for_create)]
 
    // [<start after_store>]
-//idk
+//nyi
    if( !is_create && get_obj( ).child_Initial_Record_Value( ).iterate_forwards( ) )
    {
       do

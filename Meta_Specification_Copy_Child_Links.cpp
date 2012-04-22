@@ -957,7 +957,7 @@ void Meta_Specification_Copy_Child_Links::impl::validate( unsigned state, bool i
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Child_Relationship ) ) ) ) );
 
    // [<start validate>]
-//idk
+//nyi
    if( check_equal( get_obj( ).Specification_Type( ), "trigger_create_children_for_fk_children" )
     && to_string( get_obj( ).Class( ) ) != to_string( get_obj( ).Child_Relationship( ).Child_Class( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Relationship,
@@ -1071,7 +1071,7 @@ void Meta_Specification_Copy_Child_Links::impl::after_store( bool is_create, boo
    ( void )is_internal;
 
    // [<start after_store>]
-//idk
+//nyi
    if( is_create )
    {
       get_obj( ).child_Specification_Parent( ).op_create( get_obj( ).get_key( ) + "_L" );

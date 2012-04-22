@@ -46,7 +46,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "module_management.h"
 #include "Meta_Enum.h"
 #include "Meta_Type.h"
@@ -672,7 +672,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 void Meta_Package::impl::impl_Cancel_Remove( )
 {
    // [<start Cancel_Remove_impl>]
-//idk
+//nyi
    if( !storage_locked_for_admin( ) )
    {
       get_obj( ).op_update( );
@@ -688,7 +688,7 @@ void Meta_Package::impl::impl_Cancel_Remove( )
 void Meta_Package::impl::impl_Check_Install( )
 {
    // [<start Check_Install_impl>]
-//idk
+//nyi
    string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
    string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
 
@@ -751,7 +751,7 @@ void Meta_Package::impl::impl_Check_Install( )
 void Meta_Package::impl::impl_Complete_Remove( )
 {
    // [<start Complete_Remove_impl>]
-//idk
+//nyi
    get_obj( ).op_update( );
 
    get_obj( ).Actions( "136410" );
@@ -784,7 +784,7 @@ void Meta_Package::impl::impl_Complete_Remove( )
 void Meta_Package::impl::impl_Install( )
 {
    // [<start Install_impl>]
-//idk
+//nyi
    string std_package_key;
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       std_package_key = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).get_key( );
@@ -1031,7 +1031,7 @@ void Meta_Package::impl::impl_Install( )
 void Meta_Package::impl::impl_Remove( )
 {
    // [<start Remove_impl>]
-//idk
+//nyi
    string std_package_key;
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       std_package_key = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).get_key( );
@@ -1366,7 +1366,7 @@ uint64_t Meta_Package::impl::get_state( ) const
    // [(finish modifier_field_value)]
 
    // [<start get_state>]
-//idk
+//nyi
    if( get_obj( ).Usage_Count( ) > 0 )
       state |= c_modifier_Is_In_Use;
    // [<finish get_state>]
@@ -1580,7 +1580,7 @@ void Meta_Package::impl::for_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start for_store>]
-//idk
+//nyi
    if( is_create && !get_obj( ).Package_Type( ).Multi( ) )
    {
       if( get_obj( ).Model( ).child_Package( ).iterate_forwards( ) )
@@ -1605,7 +1605,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
-//idk
+//nyi
    if( is_create )
    {
       string key_list( get_obj( ).Package_Type( ).Name( ) + ".keys.lst" );
@@ -1777,7 +1777,7 @@ void Meta_Package::impl::after_destroy( bool is_internal )
    ( void )is_internal;
 
    // [<start after_destroy>]
-//idk
+//nyi
    string install_log( get_obj( ).get_key( ) + ".install.log" );
    string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
    string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
@@ -2656,7 +2656,7 @@ void Meta_Package::get_always_required_field_names(
    // [(finish modifier_field_value)]
 
    // [<start get_always_required_field_names>]
-//idk
+//nyi
    dependents.insert( "Usage_Count" ); // (for Is_In_Use modifier)
 
    if( ( required_transients && is_field_transient( e_field_id_Usage_Count ) )

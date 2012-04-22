@@ -44,7 +44,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "Meta_Type.h"
 // [<finish includes>]
 
@@ -558,7 +558,7 @@ void Meta_Initial_Record_Value::impl::validate( unsigned state, bool is_internal
        get_module_string( c_field_display_name_Value ) + " " + error_message ) );
 
    // [<start validate>]
-//idk
+//nyi
    if( !get_obj( ).Value( ).empty( ) && !is_valid_value( get_obj( ).Value( ),
     ( primitive )get_obj( ).Field( ).Type( ).Primitive( ), get_obj( ).Field( ).Type( ).Max_Size( ),
     get_obj( ).Field( ).Type( ).Min_Value( ).c_str( ), get_obj( ).Field( ).Type( ).Max_Value( ).c_str( ) ) )

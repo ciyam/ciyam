@@ -46,7 +46,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "Meta_List.h"
 #include "Meta_View.h"
 #include "Meta_Class.h"
@@ -1202,7 +1202,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
 void Meta_Application::impl::impl_Generate( )
 {
    // [<start Generate_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -1710,7 +1710,7 @@ void Meta_Application::impl::impl_Generate( )
 void Meta_Application::impl::impl_Generate_File_Links( )
 {
    // [<start Generate_File_Links_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -1730,7 +1730,7 @@ void Meta_Application::impl::impl_Generate_File_Links( )
 void Meta_Application::impl::impl_Generate_Modules( )
 {
    // [<start Generate_Modules_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -1752,7 +1752,7 @@ void Meta_Application::impl::impl_Generate_Modules( )
 void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
 {
    // [<start Generate_Upgrade_DDL_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -2362,7 +2362,7 @@ void Meta_Application::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [<start to_store>]
-//idk
+//nyi
    if( is_create && get_obj( ).Default_Timezone_Abbr( ).empty( ) )
       get_obj( ).Default_Timezone_Abbr( get_timezone( ) );
    // [<finish to_store>]
@@ -2374,7 +2374,7 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start for_store>]
-//idk
+//nyi
    if( is_create && !storage_locked_for_admin( ) && get_obj( ).Create_Database( ) )
    {
 #ifndef _WIN32
@@ -2422,7 +2422,7 @@ void Meta_Application::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
-//idk
+//nyi
    if( is_create && get_obj( ).Add_Modules_Automatically( ) )
    {
       if( get_obj( ).Workgroup( ).child_Model( ).iterate_forwards( ) )
@@ -2475,7 +2475,7 @@ void Meta_Application::impl::for_destroy( bool is_internal )
    ( void )is_internal;
 
    // [<start for_destroy>]
-//idk
+//nyi
    if( !storage_locked_for_admin( ) )
    {
       if( get_obj( ).Created_Database( ) )

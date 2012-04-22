@@ -1075,7 +1075,7 @@ void Meta_Package_Option::impl::after_fetch( )
       p_obj->setup_foreign_key( *cp_Package, v_Package );
 
    // [<start after_fetch>]
-//idk
+//nyi
    if( !get_obj( ).Is_Other_Package( ) )
    {
       switch( get_obj( ).Primitive( ) )
@@ -1160,7 +1160,7 @@ void Meta_Package_Option::impl::for_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start for_store>]
-//idk
+//nyi
    if( get_obj( ).Is_Other_Package( ) )
       get_obj( ).Use_Option( !is_null( get_obj( ).Other_Package( ) ) );
    // [<finish for_store>]
@@ -2167,7 +2167,7 @@ void Meta_Package_Option::get_required_field_names(
    get_always_required_field_names( names, required_transients, dependents );
 
    // [<start get_required_field_names>]
-//idk
+//nyi
    if( needs_field_value( "Value", dependents ) )
    {
       dependents.insert( "Use_Option" );

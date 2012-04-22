@@ -48,7 +48,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "Meta_Enum.h"
 #include "Meta_Type.h"
 #include "Meta_Field.h"
@@ -1548,7 +1548,7 @@ struct Meta_List::impl : public Meta_List_command_handler
 void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 {
    // [<start Generate_PDF_List_impl>]
-//idk
+//nyi
    string list_ext;
 
    if( get_obj( ).Type( ).get_key( ) == "group" )
@@ -3233,7 +3233,7 @@ void Meta_List::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
-//idk
+//nyi
    // NOTE: Due to being transient detecting a duplicate Name can
    // only done after the record is stored (as its value is given
    // to it in after_fetch).

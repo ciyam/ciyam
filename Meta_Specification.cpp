@@ -3134,7 +3134,7 @@ void Meta_Specification::impl::impl_Add_Stats_Info( )
 void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, const string& Parent_Prefix )
 {
    // [<start Generate_All_Strings_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress or a cascade is in progress then do nothing.
    if( storage_locked_for_admin( ) || get_obj( ).get_is_being_cascaded( ) )
       return;
@@ -3197,7 +3197,7 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
 void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const string& Parent_Prefix )
 {
    // [<start Generate_All_Vars_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress or a cascade is in progress then do nothing.
    if( storage_locked_for_admin( ) || get_obj( ).get_is_being_cascaded( ) )
       return;
@@ -6157,7 +6157,7 @@ void Meta_Specification::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_field_from_other)]
 
    // [<start for_store>]
-//idk
+//nyi
    if( !get_obj( ).Options( ).empty( ) )
       get_obj( ).Name( get_obj( ).Name( ) + " " + get_obj( ).Options( ) );
    // [<finish for_store>]
