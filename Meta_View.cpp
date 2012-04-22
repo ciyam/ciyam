@@ -47,7 +47,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "Meta_Enum.h"
 #include "Meta_Type.h"
 #include "Meta_Field.h"
@@ -899,7 +899,7 @@ struct Meta_View::impl : public Meta_View_command_handler
 void Meta_View::impl::impl_Generate_PDF_View( )
 {
    // [<start Generate_PDF_View_impl>]
-//idk
+//nyi
    string bat_filename( get_obj( ).Model( ).Name( ) );
 #ifdef _WIN32
    bat_filename += "_" + get_obj( ).Class( ).Name( ) + ".pdf.bat";
@@ -1887,7 +1887,7 @@ void Meta_View::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
-//idk
+//nyi
    // NOTE: Due to being transient detecting a duplicate Name can
    // only done after the record is stored (as its value is given
    // to it in after_fetch).

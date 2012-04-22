@@ -54,7 +54,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "Meta_Enum.h"
 #include "Meta_Type.h"
 #include "Meta_Field.h"
@@ -322,7 +322,7 @@ string get_enum_string_add_packages( int val )
 }
 
 // [<start anonymous>]
-//idk
+//nyi
 string get_mapped_id( const string& model, const string& id )
 {
    static map< string, string > ids;
@@ -1028,7 +1028,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 void Meta_Model::impl::impl_Create_Module( )
 {
    // [<start Create_Module_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -1080,7 +1080,7 @@ void Meta_Model::impl::impl_Create_Module( )
 void Meta_Model::impl::impl_Generate( )
 {
    // [<start Generate_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -5123,7 +5123,7 @@ void Meta_Model::impl::impl_Generate( )
 void Meta_Model::impl::impl_Generate_File_Links( )
 {
    // [<start Generate_File_Links_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -5166,7 +5166,7 @@ void Meta_Model::impl::impl_Generate_File_Links( )
 void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acyclic_Class_Names, bool Check_Initial_Data )
 {
    // [<start Get_Acyclic_Class_List_impl>]
-//idk
+//nyi
    set< string > class_names;
 
    size_t num_classes = 0;
@@ -5296,7 +5296,7 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
 void Meta_Model::impl::impl_Remove_Module( )
 {
    // [<start Remove_Module_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -5531,7 +5531,7 @@ uint64_t Meta_Model::impl::get_state( ) const
    uint64_t state = 0;
 
    // [<start get_state>]
-//idk
+//nyi
    if( !get_obj( ).Actions( ).empty( ) )
       state |= c_modifier_Is_Not_Busy;
    else
@@ -5732,7 +5732,7 @@ void Meta_Model::impl::after_fetch( )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
    // [<start after_fetch>]
-//idk
+//nyi
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
    if( get_system_variable( model_key ).empty( ) )
    {
@@ -5862,7 +5862,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
    // [(finish default_to_field)]
 
    // [<start for_store>]
-//idk
+//nyi
    if( is_create && get_obj( ).Add_Packages( ) && !storage_locked_for_admin( ) )
    {
       string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
@@ -5881,7 +5881,7 @@ void Meta_Model::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
-//idk
+//nyi
    if( is_create && get_obj( ).Add_Packages( ) )
    {
       vector< pair< string, string > > single_types;
@@ -5951,7 +5951,7 @@ void Meta_Model::impl::for_destroy( bool is_internal )
    // [(finish file_link)]
 
    // [<start for_destroy>]
-//idk
+//nyi
    if( get_obj( ).Created( ) )
    {
 #ifdef _WIN32
@@ -7158,7 +7158,7 @@ void Meta_Model::get_always_required_field_names(
    ( void )required_transients;
 
    // [<start get_always_required_field_names>]
-//idk
+//nyi
    dependents.insert( "Created" );
 
    if( ( required_transients && is_field_transient( e_field_id_Created ) )

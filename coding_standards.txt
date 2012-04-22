@@ -4,6 +4,10 @@ Coding Standards
 All submitted source is expected to be consistent with the existing coding standards
 and these standards are also expected to apply to code generated from source templates.
 
+To assist in identifying non-standard code (for .cpp and .h files) the tool "check_source"
+is used as a git pre-commit trigger. Any 3rd party header files placed in the repository
+should be added to the "check_source_include" file to be excluded from these checks.
+
 Format
 ------
 
@@ -149,6 +153,17 @@ label which is one of the following:
 // FUTURE: A suggested performance or functionality improvement to be looked into later.
 
 // i.e. 10 seconds (clarification about a constant value or similar)
+
+The following special comment is available if needed to prevent a check_source error for initialisation:
+
+//__Ignore_Block
+double values[ ] = { -2.6, -2.5, -2.4, -1.6, -1.5, -1.4,
+ -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 1.4, 1.5, 1.6, 2.4, 2.5, 2.6 };
+
+The following special comment is used to indicate manual code that should be replaced by generated code
+(in the case of Meta perhaps eventually):
+
+//nyi
 
 Macros
 ------

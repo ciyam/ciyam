@@ -818,7 +818,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 void Meta_Specification_Field_Action::impl::impl_Generate_All_Vars( string& All_Vars, const string& Parent_Prefix )
 {
    // [<start Generate_All_Vars_impl>]
-//idk
+//nyi
    // NOTE: If a restore is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -1904,7 +1904,7 @@ void Meta_Specification_Field_Action::get_required_field_names(
    get_always_required_field_names( names, required_transients, dependents );
 
    // [<start get_required_field_names>]
-//idk
+//nyi
    if( needs_field_value( "Vars" )
     && ( required_transients && is_transient_field( "Type" ) )
     || ( !required_transients && !is_transient_field( "Type" ) ) )

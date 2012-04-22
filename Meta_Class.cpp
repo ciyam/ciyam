@@ -59,7 +59,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "Meta_Type.h"
 #include "Meta_Enum.h"
 #include "Meta_Enum_Item.h"
@@ -318,7 +318,7 @@ string get_enum_string_class_type( int val )
 }
 
 // [<start anonymous>]
-//idk
+//nyi
 string get_mapped_id( const string& model, const string& id )
 {
    static map< string, string > ids;
@@ -1723,7 +1723,7 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 void Meta_Class::impl::impl_Generate( )
 {
    // [<start Generate_impl>]
-//idk
+//nyi
    // NOTE: If a recovery is in progress then do nothing.
    if( storage_locked_for_admin( ) )
       return;
@@ -3415,7 +3415,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
    // [(finish clone_children_from_fk)]
 
    // [<start after_store>]
-//idk
+//nyi
    if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
    {
       map< string, string > all_classes;

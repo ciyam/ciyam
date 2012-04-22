@@ -1297,7 +1297,7 @@ void Meta_Relationship::impl::after_fetch( )
    // [(finish field_from_other_field)]
 
    // [<start after_fetch>]
-//idk
+//nyi
    if( get_obj( ).needs_field_value( "Child_Class_File_Field_Name" )
     || required_transients.count( "Child_Class_File_Field_Name" ) )
    {
@@ -1448,7 +1448,7 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
    // [(finish update_children)]
 
    // [<start after_store>]
-//idk
+//nyi
    if( !is_create && get_obj( ).child_Relationship_Source( ).iterate_forwards( ) )
    {
       do

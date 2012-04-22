@@ -44,7 +44,7 @@
 #include "module_interface.h"
 
 // [<start includes>]
-//idk
+//nyi
 #include "numeric.h"
 #include "date_time.h"
 #include "mtime_helper.h"
@@ -1258,7 +1258,7 @@ void Meta_Type::impl::validate( unsigned state, bool is_internal, validation_err
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Zero_Padding ) ) ) ) );
 
    // [<start validate>]
-//idk
+//nyi
    if( get_obj( ).Min_Value( ).empty( ) && !get_obj( ).Max_Value( ).empty( ) )
       p_validation_errors->insert( validation_error_value_type( // FUTURE: Should be in module_strings...
        c_field_name_Min_Value, get_module_string( c_field_display_name_Min_Value ) + " must not be empty." ) );
