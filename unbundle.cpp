@@ -241,7 +241,7 @@ int main( int argc, char* argv[ ] )
    bool overwrite = false;
    bool is_quieter = false;
 
-   if( argc > first_arg + 1  )
+   if( argc > first_arg + 1 )
    {
       if( string( argv[ first_arg + 1 ] ) == "-i" )
       {
@@ -255,7 +255,7 @@ int main( int argc, char* argv[ ] )
       }
    }
 
-   if( argc > first_arg + 1  )
+   if( argc > first_arg + 1 )
    {
       if( string( argv[ first_arg + 1 ] ) == "-l" )
       {
@@ -264,7 +264,7 @@ int main( int argc, char* argv[ ] )
       }
    }
 
-   if( argc > first_arg + 1  )
+   if( argc > first_arg + 1 )
    {
       if( string( argv[ first_arg + 1 ] ) == "-o" )
       {
@@ -273,7 +273,7 @@ int main( int argc, char* argv[ ] )
       }
    }
 
-   if( argc > first_arg + 1  )
+   if( argc > first_arg + 1 )
    {
       if( string( argv[ first_arg + 1 ] ) == "-p" )
       {
