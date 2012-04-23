@@ -1286,7 +1286,7 @@ void Meta_Package::impl::impl_Remove( )
 
                get_obj( ).Actions( "" );
                get_obj( ).op_apply( );
-            }   
+            }
          }
 
          set_system_variable( model_key, "Removing package '" + get_obj( ).Name( ) + "'..." ); // FUTURE: Should be a module string...
