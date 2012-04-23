@@ -12,6 +12,7 @@ var qsFurther = '';
 
 var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
+var debugDynamicContent = false;
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
    window.location.replace( 'https:' + source[ 1 ] );
@@ -529,7 +530,18 @@ function process( )
 
    // NOTE: If there is no whitespace found in the response then it is assumed to be base64.
    if( base64test.exec( response ) )
-      document.getElementById( 'content' ).innerHTML = response;
+   {
+      var str = response;
+
+      if( debugDynamicContent )
+      {
+         str = str.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
+         str = "<div id='debug'><pre>\n" + str + "\n</pre></div>\n";
+         str = response + str;
+      }
+
+      document.getElementById( 'content' ).innerHTML = str;
+   }
    else
    {
       response = Base64.decode( response );

@@ -575,6 +575,18 @@ td.list
    _position: relative; /* Kludge for display using IE 6 */
 }
 
+#debug
+{
+   left: 0px;
+   top: 720px;
+   width: 100%;
+   font-size: 12px;
+   text-align: left;
+   border:0px solid #000;
+   position: absolute;
+   _position: relative; /* Kludge for display using IE 6 */
+}
+
 /* SCREEN  */
 @media screen
 {
