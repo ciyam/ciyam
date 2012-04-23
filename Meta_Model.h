@@ -165,6 +165,8 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
 
    virtual void Get_Acyclic_Class_List( std::string& Acyclic_Class_Keys, std::string& Acyclic_Class_Names, bool Check_Initial_Data );
 
+   virtual void Remove_All_Packages( );
+
    virtual void Remove_Module( );
 
    std::string get_field_value( int field ) const;

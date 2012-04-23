@@ -807,6 +807,7 @@ bool CLASS_BASE_DECL_SPEC exists_file( const std::string& filename, bool check_l
 void CLASS_BASE_DECL_SPEC remove_file( const std::string& filename );
 
 int64_t CLASS_BASE_DECL_SPEC size_file( const std::string& filename );
+int64_t CLASS_BASE_DECL_SPEC last_mod_time( const std::string& filename );
 
 void CLASS_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );
 std::string CLASS_BASE_DECL_SPEC load_file( const std::string& filename, bool is_optional = false );

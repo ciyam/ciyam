@@ -3935,6 +3935,14 @@
      <mandatory>false
      <modifiers>
     </field>
+    <field/>
+     <name>field_model_actions
+     <field>105109
+     <ftype>string
+     <extra>actions
+     <mandatory>false
+     <modifiers>
+    </field>
    </fields>
   </view>
   <view/>

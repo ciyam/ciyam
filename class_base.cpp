@@ -2187,6 +2187,11 @@ int64_t size_file( const string& filename )
    return size;
 }
 
+int64_t last_mod_time( const string& filename )
+{
+   return last_modification_time( filename );
+}
+
 void remove_file( const string& filename )
 {
    file_remove( filename );

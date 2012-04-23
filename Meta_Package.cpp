@@ -681,7 +681,9 @@ void Meta_Package::impl::impl_Cancel_Remove( )
    }
 
    string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
-   set_system_variable( model_key, "" );
+
+   if( get_system_variable( "@" + model_key ).empty( ) )
+      set_system_variable( model_key, "" );
    // [<finish Cancel_Remove_impl>]
 }
 
@@ -744,7 +746,9 @@ void Meta_Package::impl::impl_Check_Install( )
    get_obj( ).op_apply( );
 
    string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
-   set_system_variable( model_key, "" );
+
+   if( get_system_variable( "@" + model_key ).empty( ) )
+      set_system_variable( model_key, "" );
    // [<finish Check_Install_impl>]
 }
 
@@ -777,7 +781,9 @@ void Meta_Package::impl::impl_Complete_Remove( )
    }
 
    string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
-   set_system_variable( model_key, "" );
+
+   if( get_system_variable( "@" + model_key ).empty( ) )
+      set_system_variable( model_key, "" );
    // [<finish Complete_Remove_impl>]
 }
 
@@ -1036,6 +1042,19 @@ void Meta_Package::impl::impl_Remove( )
    if( !is_null( get_obj( ).Model( ).Workgroup( ).Standard_Package( ) ) )
       std_package_key = get_obj( ).Model( ).Workgroup( ).Standard_Package( ).get_key( );
 
+   string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+
+   bool do_exec = true;
+   if( get_obj( ).get_variable( "@do_exec" ) == "0" || get_obj( ).get_variable( "@do_exec" ) == "false" )
+      do_exec = false;
+
+   bool is_last = false;
+   if( get_obj( ).get_variable( "@is_last" ) == "1" || get_obj( ).get_variable( "@is_last" ) == "true" )
+   {
+      is_last = true;
+      set_system_variable( "@" + model_key, "" );
+   }
+
    if( !std_package_key.empty( ) && get_obj( ).get_key( ) != std_package_key && get_obj( ).Name( ) == "Standard" )
    {
       get_obj( ).op_update( );
@@ -1054,11 +1073,17 @@ void Meta_Package::impl::impl_Remove( )
    }
    else if( !storage_locked_for_admin( ) )
    {
+      bool skip = false;
       if( get_obj( ).Usage_Count( ) )
-         throw runtime_error( "This package cannot be removed as it is being referenced by other models." );
+      {
+         if( do_exec )
+            skip = true;
+         else
+            throw runtime_error( "This package cannot be removed as it is being referenced by other models." );
+      }
 
       class_pointer< Meta_Package > cp_other( e_create_instance );
-      if( cp_other->iterate_forwards( ) )
+      if( do_exec && cp_other->iterate_forwards( ) )
       {
          do
          {
@@ -1081,8 +1106,16 @@ void Meta_Package::impl::impl_Remove( )
                         next.erase( pos );
 
                      if( next == get_obj( ).Package_Type( ).Name( ) )
-                        throw runtime_error( "Need to remove '"
-                         + cp_other->Name( ) + "' before this package can be removed." );
+                     {
+                        if( do_exec )
+                        {
+                           skip = true;
+                           break;
+                        }
+                        else
+                           throw runtime_error( "Need to remove '"
+                            + cp_other->Name( ) + "' before this package can be removed." );
+                     }
                   }
                }
 
@@ -1091,14 +1124,24 @@ void Meta_Package::impl::impl_Remove( )
                   do
                   {
                      if( get_obj( ).get_key( ) == cp_other->child_Package_Option( ).Other_Package( ).get_key( ) )
-                        throw runtime_error( "Need to remove '" + cp_other->Name( ) + "' before this package can be removed." );
+                     {
+                        if( do_exec )
+                        {
+                           skip = true;
+                           break;
+                        }
+                        else
+                           throw runtime_error( "Need to remove '"
+                            + cp_other->Name( ) + "' before this package can be removed." );
+                     }
                   } while( cp_other->child_Package_Option( ).iterate_next( ) );
                }
             }
          } while( cp_other->iterate_next( ) );
       }
 
-      get_obj( ).op_update( );
+      if( !skip )
+         get_obj( ).op_update( );
 
       string new_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".new" ) );
       if( exists_file( new_filename ) )
@@ -1125,81 +1168,102 @@ void Meta_Package::impl::impl_Remove( )
          string script_filename( get_obj( ).get_key( ) + ".bat" );
 #endif
          string commands_filename( get_obj( ).get_key( ) + ".cin" );
+
          // NOTE: Empty code block for scope purposes.
          {
             ofstream outf( commands_filename.c_str( ) );
             if( !outf )
                throw runtime_error( "unable to open file '" + commands_filename + "' for output" );
 
-            outf << ".storage_init " << storage_name( ) << '\n';
-            outf << "@ifndef %ERROR%\n";
-            outf << ".storage_trans_start\n";
-            outf << "@endif\n";
-
-            // NOTE: Packages could contain updates of external artifacts (such as specifications) which
-            // need to be "undone" as updates (rather than occurring automatically via cascades) so here
-            // the package will be processed for just this purpose (the keys for such updates are marked
-            // specifically for this purpose).
-            string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
-            if( exists_file( map_filename ) )
-               outf << ".perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
-                << " " << get_obj( ).Package_Type( ).Name( ) << ".package.sio -for_remove -r=@" << map_filename << "\n";
-
-            vector< string > ordered;
-            string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );
-            read_file_lines( acyclic_filename, ordered );
-
-            // NOTE: Forcing "class" to be processed first is done as a performance optimisation
-            // (as it will automatically cascade numerous other records).
-            ordered.push_back( "Class" );
-
-            // NOTE: In order to make sure deletes are correctedly ordered they need to be
-            // processed in the opposite of the acyclic class list (as its ordering is for
-            // record creation).
-            reverse( ordered.begin( ), ordered.end( ) );
-
-            int total = 0;
-            for( size_t i = 0; i < ordered.size( ); i++ )
+            if( skip || !is_last )
             {
-               string next_cid = get_class_id_for_id_or_name( get_obj( ).module_id( ), ordered[ i ] );
-               for( int j = 0; j < class_keys[ next_cid ].size( ); j++ )
-               {
-                  outf << "@ifndef %ERROR%\n";
-                  outf << ".perform_destroy " << get_uid( ) << " @now "
-                   << get_obj( ).module_id( ) << ' ' << next_cid << " -q " << class_keys[ next_cid ][ j ] << '\n';
-                  outf << "@ifdef %ERROR%\n";
-                  outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
-                  outf << "@endif\n";
-                  if( ++total % 50 == 0 )
-                     outf << "#Processed " << total << " records...\n";
-                  outf << "@endif\n";
-               }
+               outf << ".system_variable @" << model_key
+                << " \"" << get_system_variable( "@" + model_key ) << "\"" << '\n';
             }
 
-            outf << "@ifndef %ERROR%\n";
-            outf << ".storage_trans_commit\n";
-            outf << "@else\n";
-            outf << ".storage_trans_rollback\n";
-            outf << "@endif\n";
-            outf << "@ifndef %ERROR%\n";
-            outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
-             << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136440\n";
-            outf << "@else\n";
-            outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
-             << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136450\n";
-            outf << "@endif\n";
+            if( !skip )
+            {
+               outf << ".storage_init " << storage_name( ) << '\n';
+               outf << "@ifndef %ERROR%\n";
+               outf << ".storage_trans_start\n";
+               outf << "@endif\n";
+
+               // NOTE: Packages could contain updates of external artifacts (such as specifications) which
+               // need to be "undone" as updates (rather than occurring automatically via cascades) so here
+               // the package will be processed for just this purpose (the keys for such updates are marked
+               // specifically for this purpose).
+               string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
+               if( exists_file( map_filename ) )
+                  outf << ".perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
+                   << " " << get_obj( ).Package_Type( ).Name( ) << ".package.sio -for_remove -r=@" << map_filename << "\n";
+
+               vector< string > ordered;
+               string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );
+               read_file_lines( acyclic_filename, ordered );
+
+               // NOTE: Forcing "class" to be processed first is done as a performance optimisation
+               // (as it will automatically cascade numerous other records).
+               ordered.push_back( "Class" );
+
+               // NOTE: In order to make sure deletes are correctedly ordered they need to be
+               // processed in the opposite of the acyclic class list (as its ordering is for
+               // record creation).
+               reverse( ordered.begin( ), ordered.end( ) );
+
+               int total = 0;
+               for( size_t i = 0; i < ordered.size( ); i++ )
+               {
+                  string next_cid = get_class_id_for_id_or_name( get_obj( ).module_id( ), ordered[ i ] );
+                  for( int j = 0; j < class_keys[ next_cid ].size( ); j++ )
+                  {
+                     outf << "@ifndef %ERROR%\n";
+                     outf << ".perform_destroy " << get_uid( ) << " @now "
+                      << get_obj( ).module_id( ) << ' ' << next_cid << " -q " << class_keys[ next_cid ][ j ] << '\n';
+                     outf << "@ifdef %ERROR%\n";
+                     outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
+                     outf << "@endif\n";
+                     if( ++total % 50 == 0 )
+                        outf << "#Processed " << total << " records...\n";
+                     outf << "@endif\n";
+                  }
+               }
+
+               outf << "@ifndef %ERROR%\n";
+               outf << ".storage_trans_commit\n";
+               outf << "@else\n";
+               outf << ".storage_trans_rollback\n";
+               outf << "@endif\n";
+
+               if( is_last )
+               {
+                  outf << ".system_variable @" << model_key
+                   << " \"" << get_system_variable( "@" + model_key ) << "\"" << '\n';
+               }
+
+               outf << "@ifndef %ERROR%\n";
+               outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
+                << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136440\n"; // i.e. Complete_Remove
+               outf << "@else\n";
+               outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
+                << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136450\n"; // i.e. Cancel_Remove
+               outf << "@endif\n";
 #ifdef _WIN32
-            outf << ".session_lock -release " << session_id( ) << "\n"; // see NOTE below...
+               if( do_exec || is_last )
+                  outf << ".session_lock -release " << session_id( ) << "\n"; // see NOTE below...
 #endif
+            }
+
             outf << ".quit\n";
 
             string install_log( get_obj( ).get_key( ) + ".install.log" );
+            if( !skip )
+            {
+               ofstream outl( install_log.c_str( ), ios::out | ios::app );
+               if( !outl )
+                  throw runtime_error( "unable to open '" + install_log + "' for output" );
 
-            ofstream outl( install_log.c_str( ), ios::out | ios::app );
-            if( !outl )
-               throw runtime_error( "unable to open '" + install_log + "' for output" );
-
-            outl << "\nStarting Remove...\n";
+               outl << "\nStarting Remove...\n";
+            }
 
             ofstream outs( script_filename.c_str( ) );
             if( !outs )
@@ -1216,29 +1280,38 @@ void Meta_Package::impl::impl_Remove( )
 #else
             outs << "rm " << commands_filename << "\n";
 #endif
-            outs << "echo Finished Remove...>>" << install_log << "\n";
-            get_obj( ).Actions( "" );
-            get_obj( ).op_apply( );
+            if( !skip )
+            {
+               outs << "echo Finished Remove...>>" << install_log << "\n";
+
+               get_obj( ).Actions( "" );
+               get_obj( ).op_apply( );
+            }   
          }
 
-         string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
          set_system_variable( model_key, "Removing package '" + get_obj( ).Name( ) + "'..." ); // FUTURE: Should be a module string...
 
+         if( do_exec )
+         {
 #ifdef _WIN32
-         // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
-         // killing this session until the asychronous operations have been completed.
-         capture_session( session_id( ) );
-         exec_system( "run_temp " + script_filename, true );
+            // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
+            // killing this session until the asychronous operations have been completed.
+            capture_session( session_id( ) );
+            exec_system( "run_temp " + script_filename, true );
 #else
-         chmod( script_filename.c_str( ), 0777 );
-         exec_system( "./run_temp " + script_filename, true );
+            chmod( script_filename.c_str( ), 0777 );
+            exec_system( "./run_temp " + script_filename, true );
 #endif
+         }
       }
       else
       {
-         get_obj( ).Actions( "136410" );
-         get_obj( ).Installed( false );
-         get_obj( ).op_apply( );
+         if( !skip )
+         {
+            get_obj( ).Actions( "136410" );
+            get_obj( ).Installed( false );
+            get_obj( ).op_apply( );
+         }
       }
    }
    // [<finish Remove_impl>]

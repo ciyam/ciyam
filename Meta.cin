@@ -195,6 +195,7 @@ procedure_add -id=105420 Model Create_Module
 procedure_add -id=105430 Model Remove_Module
 procedure_add -id=105435 Model Generate_File_Links
 procedure_add -id=105440 Model Get_Acyclic_Class_List
+procedure_add -id=105450 Model Remove_All_Packages
 procedure_arg_add -id=105441 Model Get_Acyclic_Class_List Acyclic_Class_Keys string out
 procedure_arg_add -id=105442 Model Get_Acyclic_Class_List Acyclic_Class_Names string out
 procedure_arg_add -id=105443 Model Get_Acyclic_Class_List Check_Initial_Data bool in
@@ -901,10 +902,10 @@ relationship_add -id=202650 -fid=302650 Specification_Copy_Child_Links Child_Fil
 relationship_add -id=202651 -fid=302651 Specification_Copy_Child_Links Source_Child_Relationship Relationship mand restrict
 relationship_add -id=202652 -fid=302652 Specification_Copy_Child_Links Source_Child_Rel_Child_Class Class mand restrict
 relationship_add -id=202653 -fid=302653 Specification_Copy_Child_Links Source_Child_File_Field Field opt restrict
-relationship_add -id=202800 -fid=302800 Package {Model} Model mand restrict
+relationship_add -id=202800 -fid=302800 Package {Model} Model mand destroy
 relationship_add -id=202810 -fid=302810 Package {Package_Type} Package_Type mand restrict
 relationship_add -id=202820 -fid=302820 Package_Option {Package} Package mand destroy
-relationship_add -id=202825 -fid=302825 Package_Option {Model} Model mand restrict
+relationship_add -id=202825 -fid=302825 Package_Option {Model} Model mand destroy
 relationship_add -id=202830 -fid=302830 Package_Option Other_Package Package opt unlink
 relationship_add -id=202835 -fid=302835 Workgroup Standard_Package Package opt unlink
 index_add -id=400100 User {Workgroup},User_Id unique
@@ -1728,7 +1729,7 @@ specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_li
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
  Name,Id;no_edit+non_new,Status;view_only,Version,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
-,Add_Packages;new_only,Source_File,Commands_File"
+,Add_Packages;new_only,Source_File,Commands_File,Actions"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
