@@ -1873,7 +1873,7 @@
 `{`$specification_Model_view_extra`=`'`'`}
 `{`$specification_Model_view_mods`=`'`'`}
 `{`$specification_Model_view_binfo`=`'`'`}
-`{`$specification_Model_view_fnums`=`'00 01 02 03 04 05 06 07 08`'`}
+`{`$specification_Model_view_fnums`=`'00 01 02 03 04 05 06 07 08 09`'`}
 `{`$specification_Model_view_field00`=`'105101`'`}
 `{`$specification_Model_view_ftype00`=`'string`'`}
 `{`$specification_Model_view_extra00`=`'filename+max_size=30`'`}
@@ -1934,6 +1934,12 @@
 `{`$specification_Model_view_fmods08`=`'`'`}
 `{`$specification_Model_view_fname08`=`'field_model_commands_file`'`}
 `{`$specification_Model_view_fmand08`=`'false`'`}
+`{`$specification_Model_view_field09`=`'105109`'`}
+`{`$specification_Model_view_ftype09`=`'string`'`}
+`{`$specification_Model_view_extra09`=`'actions`'`}
+`{`$specification_Model_view_fmods09`=`'`'`}
+`{`$specification_Model_view_fname09`=`'field_model_actions`'`}
+`{`$specification_Model_view_fmand09`=`'false`'`}
 `{`}
 `{`$specification_Modifier_view_id`=`'601910`'`}
 `{`$specification_Modifier_view_cid`=`'109100`'`}

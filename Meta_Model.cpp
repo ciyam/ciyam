@@ -242,6 +242,7 @@ const char* const c_procedure_id_Create_Module = "105420";
 const char* const c_procedure_id_Generate = "105410";
 const char* const c_procedure_id_Generate_File_Links = "105435";
 const char* const c_procedure_id_Get_Acyclic_Class_List = "105440";
+const char* const c_procedure_id_Remove_All_Packages = "105450";
 const char* const c_procedure_id_Remove_Module = "105430";
 
 const uint64_t c_modifier_Is_Not_Busy = UINT64_C( 0x100 );
@@ -610,6 +611,12 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
 
       append_value( cmd_handler.retval, Acyclic_Class_Names );
    }
+   else if( command == c_cmd_Meta_Model_Remove_All_Packages )
+   {
+      cmd_handler.p_Meta_Model->Remove_All_Packages( );
+
+      cmd_handler.retval.erase( );
+   }
    else if( command == c_cmd_Meta_Model_Remove_Module )
    {
       cmd_handler.p_Meta_Model->Remove_Module( );
@@ -944,6 +951,8 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    void impl_Generate_File_Links( );
 
    void impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acyclic_Class_Names, bool Check_Initial_Data );
+
+   void impl_Remove_All_Packages( );
 
    void impl_Remove_Module( );
 
@@ -5293,6 +5302,83 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
    // [<finish Get_Acyclic_Class_List_impl>]
 }
 
+void Meta_Model::impl::impl_Remove_All_Packages( )
+{
+   // [<start Remove_All_Packages_impl>]
+//nyi
+   if( !storage_locked_for_admin( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
+   {
+      map< int64_t, string > packages;
+      do
+      {
+         if( get_obj( ).child_Package( ).Installed( ) )
+         {
+            int64_t last_mod = last_mod_time(
+             get_obj( ).child_Package( ).get_attached_file_path( get_obj( ).child_Package( ).get_key( ) + ".map" ) );
+
+            packages.insert( make_pair( last_mod, get_obj( ).child_Package( ).get_key( ) ) );
+         }
+      } while( get_obj( ).child_Package( ).iterate_next( ) );
+
+#ifndef _WIN32
+      string script_filename( get_obj( ).get_key( ) );
+#else
+      string script_filename( get_obj( ).get_key( ) + ".bat" );
+#endif
+
+      string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
+
+      if( !packages.empty( ) )
+      {
+         ofstream outf( script_filename.c_str( ) );
+         set_system_variable( "@" + model_key, "1" );
+
+#ifdef _WIN32
+         outf << "@echo off\n";
+#endif
+         for( map< int64_t, string >::iterator i = packages.end( ); ; --i )
+         {
+            if( i != packages.end( ) )
+            {
+               get_obj( ).child_Package( ).perform_fetch( i->second );
+               get_obj( ).child_Package( ).set_variable( "@do_exec", "0" );
+
+               if( i == packages.begin( ) )
+                  get_obj( ).child_Package( ).set_variable( "@is_last", "1" );
+
+               get_obj( ).child_Package( ).Remove( );
+
+#ifndef _WIN32
+               outf << "./" << get_obj( ).child_Package( ).get_key( ) << '\n';
+               outf << "rm " << get_obj( ).child_Package( ).get_key( ) << '\n';
+#else
+               outf << "call " << get_obj( ).child_Package( ).get_key( ) << ".bat" << '\n';
+               outf << "del " << get_obj( ).child_Package( ).get_key( ) << ".bat" << '\n';
+#endif
+            }
+
+            if( i == packages.begin( ) )
+               break;
+         }
+      }
+
+      if( !packages.empty( ) )
+      {
+         set_system_variable( model_key, "Removing packages..." ); // FUTURE: Should be a module string...
+#ifdef _WIN32
+         // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
+         // killing this session until the asychronous operations have been completed.
+         capture_session( session_id( ) );
+         exec_system( "run_temp " + script_filename, true );
+#else
+         chmod( script_filename.c_str( ), 0777 );
+         exec_system( "./run_temp " + script_filename, true );
+#endif
+      }
+   }
+   // [<finish Remove_All_Packages_impl>]
+}
+
 void Meta_Model::impl::impl_Remove_Module( )
 {
    // [<start Remove_Module_impl>]
@@ -5532,7 +5618,7 @@ uint64_t Meta_Model::impl::get_state( ) const
 
    // [<start get_state>]
 //nyi
-   if( !get_obj( ).Actions( ).empty( ) )
+   if( get_obj( ).Status( ).empty( ) )
       state |= c_modifier_Is_Not_Busy;
    else
       state |= ( c_state_is_changing | c_state_uneditable | c_state_undeletable | c_state_ignore_uneditable );
@@ -5733,13 +5819,27 @@ void Meta_Model::impl::after_fetch( )
 
    // [<start after_fetch>]
 //nyi
+#ifndef _WIN32
+   string script_filename( get_obj( ).get_key( ) );
+#else
+   string script_filename( get_obj( ).get_key( ) + ".bat" );
+#endif
+
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
-   if( get_system_variable( model_key ).empty( ) )
+   if( get_system_variable( model_key ).empty( ) && !exists_file( script_filename ) )
    {
-      if( !get_obj( ).Created( ) )
-         get_obj( ).Actions( "105420" ); // i.e Create_Module
-      else
-         get_obj( ).Actions( "105430" ); // i.e. Remove_Module
+      if( get_obj( ).child_Package( ).iterate_forwards( ) )
+      {
+         do
+         {
+            if( get_obj( ).child_Package( ).Installed( ) && get_obj( ).child_Package( ).Usage_Count( ) == 0 )
+            {
+               get_obj( ).Actions( get_obj( ).Actions( ) + "?105450" ); // i.e. Remove_All_Packages
+               get_obj( ).child_Package( ).iterate_stop( );
+               break;
+            }
+         } while( get_obj( ).child_Package( ).iterate_next( ) );
+      }
    }
    else
       get_obj( ).Status( get_system_variable( model_key ) );
@@ -5931,6 +6031,20 @@ bool Meta_Model::impl::can_destroy( bool is_internal )
    bool retval = is_internal || !( get_state( ) & c_state_undeletable );
 
    // [<start can_destroy>]
+//nyi
+   if( !storage_locked_for_admin( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( get_obj( ).child_Package( ).Installed( ) )
+         {
+            retval = false;
+            get_obj( ).child_Package( ).iterate_stop( );
+
+            break;
+         }
+      } while( get_obj( ).child_Package( ).iterate_next( ) );
+   }
    // [<finish can_destroy>]
 
    return retval;
@@ -6278,6 +6392,11 @@ void Meta_Model::Generate_File_Links( )
 void Meta_Model::Get_Acyclic_Class_List( string& Acyclic_Class_Keys, string& Acyclic_Class_Names, bool Check_Initial_Data )
 {
    p_impl->impl_Get_Acyclic_Class_List( Acyclic_Class_Keys, Acyclic_Class_Names, Check_Initial_Data );
+}
+
+void Meta_Model::Remove_All_Packages( )
+{
+   p_impl->impl_Remove_All_Packages( );
 }
 
 void Meta_Model::Remove_Module( )
@@ -6957,7 +7076,7 @@ class_base* Meta_Model::get_next_foreign_key_child(
          break;
 
          case 4:
-         if( op == e_cascade_op_restrict )
+         if( op == e_cascade_op_destroy )
          {
             next_child_field = "302825";
             p_class_base = &child_Package_Option( );
@@ -6965,7 +7084,7 @@ class_base* Meta_Model::get_next_foreign_key_child(
          break;
 
          case 5:
-         if( op == e_cascade_op_restrict )
+         if( op == e_cascade_op_destroy )
          {
             next_child_field = "302800";
             p_class_base = &child_Package( );
@@ -7460,6 +7579,7 @@ procedure_info_container& Meta_Model::static_get_procedure_info( )
       procedures.insert( make_pair( "105410", "Generate" ) );
       procedures.insert( make_pair( "105435", "Generate_File_Links" ) );
       procedures.insert( make_pair( "105440", "Get_Acyclic_Class_List" ) );
+      procedures.insert( make_pair( "105450", "Remove_All_Packages" ) );
       procedures.insert( make_pair( "105430", "Remove_Module" ) );
    }
 

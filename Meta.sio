@@ -8113,6 +8113,10 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>601510
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -8563,6 +8567,14 @@
         <specifications/>
         </specifications>
        </arg>
+      </args>
+     </procedure>
+     <procedure/>
+      <id>105450
+      <name>Remove_All_Packages
+      <specifications/>
+      </specifications>
+      <args/>
       </args>
      </procedure>
      <procedure/>
@@ -26205,7 +26217,7 @@
     <name>{Model}_{Package_Option}
     <parent_id>105100
     <child_id>137100
-    <cascade_op>restrict
+    <cascade_op>destroy
     <specifications/>
     </specifications>
    </relationship>
@@ -26214,7 +26226,7 @@
     <name>{Model}_{Package}
     <parent_id>105100
     <child_id>136100
-    <cascade_op>restrict
+    <cascade_op>destroy
     <specifications/>
     </specifications>
    </relationship>
@@ -28798,6 +28810,7 @@
      <field_info>105112;new_only+enum=575
      <field_info>105110
      <field_info>105111
+     <field_info>105109
     </data>
    </specification>
    <specification/>

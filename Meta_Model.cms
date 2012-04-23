@@ -7,4 +7,5 @@ Create_Module "Create_Module procedure"
 Generate "Generate procedure"
 Generate_File_Links "Generate_File_Links procedure"
 Get_Acyclic_Class_List "Get_Acyclic_Class_List procedure" <oval//Check_Initial_Data>
+Remove_All_Packages "Remove_All_Packages procedure"
 Remove_Module "Remove_Module procedure"

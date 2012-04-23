@@ -122,6 +122,11 @@ after_fetch    Destroy       Destroy      The lock is acquired before the record
                                           used in order to determine the value of transient fields which need
                                           to use other field (or other record field) values.
 
+can_destroy    Destroy       Destroy      This function is available to provide a means of protecting certain
+                                          specific records from being deleted (if they are not protected from
+                                          deletion by their state). If a specific error message is wanted for
+                                          display then an exception should be thrown in this function.
+
                                           (op_apply)
 for_destroy    Destroy       Destroy      This function is intended for making necessary changes (normally as
 [starts a tx if not already in one]       updates) to other records that are not simple cascades (such as the
