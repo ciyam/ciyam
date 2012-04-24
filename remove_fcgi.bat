@@ -12,7 +12,7 @@ if not exist "%WEBDIR%\%1\fcgi.sio" goto error2
 if exist "%WEBDIR%\%1\upload.kill.bat" del "%WEBDIR%\%1\upload.kill.bat"
 if exist "%WEBDIR%\%1\ciyam_interface.kill.bat" del "%WEBDIR%\%1\ciyam_interface.kill.bat"
 
-#REM Use PING to approximate a 2 second pause...
+REM Use PING to approximate a 2 second pause...
 PING 127.0.0.1 -n 3 >nul
 
 if exist "%WEBDIR%\%1\upload.kill.bat" call "%WEBDIR%\%1\upload.kill.bat"

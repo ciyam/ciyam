@@ -46,7 +46,7 @@ If all has gone well then it is time to install the IDE application which is don
 ./setup Meta meta
 ./install_fcgi ciyam_interface meta
 ./install_fcgi upload meta
-./install Meta meta
+./install Meta meta index
 
 To use the application you'll need to make sure that the application server (ciyam_server) is running. To run
 it under Windows use "start ciyam_server" and under Linux "./ciyam_server &". Once the application server has
