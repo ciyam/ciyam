@@ -37,27 +37,17 @@ struct session_info;
 
 #  define GDS( s ) get_string( STRINGIZE( s ) )
 
-#  define LOG_TRACE ( scoped_flusher( get_log( ) ), get_log( ) )
-#  define TEMP_TRACE LOG_TRACE
+#  define LOG_TRACE( message ) log_trace_message( message )
+#  define TEMP_TRACE( message ) LOG_TRACE( message )
 
 #  ifdef DEBUG
-#     define DEBUG_TRACE LOG_TRACE
+#     define DEBUG_TRACE( message ) LOG_TRACE( message )
 #  else
-#     define DEBUG_TRACE if( 1 ); else get_log( )
+#     define DEBUG_TRACE( message )
 #  endif
 
-std::ostream& get_log( );
-
 void init_log( );
-
-struct scoped_flusher
-{
-   scoped_flusher( std::ostream& os );
-   ~scoped_flusher( );
-
-   std::ostream& os;
-   guard* p_guard;
-};
+void log_trace_message( const std::string& message );
 
 const std::string& get_server_id( );
 void set_server_id( const std::string& id );

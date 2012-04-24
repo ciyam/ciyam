@@ -101,11 +101,11 @@ void read_module_strings( module_info& info, tcp_socket& socket )
 
 bool simple_command( session_info& sess_info, const string& cmd, string* p_response )
 {
-   DEBUG_TRACE << cmd;
+   DEBUG_TRACE( cmd );
 
    if( sess_info.p_socket->write_line( cmd ) <= 0 )
    {
-      DEBUG_TRACE << "socket write failure";
+      DEBUG_TRACE( "socket write failure" );
       return false;
    }
 
@@ -113,31 +113,33 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
    if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
    {
       if( sess_info.p_socket->had_timeout( ) )
-         DEBUG_TRACE << "timeout awaiting initial response";
+         DEBUG_TRACE( "timeout awaiting initial response" );
       else
-         DEBUG_TRACE << "unexpected socket closure getting initial response";
+         DEBUG_TRACE( "unexpected socket closure getting initial response" );
+
       return false;
    }
 
    if( p_response )
    {
       *p_response = response;
-      DEBUG_TRACE << response;
+      DEBUG_TRACE( response );
 
       response.clear( );
       if( sess_info.p_socket->read_line( response, c_subsequent_response_timeout ) <= 0 )
       {
          if( sess_info.p_socket->had_timeout( ) )
-            DEBUG_TRACE << "timeout awaiting subsequent response";
+            DEBUG_TRACE( "timeout awaiting subsequent response" );
          else
-            DEBUG_TRACE << "unexpected socket closure getting subsequent response";
+            DEBUG_TRACE( "unexpected socket closure getting subsequent response" );
+
          return false;
       }
    }
 
    if( response != c_response_okay )
    {
-      DEBUG_TRACE << "unexpected server response '" + response + "'";
+      DEBUG_TRACE( "unexpected server response '" + response + "'" );
       return false;
    }
 
@@ -168,7 +170,7 @@ bool perform_update( const string& module, const string& class_id,
 
    cmd += " " + key + " \"" + field_values + "\"";
 
-   DEBUG_TRACE << cmd;
+   DEBUG_TRACE( cmd );
 
    if( socket.write_line( cmd ) > 0 )
    {
@@ -192,7 +194,7 @@ bool perform_update( const string& module,
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id + " " + key + " \"" + field
     + "=" + escaped( new_value, ",\"" ) + "\" \"" + field + "=" + escaped( old_value, ",\"" ) + "\"" );
 
-   DEBUG_TRACE << cmd;
+   DEBUG_TRACE( cmd );
 
    if( socket.write_line( cmd ) > 0 )
    {
@@ -413,7 +415,7 @@ bool perform_action( const string& module_name,
       else if( act == c_act_exec )
          act_cmd += " " + exec_args( exec_info );
 
-      DEBUG_TRACE << act_cmd;
+      DEBUG_TRACE( act_cmd );
 
       if( socket.write_line( act_cmd ) <= 0 )
       {
@@ -542,7 +544,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
          fetch_cmd += " \"" + *p_pdf_title + "\"";
    }
 
-   DEBUG_TRACE << fetch_cmd;
+   DEBUG_TRACE( fetch_cmd );
 
    if( sess_info.p_socket->write_line( fetch_cmd ) <= 0 )
       okay = false;
@@ -685,7 +687,7 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
       fetch_cmd += path + "\" \"" + title + "\"";
    }
 
-   DEBUG_TRACE << extra_debug << fetch_cmd;
+   DEBUG_TRACE( extra_debug + fetch_cmd );
 
    if( socket.write_line( fetch_cmd ) <= 0 )
       okay = false;
@@ -2381,7 +2383,7 @@ void save_record( const string& module_id,
    if( !exec.empty( ) )
       act_cmd += " -x=" + exec;
 
-   DEBUG_TRACE << act_cmd;
+   DEBUG_TRACE( act_cmd );
 
    if( sess_info.p_socket->write_line( act_cmd ) <= 0 )
       had_send_or_recv_error = true;

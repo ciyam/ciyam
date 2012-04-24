@@ -390,7 +390,7 @@ void read_global_storage_info( )
    read_storage_info( get_storage_info( ), log_messages );
 
    for( size_t i = 0; i < log_messages.size( ); i++ )
-      LOG_TRACE << log_messages[ i ];
+      LOG_TRACE( log_messages[ i ] );
 }
 
 string get_display_name( const string& str )
@@ -606,10 +606,10 @@ void timeout_handler::on_start( )
 
          if( tm_now - ( si->second )->tm_last_request > c_timeout_seconds )
          {
-            LOG_TRACE << "session timeout";
-            LOG_TRACE << "[logout: " << si->second->user_id
-             << " at " << date_time::local( ).as_string( true, false )
-             << " from " << si->second->ip_addr << "]";
+            LOG_TRACE( "session timeout" );
+            LOG_TRACE( "[logout: " + si->second->user_id
+             + " at " + date_time::local( ).as_string( true, false )
+             + " from " + si->second->ip_addr + "]" );
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -747,7 +747,7 @@ void request_handler::process_request( )
    session_info* p_session_info = 0;
    ostringstream form_content, extra_content;
 
-   DEBUG_TRACE << "[process request]";
+   DEBUG_TRACE( "[process request]" );
 
    try
    {
@@ -992,7 +992,7 @@ void request_handler::process_request( )
       {
          if( !new_session )
          {
-            DEBUG_TRACE << "session " << session_id << " terminated";
+            DEBUG_TRACE( "session " + session_id + " terminated" );
 
             remove_session_temp_directory( session_id );
 
@@ -1032,7 +1032,7 @@ void request_handler::process_request( )
                connection_okay = true;
             else
             {
-               DEBUG_TRACE << "[opening socket]";
+               DEBUG_TRACE( "[opening socket]" );
 
                if( p_session_info->p_socket->open( ) )
                {
@@ -1356,9 +1356,9 @@ void request_handler::process_request( )
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;
 
-                  LOG_TRACE << "[login: " << p_session_info->user_id
-                   << " at " << date_time::local( ).as_string( true, false )
-                   << " from " << p_session_info->ip_addr << "]";
+                  LOG_TRACE( "[login: " + p_session_info->user_id
+                   + " at " + date_time::local( ).as_string( true, false )
+                   + " from " + p_session_info->ip_addr + "]" );
                }
             }
          }
@@ -1491,7 +1491,7 @@ void request_handler::process_request( )
             {
 #ifdef DEBUG
                for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
-                  DEBUG_TRACE << "Input[ " << ci->first << " ] => " << ci->second;
+                  DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
                throw runtime_error( "Invalid URL" );
             }
@@ -1589,7 +1589,7 @@ void request_handler::process_request( )
 
 #ifdef DEBUG
          for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
-            DEBUG_TRACE << "Input[ " << ci->first << " ] => " << ci->second;
+            DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
 
          bool had_send_or_recv_error = false;
@@ -2985,7 +2985,7 @@ void request_handler::process_request( )
             finished_session = true;
 
             if( had_send_or_recv_error )
-               LOG_TRACE << "session terminated";
+               LOG_TRACE( "session terminated" );
 
             ostringstream osstr;
             if( g_interface_html.find( c_form_content_comment ) == string::npos )
@@ -3022,9 +3022,9 @@ void request_handler::process_request( )
          {
             remove_non_persistent( session_id );
 
-            LOG_TRACE << "[logout: " << p_session_info->user_id
-             << " at " << date_time::local( ).as_string( true, false )
-             << " from " << p_session_info->ip_addr << "]";
+            LOG_TRACE( "[logout: " + p_session_info->user_id
+             + " at " + date_time::local( ).as_string( true, false )
+             + " from " + p_session_info->ip_addr + "]" );
          }
          else
          {
@@ -3964,7 +3964,7 @@ void request_handler::process_request( )
    }
    catch( exception& x )
    {
-      LOG_TRACE << "error: " << x.what( );
+      LOG_TRACE( string( "error: " ) + x.what( ) );
 
       ostringstream osstr;
       osstr << "<p class=\"error\" align=\"center\">"
@@ -4003,7 +4003,7 @@ void request_handler::process_request( )
    {
       extra_content << "<p class=\"error\" align=\"center\">" << GDS( c_display_unexpected_server_error ) << "</p>\n";
 
-      LOG_TRACE << "unexpected error occurred";
+      LOG_TRACE( "unexpected error occurred" );
 
       if( p_session_info && p_session_info->logged_in )
       {
@@ -4181,9 +4181,9 @@ int main( int argc, char* argv[ ] )
 
       init_log( );
 
-      LOG_TRACE << "[started at: " << date_time::local( ).as_string( true, false ) << "]";
+      LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
 
-      DEBUG_TRACE << "[read strings]";
+      DEBUG_TRACE( "[read strings]" );
 
       init_strings( );
 
@@ -4246,11 +4246,11 @@ int main( int argc, char* argv[ ] )
       g_display_login_info = GDS( c_display_login_info );
       g_display_change_password = GDS( c_display_change_password );
 
-      DEBUG_TRACE << "[read storage info]";
+      DEBUG_TRACE( "[read storage info]" );
 
       read_global_storage_info( );
 
-      DEBUG_TRACE << "[now starting handlers]";
+      DEBUG_TRACE( "[now starting handlers]" );
 
       // NOTE: Scope for timeout handler temporary object.
       {
@@ -4287,16 +4287,16 @@ int main( int argc, char* argv[ ] )
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
       remove_sockets( );
 #endif
-      LOG_TRACE << "[finished at: " << date_time::local( ).as_string( true, false ) << "]";
+      LOG_TRACE( "[finished at: " + date_time::local( ).as_string( true, false ) + "]" );
    }
    catch( exception& x )
    {
-      get_log( ) << "error: " << x.what( ) << endl;
+      LOG_TRACE( string( "error: " ) + x.what( ) );
       rc = 1;
    }
    catch( ... )
    {
-      get_log( ) << "unexpected exception caught" << endl;
+      LOG_TRACE( "unexpected exception caught" );
       rc = 2;
    }
 
