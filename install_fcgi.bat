@@ -13,7 +13,7 @@ if not exist %1.exe goto error2
 if not exist %install_path%\fcgi.sio goto error3
 
 if exist "%WEBDIR%\%directory%\%1.kill.bat" del "%WEBDIR%\%directory%\%1.kill.bat"
-#REM Use PING to approximate a 2 second pause...
+REM Use PING to approximate a 2 second pause...
 PING 127.0.0.1 -n 3 >nul
 if exist "%WEBDIR%\%directory%\%1.kill.bat" call "%WEBDIR%\%directory%\%1.kill.bat"
 
