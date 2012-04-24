@@ -8395,6 +8395,9 @@ bool perform_instance_iterate( class_base& instance,
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
 
+   if( instance.get_is_iterating( ) )
+      throw runtime_error( "iterate called whilst already iterating (class: " + to_string( instance.class_name( ) ) + ")" );
+
    // NOTE: Because filtering can exclude records from the DB fetch the limit must be
    // omitted if any filters have been supplied.
    if( p_filters )
@@ -8610,6 +8613,9 @@ bool perform_instance_iterate( class_base& instance,
 
       if( found )
       {
+         if( !instance_accessor.p_sql_dataset( ) )
+            throw runtime_error( "unexpected null dataset in perform_instance_iterate" );
+
          deque< vector< string > > rows;
          sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
 
