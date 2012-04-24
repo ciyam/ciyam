@@ -87,21 +87,14 @@ inline const string& data_or_nbsp( const string& input )
       return g_nbsp;
 }
 
-}
-
-ostream& get_log( )
+struct scoped_flusher
 {
-   return g_logfile;
-}
+   scoped_flusher( ostream& os );
+   ~scoped_flusher( );
 
-void init_log( )
-{
-#ifndef DEBUG
-   g_logfile.open( c_log_file, ios::out );
-#else
-   g_logfile.open( c_log_file, ios::out | ios::app );
-#endif
-}
+   ostream& os;
+   guard* p_guard;
+};
 
 scoped_flusher::scoped_flusher( ostream& os )
  : os( os )
@@ -113,6 +106,24 @@ scoped_flusher::~scoped_flusher( )
 {
    os << endl;
    delete p_guard;
+}
+
+}
+
+void init_log( )
+{
+#ifndef DEBUG
+   g_logfile.open( c_log_file, ios::out );
+#else
+   g_logfile.open( c_log_file, ios::out | ios::app );
+#endif
+}
+
+void log_trace_message( const string& message )
+{
+   scoped_flusher sf( g_logfile );
+
+   g_logfile << message;
 }
 
 const string& get_server_id( )
@@ -263,7 +274,7 @@ bool delete_files( const char* p_dir, bool recycle )
 
 string get_hash( const string& values )
 {
-   DEBUG_TRACE << "(hash) values = " << values;
+   DEBUG_TRACE( "(hash) values = " + values );
 
    sha1 hash( values );
 
@@ -291,7 +302,7 @@ string get_user_hash( const string& user_id )
 
 string get_checksum( const string& values )
 {
-   DEBUG_TRACE << "(checksum) values = " << values;
+   DEBUG_TRACE( "(checksum) values = " + values );
 
    sha1 hash( g_server_id + values );
 
@@ -306,7 +317,7 @@ string get_checksum( const string& values )
 
 string get_checksum( const session_info& sess_info, const string& values )
 {
-   DEBUG_TRACE << "(checksum) values = " << values;
+   DEBUG_TRACE( "(checksum) values = " + values );
 
    sha1 hash( sess_info.checksum_prefix + values );
 
@@ -916,7 +927,7 @@ string exec_args( const string& input )
 
 void setup_directories( )
 {
-   DEBUG_TRACE << "[setup directories]";
+   DEBUG_TRACE( "[setup directories]" );
 
    char buf[ _MAX_PATH ];
    _getcwd( buf, _MAX_PATH );
