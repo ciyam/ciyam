@@ -5541,13 +5541,15 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    if( get_obj( ).Specification_Type( ).get_key( ) == "user_info"
     && !get_obj( ).Class( ).get_key( ).empty( ) && is_null( get_obj( ).Source_Parent( ) ) )
    {
-      if( get_obj( ).Class( ).child_Field( ).iterate_forwards( ) )
+      if( !get_obj( ).Class( ).child_Field( ).get_is_iterating( )
+       && get_obj( ).Class( ).child_Field( ).iterate_forwards( ) )
       {
          do
          {
             if( get_obj( ).Class( ).child_Field( ).Extra( ) == -2 ) // i.e. user_group
             {
                get_obj( ).Source_Parent( get_obj( ).Class( ).child_Field( ) );
+               get_obj( ).Class( ).child_Field( ).iterate_stop( );
                break;
             }
          } while( get_obj( ).Class( ).child_Field( ).iterate_next( ) );
@@ -5785,7 +5787,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // NOTE: Scope for local variables.
    {
       string str, rstr;
-      if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+      if( !is_create
+       && !get_obj( ).child_Specification_Parent( ).get_is_iterating( )
+       && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
       {
          do
          {
@@ -5793,7 +5797,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
             {
                string key_info( FIELD_ID( Meta, Specification, Order ) );
                key_info += ' ';
-               if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+
+               if( !get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).get_is_iterating( )
+                && get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
                {
                   do
                   {
@@ -5821,6 +5827,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
                      str += get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).Name( );
                   } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
                }
+
                get_obj( ).child_Specification_Parent( ).iterate_stop( );
                break;
             }
@@ -5854,7 +5861,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_clear)]
 
    // [(start meta_spec_field_pairs)]
-   if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+   if( !is_create
+    && !get_obj( ).child_Specification_Parent( ).get_is_iterating( )
+    && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
    {
       string str( get_obj( ).Fields( ) );
       do
@@ -5863,7 +5872,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
          {
             string key_info( FIELD_ID( Meta, Specification, Order ) );
             key_info += ' ';
-            if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+
+            if( !get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).get_is_iterating( )
+             && get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
             {
                do
                {
@@ -5874,9 +5885,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
                } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
             }
+
             get_obj( ).child_Specification_Parent( ).iterate_stop( );
             break;
          }
+
       } while( get_obj( ).child_Specification_Parent( ).iterate_next( ) );
 
       get_obj( ).Fields( str );
@@ -5884,7 +5897,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_pairs)]
 
    // [(start meta_spec_field_pairs)]
-   if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+   if( !is_create
+    && !get_obj( ).child_Specification_Parent( ).get_is_iterating( )
+    && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
    {
       string str( get_obj( ).Fields( ) );
       do
@@ -5893,7 +5908,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
          {
             string key_info( FIELD_ID( Meta, Specification, Order ) );
             key_info += ' ';
-            if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+
+            if( !get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).get_is_iterating( )
+             && get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
             {
                do
                {
@@ -5911,9 +5928,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
                } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
             }
+
             get_obj( ).child_Specification_Parent( ).iterate_stop( );
             break;
          }
+
       } while( get_obj( ).child_Specification_Parent( ).iterate_next( ) );
 
       get_obj( ).Fields( str );
@@ -5921,7 +5940,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_pairs)]
 
    // [(start meta_spec_field_pairs)]
-   if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+   if( !is_create
+    && !get_obj( ).child_Specification_Parent( ).get_is_iterating( )
+    && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
    {
       string str( get_obj( ).Field_Pairs( ) );
       do
@@ -5930,7 +5951,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
          {
             string key_info( FIELD_ID( Meta, Specification, Order ) );
             key_info += ' ';
-            if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+
+            if( !get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).get_is_iterating( )
+             && get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
             {
                do
                {
@@ -5947,9 +5970,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
                } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
             }
+
             get_obj( ).child_Specification_Parent( ).iterate_stop( );
             break;
          }
+
       } while( get_obj( ).child_Specification_Parent( ).iterate_next( ) );
 
       get_obj( ).Field_Pairs( str );
@@ -5957,7 +5982,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_pairs)]
 
    // [(start meta_spec_field_pairs)]
-   if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+   if( !is_create
+    && !get_obj( ).child_Specification_Parent( ).get_is_iterating( )
+    && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
    {
       string str( get_obj( ).Field_Pairs( ) );
       do
@@ -5966,7 +5993,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
          {
             string key_info( FIELD_ID( Meta, Specification, Order ) );
             key_info += ' ';
-            if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+
+            if( !get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).get_is_iterating( )
+             && get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
             {
                do
                {
@@ -5983,9 +6012,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
                } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
             }
+
             get_obj( ).child_Specification_Parent( ).iterate_stop( );
             break;
          }
+
       } while( get_obj( ).child_Specification_Parent( ).iterate_next( ) );
 
       get_obj( ).Field_Pairs( str );
@@ -5993,7 +6024,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_pairs)]
 
    // [(start meta_spec_field_pairs)]
-   if( !is_create && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
+   if( !is_create
+    && !get_obj( ).child_Specification_Parent( ).get_is_iterating( )
+    && get_obj( ).child_Specification_Parent( ).iterate_forwards( ) )
    {
       string str( get_obj( ).Field_Pairs( ) );
       do
@@ -6002,7 +6035,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
          {
             string key_info( FIELD_ID( Meta, Specification, Order ) );
             key_info += ' ';
-            if( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
+
+            if( !get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).get_is_iterating( )
+             && get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_forwards( key_info ) )
             {
                do
                {
@@ -6019,9 +6054,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
                } while( get_obj( ).child_Specification_Parent( ).child_Specification_Parent( ).iterate_next( ) );
             }
+
             get_obj( ).child_Specification_Parent( ).iterate_stop( );
             break;
          }
+
       } while( get_obj( ).child_Specification_Parent( ).iterate_next( ) );
 
       get_obj( ).Field_Pairs( str );

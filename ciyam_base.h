@@ -56,7 +56,7 @@ if( get_trace_flags( ) & ( flags ) )
 
 #  define TRACE_LOG( flag, message )\
 if( get_trace_flags( ) & flag )\
-   log_trace_message( flag, message );
+   log_trace_message( flag, message )
 
 #  define TEMP_TRACE( message ) TRACE_LOG( TRACE_ANYTHING, message )
 

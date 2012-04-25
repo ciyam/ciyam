@@ -3,7 +3,9 @@
    // NOTE: Scope for local variables.
    {
       string str, rstr;
-      if( !is_create && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
+      if( !is_create
+       && !get_obj( ).child_`{`$arg_child`}( ).get_is_iterating( )
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
       {
          do
          {
@@ -11,7 +13,9 @@
             {
                string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
                key_info += ' ';
-               if( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+
+               if( !get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).get_is_iterating( )
+                && get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
                {
                   do
                   {
@@ -39,6 +43,7 @@
                      str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).`{`$arg_sfield`}( );
                   } while( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_next( ) );
                }
+
                get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
                break;
             }
