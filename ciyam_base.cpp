@@ -8382,7 +8382,8 @@ bool perform_instance_iterate( class_base& instance,
 {
    bool found = false;
 
-   TRACE_LOG( TRACE_CLASSOPS, "[iterate] key_info = '" + key_info + "'" );
+   TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '"
+    + to_string( instance.class_name( ) ) + "', key_info = '" + key_info + "', direction = " + to_string( direction ) );
 
    oid id;
    string sql, key, key_value( key_info );
@@ -8396,7 +8397,17 @@ bool perform_instance_iterate( class_base& instance,
    storage_handler& handler( *gtp_session->p_storage_handler );
 
    if( instance.get_is_iterating( ) )
-      throw runtime_error( "iterate called whilst already iterating (class: " + to_string( instance.class_name( ) ) + ")" );
+   {
+      string class_name( instance.class_name( ) );
+      class_base* p_parent = instance.get_graph_parent( );
+      while( p_parent )
+      {
+         class_name += string( " <- " ) + p_parent->class_name( );
+         p_parent = p_parent->get_graph_parent( );
+      }
+
+      throw runtime_error( "iterate called whilst already iterating (class: " + class_name + ")" );
+   }
 
    // NOTE: Because filtering can exclude records from the DB fetch the limit must be
    // omitted if any filters have been supplied.

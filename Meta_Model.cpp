@@ -5246,9 +5246,12 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
                            if( !found_value )
                               continue;
                         }
+
+                        get_obj( ).child_Class( ).child_Field( ).iterate_stop( );
                         okay = false;
                         break;
                      }
+
                   } while( get_obj( ).child_Class( ).child_Field( ).iterate_next( ) );
 
                   if( okay )
@@ -5831,7 +5834,7 @@ void Meta_Model::impl::after_fetch( )
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
    if( get_system_variable( model_key ).empty( ) && !exists_file( script_filename ) )
    {
-      if( !get_obj( ).get_graph_parent( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
+      if( !get_obj( ).child_Package( ).get_is_iterating( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
       {
          do
          {

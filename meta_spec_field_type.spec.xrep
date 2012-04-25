@@ -89,13 +89,15 @@
    if( get_obj( ).`{`$arg_mfield`}( ).get_key( ) == "`{`$arg_uikey`}"
     && !get_obj( ).`{`$arg_cfield`}( ).get_key( ).empty( ) && is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
    {
-      if( get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).iterate_forwards( ) )
+      if( !get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).get_is_iterating( )
+       && get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).iterate_forwards( ) )
       {
          do
          {
             if( get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).`{`$arg_efield`}( ) == `{`$arg_ugvalue`} ) // i.e. `{`$arg_ugname`}
             {
                get_obj( ).`{`$arg_spfield`}( get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ) );
+               get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).iterate_stop( );
                break;
             }
          } while( get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).iterate_next( ) );
