@@ -1297,6 +1297,8 @@ bool fetch_instance_from_db( class_base& instance,
       delete instance_accessor.p_sql_dataset( );
       instance_accessor.p_sql_dataset( ) = 0;
 
+      instance_accessor.after_fetch_from_db( );
+
       if( !skip_after_fetch )
          instance_accessor.perform_after_fetch( );
    }
@@ -1317,6 +1319,8 @@ bool fetch_instance_from_db( class_base& instance,
          TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum + 1 ) + " to " + ds.as_string( i ) );
          instance.set_field_value( fnum, ds.as_string( i ) );
       }
+
+      instance_accessor.after_fetch_from_db( );
 
       if( !skip_after_fetch )
          instance_accessor.perform_after_fetch( );
@@ -1362,6 +1366,7 @@ bool fetch_instance_from_db( class_base& instance,
             }
          }
 
+         instance_accessor.after_fetch_from_db( );
          instance_accessor.perform_after_fetch( is_minimal_fetch );
       }
    }
@@ -3098,6 +3103,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
    }
 
    instance_accessor.row_cache( ).pop_front( );
+
+   instance_accessor.after_fetch_from_db( );
 
    if( !skip_after_fetch )
       instance_accessor.perform_after_fetch( );

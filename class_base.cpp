@@ -1320,15 +1320,9 @@ void class_base::destroy( )
    }
 }
 
-void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
+void class_base::after_fetch_from_db( )
 {
-   restorable< bool > tmp_is_fetching( is_fetching, true );
-
-   TRACE_LOG( TRACE_CLASSOPS, "perform_after_fetch( ) [class: " + string( class_name( ) )
-     + "] key = " + key + ", is_minimal = " + to_string( is_minimal ) + ", is_for_prepare = "
-     + to_string( is_for_prepare ) + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
-
-   if( !is_for_prepare || ( !key.empty( ) && key[ 0 ] != ' ' ) )
+   if( !key.empty( ) && key[ 0 ] != ' ' )
    {
       lazy_fetch_key.erase( );
 
@@ -1341,6 +1335,15 @@ void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
       for( size_t i = 0; i < num_fields; i++ )
          original_values.push_back( get_field_value( i ) );
    }
+}
+
+void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
+{
+   restorable< bool > tmp_is_fetching( is_fetching, true );
+
+   TRACE_LOG( TRACE_CLASSOPS, "perform_after_fetch( ) [class: " + string( class_name( ) )
+     + "] key = " + key + ", is_minimal = " + to_string( is_minimal ) + ", is_for_prepare = "
+     + to_string( is_for_prepare ) + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
 
    if( !is_minimal && !is_being_cascaded )
    {

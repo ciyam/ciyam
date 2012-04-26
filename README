@@ -6,7 +6,9 @@ The following environment variables are required by various scripts:
 Name   Description                 Sample Value
 -----  -----------------           ------------
 CPPENV C++ Compiler (Windows only) mvc
-WEBDIR Web Document Root path      /srv/www/htdocs
+WEBDIR Web Document Root path**    /srv/www/htdocs
+
+** This path must *not* contain spaces.
 
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 

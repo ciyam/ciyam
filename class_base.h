@@ -480,6 +480,8 @@ class CLASS_BASE_DECL_SPEC class_base
    
    virtual void validate( unsigned state, bool is_internal ) = 0;
 
+   void after_fetch_from_db( );
+
    virtual void after_fetch( ) = 0;
    virtual void finalise_fetch( ) = 0;
    void perform_after_fetch( bool is_minimal = false, bool is_for_prepare = false );
@@ -607,6 +609,7 @@ struct class_base_accessor
 
    void clear( ) { cb.clear( ); }
 
+   void after_fetch_from_db( ) { cb.after_fetch_from_db( ); }
    void perform_after_fetch( bool is_minimal = false ) { cb.perform_after_fetch( is_minimal ); }
 
    void at_create( ) { cb.at_create( ); }

@@ -584,7 +584,7 @@ inline string group_repeat_string( int repeat_num )
 }
 
 #ifdef _WIN32
-bool wrename_file( const wstring& from, const wstring& to )
+bool wmove_file( const wstring& from, const wstring& to )
 {
    int from_len = from.length( );
    wchar_t* p_from = new wchar_t[ from_len + 2 ];
@@ -603,7 +603,7 @@ bool wrename_file( const wstring& from, const wstring& to )
 
    SHFILEOPSTRUCTW fileop;
    fileop.hwnd = 0;
-   fileop.wFunc = FO_RENAME;
+   fileop.wFunc = FO_MOVE;
    fileop.pFrom = p_from;
    fileop.pTo = p_to;
    fileop.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
@@ -6220,7 +6220,8 @@ void generate_pdf_doc( const string& format_filename,
       for( size_t i = 0; i < tmp_file_name.length( ); i++ )
          wtmp_file_name += ( wchar_t )tmp_file_name[ i ];
 
-      wrename_file( wtmp_file_name, wname );
+      file_remove( wname );
+      wmove_file( wtmp_file_name, wname );
    }
    else
       doc.save_to_file( output_filename );

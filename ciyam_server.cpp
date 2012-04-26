@@ -480,7 +480,7 @@ int main( int argc, char* argv[ ] )
       for( int i = 0; i < 100; i++ )
       {
          hash.init( );
-         hash.update( upper( license_hash ) + to_string( i ) );
+         hash.update( license_hash + to_string( i ) );
 
          sha1_quads.clear( );
          split( hash.get_digest_as_string( ',' ), sha1_quads );
@@ -493,7 +493,7 @@ int main( int argc, char* argv[ ] )
          set< string > all_licenses;
          split( license, all_licenses, '+' );
 
-         if( all_licenses.count( upper( sha1_quads[ 2 ] ) ) )
+         if( all_licenses.count( sha1_quads[ 2 ] ) )
          {
             set_max_user_limit( i );
             is_licensed = true;
