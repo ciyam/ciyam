@@ -3048,7 +3048,7 @@ void request_handler::process_request( )
             {
                extra_content << "\n<div id=\"header\">\n";
 
-               string header_image_name( lower( module_ref ) + ".jpg" );
+               string header_image_name( module_name + ".jpg" );
                if( file_exists( header_image_name.c_str( ) ) )
                   extra_content << "   <img src=\"" << header_image_name << "\" alt=\"Header\">\n";
 
