@@ -10,7 +10,7 @@ in) for objects that are derived from the standard "class_base" base class (i.e.
 Protocol: perform_create <uid> <dtm> <module> <mclass> <key> field1=value1,field2=value2...
 (where <key> is " " for an automatically created key and for clone "[<new_key>] <clone_key>")
 
-C++ Code:
+Equivalent C++ Code for Rules:
 object.op_create( <key_info> );
 object.<field1>( <value1> );
 object.<field2>( <value2> );
@@ -22,7 +22,7 @@ Function       Lock Before   Lock After   Description
                                           (op_create - <key> [<clone_key>])
 at_create      Create        Create       Record is in an "empty" or cloned state. This function is available
                                           to provide different default field values, although it is generally
-                                          only use to erase unwanted clone values when cloning. Assuming that
+                                          only used to erase unwanted cloned values for clones. Assuming that
                                           no error occurs (the most likely being that an attempt to create an
                                           already existing record occurred) then the record will be ready for
                                           the setting of field values prior to the call to "op_apply".
@@ -56,11 +56,16 @@ after_store    Update        <none>       Assuming no error has occurred previou
                                           files.
 -------------------------------------------------------------------------------------------------------------
 
+Passing " " as the key (to automatically create a key) should never be performed in rules code as a generated
+key will contain the current timestamp (this is okay for protocol as the timestamp is stored in the log). For
+record creation in rules keys should constructed from a known key with a suffix (e.g. <key>_D or <key>_000001
+where <key> already exists and with the latter pattern applicable when needing to create multiple records).
+
 2) Updating an existing record:
 
 Protocol: perform_update <uid> <dtm> <module> <mclass> <key> [=<ver_info>] field1=value1,field2=value2...
 
-C++ Code:
+Equivalent C++ Code for Rules:
 object.op_update( <key> );
 object.<field1>( <value1> );
 object.<field2>( <value2> );
@@ -106,7 +111,7 @@ after_store    Update        <none>       Assuming no error has occurred previou
 
 Protocol: perform_destroy <uid> <dtm> <module> <mclass> <key> [=<ver_info>]
 
-C++ Code:
+Equivalent C++ Code for Rules:
 object.op_destroy( <key> );
 object.op_apply( );
 
@@ -139,4 +144,66 @@ after_destroy  Destroy       <none>       Assuming no error has occurred previou
                                           this function is used to clean up "external" files or for some type
                                           of special conditional cascading.
 -------------------------------------------------------------------------------------------------------------
-                                          
+
+4) Fetching an existing record:
+
+Protocol: perform_fetch <module> <mclass> <key> #1 field1,field2...
+
+Equivalent C++ Code for Rules:
+object.perform_fetch( <key> ); // NOTE: Via rules a single record fetch will always retrieve all fields.
+
+Function       Lock Before   Lock After   Description
+-------------------------------------------------------------------------------------------------------------
+                                          (perform_fetch - <key>)
+after_fetch    <none>        <none>       It should be noted that fetching a record using this method doesn't
+                                          involve locks at all (for maximum performance). Generally this hook
+                                          is used to determine the value of transient fields that depend upon
+                                          other field (or other record field) values.
+-------------------------------------------------------------------------------------------------------------
+
+Equivalent C++ Code for Rules:
+object.begin_review( <key> ); // NOTE: Via rules a single record fetch will always retrieve all fields.
+...
+object.finish_review( );
+
+Function       Lock Before   Lock After   Description
+-------------------------------------------------------------------------------------------------------------
+                                          (begin_review - <key>)
+after_fetch    Review        Review       This method of fetching a record is available via protocol but only
+                                          using the "object" protocol commands (which are only intended to be
+                                          used for regression test purposes) therefore it is intended to only
+                                          really be used via rules code to ensure that a record will not have
+                                          any changes made to it whilst the lock is held. The hook is used as
+                                          already mentioned.
+
+                                          (finish_review)
+n/a            Review        <none>       This will release the lock (with no other side affects).
+-------------------------------------------------------------------------------------------------------------
+
+5) Fetching multiple existing records:
+
+Protocol: perform_fetch <module> <mclass> "" [#<limit>] field1,field2...
+
+Equivalent C++ Code for Rules:
+if( object.iterate_forwards( "", "field1,field2..." ) )
+{
+   do
+   {
+...
+   } while( object.iterate_next( ) );
+}
+
+Function       Lock Before   Lock After   Description
+-------------------------------------------------------------------------------------------------------------
+                                          (perform_fetch)
+after_fetch    <none>        <none>       Locking is not involved (for maximum performance) and the SQL query
+                                          will be limited according to the field list (optional for C++ code)
+                                          and fields that are required to determine state and for inter-field
+                                          dependencies. The hook is used as already mentioned.
+-------------------------------------------------------------------------------------------------------------
+
+It should be noted that when fetching multiple records via the protocol if the record "limit" is omitted then
+if is generating PDF a default limit will be used otherwise the number of records returned is unlimited. When
+wanting to discontinue iteration in rules code by breaking out of an iteration loop the method "iterate_stop"
+needs to be called otherwise object state errors can occur.
+
