@@ -2404,6 +2404,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          term_storage( handler );
 
          bool has_dead_keys = false;
+         bool has_autoscript = false;
+         bool has_manuscript = false;
 
          // NOTE: Scope to ensure streams are closed.
          {
@@ -2412,29 +2414,37 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             string idx_name( name + ".idx" );
             string hdr_name( name + ".hdr" );
             string log_name( name + ".log" );
+            string sid_name( "ciyam_server.sid" );
+            string sio_name( "ciyam_server.sio" );
 
             string sav_sql_name( sql_name + ".sav" );
             string sav_dat_name( dat_name + ".sav" );
             string sav_idx_name( idx_name + ".sav" );
             string sav_hdr_name( hdr_name + ".sav" );
             string sav_log_name( log_name + ".sav" );
+            string sav_sid_name( sid_name + ".sav" );
+            string sav_sio_name( sio_name + ".sav" );
 
             ifstream sqlf( sql_name.c_str( ), ios::in | ios::binary );
             ifstream datf( dat_name.c_str( ), ios::in | ios::binary );
             ifstream idxf( idx_name.c_str( ), ios::in | ios::binary );
             ifstream hdrf( hdr_name.c_str( ), ios::in | ios::binary );
             ifstream logf( log_name.c_str( ), ios::in | ios::binary );
+            ifstream sidf( sid_name.c_str( ), ios::in | ios::binary );
+            ifstream siof( sio_name.c_str( ), ios::in | ios::binary );
 
-            if( !sqlf || !datf || !idxf || !hdrf || !logf )
-               throw runtime_error( "unable to open DB files for '" + name + "' (in use?)" );
+            if( !sqlf || !datf || !idxf || !hdrf || !logf || !sidf || !siof )
+               throw runtime_error( "unable to open backup files for '" + name + "' (in use?)" );
 
             ofstream sav_sqlf( sav_sql_name.c_str( ), ios::out | ios::binary );
             ofstream sav_datf( sav_dat_name.c_str( ), ios::out | ios::binary );
             ofstream sav_idxf( sav_idx_name.c_str( ), ios::out | ios::binary );
             ofstream sav_hdrf( sav_hdr_name.c_str( ), ios::out | ios::binary );
             ofstream sav_logf( sav_log_name.c_str( ), ios::out | ios::binary );
+            ofstream sav_sidf( sav_sid_name.c_str( ), ios::out | ios::binary );
+            ofstream sav_siof( sav_sio_name.c_str( ), ios::out | ios::binary );
 
-            if( !sav_sqlf || !sav_datf || !sav_idxf || !sav_hdrf || !sav_logf )
+            if( !sav_sqlf || !sav_datf || !sav_idxf || !sav_hdrf || !sav_logf || !sav_sidf || !sav_siof )
                throw runtime_error( "unable to open backup files for '" + name + "'" );
 
             copy_stream( sqlf, sav_sqlf );
@@ -2442,6 +2452,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             copy_stream( idxf, sav_idxf );
             copy_stream( hdrf, sav_hdrf );
             copy_stream( logf, sav_logf );
+            copy_stream( sidf, sav_sidf );
+            copy_stream( siof, sav_siof );
 
             string key_name( name + ".dead_keys.lst" );
             if( file_exists( key_name ) )
@@ -2459,6 +2471,42 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                copy_stream( keyf, sav_keyf );
                has_dead_keys = true;
             }
+
+            string autoscript_name( "autoscript.sio" );
+            if( file_exists( autoscript_name ) )
+            {
+               ifstream ascf( autoscript_name.c_str( ), ios::in | ios::binary );
+               if( !ascf )
+                  throw runtime_error( "unable to open '" + autoscript_name + "' for input" );
+
+               string sav_autoscript_name( autoscript_name + ".sav" );
+
+               ofstream sav_ascf( sav_autoscript_name.c_str( ), ios::out | ios::binary );
+               if( !sav_ascf )
+                  throw runtime_error( "unable to open '" + sav_autoscript_name + "' for output" );
+
+               copy_stream( ascf, sav_ascf );
+
+               has_autoscript = true;
+            }
+
+            string manuscript_name( "manuscript.sio" );
+            if( file_exists( manuscript_name ) )
+            {
+               ifstream mscf( manuscript_name.c_str( ), ios::in | ios::binary );
+               if( !mscf )
+                  throw runtime_error( "unable to open '" + manuscript_name + "' for input" );
+
+               string sav_manuscript_name( manuscript_name + ".sav" );
+
+               ofstream sav_mscf( sav_manuscript_name.c_str( ), ios::out | ios::binary );
+               if( !sav_mscf )
+                  throw runtime_error( "unable to open '" + sav_manuscript_name + "' for output" );
+
+               copy_stream( mscf, sav_mscf );
+
+               has_manuscript = true;
+            }
          }
 
          string file_names( name + ".sql.sav" );
@@ -2466,9 +2514,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          file_names += " " + name + ".idx.sav";
          file_names += " " + name + ".hdr.sav";
          file_names += " " + name + ".log.sav";
+         file_names += " ciyam_server.sid.sav ciyam_server.sio.sav";
 
          if( has_dead_keys )
             file_names += " " + name + ".dead_keys.lst.sav";
+
+         if( has_autoscript )
+            file_names += " autoscript.sio.sav";
+
+         if( has_manuscript )
+            file_names += " manuscript.sio.sav";
 
          file_names += " " + name + ".backup.sql";
 
@@ -2515,6 +2570,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          remove_file( name + ".hdr.sav" );
          remove_file( name + ".log.sav" );
          remove_file( name + ".backup.sql" );
+         remove_file( "ciyam_server.sid.sav" );
+         remove_file( "ciyam_server.sio.sav" );
+
+         if( has_autoscript )
+            remove_file( "autoscript.sio.sav" );
+
+         if( has_manuscript )
+            remove_file( "manuscript.sio.sav" );
 
          if( truncate_log )
             remove_file( name + ".log." + osstr.str( ) );
