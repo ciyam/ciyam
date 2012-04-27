@@ -5237,6 +5237,7 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
                               {
                                  if( !get_obj( ).child_Class( ).child_Field( ).child_Initial_Record_Value( ).Value( ).empty( ) )
                                  {
+                                    get_obj( ).child_Class( ).child_Field( ).child_Initial_Record_Value( ).iterate_stop( );
                                     found_value = true;
                                     break;
                                  }
