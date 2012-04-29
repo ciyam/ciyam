@@ -1586,6 +1586,10 @@ void output_list_form( ostream& os,
 
                   const data_container& parent_row_data = source.parent_lists[ i ];
 
+                  set< string > parent_extras;
+                  if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
+                     split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
+
                   for( size_t j = 0; j < parent_row_data.size( ); j++ )
                   {
                      string key( parent_row_data[ j ].first );
@@ -1598,6 +1602,17 @@ void output_list_form( ostream& os,
 
                      if( display.empty( ) )
                         display = key;
+
+                     if( parent_extras.count( c_parent_extra_manuallink ) )
+                     {
+                        stringstream ss;
+
+                        replace_links_and_output( display, "",
+                         source.module, source.module_ref, ss, false, false, session_id,
+                         sess_info, user_select_key, using_session_cookie, use_url_checksum );
+
+                        display = ss.str( );
+                     }
 
                      os << "<option value=\"" << key << "\">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
                   }

@@ -1141,6 +1141,8 @@ bool fetch_parent_row_data( const string& module, const module_info& mod_info,
                exclude_key_info = parent_key;
                continue;
             }
+            else if( key == c_parent_extra_manuallink )
+               continue;
             else if( key == c_parent_extra_permission )
             {
                if( !filters.empty( ) )

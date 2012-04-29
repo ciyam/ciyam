@@ -243,6 +243,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void set_instance( const std::string& key );
 
    void copy_all_field_values( const class_base& src );
+   void copy_original_field_values( const class_base& src );
 
    bool filtered( ) const { return is_filtered( ); }
 

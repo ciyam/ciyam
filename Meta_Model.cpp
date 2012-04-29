@@ -4176,6 +4176,12 @@ void Meta_Model::impl::impl_Generate( )
                                  pextras += "+";
                               pextras += p_field->Class( ).child_Field( ).Id( );
                            }
+                           else if( p_field->Class( ).child_Field( ).Extra( ) == 13 ) // i.e. "manual_link"
+                           {
+                              if( !pextras.empty( ) )
+                                 pextras += "+";
+                              pextras += "@manuallink";
+                           }
                            else if( p_field->Class( ).child_Field( ).Extra( ) == 18 ) // i.e. "security_level"
                            {
                               if( !pextras.empty( ) )

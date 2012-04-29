@@ -961,7 +961,7 @@ void class_base::set_instance( const string& key )
 void class_base::copy_all_field_values( const class_base& src )
 {
    if( class_id( ) != src.class_id( ) )
-      throw runtime_error( "Cannot copy all field values from a '"
+      throw runtime_error( "cannot copy all field values from a '"
        + string( src.class_name( ) ) + "' to a '" + string( class_name( ) ) + "'" );
 
    size_t num_fields( get_num_fields( ) );
@@ -977,6 +977,19 @@ void class_base::copy_all_field_values( const class_base& src )
        || src.fetch_field_names.count( src.get_field_name( i ) ) ) )
          set_field_value( i, src.get_field_value( i ) );
    }
+}
+
+void class_base::copy_original_field_values( const class_base& src )
+{
+   if( class_id( ) != src.class_id( ) )
+      throw runtime_error( "cannot copy all field values from a '"
+       + string( src.class_name( ) ) + "' to a '" + string( class_name( ) ) + "'" );
+
+   if( get_num_fields( ) != src.original_values.size( ) )
+      throw runtime_error( "unexpected get_num_fields( ) != src.original_values.size( )" );
+
+   for( size_t i = 0; i < src.original_values.size( ); i++ )
+      set_field_value( i, src.original_values[ i ] );
 }
 
 string class_base::get_validation_errors( validation_errors_type type )
