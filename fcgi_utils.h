@@ -80,6 +80,8 @@ std::string get_cookie_value( const std::string& session_id,
 
 void setup_gmt_and_dtm_offset( std::map< std::string, std::string >& input_data, session_info& sess_info );
 
+std::string hash_password( const std::string& salted_password );
+
 bool is_non_persistent( const std::string& session_id );
 void add_non_persistent( const std::string& session_id );
 void remove_non_persistent( const std::string& session_id );

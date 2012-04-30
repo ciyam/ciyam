@@ -7126,7 +7126,7 @@
      <name>field_user_user_id
      <field>100101
      <ftype>string
-     <extra>max_size=30
+     <extra>hpassword_salt+max_size=30
      <mandatory>true
      <modifiers>
     </field>
@@ -9203,7 +9203,7 @@
      <name>field_user_user_id
      <field>100101
      <ftype>string
-     <extra>max_size=30
+     <extra>hpassword_salt+max_size=30
      <modifiers>
      <unique>true
      <indexed>true
@@ -9273,7 +9273,7 @@
      <name>field_user_user_id
      <field>100101
      <ftype>string
-     <extra>max_size=30
+     <extra>hpassword_salt+max_size=30
      <modifiers>
      <unique>true
      <indexed>true

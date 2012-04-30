@@ -41,6 +41,7 @@
 #include "fcgi_utils.h"
 
 #include "sha1.h"
+#include "config.h"
 #include "threads.h"
 #include "date_time.h"
 #include "fcgi_info.h"
@@ -397,6 +398,16 @@ void setup_gmt_and_dtm_offset( map< string, string >& input_data, session_info& 
 
       sess_info.has_set_offsets = true;
    }
+}
+
+string hash_password( const string& salted_password )
+{
+   string s( salted_password );
+
+   for( size_t i = 0; i < c_password_hash_rounds; i++ )
+      s = sha1( s ).get_digest_as_string( );
+
+   return s;
 }
 
 bool is_non_persistent( const string& session_id )

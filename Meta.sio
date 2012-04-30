@@ -22289,6 +22289,7 @@
       <name>User_Id
       <type>1010
       <mandatory>true
+      <extra>hpassword_salt
       <indexes/>
        <index/>
         <id>100201

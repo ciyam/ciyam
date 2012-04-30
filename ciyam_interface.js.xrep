@@ -28,7 +28,7 @@ var pwdSalt = '';
 var serverId = '';
 var uniqueId = '';
 
-var hashRounds = 1000;
+var hashRounds = 100;
 
 var validation_error = '';
 

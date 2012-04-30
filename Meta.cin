@@ -99,7 +99,7 @@ user_defined_type_add -id=1055 long_identifier str100 "format identifier"
 user_defined_type_add -id=1060 year_created int "range 2005 2020"
 user_defined_type_add -id=1070 version numeric "range 0.1 100.0"
 class_add -id=100100 User Users
-field_add -id=100101 User User_Id str30 mand
+field_add -id=100101 User User_Id str30 mand -x=hpassword_salt
 field_add -id=100102 User Active bool mand -def=1
 field_add -id=100103 User Password str100 mand -x=hpassword
 field_add -id=100104 User Description str100 mand

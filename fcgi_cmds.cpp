@@ -1875,7 +1875,7 @@ void fetch_user_record( const string& gid,
       if( user_password.length( ) < 20 )
       {
          sess_info.clear_password = user_password;
-         user_password = lower( sha1( gid + user_password ).get_digest_as_string( ) );
+         user_password = hash_password( gid + user_password + username );
       }
       else
          user_password = password_decrypt( user_password, get_server_id( ) );

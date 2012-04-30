@@ -5442,7 +5442,7 @@
 `{`$specification_User_list_column00`=`'100101`'`}
 `{`$specification_User_list_clname00`=`'User_User_Id`'`}
 `{`$specification_User_list_cltype00`=`'string`'`}
-`{`$specification_User_list_clxtra00`=`'max_size=30`'`}
+`{`$specification_User_list_clxtra00`=`'hpassword_salt+max_size=30`'`}
 `{`$specification_User_list_clmods00`=`'`'`}
 `{`$specification_User_list_cluniq00`=`'true`'`}
 `{`$specification_User_list_cindex00`=`'true`'`}
@@ -5494,7 +5494,7 @@
 `{`$specification_User_child_list0_column00`=`'100101`'`}
 `{`$specification_User_child_list0_clname00`=`'User_User_Id`'`}
 `{`$specification_User_child_list0_cltype00`=`'string`'`}
-`{`$specification_User_child_list0_clxtra00`=`'max_size=30`'`}
+`{`$specification_User_child_list0_clxtra00`=`'hpassword_salt+max_size=30`'`}
 `{`$specification_User_child_list0_clmods00`=`'`'`}
 `{`$specification_User_child_list0_cluniq00`=`'true`'`}
 `{`$specification_User_child_list0_cindex00`=`'true`'`}
@@ -5523,7 +5523,7 @@
 `{`$specification_User_view_fnums`=`'00 01 02 03 04 05`'`}
 `{`$specification_User_view_field00`=`'100101`'`}
 `{`$specification_User_view_ftype00`=`'string`'`}
-`{`$specification_User_view_extra00`=`'max_size=30`'`}
+`{`$specification_User_view_extra00`=`'hpassword_salt+max_size=30`'`}
 `{`$specification_User_view_fmods00`=`'`'`}
 `{`$specification_User_view_fname00`=`'field_user_user_id`'`}
 `{`$specification_User_view_fmand00`=`'true`'`}
