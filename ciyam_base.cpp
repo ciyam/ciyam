@@ -1818,6 +1818,62 @@ void split_key_info( const string& key_info,
    }
 }
 
+void split_text_search( const string& text_search, vector< string >& words )
+{
+   string next_word;
+   bool in_quotes = false;
+   bool had_escape = false;
+   for( size_t i = 0; i < text_search.size( ); i++ )
+   {
+      char ch = text_search[ i ];
+
+      if( had_escape )
+      {
+         had_escape = false;
+         next_word += ch;
+      }
+      else if( ch == '\\' )
+         had_escape = true;
+      else
+      {
+         if( ch == '"' )
+         {
+            in_quotes = !in_quotes;
+            if( !in_quotes )
+            {
+               if( !next_word.empty( ) )
+               {
+                  words.push_back( next_word );
+                  next_word.erase( );
+               }
+            }
+            else if( i < text_search.size( ) - 1 && text_search[ i + 1 ] == '"' )
+            {
+               in_quotes = false;
+               next_word += ch;
+               ++i;
+            }
+         }
+         else
+         {
+            if( ch == ' ' && !in_quotes )
+            {
+               if( !next_word.empty( ) )
+               {
+                  words.push_back( next_word );
+                  next_word.erase( );
+               }
+            }
+            else
+               next_word += ch;
+         }
+      }
+   }
+
+   if( !next_word.empty( ) )
+      words.push_back( next_word );
+}
+
 size_t split_csv_values( const string& line,
  vector< string >& values, bool& last_value_incomplete, size_t continuation_offset )
 {
@@ -2196,23 +2252,38 @@ string construct_sql_select(
       if( text_search_fields.empty( ) )
          throw runtime_error( "no text search fields defined in class '" + string( instance.class_name( ) ) + "'" );
 
-      sql += "(";
+      vector< string > text_search_words;
+      split_text_search( text_search, text_search_words );
 
-      for( size_t i = 0; i < text_search_fields.size( ); i++ )
+      if( text_search_words.size( ) > 1 )
+         sql += "(";
+
+      for( size_t i = 0; i < text_search_words.size( ); i++ )
       {
          if( i > 0 )
-            sql += " OR ";
+            sql += " AND ";
 
-         string like_expr( escaped( text_search, "'%_" ) );
-         like_expr = "%" + like_expr + "%";
+         sql += "(";
 
-         // NOTE: Due to issues with UTF-8 and MySQL the query needs to use both the case
-         // sensitive and insensitive tests in order to get the correct results.
-         sql += "C_" + text_search_fields[ i ] + " LIKE '" + like_expr + "'";
-         sql += " OR LOWER(C_" + text_search_fields[ i ] + ") LIKE LOWER('" + like_expr + "')";
+         for( size_t j = 0; j < text_search_fields.size( ); j++ )
+         {
+            if( j > 0 )
+               sql += " OR ";
+
+            string like_expr( escaped( text_search_words[ i ], "'%_" ) );
+            like_expr = "%" + like_expr + "%";
+
+            // NOTE: Due to issues with UTF-8 and MySQL the query needs to use both the case
+            // sensitive and insensitive tests in order to get the correct results.
+            sql += "C_" + text_search_fields[ j ] + " LIKE '" + like_expr + "'";
+            sql += " OR LOWER(C_" + text_search_fields[ j ] + ") LIKE LOWER('" + like_expr + "')";
+         }
+
+         sql += ")";
       }
 
-      sql += ")";
+      if( text_search_words.size( ) > 1 )
+         sql += ")";
 
       if( !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
          sql += " AND ";
