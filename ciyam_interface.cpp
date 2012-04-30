@@ -341,16 +341,6 @@ inline const string& data_or_nbsp( const string& input )
       return g_nbsp;
 }
 
-string hash_password( const string& salted_password )
-{
-   string s( salted_password );
-
-   for( size_t i = 0; i < c_password_hash_rounds; i++ )
-      s = sha1( s ).get_digest_as_string( );
-
-   return s;
-}
-
 string format_int_value( int i, const string& mask )
 {
    return format_numeric( i, mask );
@@ -1037,7 +1027,7 @@ void request_handler::process_request( )
                if( p_session_info->p_socket->open( ) )
                {
                   ip_address address( c_default_ciyam_host, c_default_ciyam_port );
-                  if( p_session_info->p_socket->connect( address ), c_connect_timeout )
+                  if( p_session_info->p_socket->connect( address, c_connect_timeout ) )
                   {
                      p_session_info->p_socket->set_no_delay( );
 
@@ -1172,7 +1162,7 @@ void request_handler::process_request( )
                      // has been repeated then just treat as a standard login if the password is correct.
                      if( user_data[ 0 ] != user_data[ 1 ] )
                      {
-                        if( activate_password == lower( hash_password( g_id + user_data[ 1 ] + user ) ) )
+                        if( activate_password == hash_password( g_id + user_data[ 1 ] + user ) )
                            is_activation = false;
                         else
                            throw runtime_error( GDS( c_display_account_has_already_been_activated ) );
@@ -1981,13 +1971,13 @@ void request_handler::process_request( )
                if( pos != string::npos )
                   old_password.erase( pos );
 
-               if( new_password == lower( hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) ) )
+               if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
                   throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
 
                // NOTE: Only use the encrypted original password if it was decrypted when logging in.
                if( p_session_info->clear_password.length( ) )
                {
-                  if( old_password == lower( hash_password( g_id + p_session_info->clear_password + p_session_info->user_id ) ) )
+                  if( old_password == hash_password( g_id + p_session_info->clear_password + p_session_info->user_id ) )
                      old_password = p_session_info->clear_password;
                }
                else
@@ -3340,7 +3330,7 @@ void request_handler::process_request( )
                   if( pos != string::npos )
                      str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
-                  str_replace( password_html, p_session_info->user_id.c_str( ), user );
+                  str_replace( password_html, c_user_id, user );
 
                   extra_content << password_html;
                }
