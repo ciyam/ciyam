@@ -25,12 +25,15 @@
             `{`$module_name`}_`{`$class_name`} original;
             original.copy_original_field_values( get_obj( ) );
 
-            original.`{`$arg_pfield`}( ).op_update( );
-            original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+            if( !is_null( original.`{`$arg_pfield`}( ) ) )
+            {
+               original.`{`$arg_pfield`}( ).op_update( );
+               original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
-            original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+               original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
 `}\
-            original.`{`$arg_pfield`}( ).op_apply( );
+               original.`{`$arg_pfield`}( ).op_apply( );
+            }
          }
       }
 
@@ -42,6 +45,19 @@
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) + get_obj( ).`{`$arg_n2field`}( ) );
 `}\
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+   }
+   else if( !is_create
+    && is_null( get_obj( ).`{`$arg_pfield`}( ) ) && get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+   {
+      `{`$module_name`}_`{`$class_name`} original;
+      original.copy_original_field_values( get_obj( ) );
+
+      original.`{`$arg_pfield`}( ).op_update( );
+      original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
+      original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+`}\
+      original.`{`$arg_pfield`}( ).op_apply( );
    }
    // [(finish total_child_field_in_parent)]
 `}
