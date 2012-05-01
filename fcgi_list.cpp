@@ -514,7 +514,7 @@ void output_list_form( ostream& os,
     || ( is_owner_new && !has_owner_parent )
     || source.view.empty( ) || ( ( parent_state & c_state_uneditable )
     && ( !ignore_parent_state || !( parent_state & c_state_ignore_uneditable ) ) )
-    || ( is_admin_owner_new && !has_owner_parent && !sess_info.is_admin_user )
+    || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) )
     || ( !sess_info.is_admin_user && ( is_admin_new || list_type == c_list_type_admin ) ) )
       allow_new_record = false;
 
@@ -3221,7 +3221,7 @@ void output_list_form( ostream& os,
          if( ( source.lici->second )->extras.count( c_list_type_extra_limit ) )
          {
             size_t row_limit = atoi( ( source.lici->second )->extras.find( c_list_type_extra_limit )->second.c_str( ) );
-            if( source.row_data.size( ) >= row_limit )
+            if( row_limit && source.row_data.size( ) >= row_limit )
                allow_new_record = false;
          }
       }
