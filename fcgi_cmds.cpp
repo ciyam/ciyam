@@ -2084,8 +2084,8 @@ void add_quick_link( const string& module_ref,
 
 void save_record( const string& module_id,
  const string& flags, const string& app, const string& chk,
- const string& field, const string& extra, const string& exec, const string& cont,
- const string& extrafields, bool is_new_record, const map< string, string >& new_field_and_values,
+ const string& field, const string& extra, const string& exec,
+ const string& cont, bool is_new_record, const map< string, string >& new_field_and_values,
  const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view,
  session_info& sess_info, string& act, string& data, string& new_key, string& error_message, bool& was_invalid, bool& had_send_or_recv_error )
 {
@@ -2251,32 +2251,42 @@ void save_record( const string& module_id,
       }
       else if( view.int_fields.count( value_id ) )
       {
-         next = values.at( num++ );
-
-         if( extra_data.count( c_field_extra_int_type ) )
+         if( new_field_and_values.count( field_id ) )
+            next = new_field_and_values.find( field_id )->second;
+         else if( !view.hidden_fields.count( value_id ) && !view.protected_fields.count( value_id ) )
          {
-            string int_type = extra_data[ c_field_extra_int_type ];
+            next = values.at( num++ );
 
-            if( int_type == "bytes" )
-               next = to_string( unformat_bytes( next ) );
-            else if( int_type == "duration_dhm" || int_type == "duration_hms" )
-               next = to_string( unformat_duration( next ) );
-            else
-               throw runtime_error( "unsupported int_type '" + int_type + "'" );
+            if( extra_data.count( c_field_extra_int_type ) )
+            {
+               string int_type = extra_data[ c_field_extra_int_type ];
+
+               if( int_type == "bytes" )
+                  next = to_string( unformat_bytes( next ) );
+               else if( int_type == "duration_dhm" || int_type == "duration_hms" )
+                  next = to_string( unformat_duration( next ) );
+               else
+                  throw runtime_error( "unsupported int_type '" + int_type + "'" );
+            }
          }
       }
       else if( view.numeric_fields.count( value_id ) )
       {
-         next = values.at( num++ );
-
-         if( extra_data.count( c_field_extra_numeric_type ) )
+         if( new_field_and_values.count( field_id ) )
+            next = new_field_and_values.find( field_id )->second;
+         else if( !view.hidden_fields.count( value_id ) && !view.protected_fields.count( value_id ) )
          {
-            string numeric_type = extra_data[ c_field_extra_numeric_type ];
+            next = values.at( num++ );
 
-            if( numeric_type == "bytes" )
-               next = to_string( unformat_bytes( next ) );
-            else
-               throw runtime_error( "unsupported numeric_type '" + numeric_type + "'" );
+            if( extra_data.count( c_field_extra_numeric_type ) )
+            {
+               string numeric_type = extra_data[ c_field_extra_numeric_type ];
+
+               if( numeric_type == "bytes" )
+                  next = to_string( unformat_bytes( next ) );
+               else
+                  throw runtime_error( "unsupported numeric_type '" + numeric_type + "'" );
+            }
          }
       }
       else if( view.password_fields.count( value_id )
@@ -2370,7 +2380,7 @@ void save_record( const string& module_id,
       }
    }
 
-   if( !extrafields.empty( ) )
+   if( !extra_field_info.empty( ) )
    {
       map< string, string >::const_iterator i;
       for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )

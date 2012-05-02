@@ -12,6 +12,7 @@ var qsFurther = '';
 
 var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
+var usePageFadeIn = true;
 var debugDynamicContent = false;
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
@@ -606,7 +607,9 @@ function process( )
    {
       jump_back = false;
 
-      fade_in( 0 );
+      if( usePageFadeIn )
+         fade_in( 0 );
+
       // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
       setTimeout( "focus_on_first_text( )", 50 );
    }

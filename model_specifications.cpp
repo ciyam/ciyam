@@ -103,6 +103,7 @@ const char* const c_attribute_field_id = "field_id";
 const char* const c_attribute_function = "function";
 const char* const c_attribute_mem_func = "mem_func";
 const char* const c_attribute_new_only = "new_only";
+const char* const c_attribute_not_null = "not_null";
 const char* const c_attribute_cclass_id = "cclass_id";
 const char* const c_attribute_is_annual = "is_annual";
 const char* const c_attribute_is_months = "is_months";
@@ -437,6 +438,7 @@ const char* const c_data_inc_proc = "inc_proc";
 const char* const c_data_keyfield = "keyfield";
 const char* const c_data_modifier = "modifier";
 const char* const c_data_new_only = "new_only";
+const char* const c_data_not_null = "not_null";
 const char* const c_data_pacfield = "pacfield";
 const char* const c_data_patfield = "patfield";
 const char* const c_data_root_key = "root_key";
@@ -4768,6 +4770,7 @@ struct field_from_changed_fk_specification : specification
    string parent_source_field_id;
 
    bool new_only;
+   bool not_null;
    bool for_store;
    bool not_create;
    bool include_default;
@@ -4783,6 +4786,7 @@ void field_from_changed_fk_specification::add( model& m, const vector< string >&
    string arg_src_dest_field_info( args[ 2 ] );
 
    new_only = false;
+   not_null = false;
    for_store = false;
    not_create = false;
    include_default = false;
@@ -4792,6 +4796,8 @@ void field_from_changed_fk_specification::add( model& m, const vector< string >&
 
       if( next_arg == c_arg_new_only )
          new_only = true;
+      else if( next_arg == c_arg_check_null )
+         not_null = true;
       else if( next_arg == c_arg_for_store )
          for_store = true;
       else if( next_arg == c_arg_not_create )
@@ -4853,6 +4859,7 @@ void field_from_changed_fk_specification::read_data( sio_reader& reader )
    parent_source_field_id = reader.read_attribute( c_attribute_sfield_id );
 
    new_only = ( reader.read_opt_attribute( c_attribute_new_only ) == c_true );
+   not_null = ( reader.read_opt_attribute( c_attribute_not_null ) == c_true );
    for_store = ( reader.read_opt_attribute( c_attribute_for_store ) == c_true );
    not_create = ( reader.read_opt_attribute( c_attribute_not_create ) == c_true );
    include_default = ( reader.read_opt_attribute( c_attribute_include_default ) == c_true );
@@ -4867,6 +4874,7 @@ void field_from_changed_fk_specification::write_data( sio_writer& writer ) const
    writer.write_attribute( c_attribute_sfield_id, parent_source_field_id );
 
    writer.write_opt_attribute( c_attribute_new_only, new_only ? c_true : "" );
+   writer.write_opt_attribute( c_attribute_not_null, not_null ? c_true : "" );
    writer.write_opt_attribute( c_attribute_for_store, for_store ? c_true : "" );
    writer.write_opt_attribute( c_attribute_not_create, not_create ? c_true : "" );
    writer.write_opt_attribute( c_attribute_include_default, include_default ? c_true : "" );
@@ -4891,6 +4899,7 @@ void field_from_changed_fk_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( c_data_sfield, parent_source_field_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_new_only, new_only ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_not_null, not_null ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_for_store, for_store ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );

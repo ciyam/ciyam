@@ -1866,9 +1866,15 @@ void request_handler::process_request( )
                if( act == c_act_save )
                {
                   if( error_message.empty( ) )
+                  {
+                     if( !view.create_user_key_field.empty( )
+                      && !extra_field_info.count( view.create_user_key_field ) )
+                        extra_field_info.insert( make_pair( view.create_user_key_field, p_session_info->user_key ) );
+
                      save_record( module_id, flags, app, chk, field, extra, exec, cont,
-                      extrafields, is_new_record, new_field_and_values, extra_field_info, vici,
+                      is_new_record, new_field_and_values, extra_field_info, vici,
                       view, *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
+                  }
                }
                else if( act == c_act_cont )
                {

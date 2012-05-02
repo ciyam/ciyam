@@ -38,8 +38,6 @@ class Meta_View;
 class Meta_Permission;
 class Meta_Workgroup;
 
-class numeric;
-
 class META_MODEL_DECL_SPEC Meta_Model : public class_base
 {
    friend class Meta_Class;
@@ -116,8 +114,8 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
    const std::string& Status( ) const;
    void Status( const std::string& Status );
 
-   const numeric& Version( ) const;
-   void Version( const numeric& Version );
+   const std::string& Version( ) const;
+   void Version( const std::string& Version );
 
    int Year_Created( ) const;
    void Year_Created( int Year_Created );

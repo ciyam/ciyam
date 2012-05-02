@@ -30,8 +30,6 @@
 class Meta_Module;
 class Meta_Workgroup;
 
-class numeric;
-
 class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 {
    friend class Meta_Module;
@@ -166,8 +164,8 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    bool Use_URL_Checksum( ) const;
    void Use_URL_Checksum( bool Use_URL_Checksum );
 
-   const numeric& Version( ) const;
-   void Version( const numeric& Version );
+   const std::string& Version( ) const;
+   void Version( const std::string& Version );
 
    Meta_Workgroup& Workgroup( );
    const Meta_Workgroup& Workgroup( ) const;

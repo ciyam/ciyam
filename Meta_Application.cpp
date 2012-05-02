@@ -36,8 +36,6 @@
 #include "Meta_Module.h"
 #include "Meta_Workgroup.h"
 
-#include "numeric_helper.h"
-
 #include "ciyam_base.h"
 #include "class_domains.h"
 #include "module_strings.h"
@@ -304,7 +302,7 @@ aggregate_domain< string,
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
-domain_numeric_range< numeric, 0, 1, 100, 0 > g_Version_domain;
+domain_string_max_size< 5 > g_Version_domain;
 
 set< string > g_derivations;
 
@@ -347,7 +345,7 @@ bool gv_default_Print_Lists_With_Row_Numbers = bool( 0 );
 bool gv_default_Show_Inaccessible_Modules = bool( 0 );
 bool gv_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool gv_default_Use_URL_Checksum = bool( 1 );
-numeric gv_default_Version = numeric( 0.1 );
+string gv_default_Version = string( "0.1" );
 
 set< int > g_app_auto_days_enum;
 set< int > g_app_print_row_limit_enum;
@@ -769,7 +767,7 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       else if( field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_URL_Checksum( ), cmd_handler.retval );
       else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
-         string_getter< numeric >( cmd_handler.p_Meta_Application->Version( ), cmd_handler.retval );
+         string_getter< string >( cmd_handler.p_Meta_Application->Version( ), cmd_handler.retval );
       else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Application->Workgroup( ), cmd_handler.retval );
       else
@@ -870,7 +868,7 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_URL_Checksum, field_value );
       else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
-         func_string_setter< Meta_Application, numeric >(
+         func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Version, field_value );
       else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
          func_string_setter< Meta_Application, Meta_Workgroup >(
@@ -889,12 +887,6 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
-      {
-         numeric Version( cmd_handler.p_Meta_Application->Version( ) );
-         execute_command( Version, cmd_and_args, cmd_handler.retval );
-         cmd_handler.p_Meta_Application->Version( Version );
-      }
       else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
          cmd_handler.retval = cmd_handler.p_Meta_Application->Workgroup( ).execute( cmd_and_args );
       else
@@ -1049,8 +1041,8 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool impl_Use_URL_Checksum( ) const { return lazy_fetch( p_obj ), v_Use_URL_Checksum; }
    void impl_Use_URL_Checksum( bool Use_URL_Checksum ) { v_Use_URL_Checksum = Use_URL_Checksum; }
 
-   const numeric& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
-   void impl_Version( const numeric& Version ) { v_Version = Version; }
+   const string& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
+   void impl_Version( const string& Version ) { v_Version = Version; }
 
    Meta_Workgroup& impl_Workgroup( )
    {
@@ -1191,7 +1183,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Show_Inaccessible_Modules;
    bool v_Use_Check_Boxes_for_Bools;
    bool v_Use_URL_Checksum;
-   numeric v_Version;
+   string v_Version;
 
    string v_Workgroup;
    mutable class_pointer< Meta_Workgroup > cp_Workgroup;
@@ -2100,7 +2092,7 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 29:
-      func_string_setter< Meta_Application::impl, numeric >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
       break;
 
       case 30:
@@ -2238,6 +2230,11 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+
+   if( is_null( v_Version ) && !value_will_be_provided( c_field_name_Version ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Version ) ) ) ) );
 
    if( v_Workgroup.empty( ) && !value_will_be_provided( c_field_name_Workgroup ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Workgroup,
@@ -2843,12 +2840,12 @@ void Meta_Application::Use_URL_Checksum( bool Use_URL_Checksum )
    p_impl->impl_Use_URL_Checksum( Use_URL_Checksum );
 }
 
-const numeric& Meta_Application::Version( ) const
+const string& Meta_Application::Version( ) const
 {
    return p_impl->impl_Version( );
 }
 
-void Meta_Application::Version( const numeric& Version )
+void Meta_Application::Version( const string& Version )
 {
    p_impl->impl_Version( Version );
 }
@@ -3324,10 +3321,10 @@ const char* Meta_Application::get_field_id(
       p_id = c_field_id_Version;
 
       if( p_type_name )
-         *p_type_name = "numeric";
+         *p_type_name = "string";
 
       if( p_sql_numeric )
-         *p_sql_numeric = true;
+         *p_sql_numeric = false;
    }
    else if( name == c_field_name_Workgroup )
    {
@@ -3645,10 +3642,10 @@ const char* Meta_Application::get_field_name(
       p_name = c_field_name_Version;
 
       if( p_type_name )
-         *p_type_name = "numeric";
+         *p_type_name = "string";
 
       if( p_sql_numeric )
-         *p_sql_numeric = true;
+         *p_sql_numeric = false;
    }
    else if( id == c_field_id_Workgroup )
    {
@@ -3985,7 +3982,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Show_Inaccessible_Modules( ) ) );
    values.push_back( to_string( Use_Check_Boxes_for_Bools( ) ) );
    values.push_back( to_string( Use_URL_Checksum( ) ) );
-   values.push_back( to_string( Version( ) ) );
+   values.push_back( sql_quote( to_string( Version( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -4106,7 +4103,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127110", "Show_Inaccessible_Modules", "bool", false ) );
    all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false ) );
    all_field_info.push_back( field_info( "127107", "Use_URL_Checksum", "bool", false ) );
-   all_field_info.push_back( field_info( "127102", "Version", "numeric", false ) );
+   all_field_info.push_back( field_info( "127102", "Version", "string", false ) );
    all_field_info.push_back( field_info( "302220", "Workgroup", "Meta_Workgroup", true ) );
 }
 
@@ -4530,7 +4527,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_URL_Checksum INTEGER NOT NULL,"
-    "C_Version NUMERIC(28\\,8) NOT NULL,"
+    "C_Version VARCHAR(200) NOT NULL,"
     "C_Workgroup VARCHAR(64) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

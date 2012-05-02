@@ -97,7 +97,6 @@ user_defined_type_add -id=1050 identifier str30 "format identifier"
 user_defined_type_add -id=1051 mid_identifier str50 "format identifier"
 user_defined_type_add -id=1055 long_identifier str100 "format identifier"
 user_defined_type_add -id=1060 year_created int "range 2005 2020"
-user_defined_type_add -id=1070 version numeric "range 0.1 100.0"
 class_add -id=100100 User Users
 field_add -id=100101 User User_Id str30 mand -x=hpassword_salt
 field_add -id=100102 User Active bool mand -def=1
@@ -177,7 +176,7 @@ procedure_arg_add -id=104421 Enum_Item Move_Down Restrict_Fields string in
 procedure_arg_add -id=104422 Enum_Item Move_Down Restrict_Values string in
 class_add -id=105100 Model Models
 field_add -id=105101 Model Name identifier mand -x=filename
-field_add -id=105102 Model Version version mand -def=0.1
+field_add -id=105102 Model Version str5 mand -def=0.1
 field_add -id=105103 Model Year_Created year_created mand -x=defcurrentyear
 field_add -id=105104 Model Id identifier mand
 field_add -id=105105 Model Next_Class_Id identifier opt
@@ -615,7 +614,7 @@ procedure_arg_add -id=126421 Module Move_Down Restrict_Fields string in
 procedure_arg_add -id=126422 Module Move_Down Restrict_Values string in
 class_add -id=127100 Application Applications
 field_add -id=127101 Application Name identifier mand
-field_add -id=127102 Application Version version mand -def=0.1
+field_add -id=127102 Application Version str5 mand -def=0.1
 field_add -id=127103 Application Module_Prefix identifier opt
 field_add -id=127104 Application Actions string opt -x=actions -def=127410
 field_add -id=127105 Application Generate_Status string opt
