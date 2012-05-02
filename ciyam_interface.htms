@@ -1,7 +1,3 @@
 <div id="extra_content">
 <!-- @@extra_content -->
 </div>
-
-<!-- NOTE: The following is used in order to force a DOM update after an XMLHttpRequest is processed (for script eval purposes). -->
-<img src="" style="visibility: hidden" width="1" height="1" onerror=""/>
-

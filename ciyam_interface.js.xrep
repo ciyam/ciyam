@@ -511,6 +511,14 @@ function fade_in( n )
    }
 }
 
+function force_update( )
+{
+   // NOTE: Add and after a minimal timeout remove a dummy node to force a DOM update.
+   var t = document.createTextNode( 'dummy' );
+   document.appendChild( t );
+   setTimeout( function( ) { t.parentNode.removeChild( t ); }, 0 );
+}
+
 function process( )
 {
    if( xmlReq.readyState != 4 )
@@ -541,6 +549,7 @@ function process( )
       }
 
       document.getElementById( 'content' ).innerHTML = str;
+      force_update( );
    }
    else
    {
@@ -571,6 +580,7 @@ function process( )
       }
 
       document.getElementById( 'content' ).innerHTML = utf8_decode( decrypted );
+      force_update( );
    }
 
    if( document.getElementById( 'form_content_func' ) != null )
