@@ -2278,8 +2278,8 @@
     <field/>
      <name>field_application_version
      <field>127102
-     <ftype>numeric
-     <extra>range=0.1..100.0
+     <ftype>string
+     <extra>max_size=5
      <mandatory>true
      <modifiers>
     </field>
@@ -3886,8 +3886,8 @@
     <field/>
      <name>field_model_version
      <field>105102
-     <ftype>numeric
-     <extra>range=0.1..100.0
+     <ftype>string
+     <extra>max_size=5
      <mandatory>true
      <modifiers>
     </field>
@@ -7778,8 +7778,8 @@
     <column/>
      <name>field_application_version
      <field>127102
-     <ftype>numeric
-     <extra>range=0.1..100.0
+     <ftype>string
+     <extra>max_size=5
      <modifiers>
      <unique>false
      <indexed>false
@@ -8315,8 +8315,8 @@
     <column/>
      <name>field_model_version
      <field>105102
-     <ftype>numeric
-     <extra>range=0.1..100.0
+     <ftype>string
+     <extra>max_size=5
      <modifiers>
      <unique>false
      <indexed>false

@@ -564,7 +564,7 @@
      <field/>
       <id>127102
       <name>Version
-      <type>1070
+      <type>1000
       <mandatory>true
       <default_value>0.1
       <indexes/>
@@ -8414,7 +8414,7 @@
      <field/>
       <id>105102
       <name>Version
-      <type>1070
+      <type>1000
       <mandatory>true
       <default_value>0.1
       <indexes/>
@@ -34288,19 +34288,6 @@
     <domain/>
      <name>max_size
      <max_size>50
-    </domain>
-   </user_defined_type>
-   <user_defined_type/>
-    <id>1070
-    <name>version
-    <type>numeric
-    <sys_type>numeric
-    <domain/>
-     <name>range
-     <minimum_whole>0
-     <minimum_fraction>1
-     <maximum_whole>100
-     <maximum_fraction>0
     </domain>
    </user_defined_type>
    <user_defined_type/>

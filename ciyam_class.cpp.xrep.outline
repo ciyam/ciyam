@@ -1420,7 +1420,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_from_changed_fk.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_sfield=$specification_\0_sfield arg_new_only=$specification_\0_new_only\
- arg_not_create=$specification_\0_not_create arg_inc_dflt=$specification_\0_inc_dflt`}\
+ arg_not_create=$specification_\0_not_create arg_inc_dflt=$specification_\0_inc_dflt\
+ arg_not_null=$specification_\0_not_null`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_concatenation`'`)
 `{`#field_from_concatenation.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -1573,7 +1574,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#field_from_changed_fk.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_sfield=$specification_\0_sfield arg_new_only=$specification_\0_new_only\
- arg_not_create=$specification_\0_not_create arg_inc_dflt=$specification_\0_inc_dflt`}\
+ arg_not_create=$specification_\0_not_create arg_inc_dflt=$specification_\0_inc_dflt\
+ arg_not_null=$specification_\0_not_null`}\
 `,\
 `@eq`(`'\1`'`,`'file_attachment`'`)`&`?`$specification_\0_sfield`&`!`@eq`(`$specification_\0_sfield`,`'`'`)
 `{`#file_attachment.spec.xrep section=for_store arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\

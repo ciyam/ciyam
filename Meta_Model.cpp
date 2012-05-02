@@ -44,8 +44,6 @@
 #include "Meta_Permission.h"
 #include "Meta_Workgroup.h"
 
-#include "numeric_helper.h"
-
 #include "ciyam_base.h"
 #include "class_domains.h"
 #include "module_strings.h"
@@ -268,7 +266,7 @@ aggregate_domain< string,
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Next_View_Id_domain;
-domain_numeric_range< numeric, 0, 1, 100, 0 > g_Version_domain;
+domain_string_max_size< 5 > g_Version_domain;
 domain_int_range< 2005, 2020 > g_Year_Created_domain;
 
 set< string > g_derivations;
@@ -295,7 +293,7 @@ string gv_default_Next_Specification_Id = string( );
 string gv_default_Next_View_Id = string( );
 string gv_default_Source_File = string( );
 string gv_default_Status = string( );
-numeric gv_default_Version = numeric( 0.1 );
+string gv_default_Version = string( "0.1" );
 int gv_default_Year_Created = int( );
 
 set< int > g_add_packages_enum;
@@ -494,7 +492,7 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
       else if( field_name == c_field_id_Status || field_name == c_field_name_Status )
          string_getter< string >( cmd_handler.p_Meta_Model->Status( ), cmd_handler.retval );
       else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
-         string_getter< numeric >( cmd_handler.p_Meta_Model->Version( ), cmd_handler.retval );
+         string_getter< string >( cmd_handler.p_Meta_Model->Version( ), cmd_handler.retval );
       else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Model->Workgroup( ), cmd_handler.retval );
       else if( field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
@@ -549,7 +547,7 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Status, field_value );
       else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
-         func_string_setter< Meta_Model, numeric >(
+         func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Version, field_value );
       else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
          func_string_setter< Meta_Model, Meta_Workgroup >(
@@ -571,12 +569,6 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
-      {
-         numeric Version( cmd_handler.p_Meta_Model->Version( ) );
-         execute_command( Version, cmd_and_args, cmd_handler.retval );
-         cmd_handler.p_Meta_Model->Version( Version );
-      }
       else if( field_name == c_field_id_Permission || field_name == c_field_name_Permission )
          cmd_handler.retval = cmd_handler.p_Meta_Model->Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
@@ -683,8 +675,8 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    const string& impl_Status( ) const { return lazy_fetch( p_obj ), v_Status; }
    void impl_Status( const string& Status ) { v_Status = Status; }
 
-   const numeric& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
-   void impl_Version( const numeric& Version ) { v_Version = Version; }
+   const string& impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
+   void impl_Version( const string& Version ) { v_Version = Version; }
 
    int impl_Year_Created( ) const { return lazy_fetch( p_obj ), v_Year_Created; }
    void impl_Year_Created( int Year_Created ) { v_Year_Created = Year_Created; }
@@ -1017,7 +1009,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    string v_Next_View_Id;
    string v_Source_File;
    string v_Status;
-   numeric v_Version;
+   string v_Version;
    int v_Year_Created;
 
    string v_Permission;
@@ -1139,12 +1131,12 @@ void Meta_Model::impl::impl_Generate( )
 
       string model_name( get_obj( ).Name( ) );
 
-      numeric ver( get_obj( ).Version( ) );
       string title( get_obj( ).Name( ) + "_" );
-      if( ver < 1.0 )
+      if( atof( get_obj( ).Version( ).c_str( ) ) < 1.0 )
          title += "Beta";
       else
-         title += ver.as_string( );
+         title += get_obj( ).Version( );
+
       outf << "\x60{\x60$model_title\x60=\x60'" << title << "\x60'\x60}\n";
       outf << "\x60{\x60$model_version\x60=\x60'" << get_obj( ).Version( ) << "\x60'\x60}\n";
       outf << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).Year_Created( ) << "\x60'\x60}\n";
@@ -5609,7 +5601,7 @@ void Meta_Model::impl::set_field_value( int field, const string& value )
       break;
 
       case 13:
-      func_string_setter< Meta_Model::impl, numeric >( *this, &Meta_Model::impl::impl_Version, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
       break;
 
       case 14:
@@ -5746,6 +5738,11 @@ void Meta_Model::impl::validate( unsigned state, bool is_internal, validation_er
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Name ) ) ) ) );
+
+   if( is_null( v_Version ) && !value_will_be_provided( c_field_name_Version ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Version ) ) ) ) );
 
    if( v_Workgroup.empty( ) && !value_will_be_provided( c_field_name_Workgroup ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Workgroup,
@@ -6247,12 +6244,12 @@ void Meta_Model::Status( const string& Status )
    p_impl->impl_Status( Status );
 }
 
-const numeric& Meta_Model::Version( ) const
+const string& Meta_Model::Version( ) const
 {
    return p_impl->impl_Version( );
 }
 
-void Meta_Model::Version( const numeric& Version )
+void Meta_Model::Version( const string& Version )
 {
    p_impl->impl_Version( Version );
 }
@@ -6673,10 +6670,10 @@ const char* Meta_Model::get_field_id(
       p_id = c_field_id_Version;
 
       if( p_type_name )
-         *p_type_name = "numeric";
+         *p_type_name = "string";
 
       if( p_sql_numeric )
-         *p_sql_numeric = true;
+         *p_sql_numeric = false;
    }
    else if( name == c_field_name_Workgroup )
    {
@@ -6844,10 +6841,10 @@ const char* Meta_Model::get_field_name(
       p_name = c_field_name_Version;
 
       if( p_type_name )
-         *p_type_name = "numeric";
+         *p_type_name = "string";
 
       if( p_sql_numeric )
-         *p_sql_numeric = true;
+         *p_sql_numeric = false;
    }
    else if( id == c_field_id_Workgroup )
    {
@@ -7262,7 +7259,7 @@ void Meta_Model::get_sql_column_values(
    values.push_back( sql_quote( to_string( Next_View_Id( ) ) ) );
    values.push_back( sql_quote( to_string( Permission( ) ) ) );
    values.push_back( sql_quote( to_string( Source_File( ) ) ) );
-   values.push_back( to_string( Version( ) ) );
+   values.push_back( sql_quote( to_string( Version( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
    values.push_back( to_string( Year_Created( ) ) );
 
@@ -7358,7 +7355,7 @@ void Meta_Model::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "301600", "Permission", "Meta_Permission", false ) );
    all_field_info.push_back( field_info( "105110", "Source_File", "string", false ) );
    all_field_info.push_back( field_info( "105114", "Status", "string", false ) );
-   all_field_info.push_back( field_info( "105102", "Version", "numeric", false ) );
+   all_field_info.push_back( field_info( "105102", "Version", "string", false ) );
    all_field_info.push_back( field_info( "300500", "Workgroup", "Meta_Workgroup", true ) );
    all_field_info.push_back( field_info( "105103", "Year_Created", "int", false ) );
 }
@@ -7618,7 +7615,7 @@ string Meta_Model::static_get_sql_columns( )
     "C_Next_View_Id VARCHAR(200) NOT NULL,"
     "C_Permission VARCHAR(64) NOT NULL,"
     "C_Source_File VARCHAR(200) NOT NULL,"
-    "C_Version NUMERIC(28\\,8) NOT NULL,"
+    "C_Version VARCHAR(200) NOT NULL,"
     "C_Workgroup VARCHAR(64) NOT NULL,"
     "C_Year_Created INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
