@@ -1631,8 +1631,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_abbr( tz_abbr );
 
-               transaction_start( );
-
                op_instance_create( handle, "", key, false );
 
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
@@ -1652,7 +1650,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                op_instance_apply( handle, "", false );
-               transaction_commit( );
 
                response = key.substr( 0, key.find( ' ' ) );
 
@@ -1660,7 +1657,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
-               transaction_rollback( );
                destroy_object_instance( handle );
                throw;
             }
