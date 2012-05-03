@@ -8,28 +8,28 @@
       if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Primitive )
       {
          if( !`{`$arg_parent_arg`}.empty( ) )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a primitive"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a primitive"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Relationship )
       {
          if( `{`$arg_parent_arg`}.empty( ) )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a relationship"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Self_Relationship )
       {
          if( `{`$arg_parent_arg`}.empty( ) || `{`$arg_parent_arg`} != `{`$arg_class_arg`} )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Non_Self_Relationship )
       {
          if( `{`$arg_parent_arg`}.empty( ) || `{`$arg_parent_arg`} == `{`$arg_class_arg`} )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Text_Type )
       {
          if( Primitive == c_enum_`{`$enum_name`}_bool
           || Primitive == c_enum_`{`$enum_name`}_int || Primitive == c_enum_`{`$enum_name`}_numeric )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a text type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a text type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Scalar_Type )
       {
@@ -43,7 +43,7 @@
          }
 
          if( in_error )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a scalar type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a scalar type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Math_Type )
       {
@@ -55,7 +55,7 @@
          }
 
          if( in_error )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a math type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a math type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Calendar_Type )
       {
@@ -67,7 +67,7 @@
          }
 
          if( in_error )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a calendar type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a calendar type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) < c_enum_`{`$enum_name`}_Any_Text_Type ) // i.e. all primitives
       {
@@ -91,7 +91,7 @@
             else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_bool )
                primitive_name = GMS( get_enum_string_field_type( c_enum_`{`$enum_name`}_bool ) );
 
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
          }
       }
       else
@@ -104,12 +104,12 @@
       if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Text_Type )
       {
          if( `{`$arg_primitive_arg`} >= c_enum_`{`$enum_name`}_numeric )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a text type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a text type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Conditional )
       {
          if( `{`$arg_primitive_arg`} < c_enum_`{`$enum_name`}_int || `{`$arg_primitive_arg`} > c_enum_`{`$enum_name`}_bool )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) < c_enum_`{`$enum_name`}_Any_Text_Type ) // i.e. all primitives
       {
@@ -132,7 +132,7 @@
             else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_bool )
                primitive_name = GMS( get_enum_string_field_type( c_enum_`{`$enum_name`}_bool ) );
 
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
          }
       }
       else
@@ -145,18 +145,18 @@
       if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Text_Type )
       {
          if( `{`$arg_primitive_arg`} >= c_enum_`{`$enum_name`}_numeric )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a text type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a text type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Conditional )
       {
          if( `{`$arg_primitive_arg`} < c_enum_`{`$enum_name`}_int || `{`$arg_primitive_arg`} > c_enum_`{`$enum_name`}_bool )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a conditional type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Value_Or_Conditional )
       {
          if( `{`$arg_test_value_arg`}.empty( )
           && ( `{`$arg_primitive_arg`} < c_enum_`{`$enum_name`}_int || `{`$arg_primitive_arg`} > c_enum_`{`$enum_name`}_bool ) )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a conditional type if no value provided"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a conditional type if no value provided"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) < c_enum_`{`$enum_name`}_Any_Text_Type ) // i.e. all primitives
       {
@@ -179,7 +179,7 @@
             else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_bool )
                primitive_name = GMS( get_enum_string_field_type( c_enum_`{`$enum_name`}_bool ) );
 
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
          }
       }
       else
@@ -192,12 +192,12 @@
       if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Self_Relationship )
       {
          if( !`{`$arg_parent_arg`}.empty( ) && `{`$arg_parent_arg`} != `{`$arg_class_arg`} )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a self-relationship"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Non_Self_Relationship )
       {
          if( !`{`$arg_parent_arg`}.empty( ) && `{`$arg_parent_arg`} == `{`$arg_class_arg`} )
-            `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
+            `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a (non-self) relationship"; // FUTURE: Should be in module_strings...
       }
       else
          throw runtime_error( "unexpected `{`$arg_field`} value " + to_string( get_obj( ).`{`$arg_field`}( ) ) + " in `{`$arg_procedure`}" );
@@ -225,7 +225,7 @@
          else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_bool )
             primitive_name = GMS( get_enum_string_field_type( c_enum_`{`$enum_name`}_bool ) );
 
-         `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
+         `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
       }
    }
 `,\
@@ -241,7 +241,7 @@
          else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_out )
             type_name = GMS( get_enum_string_field_type( c_enum_`{`$enum_name`}_out ) );
 
-         `{`$arg_error_arg`} = GMS( c_field_id_`{`$arg_field`} ) + " must be type " + type_name; // FUTURE: Should be in module_strings...
+         `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be type " + type_name; // FUTURE: Should be in module_strings...
       }
    }
 `,\
