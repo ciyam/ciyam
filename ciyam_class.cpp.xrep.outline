@@ -1151,6 +1151,10 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_is_neg=$specification_\0_is_neg arg_test_neq=$specification_\0_test_neq`}\
 `,\
+`@eq`(`'\1`'`,`'check_dep_field_changed`'`)
+`{`#check_dep_field_changed.spec.xrep section=validate class_name=$class_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+`,\
 `@eq`(`'\1`'`,`'check_parent_fk_match`'`)
 `{`#check_parent_fk_match.spec.xrep section=validate class_name=$class_name\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_cfield=$specification_\0_cfield`}\

@@ -1,0 +1,13 @@
+`{`@eq`(`'validate`'`,`$section`)\
+   // [(start check_dep_field_changed)]
+   if( !is_system_uid( )
+    && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )
+    && !get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )
+   {
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_dep_must_be_changed ), make_pair(
+       c_str_parm_field_dep_must_be_changed_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_parm_field_dep_must_be_changed_field2, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
+   }
+   // [(finish check_dep_field_changed)]
+`}
