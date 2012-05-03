@@ -1,7 +1,7 @@
 `{`#makefile.vars.xrep @`}
 ##
 ## Usage:
-##  make [-DDEBUG] [-DCODEGUARD] [<target1> [<target2>] [...]]
+##  make [<target1> [<target2>] [...]]
 ##
 ##  where:
 ##  <target>   is:                  to:
