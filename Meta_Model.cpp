@@ -5836,7 +5836,8 @@ void Meta_Model::impl::after_fetch( )
 #endif
 
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
-   if( get_system_variable( model_key ).empty( ) && !exists_file( script_filename ) )
+   if( !get_obj( ).get_graph_parent( )
+    && get_system_variable( model_key ).empty( ) && !exists_file( script_filename ) )
    {
       if( !get_obj( ).child_Package( ).get_is_iterating( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
       {
