@@ -1,7 +1,7 @@
 `{`#makefile.vars.xrep @`}
 ##
 ## Usage:
-##  make [DEBUG=1] [<target1> [<target2>] [...]]
+##  make [<target1> [<target2>] [...]]
 ##
 ##  where:
 ##  <target>   is:                  to:

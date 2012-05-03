@@ -12,6 +12,9 @@ WEBDIR Web Document Root path**    /srv/www/htdocs
 
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 
+If wanting to perform a debug build for Windows use the environment variable CPPDBG.
+(e.g. for VC++ set CPPDBG=DEBUG=1)
+
 The following are platform specific instructions for installing 3rd party libraries:
 
 NOTE: To make things easier for Windows developers some .lib and .dll files have been included.

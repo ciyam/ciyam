@@ -1,6 +1,6 @@
 ##
 ## Usage:
-##  make [-DDEBUG] [-DCODEGUARD] [<target1> [<target2>] [...]]
+##  make [<target1> [<target2>] [...]]
 ##
 ##  where:
 ##  <target>   is:                  to:
@@ -14,6 +14,7 @@
 ##             ciyam_base           make ciyam_base.dll target
 ##             Meta                 make Meta.dll target
 ##             bundle               make bundle.exe target
+##             check_source         make check_source.exe target
 ##             ciyam_client         make ciyam_client.exe target
 ##             ciyam_interface      make ciyam_interface.exe target
 ##             ciyam_server         make ciyam_server.exe target
@@ -202,6 +203,7 @@ TARGET_BASE_OBJECTS=base64.obj\
  ptypes.obj\
  read_write_buffer.obj\
  read_write_buffered_stream.obj\
+ regex.obj\
  sio.obj\
  sha1.obj\
  smtp.obj\
@@ -215,7 +217,8 @@ TARGET_BASE_ERRFILE=base.err
 
 TARGET_COMMANDS=commands.lib
 TARGET_COMMANDS_OBJECTS=command_parser.obj\
- utilities.obj
+ utilities.obj\
+ regex.obj
 TARGET_COMMANDS_ERRFILE=commands.err
 
 TARGET_CIYAM_BASE=ciyam_base.dll
@@ -316,6 +319,9 @@ TARGET_META_ERRFILE=Meta.err
 TARGET_BUNDLE=bundle.exe
 TARGET_BUNDLE_OBJECTS=bundle.obj
 
+TARGET_CHECK_SOURCE=check_source.exe
+TARGET_CHECK_SOURCE_OBJECTS=check_source.obj
+
 TARGET_CIYAM_CLIENT=ciyam_client.exe
 TARGET_CIYAM_CLIENT_OBJECTS=ciyam_client.obj
 
@@ -406,6 +412,7 @@ ALL_TARGETS=\
  $(TARGET_CIYAM_BASE)\
  $(TARGET_META)\
  $(TARGET_BUNDLE)\
+ $(TARGET_CHECK_SOURCE)\
  $(TARGET_CIYAM_CLIENT)\
  $(TARGET_CIYAM_INTERFACE)\
  $(TARGET_CIYAM_SERVER)\
@@ -439,6 +446,7 @@ ALL_OBJECTS=\
  $(TARGET_CIYAM_BASE_OBJECTS)\
  $(TARGET_META_OBJECTS)\
  $(TARGET_BUNDLE_OBJECTS)\
+ $(TARGET_CHECK_SOURCE_OBJECTS)\
  $(TARGET_CIYAM_CLIENT_OBJECTS)\
  $(TARGET_CIYAM_INTERFACE_OBJECTS)\
  $(TARGET_CIYAM_SERVER_OBJECTS)\
@@ -481,6 +489,7 @@ commands: $(TARGET_COMMANDS)
 ciyam_base: $(TARGET_CIYAM_BASE)
 Meta: $(TARGET_META)
 bundle: $(TARGET_BUNDLE)
+check_source: $(TARGET_CHECK_SOURCE)
 ciyam_client: $(TARGET_CIYAM_CLIENT)
 ciyam_interface: $(TARGET_CIYAM_INTERFACE)
 ciyam_server: $(TARGET_CIYAM_SERVER)
@@ -570,6 +579,16 @@ $(TARGET_BUNDLE):: $(TARGET_BASE) $(TARGET_BUNDLE:.exe=.compile)
 $(TARGET_BUNDLE):: $(TARGET_BUNDLE_OBJECTS) $(TARGET_BASE)
  $(LINK) @&&!
  $(LINK_NORMAL) $(ZLIB_LIBS)
+!
+
+$(TARGET_CHECK_SOURCE:.exe=.compile):
+ @echo $(CPP_NORMAL) %* >compile.bat
+
+$(TARGET_CHECK_SOURCE):: $(TARGET_CHECK_SOURCE:.exe=.compile)
+
+$(TARGET_CHECK_SOURCE):: $(TARGET_CHECK_SOURCE_OBJECTS)
+ $(LINK) @&&!
+ $(LINK_NORMAL)
 !
 
 $(TARGET_CIYAM_CLIENT:.exe=.compile):
