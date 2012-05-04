@@ -5,7 +5,7 @@
    <tests/>
     <test/>
      <name>1
-     <description>Test installation of the Standard package.
+     <description>Test installation of the Standard and User packages.
      <test_step/>
       <name>*init*
       <exec>*ciyam_server -quiet
@@ -37,6 +37,16 @@
      </test_step>
      <test_step/>
       <name>c
+      <exec>ciyam_client -echo -quiet
+      <input>true
+      <output>generate
+     </test_step>
+    </test>
+    <test/>
+     <name>3
+     <description>Test removing all packages and deleting Model.
+     <test_step/>
+      <name>a
       <exec>ciyam_client -echo -quiet
       <input>true
       <output>generate

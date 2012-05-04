@@ -5333,6 +5333,10 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 
       string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
 
+      bool async = true;
+      if( get_obj( ).get_variable( "@async" ) == "0" || get_obj( ).get_variable( "@async" ) == "false" )
+         async = false;
+
       if( !packages.empty( ) )
       {
          ofstream outf( script_filename.c_str( ) );
@@ -5348,7 +5352,7 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
                get_obj( ).child_Package( ).perform_fetch( i->second );
                get_obj( ).child_Package( ).set_variable( "@do_exec", "0" );
 
-               if( i == packages.begin( ) )
+               if( async && i == packages.begin( ) )
                   get_obj( ).child_Package( ).set_variable( "@is_last", "1" );
 
                get_obj( ).child_Package( ).Remove( );
@@ -5369,16 +5373,24 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 
       if( !packages.empty( ) )
       {
+
          set_system_variable( model_key, "Removing packages..." ); // FUTURE: Should be a module string...
+
+         // NOTE: If the thread that has spawned the child process is terminated (due
+         // to client deciding to finish its session) then this can potentially cause
+         // big troubles due to resource inheritance so the session is captured prior
+         // to the async request and will be released at the end of the script.
+         if( async )
+            capture_session( session_id( ) );
+
 #ifdef _WIN32
-         // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
-         // killing this session until the asychronous operations have been completed.
-         capture_session( session_id( ) );
-         exec_system( "run_temp " + script_filename, true );
+         exec_system( "run_temp " + script_filename, async );
 #else
          chmod( script_filename.c_str( ), 0777 );
-         exec_system( "./run_temp " + script_filename, true );
+         exec_system( "./run_temp " + script_filename, async );
 #endif
+         if( !async )
+            set_system_variable( model_key, "" );
       }
    }
    // [<finish Remove_All_Packages_impl>]
