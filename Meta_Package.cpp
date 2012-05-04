@@ -1200,8 +1200,9 @@ void Meta_Package::impl::impl_Remove( )
                // specifically for this purpose).
                string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
                if( exists_file( map_filename ) )
-                  outf << ".perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
-                   << " " << get_obj( ).Package_Type( ).Name( ) << ".package.sio -for_remove -r=@" << map_filename << "\n";
+                  outf << ".perform_package_import " << get_uid( ) << " @now "
+                   << get_obj( ).module_name( ) << " " << get_obj( ).Package_Type( ).Name( )
+                   << ".package.sio -for_remove -r=@" << escaped_string( map_filename ) << "\n";
 
                vector< string > ordered;
                string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );

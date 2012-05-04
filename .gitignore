@@ -54,6 +54,7 @@ compile.sh
 compile.bat
 
 # Ignore makefile generation files.
+make.dtm
 makefile.sio
 makefile.vars.xrep
 
