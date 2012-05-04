@@ -126,6 +126,8 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
       if( !str.empty( ) )
       {
+         if( str == "encrypt" )
+            str += " " + get_password( "Password: " );
 #ifdef DEBUG
          cout << "sending command: " << str << endl;
 #endif

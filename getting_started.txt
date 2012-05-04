@@ -50,7 +50,38 @@ If all has gone well then it is time to install the IDE application which is don
 
 To use the application you'll need to make sure that the application server (ciyam_server) is running. To run
 it under Windows use "start ciyam_server" and under Linux "./ciyam_server &". Once the application server has
-started and is "listening" you are now ready to use the IDE.
+started and is "listening" you are now nearly ready to create your first web application.
+
+***************************** Extra steps if MySQL 'root' password is not blank *****************************
+
+If you have a non-blank 'root' password for your MySQL server then this password will need to be known by the
+application server in order for the 'Meta' application to be able to create (and drop) a DB. This password is
+stored in the application server's main configuration file (ciyam_server.sio) in an encrypted base64 format.
+
+Looking at the default ciyam_server.sio file you'll notice the following line:
+# <sql_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
+
+The comment character ('#') will need to be removed and then the base64 changed to the encrypted form of your
+MySQL root password. To determine the encrypted base64 password a protocol command "encrypt" exists. For ease
+of use a batch/script called ./password can be used to determine the correctly encrypted password value. This
+script can be used in one of two ways. The first is as follows:
+
+./password my_password
+Kd5XMcOhRxvwdg3NJ4ojNXzS6lg=
+
+The second method is to run the script without passing the password as an argument (use this way if you don't
+want the password it to be visible on the screen or kept in command history). If you use this method then you
+will be prompted to type in the password (which will not be echoed).
+
+./password
+Password:
+Kd5XMcOhRxvwdg3N+aggkL3j1og=
+
+Once you have modified the <sql_password> value in "ciyam_server.sio" (and removed the # comment marker) then
+you will need to stop and restart the application server (if using Windows then focus on the "cmd" window for
+"ciyam_server" and type "ctrl-c" to shut it down).
+
+*************************************************************************************************************
 
 If all went well the you should now be able to access the IDE: http://localhost/Meta
 
