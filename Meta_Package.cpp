@@ -1311,6 +1311,10 @@ void Meta_Package::impl::impl_Remove( )
             exec_system( "./run_temp " + script_filename, true );
 #endif
          }
+#ifndef _WIN32
+         else
+            chmod( script_filename.c_str( ), 0777 );
+#endif
       }
       else
       {
