@@ -16,8 +16,15 @@ guest_standard
 > perform_execute guest 20120102 100 136100 "-v=@async=false,@message=Installing Standard Package..." guest_standard =1.0 -136410
 Installing Standard Package...
 
+> perform_create guest 20120102 100 136100 guest_user "136101=User,136107=User,302810=user,302800=guest_model"
+guest_user
+
+> perform_execute guest 20120102 100 136100 "-v=@async=false,@message=Installing User Package..." guest_user =1.0 -136410
+Installing User Package...
+
 > perform_fetch Meta Class "" Name,Plural,Id -min
 System,System,M001C100
+User,User,M001C101
 
 > perform_fetch Meta Field "" Name,Id -min
 Name,M001C100F100
@@ -25,6 +32,13 @@ Vendor,M001C100F101
 Reference,M001C100F102
 Message,M001C100F103
 Actions,M001C100F104
+User_Id,M001C101F100
+Active,M001C101F101
+Template,M001C101F102
+Password,M001C101F103
+Description,M001C101F104
+Email,M001C101F105
+Permissions,M001C101F106
 
 > perform_fetch Meta Enum "" Name,Id -min
 Day_Type,E100

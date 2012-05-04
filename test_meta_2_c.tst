@@ -3,6 +3,7 @@
 
 > perform_fetch Meta Class "" Name,Plural,Id -min
 System,System,M001C100
+User,User,M001C101
 
 > perform_fetch Meta Field "" Name,Id -min
 Name,M001C100F100
@@ -10,6 +11,13 @@ Vendor,M001C100F101
 Reference,M001C100F102
 Message,M001C100F103
 Actions,M001C100F104
+User_Id,M001C101F100
+Active,M001C101F101
+Template,M001C101F102
+Password,M001C101F103
+Description,M001C101F104
+Email,M001C101F105
+Permissions,M001C101F106
 
 > perform_fetch Meta Enum "" Name,Id -min
 Day_Type,E100

@@ -998,6 +998,9 @@ void Meta_Package::impl::impl_Install( )
          outc << ".storage_init " << storage_name( ) << "\n";
          outc << ".session_variable @package " << temp_name << "\n";
 
+         if( !get_session_variable( "@attached_file_path" ).empty( ) )
+            outc << ".session_variable @attached_file_path \"" << get_session_variable( "@attached_file_path" ) << "\"\n";
+
          outc << "perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
           << " " << type_name << ".package.sio -new_only -s=@Meta_Class.skips.lst -r=@" << list_filename << "\n";
 
@@ -1188,6 +1191,9 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".storage_trans_start\n";
                outf << "@endif\n";
 
+               if( !get_session_variable( "@attached_file_path" ).empty( ) )
+                  outf << ".session_variable @attached_file_path \"" << get_session_variable( "@attached_file_path" ) << "\"\n";
+
                // NOTE: Packages could contain updates of external artifacts (such as specifications) which
                // need to be "undone" as updates (rather than occurring automatically via cascades) so here
                // the package will be processed for just this purpose (the keys for such updates are marked
@@ -1247,10 +1253,9 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
                 << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136450\n"; // i.e. Cancel_Remove
                outf << "@endif\n";
-#ifdef _WIN32
+
                if( do_exec || is_last )
                   outf << ".session_lock -release " << session_id( ) << "\n"; // see NOTE below...
-#endif
             }
 
             outf << ".quit\n";
@@ -1293,10 +1298,13 @@ void Meta_Package::impl::impl_Remove( )
 
          if( do_exec )
          {
-#ifdef _WIN32
-            // NOTE: Due to file locking inheritance in Win32 prevent a dead socket from
-            // killing this session until the asychronous operations have been completed.
+            // NOTE: If the thread that has spawned the child process is terminated (due
+            // to client deciding to finish its session) then this can potentially cause
+            // big troubles due to resource inheritance so the session is captured prior
+            // to the async request and will be released at the end of the script.
             capture_session( session_id( ) );
+
+#ifdef _WIN32
             exec_system( "run_temp " + script_filename, true );
 #else
             chmod( script_filename.c_str( ), 0777 );
