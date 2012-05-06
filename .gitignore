@@ -45,9 +45,12 @@ xvars
 # Ignore generated header files.
 *.cmh
 
-# Ignore log files and lock files.
+# Ignore all log and lock files.
 *.log
 *.lck
+
+# Except dummy log file template.
+!app.log
 
 # Ignore generated compile script.
 compile.sh
