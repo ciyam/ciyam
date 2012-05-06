@@ -40,10 +40,11 @@ str030,T102
 str100,T103
 year,T104
 duration,T105
-0..100,T106
-std_date,T107
-std_datetime,T109
-std_time,T108
+filename,T106
+0..100,T107
+std_date,T108
+std_datetime,T110
+std_time,T109
 bool,T006
 date,T002
 datetime,T001
