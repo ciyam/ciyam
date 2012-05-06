@@ -293,7 +293,8 @@ function string_to_bytes( str )
    return re;
 }
 
-function trim( str ) {
+function trim( str ) 
+{
    return str.replace( /^\s+|\s+$/g, "" );
 }
 
