@@ -293,6 +293,11 @@ function string_to_bytes( str )
    return re;
 }
 
+function trim( str ) 
+{
+   return str.replace( /^\s+|\s+$/g, "" );
+}
+
 function load( )
 {
    clearTimeout( warn_refresh_timer_id );
@@ -318,7 +323,7 @@ function load( )
    for( i = 0; i < all_cookies.length; i++ )
    {
       var next_cookie = all_cookies[ i ].split( '=' );
-      if( next_cookie[ 0 ] == 'session' )
+      if( trim( next_cookie[ 0 ] ) == 'session' )
       {
          has_session = true;
          var cookie_parts = next_cookie[ 1 ].split( ',' );
