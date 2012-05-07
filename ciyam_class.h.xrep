@@ -43,8 +43,8 @@
 `{`}
 `{`!`(`?`$parent_class`)`$base_class`=`'class_base`'`,`$base_class`=`'`{`$parent_class`}`'`}
 `{`}
-`{`(`?`$child_types`|`?`$parent_types`)`$related_types`=`'`'`}
-`{`(`?`$child_types`|`?`$parent_types`)`$related_other_types`=`'`'`}
+`{`(`?`$child_types`|`?`$trans_types`|`?`$parent_types`)`$related_types`=`'`'`}
+`{`(`?`$child_types`|`?`$trans_types`|`?`$parent_types`)`$related_other_types`=`'`'`}
 `{`(`?`$child_types`)`$related_types`=`$related_types`+`$child_types`}
 `{`(`?`$trans_types`)`$related_types`=`$related_types`+`$trans_types`}
 `{`(`?`$parent_types`)`$related_types`=`$related_types`+`$parent_types`}

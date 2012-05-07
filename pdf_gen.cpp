@@ -5446,6 +5446,41 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
 #ifdef DEBUG
                         cout << "*** no data found for dependent group '" << dep_group << "' in: " << group << endl;
 #endif
+                        // NOTE: Identify and ensure that no processing will be attempted for groups which
+                        // are "nested" between the current group and its dependency.
+                        set< string > dep_candidates;
+                        string inner_group( dep_group );
+                        for( size_t i = 0; i < groups.size( ); i++ )
+                        {
+                           string next_group( groups[ i ] );
+                           if( format.groups.find( next_group )->second.par_group == inner_group )
+                           {
+                              group_has_overflow[ next_group ] = false;
+                              group_page_delayed[ next_group ] = false;
+                              group_still_to_come[ next_group ] = false;
+
+                              inner_group = next_group;
+                              if( !format.groups.find( next_group )->second.par_group.empty( )
+                               && format.groups.find( next_group )->second.par_group != dep_group )
+                                 dep_candidates.insert( format.groups.find( next_group )->second.par_group );
+                           }
+
+                           if( !inner_group.empty( )
+                            && format.groups.find( next_group )->second.dep_group == inner_group )
+                           {
+                              group_has_overflow[ next_group ] = false;
+                              group_page_delayed[ next_group ] = false;
+                              group_still_to_come[ next_group ] = false;
+                           }
+
+                           if( dep_candidates.count( format.groups.find( next_group )->second.dep_group ) )
+                           {
+                              group_has_overflow[ next_group ] = false;
+                              group_page_delayed[ next_group ] = false;
+                              group_still_to_come[ next_group ] = false;
+                           }
+                        }
+
                         group_has_overflow[ group ] = false;
                         group_page_delayed[ group ] = false;
                         group_still_to_come[ group ] = false;
