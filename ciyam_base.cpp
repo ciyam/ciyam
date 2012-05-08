@@ -1424,6 +1424,7 @@ bool is_child_constrained( class_base& instance,
                      if( lock.type != op_lock::e_lock_type_destroy )
                      {
                         constraining_class = p_class_base->get_display_name( );
+                        p_class_base->iterate_stop( );
                         return true;
                      }
                   } while( p_class_base->iterate_next( ) );
@@ -1444,7 +1445,10 @@ bool is_child_constrained( class_base& instance,
                         instance_keys[ p_class_base->class_id( ) ].insert( p_class_base->get_key( ) );
 
                      if( is_child_constrained( *p_dyn_class_base, root_instance, constraining_class, instance_keys ) )
+                     {
+                        p_class_base->iterate_stop( );
                         return true;
+                     }
 
                      child_instance_accessor.destroy_dynamic_instance( );
 
@@ -1527,7 +1531,10 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                   {
                      if( !handler.obtain_lock( lock_handle, p_class_base->lock_class_id( ),
                       p_class_base->get_key( ), op_lock::e_lock_type_update, gtp_session, &instance, &root_instance ) )
+                     {
+                        p_class_base->iterate_stop( );
                         return false;
+                     }
                   }
                   else
                   {
@@ -1546,12 +1553,18 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                            instance_keys[ p_class_base->class_id( ) ].insert( p_class_base->get_key( ) );
 
                         if( !obtain_cascade_locks_for_destroy( *p_dyn_class_base, root_instance, instance_keys ) )
+                        {
+                           p_class_base->iterate_stop( );
                            return false;
+                        }
 
                         child_instance_accessor.destroy_dynamic_instance( );
                      }
                      else
+                     {
+                        p_class_base->iterate_stop( );
                         return false;
+                     }
                   }
                } while( p_class_base->iterate_next( ) );
             }
