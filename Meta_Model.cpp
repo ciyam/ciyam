@@ -4239,8 +4239,8 @@ void Meta_Model::impl::impl_Generate( )
                      {
                         operations = "link";
 
-                        if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
-                           operations += ":" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
+                        if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ) ) )
+                           operations += ":" + get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ).Id( );
                      }
                      else if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_select" )
                      {
@@ -4436,7 +4436,12 @@ void Meta_Model::impl::impl_Generate( )
 
                      string operations;
                      if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "link_select" )
+                     {
                         operations = "link";
+
+                        if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ) ) )
+                           operations += ":" + get_obj( ).child_List( ).child_List_Field( ).Link_Permission( ).Id( );
+                     }
                      else if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_field" )
                      {
                         operations = "restricted";

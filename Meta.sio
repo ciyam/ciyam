@@ -5687,6 +5687,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600498
+      <item>class
+     </specification>
+     <specification/>
       <id>602850
       <item>class
      </specification>
@@ -6247,6 +6251,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500889
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -7050,6 +7058,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600498
+        <item>field
+       </specification>
+       <specification/>
         <id>602850
         <item>field
        </specification>
@@ -7350,6 +7362,10 @@
       <name>Hide_For_Restriction_Field
      </modifier>
      <modifier/>
+      <id>500889
+      <name>Hide_Link_Permission_Field
+     </modifier>
+     <modifier/>
       <id>500881
       <name>Hide_Link_Restriction
      </modifier>
@@ -7571,6 +7587,10 @@
       <id>600496
       <item>pclass
      </specification>
+     <specification/>
+      <id>600498
+      <item>pclass
+     </specification>
     </specifications>
     <fields/>
      <field/>
@@ -7607,6 +7627,23 @@
       <specifications/>
        <specification/>
         <id>600474
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>123119
+      <name>Allow_Link_Permission
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600498
         <item>pfield
        </specification>
       </specifications>
@@ -27907,6 +27944,19 @@
     </data>
    </specification>
    <specification/>
+    <id>600498
+    <name>{List_Field}_Hide_Link_Permission_Field
+    <type>modifier_field_value
+    <data/>
+     <class_id>124100
+     <pclass_id>123100
+     <modifier_id>500889
+     <field_id>302120
+     <pfield_id>123119
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600481
     <name>{List_Field}_Hide_Link_Restriction
     <type>modifier_field_value
@@ -33768,7 +33818,7 @@
     <id>905
     <name>app_generate_type
     <type>int
-    <key_values>0=Full_Generate,1=Skip_DB_Upgrade,2=Application_UI_Only
+    <key_values>0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
    </user_defined_enum>
    <user_defined_enum/>
     <id>900

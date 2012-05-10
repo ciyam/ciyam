@@ -609,7 +609,7 @@ string get_enum_string_app_text_trunc_limit( int val )
 
 const int c_enum_app_generate_type_Full_Generate( 0 );
 const int c_enum_app_generate_type_Skip_DB_Upgrade( 1 );
-const int c_enum_app_generate_type_Application_UI_Only( 2 );
+const int c_enum_app_generate_type_Application_Settings( 2 );
 
 string get_enum_string_app_generate_type( int val )
 {
@@ -622,7 +622,7 @@ string get_enum_string_app_generate_type( int val )
    else if( to_string( val ) == to_string( "1" ) )
       string_name = "enum_app_generate_type_Skip_DB_Upgrade";
    else if( to_string( val ) == to_string( "2" ) )
-      string_name = "enum_app_generate_type_Application_UI_Only";
+      string_name = "enum_app_generate_type_Application_Settings";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for app_generate_type" );
 
@@ -1441,7 +1441,7 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generating Source...\"\n";
       outss1 << "quit\n";
 
-      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_UI_Only )
+      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
 #ifdef _WIN32
          outs << "ciyam_client -quiet -no_prompt < "
@@ -1452,7 +1452,7 @@ void Meta_Application::impl::impl_Generate( )
 #endif
       }
 
-      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_UI_Only )
+      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
          for( size_t i = 0; i < modules.size( ); i++ )
          {
@@ -1507,7 +1507,7 @@ void Meta_Application::impl::impl_Generate( )
        << " " << to_string( c_procedure_id_Generate_File_Links ) << "\n";
       outss2 << "quit\n";
 
-      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_UI_Only )
+      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
          outs << "\necho Updating Links... >>" << generate_log_file << "\n";
 #ifdef _WIN32
@@ -1523,7 +1523,7 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Performing Make...\"\n";
       outss3 << "quit\n";
 
-      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_UI_Only )
+      if( get_obj( ).Generate_Type( ) < c_enum_app_generate_type_Application_Settings )
       {
          outs << "\necho Starting Make... >>" << generate_log_file << "\n";
 #ifdef _WIN32

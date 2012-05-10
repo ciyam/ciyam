@@ -463,20 +463,21 @@ const uint64_t c_modifier_Hide_FK_Fields = UINT64_C( 0x1000 );
 const uint64_t c_modifier_Hide_Fields_For_Trivial_Field = UINT64_C( 0x2000 );
 const uint64_t c_modifier_Hide_For_Child_Rel_Select = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Hide_For_Restriction_Field = UINT64_C( 0x8000 );
-const uint64_t c_modifier_Hide_Link_Restriction = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Hide_Link_Type = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Hide_Non_FK_Field = UINT64_C( 0x40000 );
-const uint64_t c_modifier_Hide_Non_Procedure_Fields = UINT64_C( 0x80000 );
-const uint64_t c_modifier_Hide_Non_Simple_Fields = UINT64_C( 0x100000 );
-const uint64_t c_modifier_Hide_Procedure_Fields = UINT64_C( 0x200000 );
-const uint64_t c_modifier_Hide_Restriction_Field = UINT64_C( 0x400000 );
-const uint64_t c_modifier_Hide_Restriction_Spec = UINT64_C( 0x800000 );
-const uint64_t c_modifier_Hide_Restriction_Value = UINT64_C( 0x1000000 );
-const uint64_t c_modifier_Hide_Search_Option_Limit = UINT64_C( 0x2000000 );
-const uint64_t c_modifier_Hide_Select_Specifics = UINT64_C( 0x4000000 );
-const uint64_t c_modifier_Hide_Switch_Type = UINT64_C( 0x8000000 );
-const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x10000000 );
-const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x20000000 );
+const uint64_t c_modifier_Hide_Link_Permission_Field = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Hide_Link_Restriction = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Hide_Link_Type = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Hide_Non_FK_Field = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Hide_Non_Procedure_Fields = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Hide_Non_Simple_Fields = UINT64_C( 0x200000 );
+const uint64_t c_modifier_Hide_Procedure_Fields = UINT64_C( 0x400000 );
+const uint64_t c_modifier_Hide_Restriction_Field = UINT64_C( 0x800000 );
+const uint64_t c_modifier_Hide_Restriction_Spec = UINT64_C( 0x1000000 );
+const uint64_t c_modifier_Hide_Restriction_Value = UINT64_C( 0x2000000 );
+const uint64_t c_modifier_Hide_Search_Option_Limit = UINT64_C( 0x4000000 );
+const uint64_t c_modifier_Hide_Select_Specifics = UINT64_C( 0x8000000 );
+const uint64_t c_modifier_Hide_Switch_Type = UINT64_C( 0x10000000 );
+const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x20000000 );
+const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x40000000 );
 
 domain_string_max_size< 100 > g_Include_Key_Additions_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -2946,6 +2947,11 @@ uint64_t Meta_List_Field::impl::get_state( ) const
    // [(start modifier_field_value)]
    if( get_obj( ).Type( ).Is_Restrict_Search( ) == false )
       state |= c_modifier_Is_Not_Restrict_Search;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Type( ).Allow_Link_Permission( ) == false )
+      state |= c_modifier_Hide_Link_Permission_Field;
    // [(finish modifier_field_value)]
 
    // [<start get_state>]
@@ -6323,6 +6329,14 @@ void Meta_List_Field::get_always_required_field_names(
 
    // [(start modifier_field_value)]
    dependents.insert( "Type" ); // (for Is_Not_Restrict_Search modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Type ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Type" ); // (for Hide_Link_Permission_Field modifier)
 
    if( ( required_transients && is_field_transient( e_field_id_Type ) )
     || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
