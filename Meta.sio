@@ -18830,6 +18830,27 @@
       </specifications>
      </field>
      <field/>
+      <id>114197
+      <name>Allow_Modifier
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600105
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>114117
       <name>Allow_Options
       <type>bool
@@ -19652,10 +19673,6 @@
       <modifiers/>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>600105
-        <item>pfield
-       </specification>
        <specification/>
         <id>600134
         <item>cfield
@@ -30435,6 +30452,7 @@
      <field_info>114175
      <field_info>114183
      <field_info>114184
+     <field_info>114197
      <field_info>114107
      <field_info>114108
      <field_info>114109
@@ -30875,7 +30893,7 @@
      <pclass_id>114100
      <modifier_id>500630
      <field_id>301410
-     <pfield_id>114107
+     <pfield_id>114197
      <field_value>false
     </data>
    </specification>

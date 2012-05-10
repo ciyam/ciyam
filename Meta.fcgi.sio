@@ -6321,6 +6321,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_specification_type_allow_modifier
+     <field>114197
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_specification_type_needs_modifier
      <field>114107
      <ftype>bool

@@ -10730,6 +10730,7 @@ void total_child_field_in_parent_specification::add_specification_data( model& m
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pnfield, pnfield_name ) );
    spec_data.data_pairs.push_back( make_pair( "pfkfield", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "tfield", "" ) );
 }
 
 string total_child_field_in_parent_specification::static_class_name( ) { return "total_child_field_in_parent"; }
