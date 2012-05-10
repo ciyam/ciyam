@@ -82,7 +82,7 @@ user_defined_enum_add -id=901 app_text_rows int 5=5,10=10,15=15,20=20,25=25,30=3
 user_defined_enum_add -id=902 app_text_limit int 1000=1000,1500=1500,2000=2000,2500=2500,3000=3000,4000=4000,5000=5000,10000=10000,20000=20000,30000=30000,40000=40000,50000=50000,60000=60000
 user_defined_enum_add -id=903 app_print_row_limit int 1000=1000,2000=2000,3000=3000,4000=4000,5000=5000,10000=10000,20000=20000
 user_defined_enum_add -id=904 app_text_trunc_limit int 10=10,15=15,20=20,25=25,30=30,40=40,50=50,75=75,100=100
-user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_UI_Only
+user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
@@ -563,6 +563,7 @@ field_add -id=123115 List_Field_Type Allow_Search_Option_Limit bool mand -def=0
 field_add -id=123116 List_Field_Type Allow_Restriction_Field bool mand -def=0
 field_add -id=123117 List_Field_Type Needs_Restriction_Field bool mand -def=0
 field_add -id=123118 List_Field_Type Is_Restrict_Search bool mand -def=0
+field_add -id=123119 List_Field_Type Allow_Link_Permission bool mand -def=0
 index_add -id=123201 List_Field_Type Name unique
 class_add -id=124100 List_Field List_Fields -x=ordered
 field_add -id=124101 List_Field Order string mand -x=order
@@ -1101,6 +1102,7 @@ modifier_add -id=500886 List_Field Hide_For_Restriction_Field Use_Source_Parent:
 ,Source_Field:relegate,Source_Parent:relegate,Source_Child:relegate
 modifier_add -id=500887 List_Field Is_Not_View_Child Access_Parent_Modifier:relegate
 modifier_add -id=500888 List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
+modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
@@ -1677,6 +1679,7 @@ specification_add -id=600494 {List_Field}_Parent_Class_From_List field_from_othe
 specification_add -id=600495 {List_Field}_Is_Not_View_Child modifier_field_null "List_Field Is_Not_View_Child Parent_Class"
 specification_add -id=600496 {List_Field}_Is_Not_Restrict_Search modifier_field_value "List_Field Is_Not_Restrict_Search Type:Is_Restrict_Search false"
 specification_add -id=600497 {List_Field}_Source_Parent_Class_2 field_from_other_field "List_Field Child_Rel_Source_Parent_Class Source_Parent_Class -check_null"
+specification_add -id=600498 {List_Field}_Hide_Link_Permission_Field modifier_field_value "List_Field Hide_Link_Permission_Field Type:Allow_Link_Permission false"
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
 specification_add -id=600510 {Application}_Generate_Details transient_field_from_file "Application Generate_Details Name .generate.log"
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"

@@ -41,22 +41,23 @@ class META_LIST_FIELD_TYPE_DECL_SPEC Meta_List_Field_Type : public class_base
       e_field_id_none = 0,
       e_field_id_Allow_Child_Rel_Select_Specifics = 1,
       e_field_id_Allow_Exclude_In_Use_FK = 2,
-      e_field_id_Allow_Link_Restriction = 3,
-      e_field_id_Allow_Link_Type = 4,
-      e_field_id_Allow_Procedure = 5,
-      e_field_id_Allow_Restriction_Field = 6,
-      e_field_id_Allow_Restriction_Spec = 7,
-      e_field_id_Allow_Restriction_Value = 8,
-      e_field_id_Allow_Search_Option_Limit = 9,
-      e_field_id_Allow_Select_Specifics = 10,
-      e_field_id_Is_Restrict_Search = 11,
-      e_field_id_List_Field_Name = 12,
-      e_field_id_Name = 13,
-      e_field_id_Needs_Restriction_Field = 14,
-      e_field_id_Needs_Source = 15,
-      e_field_id_Needs_Switch_Type = 16,
-      e_field_id_Non_Simple_Field = 17,
-      e_field_id_Trivial_Field_Only = 18
+      e_field_id_Allow_Link_Permission = 3,
+      e_field_id_Allow_Link_Restriction = 4,
+      e_field_id_Allow_Link_Type = 5,
+      e_field_id_Allow_Procedure = 6,
+      e_field_id_Allow_Restriction_Field = 7,
+      e_field_id_Allow_Restriction_Spec = 8,
+      e_field_id_Allow_Restriction_Value = 9,
+      e_field_id_Allow_Search_Option_Limit = 10,
+      e_field_id_Allow_Select_Specifics = 11,
+      e_field_id_Is_Restrict_Search = 12,
+      e_field_id_List_Field_Name = 13,
+      e_field_id_Name = 14,
+      e_field_id_Needs_Restriction_Field = 15,
+      e_field_id_Needs_Source = 16,
+      e_field_id_Needs_Switch_Type = 17,
+      e_field_id_Non_Simple_Field = 18,
+      e_field_id_Trivial_Field_Only = 19
    };
 
    Meta_List_Field_Type( );
@@ -67,6 +68,9 @@ class META_LIST_FIELD_TYPE_DECL_SPEC Meta_List_Field_Type : public class_base
 
    bool Allow_Exclude_In_Use_FK( ) const;
    void Allow_Exclude_In_Use_FK( bool Allow_Exclude_In_Use_FK );
+
+   bool Allow_Link_Permission( ) const;
+   void Allow_Link_Permission( bool Allow_Link_Permission );
 
    bool Allow_Link_Restriction( ) const;
    void Allow_Link_Restriction( bool Allow_Link_Restriction );
