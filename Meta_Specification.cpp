@@ -4101,7 +4101,7 @@ uint64_t Meta_Specification::impl::get_state( ) const
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   if( get_obj( ).Specification_Type( ).Needs_Modifier( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Modifier( ) == false )
       state |= c_modifier_Hide_Modifier;
    // [(finish modifier_field_value)]
 

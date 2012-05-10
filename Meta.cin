@@ -375,6 +375,7 @@ field_add -id=114193 Specification_Type Needs_Other_Class bool mand -def=0
 field_add -id=114194 Specification_Type Needs_Procedure_Arg_2 bool mand -def=0
 field_add -id=114195 Specification_Type Needs_Procedure_Arg_3 bool mand -def=0
 field_add -id=114196 Specification_Type Use_Parent_Other_Class_For_Class bool mand -def=0
+field_add -id=114197 Specification_Type Allow_Modifier bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -1283,7 +1284,7 @@ specification_add -id=600104a {Specification}_Hide_Procedure_Arg_2 modifier_fiel
 specification_add -id=600104b {Specification}_Hide_Procedure_Arg_3 modifier_field_value "Specification Hide_Procedure_Arg_3 {Specification_Type}:Needs_Procedure_Arg_3 false"
 specification_add -id=600104c {Specification}_Hide_Other_Procedure modifier_field_value "Specification Hide_Other_Procedure {Specification_Type}:Needs_Other_Procedure false"
 specification_add -id=600104d {Specification}_Hide_Other_Procedure_2 modifier_field_value "Specification Hide_Other_Procedure_2 {Specification_Type}:Needs_Other_Procedure_2 false"
-specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Needs_Modifier false"
+specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Allow_Modifier false"
 specification_add -id=600106 {Specification}_Hide_Enum modifier_field_value "Specification Hide_Enum {Specification_Type}:Needs_Enum false"
 specification_add -id=600107 {Specification}_Hide_Enum_Item modifier_field_value "Specification Hide_Enum_Item {Specification_Type}:Needs_Enum_Item false"
 specification_add -id=600107a {Specification}_Hide_Enum_Item_2 modifier_field_value "Specification Hide_Enum_Item_2 {Specification_Type}:Needs_Enum_Item_2 false"
@@ -1778,7 +1779,8 @@ specification_add -id=602321 {Relationship}_child_list1 list "@602321_Child_* ch
 specification_add -id=602400 {Specification_Type}_view view "? standard:admin_edit Specification_Type\
  Name,Notes,Specification_Name,Specification_Vars,Default_Child_Vars,Specification_Strings,Specification_Object\
 ,@tab:Basic_Fields,Needs_Class,Allow_Other_Class,Needs_Other_Class,Allow_Field,Needs_Field,Field_type,Allow_Other_Field,Needs_Other_Field\
-,Allow_Other_Field_2,Needs_Other_Field_2,Needs_Modifier,Needs_Enum,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
+,Allow_Other_Field_2,Needs_Other_Field_2,Allow_Modifier,Needs_Modifier\
+,Needs_Enum,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
 ,Allow_Value,Needs_Value,Allow_Test_Field,Needs_Test_Field,Test_Field_type,Allow_Test_Value,Needs_Test_Value\
 ,@tab:Extra_Fields,Allow_Procedure,Needs_Procedure,Needs_Procedure_Arg,Procedure_Arg_type,Procedure_Arg_primitive\
 ,Needs_Procedure_Arg_2,Needs_Procedure_Arg_3,Needs_Other_Procedure,Needs_Other_Procedure_2\

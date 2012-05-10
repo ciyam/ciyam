@@ -1,69 +1,108 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)]
-   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) && !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`}\
+    && ( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) )
+    || is_update_locked_by_own_session( get_obj( ).`{`$arg_pfield`}( ) ) ) )
    {
-      if( is_create || !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
-         get_obj( ).`{`$arg_pfield`}( ).op_update( );
+      class_base* p_parent = get_obj( ).get_graph_parent( );
 
-      if( !is_create )
+      if( !p_parent || !p_parent->get_is_editing( )
+       || p_parent->get_key( ) != get_obj( ).`{`$arg_pfield`}( ).get_key( )
+       || strcmp( p_parent->lock_class_id( ), get_obj( ).`{`$arg_pfield`}( ).lock_class_id( ) ) )
       {
-`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
-         if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
-         {
-            get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( )
-             - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
-            get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( )
-             - from_string< typeof( get_obj( ).`{`$arg_n2field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n2field`} ) ) );
-         }
-`,\
-         if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
-            get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( )
-             - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
-`}\
-         else
-         {
-            `{`$module_name`}_`{`$class_name`} original;
-            original.copy_original_field_values( get_obj( ) );
+         if( is_create || !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+            get_obj( ).`{`$arg_pfield`}( ).op_update( );
 
-            if( !is_null( original.`{`$arg_pfield`}( ) ) )
-            {
-               original.`{`$arg_pfield`}( ).op_update( );
-               original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+         if( !is_create )
+         {
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
-               original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+            if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+            {
+`{`@eq`(`$arg_tfield`,`'`'`)\
+               get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( )
+                - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
+               get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( )
+                - from_string< typeof( get_obj( ).`{`$arg_n2field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n2field`} ) ) );
+`,\
+               if( !get_obj( ).`{`$arg_tfield`}( ).has_changed( ) )
+               {
+                  get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( )
+                   - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
+                  get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( )
+                   - from_string< typeof( get_obj( ).`{`$arg_n2field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n2field`} ) ) );
+               }
 `}\
-               original.`{`$arg_pfield`}( ).op_apply( );
+            }
+`,\
+            if( !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+               get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( )
+                - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
+`}\
+            else
+            {
+               `{`$module_name`}_`{`$class_name`} original;
+               original.copy_original_field_values( get_obj( ) );
+
+               if( !is_null( original.`{`$arg_pfield`}( ) ) )
+               {
+                  original.`{`$arg_pfield`}( ).op_update( );
+                  original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+`{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
+                  original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+`}\
+                  original.`{`$arg_pfield`}( ).op_apply( );
+               }
             }
          }
-      }
 
-      if( !is_create && get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
-         get_obj( ).`{`$arg_pfield`}( ).op_update( );
+         if( !is_create && get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+            get_obj( ).`{`$arg_pfield`}( ).op_update( );
 
-      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) + get_obj( ).`{`$arg_nfield`}( ) );
+         get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) + get_obj( ).`{`$arg_nfield`}( ) );
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
-      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) + get_obj( ).`{`$arg_n2field`}( ) );
+         get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) + get_obj( ).`{`$arg_n2field`}( ) );
 `}\
-      get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+         get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+      }
    }
    else if( !is_create
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && ( get_obj( ).`{`$arg_tfield`}( ).has_changed( )
+    && is_null( get_obj( ).get_original_field_value( c_field_id_`{`$arg_tfield`} ) ) )
+    || ( is_null( get_obj( ).`{`$arg_pfield`}( ) ) && get_obj( ).`{`$arg_pfield`}( ).has_changed( ) ) )
+`,\
     && is_null( get_obj( ).`{`$arg_pfield`}( ) ) && get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
+`}\
    {
       `{`$module_name`}_`{`$class_name`} original;
       original.copy_original_field_values( get_obj( ) );
 
-      original.`{`$arg_pfield`}( ).op_update( );
-      original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
+      class_base* p_parent = get_obj( ).get_graph_parent( );
+
+      if( !p_parent || !p_parent->get_is_editing( )
+       || p_parent->get_key( ) != original.`{`$arg_pfield`}( ).get_key( )
+       || strcmp( p_parent->lock_class_id( ), original.`{`$arg_pfield`}( ).lock_class_id( ) ) )
+      {
+         original.`{`$arg_pfield`}( ).op_update( );
+         original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
-      original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
+         original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
 `}\
-      original.`{`$arg_pfield`}( ).op_apply( );
+         original.`{`$arg_pfield`}( ).op_apply( );
+      }
    }
    // [(finish total_child_field_in_parent)]
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)]
-   if( !get_obj( ).get_is_being_cascaded( ) && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !get_obj( ).get_is_being_cascaded( )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`}\
+    && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );
@@ -94,6 +133,13 @@
    if( ( required_transients && is_field_transient( e_field_id_`{`$arg_n2field`} ) )
     || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_n2field`} ) ) )
       names.insert( "`{`$arg_n2field`}" );
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
 `}\
    // [(finish total_child_field_in_parent)]
 `}
