@@ -86,7 +86,7 @@
 `}
 `{`@eq`(`'to_store`'`,`$section`)\
    // [(start meta_spec_field_type)]
-   if( get_obj( ).`{`$arg_mfield`}( ).get_key( ) == "`{`$arg_uikey`}"
+   if( is_create && get_obj( ).`{`$arg_mfield`}( ).get_key( ) == "`{`$arg_uikey`}"
     && !get_obj( ).`{`$arg_cfield`}( ).get_key( ).empty( ) && is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
    {
       if( !get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).get_is_iterating( )

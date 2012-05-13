@@ -124,8 +124,6 @@ const int c_num_transient_fields = 0;
 
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
 
-domain_string_max_size< 100 > g_Value_domain;
-
 set< string > g_derivations;
 
 typedef map< string, Meta_Initial_Record_Value* > external_aliases_container;
@@ -548,14 +546,6 @@ void Meta_Initial_Record_Value::impl::validate( unsigned state, bool is_internal
       p_validation_errors->insert( validation_error_value_type( c_field_name_Initial_Record,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Initial_Record ) ) ) ) );
-
-   string error_message;
-   if( !is_null( v_Value )
-    && ( v_Value != gv_default_Value
-    || !value_will_be_provided( c_field_name_Value ) )
-    && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
-       get_module_string( c_field_display_name_Value ) + " " + error_message ) );
 
    // [<start validate>]
 //nyi
@@ -1313,7 +1303,7 @@ string Meta_Initial_Record_Value::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Field VARCHAR(64) NOT NULL,"
     "C_Initial_Record VARCHAR(64) NOT NULL,"
-    "C_Value VARCHAR(200) NOT NULL,"
+    "C_Value TEXT NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

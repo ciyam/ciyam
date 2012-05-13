@@ -5538,7 +5538,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start meta_spec_field_type)]
-   if( get_obj( ).Specification_Type( ).get_key( ) == "user_info"
+   if( is_create && get_obj( ).Specification_Type( ).get_key( ) == "user_info"
     && !get_obj( ).Class( ).get_key( ).empty( ) && is_null( get_obj( ).Source_Parent( ) ) )
    {
       if( !get_obj( ).Class( ).child_Field( ).get_is_iterating( )
