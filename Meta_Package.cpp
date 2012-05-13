@@ -1208,9 +1208,12 @@ void Meta_Package::impl::impl_Remove( )
                string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );
                read_file_lines( acyclic_filename, ordered );
 
-               // NOTE: Forcing "class" to be processed first is done as a performance optimisation
-               // (as it will automatically cascade numerous other records).
+               // NOTE: Forcing the order to reach "Class" as quickly as possible is done as a performance
+               // optimisation (as it will automatically cascade numerous other records).
                ordered.push_back( "Class" );
+               ordered.push_back( "Specification" );
+               ordered.push_back( "View" );
+               ordered.push_back( "List" );
 
                // NOTE: In order to make sure deletes are correctedly ordered they need to be
                // processed in the opposite of the acyclic class list (as its ordering is for
@@ -1771,7 +1774,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
                      string value = next.substr( pos + 1 );
 
-                     if( type == "class" )
+                     if( type == "package" )
                      {
                         get_obj( ).child_Package_Option( ).Is_Other_Package( true );
                         get_obj( ).child_Package_Option( ).Other_Package_Type( package_types[ value ] );

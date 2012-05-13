@@ -2994,7 +2994,7 @@
      <name>field_initial_record_value_value
      <field>130101
      <ftype>string
-     <extra>max_size=100
+     <extra>text
      <mandatory>false
      <modifiers>
     </field>
@@ -4255,7 +4255,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>1000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate
+     <modifiers>1000:relegate
      <pclass>136100
      <pfield>136101
      <pfname>field_package_name
@@ -8193,7 +8193,7 @@
      <name>field_initial_record_value_value
      <field>130101
      <ftype>string
-     <extra>max_size=100
+     <extra>text
      <modifiers>
      <unique>false
      <indexed>false

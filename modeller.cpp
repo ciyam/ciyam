@@ -1179,7 +1179,8 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                            sql_columns += ",\nC_";
 
                         bool is_large_text = false;
-                        if( base_field_data[ i ].extra.find( "notes" ) != string::npos
+                        if( base_field_data[ i ].extra.find( "text" ) != string::npos
+                         || base_field_data[ i ].extra.find( "notes" ) != string::npos
                          || base_field_data[ i ].extra.find( "content" ) != string::npos
                          || base_field_data[ i ].extra.find( "user_perms" ) != string::npos )
                            is_large_text = true;
@@ -1214,7 +1215,8 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                         sql_columns += ",\nC_";
 
                      bool is_large_text = false;
-                     if( all_field_data[ i ].extra.find( "notes" ) != string::npos
+                     if( all_field_data[ i ].extra.find( "text" ) != string::npos
+                      || all_field_data[ i ].extra.find( "notes" ) != string::npos
                       || all_field_data[ i ].extra.find( "content" ) != string::npos
                       || all_field_data[ i ].extra.find( "user_perms" ) != string::npos )
                         is_large_text = true;

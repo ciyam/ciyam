@@ -668,7 +668,7 @@ field_add -id=129101 Initial_Record Key label mand
 field_add -id=129102 Initial_Record Comments str100 opt
 field_add -id=129103 Initial_Record Order string mand -x=order
 class_add -id=130100 Initial_Record_Value Initial_Record_Values
-field_add -id=130101 Initial_Record_Value Value str100 opt
+field_add -id=130101 Initial_Record_Value Value string opt -x=text
 procedure_add -id=130410 Initial_Record Move_Up
 procedure_arg_add -id=130411 Initial_Record Move_Up Restrict_Fields string in
 procedure_arg_add -id=130412 Initial_Record Move_Up Restrict_Values string in
@@ -759,7 +759,7 @@ relationship_add -id=201405 -fid=301405 Specification Parent_{Specification} Spe
 relationship_add -id=201406 -fid=301406 Specification Child_{Specification_Type} Specification_Type opt restrict
 relationship_add -id=201410 -fid=301410 Specification {Specification_Type} Specification_Type mand destroy
 relationship_add -id=201420 -fid=301420 Specification {Class} Class mand destroy
-relationship_add -id=201421 -fid=301421 Specification Other_Class Class opt destroy
+relationship_add -id=201421 -fid=301421 Specification Other_Class Class opt restrict
 relationship_add -id=201430 -fid=301430 Specification {Field} Field opt restrict
 relationship_add -id=201435 -fid=301435 Specification Other_Field Field opt restrict
 relationship_add -id=201436 -fid=301436 Specification Other_Field_2 Field opt restrict
@@ -779,17 +779,17 @@ relationship_add -id=201477 -fid=301477 Specification Procedure_Arg_2 Procedure_
 relationship_add -id=201478 -fid=301478 Specification Procedure_Arg_3 Procedure_Arg opt restrict
 relationship_add -id=201480 -fid=301480 Specification Source_Parent Field opt restrict
 relationship_add -id=201481 -fid=301481 Specification Source_Field Field opt restrict
-relationship_add -id=201482 -fid=301482 Specification Source_Field_Class Class opt destroy
+relationship_add -id=201482 -fid=301482 Specification Source_Field_Class Class opt restrict
 relationship_add -id=201485 -fid=301485 Specification Test_Field Field opt restrict
 relationship_add -id=201486 -fid=301486 Specification Test_Parent Field opt restrict
-relationship_add -id=201487 -fid=301487 Specification Test_Parent_Class Class opt destroy
+relationship_add -id=201487 -fid=301487 Specification Test_Parent_Class Class opt restrict
 relationship_add -id=201488 -fid=301488 Specification Test_Child Field opt restrict
-relationship_add -id=201489 -fid=301489 Specification Source_Child_Class Class opt destroy
-relationship_add -id=201490 -fid=301490 Specification Source_Parent_Class Class opt destroy
-relationship_add -id=201491 -fid=301491 Specification Child_Rel_Child_Class Class opt destroy
-relationship_add -id=201492 -fid=301492 Specification Field_Class Class opt destroy
-relationship_add -id=201493 -fid=301493 Specification Test_Field_Class Class opt destroy
-relationship_add -id=201494 -fid=301494 Specification Source_Class Class opt destroy
+relationship_add -id=201489 -fid=301489 Specification Source_Child_Class Class opt restrict
+relationship_add -id=201490 -fid=301490 Specification Source_Parent_Class Class opt restrict
+relationship_add -id=201491 -fid=301491 Specification Child_Rel_Child_Class Class opt restrict
+relationship_add -id=201492 -fid=301492 Specification Field_Class Class opt restrict
+relationship_add -id=201493 -fid=301493 Specification Test_Field_Class Class opt restrict
+relationship_add -id=201494 -fid=301494 Specification Source_Class Class opt restrict
 relationship_add -id=201495 -fid=301495 Specification Source_Child Field opt restrict
 relationship_add -id=201496 -fid=301496 Specification Source_Child_2 Field opt restrict
 relationship_add -id=201498 -fid=301498 Specification {Procedure_Arg} Procedure_Arg opt restrict
@@ -1112,20 +1112,20 @@ modifier_add -id=500961 Package Is_Not_Installed @class:lowlight;list
 modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
 modifier_add -id=500981 Package_Option Is_Not_Other_Package_Option Other_Package:relegate
-modifier_add -id=500982 Package_Option Is_String Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500982 Package_Option Is_String Use_Option:relegate\
 ,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
-modifier_add -id=500983 Package_Option Is_Datetime Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500983 Package_Option Is_Datetime Use_Option:relegate\
 ,String:relegate,Date:relegate,Time:relegate,Integer:relegate
-modifier_add -id=500984 Package_Option Is_Date Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500984 Package_Option Is_Date Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Time:relegate,Numeric:relegate,Integer:relegate
-modifier_add -id=500985 Package_Option Is_Time Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500985 Package_Option Is_Time Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Numeric:relegate,Integer:relegate
-modifier_add -id=500986 Package_Option Is_Numeric Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500986 Package_Option Is_Numeric Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Integer:relegate
-modifier_add -id=500987 Package_Option Is_Int Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500987 Package_Option Is_Int Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate
-modifier_add -id=500988 Package_Option Is_Bool Other_Package:relegate\
-,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500988 Package_Option Is_Bool String:relegate,Datetime:relegate\
+,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
 specification_add -id=600001 {User}_Clear_Permissions field_clear "User Permissions"
 specification_add -id=600002 {Workgroup}_Clone_{Type}_defaults clone_default_group_children "Workgroup Type {Workgroup}"
 specification_add -id=600003 {Workgroup}_Clone_{Enum}_defaults clone_default_group_children "Workgroup Enum {Workgroup}"

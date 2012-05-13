@@ -4267,8 +4267,9 @@
      <field/>
       <id>130101
       <name>Value
-      <type>1020
+      <type>string
       <mandatory>false
+      <extra>text
       <indexes/>
       </indexes>
       <modifiers/>
@@ -9981,34 +9982,6 @@
       <modifiers/>
        <modifier/>
         <id>500981
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500982
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500983
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500984
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500985
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500986
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500987
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500988
         <affect>relegate
        </modifier>
       </modifiers>
@@ -24877,7 +24850,7 @@
     <name>Child_Rel_Child_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25111,7 +25084,7 @@
     <name>Field_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25363,7 +25336,7 @@
     <name>Other_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25642,7 +25615,7 @@
     <name>Source_Child_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25705,7 +25678,7 @@
     <name>Source_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25723,7 +25696,7 @@
     <name>Source_Field_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25786,7 +25759,7 @@
     <name>Source_Parent_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25939,7 +25912,7 @@
     <name>Test_Field_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25957,7 +25930,7 @@
     <name>Test_Parent_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>

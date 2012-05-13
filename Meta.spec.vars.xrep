@@ -1022,7 +1022,7 @@
 `{`$specification_Initial_Record_Value_view_pridx01`=`'false`'`}
 `{`$specification_Initial_Record_Value_view_field02`=`'130101`'`}
 `{`$specification_Initial_Record_Value_view_ftype02`=`'string`'`}
-`{`$specification_Initial_Record_Value_view_extra02`=`'max_size=100`'`}
+`{`$specification_Initial_Record_Value_view_extra02`=`'text`'`}
 `{`$specification_Initial_Record_Value_view_fmods02`=`'`'`}
 `{`$specification_Initial_Record_Value_view_fname02`=`'field_initial_record_value_value`'`}
 `{`$specification_Initial_Record_Value_view_fmand02`=`'false`'`}
@@ -1054,7 +1054,7 @@
 `{`$specification_Initial_Record_Value_child_list0_column01`=`'130101`'`}
 `{`$specification_Initial_Record_Value_child_list0_clname01`=`'Initial_Record_Value_Value`'`}
 `{`$specification_Initial_Record_Value_child_list0_cltype01`=`'string`'`}
-`{`$specification_Initial_Record_Value_child_list0_clxtra01`=`'max_size=100`'`}
+`{`$specification_Initial_Record_Value_child_list0_clxtra01`=`'text`'`}
 `{`$specification_Initial_Record_Value_child_list0_clmods01`=`'`'`}
 `{`$specification_Initial_Record_Value_child_list0_cluniq01`=`'false`'`}
 `{`$specification_Initial_Record_Value_child_list0_cindex01`=`'false`'`}
@@ -2336,7 +2336,7 @@
 `{`$specification_Package_Option_view_field09`=`'302830`'`}
 `{`$specification_Package_Option_view_ftype09`=`'@class`'`}
 `{`$specification_Package_Option_view_extra09`=`'`'`}
-`{`$specification_Package_Option_view_fmods09`=`'1000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate`'`}
+`{`$specification_Package_Option_view_fmods09`=`'1000:relegate`'`}
 `{`$specification_Package_Option_view_fname09`=`'field_package_option_other_package`'`}
 `{`$specification_Package_Option_view_fmand09`=`'false`'`}
 `{`$specification_Package_Option_view_prcls09`=`'136100`'`}

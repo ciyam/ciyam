@@ -53,22 +53,22 @@ template< int N, int X > struct domain_int_range
 
 template< int N, int X > std::string domain_int_range< N, X >::error_message( const std::string& mask ) const
 {
-   std::string s1( mask.empty( ) ? to_string( N ) : formatted_int( N, mask ) );
+   std::string min( mask.empty( ) ? to_string( N ) : formatted_int( N, mask ) );
 
-   std::string s2( mask.empty( ) ? to_string( X ) : formatted_int( X, mask ) );
+   std::string max( mask.empty( ) ? to_string( X ) : formatted_int( X, mask ) );
 
    return get_string_message(
     GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, s1 ),
-    make_pair( c_str_parm_value_must_be_in_range_to, s2 ) );
+    make_pair( c_str_parm_value_must_be_in_range_from, min ),
+    make_pair( c_str_parm_value_must_be_in_range_to, max ) );
 }
 
 template< int Y1, int M1, int D1, int Y2, int M2, int D2 > struct domain_date_range
 {
    domain_date_range( )
     :
-    ud1( Y1, ( month )M1, D1 ),
-    ud2( Y2, ( month )M2, D2 )
+    min( Y1, ( month )M1, D1 ),
+    max( Y2, ( month )M2, D2 )
    {
    }
 
@@ -76,7 +76,7 @@ template< int Y1, int M1, int D1, int Y2, int M2, int D2 > struct domain_date_ra
    {
       bool valid = true;
 
-      if( ud < ud1 || ud > ud2 )
+      if( ud < min || ud > max )
       {
          valid = false;
          error = error_message( );
@@ -85,8 +85,8 @@ template< int Y1, int M1, int D1, int Y2, int M2, int D2 > struct domain_date_ra
       return valid;
    }
 
-   udate ud1;
-   udate ud2;
+   udate min;
+   udate max;
 
    std::string error_message( ) const;
 };
@@ -95,16 +95,16 @@ template< int Y1, int M1, int D1, int Y2, int M2, int D2 >
  std::string domain_date_range< Y1, M1, D1, Y2, M2, D2 >::error_message( ) const
 {
    return get_string_message( GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, ud1.as_string( true ) ),
-    make_pair( c_str_parm_value_must_be_in_range_to, ud2.as_string( true ) ) );
+    make_pair( c_str_parm_value_must_be_in_range_from, min.as_string( true ) ),
+    make_pair( c_str_parm_value_must_be_in_range_to, max.as_string( true ) ) );
 }
 
 template< int Y1, int M1, int D1, int H1, int N1, int S1, int Y2, int M2, int D2, int H2, int N2, int S2 > struct domain_datetime_range
 {
    domain_datetime_range( )
     :
-    dtm1( Y1, ( month )M1, D1, H1, N1, ( second )S1 ),
-    dtm2( Y2, ( month )M2, D2, H2, N2, ( second )S2 )
+    min( Y1, ( month )M1, D1, H1, N1, ( second )S1 ),
+    max( Y2, ( month )M2, D2, H2, N2, ( second )S2 )
    {
    }
 
@@ -112,7 +112,7 @@ template< int Y1, int M1, int D1, int H1, int N1, int S1, int Y2, int M2, int D2
    {
       bool valid = true;
 
-      if( dtm < dtm1 || dtm > dtm2 )
+      if( dtm < min || dtm > max )
       {
          valid = false;
          error = error_message( );
@@ -121,8 +121,8 @@ template< int Y1, int M1, int D1, int H1, int N1, int S1, int Y2, int M2, int D2
       return valid;
    }
 
-   date_time dtm1;
-   date_time dtm2;
+   date_time min;
+   date_time max;
 
    std::string error_message( ) const;
 };
@@ -131,8 +131,8 @@ template< int Y1, int M1, int D1, int H1, int N1, int S1, int Y2, int M2, int D2
  std::string domain_datetime_range< Y1, M1, D1, H1, N1, S1, Y2, M2, D2, H2, N2, S2 >::error_message( ) const
 {
    return get_string_message( GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, dtm1.as_string( true, false ) ),
-    make_pair( c_str_parm_value_must_be_in_range_to, dtm2.as_string( true, false ) ) );
+    make_pair( c_str_parm_value_must_be_in_range_from, min.as_string( true, false ) ),
+    make_pair( c_str_parm_value_must_be_in_range_to, max.as_string( true, false ) ) );
 }
 
 template< int I, int D = 10 > struct divisor
@@ -189,16 +189,16 @@ template< typename N, int W1, int F1, int W2, int F2 >
 template< typename N, int W1, int F1, int W2, int F2 >
  std::string domain_numeric_range< N, W1, F1, W2, F2 >::error_message( const std::string& mask ) const
 {
-   std::string s1( mask.empty( ) ? to_string( W1 ) + "." + to_string( F1 )
+   std::string min( mask.empty( ) ? to_string( W1 ) + "." + to_string( F1 )
     : formatted_numeric( numeric( ( to_string( W1 ) + "." + to_string( F1 ) ).c_str( ) ), mask ) );
 
-   std::string s2( mask.empty( ) ? to_string( W2 ) + "." + to_string( F2 )
+   std::string max( mask.empty( ) ? to_string( W2 ) + "." + to_string( F2 )
     : formatted_numeric( numeric( ( to_string( W2 ) + "." + to_string( F2 ) ).c_str( ) ), mask ) );
 
    return get_string_message(
     GS( c_str_value_must_be_in_range ),
-    make_pair( c_str_parm_value_must_be_in_range_from, s1 ),
-    make_pair( c_str_parm_value_must_be_in_range_to, s2 ) );
+    make_pair( c_str_parm_value_must_be_in_range_from, min ),
+    make_pair( c_str_parm_value_must_be_in_range_to, max ) );
 }
 
 template< typename N, int S, int P, int F = 0 > struct domain_numeric_format
