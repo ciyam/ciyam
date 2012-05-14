@@ -7072,6 +7072,10 @@ void home_message_stats_specification::add_specification_data( model& m, specifi
    spec_data.data_pairs.push_back( make_pair( c_data_secondary_stats2_class2, stats_2_fk_2_class_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_secondary_stats2_field2, stats_2_fk_2_field_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_secondary_stats2_value2, stats_class_2_fk_2_value ) );
+
+   spec_data.data_pairs.push_back( make_pair( "secondary_perm", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "primary_stats2_perm", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "secondary_stats2_perm", "" ) );
 }
 
 void home_message_stats_specification::get_specification_strings( model& m, vector< pair< string, string > >& strings ) const
