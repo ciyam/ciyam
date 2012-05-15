@@ -197,6 +197,7 @@ void module_info::clear( )
    user_select_uo_field.erase( );
 
    user_select_is_strict = false;
+   allows_anonymous_access = false;
 
    user_qlink_class_id.erase( );
    user_qlink_pfield_id.erase( );
@@ -487,6 +488,22 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       info.id = reader.read_attribute( c_attribute_id );
       info.name = reader.read_attribute( c_attribute_name );
       info.perm = reader.read_attribute( c_attribute_perm );
+
+      if( !info.perm.empty( ) )
+      {
+        vector<string> perms;
+        split( info.perm, perms, ',' );
+        vector<string> new_perms;
+        for( int i = 0; i < perms.size( ); ++i )
+        {
+          if( perms[ i ] == "@anon" )
+            info.allows_anonymous_access = true;
+          else
+            new_perms.push_back( perms[ i ] );
+        }
+        info.perm = join( new_perms, ',' );
+      }
+
       info.title = reader.read_attribute( c_attribute_title );
 
       string user_info = reader.read_attribute( c_attribute_user_info );
