@@ -52,6 +52,6 @@ else
   {
    cp ciyam_interface $WEBDIR/$2/ciyam_interface.fcgi
   }
-  cat setup_files | xargs -I % cp % $WEBDIR/$2
+  cat setup_files.lst | xargs -I % cp % $WEBDIR/$2
  fi
 fi
