@@ -4267,8 +4267,9 @@
      <field/>
       <id>130101
       <name>Value
-      <type>1020
+      <type>string
       <mandatory>false
+      <extra>text
       <indexes/>
       </indexes>
       <modifiers/>
@@ -5687,6 +5688,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600498
+      <item>class
+     </specification>
+     <specification/>
       <id>602850
       <item>class
      </specification>
@@ -6247,6 +6252,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500889
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -7050,6 +7059,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600498
+        <item>field
+       </specification>
+       <specification/>
         <id>602850
         <item>field
        </specification>
@@ -7350,6 +7363,10 @@
       <name>Hide_For_Restriction_Field
      </modifier>
      <modifier/>
+      <id>500889
+      <name>Hide_Link_Permission_Field
+     </modifier>
+     <modifier/>
       <id>500881
       <name>Hide_Link_Restriction
      </modifier>
@@ -7571,6 +7588,10 @@
       <id>600496
       <item>pclass
      </specification>
+     <specification/>
+      <id>600498
+      <item>pclass
+     </specification>
     </specifications>
     <fields/>
      <field/>
@@ -7607,6 +7628,23 @@
       <specifications/>
        <specification/>
         <id>600474
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>123119
+      <name>Allow_Link_Permission
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600498
         <item>pfield
        </specification>
       </specifications>
@@ -9944,34 +9982,6 @@
       <modifiers/>
        <modifier/>
         <id>500981
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500982
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500983
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500984
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500985
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500986
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500987
-        <affect>relegate
-       </modifier>
-       <modifier/>
-        <id>500988
         <affect>relegate
        </modifier>
       </modifiers>
@@ -18830,6 +18840,27 @@
       </specifications>
      </field>
      <field/>
+      <id>114197
+      <name>Allow_Modifier
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600105
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>114117
       <name>Allow_Options
       <type>bool
@@ -19652,10 +19683,6 @@
       <modifiers/>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>600105
-        <item>pfield
-       </specification>
        <specification/>
         <id>600134
         <item>cfield
@@ -24823,7 +24850,7 @@
     <name>Child_Rel_Child_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25057,7 +25084,7 @@
     <name>Field_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25309,7 +25336,7 @@
     <name>Other_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25588,7 +25615,7 @@
     <name>Source_Child_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25651,7 +25678,7 @@
     <name>Source_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25669,7 +25696,7 @@
     <name>Source_Field_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25732,7 +25759,7 @@
     <name>Source_Parent_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25885,7 +25912,7 @@
     <name>Test_Field_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25903,7 +25930,7 @@
     <name>Test_Parent_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>destroy
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -27887,6 +27914,19 @@
      <field_id>302120
      <pfield_id>123116
      <field_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600498
+    <name>{List_Field}_Hide_Link_Permission_Field
+    <type>modifier_field_value
+    <data/>
+     <class_id>124100
+     <pclass_id>123100
+     <modifier_id>500889
+     <field_id>302120
+     <pfield_id>123119
+     <field_value>false
     </data>
    </specification>
    <specification/>
@@ -30435,6 +30475,7 @@
      <field_info>114175
      <field_info>114183
      <field_info>114184
+     <field_info>114197
      <field_info>114107
      <field_info>114108
      <field_info>114109
@@ -30875,7 +30916,7 @@
      <pclass_id>114100
      <modifier_id>500630
      <field_id>301410
-     <pfield_id>114107
+     <pfield_id>114197
      <field_value>false
     </data>
    </specification>
@@ -33750,7 +33791,7 @@
     <id>905
     <name>app_generate_type
     <type>int
-    <key_values>0=Full_Generate,1=Skip_DB_Upgrade,2=Application_UI_Only
+    <key_values>0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
    </user_defined_enum>
    <user_defined_enum/>
     <id>900

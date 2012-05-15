@@ -39,6 +39,7 @@
 
 #include "utilities.h"
 #include "ciyam_base.h"
+#include "class_base.h"
 #include "ciyam_macros.h"
 #include "module_strings.h"
 #include "command_handler.h"
@@ -126,6 +127,8 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
  arg_primary_stats2_value1=$specification_home_message_primary_stats2_value1\
  arg_primary_stats2_field2=$specification_home_message_primary_stats2_field2\
  arg_primary_stats2_value2=$specification_home_message_primary_stats2_value2\
+ arg_primary_stats2_perm=$specification_home_message_primary_stats2_perm\
+ arg_secondary_perm=$specification_home_message_secondary_perm\
  arg_secondary_stats1_cclass=$specification_home_message_secondary_stats1_cclass\
  arg_secondary_stats1_cfield=$specification_home_message_secondary_stats1_cfield\
  arg_secondary_stats1_field1=$specification_home_message_secondary_stats1_field1\
@@ -137,7 +140,8 @@ void module_`{`$model_name`}_command_functor::operator ( )( const string& comman
  arg_secondary_stats2_field1=$specification_home_message_secondary_stats2_field1\
  arg_secondary_stats2_value1=$specification_home_message_secondary_stats2_value1\
  arg_secondary_stats2_field2=$specification_home_message_secondary_stats2_field2\
- arg_secondary_stats2_value2=$specification_home_message_secondary_stats2_value2`}`}
+ arg_secondary_stats2_value2=$specification_home_message_secondary_stats2_value2\
+ arg_secondary_stats2_perm=$specification_home_message_secondary_stats2_perm`}`}
 `{`(`?`$specification_home_message_id`)`&`@eq`(`$specification_home_message_type`,`'top_n`'`)\
 `{`#home_message_top_n.spec.xrep section=commands_impl model_name=$model_name\
  arg_class=$specification_home_message_class arg_limit=$specification_home_message_limit\

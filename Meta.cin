@@ -82,7 +82,7 @@ user_defined_enum_add -id=901 app_text_rows int 5=5,10=10,15=15,20=20,25=25,30=3
 user_defined_enum_add -id=902 app_text_limit int 1000=1000,1500=1500,2000=2000,2500=2500,3000=3000,4000=4000,5000=5000,10000=10000,20000=20000,30000=30000,40000=40000,50000=50000,60000=60000
 user_defined_enum_add -id=903 app_print_row_limit int 1000=1000,2000=2000,3000=3000,4000=4000,5000=5000,10000=10000,20000=20000
 user_defined_enum_add -id=904 app_text_trunc_limit int 10=10,15=15,20=20,25=25,30=30,40=40,50=50,75=75,100=100
-user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_UI_Only
+user_defined_enum_add -id=905 app_generate_type int 0=Full_Generate,1=Skip_DB_Upgrade,2=Application_Settings
 user_defined_enum_add -id=906 app_auto_days int 0=0,1=1,2=2,3=3,7=7,10=10,20=20,30=30,60=60,90=90,180=180,365=365
 user_defined_type_add -id=1000 str5 string "max_size 5"
 user_defined_type_add -id=1005 str10 string "max_size 10"
@@ -375,6 +375,7 @@ field_add -id=114193 Specification_Type Needs_Other_Class bool mand -def=0
 field_add -id=114194 Specification_Type Needs_Procedure_Arg_2 bool mand -def=0
 field_add -id=114195 Specification_Type Needs_Procedure_Arg_3 bool mand -def=0
 field_add -id=114196 Specification_Type Use_Parent_Other_Class_For_Class bool mand -def=0
+field_add -id=114197 Specification_Type Allow_Modifier bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -562,6 +563,7 @@ field_add -id=123115 List_Field_Type Allow_Search_Option_Limit bool mand -def=0
 field_add -id=123116 List_Field_Type Allow_Restriction_Field bool mand -def=0
 field_add -id=123117 List_Field_Type Needs_Restriction_Field bool mand -def=0
 field_add -id=123118 List_Field_Type Is_Restrict_Search bool mand -def=0
+field_add -id=123119 List_Field_Type Allow_Link_Permission bool mand -def=0
 index_add -id=123201 List_Field_Type Name unique
 class_add -id=124100 List_Field List_Fields -x=ordered
 field_add -id=124101 List_Field Order string mand -x=order
@@ -666,7 +668,7 @@ field_add -id=129101 Initial_Record Key label mand
 field_add -id=129102 Initial_Record Comments str100 opt
 field_add -id=129103 Initial_Record Order string mand -x=order
 class_add -id=130100 Initial_Record_Value Initial_Record_Values
-field_add -id=130101 Initial_Record_Value Value str100 opt
+field_add -id=130101 Initial_Record_Value Value string opt -x=text
 procedure_add -id=130410 Initial_Record Move_Up
 procedure_arg_add -id=130411 Initial_Record Move_Up Restrict_Fields string in
 procedure_arg_add -id=130412 Initial_Record Move_Up Restrict_Values string in
@@ -757,7 +759,7 @@ relationship_add -id=201405 -fid=301405 Specification Parent_{Specification} Spe
 relationship_add -id=201406 -fid=301406 Specification Child_{Specification_Type} Specification_Type opt restrict
 relationship_add -id=201410 -fid=301410 Specification {Specification_Type} Specification_Type mand destroy
 relationship_add -id=201420 -fid=301420 Specification {Class} Class mand destroy
-relationship_add -id=201421 -fid=301421 Specification Other_Class Class opt destroy
+relationship_add -id=201421 -fid=301421 Specification Other_Class Class opt restrict
 relationship_add -id=201430 -fid=301430 Specification {Field} Field opt restrict
 relationship_add -id=201435 -fid=301435 Specification Other_Field Field opt restrict
 relationship_add -id=201436 -fid=301436 Specification Other_Field_2 Field opt restrict
@@ -777,17 +779,17 @@ relationship_add -id=201477 -fid=301477 Specification Procedure_Arg_2 Procedure_
 relationship_add -id=201478 -fid=301478 Specification Procedure_Arg_3 Procedure_Arg opt restrict
 relationship_add -id=201480 -fid=301480 Specification Source_Parent Field opt restrict
 relationship_add -id=201481 -fid=301481 Specification Source_Field Field opt restrict
-relationship_add -id=201482 -fid=301482 Specification Source_Field_Class Class opt destroy
+relationship_add -id=201482 -fid=301482 Specification Source_Field_Class Class opt restrict
 relationship_add -id=201485 -fid=301485 Specification Test_Field Field opt restrict
 relationship_add -id=201486 -fid=301486 Specification Test_Parent Field opt restrict
-relationship_add -id=201487 -fid=301487 Specification Test_Parent_Class Class opt destroy
+relationship_add -id=201487 -fid=301487 Specification Test_Parent_Class Class opt restrict
 relationship_add -id=201488 -fid=301488 Specification Test_Child Field opt restrict
-relationship_add -id=201489 -fid=301489 Specification Source_Child_Class Class opt destroy
-relationship_add -id=201490 -fid=301490 Specification Source_Parent_Class Class opt destroy
-relationship_add -id=201491 -fid=301491 Specification Child_Rel_Child_Class Class opt destroy
-relationship_add -id=201492 -fid=301492 Specification Field_Class Class opt destroy
-relationship_add -id=201493 -fid=301493 Specification Test_Field_Class Class opt destroy
-relationship_add -id=201494 -fid=301494 Specification Source_Class Class opt destroy
+relationship_add -id=201489 -fid=301489 Specification Source_Child_Class Class opt restrict
+relationship_add -id=201490 -fid=301490 Specification Source_Parent_Class Class opt restrict
+relationship_add -id=201491 -fid=301491 Specification Child_Rel_Child_Class Class opt restrict
+relationship_add -id=201492 -fid=301492 Specification Field_Class Class opt restrict
+relationship_add -id=201493 -fid=301493 Specification Test_Field_Class Class opt restrict
+relationship_add -id=201494 -fid=301494 Specification Source_Class Class opt restrict
 relationship_add -id=201495 -fid=301495 Specification Source_Child Field opt restrict
 relationship_add -id=201496 -fid=301496 Specification Source_Child_2 Field opt restrict
 relationship_add -id=201498 -fid=301498 Specification {Procedure_Arg} Procedure_Arg opt restrict
@@ -1100,6 +1102,7 @@ modifier_add -id=500886 List_Field Hide_For_Restriction_Field Use_Source_Parent:
 ,Source_Field:relegate,Source_Parent:relegate,Source_Child:relegate
 modifier_add -id=500887 List_Field Is_Not_View_Child Access_Parent_Modifier:relegate
 modifier_add -id=500888 List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
+modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
@@ -1109,20 +1112,20 @@ modifier_add -id=500961 Package Is_Not_Installed @class:lowlight;list
 modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
 modifier_add -id=500981 Package_Option Is_Not_Other_Package_Option Other_Package:relegate
-modifier_add -id=500982 Package_Option Is_String Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500982 Package_Option Is_String Use_Option:relegate\
 ,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
-modifier_add -id=500983 Package_Option Is_Datetime Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500983 Package_Option Is_Datetime Use_Option:relegate\
 ,String:relegate,Date:relegate,Time:relegate,Integer:relegate
-modifier_add -id=500984 Package_Option Is_Date Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500984 Package_Option Is_Date Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Time:relegate,Numeric:relegate,Integer:relegate
-modifier_add -id=500985 Package_Option Is_Time Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500985 Package_Option Is_Time Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Numeric:relegate,Integer:relegate
-modifier_add -id=500986 Package_Option Is_Numeric Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500986 Package_Option Is_Numeric Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Integer:relegate
-modifier_add -id=500987 Package_Option Is_Int Use_Option:relegate,Other_Package:relegate\
+modifier_add -id=500987 Package_Option Is_Int Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate
-modifier_add -id=500988 Package_Option Is_Bool Other_Package:relegate\
-,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500988 Package_Option Is_Bool String:relegate,Datetime:relegate\
+,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
 specification_add -id=600001 {User}_Clear_Permissions field_clear "User Permissions"
 specification_add -id=600002 {Workgroup}_Clone_{Type}_defaults clone_default_group_children "Workgroup Type {Workgroup}"
 specification_add -id=600003 {Workgroup}_Clone_{Enum}_defaults clone_default_group_children "Workgroup Enum {Workgroup}"
@@ -1283,7 +1286,7 @@ specification_add -id=600104a {Specification}_Hide_Procedure_Arg_2 modifier_fiel
 specification_add -id=600104b {Specification}_Hide_Procedure_Arg_3 modifier_field_value "Specification Hide_Procedure_Arg_3 {Specification_Type}:Needs_Procedure_Arg_3 false"
 specification_add -id=600104c {Specification}_Hide_Other_Procedure modifier_field_value "Specification Hide_Other_Procedure {Specification_Type}:Needs_Other_Procedure false"
 specification_add -id=600104d {Specification}_Hide_Other_Procedure_2 modifier_field_value "Specification Hide_Other_Procedure_2 {Specification_Type}:Needs_Other_Procedure_2 false"
-specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Needs_Modifier false"
+specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Allow_Modifier false"
 specification_add -id=600106 {Specification}_Hide_Enum modifier_field_value "Specification Hide_Enum {Specification_Type}:Needs_Enum false"
 specification_add -id=600107 {Specification}_Hide_Enum_Item modifier_field_value "Specification Hide_Enum_Item {Specification_Type}:Needs_Enum_Item false"
 specification_add -id=600107a {Specification}_Hide_Enum_Item_2 modifier_field_value "Specification Hide_Enum_Item_2 {Specification_Type}:Needs_Enum_Item_2 false"
@@ -1676,6 +1679,7 @@ specification_add -id=600494 {List_Field}_Parent_Class_From_List field_from_othe
 specification_add -id=600495 {List_Field}_Is_Not_View_Child modifier_field_null "List_Field Is_Not_View_Child Parent_Class"
 specification_add -id=600496 {List_Field}_Is_Not_Restrict_Search modifier_field_value "List_Field Is_Not_Restrict_Search Type:Is_Restrict_Search false"
 specification_add -id=600497 {List_Field}_Source_Parent_Class_2 field_from_other_field "List_Field Child_Rel_Source_Parent_Class Source_Parent_Class -check_null"
+specification_add -id=600498 {List_Field}_Hide_Link_Permission_Field modifier_field_value "List_Field Hide_Link_Permission_Field Type:Allow_Link_Permission false"
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
 specification_add -id=600510 {Application}_Generate_Details transient_field_from_file "Application Generate_Details Name .generate.log"
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"
@@ -1778,7 +1782,8 @@ specification_add -id=602321 {Relationship}_child_list1 list "@602321_Child_* ch
 specification_add -id=602400 {Specification_Type}_view view "? standard:admin_edit Specification_Type\
  Name,Notes,Specification_Name,Specification_Vars,Default_Child_Vars,Specification_Strings,Specification_Object\
 ,@tab:Basic_Fields,Needs_Class,Allow_Other_Class,Needs_Other_Class,Allow_Field,Needs_Field,Field_type,Allow_Other_Field,Needs_Other_Field\
-,Allow_Other_Field_2,Needs_Other_Field_2,Needs_Modifier,Needs_Enum,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
+,Allow_Other_Field_2,Needs_Other_Field_2,Allow_Modifier,Needs_Modifier\
+,Needs_Enum,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
 ,Allow_Value,Needs_Value,Allow_Test_Field,Needs_Test_Field,Test_Field_type,Allow_Test_Value,Needs_Test_Value\
 ,@tab:Extra_Fields,Allow_Procedure,Needs_Procedure,Needs_Procedure_Arg,Procedure_Arg_type,Procedure_Arg_primitive\
 ,Needs_Procedure_Arg_2,Needs_Procedure_Arg_3,Needs_Other_Procedure,Needs_Other_Procedure_2\

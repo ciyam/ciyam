@@ -63,6 +63,7 @@ const char* const c_okay = "okay";
 
 const char* const c_field_id_Allow_Child_Rel_Select_Specifics = "123113";
 const char* const c_field_id_Allow_Exclude_In_Use_FK = "123106";
+const char* const c_field_id_Allow_Link_Permission = "123119";
 const char* const c_field_id_Allow_Link_Restriction = "123112";
 const char* const c_field_id_Allow_Link_Type = "123107";
 const char* const c_field_id_Allow_Procedure = "123108";
@@ -82,6 +83,7 @@ const char* const c_field_id_Trivial_Field_Only = "123110";
 
 const char* const c_field_name_Allow_Child_Rel_Select_Specifics = "Allow_Child_Rel_Select_Specifics";
 const char* const c_field_name_Allow_Exclude_In_Use_FK = "Allow_Exclude_In_Use_FK";
+const char* const c_field_name_Allow_Link_Permission = "Allow_Link_Permission";
 const char* const c_field_name_Allow_Link_Restriction = "Allow_Link_Restriction";
 const char* const c_field_name_Allow_Link_Type = "Allow_Link_Type";
 const char* const c_field_name_Allow_Procedure = "Allow_Procedure";
@@ -101,6 +103,7 @@ const char* const c_field_name_Trivial_Field_Only = "Trivial_Field_Only";
 
 const char* const c_field_display_name_Allow_Child_Rel_Select_Specifics = "field_list_field_type_allow_child_rel_select_specifics";
 const char* const c_field_display_name_Allow_Exclude_In_Use_FK = "field_list_field_type_allow_exclude_in_use_fk";
+const char* const c_field_display_name_Allow_Link_Permission = "field_list_field_type_allow_link_permission";
 const char* const c_field_display_name_Allow_Link_Restriction = "field_list_field_type_allow_link_restriction";
 const char* const c_field_display_name_Allow_Link_Type = "field_list_field_type_allow_link_type";
 const char* const c_field_display_name_Allow_Procedure = "field_list_field_type_allow_procedure";
@@ -118,7 +121,7 @@ const char* const c_field_display_name_Needs_Switch_Type = "field_list_field_typ
 const char* const c_field_display_name_Non_Simple_Field = "field_list_field_type_non_simple_field";
 const char* const c_field_display_name_Trivial_Field_Only = "field_list_field_type_trivial_field_only";
 
-const int c_num_fields = 18;
+const int c_num_fields = 19;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -139,13 +142,15 @@ const char* const c_all_sorted_field_ids[ ] =
    "123115",
    "123116",
    "123117",
-   "123118"
+   "123118",
+   "123119"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
    "Allow_Child_Rel_Select_Specifics",
    "Allow_Exclude_In_Use_FK",
+   "Allow_Link_Permission",
    "Allow_Link_Restriction",
    "Allow_Link_Type",
    "Allow_Procedure",
@@ -193,6 +198,7 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 bool gv_default_Allow_Child_Rel_Select_Specifics = bool( 0 );
 bool gv_default_Allow_Exclude_In_Use_FK = bool( 0 );
+bool gv_default_Allow_Link_Permission = bool( 0 );
 bool gv_default_Allow_Link_Restriction = bool( 0 );
 bool gv_default_Allow_Link_Type = bool( 0 );
 bool gv_default_Allow_Procedure = bool( 0 );
@@ -293,6 +299,8 @@ void Meta_List_Field_Type_command_functor::operator ( )( const string& command, 
          string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Child_Rel_Select_Specifics( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Exclude_In_Use_FK || field_name == c_field_name_Allow_Exclude_In_Use_FK )
          string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Exclude_In_Use_FK( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Link_Permission || field_name == c_field_name_Allow_Link_Permission )
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Link_Permission( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Link_Restriction || field_name == c_field_name_Allow_Link_Restriction )
          string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Link_Restriction( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Link_Type || field_name == c_field_name_Allow_Link_Type )
@@ -341,6 +349,9 @@ void Meta_List_Field_Type_command_functor::operator ( )( const string& command, 
       else if( field_name == c_field_id_Allow_Exclude_In_Use_FK || field_name == c_field_name_Allow_Exclude_In_Use_FK )
          func_string_setter< Meta_List_Field_Type, bool >(
           *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Exclude_In_Use_FK, field_value );
+      else if( field_name == c_field_id_Allow_Link_Permission || field_name == c_field_name_Allow_Link_Permission )
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Link_Permission, field_value );
       else if( field_name == c_field_id_Allow_Link_Restriction || field_name == c_field_name_Allow_Link_Restriction )
          func_string_setter< Meta_List_Field_Type, bool >(
           *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Link_Restriction, field_value );
@@ -432,6 +443,9 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
 
    bool impl_Allow_Exclude_In_Use_FK( ) const { return lazy_fetch( p_obj ), v_Allow_Exclude_In_Use_FK; }
    void impl_Allow_Exclude_In_Use_FK( bool Allow_Exclude_In_Use_FK ) { v_Allow_Exclude_In_Use_FK = Allow_Exclude_In_Use_FK; }
+
+   bool impl_Allow_Link_Permission( ) const { return lazy_fetch( p_obj ), v_Allow_Link_Permission; }
+   void impl_Allow_Link_Permission( bool Allow_Link_Permission ) { v_Allow_Link_Permission = Allow_Link_Permission; }
 
    bool impl_Allow_Link_Restriction( ) const { return lazy_fetch( p_obj ), v_Allow_Link_Restriction; }
    void impl_Allow_Link_Restriction( bool Allow_Link_Restriction ) { v_Allow_Link_Restriction = Allow_Link_Restriction; }
@@ -551,6 +565,7 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
 
    bool v_Allow_Child_Rel_Select_Specifics;
    bool v_Allow_Exclude_In_Use_FK;
+   bool v_Allow_Link_Permission;
    bool v_Allow_Link_Restriction;
    bool v_Allow_Link_Type;
    bool v_Allow_Procedure;
@@ -586,66 +601,70 @@ string Meta_List_Field_Type::impl::get_field_value( int field ) const
       break;
 
       case 2:
-      retval = to_string( impl_Allow_Link_Restriction( ) );
+      retval = to_string( impl_Allow_Link_Permission( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Allow_Link_Type( ) );
+      retval = to_string( impl_Allow_Link_Restriction( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Allow_Procedure( ) );
+      retval = to_string( impl_Allow_Link_Type( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Allow_Restriction_Field( ) );
+      retval = to_string( impl_Allow_Procedure( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Allow_Restriction_Spec( ) );
+      retval = to_string( impl_Allow_Restriction_Field( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Allow_Restriction_Value( ) );
+      retval = to_string( impl_Allow_Restriction_Spec( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Allow_Search_Option_Limit( ) );
+      retval = to_string( impl_Allow_Restriction_Value( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Allow_Select_Specifics( ) );
+      retval = to_string( impl_Allow_Search_Option_Limit( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Is_Restrict_Search( ) );
+      retval = to_string( impl_Allow_Select_Specifics( ) );
       break;
 
       case 11:
-      retval = to_string( impl_List_Field_Name( ) );
+      retval = to_string( impl_Is_Restrict_Search( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_List_Field_Name( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Needs_Restriction_Field( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Needs_Source( ) );
+      retval = to_string( impl_Needs_Restriction_Field( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Needs_Switch_Type( ) );
+      retval = to_string( impl_Needs_Source( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Non_Simple_Field( ) );
+      retval = to_string( impl_Needs_Switch_Type( ) );
       break;
 
       case 17:
+      retval = to_string( impl_Non_Simple_Field( ) );
+      break;
+
+      case 18:
       retval = to_string( impl_Trivial_Field_Only( ) );
       break;
 
@@ -669,66 +688,70 @@ void Meta_List_Field_Type::impl::set_field_value( int field, const string& value
       break;
 
       case 2:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Restriction, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Permission, value );
       break;
 
       case 3:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Type, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Restriction, value );
       break;
 
       case 4:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Procedure, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Link_Type, value );
       break;
 
       case 5:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Field, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Procedure, value );
       break;
 
       case 6:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Spec, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Field, value );
       break;
 
       case 7:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Value, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Spec, value );
       break;
 
       case 8:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Search_Option_Limit, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Restriction_Value, value );
       break;
 
       case 9:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Select_Specifics, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Search_Option_Limit, value );
       break;
 
       case 10:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Is_Restrict_Search, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Select_Specifics, value );
       break;
 
       case 11:
-      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_List_Field_Name, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Is_Restrict_Search, value );
       break;
 
       case 12:
-      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_Name, value );
+      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_List_Field_Name, value );
       break;
 
       case 13:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Restriction_Field, value );
+      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_Name, value );
       break;
 
       case 14:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Source, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Restriction_Field, value );
       break;
 
       case 15:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Switch_Type, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Source, value );
       break;
 
       case 16:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Non_Simple_Field, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Switch_Type, value );
       break;
 
       case 17:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Non_Simple_Field, value );
+      break;
+
+      case 18:
       func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Trivial_Field_Only, value );
       break;
 
@@ -786,6 +809,7 @@ void Meta_List_Field_Type::impl::clear( )
 {
    v_Allow_Child_Rel_Select_Specifics = gv_default_Allow_Child_Rel_Select_Specifics;
    v_Allow_Exclude_In_Use_FK = gv_default_Allow_Exclude_In_Use_FK;
+   v_Allow_Link_Permission = gv_default_Allow_Link_Permission;
    v_Allow_Link_Restriction = gv_default_Allow_Link_Restriction;
    v_Allow_Link_Type = gv_default_Allow_Link_Type;
    v_Allow_Procedure = gv_default_Allow_Procedure;
@@ -980,6 +1004,16 @@ bool Meta_List_Field_Type::Allow_Exclude_In_Use_FK( ) const
 void Meta_List_Field_Type::Allow_Exclude_In_Use_FK( bool Allow_Exclude_In_Use_FK )
 {
    p_impl->impl_Allow_Exclude_In_Use_FK( Allow_Exclude_In_Use_FK );
+}
+
+bool Meta_List_Field_Type::Allow_Link_Permission( ) const
+{
+   return p_impl->impl_Allow_Link_Permission( );
+}
+
+void Meta_List_Field_Type::Allow_Link_Permission( bool Allow_Link_Permission )
+{
+   p_impl->impl_Allow_Link_Permission( Allow_Link_Permission );
 }
 
 bool Meta_List_Field_Type::Allow_Link_Restriction( ) const
@@ -1293,6 +1327,16 @@ const char* Meta_List_Field_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Allow_Link_Permission )
+   {
+      p_id = c_field_id_Allow_Link_Permission;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Allow_Link_Restriction )
    {
       p_id = c_field_id_Allow_Link_Restriction;
@@ -1484,6 +1528,16 @@ const char* Meta_List_Field_Type::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Allow_Link_Permission )
+   {
+      p_name = c_field_name_Allow_Link_Permission;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Allow_Link_Restriction )
    {
       p_name = c_field_name_Allow_Link_Restriction;
@@ -1658,6 +1712,8 @@ string Meta_List_Field_Type::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Allow_Child_Rel_Select_Specifics );
    else if( id == c_field_id_Allow_Exclude_In_Use_FK )
       display_name = get_module_string( c_field_display_name_Allow_Exclude_In_Use_FK );
+   else if( id == c_field_id_Allow_Link_Permission )
+      display_name = get_module_string( c_field_display_name_Allow_Link_Permission );
    else if( id == c_field_id_Allow_Link_Restriction )
       display_name = get_module_string( c_field_display_name_Allow_Link_Restriction );
    else if( id == c_field_id_Allow_Link_Type )
@@ -1866,6 +1922,7 @@ void Meta_List_Field_Type::get_sql_column_names(
 
    names.push_back( "C_Allow_Child_Rel_Select_Specifics" );
    names.push_back( "C_Allow_Exclude_In_Use_FK" );
+   names.push_back( "C_Allow_Link_Permission" );
    names.push_back( "C_Allow_Link_Restriction" );
    names.push_back( "C_Allow_Link_Type" );
    names.push_back( "C_Allow_Procedure" );
@@ -1895,6 +1952,7 @@ void Meta_List_Field_Type::get_sql_column_values(
 
    values.push_back( to_string( Allow_Child_Rel_Select_Specifics( ) ) );
    values.push_back( to_string( Allow_Exclude_In_Use_FK( ) ) );
+   values.push_back( to_string( Allow_Link_Permission( ) ) );
    values.push_back( to_string( Allow_Link_Restriction( ) ) );
    values.push_back( to_string( Allow_Link_Type( ) ) );
    values.push_back( to_string( Allow_Procedure( ) ) );
@@ -1987,6 +2045,7 @@ void Meta_List_Field_Type::static_get_field_info( field_info_container& all_fiel
 {
    all_field_info.push_back( field_info( "123113", "Allow_Child_Rel_Select_Specifics", "bool", false ) );
    all_field_info.push_back( field_info( "123106", "Allow_Exclude_In_Use_FK", "bool", false ) );
+   all_field_info.push_back( field_info( "123119", "Allow_Link_Permission", "bool", false ) );
    all_field_info.push_back( field_info( "123112", "Allow_Link_Restriction", "bool", false ) );
    all_field_info.push_back( field_info( "123107", "Allow_Link_Type", "bool", false ) );
    all_field_info.push_back( field_info( "123108", "Allow_Procedure", "bool", false ) );
@@ -2038,66 +2097,70 @@ const char* Meta_List_Field_Type::static_get_field_id( field_id id )
       break;
 
       case 3:
-      p_id = "123112";
+      p_id = "123119";
       break;
 
       case 4:
-      p_id = "123107";
+      p_id = "123112";
       break;
 
       case 5:
-      p_id = "123108";
+      p_id = "123107";
       break;
 
       case 6:
-      p_id = "123116";
+      p_id = "123108";
       break;
 
       case 7:
-      p_id = "123103";
+      p_id = "123116";
       break;
 
       case 8:
-      p_id = "123104";
+      p_id = "123103";
       break;
 
       case 9:
-      p_id = "123115";
+      p_id = "123104";
       break;
 
       case 10:
-      p_id = "123111";
+      p_id = "123115";
       break;
 
       case 11:
-      p_id = "123118";
+      p_id = "123111";
       break;
 
       case 12:
-      p_id = "123102";
+      p_id = "123118";
       break;
 
       case 13:
-      p_id = "123101";
+      p_id = "123102";
       break;
 
       case 14:
-      p_id = "123117";
+      p_id = "123101";
       break;
 
       case 15:
-      p_id = "123114";
+      p_id = "123117";
       break;
 
       case 16:
-      p_id = "123105";
+      p_id = "123114";
       break;
 
       case 17:
-      p_id = "123109";
+      p_id = "123105";
       break;
 
       case 18:
+      p_id = "123109";
+      break;
+
+      case 19:
       p_id = "123110";
       break;
    }
@@ -2123,66 +2186,70 @@ const char* Meta_List_Field_Type::static_get_field_name( field_id id )
       break;
 
       case 3:
-      p_id = "Allow_Link_Restriction";
+      p_id = "Allow_Link_Permission";
       break;
 
       case 4:
-      p_id = "Allow_Link_Type";
+      p_id = "Allow_Link_Restriction";
       break;
 
       case 5:
-      p_id = "Allow_Procedure";
+      p_id = "Allow_Link_Type";
       break;
 
       case 6:
-      p_id = "Allow_Restriction_Field";
+      p_id = "Allow_Procedure";
       break;
 
       case 7:
-      p_id = "Allow_Restriction_Spec";
+      p_id = "Allow_Restriction_Field";
       break;
 
       case 8:
-      p_id = "Allow_Restriction_Value";
+      p_id = "Allow_Restriction_Spec";
       break;
 
       case 9:
-      p_id = "Allow_Search_Option_Limit";
+      p_id = "Allow_Restriction_Value";
       break;
 
       case 10:
-      p_id = "Allow_Select_Specifics";
+      p_id = "Allow_Search_Option_Limit";
       break;
 
       case 11:
-      p_id = "Is_Restrict_Search";
+      p_id = "Allow_Select_Specifics";
       break;
 
       case 12:
-      p_id = "List_Field_Name";
+      p_id = "Is_Restrict_Search";
       break;
 
       case 13:
-      p_id = "Name";
+      p_id = "List_Field_Name";
       break;
 
       case 14:
-      p_id = "Needs_Restriction_Field";
+      p_id = "Name";
       break;
 
       case 15:
-      p_id = "Needs_Source";
+      p_id = "Needs_Restriction_Field";
       break;
 
       case 16:
-      p_id = "Needs_Switch_Type";
+      p_id = "Needs_Source";
       break;
 
       case 17:
-      p_id = "Non_Simple_Field";
+      p_id = "Needs_Switch_Type";
       break;
 
       case 18:
+      p_id = "Non_Simple_Field";
+      break;
+
+      case 19:
       p_id = "Trivial_Field_Only";
       break;
    }
@@ -2203,38 +2270,40 @@ int Meta_List_Field_Type::static_get_field_num( const string& field )
       rc += 1;
    else if( field == c_field_id_Allow_Exclude_In_Use_FK || field == c_field_name_Allow_Exclude_In_Use_FK )
       rc += 2;
-   else if( field == c_field_id_Allow_Link_Restriction || field == c_field_name_Allow_Link_Restriction )
+   else if( field == c_field_id_Allow_Link_Permission || field == c_field_name_Allow_Link_Permission )
       rc += 3;
-   else if( field == c_field_id_Allow_Link_Type || field == c_field_name_Allow_Link_Type )
+   else if( field == c_field_id_Allow_Link_Restriction || field == c_field_name_Allow_Link_Restriction )
       rc += 4;
-   else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
+   else if( field == c_field_id_Allow_Link_Type || field == c_field_name_Allow_Link_Type )
       rc += 5;
-   else if( field == c_field_id_Allow_Restriction_Field || field == c_field_name_Allow_Restriction_Field )
+   else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
       rc += 6;
-   else if( field == c_field_id_Allow_Restriction_Spec || field == c_field_name_Allow_Restriction_Spec )
+   else if( field == c_field_id_Allow_Restriction_Field || field == c_field_name_Allow_Restriction_Field )
       rc += 7;
-   else if( field == c_field_id_Allow_Restriction_Value || field == c_field_name_Allow_Restriction_Value )
+   else if( field == c_field_id_Allow_Restriction_Spec || field == c_field_name_Allow_Restriction_Spec )
       rc += 8;
-   else if( field == c_field_id_Allow_Search_Option_Limit || field == c_field_name_Allow_Search_Option_Limit )
+   else if( field == c_field_id_Allow_Restriction_Value || field == c_field_name_Allow_Restriction_Value )
       rc += 9;
-   else if( field == c_field_id_Allow_Select_Specifics || field == c_field_name_Allow_Select_Specifics )
+   else if( field == c_field_id_Allow_Search_Option_Limit || field == c_field_name_Allow_Search_Option_Limit )
       rc += 10;
-   else if( field == c_field_id_Is_Restrict_Search || field == c_field_name_Is_Restrict_Search )
+   else if( field == c_field_id_Allow_Select_Specifics || field == c_field_name_Allow_Select_Specifics )
       rc += 11;
-   else if( field == c_field_id_List_Field_Name || field == c_field_name_List_Field_Name )
+   else if( field == c_field_id_Is_Restrict_Search || field == c_field_name_Is_Restrict_Search )
       rc += 12;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_List_Field_Name || field == c_field_name_List_Field_Name )
       rc += 13;
-   else if( field == c_field_id_Needs_Restriction_Field || field == c_field_name_Needs_Restriction_Field )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 14;
-   else if( field == c_field_id_Needs_Source || field == c_field_name_Needs_Source )
+   else if( field == c_field_id_Needs_Restriction_Field || field == c_field_name_Needs_Restriction_Field )
       rc += 15;
-   else if( field == c_field_id_Needs_Switch_Type || field == c_field_name_Needs_Switch_Type )
+   else if( field == c_field_id_Needs_Source || field == c_field_name_Needs_Source )
       rc += 16;
-   else if( field == c_field_id_Non_Simple_Field || field == c_field_name_Non_Simple_Field )
+   else if( field == c_field_id_Needs_Switch_Type || field == c_field_name_Needs_Switch_Type )
       rc += 17;
-   else if( field == c_field_id_Trivial_Field_Only || field == c_field_name_Trivial_Field_Only )
+   else if( field == c_field_id_Non_Simple_Field || field == c_field_name_Non_Simple_Field )
       rc += 18;
+   else if( field == c_field_id_Trivial_Field_Only || field == c_field_name_Trivial_Field_Only )
+      rc += 19;
 
    return rc - 1;
 }
@@ -2257,6 +2326,7 @@ string Meta_List_Field_Type::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Allow_Child_Rel_Select_Specifics INTEGER NOT NULL,"
     "C_Allow_Exclude_In_Use_FK INTEGER NOT NULL,"
+    "C_Allow_Link_Permission INTEGER NOT NULL,"
     "C_Allow_Link_Restriction INTEGER NOT NULL,"
     "C_Allow_Link_Type INTEGER NOT NULL,"
     "C_Allow_Procedure INTEGER NOT NULL,"

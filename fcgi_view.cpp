@@ -474,12 +474,14 @@ bool output_view_form( ostream& os, const string& act,
           && ( !is_owner_edit || owner.empty( ) || owner == sess_info.user_key ) )
          {
             // NOTE: Unowned records (marked as "owner edit") cannot be edited, however,
-            // record specific actions will still appear. If "admin_owner_edit" is used
-            // then "edit" will only be allowed for owned records unless user is "admin".
-            // Also if the view has been identified as the "user_info" view then unless
-            // user is "admin" or the user key matches the current user prevent editing.
+            // record specific actions will still appear (unless the record is changing
+            // or is currently unactionable). If "admin_owner_edit" is used then "edit"
+            // will only be allowed for owned records unless user is "admin". Also when
+            // the view has been identified as the "user_info" view then unless user is
+            // "admin" or the user key matches the current user prevent editing.
             if( !( source.state & c_state_uneditable )
              && !( source.state & c_state_is_changing )
+             && !( source.state & c_state_unactionable )
              && ( !is_owner_edit || owner == sess_info.user_key )
              && ( !is_admin_owner_edit || sess_info.is_admin_user || owner == sess_info.user_key )
              && ( sess_info.is_admin_user || mod_info.user_info_view_id != source.vici->second->id || data == sess_info.user_key ) )
@@ -519,7 +521,7 @@ bool output_view_form( ostream& os, const string& act,
                all_actions = "create_copy$" + source.vici->second->cid + "%" + data + all_actions;
             }
 
-            if( !all_actions.empty( ) )
+            if( !all_actions.empty( ) && !( source.state & c_state_unactionable ) )
             {
                if( had_any )
                   os << c_nbsp;
@@ -536,7 +538,7 @@ bool output_view_form( ostream& os, const string& act,
          {
             is_editable = false;
 
-            if( !source.actions_value.empty( ) )
+            if( !source.actions_value.empty( ) && !( source.state & c_state_unactionable ) )
             {
                if( had_any )
                   os << c_nbsp;

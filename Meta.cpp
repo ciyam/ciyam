@@ -30,6 +30,7 @@
 
 #include "utilities.h"
 #include "ciyam_base.h"
+#include "class_base.h"
 #include "ciyam_macros.h"
 #include "module_strings.h"
 #include "command_handler.h"

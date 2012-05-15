@@ -17,18 +17,22 @@
 
          if( news.iterate_backwards( key_info ) )
          {
+            class_base_filter filter( news, "*" );
             do
             {
-               if( item++ > 0 )
-                  osstr << "\\\\n\\\\n";
-
-               osstr << search_replace( news.`{`$arg_field`}( ), "\\r\\n", "\\\\n" );
-
-               if( item == limit )
+               if( !news.is_filtered( ) )
                {
-                  news.iterate_stop( );
-                  break;
-               }
+                  if( item++ > 0 )
+                     osstr << "\\\\n\\\\n";
+
+                  osstr << search_replace( news.`{`$arg_field`}( ), "\\r\\n", "\\\\n" );
+
+                  if( item == limit )
+                  {
+                     news.iterate_stop( );
+                     break;
+                  }
+               }   
             } while( news.iterate_next( ) );
 
             osstr << "\\\\n\\\\n";

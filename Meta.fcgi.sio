@@ -104,7 +104,7 @@
     </value>
     <value/>
      <data>2
-     <name>enum_app_generate_type_application_ui_only
+     <name>enum_app_generate_type_application_settings
     </value>
    </values>
   </enum>
@@ -2994,7 +2994,7 @@
      <name>field_initial_record_value_value
      <field>130101
      <ftype>string
-     <extra>max_size=100
+     <extra>text
      <mandatory>false
      <modifiers>
     </field>
@@ -3419,7 +3419,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>80000:relegate,2000:relegate,4000:relegate,8000:relegate
+     <modifiers>100000:relegate,2000:relegate,4000:relegate,8000:relegate
     </field>
     <field/>
      <name>field_list_field_source_parent_class
@@ -3439,7 +3439,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>40000:relegate,80000:relegate,2000:relegate,4000:relegate,8000:relegate
+     <modifiers>80000:relegate,100000:relegate,2000:relegate,4000:relegate,8000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3451,7 +3451,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>1000:relegate,80000:relegate,2000:relegate,4000:relegate,8000:relegate
+     <modifiers>1000:relegate,100000:relegate,2000:relegate,4000:relegate,8000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3463,7 +3463,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>1000:relegate,80000:relegate,2000:relegate,4000:relegate,8000:relegate
+     <modifiers>1000:relegate,100000:relegate,2000:relegate,4000:relegate,8000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3487,7 +3487,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>1000:relegate,80000:relegate,100000:relegate,2000:relegate
+     <modifiers>1000:relegate,100000:relegate,200000:relegate,2000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3499,7 +3499,7 @@
      <ftype>@class
      <extra>force
      <mandatory>false
-     <modifiers>80000:relegate,2000:relegate,400:relegate
+     <modifiers>100000:relegate,2000:relegate,400:relegate
      <pclass>113100
      <pfield>113105
      <pfname>field_relationship_child_name
@@ -3523,7 +3523,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>80000:relegate,2000:relegate,400:relegate
+     <modifiers>100000:relegate,2000:relegate,400:relegate
     </field>
     <field/>
      <name>field_list_field_child_rel_source_field
@@ -3531,7 +3531,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>200:relegate,80000:relegate,2000:relegate,400:relegate
+     <modifiers>200:relegate,100000:relegate,2000:relegate,400:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3543,7 +3543,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>100:relegate,80000:relegate,2000:relegate,400:relegate
+     <modifiers>100:relegate,100000:relegate,2000:relegate,400:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3567,7 +3567,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>100:relegate,80000:relegate,2000:relegate,400:relegate
+     <modifiers>100:relegate,100000:relegate,2000:relegate,400:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3579,7 +3579,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate,2000:relegate
+     <modifiers>1000000:relegate,2000:relegate
      <pclass>115100
      <pfield>115101
      <pfname>field_specification_name
@@ -3591,7 +3591,7 @@
      <ftype>int
      <extra>enum=695
      <mandatory>true
-     <modifiers>8000000:relegate
+     <modifiers>10000000:relegate
     </field>
     <field/>
      <name>field_list_field_restriction_field
@@ -3599,7 +3599,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>400000:relegate
+     <modifiers>800000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3611,7 +3611,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>1000000:relegate,2000:relegate
+     <modifiers>2000000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_trigger_option
@@ -3619,7 +3619,7 @@
      <ftype>int
      <extra>enum=694
      <mandatory>true
-     <modifiers>2000:relegate,4000000:relegate,4000:relegate
+     <modifiers>2000:relegate,8000000:relegate,4000:relegate
     </field>
     <field/>
      <name>field_list_field_search_option_limit
@@ -3627,7 +3627,7 @@
      <ftype>int
      <extra>enum=686
      <mandatory>true
-     <modifiers>2000:relegate,2000000:relegate
+     <modifiers>2000:relegate,4000000:relegate
     </field>
     <field/>
      <name>field_list_field_select_key_exclusions
@@ -3635,7 +3635,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>4000000:relegate
+     <modifiers>8000000:relegate
     </field>
     <field/>
      <name>field_list_field_include_key_additions
@@ -3643,7 +3643,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>4000000:relegate
+     <modifiers>8000000:relegate
     </field>
     <field/>
      <name>field_list_field_exclude_in_use_fk
@@ -3659,7 +3659,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>200000:relegate,2000:relegate
+     <modifiers>400000:relegate,2000:relegate
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -3671,7 +3671,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>200000:relegate,2000:relegate
+     <modifiers>400000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_omit_versions
@@ -3679,7 +3679,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200000:relegate,2000:relegate
+     <modifiers>400000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_reverse_order
@@ -3687,7 +3687,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200000:relegate,2000:relegate
+     <modifiers>400000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_retain_selected_rows
@@ -3695,7 +3695,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200000:relegate,2000:relegate
+     <modifiers>400000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_non_instance_procedure
@@ -3703,7 +3703,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>200000:relegate,2000:relegate
+     <modifiers>400000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_font_size
@@ -3719,7 +3719,7 @@
      <ftype>int
      <extra>enum=691
      <mandatory>true
-     <modifiers>100000:relegate
+     <modifiers>200000:relegate
     </field>
     <field/>
      <name>field_list_field_notes_truncation
@@ -3727,7 +3727,7 @@
      <ftype>int
      <extra>enum=697
      <mandatory>true
-     <modifiers>100000:relegate
+     <modifiers>200000:relegate
     </field>
     <field/>
      <name>field_list_field_print_type
@@ -3735,7 +3735,7 @@
      <ftype>int
      <extra>enum=696
      <mandatory>true
-     <modifiers>100000:relegate,2000:relegate
+     <modifiers>200000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_label_class
@@ -3743,7 +3743,7 @@
      <ftype>int
      <extra>enum=699
      <mandatory>true
-     <modifiers>100:relegate,80000:relegate,2000:relegate,400:relegate
+     <modifiers>100:relegate,100000:relegate,2000:relegate,400:relegate
     </field>
     <field/>
      <name>field_list_field_label_source
@@ -3751,7 +3751,7 @@
      <ftype>int
      <extra>enum=693
      <mandatory>true
-     <modifiers>100000:relegate,2000:relegate
+     <modifiers>200000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_label_without_prefix
@@ -3759,7 +3759,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>100000:relegate,2000:relegate
+     <modifiers>200000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_use_in_text_search_title
@@ -3767,7 +3767,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>100000:relegate,2000:relegate
+     <modifiers>200000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_exact_match_only
@@ -3775,7 +3775,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>10000000:relegate
+     <modifiers>20000000:relegate
     </field>
     <field/>
      <name>field_list_field_link_type
@@ -3783,7 +3783,7 @@
      <ftype>int
      <extra>enum=698
      <mandatory>true
-     <modifiers>1000:relegate,20000:relegate,80000:relegate,2000:relegate
+     <modifiers>1000:relegate,40000:relegate,100000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_list_field_link_restriction
@@ -3791,7 +3791,7 @@
      <ftype>int
      <extra>force+forced+enum=692
      <mandatory>true
-     <modifiers>10000:relegate
+     <modifiers>20000:relegate
     </field>
     <field/>
      <name>field_list_field_link_permission
@@ -3799,7 +3799,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>
+     <modifiers>10000:relegate
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -3840,7 +3840,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>20000000:relegate
+     <modifiers>40000000:relegate
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
@@ -4255,7 +4255,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>1000:relegate,8000:relegate,400:relegate,200:relegate,10000:relegate,2000:relegate,800:relegate,100:relegate
+     <modifiers>1000:relegate
      <pclass>136100
      <pfield>136101
      <pfname>field_package_name
@@ -6321,6 +6321,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_specification_type_allow_modifier
+     <field>114197
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_specification_type_needs_modifier
      <field>114107
      <ftype>bool
@@ -8185,7 +8193,7 @@
      <name>field_initial_record_value_value
      <field>130101
      <ftype>string
-     <extra>max_size=100
+     <extra>text
      <modifiers>
      <unique>false
      <indexed>false
