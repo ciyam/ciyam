@@ -1110,14 +1110,12 @@ void Meta_Package::impl::impl_Remove( )
 
                      if( next == get_obj( ).Package_Type( ).Name( ) )
                      {
-                        if( do_exec )
-                        {
-                           skip = true;
-                           break;
-                        }
-                        else
-                           throw runtime_error( "Need to remove '"
-                            + cp_other->Name( ) + "' before this package can be removed." );
+                        cp_other->iterate_stop( );
+                        set_system_variable( model_key, "" );
+                        set_system_variable( "@" + model_key, "" );
+
+                        throw runtime_error( "Need to remove '"
+                         + cp_other->Name( ) + "' before this package can be removed." );
                      }
                   }
                }
@@ -1128,14 +1126,14 @@ void Meta_Package::impl::impl_Remove( )
                   {
                      if( get_obj( ).get_key( ) == cp_other->child_Package_Option( ).Other_Package( ).get_key( ) )
                      {
-                        if( do_exec )
-                        {
-                           skip = true;
-                           break;
-                        }
-                        else
-                           throw runtime_error( "Need to remove '"
-                            + cp_other->Name( ) + "' before this package can be removed." );
+                        cp_other->child_Package_Option( ).iterate_stop( );
+
+                        cp_other->iterate_stop( );
+                        set_system_variable( model_key, "" );
+                        set_system_variable( "@" + model_key, "" );
+
+                        throw runtime_error( "Need to remove '"
+                         + cp_other->Name( ) + "' before this package can be removed." );
                      }
                   } while( cp_other->child_Package_Option( ).iterate_next( ) );
                }
@@ -1458,6 +1456,10 @@ uint64_t Meta_Package::impl::get_state( ) const
 //nyi
    if( get_obj( ).Usage_Count( ) > 0 )
       state |= c_modifier_Is_In_Use;
+
+   string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+   if( !get_system_variable( model_key ).empty( ) )
+      state |= ( c_state_is_changing | c_state_uneditable | c_state_unactionable );
    // [<finish get_state>]
 
    return state;

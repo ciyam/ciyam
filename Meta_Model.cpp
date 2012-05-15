@@ -4702,9 +4702,9 @@ void Meta_Model::impl::impl_Generate( )
             {
                do
                {
-                  if( !get_obj( ).child_List( ).Ignore_User_Id_Filter( )
-                   && ( p_sclass->child_Specification( ).Specification_Type( ) == "filter_non_uid"
-                   || p_sclass->child_Specification( ).Specification_Type( ) == "filter_field_value" ) )
+                  if( ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( )
+                   && p_sclass->child_Specification( ).Specification_Type( ) == "filter_non_uid" )
+                   || p_sclass->child_Specification( ).Specification_Type( ) == "filter_field_value" )
                   {
                      if( !filters.empty( ) )
                         filters += ",";
@@ -7311,6 +7311,12 @@ void Meta_Model::get_always_required_field_names(
    if( ( required_transients && is_field_transient( e_field_id_Created ) )
     || ( !required_transients && !is_field_transient( e_field_id_Created ) ) )
       names.insert( "Created" );
+
+   dependents.insert( "Status" );
+
+   if( ( required_transients && is_field_transient( e_field_id_Status ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Status ) ) )
+      names.insert( "Status" );
    // [<finish get_always_required_field_names>]
 }
 
