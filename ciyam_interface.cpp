@@ -155,6 +155,7 @@ const char* const c_form_content_comment = "<!-- @@form_content -->";
 const char* const c_extra_content_comment = "<!-- @@extra_content -->";
 
 const char* const c_user_key_arg = "$user";
+const char* const c_user_perms_arg = "$perms";
 const char* const c_user_other_none = "~";
 
 const char* const c_dummy_server_command = "wait";
@@ -2042,19 +2043,41 @@ void request_handler::process_request( )
 
             setup_gmt_and_dtm_offset( input_data, *p_session_info );
 
-            if( !mod_info.home_info.empty( )
+            if( !temp_session && !mod_info.home_info.empty( )
              && ( !p_session_info->user_group.empty( ) || !p_session_info->is_admin_user ) )
             {
                issued_command = true;
                string home_info_cmd = mod_info.home_info;
 
+               string perms;
+               map< string, string >::const_iterator i;
+               for( i = p_session_info->user_perms.begin( ); i != p_session_info->user_perms.end( ); ++i )
+               {
+                  if( !perms.empty( ) )
+                     perms += ",";
+                  perms += i->first;
+               }
+
                while( true )
                {
-                  string::size_type pos = home_info_cmd.find( c_user_key_arg );
-                  if( pos == string::npos )
-                     break;
+                  bool found = false;
 
-                  home_info_cmd.replace( pos, strlen( c_user_key_arg ), p_session_info->user_key );
+                  string::size_type pos = home_info_cmd.find( c_user_key_arg );
+                  if( pos != string::npos )
+                  {
+                     found = true;
+                     home_info_cmd.replace( pos, strlen( c_user_key_arg ), p_session_info->user_key );
+                  }
+
+                  pos = home_info_cmd.find( c_user_perms_arg );
+                  if( pos != string::npos )
+                  {
+                     found = true;
+                     home_info_cmd.replace( pos, strlen( c_user_perms_arg ), perms );
+                  }
+
+                  if( !found )
+                     break;
                }
 
                if( p_session_info->p_socket->write_line( home_info_cmd ) <= 0 )

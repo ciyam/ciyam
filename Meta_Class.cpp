@@ -4863,7 +4863,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 2:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301491";
             p_class_base = &child_Specification_Child_Rel_Child( );
@@ -4879,7 +4879,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 4:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301492";
             p_class_base = &child_Specification_Field( );
@@ -4919,7 +4919,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 9:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301421";
             p_class_base = &child_Specification_Other( );
@@ -4983,7 +4983,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 17:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301489";
             p_class_base = &child_Specification_Source_Child( );
@@ -4999,7 +4999,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 19:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301494";
             p_class_base = &child_Specification_Source( );
@@ -5007,7 +5007,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 20:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301482";
             p_class_base = &child_Specification_Source_Field( );
@@ -5023,7 +5023,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 22:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301490";
             p_class_base = &child_Specification_Source_Parent( );
@@ -5047,7 +5047,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 25:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301493";
             p_class_base = &child_Specification_Test_Field( );
@@ -5055,7 +5055,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          break;
 
          case 26:
-         if( op == e_cascade_op_destroy )
+         if( op == e_cascade_op_restrict )
          {
             next_child_field = "301487";
             p_class_base = &child_Specification_Test_Parent( );

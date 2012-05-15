@@ -1110,14 +1110,12 @@ void Meta_Package::impl::impl_Remove( )
 
                      if( next == get_obj( ).Package_Type( ).Name( ) )
                      {
-                        if( do_exec )
-                        {
-                           skip = true;
-                           break;
-                        }
-                        else
-                           throw runtime_error( "Need to remove '"
-                            + cp_other->Name( ) + "' before this package can be removed." );
+                        cp_other->iterate_stop( );
+                        set_system_variable( model_key, "" );
+                        set_system_variable( "@" + model_key, "" );
+
+                        throw runtime_error( "Need to remove '"
+                         + cp_other->Name( ) + "' before this package can be removed." );
                      }
                   }
                }
@@ -1128,14 +1126,14 @@ void Meta_Package::impl::impl_Remove( )
                   {
                      if( get_obj( ).get_key( ) == cp_other->child_Package_Option( ).Other_Package( ).get_key( ) )
                      {
-                        if( do_exec )
-                        {
-                           skip = true;
-                           break;
-                        }
-                        else
-                           throw runtime_error( "Need to remove '"
-                            + cp_other->Name( ) + "' before this package can be removed." );
+                        cp_other->child_Package_Option( ).iterate_stop( );
+
+                        cp_other->iterate_stop( );
+                        set_system_variable( model_key, "" );
+                        set_system_variable( "@" + model_key, "" );
+
+                        throw runtime_error( "Need to remove '"
+                         + cp_other->Name( ) + "' before this package can be removed." );
                      }
                   } while( cp_other->child_Package_Option( ).iterate_next( ) );
                }
@@ -1208,9 +1206,12 @@ void Meta_Package::impl::impl_Remove( )
                string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );
                read_file_lines( acyclic_filename, ordered );
 
-               // NOTE: Forcing "class" to be processed first is done as a performance optimisation
-               // (as it will automatically cascade numerous other records).
+               // NOTE: Forcing the order to reach "Class" as quickly as possible is done as a performance
+               // optimisation (as it will automatically cascade numerous other records).
                ordered.push_back( "Class" );
+               ordered.push_back( "Specification" );
+               ordered.push_back( "View" );
+               ordered.push_back( "List" );
 
                // NOTE: In order to make sure deletes are correctedly ordered they need to be
                // processed in the opposite of the acyclic class list (as its ordering is for
@@ -1455,6 +1456,10 @@ uint64_t Meta_Package::impl::get_state( ) const
 //nyi
    if( get_obj( ).Usage_Count( ) > 0 )
       state |= c_modifier_Is_In_Use;
+
+   string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+   if( !get_system_variable( model_key ).empty( ) )
+      state |= ( c_state_is_changing | c_state_uneditable | c_state_unactionable );
    // [<finish get_state>]
 
    return state;
@@ -1771,7 +1776,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
                      string value = next.substr( pos + 1 );
 
-                     if( type == "class" )
+                     if( type == "package" )
                      {
                         get_obj( ).child_Package_Option( ).Is_Other_Package( true );
                         get_obj( ).child_Package_Option( ).Other_Package_Type( package_types[ value ] );

@@ -1885,6 +1885,19 @@ string construct_class_identity( const class_base& cb )
 }
 #endif
 
+class_base_filter::class_base_filter( class_base& cb, const string& filter_ids )
+ :
+ cba( cb )
+{
+   split( filter_ids, filters );
+   swap( cba.filters( ), filters );
+}
+
+class_base_filter::~class_base_filter( )
+{
+   swap( filters, cba.filters( ) );
+}
+
 bool is_valid_int( const string& s )
 {
    bool rc = true;
