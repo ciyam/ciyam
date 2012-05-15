@@ -557,7 +557,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    void cleanup( );
 
-   bool has_filter( const std::string& id_or_name ) const { return filters.count( id_or_name ) > 0; }
+   bool has_filter( const std::string& id_or_name ) const { return filters.count( "*" ) > 0 || filters.count( id_or_name ) > 0; }
 
    void add_search_replacement( const std::string& field, const std::string& search, const std::string& replace );
 
@@ -693,6 +693,17 @@ struct class_base_accessor
    }
 
    class_base& cb;
+};
+
+class CLASS_BASE_DECL_SPEC class_base_filter
+{
+   public:
+   class_base_filter( class_base& cb, const std::string& filter_ids );
+   ~class_base_filter( );
+
+   private:
+   class_base_accessor cba;
+   std::set< std::string > filters;
 };
 
 enum create_instance

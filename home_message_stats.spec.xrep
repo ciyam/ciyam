@@ -65,18 +65,22 @@
          int num_stats1 = 0;
          if( user.child_`{`$child1_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
          {
+            class_base_filter filter( user.child_`{`$child1_suffix`}( ), "*" );
             do
             {
-               if( index_depth == fields.size( ) )
-                  ++num_stats1;
+               if( !user.child_`{`$child1_suffix`}( ).is_filtered( ) )
+               {
+                  if( index_depth == fields.size( ) )
+                     ++num_stats1;
 `{`@eq`(`$arg_primary_stats1_field2`,`'`'`)\
-               else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_primary_stats1_field1`}( ) ) == "`{`$arg_primary_stats1_value1`}" )
-                  ++num_stats1;\
+                  else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_primary_stats1_field1`}( ) ) == "`{`$arg_primary_stats1_value1`}" )
+                     ++num_stats1;\
 `,\
-               else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_primary_stats1_field1`}( ) ) == "`{`$arg_primary_stats1_value1`}"
-                && to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_primary_stats1_field2`}( ) ) == "`{`$arg_primary_stats1_value2`}" )
-                  ++num_stats1;\
+                  else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_primary_stats1_field1`}( ) ) == "`{`$arg_primary_stats1_value1`}"
+                   && to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_primary_stats1_field2`}( ) ) == "`{`$arg_primary_stats1_value2`}" )
+                     ++num_stats1;\
 `}
+               }
             } while( user.child_`{`$child1_suffix`}( ).iterate_next( ) );
          }
 
@@ -122,18 +126,22 @@
             int num_stats2 = 0;
             if( user.child_`{`$child2_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
             {
+               class_base_filter filter( user.child_`{`$child2_suffix`}( ), "*" );
                do
                {
-                  if( index_depth == fields.size( ) )
-                     ++num_stats2;
+                  if( !user.child_`{`$child2_suffix`}( ).is_filtered( ) )
+                  {
+                     if( index_depth == fields.size( ) )
+                        ++num_stats2;
 `{`@eq`(`$arg_primary_stats2_field2`,`'`'`)\
-                  else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_primary_stats2_field1`}( ) ) == "`{`$arg_primary_stats2_value1`}" )
-                     ++num_stats2;\
+                     else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_primary_stats2_field1`}( ) ) == "`{`$arg_primary_stats2_value1`}" )
+                        ++num_stats2;\
 `,\
-                  else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_primary_stats2_field1`}( ) ) == "`{`$arg_primary_stats2_value1`}"
-                   && to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_primary_stats2_field2`}( ) ) == "`{`$arg_primary_stats2_value2`}" )
-                     ++num_stats2;\
+                     else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_primary_stats2_field1`}( ) ) == "`{`$arg_primary_stats2_value1`}"
+                      && to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_primary_stats2_field2`}( ) ) == "`{`$arg_primary_stats2_value2`}" )
+                        ++num_stats2;\
 `}
+                  }
                } while( user.child_`{`$child2_suffix`}( ).iterate_next( ) );
             }
 
@@ -188,18 +196,22 @@
             num_stats1 = 0;
             if( group.child_`{`$child1_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
             {
+               class_base_filter filter( group.child_`{`$child1_suffix`}( ), "*" );
                do
                {
-                  if( index_depth == fields.size( ) )
-                     ++num_stats1;
+                  if( !group.child_`{`$child1_suffix`}( ).is_filtered( ) )
+                  {
+                     if( index_depth == fields.size( ) )
+                        ++num_stats1;
 `{`@eq`(`$arg_secondary_stats1_field2`,`'`'`)\
-                  else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_secondary_stats1_field1`}( ) ) == "`{`$arg_secondary_stats1_value1`}" )
-                     ++num_stats1;\
+                     else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_secondary_stats1_field1`}( ) ) == "`{`$arg_secondary_stats1_value1`}" )
+                        ++num_stats1;\
 `,\
-                  else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_secondary_stats1_field1`}( ) ) == "`{`$arg_secondary_stats1_value1`}"
-                   && to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_secondary_stats1_field2`}( ) ) == "`{`$arg_secondary_stats1_value2`}" )
-                     ++num_stats1;\
+                     else if( to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_secondary_stats1_field1`}( ) ) == "`{`$arg_secondary_stats1_value1`}"
+                      && to_string( user.child_`{`$child1_suffix`}( ).`{`$arg_secondary_stats1_field2`}( ) ) == "`{`$arg_secondary_stats1_value2`}" )
+                        ++num_stats1;\
 `}
+                  }
                } while( group.child_`{`$child1_suffix`}( ).iterate_next( ) );
             }
 
@@ -246,18 +258,22 @@
                int num_stats2 = 0;
                if( group.child_`{`$child2_suffix`}( ).iterate_forwards( key_info, true, 0, e_sql_optimisation_unordered ) )
                {
+                  class_base_filter filter( group.child_`{`$child2_suffix`}( ), "*" );
                   do
                   {
-                     if( index_depth == fields.size( ) )
-                        ++num_stats2;
+                     if( !group.child_`{`$child2_suffix`}( ).is_filtered( ) )
+                     {
+                        if( index_depth == fields.size( ) )
+                           ++num_stats2;
 `{`@eq`(`$arg_secondary_stats2_field2`,`'`'`)\
-                     else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_secondary_stats2_field1`}( ) ) == "`{`$arg_secondary_stats2_value1`}" )
-                        ++num_stats2;\
+                        else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_secondary_stats2_field1`}( ) ) == "`{`$arg_secondary_stats2_value1`}" )
+                           ++num_stats2;\
 `,\
-                     else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_secondary_stats2_field1`}( ) ) == "`{`$arg_secondary_stats2_value1`}"
-                      && to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_secondary_stats2_field2`}( ) ) == "`{`$arg_secondary_stats2_value2`}" )
-                        ++num_stats2;\
+                        else if( to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_secondary_stats2_field1`}( ) ) == "`{`$arg_secondary_stats2_value1`}"
+                         && to_string( user.child_`{`$child2_suffix`}( ).`{`$arg_secondary_stats2_field2`}( ) ) == "`{`$arg_secondary_stats2_value2`}" )
+                           ++num_stats2;\
 `}
+                     }
                   } while( group.child_`{`$child2_suffix`}( ).iterate_next( ) );
                }
 
