@@ -13,6 +13,9 @@ git diff --cached --name-status | while read st file; do
     exit 1
    fi
   fi
+ else
+  echo Error: check_source target is missing.
+  exit 1
  fi
 done
 
