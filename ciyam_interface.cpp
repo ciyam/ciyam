@@ -3087,123 +3087,123 @@ void request_handler::process_request( )
                
                if( using_anonymous )
                {
-                 extra_content << g_mini_login_html;
+                  extra_content << g_mini_login_html;
                }
                else
                {
-                 extra_content << "         <div id=\"username\">\n";
+                  extra_content << "         <div id=\"username\">\n";
 
-                 if( !get_storage_info( ).user_info_view_id.empty( ) )
-                 {
-                   extra_content << GDS( c_display_logged_in_as ) << " ";
+                  if( !get_storage_info( ).user_info_view_id.empty( ) )
+                  {
+                     extra_content << GDS( c_display_logged_in_as ) << " ";
 
-                   string user_info_view_id( get_storage_info( ).user_info_view_id );
-                   string user_info_module_ref( get_storage_info( ).user_info_module_ref );
+                     string user_info_view_id( get_storage_info( ).user_info_view_id );
+                     string user_info_module_ref( get_storage_info( ).user_info_module_ref );
 
-                   if( !mod_info.user_info_view_id.empty( ) )
-                   {
-                     user_info_view_id = mod_info.user_info_view_id;
-                     user_info_module_ref = module_ref;
-                   }
-
-                   bool has_user_link = false;
-                   if( cmd != c_cmd_view || ident != user_info_view_id || data != p_session_info->user_key )
-                   {
-                     module_const_iterator mci, end;
-                     for( mci = get_storage_info( ).modules.begin( ), end = get_storage_info( ).modules.end( ); mci != end; ++mci )
+                     if( !mod_info.user_info_view_id.empty( ) )
                      {
-                        string next_module( mci->name );
+                        user_info_view_id = mod_info.user_info_view_id;
+                        user_info_module_ref = module_ref;
+                     }
 
-                        if( !mci->perm.empty( ) && !p_session_info->user_perms.count( mci->perm ) )
-                           continue;
-
-                        string module_ref( get_storage_info( ).get_module_ref( next_module ) );
-
-                        if( module_ref == user_info_module_ref && ( module_name == next_module || allow_module_switching ) )
+                     bool has_user_link = false;
+                     if( cmd != c_cmd_view || ident != user_info_view_id || data != p_session_info->user_key )
+                     {
+                        module_const_iterator mci, end;
+                        for( mci = get_storage_info( ).modules.begin( ), end = get_storage_info( ).modules.end( ); mci != end; ++mci )
                         {
-                           has_user_link = true;
+                           string next_module( mci->name );
 
-                           extra_content << "<a href=\"" << get_module_page_name( user_info_module_ref )
-                            << "?cmd=" << c_cmd_view << "&data=" << p_session_info->user_key << "&ident=" << user_info_view_id;
+                           if( !mci->perm.empty( ) && !p_session_info->user_perms.count( mci->perm ) )
+                              continue;
 
-                           if( !uselect.empty( ) )
-                              extra_content << "&" << c_param_uselect << "=" << uselect;
+                           string module_ref( get_storage_info( ).get_module_ref( next_module ) );
 
-                           if( !cookies_permitted )
-                              extra_content << "&session=" << session_id;
-
-                           if( use_url_checksum )
+                           if( module_ref == user_info_module_ref && ( module_name == next_module || allow_module_switching ) )
                            {
-                              string checksum_values( to_string( c_cmd_view )
-                               + p_session_info->user_key + user_info_view_id + uselect );
+                              has_user_link = true;
 
-                              extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                              extra_content << "<a href=\"" << get_module_page_name( user_info_module_ref )
+                               << "?cmd=" << c_cmd_view << "&data=" << p_session_info->user_key << "&ident=" << user_info_view_id;
+
+                              if( !uselect.empty( ) )
+                                 extra_content << "&" << c_param_uselect << "=" << uselect;
+
+                              if( !cookies_permitted )
+                                 extra_content << "&session=" << session_id;
+
+                              if( use_url_checksum )
+                              {
+                                 string checksum_values( to_string( c_cmd_view )
+                                  + p_session_info->user_key + user_info_view_id + uselect );
+
+                                 extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                              }
+
+                              extra_content << "\">";
+                              break;
                            }
-
-                           extra_content << "\">";
-                           break;
                         }
                      }
-                   }
 
-                   extra_content << p_session_info->user_id;
+                     extra_content << p_session_info->user_id;
 
-                   if( has_user_link )
-                     extra_content << "</a>";
-                }
-                else
-                  extra_content << GDS( c_display_logged_in_as ) << " " << p_session_info->user_id;
-
-
-                if( !mod_info.user_pwd_field_id.empty( ) )
-                {
-                  if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
-                     extra_content << " | " << pwd_display_name << "";
-                  else
-                  {
-                     extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_pwd;
-
-                     if( !uselect.empty( ) )
-                        extra_content << "&" << c_param_uselect << "=" << uselect;
-
-                     if( !cookies_permitted )
-                        extra_content << "&session=" << session_id;
-
-                     if( use_url_checksum )
-                     {
-                        string checksum_values( c_cmd_pwd + uselect );
-                        extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                     }
-
-                     extra_content << "\">" << pwd_display_name << "</a>";
+                     if( has_user_link )
+                        extra_content << "</a>";
                   }
-                }
+                  else
+                     extra_content << GDS( c_display_logged_in_as ) << " " << p_session_info->user_id;
 
-                extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_quit;
 
-                if( !uselect.empty( ) )
-                  extra_content << "&" << c_param_uselect << "=" << uselect;
+                  if( !mod_info.user_pwd_field_id.empty( ) )
+                  {
+                     if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
+                        extra_content << " | " << pwd_display_name << "";
+                     else
+                     {
+                        extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_pwd;
 
-                if( !cookies_permitted )
-                  extra_content << "&session=" << session_id;
+                        if( !uselect.empty( ) )
+                           extra_content << "&" << c_param_uselect << "=" << uselect;
 
-                if( use_url_checksum )
-                {
-                  string checksum_values( c_cmd_pwd + uselect );
-                  extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                }
+                        if( !cookies_permitted )
+                           extra_content << "&session=" << session_id;
 
-                extra_content << "\">" << GDS( c_display_logout ) << "</a>";
+                        if( use_url_checksum )
+                        {
+                           string checksum_values( c_cmd_pwd + uselect );
+                           extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                        }
 
-                if( file_exists( "help.htm" ) )
-                  extra_content << " | <a href=\"help.htm\" target=\"_blank\">" << GDS( c_display_help ) << "</a>";
-                else if( file_exists( "help.html" ) )
-                  extra_content << " | <a href=\"help.html\" target=\"_blank\">" << GDS( c_display_help ) << "</a>";
+                        extra_content << "\">" << pwd_display_name << "</a>";
+                     }
+                  }
 
-                extra_content << "\n         </div>\n";
-              }
+                  extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_quit;
+
+                  if( !uselect.empty( ) )
+                     extra_content << "&" << c_param_uselect << "=" << uselect;
+
+                  if( !cookies_permitted )
+                     extra_content << "&session=" << session_id;
+
+                  if( use_url_checksum )
+                  {
+                     string checksum_values( c_cmd_pwd + uselect );
+                     extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                  }
+
+                  extra_content << "\">" << GDS( c_display_logout ) << "</a>";
+
+                  if( file_exists( "help.htm" ) )
+                     extra_content << " | <a href=\"help.htm\" target=\"_blank\">" << GDS( c_display_help ) << "</a>";
+                  else if( file_exists( "help.html" ) )
+                     extra_content << " | <a href=\"help.html\" target=\"_blank\">" << GDS( c_display_help ) << "</a>";
+
+                  extra_content << "\n         </div>\n";
+               }
               
-              extra_content << "         <div id=\"uselects\">\n";
+               extra_content << "         <div id=\"uselects\">\n";
 
                // NOTE: If a user select option is specified and the user has access to it then include it.
                if( !mod_info.user_select_str_key.empty( )
