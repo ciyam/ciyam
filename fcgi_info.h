@@ -324,7 +324,8 @@ struct module_info
 {
    module_info( )
     :
-    user_select_is_strict( false )
+    user_select_is_strict( false ),
+    allows_anonymous_access( false )
    {
    }
 
@@ -366,6 +367,7 @@ struct module_info
    std::string user_select_uo_field;
 
    bool user_select_is_strict;
+   bool allows_anonymous_access;
 
    std::string user_qlink_class_id;
    std::string user_qlink_pfield_id;

@@ -18,6 +18,7 @@ login.htms
 login_box.gif
 login_header.gif
 login_persistent.htms
+minilogin.htms
 minmax.js
 navbar.png
 password.htms

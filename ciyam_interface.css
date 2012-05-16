@@ -564,6 +564,46 @@ td.list
 
 /*END LOGIN*/
 
+/* MINI LOGIN */
+
+#minilogin
+{
+   height:100%;
+   float:right;
+}
+
+#miniloginform
+{
+   height:100%;
+}
+
+#minilogintable
+{
+   height:100%;
+}
+
+#miniusername
+{
+  border: 1px solid black; 
+  height: 12px;
+  width: 80px;
+}
+
+#minipassword
+{
+  border: 1px solid black; 
+  height: 12px;
+  width: 80px;
+}
+
+#minisubmit
+{
+  border: 1px solid black; 
+  height: 20px;
+}
+
+/*END MINI LOGIN*/
+
 #footer
 {
    left: 0px;
