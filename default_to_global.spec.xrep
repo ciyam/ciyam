@@ -1,17 +1,25 @@
 `{`@eq`(`'to_store`'`,`$section`)\
    // [(start default_to_global)]
-`{`@eq`(`$arg_tvalue`,`'`'`)\
-   if( is_create`{`!`@eq`(`$arg_dflt_only`,`'`'`) && get_obj( ).get_key( ).empty( )`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
- &&`{`!`@eq`(`$arg_cfield`,`'`'`) is_null( get_obj( ).`{`$arg_cfield`}( ) ) &&`}\
- !is_null( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )`} )\
+`{`$cond`=`'`'`}\
+`{`@eq`(`$arg_inc_exist`,`'`'`)`$cond`=`'is_create`'`}\
+`{`!`@eq`(`$arg_dflt_only`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`' && `'`}`}\
+`{`!`@eq`(`$arg_dflt_only`,`'`'`)`$cond`^`'get_obj( ).get_key( ).empty( )`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`' && `'`}`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$cond`^`'`{`!`@eq`(`$arg_cfield`,`'`'`)is_null( get_obj( ).`{`$arg_cfield`}( ) ) && `}\
+`{`@eq`(`$arg_tvalue`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )\
+`,get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )`}\
+`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`}`'`}\
+`{`@eq`(`$cond`,`'`'`)\
+`{`$test`=`$arg_value`/@`/ `}`{`@eq`(`$test`,`$arg_value`)\
+   get_obj( ).`{`$arg_field`}( `{`$arg_value`} );\
 `,\
-   if( is_create`{`!`@eq`(`$arg_dflt_only`,`'`'`) && get_obj( ).get_key( ).empty( )`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
- &&`{`!`@eq`(`$arg_cfield`,`'`'`) is_null( get_obj( ).`{`$arg_cfield`}( ) ) &&`}\
- get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}`} )\
-`}`{`$test`=`$arg_value`/@`/ `}`{`@eq`(`$test`,`$arg_value`)
+   get_obj( ).`{`$arg_field`}( get_session_variable( `{`$arg_value`} ) );\
+`}`,\
+   if( `{`$cond`} )
+`{`$test`=`$arg_value`/@`/ `}`{`@eq`(`$test`,`$arg_value`)\
       get_obj( ).`{`$arg_field`}( `{`$arg_value`} );\
 `,\
       get_obj( ).`{`$arg_field`}( get_session_variable( `{`$arg_value`} ) );\
-`}
+`}`}
    // [(finish default_to_global)]
 `}
