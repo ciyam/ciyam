@@ -2380,6 +2380,7 @@ void Meta_Model::impl::impl_Generate( )
                            }
                         }
 
+                        bool invert_perm = false;
                         switch( get_obj( ).child_View( ).child_View_Field( ).Link_Restriction( ) )
                         {
                            case 0:
@@ -2391,11 +2392,40 @@ void Meta_Model::impl::impl_Generate( )
                            case 1:
                            if( !extras.empty( ) )
                               extras += '+';
-                           extras += "admin_link";
+                           extras += "owner_link";
+                           invert_perm = true;
                            break;
 
-                           case 2: // i.e. denied_always
+                           case 2:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "admin_link";
+                           invert_perm = true;
                            break;
+
+                           case 3:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "admin_owner_link";
+                           invert_perm = true;
+                           break;
+
+                           case 4: // i.e. denied_always
+                           if( !is_null( get_obj( ).child_View( ).child_View_Field( ).Link_Permission( ) ) )
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "link";
+                           }
+                           break;
+                        }
+
+                        if( !is_null( get_obj( ).child_View( ).child_View_Field( ).Link_Permission( ) ) )
+                        {
+                           extras += "=";
+                           if( invert_perm )
+                              extras += "!";
+                           extras += get_obj( ).child_View( ).child_View_Field( ).Link_Permission( ).Id( );
                         }
 
                         switch( get_obj( ).child_View( ).child_View_Field( ).New_Source( ) )

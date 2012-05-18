@@ -63,28 +63,29 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
       e_field_id_FK_Trigger_Option = 12,
       e_field_id_Font_Size = 13,
       e_field_id_Ignore_Manual_Links = 14,
-      e_field_id_Link_Restriction = 15,
-      e_field_id_Mandatory_Option = 16,
-      e_field_id_Name = 17,
-      e_field_id_New_Source = 18,
-      e_field_id_New_Value = 19,
-      e_field_id_Order = 20,
-      e_field_id_Restriction_Spec = 21,
-      e_field_id_Show_Hide_Start_Point = 22,
-      e_field_id_Sort_Manually = 23,
-      e_field_id_Source_Child = 24,
-      e_field_id_Source_Edit_Child = 25,
-      e_field_id_Source_Field = 26,
-      e_field_id_Source_Parent = 27,
-      e_field_id_Source_Parent_Class = 28,
-      e_field_id_Tab_Name = 29,
-      e_field_id_Trigger_Behaviour = 30,
-      e_field_id_Trigger_For_State = 31,
-      e_field_id_Trigger_Option = 32,
-      e_field_id_Type = 33,
-      e_field_id_Use_Full_Width = 34,
-      e_field_id_Use_Source_Parent = 35,
-      e_field_id_View = 36
+      e_field_id_Link_Permission = 15,
+      e_field_id_Link_Restriction = 16,
+      e_field_id_Mandatory_Option = 17,
+      e_field_id_Name = 18,
+      e_field_id_New_Source = 19,
+      e_field_id_New_Value = 20,
+      e_field_id_Order = 21,
+      e_field_id_Restriction_Spec = 22,
+      e_field_id_Show_Hide_Start_Point = 23,
+      e_field_id_Sort_Manually = 24,
+      e_field_id_Source_Child = 25,
+      e_field_id_Source_Edit_Child = 26,
+      e_field_id_Source_Field = 27,
+      e_field_id_Source_Parent = 28,
+      e_field_id_Source_Parent_Class = 29,
+      e_field_id_Tab_Name = 30,
+      e_field_id_Trigger_Behaviour = 31,
+      e_field_id_Trigger_For_State = 32,
+      e_field_id_Trigger_Option = 33,
+      e_field_id_Type = 34,
+      e_field_id_Use_Full_Width = 35,
+      e_field_id_Use_Source_Parent = 36,
+      e_field_id_View = 37
    };
 
    Meta_View_Field( );
@@ -176,6 +177,10 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
    Meta_Class& Class( );
    const Meta_Class& Class( ) const;
    void Class( const std::string& key );
+
+   Meta_Permission& Link_Permission( );
+   const Meta_Permission& Link_Permission( ) const;
+   void Link_Permission( const std::string& key );
 
    Meta_Specification& Restriction_Spec( );
    const Meta_Specification& Restriction_Spec( ) const;

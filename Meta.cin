@@ -43,7 +43,7 @@ user_defined_enum_add -id=658 view_pdf_view_type int 0=none,2=Standard_2_Column,
 user_defined_enum_add -id=660 view_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=661 view_field_access_scope int 0=all,1=create\\_only,2=post\\_create,3=editing\\_only,4=viewing\\_only,5=updating\\_only
 user_defined_enum_add -id=662 view_field_change_scope int 0=all,1=create\\_only,2=update\\_only,3=always\\_editable
-user_defined_enum_add -id=663 view_field_link_restrict int 0=none,1=admin\\_only,2=denied\\_always
+user_defined_enum_add -id=663 view_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=670 view_field_new_source int 0=none,1=user,2=group,3=other,4=value
 user_defined_enum_add -id=671 view_field_trigger_option int 0=none,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key0
 user_defined_enum_add -id=672 view_field_trigger_behaviour int 0=normal,1=send\\_always,2=fetch\\_always,3=send\\_and\\_fetch\\_always
@@ -477,7 +477,7 @@ field_add -id=120103 View_Field Tab_Name long_identifier opt
 field_add -id=120105 View_Field Access_Restriction int mand -def=0 -e=view_field_restrict
 field_add -id=120106 View_Field Change_Restriction int mand -def=0 -e=view_field_restrict
 field_add -id=120107 View_Field Use_Source_Parent bool mand -def=0
-field_add -id=120108 View_Field Link_Restriction int mand -def=2 -e=view_field_link_restrict
+field_add -id=120108 View_Field Link_Restriction int mand -def=4 -e=view_field_link_restrict
 field_add -id=120109 View_Field New_Source int mand -def=0 -e=view_field_new_source
 field_add -id=120110 View_Field Trigger_Behaviour int mand -def=0 -e=view_field_trigger_behaviour
 field_add -id=120111 View_Field FK_Trigger_Option int mand -def=0 -e=view_field_fk_trigger_option
@@ -808,6 +808,7 @@ relationship_add -id=201830 -fid=301830 View Change_{Permission} Permission opt 
 relationship_add -id=201900 -fid=301900 View_Field {View} View mand destroy
 relationship_add -id=201905 -fid=301905 View_Field {Class} Class mand destroy
 relationship_add -id=201910 -fid=301910 View_Field Type View_Field_Type mand restrict
+relationship_add -id=201915 -fid=301915 View_Field Link_{Permission} Permission opt restrict
 relationship_add -id=201920 -fid=301920 View_Field Access_{Permission} Permission opt restrict
 relationship_add -id=201930 -fid=301930 View_Field Change_{Permission} Permission opt restrict
 relationship_add -id=201940 -fid=301940 View_Field Source_Field Field opt destroy
@@ -1022,16 +1023,16 @@ modifier_add -id=500705 View_Field Is_Field Tab_Name:relegate
 modifier_add -id=500706 View_Field Is_Print_Version Type:relegate,Source_Edit_Child:relegate,Sort_Manually:relegate\
 ,Restriction_Spec:relegate,New_Source:relegate,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate\
 ,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate,Mandatory_Option:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate\
-,Enum_Starts_At:relegate,Enum_Finishes_At:relegate,Link_Restriction:relegate,Access_Scope:relegate,Change_Scope:relegate\
-,Change_Restriction:relegate,Change_{Permission}:relegate
+,Enum_Starts_At:relegate,Enum_Finishes_At:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
+,Access_Scope:relegate,Change_Scope:relegate,Change_Restriction:relegate,Change_{Permission}:relegate
 modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:relegate,Access_Restriction:relegate\
-,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate\
+,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Enum_Starts_At:relegate,Enum_Finishes_At:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate\
 ,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate
 modifier_add -id=500715 View_Field Is_Key Mandatory_Option:relegate,Date_Precision_Option:relegate\
-,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate\
+,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Ignore_Manual_Links:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Tab_Name:relegate
@@ -1041,7 +1042,7 @@ modifier_add -id=500720 View_Field Hide_Non_FK_Fields Source_Field:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate
 modifier_add -id=500730 View_Field Hide_FK_Fields Source_Parent:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
-,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate
+,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate
 modifier_add -id=500740 View_Field Is_Not_Enum Enum_Starts_At:relegate,Enum_Finishes_At:relegate
 modifier_add -id=500800 List Is_Child Is_Variation:relegate
 modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Ignore_Uneditable_Parent:relegate
@@ -1845,8 +1846,9 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
-,Mandatory_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Ignore_Manual_Links,Show_Hide_Start_Point,Link_Restriction,Access_Scope\
-,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
+,Mandatory_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Ignore_Manual_Links\
+,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
+,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name"
 specification_add -id=602720 {View_Field}_child_list0 list "@602720_* child:no_limit\
  View_Field Name -act=+!120410+@rfields+@rvalues,+!^120420+@rfields+@rvalues {View}"
@@ -1888,12 +1890,12 @@ specification_add -id=602900 {Application}_group_list list "* group:no_limit App
 specification_add -id=602910 {Application}_view view "? standard Application\
  Name;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
-,@tab:Generate_Details,Module_Prefix,Version,Generate_Details;show+no_edit\
+,@tab:Generate_Details,Version,Generate_Details;show+no_edit\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
 ,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers,Default_Timezone_Abbr\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
-,@tab:Other_Settings,Use_URL_Checksum,Encrypt_Dynamic_Content,Auto_Login_Days,Allow_Duplicate_Logins\
+,@tab:Other_Settings,Module_Prefix,Use_URL_Checksum,Encrypt_Dynamic_Content,Auto_Login_Days,Allow_Duplicate_Logins\
 ,Actions"
 specification_add -id=602950 {Module}_child_list0 list "@602950_* child:no_limit Module {Model}:Name;link\
  -act=+!126410+@rfields+@rvalues,+!^126420+@rfields+@rvalues {Application}"

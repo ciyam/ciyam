@@ -1994,10 +1994,18 @@
     </value>
     <value/>
      <data>1
-     <name>enum_view_field_link_restrict_admin_only
+     <name>enum_view_field_link_restrict_owner_only
     </value>
     <value/>
      <data>2
+     <name>enum_view_field_link_restrict_admin_only
+    </value>
+    <value/>
+     <data>3
+     <name>enum_view_field_link_restrict_admin_owner
+    </value>
+    <value/>
+     <data>4
      <name>enum_view_field_link_restrict_denied_always
     </value>
    </values>
@@ -2268,14 +2276,6 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_application_module_prefix
-     <field>127103
-     <ftype>string
-     <extra>max_size=30
-     <mandatory>false
-     <modifiers>
-    </field>
-    <field/>
      <name>field_application_version
      <field>127102
      <ftype>string
@@ -2424,6 +2424,14 @@
      <field>@tab
      <ftype>
      <extra>
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_application_module_prefix
+     <field>127103
+     <ftype>string
+     <extra>max_size=30
      <mandatory>false
      <modifiers>
     </field>
@@ -7628,6 +7636,18 @@
      <extra>enum=663
      <mandatory>true
      <modifiers>8000:relegate,10000:relegate,1000:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_view_field_link_permission
+     <field>301915
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,100:relegate
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
     </field>
     <field/>
      <name>field_view_field_access_scope
