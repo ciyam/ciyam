@@ -23423,7 +23423,41 @@
       <type>int
       <mandatory>true
       <enum_id>663
-      <default_value>2
+      <default_value>4
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500706
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500730
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301915
+      <name>Link_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>201915
       <indexes/>
       </indexes>
       <modifiers/>
@@ -25278,6 +25312,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201915
+    <name>Link_{Permission}_{View_Field}
+    <parent_id>116100
+    <child_id>120100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>202616
     <name>Meta_Content_Field_{Specification_Content_Page}
     <parent_id>107100
@@ -26533,7 +26576,6 @@
      <field_info>127125;new_only
      <field_info>127128;new_only
      <field_info>@tab:Generate_Details
-     <field_info>127103
      <field_info>127102
      <field_info>127106;show+no_edit
      <field_info>@tab:Display_Settings
@@ -26553,6 +26595,7 @@
      <field_info>127118;enum=903
      <field_info>127127
      <field_info>@tab:Other_Settings
+     <field_info>127103
      <field_info>127107
      <field_info>127130
      <field_info>127124;enum=906
@@ -33506,6 +33549,7 @@
      <field_info>120126
      <field_info>120116
      <field_info>120108;enum=663
+     <field_info>301915:116101!@group:301500+116101
      <field_info>120119;enum=661
      <field_info>120105;enum=660
      <field_info>301920:116101!@group:301500+116101
@@ -34157,7 +34201,7 @@
     <id>663
     <name>view_field_link_restrict
     <type>int
-    <key_values>0=none,1=admin\_only,2=denied\_always
+    <key_values>0=none,1=owner\_only,2=admin\_only,3=admin\_owner,4=denied\_always
    </user_defined_enum>
    <user_defined_enum/>
     <id>677

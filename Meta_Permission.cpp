@@ -515,6 +515,28 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
       return *cp_child_List_Field_Link;
    }
 
+   Meta_View_Field& impl_child_View_Field_Link( )
+   {
+      if( !cp_child_View_Field_Link )
+      {
+         cp_child_View_Field_Link.init( );
+
+         p_obj->setup_graph_parent( *cp_child_View_Field_Link, "301915" );
+      }
+      return *cp_child_View_Field_Link;
+   }
+
+   const Meta_View_Field& impl_child_View_Field_Link( ) const
+   {
+      if( !cp_child_View_Field_Link )
+      {
+         cp_child_View_Field_Link.init( );
+
+         p_obj->setup_graph_parent( *cp_child_View_Field_Link, "301915" );
+      }
+      return *cp_child_View_Field_Link;
+   }
+
    Meta_Model& impl_child_Model( )
    {
       if( !cp_child_Model )
@@ -620,6 +642,7 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
    mutable class_pointer< Meta_List > cp_child_List_Create;
    mutable class_pointer< Meta_List > cp_child_List_Destroy;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Link;
+   mutable class_pointer< Meta_View_Field > cp_child_View_Field_Link;
    mutable class_pointer< Meta_Model > cp_child_Model;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
 };
@@ -837,6 +860,9 @@ void Meta_Permission::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Workgroup( ) ) )
+         throw runtime_error( "unexpected empty Workgroup" );
+
       get_obj( ).Workgroup( ).op_update( get_obj( ).Workgroup( ), FIELD_NAME( Meta, Workgroup, Next_Permission_Id ) );
 
       get_obj( ).Id( get_obj( ).Workgroup( ).Next_Permission_Id( ) );
@@ -1050,6 +1076,16 @@ Meta_List_Field& Meta_Permission::child_List_Field_Link( )
 const Meta_List_Field& Meta_Permission::child_List_Field_Link( ) const
 {
    return p_impl->impl_child_List_Field_Link( );
+}
+
+Meta_View_Field& Meta_Permission::child_View_Field_Link( )
+{
+   return p_impl->impl_child_View_Field_Link( );
+}
+
+const Meta_View_Field& Meta_Permission::child_View_Field_Link( ) const
+{
+   return p_impl->impl_child_View_Field_Link( );
 }
 
 Meta_Model& Meta_Permission::child_Model( )
@@ -1358,7 +1394,7 @@ void Meta_Permission::set_total_child_relationships( size_t new_total_child_rela
 
 size_t Meta_Permission::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 11;
+   size_t rc = 12;
 
    if( !is_internal )
    {
@@ -1391,7 +1427,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 11 )
+   if( child_num >= 12 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1478,12 +1514,20 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          case 9:
          if( op == e_cascade_op_restrict )
          {
+            next_child_field = "301915";
+            p_class_base = &child_View_Field_Link( );
+         }
+         break;
+
+         case 10:
+         if( op == e_cascade_op_restrict )
+         {
             next_child_field = "301600";
             p_class_base = &child_Model( );
          }
          break;
 
-         case 10:
+         case 11:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301499";
@@ -1571,6 +1615,8 @@ class_base& Meta_Permission::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Destroy( );
    else if( sub_context == "_302135" || sub_context == "child_List_Field_Link" )
       p_class_base = &child_List_Field_Link( );
+   else if( sub_context == "_301915" || sub_context == "child_View_Field_Link" )
+      p_class_base = &child_View_Field_Link( );
    else if( sub_context == "_301600" || sub_context == "child_Model" )
       p_class_base = &child_Model( );
    else if( sub_context == "_301499" || sub_context == "child_Specification" )

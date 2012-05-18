@@ -163,13 +163,31 @@ void setup_view_fields( view_source& view,
           && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) ) )
             view.hidden_fields.insert( value_id );
 
-         if( extra_data.count( c_field_extra_link ) )
+         if( has_perm_extra( c_field_extra_link, extra_data, sess_info ) )
             view.link_fields.insert( value_id );
+
+         if( has_perm_extra( c_field_extra_owner_link, extra_data, sess_info ) )
+         {
+            view.link_fields.insert( value_id );
+            view.owner_link_fields.insert( value_id );
+         }
 
          if( extra_data.count( c_field_extra_admin_link ) )
          {
             view.link_fields.insert( value_id );
-            view.admin_link_fields.insert( value_id );
+
+            if( !sess_info.is_admin_user
+             && has_perm_extra( c_field_extra_admin_link, extra_data, sess_info ) )
+               view.admin_link_fields.insert( value_id );
+         }
+
+         if( extra_data.count( c_field_extra_admin_owner_link ) )
+         {
+            view.link_fields.insert( value_id );
+
+            if( !sess_info.is_admin_user
+             && has_perm_extra( c_field_extra_admin_owner_link, extra_data, sess_info ) )
+               view.owner_link_fields.insert( value_id );
          }
 
          if( extra_data.count( c_field_extra_manual_link ) )
@@ -2417,6 +2435,7 @@ bool output_view_form( ostream& os, const string& act,
             if( !is_printable
              && !fk_refs.count( source_field_id )
              && source.link_fields.count( source_value_id )
+             && ( !source.owner_link_fields.count( source_value_id ) || is_record_owner )
              && ( !source.admin_link_fields.count( source_value_id ) || sess_info.is_admin_user )
              && source.fk_field_values.count( source_field_id )
              && mod_info.view_cids.count( source.fk_field_classes.find( source_field_id )->second ) )

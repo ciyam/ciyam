@@ -96,6 +96,9 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    Meta_List_Field& child_List_Field_Link( );
    const Meta_List_Field& child_List_Field_Link( ) const;
 
+   Meta_View_Field& child_View_Field_Link( );
+   const Meta_View_Field& child_View_Field_Link( ) const;
+
    Meta_Model& child_Model( );
    const Meta_Model& child_Model( ) const;
 
