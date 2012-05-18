@@ -137,8 +137,8 @@ inline string convert_local_to_utc( const string& local, const string& tz_abbr )
 
    if( !local.empty( ) )
    {
-      // NOTE: If a date_time string starts with '#' then it is considered as already being UTC.
-      if( local[ 0 ] == '#' )
+      // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
+      if( local[ 0 ] == 'U' )
          s = local.substr( 1 );
       else
          s = local_to_utc( date_time( local ), tz_abbr ).as_string( );

@@ -3824,6 +3824,7 @@ void default_to_global_specification::add_specification_data( model& m, specific
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, test_value ) );
 
    spec_data.data_pairs.push_back( make_pair( string( c_data_dflt_only ), default_only ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( "inc_exist", "" ) );
 }
 
 string default_to_global_specification::static_class_name( ) { return "default_to_global"; }

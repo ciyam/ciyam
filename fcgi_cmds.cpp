@@ -1325,7 +1325,6 @@ bool populate_list_info( list_source& list,
          if( field_value == "~" && svname[ 0 ] >= 'A' && svname[ 0 ] <= 'G' )
             field_value.erase( );
 
-         bool is_first = true;
          if( query_values.count( field_id ) )
          {
             string query_value( query_values[ field_id ] );
@@ -1778,7 +1777,13 @@ bool populate_list_info( list_source& list,
                         svname += ( list.lici->second )->parents[ i ].field;
 
                         if( list_search_values.count( svname ) )
+                        {
                            *p_value = list_search_values.find( svname )->second;
+
+                           // NOTE: For optional selects "~" is being used to indicate null.
+                           if( *p_value == "~" )
+                              *p_value = "";
+                        }
                         else
                         {
                            string sel_id( list.id );

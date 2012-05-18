@@ -8,7 +8,7 @@
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).`{`$arg_field`}( ) )`{`@eq`(`$arg_fmandatory`,`'0`'`) && !is_null( get_obj( ).`{`$arg_pfield`}( ) )`} )
    {
-`{`@eq`(`$arg_fmandatory`,`'true`'`)\
+`{`@eq`(`$arg_fmandatory`,`'1`'`)\
       if( is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
          throw runtime_error( "unexpected empty `{`$arg_pfield`}" );
 

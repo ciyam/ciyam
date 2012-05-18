@@ -5378,7 +5378,6 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
 
       if( !packages.empty( ) )
       {
-
          set_system_variable( model_key, "Removing packages..." ); // FUTURE: Should be a module string...
 
          // NOTE: If the thread that has spawned the child process is terminated (due

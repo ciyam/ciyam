@@ -1,0 +1,54 @@
+Development Cycle Steps
+-----------------------
+
+1. Sign up for a free GitHub account (https://github.com/signup/free), and set up git and SSH to work with
+GitHub (http://help.github.com/win-set-up-git/).
+ 
+2. You need a fork of the main source tree. Login to your GitHub account, browse to the ciyam project
+(https://github.com/ciyam/ciyam), then push the small 'Fork' button near the top of the screen.
+ 
+3. Connect that fork at GitHub with source code on your development machine. The easiest way to do that
+is to clone your github fork, using the SSH Read+Write URL github shows you on your fork's page.
+ 
+git clone git@github.com:your_github_name/ciyam.git
+cd ciyam
+
+4. Add a remote link to the main ciyam "upstream" project.
+git remote add upstream git://github.com/ciyam/ciyam.git
+
+-------------------------------------------------------------------------------------------------------------
+                    [these steps are applicable to each task being worked on]
+-------------------------------------------------------------------------------------------------------------
+
+5. Make sure you are using your master branch and have merged all remote changes (this step is not applicable
+if you have only just cloned the repository).
+
+git checkout master
+git fetch upstream
+git merge upstream/master
+
+6. Create a new branch for the task you are working on.
+
+git checkout -b task_branch_name
+ 
+ ... edit, test, re-edit, re-test ...
+
+7. Make sure that all targets have been built and then run the basic regression tests.
+
+make all
+./dotests
+
+(if any errors then these will need to be resolved before continuing)
+
+8. Run any more specific regression tests that could potentially be affected by your changes.
+
+(obviously steps 7 and 9 are not applicable if all changes made do not affect the software such as docco)
+
+9. Now commit your changes and push to your branch.
+
+git commit -m "Added new features to satisfy specified requirements."
+git push git@github.com:your_github_name/ciyam.git task_branch_name:task_branch_name
+ 
+10. Finally submit a "pull" request by going to your fork's GitHub page, selecting the branch containing the
+changes you want pulled ("task_branch_name" in the above example), and then pushing the "Pull Request" button.
+
