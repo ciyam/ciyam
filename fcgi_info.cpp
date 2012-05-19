@@ -491,17 +491,17 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
 
       if( !info.perm.empty( ) )
       {
-        vector<string> perms;
-        split( info.perm, perms, ',' );
-        vector<string> new_perms;
-        for( int i = 0; i < perms.size( ); ++i )
-        {
-          if( perms[ i ] == "@anon" )
-            info.allows_anonymous_access = true;
-          else
-            new_perms.push_back( perms[ i ] );
-        }
-        info.perm = join( new_perms, ',' );
+         vector< string > perms;
+         split( info.perm, perms, ',' );
+         vector< string > new_perms;
+         for( int i = 0; i < perms.size( ); ++i )
+         {
+            if( perms[ i ] == "@anon" )
+               info.allows_anonymous_access = true;
+            else
+               new_perms.push_back( perms[ i ] );
+         }
+         info.perm = join( new_perms, ',' );
       }
 
       info.title = reader.read_attribute( c_attribute_title );
