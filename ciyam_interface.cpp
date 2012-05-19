@@ -432,8 +432,7 @@ string get_view_or_list_header( const string& qlink,
    return str;
 }
 
-void output_login_logout( ostream& os,
- const string& extra_details, bool is_logout, bool is_error, const string& module_ref )
+void output_login_logout( ostream& os, const string& extra_details, const string& msg = "" )
 {
    os << "\n<div id=\"login_content\">\n";
 
@@ -442,23 +441,17 @@ void output_login_logout( ostream& os,
       os << "<img src=\"login_header.gif\" alt=\"Login Header\"><br class=\"clear\"/>\n";
    os << "</div>\n";
 
-   if( is_logout || is_error )
-      os << "\n<div id=\"logout_text\">\n";
-
-   if( !extra_details.empty( ) )
-      os << extra_details;
-
-   if( is_logout )
+   if( extra_details.empty( ) )
    {
-      os << "<p align=\"center\">"
-       << string_message( GDS( c_display_click_here_to_login ),
-       make_pair( c_display_click_here_to_login_parm_href,
-       "<a href=\"" + get_module_page_name( module_ref, true )
-       + "?cmd=" + string( c_cmd_login ) + "\">" ), "</a>" ) << "</p>\n";
-   }
-
-   if( is_logout || is_error )
+      os << "\n<div id=\"logout_text\">\n";
+      os << msg << "\n";
       os << "</div>\n";
+   }
+   else
+   {
+      os << extra_details;
+      os << msg << "\n";
+   }
 
    os << "</div>\n";
 }
@@ -740,6 +733,8 @@ void request_handler::process_request( )
    session_info* p_session_info = 0;
    ostringstream form_content, extra_content;
 
+   bool cookies_permitted( false );
+
    DEBUG_TRACE( "[process request]" );
 
    try
@@ -774,8 +769,6 @@ void request_handler::process_request( )
 
       const char* p_query = FCGX_GetParam( c_http_param_query, *p_env );
       const char* p_cookie = FCGX_GetParam( c_http_param_cookie, *p_env );
-
-      bool cookies_permitted( false );
 
       if( p_cookie )
       {
@@ -901,7 +894,8 @@ void request_handler::process_request( )
       {
          using_anonymous = true;
          is_authorised = true;
-         if( cmd.empty( ) ) cmd = c_cmd_home;
+         if( cmd.empty( ) ) 
+            cmd = c_cmd_home;
       }
 
       if( cmd == c_cmd_status || using_anonymous )
@@ -920,7 +914,7 @@ void request_handler::process_request( )
             if( cmd != c_cmd_activate )
             {
                is_login_screen = true;
-               output_login_logout( extra_content, login_html, false, false, "" );
+               output_login_logout( extra_content, login_html );
             }
             else
             {
@@ -1002,7 +996,10 @@ void request_handler::process_request( )
             osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
              << ": " << GDS( c_display_your_session_has_been_terminated ) << ".</p>\n";
 
-            output_login_logout( extra_content, osstr.str( ), true, true, module_ref );
+            string login_html( !cookies_permitted || !get_storage_info( ).login_days
+             || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
+
+            output_login_logout( extra_content, login_html, osstr.str( ) );
 
             if( cookies_permitted )
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
@@ -3045,7 +3042,10 @@ void request_handler::process_request( )
 
             remove_session_temp_directory( session_id );
 
-            output_login_logout( extra_content, osstr.str( ), true, false, module_ref );
+            string login_html( !cookies_permitted || !get_storage_info( ).login_days
+             || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
+
+            output_login_logout( extra_content, login_html, osstr.str( ) );
          }
 
          if( finished_session )
@@ -3750,6 +3750,20 @@ void request_handler::process_request( )
 
                bool has_selected_list = false;
 
+               // NOTE: If using anonymous then the user is not admin and belongs to 'guests' group
+               bool is_admin_user;
+               string user_group;
+               if( using_anonymous )
+               {
+                  is_admin_user = false;
+                  user_group = "guests";
+               }
+               else
+               {
+                  is_admin_user = p_session_info->is_admin_user;
+                  user_group = p_session_info->user_group;
+               }
+
                for( list_menu_const_iterator
                 lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
                {
@@ -3770,15 +3784,15 @@ void request_handler::process_request( )
                   if( lmci->second->type == c_list_type_no_access )
                      has_perm = false;
 
-                  // NOTE: If the user does not have permission or if the list is a "group" type but the user
-                  // doesn't belong to a group or if the list is an "admin" one but the user is not an admin
-                  // user then omit it. Also omit "user" lists if the user is "admin" (it is probably not a
-                  // good idea for the "admin" user to belong to a group but if so then the "admin" user will
-                  // be able to access its "group" specific lists).
+                  // NOTE: If the user does not have permission or if the list is 
+                  // a "group" type but the user doesn't belong to a group or if the list is an "admin"
+                  // one but the user is not an admin user then omit it. Also omit "user" lists if the
+                  // user is "admin" (it is probably not a good idea for the "admin" user to belong to a 
+                  // group but if so then the "admin" user will be able to access its "group" specific lists).                        
                   if( has_perm && lmci->second->type != c_list_type_home
-                   && ( p_session_info->is_admin_user || lmci->second->type != c_list_type_admin )
-                   && ( !p_session_info->is_admin_user || lmci->second->type != c_list_type_user )
-                   && ( !p_session_info->user_group.empty( ) || lmci->second->type != c_list_type_group ) )
+                   && ( is_admin_user || lmci->second->type != c_list_type_admin )
+                   && ( !is_admin_user || lmci->second->type != c_list_type_user )
+                   && ( !user_group.empty( ) || lmci->second->type != c_list_type_group ) )
                   {
                      string display_name( get_display_name( lmci->first ) );
 
@@ -4005,8 +4019,8 @@ void request_handler::process_request( )
       LOG_TRACE( string( "error: " ) + x.what( ) );
 
       ostringstream osstr;
-      osstr << "<p class=\"error\" align=\"center\">"
-       << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
+      osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
+       << ": " << x.what( ) << ".</p>\n";
 
       bool is_logged_in = false;
       if( !created_session && p_session_info && p_session_info->logged_in )
@@ -4032,7 +4046,10 @@ void request_handler::process_request( )
          }
       }
 
-      output_login_logout( extra_content, osstr.str( ), !is_logged_in, true, created_session ? module_ref : "" );
+      string login_html( !cookies_permitted || !get_storage_info( ).login_days
+       || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
+
+      output_login_logout( extra_content, login_html, osstr.str( ) );
 
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
