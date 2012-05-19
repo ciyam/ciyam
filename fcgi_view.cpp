@@ -499,7 +499,6 @@ bool output_view_form( ostream& os, const string& act,
             // "admin" or the user key matches the current user prevent editing.
             if( !( source.state & c_state_uneditable )
              && !( source.state & c_state_is_changing )
-             && !( source.state & c_state_unactionable )
              && ( !is_owner_edit || owner == sess_info.user_key )
              && ( !is_admin_owner_edit || sess_info.is_admin_user || owner == sess_info.user_key )
              && ( sess_info.is_admin_user || mod_info.user_info_view_id != source.vici->second->id || data == sess_info.user_key ) )
