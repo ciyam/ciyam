@@ -1753,7 +1753,7 @@ void request_handler::process_request( )
             }
          }
 
-         // NOTE: If the user is able to select their group or other then assign it here.
+         // NOTE: If the user is able to select their group or "other" then assign it here.
          if( !mod_info.user_select_field.empty( )
           && ( mod_info.user_select_perm.empty( )
           || p_session_info->user_perms.count( mod_info.user_select_perm ) ) )
@@ -3019,10 +3019,10 @@ void request_handler::process_request( )
             {
                if( !had_send_or_recv_error )
                   osstr << "<p align=\"center\"><strong>"
-                   << GDS( c_display_you_have_been_logged_out ) << ".</strong></p>\n";
+                   << GDS( c_display_you_have_been_logged_out ) << "</strong></p>\n";
                else
                   osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
-                   << ": " << GDS( c_display_your_session_has_been_terminated ) << ".</p>\n";
+                   << ": " << GDS( c_display_your_session_has_been_terminated ) << "</p>\n";
             }
             else
             {
@@ -3385,7 +3385,7 @@ void request_handler::process_request( )
                else
                {
                   if( error_message.empty( ) )
-                     extra_content << "<p align=\"center\"><b>" << GDS( c_display_password_has_been_changed ) << "!</b></p>\n";
+                     extra_content << "<p align=\"center\"><b>" << GDS( c_display_password_has_been_changed ) << "</b></p>\n";
                   else
                      extra_content << "<p align=\"center\" class=\"error\">" << error_message << "</p>\n";
                }
@@ -3748,21 +3748,21 @@ void request_handler::process_request( )
                   extra_content << "\">" << GDS( c_display_home ) << "</a></li>\n";
                }
 
-               bool has_selected_list = false;
-
-               // NOTE: If using anonymous then the user is not admin and belongs to 'guests' group
-               bool is_admin_user;
                string user_group;
+               bool is_admin_user;
+
                if( using_anonymous )
                {
-                  is_admin_user = false;
                   user_group = "guests";
+                  is_admin_user = false;
                }
                else
                {
-                  is_admin_user = p_session_info->is_admin_user;
                   user_group = p_session_info->user_group;
+                  is_admin_user = p_session_info->is_admin_user;
                }
+
+               bool has_selected_list = false;
 
                for( list_menu_const_iterator
                 lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
