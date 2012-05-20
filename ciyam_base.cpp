@@ -8498,7 +8498,8 @@ bool perform_instance_iterate( class_base& instance,
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
 
-   if( instance.get_is_iterating( ) )
+   // NOTE: If row_limit < 0 then iteration is being continued.
+   if( row_limit >= 0 && instance.get_is_iterating( ) )
    {
       string class_name( instance.class_name( ) );
       class_base* p_parent = instance.get_graph_parent( );
@@ -8523,7 +8524,6 @@ bool perform_instance_iterate( class_base& instance,
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
    else
    {
-      // NOTE: If row_limit < 0 then iteration is being continued.
       if( row_limit >= 0 && key_info != c_nul_key )
       {
          vector< string > field_info;
