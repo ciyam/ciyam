@@ -1478,7 +1478,10 @@ function validate_element( e, is_first )
                okay = false;
             else
             {
+               var had_bytes = false;
+               var had_decimal = false;
                var found_token = false;
+               var had_whitespace = false;
                for( var j = 0; j < e.value.length; j++ )
                {
                   if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
@@ -1489,20 +1492,29 @@ function validate_element( e, is_first )
                       || e.value.charAt( j ) == 'g' || e.value.charAt( j ) == 'G'
                       || e.value.charAt( j ) == 't' || e.value.charAt( j ) == 'T' )
                      {
-                        if( found_token )
+                        if( found_token
+                         && ( had_bytes || ( e.value.charAt( j ) != 'b' && e.value.charAt( j ) != 'B' ) ) )
                         {
                            okay = false;
                            break;
                         }
 
                         found_token = true;
+                        if( e.value.charAt( j ) == 'b' || e.value.charAt( j ) == 'B' )
+                           had_bytes = true;
                      }
+                     else if( !had_decimal && e.value.charAt( j ) == '.' )
+                        had_decimal = true;
+                     else if( !found_token && e.value.charAt( j ) == ' ' )
+                        had_whitespace = true;
                      else
                      {
                         okay = false;
                         break;
                      }
                   }
+                  else if( found_token || had_whitespace )
+                     okay = false;
                }
             }
 

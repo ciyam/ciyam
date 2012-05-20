@@ -2906,10 +2906,11 @@ void request_handler::process_request( )
 
                   string pdf_title = get_view_or_list_header( qlink, view.name, mod_info, *p_session_info );
 
-                  fetch_item_info( view.module_id, mod_info,
+                  if( !fetch_item_info( view.module_id, mod_info,
                    view.cid, item_key, view.field_list, set_field_values,
                    *p_session_info, item_info, user_info, &owner,
-                   &view.pdf_spec_name, &pdf_title, &filename_value, &pdf_view_file_name );
+                   &view.pdf_spec_name, &pdf_title, &filename_value, &pdf_view_file_name ) )
+                     throw runtime_error( "unexpected error occurred generating PDF" );
                }
             }
          }

@@ -635,7 +635,7 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
    fetch_cmd += " \"" + key_info + "\"";
 
    if( row_limit > 0 )
-      fetch_cmd += " #" + to_string( row_limit + 1 + ( p_prev ? ( int )*p_prev : 0 ) );
+      fetch_cmd += " #" + to_string( row_limit + ( p_pdf_spec_name ? 0 : 1 ) + ( p_prev ? ( int )*p_prev : 0 ) );
 
    if( !set_field_values.empty( )
     || !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
