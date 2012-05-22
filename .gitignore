@@ -52,6 +52,10 @@ xvars
 # Except dummy log file template.
 !app.log
 
+# Ignore locally generated config.
+config.h
+config.info
+
 # Ignore generated compile script.
 compile.sh
 compile.bat

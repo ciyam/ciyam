@@ -12,14 +12,10 @@
 // from CIYAM. This software may not be publicly distributed unless written permission to do so
 // has been obtained from CIYAM.
 
-//#  define DEBUG_MEMORY
-
 #ifdef __BORLANDC__
 #  include "precompile.h"
 #endif
 #pragma hdrstop
-
-//#define DEBUG_MEMORY
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <stack>
@@ -27,9 +23,6 @@
 #  include <sstream>
 #  include <iostream>
 #  include <algorithm>
-#  ifdef DEBUG_MEMORY
-#     include <stdio.h>
-#  endif
 #  include <exception>
 #endif
 
@@ -52,21 +45,6 @@ const char* const c_root_node_description = "root";
 
 const int c_max_path_size = 256;
 const int c_max_trans_depth = 100;
-
-#ifdef DEBUG_MEMORY
-void* operator new( size_t type_size )
-{
-   void* p = malloc( type_size );
-   printf( "allocated %ld bytes at %p\n", type_size, p );
-   return p;
-}
-
-void operator delete( void* p )
-{
-   printf( "deallocating memory at %p\n", p );
-   free( p );
-}
-#endif
 
 const char* const c_app_title = "test_ods";
 const char* const c_app_version = "0.1";
