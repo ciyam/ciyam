@@ -1940,9 +1940,10 @@ bool output_view_form( ostream& os, const string& act,
                   tmp_link_path += "/" + string( c_tmp_directory );
                   tmp_link_path += "/" + session_id;
 
+                  bool has_utf8_chars = false;
                   string link_file_name( uuid( ).as_string( ) );
                   if( !source.filename_field.empty( ) && source.field_values.count( source.filename_field ) )
-                     link_file_name = valid_file_name( source.field_values.find( source.filename_field )->second );
+                     link_file_name = valid_file_name( source.field_values.find( source.filename_field )->second, &has_utf8_chars );
 
                   create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
 

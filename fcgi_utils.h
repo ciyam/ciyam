@@ -116,8 +116,6 @@ std::string replace_spaces( const std::string& input, const char* p_rep, size_t 
 
 std::string replace_crlfs_and_spaces( const std::string& input, const char* p_rep, const char* p_srep );
 
-std::string valid_file_name( const std::string& str, bool* p_has_wide_chars = 0 );
-
 void create_tmp_file_link( std::string& tmp_link_path,
  const std::string& file_name, const std::string& file_ext, const std::string& dest_file_name );
 

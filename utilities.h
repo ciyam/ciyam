@@ -279,6 +279,8 @@ void file_append( const char* p_src, const char* p_dest );
 inline void file_append( const std::string& src, const char* p_dest ) { file_append( src.c_str( ), p_dest ); }
 inline void file_append( const std::string& src, const std::string& dest ) { file_append( src.c_str( ), dest.c_str( ) ); }
 
+std::string valid_file_name( const std::string& str, bool* p_has_utf8_chars = 0 );
+
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option push -w-8026
 #  endif
