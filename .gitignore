@@ -63,6 +63,9 @@ compile.bat
 
 # Ignore makefile generation files.
 make.dtm
+makefile
+makefile.bcb
+makefile.mvc
 makefile.sio
 makefile.vars.xrep
 
