@@ -81,7 +81,7 @@ bool g_is_quiet = false;
 bool g_allow_nested_c_style_comments = false;
 bool g_return_after_first_error_found = false;
 
-struct
+static struct
 {
    char* label;
    short value;
