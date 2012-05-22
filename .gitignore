@@ -15,6 +15,7 @@
 *.exe
 *.exp
 bundle
+check_source
 ciyam_client
 ciyam_interface
 ciyam_server
