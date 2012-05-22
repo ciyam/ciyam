@@ -1,3 +1,6 @@
+if [ ! -f config.info ]; then
+ cp config.info.default config.info
+fi
 ./xrep @config.h.xrep >config.h.new
 ./update config.h config.h.new
 ./genmake
