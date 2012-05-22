@@ -546,6 +546,54 @@ void file_append( const char* p_src, const char* p_dest )
    copy_stream( inpf, outf );
 }
 
+string valid_file_name( const string& str, bool* p_has_utf8_chars )
+{
+   string s;
+
+   if( p_has_utf8_chars )
+      *p_has_utf8_chars = false;
+
+   for( size_t i = 0; i < str.length( ); i++ )
+   {
+      char c = str[ i ];
+      int ic = ( int )c;
+
+      if( ic < 0 )
+      {
+         ic += 256;
+
+         if( p_has_utf8_chars )
+            *p_has_utf8_chars = true;
+         else
+         {
+            if( ic >= 192 && ic <= 223 )
+               ++i;
+            else if( ic >= 224 && ic <= 239 )
+               i += 2;
+            else if( ic >= 240 && ic <= 247 )
+               i += 3;
+            else if( ic >= 248 && ic <= 251 )
+               i += 4;
+            else if( ic >= 252 && ic <= 253 )
+               i += 5;
+            else
+               throw runtime_error( "unexpected UTF-8 encoding found in: " + str );
+
+            continue;
+         }
+      }
+
+      if( c == '"' )
+         s += "'";
+
+      if( c != '"' && c != ':' && c != '?' && c!= '*'
+       && c != '<' && c != '>' && c != '|' && c != '/' && c != '\\' )
+         s += c;
+   }
+
+   return s;
+}
+
 bool wildcard_match( const char* p_expr, const char* p_data )
 {
    switch( p_expr[ 0 ] )

@@ -674,8 +674,9 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
 
       string title( link_file_name );
 
+      bool has_utf8_chars = false;
       string path( string( c_files_directory ) + "/" + string( c_tmp_directory )
-       + "/" + sess_info.session_id + "/" + valid_file_name( link_file_name ) + ".pdf" );
+       + "/" + sess_info.session_id + "/" + valid_file_name( link_file_name, &has_utf8_chars ) + ".pdf" );
 
       if( p_pdf_view_file_name )
          *p_pdf_view_file_name = path;

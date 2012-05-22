@@ -2483,6 +2483,17 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
    return qs;
 }
 
+string valid_utf8_filename( const string& str )
+{
+   bool has_utf8 = false;
+   return valid_file_name( str, &has_utf8 );
+}
+
+string valid_non_utf8_filename( const string& str )
+{
+   return valid_file_name( str );
+}
+
 string formatted_int( int n, const string& mask )
 {
    return format_numeric( n, mask );

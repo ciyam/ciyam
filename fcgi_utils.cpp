@@ -833,31 +833,6 @@ string replace_crlfs_and_spaces( const string& input, const char* p_rep, const c
    return str;
 }
 
-string valid_file_name( const string& str, bool* p_has_wide_chars )
-{
-   string s;
-
-   if( p_has_wide_chars )
-      *p_has_wide_chars = false;
-
-   for( size_t i = 0; i < str.length( ); i++ )
-   {
-      char c = str[ i ];
-
-      if( c < 0 && p_has_wide_chars )
-         *p_has_wide_chars = true;
-
-      if( c == '"' )
-         s += "'";
-
-      if( c != '"' && c != ':' && c != '?' && c!= '*'
-       && c != '<' && c != '>' && c != '|' && c != '/' && c != '\\' )
-         s += c;
-   }
-
-   return s;
-}
-
 void create_tmp_file_link( string& tmp_link_path,
  const string& file_name, const string& file_ext, const string& dest_file_name )
 {
