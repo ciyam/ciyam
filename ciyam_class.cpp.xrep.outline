@@ -914,7 +914,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_modifier=$specification_\0_modifier\
  arg_not_eq=$specification_\0_not_eq\
  arg_not_dflt=$specification_\0_not_dflt\
- arg_cvt_func=$specification_\0_cvt_func`}\
+ arg_cvt_func=$specification_\0_cvt_func\
+ arg_fistexttype=$specification_\0_fistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_key_value`'`)
 `{`#modifier_key_value.spec.xrep section=get_state\
@@ -1238,7 +1239,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_embed_links=$specification_\0_embed_links arg_external=$specification_\0_external`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`?`$transient_field_names`&`@in`(`$specification_\0_dfield`,`$transient_field_names`)
-`{`#field_from_other_field.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
+`{`#field_from_other_field.spec.xrep section=after_fetch_or_to_store class_name=$class_name module_name=$module_name\
  arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
@@ -1437,7 +1438,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_sfield1=$specification_\0_sfield1 arg_sfield2=$specification_\0_sfield2`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`(`!`?`$transient_field_names`|`!`@in`(`$specification_\0_dfield`,`$transient_field_names`)`)
-`{`#field_from_other_field.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
+`{`#field_from_other_field.spec.xrep section=after_fetch_or_to_store class_name=$class_name module_name=$module_name\
  arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\

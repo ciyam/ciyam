@@ -1,12 +1,13 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start modifier_field_value)]
+`{`$value`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`^`'"`'`}`{`$value`^`$arg_value`}`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`^`'"`'`}\
    if( `{`!`@eq`(`$arg_not_dflt`,`'`'`)!get_obj( ).get_key( ).empty( ) && `}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )\
 `{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && `}\
 `{`!`@eq`(`$arg_cvt_func`,`'`'`)`{`$arg_cvt_func`}( `}\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
 `{`!`@eq`(`$arg_cvt_func`,`'`'`) )`}\
-`{`!`@eq`(`$arg_not_eq`,`'`'`) != `, == `}`{`$arg_value`} )\
+`{`!`@eq`(`$arg_not_eq`,`'`'`) != `, == `}`{`$value`} )\
 `{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
       state |= c_modifier_`{`$arg_modifier`};
    // [(finish modifier_field_value)]
