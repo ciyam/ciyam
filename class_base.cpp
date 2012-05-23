@@ -2491,7 +2491,7 @@ string valid_utf8_filename( const string& str )
 
 string valid_non_utf8_filename( const string& str )
 {
-   return valid_file_name( str );
+   return search_replace( valid_file_name( str ), " ", "_" );
 }
 
 string formatted_int( int n, const string& mask )

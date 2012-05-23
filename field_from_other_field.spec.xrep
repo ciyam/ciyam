@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch_or_to_store`'`,`$section`)\
 `{`$create_only_or_not_null_or_test`=`'`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
@@ -9,38 +9,9 @@
 `{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$not_null_and_other`=`'true`'`}\
    // [(start field_from_other_field)]
 `{`@eq`(`$create_only_or_not_null_or_test`,`'`'`)\
-   get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`} );
-`,\
-   if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
-`{`!`@eq`(`$both_null_and_test`,`'`'`) && `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_tvalue`,`'`'`)\
-!to_string( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ).empty( )\
-`,\
-get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}\
-`}`} )
-      get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}\
+   get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )\
 `{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );
-`{`!`@eq`(`$arg_nvalue`,`'`'`)\
-   else
-      get_obj( ).`{`$arg_dfield`}( `{`$arg_nvalue`} );
-`}\
-`}\
-   // [(finish field_from_other_field)]
-`}
-`{`@eq`(`'to_store`'`,`$section`)\
-`{`$create_only_or_not_null_or_test`=`'`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
-`{`$both_null_and_test`=`'`'`}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$both_null_and_test`=`'true`'`}\
-`{`$not_null_and_other`=`'`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$not_null_and_other`=`'true`'`}\
-   // [(start field_from_other_field)]
-`{`@eq`(`$create_only_or_not_null_or_test`,`'`'`)\
-   get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`} );
 `,\
    if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
