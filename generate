@@ -1,0 +1,37 @@
+if [ $# -lt 1 ]; then
+ echo Usage: generate [module name] [[app dir]] [[module alias]]
+else
+ export CIYAM_MODEL=
+
+ ./test_sql Meta Meta "SELECT CONCAT('export CIYAM_MODEL=', C_Key_) FROM T_Meta_Model WHERE C_Name = '$1'">~generate
+ chmod a+x ~generate
+ . ./~generate
+ rm ~generate
+
+ if [ "$CIYAM_MODEL" = "" ]; then
+  echo Error: Unknown module \'$1\'.
+ else
+  echo Starting generate...
+  echo \<generate.cin $CIYAM_MODEL>~generate.cin
+  ./ciyam_client -quiet -no_prompt <~generate.cin >~generate.tmp
+  rm ~generate.cin
+
+  cat ~generate.tmp
+  if grep -q "Error" ~generate.tmp || grep -q "error" ~generate.tmp; then
+   rm ~generate.tmp
+  else
+   rm ~generate.tmp
+   ./genmodule -rdbms $1 $2 $3
+
+   echo \<genlinks.cin $CIYAM_MODEL>~genlinks.cin
+   ./ciyam_client -quiet -no_prompt <~genlinks.cin >~genlinks.tmp
+   cat ~genlinks.tmp
+   rm ~genlinks.tmp
+   rm ~genlinks.cin
+   if [ -f manuscript.sio.new ]; then
+    ./remove_identical manuscript.sio manuscript.sio.new
+   fi
+   echo Finished generate...
+  fi
+ fi
+fi
