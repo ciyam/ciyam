@@ -4,23 +4,21 @@ if '%1' == '' goto usage
 if '%2' == '' goto usage
 
 if exist %1 goto check_content
-echo Created %1
-goto file_copy
+echo Created %2
+goto end
 
 :check_content
 echo n|comp %1 %2 >nul 2>&1
 if not errorlevel 1 goto remove_temp_file
-echo Updated %1
-
-:file_copy
-copy %2 %1 >nul
+echo Created %2
+goto end
 
 :remove_temp_file
 del %2
 goto end
 
 :usage
-echo Usage: update [dest file] [temp file]
+echo Usage: remove_identical [old file] [new file]
 
 :end
 

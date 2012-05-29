@@ -1929,6 +1929,7 @@ void child_field_cascade_specification::add_specification_data( model& m, specif
    spec_data.data_pairs.push_back( make_pair( "tfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "ctfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "check_orig", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "any_change", "" ) );
 }
 
 string child_field_cascade_specification::static_class_name( ) { return "child_field_cascade"; }
@@ -9139,8 +9140,6 @@ void modifier_field_value_specification::add( model& m, const vector< string >& 
    if( field_id.empty( ) )
       throw runtime_error( "unknown field '" + field_name + "' for class '" + arg_class_name + "'" );
 
-   bool is_non_string( is_non_string_type( field_type ) );
-
    if( !pfield_name.empty( ) )
    {
       string pclass_name( get_class_name_from_field_type( m, arg_class_name, field_name, field_type ) );
@@ -9151,17 +9150,10 @@ void modifier_field_value_specification::add( model& m, const vector< string >& 
 
       if( pfield_id.empty( ) )
          throw runtime_error( "unknown field '" + pfield_name + "' for class '" + pclass_name + "'" );
-
-      is_non_string = is_non_string_type( pfield_type );
    }
 
    if( !arg_field_value.empty( ) )
-   {
-      if( is_non_string || !enum_name.empty( ) )
-         field_value = arg_field_value;
-      else
-         field_value = '"' + arg_field_value + '"';
-   }
+      field_value = arg_field_value;
 
    if( !enum_name.empty( ) )
    {
@@ -9270,13 +9262,14 @@ void modifier_field_value_specification::add_specification_data( model& m, speci
    string modifier_name = get_modifier_name_for_id( m, class_name, modifier_id );
    spec_data.data_pairs.push_back( make_pair( c_data_modifier, modifier_name ) );
 
+   string field_type;
    if( !pclass_id.empty( ) )
    {
       string field_name = get_field_name_for_id( m, class_name, field_id, 0, true );
       spec_data.data_pairs.push_back( make_pair( c_data_pfield, field_name ) );
 
       string pclass_name = get_class_name_for_id( m, pclass_id );
-      string pfield_name = get_field_name_for_id( m, pclass_name, pfield_id );
+      string pfield_name = get_field_name_for_id( m, pclass_name, pfield_id, &field_type );
 
       spec_data.data_pairs.push_back( make_pair( c_data_field, pfield_name ) );
    }
@@ -9284,7 +9277,7 @@ void modifier_field_value_specification::add_specification_data( model& m, speci
    {
       spec_data.data_pairs.push_back( make_pair( c_data_pfield, "" ) );
 
-      string field_name = get_field_name_for_id( m, class_name, field_id, 0, true );
+      string field_name = get_field_name_for_id( m, class_name, field_id, &field_type, true );
       spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
    }
 
@@ -9312,7 +9305,11 @@ void modifier_field_value_specification::add_specification_data( model& m, speci
 
    spec_data.data_pairs.push_back( make_pair( c_data_not_eq, not_equal ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, not_default ? c_true : "" ) );
+
    spec_data.data_pairs.push_back( make_pair( c_data_cvt_func, "" ) );
+
+   bool is_text_type( !is_non_string_type( field_type ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
 }
 
 string modifier_field_value_specification::static_class_name( ) { return "modifier_field_value"; }

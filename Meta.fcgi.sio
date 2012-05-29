@@ -6345,8 +6345,24 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_specification_type_allow_enum
+     <field>114198
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_specification_type_needs_enum
      <field>114108
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_allow_enum_item
+     <field>114199
      <ftype>bool
      <extra>
      <mandatory>true
@@ -6975,14 +6991,6 @@
      <pfield>114101
      <pfname>field_specification_type_name
      <pextra>
-    </field>
-    <field/>
-     <name>field_specification_type_view_id
-     <field>114170
-     <ftype>string
-     <extra>max_size=10
-     <mandatory>false
-     <modifiers>
     </field>
    </fields>
   </view>

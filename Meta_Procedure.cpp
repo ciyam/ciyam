@@ -894,6 +894,9 @@ void Meta_Procedure::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Class( ) ) )
+         throw runtime_error( "unexpected empty Class" );
+
       get_obj( ).Class( ).op_update( get_obj( ).Class( ), FIELD_NAME( Meta, Class, Next_Procedure_Id ) );
 
       get_obj( ).Id( get_obj( ).Class( ).Next_Procedure_Id( ) );

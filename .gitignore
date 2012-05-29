@@ -84,6 +84,10 @@ for_*.spec.xrep
 !for_auto_code.spec.xrep
 !for_auto_code_user.spec.xrep
 
+# Ignore specific installed package files.
+photo_*.jpg
+gen_photo_*.xrep
+
 # Ignore ciyam test storage and related.
 ciyam.dat
 ciyam.hdr

@@ -748,6 +748,9 @@ void Meta_Enum::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Workgroup( ) ) )
+         throw runtime_error( "unexpected empty Workgroup" );
+
       get_obj( ).Workgroup( ).op_update( get_obj( ).Workgroup( ), FIELD_NAME( Meta, Workgroup, Next_Enum_Id ) );
 
       get_obj( ).Id( get_obj( ).Workgroup( ).Next_Enum_Id( ) );

@@ -376,6 +376,8 @@ field_add -id=114194 Specification_Type Needs_Procedure_Arg_2 bool mand -def=0
 field_add -id=114195 Specification_Type Needs_Procedure_Arg_3 bool mand -def=0
 field_add -id=114196 Specification_Type Use_Parent_Other_Class_For_Class bool mand -def=0
 field_add -id=114197 Specification_Type Allow_Modifier bool mand -def=0
+field_add -id=114198 Specification_Type Allow_Enum bool mand -def=0
+field_add -id=114199 Specification_Type Allow_Enum_Item bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -631,7 +633,7 @@ field_add -id=127113 Application Default_Image_Width int mand -def=100
 field_add -id=127114 Application Default_Image_Height int mand -def=75
 field_add -id=127115 Application Default_List_Row_Limit int mand -def=20 -e=app_list_row_limit
 field_add -id=127116 Application Default_Multiline_Min_Rows int mand -def=10 -e=app_text_rows
-field_add -id=127117 Application Default_Multiline_Text_Limit int mand -def=1000 -e=app_text_limit
+field_add -id=127117 Application Default_Multiline_Text_Limit int mand -def=2000 -e=app_text_limit
 field_add -id=127118 Application Default_List_Print_Row_Limit int mand -def=4000 -e=app_print_row_limit
 field_add -id=127119 Application Default_Multiline_Text_Trunc int mand -def=50 -e=app_text_trunc_limit
 field_add -id=127120 Application Generate_Type int mand -def=0 -e=app_generate_type
@@ -1288,8 +1290,8 @@ specification_add -id=600104b {Specification}_Hide_Procedure_Arg_3 modifier_fiel
 specification_add -id=600104c {Specification}_Hide_Other_Procedure modifier_field_value "Specification Hide_Other_Procedure {Specification_Type}:Needs_Other_Procedure false"
 specification_add -id=600104d {Specification}_Hide_Other_Procedure_2 modifier_field_value "Specification Hide_Other_Procedure_2 {Specification_Type}:Needs_Other_Procedure_2 false"
 specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Allow_Modifier false"
-specification_add -id=600106 {Specification}_Hide_Enum modifier_field_value "Specification Hide_Enum {Specification_Type}:Needs_Enum false"
-specification_add -id=600107 {Specification}_Hide_Enum_Item modifier_field_value "Specification Hide_Enum_Item {Specification_Type}:Needs_Enum_Item false"
+specification_add -id=600106 {Specification}_Hide_Enum modifier_field_value "Specification Hide_Enum {Specification_Type}:Allow_Enum false"
+specification_add -id=600107 {Specification}_Hide_Enum_Item modifier_field_value "Specification Hide_Enum_Item {Specification_Type}:Allow_Enum_Item false"
 specification_add -id=600107a {Specification}_Hide_Enum_Item_2 modifier_field_value "Specification Hide_Enum_Item_2 {Specification_Type}:Needs_Enum_Item_2 false"
 specification_add -id=600107b {Specification}_Hide_Enum_Item_3 modifier_field_value "Specification Hide_Enum_Item_3 {Specification_Type}:Needs_Enum_Item_3 false"
 specification_add -id=600107c {Specification}_Hide_Enum_Item_4 modifier_field_value "Specification Hide_Enum_Item_4 {Specification_Type}:Needs_Enum_Item_4 false"
@@ -1784,7 +1786,7 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
  Name,Notes,Specification_Name,Specification_Vars,Default_Child_Vars,Specification_Strings,Specification_Object\
 ,@tab:Basic_Fields,Needs_Class,Allow_Other_Class,Needs_Other_Class,Allow_Field,Needs_Field,Field_type,Allow_Other_Field,Needs_Other_Field\
 ,Allow_Other_Field_2,Needs_Other_Field_2,Allow_Modifier,Needs_Modifier\
-,Needs_Enum,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
+,Allow_Enum,Needs_Enum,Allow_Enum_Item,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
 ,Allow_Value,Needs_Value,Allow_Test_Field,Needs_Test_Field,Test_Field_type,Allow_Test_Value,Needs_Test_Value\
 ,@tab:Extra_Fields,Allow_Procedure,Needs_Procedure,Needs_Procedure_Arg,Procedure_Arg_type,Procedure_Arg_primitive\
 ,Needs_Procedure_Arg_2,Needs_Procedure_Arg_3,Needs_Other_Procedure,Needs_Other_Procedure_2\
@@ -1801,7 +1803,7 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,Protect_Class_From_Update,Protect_Procedure_From_Edit,Protect_Child_Rel_From_Update\
 ,Specification_Actions,Child_{Specification_Type}:Name;link,Has_Next_Specification_Info\
 ,Next_Protect_Procedure,Next_Protect_Source_Parent,Next_Protect_Child_Rel\
-,Next_Specification_Actions,Next_Child_{Specification_Type}:Name;link,View_Id"
+,Next_Specification_Actions,Next_Child_{Specification_Type}:Name;link"
 specification_add -id=602410 {Specification_Type}_list list "* admin:no_limit\
  Specification_Type Name,Specification_Name Parent_{Specification_Type},@key,restricted"
 specification_add -id=602420 {Specification_Type}_child_list0 list "@602420_Child_* child:admin_new,admin_erase,no_limit\

@@ -1,0 +1,24 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+   // [(start file_link_demo)]
+   if( is_create )
+   {
+      string ext( "`{`$arg_ext`}" );
+      if( !ext.empty( ) && ext[ 0 ] != '.' )
+         ext = '.' + ext;
+
+      string src( get_obj( ).get_key( ) + ext );
+      string dest( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ext ) );
+
+      if( exists_file( src ) )
+      {
+         if( exists_file( dest ) )
+            remove_file( dest );
+         else
+            create_directories_for_file_name( dest, true );
+
+         link_file( src, dest );
+         get_obj( ).`{`$arg_field`}( get_obj( ).get_key( ) + ext );
+      }
+   }
+   // [(finish file_link_demo)]
+`}

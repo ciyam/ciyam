@@ -4106,12 +4106,12 @@ uint64_t Meta_Specification::impl::get_state( ) const
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   if( get_obj( ).Specification_Type( ).Needs_Enum( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Enum( ) == false )
       state |= c_modifier_Hide_Enum;
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   if( get_obj( ).Specification_Type( ).Needs_Enum_Item( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Enum_Item( ) == false )
       state |= c_modifier_Hide_Enum_Item;
    // [(finish modifier_field_value)]
 
@@ -6129,6 +6129,9 @@ void Meta_Specification::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Model( ) ) )
+         throw runtime_error( "unexpected empty Model" );
+
       get_obj( ).Model( ).op_update( get_obj( ).Model( ), FIELD_NAME( Meta, Model, Next_Specification_Id ) );
 
       get_obj( ).Id( get_obj( ).Model( ).Next_Specification_Id( ) );

@@ -1284,14 +1284,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                string key = next.substr( pos + 1 );
                string data = next.substr( 0, pos );
 
-               if( data.length( ) > 3 && data.substr( 0, 4 ) == "opt_" )
+               if( data.length( ) > 3
+                && ( data.substr( 0, 4 ) == "opt_" || data.substr( 0, 4 ) == "loc_" ) )
                {
                   pos = data.find( "_class" );
                   if( pos == string::npos || ( pos + strlen( "_class" ) != data.length( ) ) )
                      continue;
                }
 
-               search_replaces.insert( make_pair( key, data ) );
+               if( key != "1" )
+                  search_replaces.insert( make_pair( key, data ) );
             }
          }
 

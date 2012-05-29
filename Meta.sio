@@ -287,7 +287,7 @@
       <type>int
       <mandatory>true
       <enum_id>902
-      <default_value>1000
+      <default_value>2000
       <indexes/>
       </indexes>
       <modifiers/>
@@ -18717,6 +18717,48 @@
       </specifications>
      </field>
      <field/>
+      <id>114198
+      <name>Allow_Enum
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600106
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114199
+      <name>Allow_Enum_Item
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600107
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>114123
       <name>Allow_FK_Source_Field_Choice
       <type>bool
@@ -19513,10 +19555,6 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600106
-        <item>pfield
-       </specification>
-       <specification/>
         <id>600135
         <item>cfield
        </specification>
@@ -19537,10 +19575,6 @@
       <modifiers/>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>600107
-        <item>pfield
-       </specification>
        <specification/>
         <id>600136
         <item>cfield
@@ -20946,10 +20980,6 @@
       <modifiers/>
       </modifiers>
       <specifications/>
-       <specification/>
-        <id>602400
-        <item>field
-       </specification>
       </specifications>
      </field>
     </fields>
@@ -30078,7 +30108,7 @@
      <class_id>132100
      <modifier_id>500696
      <field_id>301410
-     <field_value>"trigger_create_children_for_fk_children"
+     <field_value>trigger_create_children_for_fk_children
     </data>
    </specification>
    <specification/>
@@ -30520,7 +30550,9 @@
      <field_info>114184
      <field_info>114197
      <field_info>114107
+     <field_info>114198
      <field_info>114108
+     <field_info>114199
      <field_info>114109
      <field_info>114182
      <field_info>114185
@@ -30598,7 +30630,6 @@
      <field_info>114169
      <field_info>114150
      <field_info>301720:114101;link+max_size=100
-     <field_info>114170
     </data>
    </specification>
    <specification/>
@@ -30868,7 +30899,7 @@
      <pclass_id>114100
      <modifier_id>500640
      <field_id>301410
-     <pfield_id>114108
+     <pfield_id>114198
      <field_value>false
     </data>
    </specification>
@@ -30881,7 +30912,7 @@
      <pclass_id>114100
      <modifier_id>500650
      <field_id>301410
-     <pfield_id>114109
+     <pfield_id>114199
      <field_value>false
     </data>
    </specification>
@@ -33261,7 +33292,7 @@
      <modifier_id>500705
      <field_id>301910
      <pfield_id>119101
-     <field_value>"field"
+     <field_value>field
     </data>
    </specification>
    <specification/>
@@ -33274,7 +33305,7 @@
      <modifier_id>500715
      <field_id>301910
      <pfield_id>119101
-     <field_value>"key"
+     <field_value>key
     </data>
    </specification>
    <specification/>
@@ -33335,7 +33366,7 @@
      <modifier_id>500706
      <field_id>301900
      <pfield_id>118110
-     <field_value>"print"
+     <field_value>print
     </data>
    </specification>
    <specification/>
@@ -33348,7 +33379,7 @@
      <modifier_id>500710
      <field_id>301910
      <pfield_id>119101
-     <field_value>"tab"
+     <field_value>tab
     </data>
    </specification>
    <specification/>
@@ -33591,7 +33622,7 @@
      <class_id>118100
      <modifier_id>500701
      <field_id>301810
-     <field_value>"print"
+     <field_value>print
      <not_equal>true
     </data>
    </specification>
@@ -33603,7 +33634,7 @@
      <class_id>118100
      <modifier_id>500700
      <field_id>301810
-     <field_value>"print"
+     <field_value>print
     </data>
    </specification>
    <specification/>
