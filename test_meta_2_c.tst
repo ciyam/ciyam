@@ -45,6 +45,7 @@ filename,T106
 std_date,T108
 std_datetime,T110
 std_time,T109
+std_timestamp,T111
 bool,T006
 date,T002
 datetime,T001

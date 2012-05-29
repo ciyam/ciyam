@@ -1868,6 +1868,9 @@ void Meta_View::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Model( ) ) )
+         throw runtime_error( "unexpected empty Model" );
+
       get_obj( ).Model( ).op_update( get_obj( ).Model( ), FIELD_NAME( Meta, Model, Next_View_Id ) );
 
       get_obj( ).Id( get_obj( ).Model( ).Next_View_Id( ) );

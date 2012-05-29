@@ -2548,16 +2548,27 @@ void Meta_Class::impl::impl_Generate( )
 
             string specification_object( get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( ) );
 
-            string gen_xrep;
+            string gen_xrep, gen_extra;
             bool is_gen_script_object = false;
-            if( specification_object == "gen_script" )
+            if( specification_object == "gen_script" || specification_object == "gen_ext_script" )
             {
 #ifdef _WIN32
                gen_xrep = "xrep ";
 #else
                gen_xrep = "./xrep ";
 #endif
-               gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".cin.xrep";
+               if( specification_object == "gen_ext_script" )
+               {
+#ifndef _WIN32
+                  gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".xrep";
+#else
+                  gen_extra = ".bat";
+                  gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".bat.xrep";
+#endif
+               }
+               else
+                  gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".cin.xrep";
+
                is_gen_script_object = true;
             }
 
@@ -2615,17 +2626,21 @@ void Meta_Class::impl::impl_Generate( )
 
             if( is_gen_script_object )
             {
-               gen_xrep += " >" + gen_script;
+               gen_xrep += " >" + gen_script + gen_extra;
+#ifndef _WIN32
+               if( specification_object == "gen_ext_script" )
+                  gen_xrep += "\nchmod a+x " + gen_script + gen_extra;
+#endif
                exec_system( gen_xrep );
 
                ofstream outl( extra_lst_file_name.c_str( ), ios::out | ios::app );
                if( !outl )
                   throw runtime_error( "unexpected error opening '" + extra_lst_file_name + "' for output" );
 
-               outl << gen_script << '\n';
+               outl << ( gen_script + gen_extra ) << '\n';
 
-               if( old_extras.count( gen_script ) )
-                  old_extras.erase( gen_script );
+               if( old_extras.count( gen_script + gen_extra ) )
+                  old_extras.erase( gen_script + gen_extra );
 
                outl.flush( );
                if( !outl.good( ) )
@@ -3201,6 +3216,9 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Model( ) ) )
+         throw runtime_error( "unexpected empty Model" );
+
       get_obj( ).Model( ).op_update( get_obj( ).Model( ), FIELD_NAME( Meta, Model, Next_Class_Id ) );
 
       get_obj( ).Id( get_obj( ).Model( ).Next_Class_Id( ) );

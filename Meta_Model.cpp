@@ -5173,6 +5173,11 @@ void Meta_Model::impl::impl_Generate_File_Links( )
    if( storage_locked_for_admin( ) )
       return;
 
+   // NOTE: If the call here was directly issued (rather than via
+   // an Application parent) then generate a new manuscript file.
+   if( !get_obj( ).get_graph_parent( ) )
+      generate_new_manuscript_sio( );
+
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
    set_system_variable( model_key, "Generating file links..." ); // FUTURE: Should be a module string...
    try
@@ -6130,6 +6135,16 @@ void Meta_Model::impl::for_destroy( bool is_internal )
 #else
       exec_system( "./remove_module -rdbms " + get_obj( ).Name( ) + " >/dev/null" );
 #endif
+
+      generate_new_manuscript_sio( );
+      if( exists_file( "manuscript.sio.new" ) )
+      {
+#ifdef _WIN32
+         exec_system( "update manuscript.sio manuscript.sio.new" );
+#else
+         exec_system( "./update manuscript.sio manuscript.sio.new" );
+#endif
+      }
    }
    // [<finish for_destroy>]
 }

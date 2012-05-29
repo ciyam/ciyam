@@ -1,0 +1,3 @@
+storage_init Meta
+perform_execute 20100101 sys Meta 105100 %1 105435
+.quit

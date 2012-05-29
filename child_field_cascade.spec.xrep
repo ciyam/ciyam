@@ -20,6 +20,7 @@
 `+\n`]`}
                get_obj( ).child_`{`$arg_child`}( ).op_apply( );
 `,\
+`{`@eq`(`$arg_any_change`,`'`'`)\
 `{`@eq`(`$arg_check_orig`,`'`'`)
                if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
 `,
@@ -29,13 +30,39 @@
 `}\
                {
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
-                  get_obj( ).child_`{`$arg_child`}( ).\\\\0( get_obj( ).\\\\1( ) );\
+                  get_obj( ).child_`{`$arg_child`}( ).\\\\\\\\0( get_obj( ).\\\\\\\\1( ) );\
 `+\n`]`}
                   get_obj( ).child_`{`$arg_child`}( ).op_apply( );
                }
                else
                   get_obj( ).child_`{`$arg_child`}( ).op_cancel( );
-`}
+`,
+               bool has_changed = false;
+
+`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+`{`!`@eq`(`$arg_ctfield`,`'\\\\\\\\0`'`)\
+               if( get_obj( ).child_`{`$arg_child`}( ).\\\\\\\\0( ) != get_obj( ).\\\\\\\\1( ) )
+               {
+                  has_changed = true;
+                  get_obj( ).child_`{`$arg_child`}( ).\\\\\\\\0( get_obj( ).\\\\\\\\1( ) );
+               }
+`,`{`@eq`(`$arg_check_orig`,`'`'`)\
+               if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
+`,\
+               if( to_string( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) )
+                == get_obj( ).get_original_field_value( c_field_name_`{`$arg_tfield`} )
+                || get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_ctfield`,`'`'`) `{`$op`} get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`} )
+`}\
+               {
+                  has_changed = true;
+                  get_obj( ).child_Photo( ).\\\\\\\\0( get_obj( ).\\\\\\\\1( ) );
+               }
+`}`+\n`]`}
+               if( has_changed )
+                  get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+               else
+                  get_obj( ).child_`{`$arg_child`}( ).op_cancel( );
+`}`}
             } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
          }
       }

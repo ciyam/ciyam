@@ -2588,6 +2588,9 @@ void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 //nyi
    Result = e_sql_char_type_std;
 
+   if( get_obj( ).Extra( ) == c_enum_field_extra_text )
+      Result = e_sql_char_type_large;
+
    if( get_obj( ).Extra( ) == c_enum_field_extra_notes )
       Result = e_sql_char_type_large;
 
@@ -3182,6 +3185,9 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
    // [(start parent_auto_int_inc)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
+      if( is_null( get_obj( ).Class( ) ) )
+         throw runtime_error( "unexpected empty Class" );
+
       get_obj( ).Class( ).op_update( get_obj( ).Class( ), FIELD_NAME( Meta, Class, Next_Field_Id ) );
 
       get_obj( ).Id( get_obj( ).Class( ).Next_Field_Id( ) );

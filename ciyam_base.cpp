@@ -3773,6 +3773,12 @@ void generate_new_manuscript_sio( )
                   {
                      string next( script_lines[ j ] );
 
+                     // NOTE: Remove comment prefixes for console script files.
+                     if( next.find( "#;" ) == 0 )
+                        next.erase( 0, 1 );
+                     else if( next.find( "REM;" ) == 0 )
+                        next.erase( 0, 3 );
+
                      if( next.empty( ) || next[ 0 ] != ';' )
                      {
                         if( is_manuscript )
