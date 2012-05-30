@@ -1,0 +1,12 @@
+if [ $# -gt 0 ]; then
+ export WEBDIR=$1
+fi
+if [ "$WEBDIR" = "" ]; then
+ echo Error: Missing environment variable 'WEBDIR'.
+else
+ [ -d $WEBDIR/galleria ] ||
+ {
+  mkdir $WEBDIR/galleria
+  ./unbundle -q galleria -d $WEBDIR/galleria
+ }
+fi
