@@ -1,6 +1,9 @@
 if [ ! -f config.info ]; then
  cp config.info.default config.info
 fi
+if [ ! -f ciyam_server.sio ]; then
+ cp ciyam_server.sio.default ciyam_server.sio
+fi
 ./xrep @config.h.xrep >config.h.new
 ./update config.h config.h.new
 ./genmake

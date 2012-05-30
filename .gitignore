@@ -94,6 +94,7 @@ ciyam.hdr
 ciyam.idx
 ciyam.sql
 packages.lst
+ciyam_server.sio
 
 # Ignore Meta storage and related
 Meta.dat
