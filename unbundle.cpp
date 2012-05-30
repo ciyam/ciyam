@@ -196,7 +196,7 @@ void check_file_header( ifstream& inpf, const string& filename, encoding_type& e
 }
 
 void create_all_directories( deque< string >& create_directories,
- const map< string, string >& directory_perms, bool list_only, bool is_quieter )
+ const map< string, string >& directory_perms, const string& destination_directory, bool list_only, bool is_quieter )
 {
    while( !create_directories.empty( ) )
    {
@@ -208,20 +208,21 @@ void create_all_directories( deque< string >& create_directories,
          if( !directory_perms.count( path_name ) )
             throw runtime_error( "unexpected missing directory perms for '" + path_name + "'" );
 
+         string full_path = destination_directory + path_name;
 #ifdef _WIN32
-         int rc = _mkdir( path_name.c_str( ) );
+         int rc = _mkdir( full_path.c_str( ) );
 #else
-         int rc = _mkdir( path_name.c_str( ), S_IRWXU );
+         int rc = _mkdir( full_path.c_str( ), S_IRWXU );
 #endif
 
          if( rc < 0 && errno != EEXIST )
-            throw runtime_error( "unable to create directory '" + path_name + "'" );
+            throw runtime_error( "unable to create directory '" + full_path + "'" );
          else if( rc >= 0 || errno != EEXIST )
          {
-            file_perms( path_name, directory_perms.find( path_name )->second );
+            file_perms( full_path, directory_perms.find( path_name )->second );
 
             if( !is_quieter )
-               cout << "created directory '" << path_name << "'..." << endl;
+               cout << "created directory '" << full_path << "'..." << endl;
          }
       }
 
@@ -410,6 +411,8 @@ int main( int argc, char* argv[ ] )
                 && destination_directory[ destination_directory.size( ) - 1 ] != '\\'
                 && destination_directory[ destination_directory.size( ) - 1 ] != ':' )
                   destination_directory += '/';
+
+               replace( destination_directory, "\\", "/" );
 #endif
             }
             else if( get_exclude_filespecs )
@@ -790,7 +793,8 @@ int main( int argc, char* argv[ ] )
             count = 0;
 
             if( matched )
-               create_all_directories( create_directories, directory_perms, list_only, is_quieter );
+               create_all_directories( create_directories,
+                directory_perms, destination_directory, list_only, is_quieter );
 
             if( !matched )
                ap_ofstream.reset( );
@@ -897,7 +901,8 @@ int main( int argc, char* argv[ ] )
                   directory_perms.insert( make_pair( path_name, rwx_perms ) );
 
                   if( !prune )
-                     create_all_directories( create_directories, directory_perms, list_only, is_quieter );
+                     create_all_directories( create_directories,
+                      directory_perms, destination_directory, list_only, is_quieter );
                }
 
                paths.push( path_name );
