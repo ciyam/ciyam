@@ -3928,6 +3928,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_model_use_package_demo_data
+     <field>105115
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_model_source_file
      <field>105110
      <ftype>string
@@ -4195,7 +4203,7 @@
     </field>
     <field/>
      <name>field_package_option_name
-     <field>137101
+     <field>137115
      <ftype>string
      <extra>no_edit+max_size=100
      <mandatory>true
@@ -8545,7 +8553,7 @@
    <columns/>
     <column/>
      <name>field_package_option_name
-     <field>137101
+     <field>137115
      <ftype>string
      <extra>max_size=100
      <modifiers>

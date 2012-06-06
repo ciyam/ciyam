@@ -70,9 +70,10 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
       e_field_id_Permission = 11,
       e_field_id_Source_File = 12,
       e_field_id_Status = 13,
-      e_field_id_Version = 14,
-      e_field_id_Workgroup = 15,
-      e_field_id_Year_Created = 16
+      e_field_id_Use_Package_Demo_Data = 14,
+      e_field_id_Version = 15,
+      e_field_id_Workgroup = 16,
+      e_field_id_Year_Created = 17
    };
 
    Meta_Model( );
@@ -113,6 +114,9 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
 
    const std::string& Status( ) const;
    void Status( const std::string& Status );
+
+   bool Use_Package_Demo_Data( ) const;
+   void Use_Package_Demo_Data( bool Use_Package_Demo_Data );
 
    const std::string& Version( ) const;
    void Version( const std::string& Version );

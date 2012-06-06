@@ -1284,6 +1284,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                string key = next.substr( pos + 1 );
                string data = next.substr( 0, pos );
 
+               // NOTE: Package options (whether direct or indirect) are only mapped back
+               // to values if they are actually class keys (as other values could easily
+               // be found within class keys) therefore although useful the map file does
+               // not guarantee that a package record can be restored to the exact format
+               // appearing in the package file.
                if( data.length( ) > 3
                 && ( data.substr( 0, 4 ) == "opt_" || data.substr( 0, 4 ) == "loc_" ) )
                {
@@ -1292,8 +1297,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      continue;
                }
 
-               if( key != "1" )
-                  search_replaces.insert( make_pair( key, data ) );
+               search_replaces.insert( make_pair( key, data ) );
             }
          }
 

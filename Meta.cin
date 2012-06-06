@@ -189,6 +189,7 @@ field_add -id=105111 Model Commands_File string opt -x=flink
 field_add -id=105112 Model Add_Packages int mand -def=2 -e=add_packages -transient
 field_add -id=105113 Model Created bool mand -def=0
 field_add -id=105114 Model Status string opt -transient
+field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=0
 procedure_add -id=105410 Model Generate
 procedure_add -id=105420 Model Create_Module
 procedure_add -id=105430 Model Remove_Module
@@ -707,7 +708,7 @@ procedure_add -id=136430 Package Check_Install
 procedure_add -id=136440 Package Complete_Remove
 procedure_add -id=136450 Package Cancel_Remove
 class_add -id=137100 Package_Option Package_Options
-field_add -id=137101 Package_Option Name str100 mand
+field_add -id=137101 Package_Option Id str100 mand
 field_add -id=137102 Package_Option Use_Option bool mand -def=0
 field_add -id=137103 Package_Option Installed bool mand -def=0
 field_add -id=137104 Package_Option Is_Other_Package bool mand -def=0
@@ -721,6 +722,7 @@ field_add -id=137111 Package_Option Date string opt
 field_add -id=137112 Package_Option Time string opt
 field_add -id=137113 Package_Option Numeric string opt
 field_add -id=137114 Package_Option Integer int mand -def=0
+field_add -id=137115 Package_Option Name str100 mand
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -1735,7 +1737,7 @@ specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_li
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
  Name,Id;no_edit+non_new,Status;view_only,Version,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
-,Add_Packages;new_only,Source_File,Commands_File,Actions"
+,Add_Packages;new_only,Use_Package_Demo_Data,Source_File,Commands_File,Actions"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
