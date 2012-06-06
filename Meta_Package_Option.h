@@ -43,21 +43,22 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
       e_field_id_none = 0,
       e_field_id_Date = 1,
       e_field_id_Datetime = 2,
-      e_field_id_Installed = 3,
-      e_field_id_Integer = 4,
-      e_field_id_Is_Other_Package = 5,
-      e_field_id_Model = 6,
-      e_field_id_Name = 7,
-      e_field_id_Numeric = 8,
-      e_field_id_Other_Package = 9,
-      e_field_id_Other_Package_Required = 10,
-      e_field_id_Other_Package_Type = 11,
-      e_field_id_Package = 12,
-      e_field_id_Primitive = 13,
-      e_field_id_String = 14,
-      e_field_id_Time = 15,
-      e_field_id_Use_Option = 16,
-      e_field_id_Value = 17
+      e_field_id_Id = 3,
+      e_field_id_Installed = 4,
+      e_field_id_Integer = 5,
+      e_field_id_Is_Other_Package = 6,
+      e_field_id_Model = 7,
+      e_field_id_Name = 8,
+      e_field_id_Numeric = 9,
+      e_field_id_Other_Package = 10,
+      e_field_id_Other_Package_Required = 11,
+      e_field_id_Other_Package_Type = 12,
+      e_field_id_Package = 13,
+      e_field_id_Primitive = 14,
+      e_field_id_String = 15,
+      e_field_id_Time = 16,
+      e_field_id_Use_Option = 17,
+      e_field_id_Value = 18
    };
 
    Meta_Package_Option( );
@@ -68,6 +69,9 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
 
    const std::string& Datetime( ) const;
    void Datetime( const std::string& Datetime );
+
+   const std::string& Id( ) const;
+   void Id( const std::string& Id );
 
    bool Installed( ) const;
    void Installed( bool Installed );

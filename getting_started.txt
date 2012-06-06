@@ -89,3 +89,75 @@ If all went well the you should now be able to access the IDE: http://localhost/
 
 From the login form which should have appeared use the password and user id "guest" (no quotes).
 
+Creating an Application
+-----------------------
+
+Once you have logged in click on "Models" (in the navigation sidebar) and then click "New Record" in order to
+begin the application creation process. The "New Model" form will require a Name to be entered (for this test
+the name "Sample" should be used).
+
+The "Add Packages" drop list will default to the value "Standard User" which is fine (along with the defaults
+for the other fields) so now simply click "Save Details" to create the new Model. After saving the "Standard"
+package will automatically be installed while the "User" package will just appear greyed out (for those using
+Windows a extra "cmd" window will appear while the "Standard" package is being installed).
+
+To install the "User" package click on the greyed out "User" list item then from the "Package" view form next
+click on the "Install" button. You might notice from the "Package" view form that there are a number of child
+"Package Options" present. These "options" allow customisation of a package prior to installation. Because of
+the fact that the "User" package has such options it is not automatically installed as the "Standard" package
+was (the "Standard" package has no installation options).
+
+For the purposes of creating a test "demonstration" Application the "User" package should simply be installed
+with the "Package Options" as they are by default. After the "User" package has been installed (assuming that
+no error occurred during installation) then click on "Applications" from the navigation sidebar and as before
+click "New Record" to create the Application. In order to simplify creating a new Application enter the exact
+same text for Name as you used for the Model (in this case "Sample"). After typing in the Name next click the
+"Save Details" button and you should see in the child "Modules" list that the Model "Sample" has been created
+for you (if not then most likely the Name was not an exact match or "Add Modules Automatically" was not set).
+
+Assuming the Application has successfully been created (if not then it is possible the MySQL root password is
+not correct or present in the server configuration file), then all that remains to be done now is to click on
+the "Generate" button (leaving the Generate Type as "Full Generate"). After clicking the button Windows users
+(once again) will see a new "cmd" window appear. To see the application generation details click on the arrow
+icon that appears below the Version field.
+
+Assuming no problems have occurred then you should see lines of text that describe each of the artifacts that
+have been created (such as the "sample" web directory, all of the source files and the "make" output which is
+then finally followed by the DB construction and population with initial data).
+
+If no errors have occurred during application generation then you should now be ready to test your first ever
+CIYAM application. This should be as simple as typing "localhost/sample" into your browser (in another window
+than that used for "Meta"). If you use the name and password "guest" you should be presented with a "Welcome"
+message (as only the "Standard" and "User" packages were installed there is not much that the "guest" user is
+able to do other than change their password).
+
+Installing Package Types
+------------------------
+
+By default the package types which are included in the "Meta" system are functional ones (such as providing a
+System singleton that can be used for holding system-wide default values and also for the User record type so
+that users can be given login credentials and security permissions). Although vitally important these package
+types are not so interesting (as seen in the sample application created initially).
+
+In order to be able to create a more interesting application it is recommended to install one or more package
+types that are not automatically included in "Meta". To do this you need to login to "Meta" with the username
+"admin" and password "nimda" (logout first if still logged in as "guest" from before).
+
+The navigation sidebar will look very different when you are logged in as "admin" as this special user is not
+intended to perform standard activities but instead to perform "system configuration" and "user maintenance".
+After clicking on "Package Types" you should see a small list of the automatically included packages. Too add
+a new package type click "New Record". The Type Name will default to "New_Package_Type" and as this name will
+be automatically changed during the Package Type "Install" it does not need to be changed so you just need to
+click "Save Details" to continue.
+
+The next step is to locate a "package bundle" which is a file ending with the extension "*.package.bun.gz" in
+the project's source directory. After you "Attach" this file (which will "upload" it) you should see that the
+"gz" file has been attached. Now all that needs to be done is click on "Install" (again under Windows a "cmd"
+window will appear during the installation). If no error has occurred then the Type Name will have changed to
+the name of the package type automatically and the various other fields will have been set.
+
+It should be noted that some package types will have one or more dependencies upon other package types so the
+order that new package types are installed is important.
+
+For more specific information about the various Package Types that are available refer to "packages.txt".
+

@@ -3,7 +3,6 @@
    get_obj( ).op_update( );
    if( !get_obj( ).`{`$arg_exhausted_field`}( ) )
    {
-      `{`$arg_inc_value`} = get_obj( ).`{`$arg_next_field`}( );
       string mask( get_obj( ).`{`$arg_mask_field`}( ) );
 
       if( is_null( get_obj( ).`{`$arg_next_field`}( ) ) )
@@ -21,52 +20,53 @@
 
          get_obj( ).`{`$arg_next_field`}( str );
       }
-      else
+
+      `{`$arg_inc_value`} = get_obj( ).`{`$arg_next_field`}( );
+
+      if( mask.size( ) != get_obj( ).`{`$arg_next_field`}( ).size( ) )
       {
-         if( mask.size( ) != get_obj( ).`{`$arg_next_field`}( ).size( ) )
+         get_obj( ).op_cancel( );
+         throw runtime_error( "unexpected mask/next size mismatch" );
+      }
+
+      bool finished = false;
+      string str( get_obj( ).`{`$arg_next_field`}( ) );
+      for( size_t i = mask.size( ); i > 0; i-- )
+      {
+         if( mask[ i - 1 ] == '?' )
          {
-            get_obj( ).op_cancel( );
-            throw runtime_error( "unexpected mask/next size mismatch" );
+            if( str[ i - 1 ] == 'Z' )
+               str[ i - 1 ] = 'A';
+            else
+            {
+               ++str[ i - 1 ];
+               finished = true;
+            }
          }
-
-         bool finished = false;
-         string str( get_obj( ).`{`$arg_next_field`}( ) );
-         for( size_t i = mask.size( ); i > 0; i-- )
+         else if( mask[ i - 1 ] == '#' )
          {
-            if( mask[ i - 1 ] == '?' )
+            if( str[ i - 1 ] == '9' )
+               str[ i - 1 ] = '0';
+            else
             {
-               if( str[ i - 1 ] == 'Z' )
-                  str[ i - 1 ] = 'A';
-               else
-               {
-                  ++str[ i - 1 ];
-                  finished = true;
-               }
-            }
-            else if( mask[ i - 1 ] == '#' )
-            {
-               if( str[ i - 1 ] == '9' )
-                  str[ i - 1 ] = '0';
-               else
-               {
-                  ++str[ i - 1 ];
-                  finished = true;
-               }
-            }
-
-            if( finished )
-            {
-               get_obj( ).`{`$arg_next_field`}( str );
-               break;
+               ++str[ i - 1 ];
+               finished = true;
             }
          }
 
-         if( !finished )
+         if( finished )
          {
-            get_obj( ).`{`$arg_next_field`}( "" );
-            get_obj( ).`{`$arg_exhausted_field`}( true );
+            get_obj( ).`{`$arg_next_field`}( str );
+            break;
          }
       }
+
+      if( !finished )
+      {
+         get_obj( ).`{`$arg_next_field`}( "" );
+         get_obj( ).`{`$arg_exhausted_field`}( true );
+      }
+
       get_obj( ).op_apply( );
    }
    else

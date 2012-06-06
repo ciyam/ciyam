@@ -1732,14 +1732,16 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
             string::size_type pos = next.find( '=' );
             if( pos != string::npos )
             {
-               string opt_name = next.substr( 0, pos );
-               if( !options.count( opt_name ) )
+               string opt_id = next.substr( 0, pos );
+               if( !options.count( opt_id ) )
                {
                   get_obj( ).child_Package_Option( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
 
                   get_obj( ).child_Package_Option( ).Package( get_obj( ).get_key( ) );
 
-                  get_obj( ).child_Package_Option( ).Name( opt_name );
+                  get_obj( ).child_Package_Option( ).Id( opt_id );
+                  get_obj( ).child_Package_Option( ).Name( opt_id.substr( ext_prefix.length( ) ) );
+
                   get_obj( ).child_Package_Option( ).Is_Other_Package( true );
                   get_obj( ).child_Package_Option( ).Other_Package_Type( package_types[ next.substr( pos + 1 ) ] );
 
@@ -1747,7 +1749,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
                   get_obj( ).child_Package_Option( ).op_apply( );
 
-                  options.insert( opt_name );
+                  options.insert( opt_id );
                }
             }
          }
@@ -1756,23 +1758,25 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
             string::size_type pos = next.find( '=' );
             if( pos != string::npos )
             {
-               string opt_name = next.substr( 0, pos );
-               string type_and_name = opt_name.substr( opt_prefix.length( ) );
+               string opt_id = next.substr( 0, pos );
+               string type_and_id = opt_id.substr( opt_prefix.length( ) );
 
-               if( !type_and_name.empty( ) )
+               if( !type_and_id.empty( ) )
                {
-                  string::size_type tpos = type_and_name.find( '_' );
+                  string::size_type tpos = type_and_id.find( '_' );
                   if( tpos == string::npos || tpos == 0 )
-                     throw runtime_error( "unexpected invalid option type_and_name: " + type_and_name );
+                     throw runtime_error( "unexpected invalid option type_and_id: " + type_and_id );
 
-                  string type( type_and_name.substr( 0, tpos ) );
+                  string type( type_and_id.substr( 0, tpos ) );
 
-                  if( !options.count( opt_name ) )
+                  if( !options.count( opt_id ) )
                   {
                      get_obj( ).child_Package_Option( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
 
                      get_obj( ).child_Package_Option( ).Package( get_obj( ).get_key( ) );
-                     get_obj( ).child_Package_Option( ).Name( opt_name );
+
+                     get_obj( ).child_Package_Option( ).Id( opt_id );
+                     get_obj( ).child_Package_Option( ).Name( opt_id.substr( opt_prefix.length( ) + type.length( ) + 1 ) );
 
                      string value = next.substr( pos + 1 );
 
@@ -1812,6 +1816,13 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                            break;
 
                            case e_primitive_bool:
+                           if( get_obj( ).child_Package_Option( ).Name( ) == "@use_demo_data" )
+                           {
+                              if( get_obj( ).Model( ).Use_Package_Demo_Data( ) )
+                                 value = "1";
+                              else
+                                 value.erase( );
+                           }
                            get_obj( ).child_Package_Option( ).Use_Option( value == "1" || value == "true" );
                            break;
 
@@ -1823,7 +1834,7 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
                      get_obj( ).child_Package_Option( ).op_apply( );
 
-                     options.insert( opt_name );
+                     options.insert( opt_id );
                   }
                }
             }

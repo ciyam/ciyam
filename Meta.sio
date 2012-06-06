@@ -8450,6 +8450,23 @@
       </specifications>
      </field>
      <field/>
+      <id>105115
+      <name>Use_Package_Demo_Data
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601510
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>105102
       <name>Version
       <type>1000
@@ -9824,6 +9841,18 @@
       </specifications>
      </field>
      <field/>
+      <id>137101
+      <name>Id
+      <type>1020
+      <mandatory>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
       <id>137103
       <name>Installed
       <type>bool
@@ -9907,7 +9936,7 @@
       </specifications>
      </field>
      <field/>
-      <id>137101
+      <id>137115
       <name>Name
       <type>1020
       <mandatory>true
@@ -28922,6 +28951,7 @@
      <field_info>105103;show
      <field_info>301600:116101!@group:301500+116101
      <field_info>105112;new_only+enum=575
+     <field_info>105115
      <field_info>105110
      <field_info>105111
      <field_info>105109
@@ -29338,7 +29368,7 @@
      <ordering>forward
      <pclass_id>136100
      <pfield_id>302820
-     <field_info>137101
+     <field_info>137115
      <field_info>137107
     </data>
    </specification>
@@ -29351,7 +29381,7 @@
      <type>standard
      <class_id>137100
      <field_info>302820:136101;no_edit+link+max_size=30
-     <field_info>137101;no_edit
+     <field_info>137115;no_edit
      <field_info>137109
      <field_info>137110
      <field_info>137111

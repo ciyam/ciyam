@@ -1,0 +1,58 @@
+Notes for Using Specific Packages
+---------------------------------
+
+The following notes detail the available packages and their usage. Package names that have (default) appended
+to their name are Package Type's that are installed by default. Package Types not installed by default can be
+used after being installed from their package (refer to "Installing Package Types" in "getting_started.txt").
+
+Auto_Code (default)
+-------------------
+
+Other Package Dependencies: Standard
+
+This package provides an Auto_Code class which is used to automatically generate unique sequential codes that
+can be used by instances of any other Class.
+
+After installation to get a Class to use an "auto code" field first create a field (e.g. Code of type str010)
+then add a "for_auto_code_user" Specification to the Class. In this Specification link the Field to the newly
+created field (i.e. Code) and set the Value to a unique identifier for this "auto code" (e.g. user_code) then
+"Save Details". Next click "Add Source Info" and select the Auto_Code Class and its "Increment" Procedure.
+
+In order for the "auto code" to function at run-time an Auto_Code record with its key matching the identifier
+that was entered as the Value in the "for_auto_code_user" Specification must exist. As records that are using
+"auto codes" could have Initial_Record values (e.g. the User class) the Auto_Code records needed by the users
+of them need to be created as Initial_Record instances.
+
+Thus from the Classes child list of the Model select Auto_Code then select the Initial_Records child list and
+click "New Record". The Key for the Initial Record must be the same as the Value for the "for_auto_code_user"
+used (e.g. "user_code").
+
+After creating the Initial_Record the Initial_Record_Values for Name and Mask must be provided. For the above
+example the Initial_Record_Value's Value for Name could be set to "User_Code" with the Mask's Value being set
+to a useful "auto increment mask" (e.g. "U#####"). It should be noted that the Name must be unique (but isn't
+otherwise important).
+
+An "auto incement mask" must contain one or more "#" or "?" characters that are replaced when determining the
+"next" auto increment value with digits and letters respectively. The following table of auto code masks with
+sample values illustrates how this works (note that generated letters are only upper case).
+
+AC####  ==>  AC0000,AC0001,AC0002,...,AC9999
+??####  ==>  AA0000,AA0001,AA0002,...,ZZ9999
+XYZ#??  ==>  XYZ0AA,XYZ0AB,XYZ0AC,...,XYZ9ZZ
+
+Group (default)
+---------------
+
+Other Package Dependencies: Standard User
+
+This package provides a Workgroup class and implements the Relationship between a User and its Workgroup. The
+Relationship is optional although typically only the "admin" or "guest" user would not belong to a Workgroup.
+
+The Workgroup (or renamed as Department if preferred) is used as a simple means of slicing DB records between
+different users. Various other Packages will accept the Group Package as an option where it can make sense to
+be dividing records between different Workgroups.
+
+Package Options:
+
+@use_demo_data - Use this option to create demo Workgroups (and demo Users belonging to them).
+
