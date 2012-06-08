@@ -820,6 +820,7 @@ std::string CLASS_BASE_DECL_SPEC get_path( const std::string& filename );
 
 bool CLASS_BASE_DECL_SPEC exists_file( const std::string& filename, bool check_link_target = true );
 void CLASS_BASE_DECL_SPEC remove_file( const std::string& filename );
+void CLASS_BASE_DECL_SPEC rename_file( const std::string& oldname, const std::string& newname );
 
 int64_t CLASS_BASE_DECL_SPEC size_file( const std::string& filename );
 int64_t CLASS_BASE_DECL_SPEC last_mod_time( const std::string& filename );
@@ -841,6 +842,8 @@ std::string CLASS_BASE_DECL_SPEC get_app_file( const std::string& module_name );
 std::string CLASS_BASE_DECL_SPEC get_attached_file_path( const std::string& module_id, const std::string& class_id );
 
 std::string CLASS_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
+
+void CLASS_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 
 void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name, bool allow_all_rx = false );
 std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );

@@ -54,6 +54,7 @@
 #include "hashcash.h"
 #include "date_time.h"
 #include "utilities.h"
+#include "file_utils.h"
 #include "ciyam_base.h"
 #include "mail_source.h"
 #include "oid_pointer.h"
@@ -2206,6 +2207,20 @@ bool exists_file( const string& filename, bool check_link_target )
    return file_exists( filename, check_link_target );
 }
 
+void remove_file( const string& filename )
+{
+   file_remove( filename );
+
+   if( file_exists( filename ) )
+      throw runtime_error( "unable to remove file '" + filename + "'" );
+}
+
+void rename_file( const string& oldname, const string& newname )
+{
+   if( rename( oldname.c_str( ), newname.c_str( ) ) != 0 )
+      throw runtime_error( "unable to rename file '" + oldname + "' to '" + newname + "'" );
+}
+
 int64_t size_file( const string& filename )
 {
    int64_t size = 0;
@@ -2219,14 +2234,6 @@ int64_t size_file( const string& filename )
 int64_t last_mod_time( const string& filename )
 {
    return last_modification_time( filename );
-}
-
-void remove_file( const string& filename )
-{
-   file_remove( filename );
-
-   if( file_exists( filename ) )
-      throw runtime_error( "Unable to remove file '" + filename + "'." );
 }
 
 void copy_file( const string& source, const string& destination )
@@ -2319,6 +2326,11 @@ string expand_lf_to_cr_lf( const string& input )
    }
 
    return output;
+}
+
+void delete_directory_tree( const string& path )
+{
+   delete_directory_files( path, true );
 }
 
 void create_directories_for_file_name( const string& file_name, bool allow_all_rx )

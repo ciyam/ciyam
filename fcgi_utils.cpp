@@ -46,6 +46,7 @@
 #include "date_time.h"
 #include "fcgi_info.h"
 #include "utilities.h"
+#include "file_utils.h"
 #include "fs_iterator.h"
 #include "ciyam_interface.h"
 
@@ -241,38 +242,6 @@ string get_module_page_name( const string& module_ref, bool check_for_index )
    return page_name;
 }
 
-#ifdef _WIN32
-bool delete_files( const char* p_dir, bool recycle )
-{
-   int len = strlen( p_dir );
-   char* p_from = new char[ len + 2 ];
-   memcpy( ( void* )p_from, ( void* )p_dir, len );
-
-   // NOTE: Requires two trailing zeros to mark the end of the file list.
-   p_from[ len ] = 0;
-   p_from[ len + 1 ] = 0;
-  
-   SHFILEOPSTRUCT fileop;
-   fileop.hwnd = 0;
-   fileop.wFunc = FO_DELETE;
-   fileop.pFrom = p_from;
-   fileop.pTo = 0;
-   fileop.fFlags = FOF_NOCONFIRMATION | FOF_SILENT;
-  
-   if( recycle )
-      fileop.fFlags |= FOF_ALLOWUNDO;
-
-   fileop.fAnyOperationsAborted = 0;
-   fileop.lpszProgressTitle = 0;
-   fileop.hNameMappings = 0;
-
-   int ret = ::SHFileOperation( &fileop );
-   delete[ ] p_from;
-
-  return ret == 0;
-}
-#endif
-
 string get_hash( const string& values )
 {
    DEBUG_TRACE( "(hash) values = " + values );
@@ -436,24 +405,7 @@ void remove_session_temp_directory( const string& session_id, const char* p_pref
       path = string( p_prefix ) + "/" + path;
 
    if( file_exists( path.c_str( ) ) )
-   {
-#ifdef _WIN32
-      string directory( get_storage_info( ).web_root + "\\" );
-      directory += c_files_directory;
-      directory += "\\" + string( c_tmp_directory );
-      directory += "\\" + session_id;
-
-      delete_files( ( directory + "\\*.*" ).c_str( ) );
-#else
-      fs_iterator fsi( path, 0, true );
-
-      while( fsi.has_next( ) )
-         file_remove( fsi.get_full_name( ) );
-#endif
-   }
-
-   if( file_exists( path.c_str( ) ) )
-      _rmdir( path.c_str( ) );
+      delete_directory_files( path, true );
 }
 
 string double_escaped( const string& src, const string& chars )
