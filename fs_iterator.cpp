@@ -271,9 +271,6 @@ bool fs_iterator::has_next( )
       if( found )
          break;
 
-      if( directories.size( ) == 1 )
-         break;
-
 #ifdef _WIN32
       FindClose( directories.top( )->fhdl );
 #else
@@ -281,6 +278,9 @@ bool fs_iterator::has_next( )
 #endif
       delete directories.top( );
       directories.pop( );
+
+      if( directories.empty( ) )
+         break;
 
       path_name = full_name = name = directories.top( )->path;
    }

@@ -15,6 +15,7 @@
      <filename>date_time.cpp
      <filename>dynamic_library.cpp
      <filename>file_buffer.cpp
+     <filename>file_utils.cpp
      <filename>format.cpp
      <filename>fs_iterator.cpp
      <filename>hashcash.cpp
