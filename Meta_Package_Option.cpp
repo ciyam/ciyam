@@ -2268,6 +2268,15 @@ void Meta_Package_Option::get_required_field_names(
 
    if( needs_field_value( "Value", dependents ) )
    {
+      dependents.insert( "String" );
+
+      if( ( required_transients && is_field_transient( e_field_id_String ) )
+       || ( !required_transients && !is_field_transient( e_field_id_String ) ) )
+         names.insert( "String" );
+   }
+
+   if( needs_field_value( "Value", dependents ) )
+   {
       dependents.insert( "Datetime" );
 
       if( ( required_transients && is_field_transient( e_field_id_Datetime ) )
