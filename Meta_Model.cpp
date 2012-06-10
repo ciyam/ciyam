@@ -5518,9 +5518,9 @@ void Meta_Model::impl::impl_Remove_Module( )
       if( exists_file( "manuscript.sio.new" ) )
       {
 #ifdef _WIN32
-         exec_system( "update manuscript.sio manuscript.sio.new" );
+         exec_system( "update manuscript.sio manuscript.sio.new >nul" );
 #else
-         exec_system( "./update manuscript.sio manuscript.sio.new" );
+         exec_system( "./update manuscript.sio manuscript.sio.new >/dev/null" );
 #endif
       }
    }
@@ -5993,7 +5993,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
       if( exists_file( dest, false ) )
          remove_file( dest );
       else if( has_source_file )
-         create_directories_for_file_name( dest );
+         create_directories_for_file_name( dest, true );
 
       if( !has_source_file )
          get_obj( ).Source_File( "" );
@@ -6018,7 +6018,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
       if( exists_file( dest, false ) )
          remove_file( dest );
       else if( has_source_file )
-         create_directories_for_file_name( dest );
+         create_directories_for_file_name( dest, true );
 
       if( !has_source_file )
          get_obj( ).Commands_File( "" );
@@ -6167,9 +6167,9 @@ void Meta_Model::impl::for_destroy( bool is_internal )
       if( exists_file( "manuscript.sio.new" ) )
       {
 #ifdef _WIN32
-         exec_system( "update manuscript.sio manuscript.sio.new" );
+         exec_system( "update manuscript.sio manuscript.sio.new >nul" );
 #else
-         exec_system( "./update manuscript.sio manuscript.sio.new" );
+         exec_system( "./update manuscript.sio manuscript.sio.new >/dev/null" );
 #endif
       }
    }

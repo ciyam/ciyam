@@ -66,7 +66,7 @@ set< string > g_non_persistent;
 map< string, string > g_strings;
 
 #ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU;
+const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
 #endif
 
 const char* const c_log_file = "ciyam_interface.log";

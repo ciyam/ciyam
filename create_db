@@ -2,13 +2,13 @@ if [ $# -lt 1 ]; then
  echo Usage: create_db [[-rebuild]] [db name] [[password]]
 else
  if [ "$1" = "-rebuild" ]; then
-  export db_name=$2
-  export rebuild=true
-  export password=$3
+  db_name=$2
+  rebuild=true
+  password=$3
  else
-  export db_name=$1
-  export rebuild=false
-  export password=$2
+  db_name=$1
+  rebuild=false
+  password=$2
  fi
 
  echo DROP DATABASE IF EXISTS $db_name\;>~create_db

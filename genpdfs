@@ -1,7 +1,7 @@
 if [ $# -ne 2 ]; then
  echo Usage: genpdfs [module name] [class name]
 else
- export full_name=$1_$2
+ full_name=$1_$2
 
  if [ -f $full_name.pdf.sh ]; then
   cp $full_name.pdf.sh ~genpdfs
