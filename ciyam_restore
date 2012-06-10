@@ -1,15 +1,15 @@
 if [ $# -lt 1 -o $# -gt 3 ]; then
  echo Usage: ciyam_restore [[-rebuild]] [app name] [[web path]]
 else
- export opt=
+ opt=
  export CIYAM_STORAGE=$1
- export web_path=$2
- export backup_path=$PWD
+ web_path=$2
+ backup_path=$PWD
 
  if [ "$1" = "-rebuild" ]; then
-  export opt=$1
+  opt=$1
   export CIYAM_STORAGE=$2
-  export web_path=$3
+  web_path=$3
  fi
 
  if [ -f "$backup_path/$CIYAM_STORAGE.backup.bun.gz" ]; then

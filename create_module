@@ -1,12 +1,12 @@
 if [ $# -lt 1 ]; then
  echo Usage: create_module [[-rdbms]] [module name]
 else
- export mod_name=$1
- export is_rdbms=
+ mod_name=$1
+ is_rdbms=
 
  if [ "$1" = "-rdbms" ]; then
-  export is_rdbms=1
-  export mod_name=$2
+  is_rdbms=1
+  mod_name=$2
  fi
 
  if [ -f $mod_name.cpp ]; then

@@ -16,7 +16,7 @@
       if( exists_file( dest, false ) )
          remove_file( dest );
       else if( has_source_file )
-         create_directories_for_file_name( dest );
+         create_directories_for_file_name( dest, true );
 
       if( !has_source_file )
          get_obj( ).`{`$arg_field`}( "" );

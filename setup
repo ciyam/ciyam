@@ -34,11 +34,11 @@ else
   }
   [ -f $WEBDIR/$2/requirements.html ] ||
   {
-   ../xrep @requirements.html.xrep application=$1>$WEBDIR/$2/requirements.html
+   ./xrep @requirements.html.xrep application=$1>$WEBDIR/$2/requirements.html
   }
   [ -f $WEBDIR/$2/ciyam_interface.js ] ||
   {
-   ../xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep>$WEBDIR/$2/ciyam_interface.js
+   ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep>$WEBDIR/$2/ciyam_interface.js
   }
   [ -f $WEBDIR/$2/fcgi.sio ] ||
   {

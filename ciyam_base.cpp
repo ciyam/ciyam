@@ -3678,7 +3678,11 @@ int run_script( const string& script_name, bool async )
    }
    else
    {
+#ifdef _WIN32
       string cmd_and_args( filename );
+#else
+      string cmd_and_args( "./" + filename );
+#endif
 
       if( !arguments.empty( ) )
          cmd_and_args += " " + arguments;

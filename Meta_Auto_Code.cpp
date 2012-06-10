@@ -338,7 +338,6 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
    get_obj( ).op_update( );
    if( !get_obj( ).Exhausted( ) )
    {
-      Next_Value = get_obj( ).Next( );
       string mask( get_obj( ).Mask( ) );
 
       if( is_null( get_obj( ).Next( ) ) )
@@ -356,52 +355,53 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
 
          get_obj( ).Next( str );
       }
-      else
+
+      Next_Value = get_obj( ).Next( );
+
+      if( mask.size( ) != get_obj( ).Next( ).size( ) )
       {
-         if( mask.size( ) != get_obj( ).Next( ).size( ) )
+         get_obj( ).op_cancel( );
+         throw runtime_error( "unexpected mask/next size mismatch" );
+      }
+
+      bool finished = false;
+      string str( get_obj( ).Next( ) );
+      for( size_t i = mask.size( ); i > 0; i-- )
+      {
+         if( mask[ i - 1 ] == '?' )
          {
-            get_obj( ).op_cancel( );
-            throw runtime_error( "unexpected mask/next size mismatch" );
+            if( str[ i - 1 ] == 'Z' )
+               str[ i - 1 ] = 'A';
+            else
+            {
+               ++str[ i - 1 ];
+               finished = true;
+            }
          }
-
-         bool finished = false;
-         string str( get_obj( ).Next( ) );
-         for( size_t i = mask.size( ); i > 0; i-- )
+         else if( mask[ i - 1 ] == '#' )
          {
-            if( mask[ i - 1 ] == '?' )
+            if( str[ i - 1 ] == '9' )
+               str[ i - 1 ] = '0';
+            else
             {
-               if( str[ i - 1 ] == 'Z' )
-                  str[ i - 1 ] = 'A';
-               else
-               {
-                  ++str[ i - 1 ];
-                  finished = true;
-               }
-            }
-            else if( mask[ i - 1 ] == '#' )
-            {
-               if( str[ i - 1 ] == '9' )
-                  str[ i - 1 ] = '0';
-               else
-               {
-                  ++str[ i - 1 ];
-                  finished = true;
-               }
-            }
-
-            if( finished )
-            {
-               get_obj( ).Next( str );
-               break;
+               ++str[ i - 1 ];
+               finished = true;
             }
          }
 
-         if( !finished )
+         if( finished )
          {
-            get_obj( ).Next( "" );
-            get_obj( ).Exhausted( true );
+            get_obj( ).Next( str );
+            break;
          }
       }
+
+      if( !finished )
+      {
+         get_obj( ).Next( "" );
+         get_obj( ).Exhausted( true );
+      }
+
       get_obj( ).op_apply( );
    }
    else

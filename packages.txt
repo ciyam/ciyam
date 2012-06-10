@@ -56,3 +56,27 @@ Package Options:
 
 @use_demo_data - Use this option to create demo Workgroups (and demo Users belonging to them).
 
+Photo
+-----
+
+Other Package Dependencies: Standard
+
+This package provides a Photo Album implementation that can be used to easily create and publish photos from
+a CIYAM application.
+
+In order to be able to view "published" Photo Album web pages the open source application Galleria must first
+be installed. A script to install Galleria (and a copy of Galleria itself) is included in the repository - so
+to install it simply run the following:
+
+./setup_galleria
+
+Package Options:
+@use_demo_data - Use this option to create one or more demo Photo Albums (depends upon User demo data).
+use_user_account - Use this option if Photo Albums are intended to be shared between user accounts.
+use_user_account_mark_as_seen - This option allows ser account owners to mark a Photo Album as being seen.
+use_user_id_path - Use this option to
+use_user_permissions
+use_user_tags
+user_image_directory
+user_package
+

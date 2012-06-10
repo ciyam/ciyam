@@ -101,10 +101,6 @@ const int c_greeting_timeout = 2500;
 const int c_initial_response_timeout = 7500;
 const int c_subsequent_response_timeout = 2000;
 
-#ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU;
-#endif
-
 const char* const c_license_file = "license.txt";
 
 #ifndef _WIN32
@@ -1348,7 +1344,7 @@ void request_handler::process_request( )
 #ifdef _WIN32
                   if( _mkdir( path.c_str( ) ) != 0 )
 #else
-                  if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
+                  if( _mkdir( path.c_str( ), S_IRWXU ) != 0 )
 #endif
                      throw runtime_error( "unable to create '" + path + "' directory" );
 

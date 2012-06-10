@@ -712,7 +712,7 @@ void Meta_Package::impl::impl_Check_Install( )
       {
          if( lower( get_obj( ).Install_Details( ) ).find( "error" ) == string::npos )
          {
-            create_directories_for_file_name( map_filename );
+            create_directories_for_file_name( map_filename, true );
 
             copy_file( temp_map_filename, map_filename );
 

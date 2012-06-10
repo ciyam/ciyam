@@ -1,11 +1,11 @@
 if [ $# -lt 2 ]; then
  echo Usage: genclass [[-rdbms]] [module name] [class name]
 else
- export gen_class=0
- export module=$1
- export classnm=$2
- export full_name=$1_$2
- export user_vars="user_vars=$full_name.vars.xrep"
+ gen_class=0
+ module=$1
+ classnm=$2
+ full_name=$1_$2
+ user_vars="user_vars=$full_name.vars.xrep"
 
  if [ ! "$1" = "-rdbms" ]; then
   echo model_load $1>~genclass.tmp
@@ -13,10 +13,10 @@ else
 
   ./modeller -quiet -no_prompt <~genclass.tmp
  else
-  export module=$2
-  export classnm=$3
-  export full_name=$2_$3
-  export user_vars="user_vars=$full_name.vars.xrep"
+  module=$2
+  classnm=$3
+  full_name=$2_$3
+  user_vars="user_vars=$full_name.vars.xrep"
  fi
 
  if [ $? -eq 0 ]; then
@@ -30,15 +30,15 @@ else
   if [ -f $full_name.vars.xrep.sav ]; then
    cmp -s $full_name.vars.xrep $full_name.vars.xrep.sav
    if [ $? -eq 1 ]; then
-    export gen_class=1
+    gen_class=1
    fi
   else
-   export gen_class=1
+   gen_class=1
   fi
 
   if [ $gen_class -eq 1 ]; then
    if [ -f $full_name.cpp.xrep ]; then
-    export user_vars="$user_vars user_source=$full_name.cpp.xrep"
+    user_vars="$user_vars user_source=$full_name.cpp.xrep"
    fi
 
    ./xrep @ciyam_class.h.xrep $user_vars >$full_name.h.new

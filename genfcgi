@@ -7,7 +7,7 @@ else
  if [ "$WEBDIR" = "" ]; then
   echo Error: Missing environment variable 'WEBDIR'.
  else
-  export directory=$WEBDIR/$2
+  directory=$WEBDIR/$2
 
   if [ ! -f $1.app.vars.xrep ]; then
    echo Error: File \'$1.app.vars.xrep\' does not exist.

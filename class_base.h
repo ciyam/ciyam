@@ -845,7 +845,7 @@ std::string CLASS_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 
 void CLASS_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 
-void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name, bool allow_all_rx = false );
+void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name, bool allow_all_rwx = false );
 std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
 
 size_t CLASS_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
