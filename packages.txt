@@ -70,13 +70,27 @@ to install it simply run the following:
 
 ./setup_galleria
 
+If the User package is not linked to the Photo package (via the "user_package" option) then Photo Albums will
+be accessible to all users and will be published to the "webroot" directory. If the User package is linked in
+then Photo Albums and Photos are only visible to the user that "owns" them, however, if "use_user_account" is
+selected (and User Accounts were installed with the User package) then other users that the Photo Album owner
+has added User Accounts for will also be able to view their Photos (assuming they have been given high enough
+access). Only those Photo Albums with "public" visibility (and Photos likewise) are able to be "published" as
+the published Photo Albums will be visible to anyone having access to the website.
+
 Package Options:
+
 @use_demo_data - Use this option to create one or more demo Photo Albums (depends upon User demo data).
+
+user_package - This needs to be linked to an installed User package in order to use the other "user" options.
+
 use_user_account - Use this option if Photo Albums are intended to be shared between user accounts.
-use_user_account_mark_as_seen - This option allows ser account owners to mark a Photo Album as being seen.
-use_user_id_path - Use this option to
-use_user_permissions
-use_user_tags
-user_image_directory
-user_package
+use_user_account_mark_as_seen - This option allows the account owners to mark a Photo Album as being seen.
+
+use_user_id_path - Use this option to publish Photo Albums below a directory that is the same as the User Id.
+
+use_user_permissions - Use this option to add permissions for being able to access/modify Photo Albums.
+use_user_tags - Use this option in order to be able to add/remove "tags" to/from individual Photos.
+
+user_image_directory - This is the name of the directory in which the Photos will be stored.
 
