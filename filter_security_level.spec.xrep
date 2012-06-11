@@ -1,0 +1,22 @@
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start filter_security_level)]
+   if( get_obj( ).has_filter( "`{`$arg_id`}" )
+    || get_obj( ).has_filter( "`{`$arg_name`}" ) )
+   {
+      if( !has_sec_level( get_obj( ).`{`$arg_slevel`}( ) ) )
+         return true;
+   }
+   // [(finish filter_security_level)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start filter_security_level)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      dependents.insert( "`{`$arg_slevel`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_slevel`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_slevel`} ) ) )
+         names.insert( "`{`$arg_slevel`}" );
+   }
+   // [(finish filter_security_level)]
+`}

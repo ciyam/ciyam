@@ -1851,6 +1851,10 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `{`#filter_perm_restricted.spec.xrep section=is_filtered arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}
 `,\
+`@eq`(`'\1`'`,`'filter_security_level`'`)\
+`{`#filter_security_level.spec.xrep section=is_filtered arg_name=\0\
+ arg_id=$specification_\0_id arg_slevel=$specification_\0_slevel`}
+`,\
 `@eq`(`'\1`'`,`'non_uid_filter`'`)\
 `{`#non_uid_filter.spec.xrep section=is_filtered class_name=$class_name module_name=$module_name\
  arg_name=\0 arg_id=$specification_\0_id arg_pclass=$specification_\0_pclass arg_cfield=$specification_\0_cfield`}
@@ -2594,6 +2598,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'filter_perm_restricted`'`)
 `{`#filter_perm_restricted.spec.xrep section=get_required_field_names arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+`,\
+`@eq`(`'\1`'`,`'filter_security_level`'`)
+`{`#filter_security_level.spec.xrep section=get_required_field_names arg_name=\0\
+ arg_id=$specification_\0_id arg_slevel=$specification_\0_slevel`}\
 `,\
 `@eq`(`'\1`'`,`'meta_relationship_child_name`'`)
 `{`#meta_relationship_child_name.spec.xrep section=get_required_field_names\

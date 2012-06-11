@@ -44,6 +44,21 @@ const char* const c_order_reverse = "reverse";
 
 }
 
+string get_uid_info( const session_info& sess_info )
+{
+   string uid_info( sess_info.user_key );
+
+   if( !uid_info.empty( ) )
+   {
+      if( !sess_info.user_slevel.empty( ) )
+         uid_info += "!" + sess_info.user_slevel;
+
+      uid_info += ":" + sess_info.user_id;
+   }
+
+   return uid_info;
+}
+
 void read_module_strings( module_info& info, tcp_socket& socket )
 {
    string strings_cmd( "module_strings_list " );
@@ -147,8 +162,7 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
 }
 
 bool perform_update( const string& module, const string& class_id,
- const string& key, const vector< pair< string, string > >& field_value_pairs,
- tcp_socket& socket, const string& user_key, const string& tz_abbr )
+ const string& key, const vector< pair< string, string > >& field_value_pairs, const session_info& sess_info )
 {
    bool okay = true;
 
@@ -162,20 +176,20 @@ bool perform_update( const string& module, const string& class_id,
       field_values += escaped( field_value_pairs[ i ].second, ",\"" );
    }
 
-   string cmd( "perform_update " + user_key + " "
+   string cmd( "perform_update " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id );
 
-   if( !tz_abbr.empty( ) )
-      cmd += " -tz=" + tz_abbr;
+   if( !sess_info.tz_abbr.empty( ) )
+      cmd += " -tz=" + sess_info.tz_abbr;
 
    cmd += " " + key + " \"" + field_values + "\"";
 
    DEBUG_TRACE( cmd );
 
-   if( socket.write_line( cmd ) > 0 )
+   if( sess_info.p_socket->write_line( cmd ) > 0 )
    {
       string response;
-      if( socket.read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
          okay = false;
    }
    else
@@ -186,20 +200,20 @@ bool perform_update( const string& module, const string& class_id,
 
 bool perform_update( const string& module,
  const string& class_id, const string& key, const string& field,
- const string& old_value, const string& new_value, tcp_socket& socket, const string& user_key, string& error )
+ const string& old_value, const string& new_value, const session_info& sess_info, string& error )
 {
    bool okay = true;
 
-   string cmd( "perform_update " + user_key + " "
+   string cmd( "perform_update " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id + " " + key + " \"" + field
     + "=" + escaped( new_value, ",\"" ) + "\" \"" + field + "=" + escaped( old_value, ",\"" ) + "\"" );
 
    DEBUG_TRACE( cmd );
 
-   if( socket.write_line( cmd ) > 0 )
+   if( sess_info.p_socket->write_line( cmd ) > 0 )
    {
       string response;
-      if( socket.read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
       {
          okay = false;
          if( !response.empty( ) )
@@ -217,8 +231,7 @@ bool perform_update( const string& module,
 bool perform_action( const string& module_name,
  const string& class_id, const string& act, const string& app,
  const string& field, const string& fieldlist, const string& exec,
- const string& extra, row_error_container& row_errors, tcp_socket& socket,
- const string& user_key, const string& tz_abbr, int gmt_offset )
+ const string& extra, row_error_container& row_errors, const session_info& sess_info )
 {
    bool okay = true;
 
@@ -265,7 +278,7 @@ bool perform_action( const string& module_name,
    date_time dt( date_time::standard( ) );
 
    string current_dtm( dt.as_string( ) );
-   string current_local_dtm( ( dt + ( seconds )gmt_offset ).as_string( ) );
+   string current_local_dtm( ( dt + ( seconds )sess_info.gmt_offset ).as_string( ) );
 
    // NOTE: If a view is found for the class and it contains a "modified" date/time field then this field will be updated.
    if( !view_id.empty( ) && act == c_act_link )
@@ -364,10 +377,10 @@ bool perform_action( const string& module_name,
 
       if( !key_list.empty( ) )
       {
-         act_cmd += " " + user_key + " " + current_dtm + " " + mod_info.id + " " + class_id;
+         act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
-         if( !tz_abbr.empty( ) )
-            act_cmd += " -tz=" + tz_abbr;
+         if( !sess_info.tz_abbr.empty( ) )
+            act_cmd += " -tz=" + sess_info.tz_abbr;
 
          if( !fieldlist.empty( ) )
             act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -381,10 +394,10 @@ bool perform_action( const string& module_name,
       {
          if( is_versioned )
          {
-            act_cmd += " " + user_key + " " + current_dtm + " " + mod_info.id + " " + class_id;
+            act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
-            if( !tz_abbr.empty( ) )
-               act_cmd += " -tz=" + tz_abbr;
+            if( !sess_info.tz_abbr.empty( ) )
+               act_cmd += " -tz=" + sess_info.tz_abbr;
 
             if( !fieldlist.empty( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -398,10 +411,10 @@ bool perform_action( const string& module_name,
             if( pos != string::npos )
                next_code_and_version.erase( pos );
 
-            act_cmd += " " + user_key + " " + current_dtm + " " + mod_info.id + " " + class_id;
+            act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
-            if( !tz_abbr.empty( ) )
-               act_cmd += " -tz=" + tz_abbr;
+            if( !sess_info.tz_abbr.empty( ) )
+               act_cmd += " -tz=" + sess_info.tz_abbr;
 
             if( !fieldlist.empty( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -417,7 +430,7 @@ bool perform_action( const string& module_name,
 
       DEBUG_TRACE( act_cmd );
 
-      if( socket.write_line( act_cmd ) <= 0 )
+      if( sess_info.p_socket->write_line( act_cmd ) <= 0 )
       {
          okay = false;
          break;
@@ -438,7 +451,7 @@ bool perform_action( const string& module_name,
             timeout = c_subsequent_response_timeout;
          response.clear( );
 
-         if( socket.read_line( response, timeout ) <= 0 )
+         if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
          {
             okay = false;
             break;
@@ -461,15 +474,16 @@ bool perform_action( const string& module_name,
 bool fetch_item_info( const string& module, const module_info& mod_info,
  const string& class_id, const string& item_key, const string& field_list,
  const string& set_field_values, const session_info& sess_info, pair< string, string >& item_info,
- const string& uinfo, const string* p_owner, const string* p_pdf_spec_name,
- const string* p_pdf_title, const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+ const string* p_owner, const string* p_pdf_spec_name, const string* p_pdf_title,
+ const string* p_pdf_link_filename, string* p_pdf_view_file_name )
 {
    bool okay = true;
 
    string fetch_cmd( "perform_fetch " + module + " " + class_id );
 
-   if( !uinfo.empty( ) )
-      fetch_cmd += " -u=" + uinfo;
+   string user_info( get_uid_info( sess_info ) );
+   if( !user_info.empty( ) )
+      fetch_cmd += " -u=" + user_info;
 
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;
@@ -584,13 +598,13 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    return okay;
 }
 
-bool fetch_list_info( const string& module, const module_info& mod_info,
- const string& class_id, const string& uinfo, const session_info& sess_info,
+bool fetch_list_info( const string& module,
+ const module_info& mod_info, const string& class_id, const session_info& sess_info,
  bool is_reverse, int row_limit, const string& key_info, const string& field_list,
  const string& filters, const string& search_text, const string& search_query,
- const string& set_field_values, tcp_socket& socket, data_container& rows,
- const string& exclude_key_info, bool* p_prev, string* p_perms, const string* p_security_info,
- const string* p_extra_debug, const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
+ const string& set_field_values, data_container& rows, const string& exclude_key_info,
+ bool* p_prev, string* p_perms, const string* p_security_info, const string* p_extra_debug,
+ const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
  const string* p_pdf_link_filename, string* p_pdf_view_file_name )
 {
    bool okay = true;
@@ -611,8 +625,9 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
    if( is_reverse )
       fetch_cmd += " -rev";
 
-   if( !uinfo.empty( ) )
-      fetch_cmd += " -u=" + uinfo;
+   string user_info( get_uid_info( sess_info ) );
+   if( !user_info.empty( ) )
+      fetch_cmd += " -u=" + user_info;
 
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;
@@ -690,7 +705,7 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
 
    DEBUG_TRACE( extra_debug + fetch_cmd );
 
-   if( socket.write_line( fetch_cmd ) <= 0 )
+   if( sess_info.p_socket->write_line( fetch_cmd ) <= 0 )
       okay = false;
    else
    {
@@ -702,7 +717,7 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
             timeout = c_subsequent_response_timeout;
          response.clear( );
 
-         if( socket.read_line( response, timeout ) <= 0 )
+         if( sess_info.p_socket->read_line( response, timeout ) <= 0 )
          {
             okay = false;
             break;
@@ -745,10 +760,10 @@ bool fetch_list_info( const string& module, const module_info& mod_info,
    return okay;
 }
 
-bool fetch_parent_row_data( const string& module, const module_info& mod_info,
- const string& record_key, const string& field_id, const string& pclass_id,
- const string& parent_field, const string& parent_extras, const session_info& sess_info,
- const string& parent_key, data_container& parent_row_data, tcp_socket& socket,
+bool fetch_parent_row_data( const string& module,
+ const module_info& mod_info, const string& record_key, const string& field_id,
+ const string& pclass_id, const string& parent_field, const string& parent_extras,
+ const session_info& sess_info, const string& parent_key, data_container& parent_row_data,
  const values* p_key_values, const values* p_fkey_values, const values* p_skey_values,
  bool *p_has_view_id, const set< string >* p_exclude_keys, string* p_skey_required )
 {
@@ -1229,10 +1244,8 @@ bool fetch_parent_row_data( const string& module, const module_info& mod_info,
       pfield += view_id_field;
    }
 
-   string user_info( sess_info.user_key + ":" + sess_info.user_id );
-
-   okay = fetch_list_info( module, mod_info, pclass_id, user_info, sess_info, false, 0, key_info, pfield, filters,
-    "", "", "", socket, parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
+   okay = fetch_list_info( module, mod_info, pclass_id, sess_info, false, 0, key_info, pfield, filters,
+    "", "", "", parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
 
    if( sort_manually )
       sort_row_data_manually( parent_row_data );
@@ -1252,7 +1265,6 @@ bool populate_list_info( list_source& list,
    bool okay = true;
 
    int row_limit( sess_info.row_limit );
-   tcp_socket& socket( *sess_info.p_socket );
 
    if( is_printable )
       row_limit = sess_info.print_limit;
@@ -1539,8 +1551,6 @@ bool populate_list_info( list_source& list,
       perms += i->first;
    }
 
-   string user_info( sess_info.user_key + ":" + sess_info.user_id );
-
    string security_info;
    string* p_security_info = 0;
    if( !list.security_level_field.empty( ) )
@@ -1561,9 +1571,9 @@ bool populate_list_info( list_source& list,
 
    list.print_limited = false;
 
-   if( !fetch_list_info( list.module_id, mod_info, class_info, user_info, sess_info,
+   if( !fetch_list_info( list.module_id, mod_info, class_info, sess_info,
     is_reverse, row_limit, key_info, field_list, filters, search_text, search_query,
-    set_field_values, socket, list.row_data, "", &prev, &perms, p_security_info, 0, 0,
+    set_field_values, list.row_data, "", &prev, &perms, p_security_info, 0, 0,
     p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
       okay = false;
    else if( is_printable )
@@ -1601,8 +1611,8 @@ bool populate_list_info( list_source& list,
       string user_info( sess_info.user_key + ":" + sess_info.user_id );
 
       if( redo_fetch && !fetch_list_info( list.module_id, mod_info,
-       class_info, user_info, sess_info, is_reverse, row_limit, key_info, list.field_list,
-       filters, search_text, search_query, set_field_values, socket, list.row_data, "", &prev, &perms ) )
+       class_info, sess_info, is_reverse, row_limit, key_info, list.field_list,
+       filters, search_text, search_query, set_field_values, list.row_data, "", &prev, &perms ) )
          okay = false;
 
       size_t index_field = 0;
@@ -1721,7 +1731,7 @@ bool populate_list_info( list_source& list,
                if( !fetch_parent_row_data( list.module_id,
                  mod_info, "", "", ( list.lici->second )->nclass,
                 ( list.lici->second )->nfield, ( list.lici->second )->nextra, sess_info, "",
-                new_record_list, socket, 0, 0, 0, &list.new_record_list_has_view_id ) )
+                new_record_list, 0, 0, 0, &list.new_record_list_has_view_id ) )
                   okay = false;
                else
                   list.new_record_list = new_record_list;
@@ -1801,7 +1811,7 @@ bool populate_list_info( list_source& list,
                    mod_info, "", ( list.lici->second )->parents[ i ].field,
                    ( list.lici->second )->parents[ i ].pclass, ( list.lici->second )->parents[ i ].pfield,
                    ( list.lici->second )->parents[ i ].pextra, sess_info, parent_key, parent_row_data,
-                   socket, 0, 0, &skey_values, 0, &( list.lici->second )->parents[ i ].exclude_keys,
+                   0, 0, &skey_values, 0, &( list.lici->second )->parents[ i ].exclude_keys,
                    &( list.lici->second )->parents[ i ].skey ) )
                   {
                      okay = false;
@@ -1856,7 +1866,7 @@ void fetch_user_record( const string& gid,
    pair< string, string > user_info;
 
    if( !fetch_item_info( module_id, mod_info,
-    mod_info.user_class_id, key_info, field_list, "", sess_info, user_info, "" ) )
+    mod_info.user_class_id, key_info, field_list, "", sess_info, user_info ) )
       throw runtime_error( "unexpected error occurred processing login" );
 
    if( user_info.first.empty( ) )
@@ -1881,7 +1891,7 @@ void fetch_user_record( const string& gid,
       if( user_password.length( ) < 20 )
       {
          sess_info.clear_password = user_password;
-         user_password = hash_password( gid + user_password + username );
+         user_password = lower( sha1( gid + user_password ).get_digest_as_string( ) );
       }
       else
          user_password = password_decrypt( user_password, get_server_id( ) );
@@ -1974,10 +1984,8 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
 
    sess_info.quick_link_data.clear( );
 
-   string user_info( sess_info.user_key + ":" + sess_info.user_id );
-
-   if( !fetch_list_info( mod_info.id, mod_info, mod_info.user_qlink_class_id, user_info, sess_info, false,
-    sess_info.quick_link_limit, key_info, field_list, "", "", "", "", *sess_info.p_socket, sess_info.quick_link_data, "" ) )
+   if( !fetch_list_info( mod_info.id, mod_info, mod_info.user_qlink_class_id, sess_info, false,
+    sess_info.quick_link_limit, key_info, field_list, "", "", "", "", sess_info.quick_link_data, "" ) )
       throw runtime_error( "unexpected error occurred processing quick link info" );
 
    // NOTE: Get rid of extra row put in for list scrolling purposes...
@@ -2047,7 +2055,7 @@ void add_quick_link( const string& module_ref,
 
    string qlink_cmd( "perform_create" );
 
-   qlink_cmd += " " + sess_info.user_key
+   qlink_cmd += " " + get_uid_info( sess_info )
     + " " + date_time::standard( ).as_string( )
     + " " + mod_info.id + " " + mod_info.user_qlink_class_id + " \"\"";
 
@@ -2112,7 +2120,7 @@ void save_record( const string& module_id,
    else
       act_cmd = "perform_update";
 
-   act_cmd += " " + sess_info.user_key
+   act_cmd += " " + get_uid_info( sess_info )
     + " " + current_dtm + " " + view.module_id + " " + view.cid;
 
    if( !sess_info.tz_abbr.empty( ) )
@@ -2332,7 +2340,7 @@ void save_record( const string& module_id,
             const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
 
             if( !fetch_item_info( view.module_id, mod_info,
-             fld.pclass, key_info, "", "", sess_info, item_info, "" ) )
+             fld.pclass, key_info, "", "", sess_info, item_info ) )
                throw runtime_error( "Unexpected error occurred processing save." );
 
             if( !item_info.first.empty( ) )

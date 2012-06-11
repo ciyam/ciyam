@@ -7,7 +7,20 @@
       // [(start home_message_top_n)]
       else if( command == c_cmd_`{`$model_name`}_Home_Message )
       {
-         `{`$model_name`}_`{`$arg_class`} news;
+         string user_info( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_info ) );
+         string user_perms( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_perms ) );
+
+         set_uid( user_info );
+
+         set< string > perms;
+         if( !user_perms.empty( ) )
+         {
+            split_string( user_perms, perms );
+
+            set_perms( perms );
+         }
+
+         `{`$model_name`}_`{`$arg_class`} items;
 
          int item = 0;
          int limit = `{`$arg_limit`};
@@ -15,25 +28,25 @@
          string key_info( FIELD_ID( `{`$model_name`}, `{`$arg_class`}, `{`$arg_ofield`} ) );
          key_info += " ";
 
-         if( news.iterate_backwards( key_info ) )
+         if( items.iterate_backwards( key_info ) )
          {
-            class_base_filter filter( news, "*" );
+            class_base_filter filter( items, "*" );
             do
             {
-               if( !news.is_filtered( ) )
+               if( !items.is_filtered( ) )
                {
                   if( item++ > 0 )
                      osstr << "\\\\n\\\\n";
 
-                  osstr << search_replace( news.`{`$arg_field`}( ), "\\r\\n", "\\\\n" );
+                  osstr << search_replace( items.`{`$arg_field`}( ), "\\r\\n", "\\\\n" );
 
                   if( item == limit )
                   {
-                     news.iterate_stop( );
+                     items.iterate_stop( );
                      break;
                   }
                }   
-            } while( news.iterate_next( ) );
+            } while( items.iterate_next( ) );
 
             osstr << "\\\\n\\\\n";
          }

@@ -1142,7 +1142,7 @@ void request_handler::process_request( )
                      pair< string, string > user_info;
 
                      if( !fetch_item_info( module_id, mod_info,
-                      mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info, "" ) )
+                      mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info ) )
                         throw runtime_error( "unexpected error occurred checking activation" );
 
                      if( user_info.first.empty( ) )
@@ -1188,8 +1188,7 @@ void request_handler::process_request( )
                         field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, activate_password ) );
                         field_value_pairs.push_back( make_pair( mod_info.user_active_field_id, "1" ) );
 
-                        if( !perform_update( module_id, mod_info.user_class_id, data,
-                         field_value_pairs, *p_session_info->p_socket, data, p_session_info->tz_abbr ) )
+                        if( !perform_update( module_id, mod_info.user_class_id, data, field_value_pairs, *p_session_info ) )
                            throw runtime_error( "unexpected error occurred processing activation" );
                      }
                   }
@@ -1274,8 +1273,8 @@ void request_handler::process_request( )
                      field_list += mod_info.user_select_pfield;
 
                      if( !fetch_list_info( module_id,
-                      mod_info, class_id, "", *p_session_info, false, 0, key_info,
-                      field_list, "", "", "", "", *p_session_info->p_socket, p_session_info->select_data, "" ) )
+                      mod_info, class_id, *p_session_info, false, 0, key_info,
+                      field_list, "", "", "", "", p_session_info->select_data, "" ) )
                         throw runtime_error( "unexpected error occurred processing select info" );
 
                      if( mod_info.user_select_ofield.empty( ) )
@@ -1908,9 +1907,8 @@ void request_handler::process_request( )
                      }
                   }
 
-                  if( !perform_action( view.module, cls, act, app, field, fieldlist,
-                   exec, extra, child_row_errors[ listarg ], *p_session_info->p_socket,
-                   p_session_info->user_key, p_session_info->tz_abbr, p_session_info->gmt_offset ) )
+                  if( !perform_action( view.module, cls, act, app, field,
+                   fieldlist, exec, extra, child_row_errors[ listarg ], *p_session_info ) )
                      had_send_or_recv_error = true;
 
                   // NOTE: Handle an error/response (is stored as the first record in "child_row_errors").
@@ -1948,9 +1946,8 @@ void request_handler::process_request( )
                if( act == c_act_qlink )
                   add_quick_link( module_ref, cmd, findinfo, quicklink, listsrch, listsort, oident,
                    uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info, &list_selections );
-               else if( !perform_action( list.module, list.cid,
-                act, app, field, "", exec, extra, list.row_errors, *p_session_info->p_socket,
-                p_session_info->user_key, p_session_info->tz_abbr, p_session_info->gmt_offset ) )
+               else if( !perform_action( list.module, list.cid, act, app,
+                field, "", exec, extra, list.row_errors, *p_session_info ) )
                   had_send_or_recv_error = true;
 
                // NOTE: Handle an error/response (is stored as the first record in "row_errors").
@@ -1997,8 +1994,8 @@ void request_handler::process_request( )
                new_password = password_encrypt( new_password, get_server_id( ) );
 
                if( !perform_update( module_id, mod_info.user_class_id,
-                p_session_info->user_key, mod_info.user_pwd_field_id, old_password,
-                new_password, *p_session_info->p_socket, p_session_info->user_key, error_message ) )
+                p_session_info->user_key, mod_info.user_pwd_field_id,
+                old_password, new_password, *p_session_info, error_message ) )
                {
                   if( error_message.empty( ) )
                      throw runtime_error( "Unexpected server error occurred." );
@@ -2059,7 +2056,7 @@ void request_handler::process_request( )
                   if( pos != string::npos )
                   {
                      found = true;
-                     home_info_cmd.replace( pos, strlen( c_user_key_arg ), p_session_info->user_key );
+                     home_info_cmd.replace( pos, strlen( c_user_key_arg ), get_uid_info( *p_session_info ) );
                   }
 
                   pos = home_info_cmd.find( c_user_perms_arg );
@@ -2283,7 +2280,7 @@ void request_handler::process_request( )
             string user_info( p_session_info->user_key + ":" + p_session_info->user_id );
 
             if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
-             view.field_list, set_field_values, *p_session_info, item_info, user_info ) )
+             view.field_list, set_field_values, *p_session_info, item_info ) )
                had_send_or_recv_error = true;
             else
             {
@@ -2636,9 +2633,9 @@ void request_handler::process_request( )
                            // parent query information then simply copy this data rather than re-query.
                            if( previous_parents.count( info ) )
                               parent_row_data = view.parent_lists[ previous_parents[ info ] ];
-                           else if( !fetch_parent_row_data( view.module_id, mod_info, data,
-                            fld.field, fld.pclass, pfield, fld.pextra, *p_session_info, parent_key,
-                            parent_row_data, *p_session_info->p_socket, &view.key_values, &view.fkey_values ) )
+                           else if( !fetch_parent_row_data( view.module_id, mod_info,
+                            data, fld.field, fld.pclass, pfield, fld.pextra, *p_session_info,
+                            parent_key, parent_row_data, &view.key_values, &view.fkey_values ) )
                            {
                               had_send_or_recv_error = true;
                               break;
@@ -2866,8 +2863,7 @@ void request_handler::process_request( )
                                make_pair( view.modify_datetime_field, "U" + dtm_modified.as_string( ) ) );
 
                            // FUTURE: Need to and report an error if the update fails.
-                           if( perform_update( view.module_id, view.cid, data, field_value_pairs,
-                            *p_session_info->p_socket, p_session_info->user_key, p_session_info->tz_abbr ) )
+                           if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )
                            {
                               performed_file_attach_or_detach = true;
 
@@ -2904,8 +2900,8 @@ void request_handler::process_request( )
 
                   if( !fetch_item_info( view.module_id, mod_info,
                    view.cid, item_key, view.field_list, set_field_values,
-                   *p_session_info, item_info, user_info, &owner,
-                   &view.pdf_spec_name, &pdf_title, &filename_value, &pdf_view_file_name ) )
+                   *p_session_info, item_info, &owner, &view.pdf_spec_name,
+                   &pdf_title, &filename_value, &pdf_view_file_name ) )
                      throw runtime_error( "unexpected error occurred generating PDF" );
                }
             }

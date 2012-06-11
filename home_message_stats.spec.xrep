@@ -26,14 +26,21 @@
       // [(start home_message_stats)]
       else if( command == c_cmd_`{`$model_name`}_Home_Message )
       {
-         string user_key( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_key ) );
+         string user_info( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_info ) );
          string user_perms( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_perms ) );
 
+         set_uid( user_info );
+
          set< string > perms;
-         split_string( user_perms, perms );
+         if( !user_perms.empty( ) )
+         {
+            split_string( user_perms, perms );
+
+            set_perms( perms );
+         }
 
          `{`$model_name`}_`{`$arg_primary_class`} user;
-         user.perform_fetch( user_key );`{`!`@eq`(`$arg_primary_stats1_cclass`,`'`'`)
+         user.perform_fetch( get_uid( ) );`{`!`@eq`(`$arg_primary_stats1_cclass`,`'`'`)
 
          vector< string > fields;
 
