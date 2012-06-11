@@ -3426,6 +3426,8 @@ void Meta_Model::impl::impl_Generate( )
             string new_select_dfenum_id;
             string new_select_extras;
 
+            bool has_security_level_field = false;
+
             vector< string > restrict_field_ids;
             vector< string > restrict_field_names;
             vector< string > restrict_field_types;
@@ -3868,31 +3870,8 @@ void Meta_Model::impl::impl_Generate( )
 
                         column_extras.push_back( extras );
 
-                        if( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ) == 17 ) // i.e. "permission"
-                        {
-                           // NOTE: If the field belongs to an aliased class then need to instead use
-                           // the Source Field in order to locate the filter.
-                           Meta_Field* p_sfield( &get_obj( ).child_List( ).child_List_Field( ).Source_Field( ) );
-
-                           if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Source_Field( ) ) )
-                              p_sfield = &get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Source_Field( );
-
-                           if( p_sfield->child_Specification( ).iterate_forwards( ) )
-                           {
-                              do
-                              {
-                                 if( p_sfield->child_Specification( ).Specification_Type( ) == "filter_perm_restricted" )
-                                 {
-                                    if( !filters.empty( ) )
-                                       filters += ",";
-                                    filters += p_sfield->child_Specification( ).Id( );
-
-                                    p_sfield->child_Specification( ).iterate_stop( );
-                                    break;
-                                 }
-                              } while( p_sfield->child_Specification( ).iterate_next( ) );
-                           }
-                        }
+                        if( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ) == 18 ) // i.e. "security_level"
+                           has_security_level_field = true;
 
                         // NOTE: Index determination will be made after all columns have been processed
                         // so that unique indexes that span multiple columns can be used as well as for
@@ -4743,13 +4722,17 @@ void Meta_Model::impl::impl_Generate( )
             if( !is_null( p_sclass->Source_Class( ) ) )
                p_sclass = &p_sclass->Source_Class( );
 
+            // FUTURE: It would be more efficient if this query were restricted to the "filter" records.
             if( p_sclass->child_Specification( ).iterate_forwards( ) )
             {
                do
                {
-                  if( ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( )
-                   && p_sclass->child_Specification( ).Specification_Type( ) == "filter_non_uid" )
-                   || p_sclass->child_Specification( ).Specification_Type( ) == "filter_field_value" )
+                  string specification_type( p_sclass->child_Specification( ).Specification_Type( ) );
+
+                  if( specification_type == "filter_field_value"
+                   || specification_type == "filter_perm_restricted"
+                   || ( !has_security_level_field && specification_type == "filter_security_level" )
+                   || ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( ) && specification_type == "filter_non_uid" ) )
                   {
                      if( !filters.empty( ) )
                         filters += ",";

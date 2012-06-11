@@ -137,6 +137,7 @@ const char* const c_script_dummy_filename = "*script*";
 const char* const c_system_variable_storage = "@storage";
 
 const char* const c_session_variable_dtm = "@dtm";
+const char* const c_session_variable_sec = "@sec";
 const char* const c_session_variable_uid = "@uid";
 const char* const c_session_variable_none = "@none";
 const char* const c_session_variable_class = "@class";
@@ -217,8 +218,9 @@ struct session
    size_t id;
    size_t slot;
 
-   string uid;
    string dtm;
+   string uid;
+   string sec;
 
    string tz_abbr;
 
@@ -5219,8 +5221,31 @@ string get_uid( bool remove_display_name )
 
 void set_uid( const string& uid )
 {
-   gtp_session->uid = uid;
-   set_session_variable( c_session_variable_uid, uid );
+   string s( uid );
+
+   string::size_type pos = uid.find( ':' );
+   string::size_type spos = uid.find( '!' );
+
+   gtp_session->sec.erase( );
+   set_session_variable( c_session_variable_sec, "" );
+
+   if( spos != string::npos )
+   {
+      if( pos == string::npos || pos > spos )
+      {
+         string sec = uid.substr( spos + 1, pos == string::npos ? pos : pos - spos - 1 );
+
+         gtp_session->sec = sec;
+         set_session_variable( c_session_variable_sec, sec );
+
+         s = uid.substr( 0, spos );
+         if( pos != string::npos )
+            s += uid.substr( pos );
+      }
+   }
+
+   gtp_session->uid = s;
+   set_session_variable( c_session_variable_uid, s );
 }
 
 bool is_admin_uid( )
@@ -5242,6 +5267,15 @@ bool is_system_uid( )
 bool is_admin_uid_key( const string& key )
 {
    return key == "admin";
+}
+
+bool has_sec_level( const string& level )
+{
+   // NOTE: Security level strings (e.g. XXXX) are shorter for higher.
+   if( gtp_session->sec.empty( ) || gtp_session->sec <= level )
+      return true;
+   else
+      return false;
 }
 
 string get_dtm( )

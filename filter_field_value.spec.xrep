@@ -16,7 +16,7 @@
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
    // [(start filter_field_value)]
-   if( has_filter( "`{`$arg_id`}" ) || has_filter( "`{`$arg_name`}" ) )
+   // NOTE: Empty code block for scope purposes.
    {
       dependents.insert( "`{`$arg_field`}" );
 

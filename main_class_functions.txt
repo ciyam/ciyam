@@ -43,7 +43,7 @@ for_store      Create        Update       If the "validate" call found no issues
 [starts a tx if not already in one]       be called prior to the record itself being stored. This function is
                                           mostly intended for making necessary changes to other records (when
                                           such other records do not require this record to have actually been
-                                          created in the DB) and to provid calculated values that depend upon
+                                          created in the DB), and to provide calculated values that rely upon
                                           other DB records. Provided no exception occurs in this function the
                                           record will be stored in the DB with the lock being tranformed into
                                           an "update" lock (necessary for the next function).
@@ -58,7 +58,7 @@ after_store    Update        <none>       Assuming no error has occurred previou
 
 Passing " " as the key (to automatically create a key) should never be performed in rules code as a generated
 key will contain the current timestamp (this is okay for protocol as the timestamp is stored in the log). For
-record creation in rules keys should constructed from a known key with a suffix (e.g. <key>_D or <key>_000001
+record creation in rules keys should constructed from a known key with a suffix (e.g. <key>_X or <key>_000001
 where <key> already exists and with the latter pattern applicable when needing to create multiple records).
 
 2) Updating an existing record:
@@ -158,7 +158,7 @@ Function       Lock Before   Lock After   Description
 after_fetch    <none>        <none>       It should be noted that fetching a record using this method doesn't
                                           involve locks at all (for maximum performance). Generally this hook
                                           is used to determine the value of transient fields that depend upon
-                                          other field (or other record field) values.
+                                          other field (or another record's field) values.
 -------------------------------------------------------------------------------------------------------------
 
 Equivalent C++ Code for Rules:
