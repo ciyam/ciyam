@@ -495,6 +495,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -930,6 +931,28 @@ void Meta_Enum_Item::impl::validate( unsigned state, bool is_internal, validatio
    // [<finish validate>]
 }
 
+void Meta_Enum_Item::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Label )
+    && ( fields_set.count( c_field_id_Label ) || fields_set.count( c_field_name_Label ) )
+    && !g_Label_domain.is_valid( v_Label, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Label,
+       get_module_string( c_field_display_name_Label ) + " " + error_message ) );
+
+   if( !is_null( v_Value )
+    && ( fields_set.count( c_field_id_Value ) || fields_set.count( c_field_name_Value ) )
+    && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+       get_module_string( c_field_display_name_Value ) + " " + error_message ) );
+}
+
 void Meta_Enum_Item::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -1238,6 +1261,11 @@ void Meta_Enum_Item::clear( )
 void Meta_Enum_Item::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Enum_Item::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Enum_Item::after_fetch( )

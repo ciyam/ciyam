@@ -420,8 +420,8 @@ void CIYAM_BASE_DECL_SPEC op_instance_update( size_t handle, const std::string& 
 void CIYAM_BASE_DECL_SPEC op_instance_destroy( size_t handle, const std::string& context,
  const std::string& key, const std::string& ver_info, bool internal_operation = true, op_destroy_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC op_instance_apply( size_t handle,
- const std::string& context, bool internal_operation = true, op_apply_rc* p_rc = 0 );
+void CIYAM_BASE_DECL_SPEC op_instance_apply( size_t handle, const std::string& context,
+ bool internal_operation = true, op_apply_rc* p_rc = 0, std::set< std::string >* p_fields_set = 0 );
 
 void CIYAM_BASE_DECL_SPEC op_instance_cancel( size_t handle, const std::string& context, bool internal_operation = true );
 
@@ -485,8 +485,8 @@ enum instance_op_rc
 void CIYAM_BASE_DECL_SPEC begin_instance_op( instance_op op,
  class_base& instance, const std::string& key, bool internal_operation = true, instance_op_rc* p_rc = 0 );
 
-void CIYAM_BASE_DECL_SPEC finish_instance_op( class_base& instance,
- bool apply_changes, bool internal_operation = true, instance_op_rc* p_rc = 0 );
+void CIYAM_BASE_DECL_SPEC finish_instance_op( class_base& instance, bool apply_changes,
+ bool internal_operation = true, instance_op_rc* p_rc = 0, std::set< std::string >* p_fields_set = 0 );
 
 void CIYAM_BASE_DECL_SPEC perform_instance_fetch(
  class_base& instance, const std::string& key_info, instance_fetch_rc* p_rc = 0, bool only_sys_fields = false );

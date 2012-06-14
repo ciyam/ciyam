@@ -21403,8 +21403,61 @@
       <id>670009
       <item>class
      </specification>
+     <specification/>
+      <id>680009
+      <item>class
+     </specification>
     </specifications>
     <fields/>
+     <field/>
+      <id>102118
+      <name>Auto_Round
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>102310
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102311
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102312
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102313
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102316
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102317
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102318
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601210
+        <item>field
+       </specification>
+       <specification/>
+        <id>680009
+        <item>field
+       </specification>
+      </specifications>
+     </field>
      <field/>
       <id>102112
       <name>Date_Precision
@@ -21932,6 +21985,56 @@
       </specifications>
      </field>
      <field/>
+      <id>102119
+      <name>Rounding_Method
+      <type>int
+      <mandatory>true
+      <enum_id>507
+      <default_value>3
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>102310
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102311
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102312
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102313
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102316
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102317
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102318
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102319
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601210
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>102113
       <name>Show_Plus_Sign
       <type>bool
@@ -22166,6 +22269,10 @@
       <id>500100
       <name>Is_Internal
       <affect>lowlight
+     </modifier>
+     <modifier/>
+      <id>102319
+      <name>Is_Not_Auto_Rounded
      </modifier>
      <modifier/>
       <id>102317
@@ -33109,6 +33216,17 @@
     </data>
    </specification>
    <specification/>
+    <id>680009
+    <name>{Type}_Is_Not_Auto_Rounded
+    <type>modifier_field_value
+    <data/>
+     <class_id>102100
+     <modifier_id>102319
+     <field_id>102118
+     <field_value>0
+    </data>
+   </specification>
+   <specification/>
     <id>660009
     <name>{Type}_Is_Not_Normal_Int
     <type>modifier_field_value
@@ -33209,6 +33327,8 @@
      <field_info>102108;enum=510
      <field_info>102112;enum=511
      <field_info>102110;enum=512
+     <field_info>102118;force
+     <field_info>102119;enum=507
      <field_info>102113
      <field_info>102114;enum=513
      <field_info>102115;enum=514
@@ -34167,6 +34287,12 @@
     <name>relationship_extra
     <type>int
     <key_values>0=none,2=user\_group,3=user\_other,1=owning\_user,4=create\_user\_key,5=modify\_user\_key
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>507
+    <name>round_type
+    <type>int
+    <key_values>1=up,2=down,3=normal,4=bankers
    </user_defined_enum>
    <user_defined_enum/>
     <id>610

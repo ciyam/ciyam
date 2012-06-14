@@ -301,6 +301,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -595,6 +596,28 @@ void Meta_Auto_Code::impl::validate( unsigned state, bool is_internal, validatio
    // [<finish validate>]
 }
 
+void Meta_Auto_Code::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Mask )
+    && ( fields_set.count( c_field_id_Mask ) || fields_set.count( c_field_name_Mask ) )
+    && !g_Mask_domain.is_valid( v_Mask, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Mask,
+       get_module_string( c_field_display_name_Mask ) + " " + error_message ) );
+
+   if( !is_null( v_Next )
+    && ( fields_set.count( c_field_id_Next ) || fields_set.count( c_field_name_Next ) )
+    && !g_Next_domain.is_valid( v_Next, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
+       get_module_string( c_field_display_name_Next ) + " " + error_message ) );
+}
+
 void Meta_Auto_Code::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -798,6 +821,11 @@ void Meta_Auto_Code::clear( )
 void Meta_Auto_Code::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Auto_Code::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Auto_Code::after_fetch( )

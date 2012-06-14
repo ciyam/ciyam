@@ -2456,6 +2456,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -3083,6 +3084,40 @@ void Meta_Field::impl::validate( unsigned state, bool is_internal, validation_er
           make_pair( c_str_parm_field_and_original_mismatch_field, get_module_string( c_field_display_name_Primitive ) ) ) ) );
    }
    // [<finish validate>]
+}
+
+void Meta_Field::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Default )
+    && ( fields_set.count( c_field_id_Default ) || fields_set.count( c_field_name_Default ) )
+    && !g_Default_domain.is_valid( v_Default, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Default,
+       get_module_string( c_field_display_name_Default ) + " " + error_message ) );
+
+   if( !is_null( v_Id )
+    && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
+    && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+       get_module_string( c_field_display_name_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Parent_Class_Name )
+    && ( fields_set.count( c_field_id_Parent_Class_Name ) || fields_set.count( c_field_name_Parent_Class_Name ) )
+    && !g_Parent_Class_Name_domain.is_valid( v_Parent_Class_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class_Name,
+       get_module_string( c_field_display_name_Parent_Class_Name ) + " " + error_message ) );
 }
 
 void Meta_Field::impl::after_fetch( )
@@ -4441,6 +4476,11 @@ void Meta_Field::clear( )
 void Meta_Field::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Field::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Field::after_fetch( )

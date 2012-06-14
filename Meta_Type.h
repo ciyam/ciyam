@@ -41,28 +41,33 @@ class META_TYPE_DECL_SPEC Meta_Type : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Date_Precision = 1,
-      e_field_id_Fraction_Limit = 2,
-      e_field_id_Id = 3,
-      e_field_id_Int_Type = 4,
-      e_field_id_Internal = 5,
-      e_field_id_Max_Size = 6,
-      e_field_id_Max_Value = 7,
-      e_field_id_Min_Value = 8,
-      e_field_id_Name = 9,
-      e_field_id_Numeric_Decimals = 10,
-      e_field_id_Numeric_Digits = 11,
-      e_field_id_Numeric_Type = 12,
-      e_field_id_Primitive = 13,
-      e_field_id_Show_Plus_Sign = 14,
-      e_field_id_String_Domain = 15,
-      e_field_id_Time_Precision = 16,
-      e_field_id_Workgroup = 17,
-      e_field_id_Zero_Padding = 18
+      e_field_id_Auto_Round = 1,
+      e_field_id_Date_Precision = 2,
+      e_field_id_Fraction_Limit = 3,
+      e_field_id_Id = 4,
+      e_field_id_Int_Type = 5,
+      e_field_id_Internal = 6,
+      e_field_id_Max_Size = 7,
+      e_field_id_Max_Value = 8,
+      e_field_id_Min_Value = 9,
+      e_field_id_Name = 10,
+      e_field_id_Numeric_Decimals = 11,
+      e_field_id_Numeric_Digits = 12,
+      e_field_id_Numeric_Type = 13,
+      e_field_id_Primitive = 14,
+      e_field_id_Rounding_Method = 15,
+      e_field_id_Show_Plus_Sign = 16,
+      e_field_id_String_Domain = 17,
+      e_field_id_Time_Precision = 18,
+      e_field_id_Workgroup = 19,
+      e_field_id_Zero_Padding = 20
    };
 
    Meta_Type( );
    ~Meta_Type( );
+
+   bool Auto_Round( ) const;
+   void Auto_Round( bool Auto_Round );
 
    int Date_Precision( ) const;
    void Date_Precision( int Date_Precision );
@@ -103,6 +108,9 @@ class META_TYPE_DECL_SPEC Meta_Type : public class_base
    int Primitive( ) const;
    void Primitive( int Primitive );
 
+   int Rounding_Method( ) const;
+   void Rounding_Method( int Rounding_Method );
+
    bool Show_Plus_Sign( ) const;
    void Show_Plus_Sign( bool Show_Plus_Sign );
 
@@ -141,6 +149,7 @@ class META_TYPE_DECL_SPEC Meta_Type : public class_base
    void clear( );
 
    void validate( unsigned state, bool is_internal );
+   void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );
    void finalise_fetch( );

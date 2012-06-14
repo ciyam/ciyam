@@ -735,6 +735,7 @@ struct Meta_Specification_Copy_Child_Links::impl : public Meta_Specification_Cop
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -968,6 +969,14 @@ void Meta_Specification_Copy_Child_Links::impl::validate( unsigned state, bool i
       p_validation_errors->insert( validation_error_value_type( c_field_name_Source_Child_Relationship,
       "Source Parent and Source Child Relationship must match." ) );
    // [<finish validate>]
+}
+
+void Meta_Specification_Copy_Child_Links::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
 }
 
 void Meta_Specification_Copy_Child_Links::impl::after_fetch( )
@@ -1299,6 +1308,12 @@ void Meta_Specification_Copy_Child_Links::validate( unsigned state, bool is_inte
 {
    parent_class_type::validate( state, is_internal );
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Specification_Copy_Child_Links::validate_set_fields( set< string >& fields_set )
+{
+   parent_class_type::validate_set_fields( fields_set );
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Specification_Copy_Child_Links::after_fetch( )

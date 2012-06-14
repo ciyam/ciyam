@@ -79,6 +79,7 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Auto_Round = "102118";
 const char* const c_field_id_Date_Precision = "102112";
 const char* const c_field_id_Fraction_Limit = "102115";
 const char* const c_field_id_Id = "102111";
@@ -92,12 +93,14 @@ const char* const c_field_id_Numeric_Decimals = "102107";
 const char* const c_field_id_Numeric_Digits = "102106";
 const char* const c_field_id_Numeric_Type = "102117";
 const char* const c_field_id_Primitive = "102102";
+const char* const c_field_id_Rounding_Method = "102119";
 const char* const c_field_id_Show_Plus_Sign = "102113";
 const char* const c_field_id_String_Domain = "102108";
 const char* const c_field_id_Time_Precision = "102110";
 const char* const c_field_id_Workgroup = "300200";
 const char* const c_field_id_Zero_Padding = "102114";
 
+const char* const c_field_name_Auto_Round = "Auto_Round";
 const char* const c_field_name_Date_Precision = "Date_Precision";
 const char* const c_field_name_Fraction_Limit = "Fraction_Limit";
 const char* const c_field_name_Id = "Id";
@@ -111,12 +114,14 @@ const char* const c_field_name_Numeric_Decimals = "Numeric_Decimals";
 const char* const c_field_name_Numeric_Digits = "Numeric_Digits";
 const char* const c_field_name_Numeric_Type = "Numeric_Type";
 const char* const c_field_name_Primitive = "Primitive";
+const char* const c_field_name_Rounding_Method = "Rounding_Method";
 const char* const c_field_name_Show_Plus_Sign = "Show_Plus_Sign";
 const char* const c_field_name_String_Domain = "String_Domain";
 const char* const c_field_name_Time_Precision = "Time_Precision";
 const char* const c_field_name_Workgroup = "Workgroup";
 const char* const c_field_name_Zero_Padding = "Zero_Padding";
 
+const char* const c_field_display_name_Auto_Round = "field_type_auto_round";
 const char* const c_field_display_name_Date_Precision = "field_type_date_precision";
 const char* const c_field_display_name_Fraction_Limit = "field_type_fraction_limit";
 const char* const c_field_display_name_Id = "field_type_id";
@@ -130,13 +135,14 @@ const char* const c_field_display_name_Numeric_Decimals = "field_type_numeric_de
 const char* const c_field_display_name_Numeric_Digits = "field_type_numeric_digits";
 const char* const c_field_display_name_Numeric_Type = "field_type_numeric_type";
 const char* const c_field_display_name_Primitive = "field_type_primitive";
+const char* const c_field_display_name_Rounding_Method = "field_type_rounding_method";
 const char* const c_field_display_name_Show_Plus_Sign = "field_type_show_plus_sign";
 const char* const c_field_display_name_String_Domain = "field_type_string_domain";
 const char* const c_field_display_name_Time_Precision = "field_type_time_precision";
 const char* const c_field_display_name_Workgroup = "field_type_workgroup";
 const char* const c_field_display_name_Zero_Padding = "field_type_zero_padding";
 
-const int c_num_fields = 18;
+const int c_num_fields = 20;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -157,11 +163,14 @@ const char* const c_all_sorted_field_ids[ ] =
    "102115",
    "102116",
    "102117",
+   "102118",
+   "102119",
    "300200"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Auto_Round",
    "Date_Precision",
    "Fraction_Limit",
    "Id",
@@ -175,6 +184,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Numeric_Digits",
    "Numeric_Type",
    "Primitive",
+   "Rounding_Method",
    "Show_Plus_Sign",
    "String_Domain",
    "Time_Precision",
@@ -199,11 +209,12 @@ const uint64_t c_modifier_Is_Date = UINT64_C( 0x200 );
 const uint64_t c_modifier_Is_Datetime = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Int = UINT64_C( 0x800 );
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Is_Not_Normal_Int = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Is_Not_Normal_Numeric = UINT64_C( 0x4000 );
-const uint64_t c_modifier_Is_Numeric = UINT64_C( 0x8000 );
-const uint64_t c_modifier_Is_String = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Is_Time = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Is_Not_Auto_Rounded = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Not_Normal_Int = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Is_Not_Normal_Numeric = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Is_Numeric = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Is_String = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Is_Time = UINT64_C( 0x40000 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -227,6 +238,7 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+bool gv_default_Auto_Round = bool( 0 );
 int gv_default_Date_Precision = int( 0 );
 int gv_default_Fraction_Limit = int( 0 );
 string gv_default_Id = string( );
@@ -240,6 +252,7 @@ int gv_default_Numeric_Decimals = int( 0 );
 int gv_default_Numeric_Digits = int( 0 );
 int gv_default_Numeric_Type = int( 0 );
 int gv_default_Primitive = int( 0 );
+int gv_default_Rounding_Method = int( 3 );
 bool gv_default_Show_Plus_Sign = bool( 0 );
 int gv_default_String_Domain = int( 0 );
 int gv_default_Time_Precision = int( 0 );
@@ -250,6 +263,7 @@ set< int > g_fraction_limit_enum;
 set< int > g_int_type_enum;
 set< int > g_numeric_type_enum;
 set< int > g_primitive_enum;
+set< int > g_round_type_enum;
 set< int > g_string_domain_enum;
 set< int > g_time_precision_enum;
 set< int > g_zero_padding_enum;
@@ -372,6 +386,31 @@ string get_enum_string_primitive( int val )
       string_name = "enum_primitive_bool";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for primitive" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_round_type_up( 1 );
+const int c_enum_round_type_down( 2 );
+const int c_enum_round_type_normal( 3 );
+const int c_enum_round_type_bankers( 4 );
+
+string get_enum_string_round_type( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for round_type" );
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_round_type_up";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_round_type_down";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_round_type_normal";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_round_type_bankers";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for round_type" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -524,6 +563,8 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Auto_Round || field_name == c_field_name_Auto_Round )
+         string_getter< bool >( cmd_handler.p_Meta_Type->Auto_Round( ), cmd_handler.retval );
       else if( field_name == c_field_id_Date_Precision || field_name == c_field_name_Date_Precision )
          string_getter< int >( cmd_handler.p_Meta_Type->Date_Precision( ), cmd_handler.retval );
       else if( field_name == c_field_id_Fraction_Limit || field_name == c_field_name_Fraction_Limit )
@@ -550,6 +591,8 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
          string_getter< int >( cmd_handler.p_Meta_Type->Numeric_Type( ), cmd_handler.retval );
       else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
          string_getter< int >( cmd_handler.p_Meta_Type->Primitive( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Rounding_Method || field_name == c_field_name_Rounding_Method )
+         string_getter< int >( cmd_handler.p_Meta_Type->Rounding_Method( ), cmd_handler.retval );
       else if( field_name == c_field_id_Show_Plus_Sign || field_name == c_field_name_Show_Plus_Sign )
          string_getter< bool >( cmd_handler.p_Meta_Type->Show_Plus_Sign( ), cmd_handler.retval );
       else if( field_name == c_field_id_String_Domain || field_name == c_field_name_String_Domain )
@@ -570,6 +613,9 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Auto_Round || field_name == c_field_name_Auto_Round )
+         func_string_setter< Meta_Type, bool >(
+          *cmd_handler.p_Meta_Type, &Meta_Type::Auto_Round, field_value );
       else if( field_name == c_field_id_Date_Precision || field_name == c_field_name_Date_Precision )
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Date_Precision, field_value );
@@ -609,6 +655,9 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
       else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Primitive, field_value );
+      else if( field_name == c_field_id_Rounding_Method || field_name == c_field_name_Rounding_Method )
+         func_string_setter< Meta_Type, int >(
+          *cmd_handler.p_Meta_Type, &Meta_Type::Rounding_Method, field_value );
       else if( field_name == c_field_id_Show_Plus_Sign || field_name == c_field_name_Show_Plus_Sign )
          func_string_setter< Meta_Type, bool >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Show_Plus_Sign, field_value );
@@ -664,6 +713,9 @@ struct Meta_Type::impl : public Meta_Type_command_handler
       return *cp_obj;
    }
 
+   bool impl_Auto_Round( ) const { return lazy_fetch( p_obj ), v_Auto_Round; }
+   void impl_Auto_Round( bool Auto_Round ) { v_Auto_Round = Auto_Round; }
+
    int impl_Date_Precision( ) const { return lazy_fetch( p_obj ), v_Date_Precision; }
    void impl_Date_Precision( int Date_Precision ) { v_Date_Precision = Date_Precision; }
 
@@ -702,6 +754,9 @@ struct Meta_Type::impl : public Meta_Type_command_handler
 
    int impl_Primitive( ) const { return lazy_fetch( p_obj ), v_Primitive; }
    void impl_Primitive( int Primitive ) { v_Primitive = Primitive; }
+
+   int impl_Rounding_Method( ) const { return lazy_fetch( p_obj ), v_Rounding_Method; }
+   void impl_Rounding_Method( int Rounding_Method ) { v_Rounding_Method = Rounding_Method; }
 
    bool impl_Show_Plus_Sign( ) const { return lazy_fetch( p_obj ), v_Show_Plus_Sign; }
    void impl_Show_Plus_Sign( bool Show_Plus_Sign ) { v_Show_Plus_Sign = Show_Plus_Sign; }
@@ -787,6 +842,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -813,6 +869,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
 
    size_t total_child_relationships;
 
+   bool v_Auto_Round;
    int v_Date_Precision;
    int v_Fraction_Limit;
    string v_Id;
@@ -826,6 +883,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    int v_Numeric_Digits;
    int v_Numeric_Type;
    int v_Primitive;
+   int v_Rounding_Method;
    bool v_Show_Plus_Sign;
    int v_String_Domain;
    int v_Time_Precision;
@@ -844,74 +902,82 @@ string Meta_Type::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Date_Precision( ) );
+      retval = to_string( impl_Auto_Round( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Fraction_Limit( ) );
+      retval = to_string( impl_Date_Precision( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Fraction_Limit( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Int_Type( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Int_Type( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Max_Size( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Max_Value( ) );
+      retval = to_string( impl_Max_Size( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Min_Value( ) );
+      retval = to_string( impl_Max_Value( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Min_Value( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Numeric_Decimals( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Numeric_Digits( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Numeric_Type( ) );
+      retval = to_string( impl_Numeric_Digits( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Numeric_Type( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Show_Plus_Sign( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 14:
-      retval = to_string( impl_String_Domain( ) );
+      retval = to_string( impl_Rounding_Method( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Time_Precision( ) );
+      retval = to_string( impl_Show_Plus_Sign( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Workgroup( ) );
+      retval = to_string( impl_String_Domain( ) );
       break;
 
       case 17:
+      retval = to_string( impl_Time_Precision( ) );
+      break;
+
+      case 18:
+      retval = to_string( impl_Workgroup( ) );
+      break;
+
+      case 19:
       retval = to_string( impl_Zero_Padding( ) );
       break;
 
@@ -927,74 +993,82 @@ void Meta_Type::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Date_Precision, value );
+      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Auto_Round, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Fraction_Limit, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Date_Precision, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Id, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Fraction_Limit, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Int_Type, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Id, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Internal, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Int_Type, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Max_Size, value );
+      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Internal, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Max_Value, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Max_Size, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Min_Value, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Max_Value, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Name, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Min_Value, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Decimals, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Name, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Digits, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Decimals, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Type, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Digits, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Primitive, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Type, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Show_Plus_Sign, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Primitive, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_String_Domain, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Rounding_Method, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Time_Precision, value );
+      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Show_Plus_Sign, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Type::impl, Meta_Workgroup >( *this, &Meta_Type::impl::impl_Workgroup, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_String_Domain, value );
       break;
 
       case 17:
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Time_Precision, value );
+      break;
+
+      case 18:
+      func_string_setter< Meta_Type::impl, Meta_Workgroup >( *this, &Meta_Type::impl::impl_Workgroup, value );
+      break;
+
+      case 19:
       func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Zero_Padding, value );
       break;
 
@@ -1062,6 +1136,11 @@ uint64_t Meta_Type::impl::get_state( ) const
       state |= c_modifier_Is_Not_Normal_Numeric;
    // [(finish modifier_field_value)]
 
+   // [(start modifier_field_value)]
+   if( get_obj( ).Auto_Round( ) == 0 )
+      state |= c_modifier_Is_Not_Auto_Rounded;
+   // [(finish modifier_field_value)]
+
    // [<start get_state>]
    // [<finish get_state>]
 
@@ -1111,6 +1190,7 @@ void Meta_Type::impl::get_foreign_key_values( foreign_key_data_container& foreig
 
 void Meta_Type::impl::clear( )
 {
+   v_Auto_Round = gv_default_Auto_Round;
    v_Date_Precision = gv_default_Date_Precision;
    v_Fraction_Limit = gv_default_Fraction_Limit;
    v_Id = gv_default_Id;
@@ -1124,6 +1204,7 @@ void Meta_Type::impl::clear( )
    v_Numeric_Digits = gv_default_Numeric_Digits;
    v_Numeric_Type = gv_default_Numeric_Type;
    v_Primitive = gv_default_Primitive;
+   v_Rounding_Method = gv_default_Rounding_Method;
    v_Show_Plus_Sign = gv_default_Show_Plus_Sign;
    v_String_Domain = gv_default_String_Domain;
    v_Time_Precision = gv_default_Time_Precision;
@@ -1241,6 +1322,11 @@ void Meta_Type::impl::validate( unsigned state, bool is_internal, validation_err
       p_validation_errors->insert( validation_error_value_type( c_field_name_Primitive,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Primitive ) ) ) ) );
+
+   if( !g_round_type_enum.count( v_Rounding_Method ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Rounding_Method,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Rounding_Method ) ) ) ) );
 
    if( !g_string_domain_enum.count( v_String_Domain ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_String_Domain,
@@ -1422,6 +1508,58 @@ void Meta_Type::impl::validate( unsigned state, bool is_internal, validation_err
    // [<finish validate>]
 }
 
+void Meta_Type::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Id )
+    && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
+    && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+       get_module_string( c_field_display_name_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Max_Size )
+    && ( fields_set.count( c_field_id_Max_Size ) || fields_set.count( c_field_name_Max_Size ) )
+    && !g_Max_Size_domain.is_valid( v_Max_Size, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Size,
+       get_module_string( c_field_display_name_Max_Size ) + " " + error_message ) );
+
+   if( !is_null( v_Max_Value )
+    && ( fields_set.count( c_field_id_Max_Value ) || fields_set.count( c_field_name_Max_Value ) )
+    && !g_Max_Value_domain.is_valid( v_Max_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Value,
+       get_module_string( c_field_display_name_Max_Value ) + " " + error_message ) );
+
+   if( !is_null( v_Min_Value )
+    && ( fields_set.count( c_field_id_Min_Value ) || fields_set.count( c_field_name_Min_Value ) )
+    && !g_Min_Value_domain.is_valid( v_Min_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Min_Value,
+       get_module_string( c_field_display_name_Min_Value ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Numeric_Decimals )
+    && ( fields_set.count( c_field_id_Numeric_Decimals ) || fields_set.count( c_field_name_Numeric_Decimals ) )
+    && !g_Numeric_Decimals_domain.is_valid( v_Numeric_Decimals, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Decimals,
+       get_module_string( c_field_display_name_Numeric_Decimals ) + " " + error_message ) );
+
+   if( !is_null( v_Numeric_Digits )
+    && ( fields_set.count( c_field_id_Numeric_Digits ) || fields_set.count( c_field_name_Numeric_Digits ) )
+    && !g_Numeric_Digits_domain.is_valid( v_Numeric_Digits, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Digits,
+       get_module_string( c_field_display_name_Numeric_Digits ) + " " + error_message ) );
+}
+
 void Meta_Type::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -1549,6 +1687,16 @@ Meta_Type::~Meta_Type( )
 {
    cleanup( );
    delete p_impl;
+}
+
+bool Meta_Type::Auto_Round( ) const
+{
+   return p_impl->impl_Auto_Round( );
+}
+
+void Meta_Type::Auto_Round( bool Auto_Round )
+{
+   p_impl->impl_Auto_Round( Auto_Round );
 }
 
 int Meta_Type::Date_Precision( ) const
@@ -1681,6 +1829,16 @@ void Meta_Type::Primitive( int Primitive )
    p_impl->impl_Primitive( Primitive );
 }
 
+int Meta_Type::Rounding_Method( ) const
+{
+   return p_impl->impl_Rounding_Method( );
+}
+
+void Meta_Type::Rounding_Method( int Rounding_Method )
+{
+   p_impl->impl_Rounding_Method( Rounding_Method );
+}
+
 bool Meta_Type::Show_Plus_Sign( ) const
 {
    return p_impl->impl_Show_Plus_Sign( );
@@ -1805,6 +1963,11 @@ void Meta_Type::validate( unsigned state, bool is_internal )
    p_impl->validate( state, is_internal, &validation_errors );
 }
 
+void Meta_Type::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
+}
+
 void Meta_Type::after_fetch( )
 {
    p_impl->after_fetch( );
@@ -1867,6 +2030,16 @@ const char* Meta_Type::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Auto_Round )
+   {
+      p_id = c_field_id_Auto_Round;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Date_Precision )
    {
       p_id = c_field_id_Date_Precision;
@@ -1997,6 +2170,16 @@ const char* Meta_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Rounding_Method )
+   {
+      p_id = c_field_id_Rounding_Method;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Show_Plus_Sign )
    {
       p_id = c_field_id_Show_Plus_Sign;
@@ -2058,6 +2241,16 @@ const char* Meta_Type::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Auto_Round )
+   {
+      p_name = c_field_name_Auto_Round;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Date_Precision )
    {
       p_name = c_field_name_Date_Precision;
@@ -2188,6 +2381,16 @@ const char* Meta_Type::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Rounding_Method )
+   {
+      p_name = c_field_name_Rounding_Method;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Show_Plus_Sign )
    {
       p_name = c_field_name_Show_Plus_Sign;
@@ -2248,6 +2451,8 @@ string Meta_Type::get_field_display_name( const string& id ) const
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_display_name" );
+   else if( id == c_field_id_Auto_Round )
+      display_name = get_module_string( c_field_display_name_Auto_Round );
    else if( id == c_field_id_Date_Precision )
       display_name = get_module_string( c_field_display_name_Date_Precision );
    else if( id == c_field_id_Fraction_Limit )
@@ -2274,6 +2479,8 @@ string Meta_Type::get_field_display_name( const string& id ) const
       display_name = get_module_string( c_field_display_name_Numeric_Type );
    else if( id == c_field_id_Primitive )
       display_name = get_module_string( c_field_display_name_Primitive );
+   else if( id == c_field_id_Rounding_Method )
+      display_name = get_module_string( c_field_display_name_Rounding_Method );
    else if( id == c_field_id_Show_Plus_Sign )
       display_name = get_module_string( c_field_display_name_Show_Plus_Sign );
    else if( id == c_field_id_String_Domain )
@@ -2472,6 +2679,7 @@ void Meta_Type::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Auto_Round" );
    names.push_back( "C_Date_Precision" );
    names.push_back( "C_Fraction_Limit" );
    names.push_back( "C_Id" );
@@ -2485,6 +2693,7 @@ void Meta_Type::get_sql_column_names(
    names.push_back( "C_Numeric_Digits" );
    names.push_back( "C_Numeric_Type" );
    names.push_back( "C_Primitive" );
+   names.push_back( "C_Rounding_Method" );
    names.push_back( "C_Show_Plus_Sign" );
    names.push_back( "C_String_Domain" );
    names.push_back( "C_Time_Precision" );
@@ -2501,6 +2710,7 @@ void Meta_Type::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( to_string( Auto_Round( ) ) );
    values.push_back( to_string( Date_Precision( ) ) );
    values.push_back( to_string( Fraction_Limit( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
@@ -2514,6 +2724,7 @@ void Meta_Type::get_sql_column_values(
    values.push_back( to_string( Numeric_Digits( ) ) );
    values.push_back( to_string( Numeric_Type( ) ) );
    values.push_back( to_string( Primitive( ) ) );
+   values.push_back( to_string( Rounding_Method( ) ) );
    values.push_back( to_string( Show_Plus_Sign( ) ) );
    values.push_back( to_string( String_Domain( ) ) );
    values.push_back( to_string( Time_Precision( ) ) );
@@ -2631,6 +2842,14 @@ void Meta_Type::get_always_required_field_names(
       names.insert( "Numeric_Type" );
    // [(finish modifier_field_value)]
 
+   // [(start modifier_field_value)]
+   dependents.insert( "Auto_Round" ); // (for Is_Not_Auto_Rounded modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Auto_Round ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Auto_Round ) ) )
+      names.insert( "Auto_Round" );
+   // [(finish modifier_field_value)]
+
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]
 }
@@ -2681,6 +2900,7 @@ void Meta_Type::static_get_class_info( class_info_container& class_info )
 
 void Meta_Type::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "102118", "Auto_Round", "bool", false ) );
    all_field_info.push_back( field_info( "102112", "Date_Precision", "int", false ) );
    all_field_info.push_back( field_info( "102115", "Fraction_Limit", "int", false ) );
    all_field_info.push_back( field_info( "102111", "Id", "string", false ) );
@@ -2694,6 +2914,7 @@ void Meta_Type::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "102106", "Numeric_Digits", "int", false ) );
    all_field_info.push_back( field_info( "102117", "Numeric_Type", "int", false ) );
    all_field_info.push_back( field_info( "102102", "Primitive", "int", false ) );
+   all_field_info.push_back( field_info( "102119", "Rounding_Method", "int", false ) );
    all_field_info.push_back( field_info( "102113", "Show_Plus_Sign", "bool", false ) );
    all_field_info.push_back( field_info( "102108", "String_Domain", "int", false ) );
    all_field_info.push_back( field_info( "102110", "Time_Precision", "int", false ) );
@@ -2728,74 +2949,82 @@ const char* Meta_Type::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "102112";
+      p_id = "102118";
       break;
 
       case 2:
-      p_id = "102115";
+      p_id = "102112";
       break;
 
       case 3:
-      p_id = "102111";
+      p_id = "102115";
       break;
 
       case 4:
-      p_id = "102116";
+      p_id = "102111";
       break;
 
       case 5:
-      p_id = "102109";
+      p_id = "102116";
       break;
 
       case 6:
-      p_id = "102103";
+      p_id = "102109";
       break;
 
       case 7:
-      p_id = "102105";
+      p_id = "102103";
       break;
 
       case 8:
-      p_id = "102104";
+      p_id = "102105";
       break;
 
       case 9:
-      p_id = "102101";
+      p_id = "102104";
       break;
 
       case 10:
-      p_id = "102107";
+      p_id = "102101";
       break;
 
       case 11:
-      p_id = "102106";
+      p_id = "102107";
       break;
 
       case 12:
-      p_id = "102117";
+      p_id = "102106";
       break;
 
       case 13:
-      p_id = "102102";
+      p_id = "102117";
       break;
 
       case 14:
-      p_id = "102113";
+      p_id = "102102";
       break;
 
       case 15:
-      p_id = "102108";
+      p_id = "102119";
       break;
 
       case 16:
-      p_id = "102110";
+      p_id = "102113";
       break;
 
       case 17:
-      p_id = "300200";
+      p_id = "102108";
       break;
 
       case 18:
+      p_id = "102110";
+      break;
+
+      case 19:
+      p_id = "300200";
+      break;
+
+      case 20:
       p_id = "102114";
       break;
    }
@@ -2813,74 +3042,82 @@ const char* Meta_Type::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Date_Precision";
+      p_id = "Auto_Round";
       break;
 
       case 2:
-      p_id = "Fraction_Limit";
+      p_id = "Date_Precision";
       break;
 
       case 3:
-      p_id = "Id";
+      p_id = "Fraction_Limit";
       break;
 
       case 4:
-      p_id = "Int_Type";
+      p_id = "Id";
       break;
 
       case 5:
-      p_id = "Internal";
+      p_id = "Int_Type";
       break;
 
       case 6:
-      p_id = "Max_Size";
+      p_id = "Internal";
       break;
 
       case 7:
-      p_id = "Max_Value";
+      p_id = "Max_Size";
       break;
 
       case 8:
-      p_id = "Min_Value";
+      p_id = "Max_Value";
       break;
 
       case 9:
-      p_id = "Name";
+      p_id = "Min_Value";
       break;
 
       case 10:
-      p_id = "Numeric_Decimals";
+      p_id = "Name";
       break;
 
       case 11:
-      p_id = "Numeric_Digits";
+      p_id = "Numeric_Decimals";
       break;
 
       case 12:
-      p_id = "Numeric_Type";
+      p_id = "Numeric_Digits";
       break;
 
       case 13:
-      p_id = "Primitive";
+      p_id = "Numeric_Type";
       break;
 
       case 14:
-      p_id = "Show_Plus_Sign";
+      p_id = "Primitive";
       break;
 
       case 15:
-      p_id = "String_Domain";
+      p_id = "Rounding_Method";
       break;
 
       case 16:
-      p_id = "Time_Precision";
+      p_id = "Show_Plus_Sign";
       break;
 
       case 17:
-      p_id = "Workgroup";
+      p_id = "String_Domain";
       break;
 
       case 18:
+      p_id = "Time_Precision";
+      break;
+
+      case 19:
+      p_id = "Workgroup";
+      break;
+
+      case 20:
       p_id = "Zero_Padding";
       break;
    }
@@ -2897,42 +3134,46 @@ int Meta_Type::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Date_Precision || field == c_field_name_Date_Precision )
+   else if( field == c_field_id_Auto_Round || field == c_field_name_Auto_Round )
       rc += 1;
-   else if( field == c_field_id_Fraction_Limit || field == c_field_name_Fraction_Limit )
+   else if( field == c_field_id_Date_Precision || field == c_field_name_Date_Precision )
       rc += 2;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Fraction_Limit || field == c_field_name_Fraction_Limit )
       rc += 3;
-   else if( field == c_field_id_Int_Type || field == c_field_name_Int_Type )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 4;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Int_Type || field == c_field_name_Int_Type )
       rc += 5;
-   else if( field == c_field_id_Max_Size || field == c_field_name_Max_Size )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 6;
-   else if( field == c_field_id_Max_Value || field == c_field_name_Max_Value )
+   else if( field == c_field_id_Max_Size || field == c_field_name_Max_Size )
       rc += 7;
-   else if( field == c_field_id_Min_Value || field == c_field_name_Min_Value )
+   else if( field == c_field_id_Max_Value || field == c_field_name_Max_Value )
       rc += 8;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Min_Value || field == c_field_name_Min_Value )
       rc += 9;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 10;
-   else if( field == c_field_id_Numeric_Digits || field == c_field_name_Numeric_Digits )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 11;
-   else if( field == c_field_id_Numeric_Type || field == c_field_name_Numeric_Type )
+   else if( field == c_field_id_Numeric_Digits || field == c_field_name_Numeric_Digits )
       rc += 12;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Numeric_Type || field == c_field_name_Numeric_Type )
       rc += 13;
-   else if( field == c_field_id_Show_Plus_Sign || field == c_field_name_Show_Plus_Sign )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 14;
-   else if( field == c_field_id_String_Domain || field == c_field_name_String_Domain )
+   else if( field == c_field_id_Rounding_Method || field == c_field_name_Rounding_Method )
       rc += 15;
-   else if( field == c_field_id_Time_Precision || field == c_field_name_Time_Precision )
+   else if( field == c_field_id_Show_Plus_Sign || field == c_field_name_Show_Plus_Sign )
       rc += 16;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_String_Domain || field == c_field_name_String_Domain )
       rc += 17;
-   else if( field == c_field_id_Zero_Padding || field == c_field_name_Zero_Padding )
+   else if( field == c_field_id_Time_Precision || field == c_field_name_Time_Precision )
       rc += 18;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 19;
+   else if( field == c_field_id_Zero_Padding || field == c_field_name_Zero_Padding )
+      rc += 20;
 
    return rc - 1;
 }
@@ -2953,6 +3194,7 @@ string Meta_Type::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Auto_Round INTEGER NOT NULL,"
     "C_Date_Precision INTEGER NOT NULL,"
     "C_Fraction_Limit INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
@@ -2966,6 +3208,7 @@ string Meta_Type::static_get_sql_columns( )
     "C_Numeric_Digits INTEGER NOT NULL,"
     "C_Numeric_Type INTEGER NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
+    "C_Rounding_Method INTEGER NOT NULL,"
     "C_Show_Plus_Sign INTEGER NOT NULL,"
     "C_String_Domain INTEGER NOT NULL,"
     "C_Time_Precision INTEGER NOT NULL,"
@@ -3006,6 +3249,11 @@ void Meta_Type::static_get_all_enum_pairs( vector< pair< string, string > >& pai
    pairs.push_back( make_pair( "enum_primitive_4", get_enum_string_primitive( 4 ) ) );
    pairs.push_back( make_pair( "enum_primitive_5", get_enum_string_primitive( 5 ) ) );
    pairs.push_back( make_pair( "enum_primitive_6", get_enum_string_primitive( 6 ) ) );
+
+   pairs.push_back( make_pair( "enum_round_type_1", get_enum_string_round_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_round_type_2", get_enum_string_round_type( 2 ) ) );
+   pairs.push_back( make_pair( "enum_round_type_3", get_enum_string_round_type( 3 ) ) );
+   pairs.push_back( make_pair( "enum_round_type_4", get_enum_string_round_type( 4 ) ) );
 
    pairs.push_back( make_pair( "enum_string_domain_0", get_enum_string_string_domain( 0 ) ) );
    pairs.push_back( make_pair( "enum_string_domain_2", get_enum_string_string_domain( 2 ) ) );
@@ -3082,6 +3330,10 @@ void Meta_Type::static_class_init( const char* p_module_name )
    g_primitive_enum.insert( 4 );
    g_primitive_enum.insert( 5 );
    g_primitive_enum.insert( 6 );
+   g_round_type_enum.insert( 1 );
+   g_round_type_enum.insert( 2 );
+   g_round_type_enum.insert( 3 );
+   g_round_type_enum.insert( 4 );
    g_string_domain_enum.insert( 0 );
    g_string_domain_enum.insert( 2 );
    g_string_domain_enum.insert( 3 );

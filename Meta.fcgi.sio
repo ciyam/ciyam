@@ -1479,6 +1479,28 @@
    </values>
   </enum>
   <enum/>
+   <id>507
+   <name>enum_round_type
+   <values/>
+    <value/>
+     <data>1
+     <name>enum_round_type_up
+    </value>
+    <value/>
+     <data>2
+     <name>enum_round_type_down
+    </value>
+    <value/>
+     <data>3
+     <name>enum_round_type_normal
+    </value>
+    <value/>
+     <data>4
+     <name>enum_round_type_bankers
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>610
    <name>enum_source_parent_type
    <values/>
@@ -7043,7 +7065,7 @@
      <ftype>int
      <extra>range=0..999999
      <mandatory>true
-     <modifiers>400:relegate,200:relegate,20000:relegate,8000:relegate,100:relegate,2000:relegate
+     <modifiers>400:relegate,200:relegate,40000:relegate,10000:relegate,100:relegate,4000:relegate
     </field>
     <field/>
      <name>field_type_min_value
@@ -7051,7 +7073,7 @@
      <ftype>string
      <extra>max_size=30
      <mandatory>false
-     <modifiers>10000:relegate,100:relegate,2000:relegate,4000:relegate
+     <modifiers>20000:relegate,100:relegate,4000:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_max_value
@@ -7059,7 +7081,7 @@
      <ftype>string
      <extra>max_size=30
      <mandatory>false
-     <modifiers>10000:relegate,100:relegate,2000:relegate,4000:relegate
+     <modifiers>20000:relegate,100:relegate,4000:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_numeric_digits
@@ -7067,7 +7089,7 @@
      <ftype>int
      <extra>range=0..16
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_numeric_decimals
@@ -7075,7 +7097,7 @@
      <ftype>int
      <extra>range=0..16
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_string_domain
@@ -7083,7 +7105,7 @@
      <ftype>int
      <extra>enum=510
      <mandatory>true
-     <modifiers>400:relegate,200:relegate,20000:relegate,8000:relegate,800:relegate,100:relegate
+     <modifiers>400:relegate,200:relegate,40000:relegate,10000:relegate,800:relegate,100:relegate
     </field>
     <field/>
      <name>field_type_date_precision
@@ -7091,7 +7113,7 @@
      <ftype>int
      <extra>enum=511
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,20000:relegate,8000:relegate,800:relegate,100:relegate
+     <modifiers>20000:relegate,400:relegate,40000:relegate,10000:relegate,800:relegate,100:relegate
     </field>
     <field/>
      <name>field_type_time_precision
@@ -7099,7 +7121,23 @@
      <ftype>int
      <extra>enum=512
      <mandatory>true
-     <modifiers>10000:relegate,200:relegate,8000:relegate,800:relegate,100:relegate
+     <modifiers>20000:relegate,200:relegate,10000:relegate,800:relegate,100:relegate
+    </field>
+    <field/>
+     <name>field_type_auto_round
+     <field>102118
+     <ftype>bool
+     <extra>force
+     <mandatory>true
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,100:relegate,4000:relegate,8000:relegate
+    </field>
+    <field/>
+     <name>field_type_rounding_method
+     <field>102119
+     <ftype>int
+     <extra>enum=507
+     <mandatory>true
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,100:relegate,4000:relegate,8000:relegate,2000:relegate
     </field>
     <field/>
      <name>field_type_show_plus_sign
@@ -7107,7 +7145,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,100:relegate,2000:relegate,4000:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,100:relegate,4000:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_zero_padding
@@ -7115,7 +7153,7 @@
      <ftype>int
      <extra>enum=513
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_fraction_limit
@@ -7123,7 +7161,7 @@
      <ftype>int
      <extra>enum=514
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate,4000:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_int_type
@@ -7131,7 +7169,7 @@
      <ftype>int
      <extra>force+enum=505
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,8000:relegate,100:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,10000:relegate,100:relegate
     </field>
     <field/>
      <name>field_type_numeric_type
@@ -7139,7 +7177,7 @@
      <ftype>int
      <extra>force+enum=506
      <mandatory>true
-     <modifiers>10000:relegate,400:relegate,200:relegate,20000:relegate,800:relegate,100:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate
     </field>
    </fields>
   </view>

@@ -2,6 +2,7 @@ model_info -id=100 -name=Meta -version=0.1 -created=2008
 user_defined_enum_add -id=500 primitive int 0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool
 user_defined_enum_add -id=505 int_type int 0=normal,3=bytes,1=duration_dhm,2=duration_hms
 user_defined_enum_add -id=506 numeric_type int 0=normal,1=bytes
+user_defined_enum_add -id=507 round_type int 1=up,2=down,3=normal,4=bankers
 user_defined_enum_add -id=510 string_domain int 0=none,2=label,3=filename,1=identifier
 user_defined_enum_add -id=511 date_precision int 0=default,1=months,2=decades
 user_defined_enum_add -id=512 time_precision int 0=default,1=minutes,2=seconds
@@ -135,18 +136,20 @@ field_add -id=102114 Type Zero_Padding int mand -def=0 -e=zero_padding
 field_add -id=102115 Type Fraction_Limit int mand -def=0 -e=fraction_limit
 field_add -id=102116 Type Int_Type int mand -def=0 -e=int_type
 field_add -id=102117 Type Numeric_Type int mand -def=0 -e=numeric_type
+field_add -id=102118 Type Auto_Round bool mand -def=0
+field_add -id=102119 Type Rounding_Method int mand -def=3 -e=round_type
 modifier_add -id=102310 Type Is_String Min_Value:relegate,Max_Value:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,Date_Precision:relegate,Time_Precision:relegate\
-,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
 modifier_add -id=102311 Type Is_Datetime Max_Size:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
-,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
 modifier_add -id=102312 Type Is_Date Max_Size:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Time_Precision:relegate\
-,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
 modifier_add -id=102313 Type Is_Time Max_Size:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
-,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
 modifier_add -id=102314 Type Is_Numeric Max_Size:relegate\
 ,String_Domain:relegate,Date_Precision:relegate,Time_Precision:relegate,Int_Type:relegate
 modifier_add -id=102315 Type Is_Int Numeric_Digits:relegate\
@@ -154,10 +157,11 @@ modifier_add -id=102315 Type Is_Int Numeric_Digits:relegate\
 ,Time_Precision:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Numeric_Type:relegate
 modifier_add -id=102316 Type Is_Bool Max_Size:relegate,Min_Value:relegate,Max_Value:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
-,Time_Precision:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
-modifier_add -id=102317 Type Is_Not_Normal_Int Max_Size:relegate,Min_Value:relegate,Max_Value:relegate,Show_Plus_Sign:relegate
+,Time_Precision:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+modifier_add -id=102317 Type Is_Not_Normal_Int Max_Size:relegate,Min_Value:relegate,Max_Value:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate
 modifier_add -id=102318 Type Is_Not_Normal_Numeric Min_Value:relegate,Max_Value:relegate,Numeric_Digits:relegate\
-,Numeric_Decimals:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate
+,Numeric_Decimals:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate
+modifier_add -id=102319 Type Is_Not_Auto_Rounded Rounding_Method:relegate
 class_add -id=103100 Enum Enums
 field_add -id=103101 Enum Name identifier mand
 field_add -id=103102 Enum Primitive int mand -def=5 -e=primitive
@@ -1151,6 +1155,7 @@ specification_add -id=640009 {Type}_Internal_protect state_protect "equal Type I
 specification_add -id=650009 {Type}_Id_auto_inc parent_auto_int_inc "Type Id {Workgroup} Next_Type_Id"
 specification_add -id=660009 {Type}_Is_Not_Normal_Int modifier_field_value "Type Is_Not_Normal_Int Int_Type 0 -not_equal"
 specification_add -id=670009 {Type}_Is_Not_Normal_Numeric modifier_field_value "Type Is_Not_Normal_Numeric Numeric_Type 0 -not_equal"
+specification_add -id=680009 {Type}_Is_Not_Auto_Rounded modifier_field_value "Type  Is_Not_Auto_Rounded Auto_Round 0"
 specification_add -id=600010 {Model}_Id_auto_inc parent_auto_int_inc "Model Id {Workgroup} Next_Model_Id"
 specification_add -id=610010 {Model}_Next_Class_Id_default default_to_field "Model Next_Class_Id Id -append=C100 -for_store"
 specification_add -id=620010 {Model}_Next_Specification_Id_default default_to_field "Model Next_Specification_Id Id -append=S100 -for_store"
@@ -1727,7 +1732,7 @@ specification_add -id=601110 {Workgroup}_view view "? admin Workgroup Name,Id;no
 specification_add -id=601210 {Type}_view view "? standard Type\
  Name,Id;no_edit+non_new,Primitive;no_edit\
 ,Max_Size,Min_Value,Max_Value,Numeric_Digits,Numeric_Decimals\
-,String_Domain,Date_Precision,Time_Precision,Show_Plus_Sign,Zero_Padding,Fraction_Limit,Int_Type;force,Numeric_Type;force"
+,String_Domain,Date_Precision,Time_Precision,Auto_Round;force,Rounding_Method,Show_Plus_Sign,Zero_Padding,Fraction_Limit,Int_Type;force,Numeric_Type;force"
 specification_add -id=601220 {Type}_group_list list "* group:no_limit Type Name,Id,Primitive -n=Primitive {Workgroup}"
 specification_add -id=601300 {Enum}_group_list list "* group:no_limit Enum Name,Id,Primitive {Workgroup}"
 specification_add -id=601310 {Enum}_view view "? standard Enum Name,Id;no_edit+non_new,Primitive;new_edit"

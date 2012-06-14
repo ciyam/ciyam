@@ -386,6 +386,7 @@ struct Meta_User::impl : public Meta_User_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -623,6 +624,34 @@ void Meta_User::impl::validate( unsigned state, bool is_internal, validation_err
 
    // [<start validate>]
    // [<finish validate>]
+}
+
+void Meta_User::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Description )
+    && ( fields_set.count( c_field_id_Description ) || fields_set.count( c_field_name_Description ) )
+    && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Description,
+       get_module_string( c_field_display_name_Description ) + " " + error_message ) );
+
+   if( !is_null( v_Password )
+    && ( fields_set.count( c_field_id_Password ) || fields_set.count( c_field_name_Password ) )
+    && !g_Password_domain.is_valid( v_Password, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Password,
+       get_module_string( c_field_display_name_Password ) + " " + error_message ) );
+
+   if( !is_null( v_User_Id )
+    && ( fields_set.count( c_field_id_User_Id ) || fields_set.count( c_field_name_User_Id ) )
+    && !g_User_Id_domain.is_valid( v_User_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_User_Id,
+       get_module_string( c_field_display_name_User_Id ) + " " + error_message ) );
 }
 
 void Meta_User::impl::after_fetch( )
@@ -875,6 +904,11 @@ void Meta_User::clear( )
 void Meta_User::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_User::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_User::after_fetch( )

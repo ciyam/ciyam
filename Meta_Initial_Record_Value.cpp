@@ -367,6 +367,7 @@ struct Meta_Initial_Record_Value::impl : public Meta_Initial_Record_Value_comman
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -556,6 +557,14 @@ void Meta_Initial_Record_Value::impl::validate( unsigned state, bool is_internal
        c_field_name_Value, get_module_string( c_field_display_name_Value )
        + " is not a valid " + get_obj( ).Field( ).Type( ).Name( ) + "." ) );
    // [<finish validate>]
+}
+
+void Meta_Initial_Record_Value::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
 }
 
 void Meta_Initial_Record_Value::impl::after_fetch( )
@@ -772,6 +781,11 @@ void Meta_Initial_Record_Value::clear( )
 void Meta_Initial_Record_Value::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Initial_Record_Value::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Initial_Record_Value::after_fetch( )

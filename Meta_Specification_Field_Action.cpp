@@ -776,6 +776,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -1107,6 +1108,28 @@ void Meta_Specification_Field_Action::impl::validate( unsigned state, bool is_in
    // [<finish validate>]
 }
 
+void Meta_Specification_Field_Action::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Clone_Key )
+    && ( fields_set.count( c_field_id_Clone_Key ) || fields_set.count( c_field_name_Clone_Key ) )
+    && !g_Clone_Key_domain.is_valid( v_Clone_Key, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Clone_Key,
+       get_module_string( c_field_display_name_Clone_Key ) + " " + error_message ) );
+
+   if( !is_null( v_New_Record_FK_Value )
+    && ( fields_set.count( c_field_id_New_Record_FK_Value ) || fields_set.count( c_field_name_New_Record_FK_Value ) )
+    && !g_New_Record_FK_Value_domain.is_valid( v_New_Record_FK_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_FK_Value,
+       get_module_string( c_field_display_name_New_Record_FK_Value ) + " " + error_message ) );
+}
+
 void Meta_Specification_Field_Action::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -1404,6 +1427,12 @@ void Meta_Specification_Field_Action::validate( unsigned state, bool is_internal
 {
    parent_class_type::validate( state, is_internal );
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Specification_Field_Action::validate_set_fields( set< string >& fields_set )
+{
+   parent_class_type::validate_set_fields( fields_set );
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Specification_Field_Action::after_fetch( )

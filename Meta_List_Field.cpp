@@ -2089,6 +2089,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -3462,6 +3463,46 @@ void Meta_List_Field::impl::validate( unsigned state, bool is_internal, validati
    // [<finish validate>]
 }
 
+void Meta_List_Field::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Include_Key_Additions )
+    && ( fields_set.count( c_field_id_Include_Key_Additions ) || fields_set.count( c_field_name_Include_Key_Additions ) )
+    && !g_Include_Key_Additions_domain.is_valid( v_Include_Key_Additions, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Include_Key_Additions,
+       get_module_string( c_field_display_name_Include_Key_Additions ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Procedure_Args )
+    && ( fields_set.count( c_field_id_Procedure_Args ) || fields_set.count( c_field_name_Procedure_Args ) )
+    && !g_Procedure_Args_domain.is_valid( v_Procedure_Args, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Procedure_Args,
+       get_module_string( c_field_display_name_Procedure_Args ) + " " + error_message ) );
+
+   if( !is_null( v_Restriction_Value )
+    && ( fields_set.count( c_field_id_Restriction_Value ) || fields_set.count( c_field_name_Restriction_Value ) )
+    && !g_Restriction_Value_domain.is_valid( v_Restriction_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Restriction_Value,
+       get_module_string( c_field_display_name_Restriction_Value ) + " " + error_message ) );
+
+   if( !is_null( v_Select_Key_Exclusions )
+    && ( fields_set.count( c_field_id_Select_Key_Exclusions ) || fields_set.count( c_field_name_Select_Key_Exclusions ) )
+    && !g_Select_Key_Exclusions_domain.is_valid( v_Select_Key_Exclusions, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Select_Key_Exclusions,
+       get_module_string( c_field_display_name_Select_Key_Exclusions ) + " " + error_message ) );
+}
+
 void Meta_List_Field::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -4431,6 +4472,11 @@ void Meta_List_Field::clear( )
 void Meta_List_Field::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_List_Field::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_List_Field::after_fetch( )

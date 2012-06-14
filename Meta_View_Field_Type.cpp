@@ -299,6 +299,7 @@ struct Meta_View_Field_Type::impl : public Meta_View_Field_Type_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -465,6 +466,28 @@ void Meta_View_Field_Type::impl::validate( unsigned state, bool is_internal, val
 
    // [<start validate>]
    // [<finish validate>]
+}
+
+void Meta_View_Field_Type::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_View_Field_Name )
+    && ( fields_set.count( c_field_id_View_Field_Name ) || fields_set.count( c_field_name_View_Field_Name ) )
+    && !g_View_Field_Name_domain.is_valid( v_View_Field_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_View_Field_Name,
+       get_module_string( c_field_display_name_View_Field_Name ) + " " + error_message ) );
 }
 
 void Meta_View_Field_Type::impl::after_fetch( )
@@ -665,6 +688,11 @@ void Meta_View_Field_Type::clear( )
 void Meta_View_Field_Type::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_View_Field_Type::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_View_Field_Type::after_fetch( )

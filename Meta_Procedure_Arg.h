@@ -120,6 +120,7 @@ class META_PROCEDURE_ARG_DECL_SPEC Meta_Procedure_Arg : public class_base
    void clear( );
 
    void validate( unsigned state, bool is_internal );
+   void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );
    void finalise_fetch( );

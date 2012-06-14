@@ -95,6 +95,7 @@ class META_SPECIFICATION_COPY_CHILD_LINKS_DECL_SPEC Meta_Specification_Copy_Chil
    void clear( );
 
    void validate( unsigned state, bool is_internal );
+   void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );
    void finalise_fetch( );
