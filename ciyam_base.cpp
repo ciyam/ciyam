@@ -7697,12 +7697,13 @@ void op_instance_destroy( size_t handle,
    instance.op_destroy( key, p_rc, internal_operation );
 }
 
-void op_instance_apply( size_t handle, const string& context, bool internal_operation, op_apply_rc* p_rc )
+void op_instance_apply( size_t handle, const string& context,
+ bool internal_operation, op_apply_rc* p_rc, set< string >* p_fields_set )
 {
    class_base& instance( get_class_base_from_handle_for_op( handle, context, e_permit_op_type_value_create_update_destroy ) );
 
    op_apply_rc rc;
-   instance.op_apply( &rc, internal_operation );
+   instance.op_apply( &rc, internal_operation, p_fields_set );
 
    if( p_rc )
       *p_rc = rc;
@@ -8252,7 +8253,8 @@ void begin_instance_op( instance_op op, class_base& instance,
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 }
 
-void finish_instance_op( class_base& instance, bool apply_changes, bool internal_operation, instance_op_rc* p_rc )
+void finish_instance_op( class_base& instance, bool apply_changes,
+ bool internal_operation, instance_op_rc* p_rc, set< string >* p_fields_set )
 {
    if( !gtp_session->p_storage_handler->get_ods( ) )
       throw runtime_error( "no storage is currently linked" );
@@ -8283,10 +8285,20 @@ void finish_instance_op( class_base& instance, bool apply_changes, bool internal
       if( op == class_base::e_op_type_create
        || ( op == class_base::e_op_type_update && !instance.get_is_minimal_update( ) ) )
       {
-         instance_accessor.perform_to_store( op == class_base::e_op_type_create, internal_operation );
-
+         bool valid = true;
          // NOTE: Validation can be switched off as an optimisation during a "storage restore".
-         if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
+         if( p_fields_set && !session_skip_validation( ) && !instance.is_valid( internal_operation, p_fields_set ) )
+            valid = false;
+
+         if( valid )
+         {
+            instance_accessor.perform_to_store( op == class_base::e_op_type_create, internal_operation );
+
+            if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
+               valid = false;
+         }
+
+         if( !valid )
          {
             if( p_rc )
             {

@@ -299,6 +299,7 @@ class META_SPECIFICATION_CONTENT_PAGE_DECL_SPEC Meta_Specification_Content_Page 
    void clear( );
 
    void validate( unsigned state, bool is_internal );
+   void validate_set_fields( std::set< std::string >& fields_set );
 
    void after_fetch( );
    void finalise_fetch( );

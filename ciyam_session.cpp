@@ -93,7 +93,6 @@ const char* const c_log_transformation_op_map_field_id = "map_field_id";
 const char* const c_log_transformation_op_map_method_id = "map_method_id";
 const char* const c_log_transformation_op_no_args_append = "no_args_append";
 const char* const c_log_transformation_op_skip_operation = "skip_operation";
-const char* const c_log_transformation_op_file_path_remove = "file_path_remove";
 const char* const c_log_transformation_op_change_field_value = "change_field_value";
 const char* const c_log_transformation_op_map_first_arg_field_ids = "map_first_arg_field_ids";
 const char* const c_log_transformation_op_instance_change_field_value = "instance_change_field_value";
@@ -709,7 +708,6 @@ void read_log_transformation_info( const string& file_name, map< string, string 
                 && operation != c_log_transformation_op_map_field_id
                 && operation != c_log_transformation_op_map_method_id
                 && operation != c_log_transformation_op_skip_operation
-                && operation != c_log_transformation_op_file_path_remove
                 && operation != c_log_transformation_op_change_field_value
                 && operation != c_log_transformation_op_instance_change_field_value )
                   throw runtime_error( "unknown transformation operation '" + operation + "'" );
@@ -1639,6 +1637,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                op_instance_create( handle, "", key, false );
 
+               set< string > fields_set;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   if( !i->second.empty( ) && !tz_abbr.empty( ) )
@@ -1653,9 +1652,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                   execute_object_command( handle, "", method_name_and_args );
+
+                  fields_set.insert( i->first );
                }
 
-               op_instance_apply( handle, "", false );
+               op_instance_apply( handle, "", false, 0, &fields_set );
 
                response = key.substr( 0, key.find( ' ' ) );
 
@@ -1716,55 +1717,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( check_value_items.count( field_id ) )
                check_value_items.erase( check_value_items.find( field_id ) );
-         }
-
-         ltf_key = string( c_log_transformation_scope_create_update_only );
-         ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_file_path_remove );
-
-         if( socket_handler.get_transformations( ).count( ltf_key ) )
-         {
-            string field_id( socket_handler.get_transformations( )[ ltf_key ] );
-
-            // NOTE: Legacy attached files (of which there can only be one per instance) included
-            // the path and did not have the same name as the instance key. For such files rename
-            // the physical file (using copy and delete) and modify the field value to now become
-            // the key value plus the file extension.
-            if( field_value_items.count( field_id ) && !field_value_items[ field_id ].empty( ) )
-            {
-               string file_name( field_value_items[ field_id ] );
-#ifndef _WIN32
-               string::size_type pos = file_name.find_last_of( '/' );
-#else
-               string::size_type pos = file_name.find_last_of( "/\\" );
-#endif
-               string file_directory;
-               if( pos != string::npos )
-               {
-                  file_directory = file_name.substr( 0, pos );
-                  file_name.erase( 0, pos + 1 );
-               }
-
-               pos = file_name.find( '.' );
-               string file_name_wo_ext( file_name.substr( 0, pos ) );
-
-               if( key != file_name_wo_ext )
-               {
-                  // KLUDGE: Some files managed to end up with a non-matching filename between
-                  // upgrades so try to fix them up by renaming them here.
-                  if( file_directory.empty( ) )
-                     file_directory = get_attached_file_path( module, mclass );
-
-                  string old_file( file_directory + "/" + file_name );
-                  string new_file( file_directory + "/" + key + get_ext( file_name ) );
-
-                  if( file_exists( old_file.c_str( ) ) )
-                     rename( old_file.c_str( ), new_file.c_str( ) );
-
-                  file_name = key + get_ext( file_name );
-               }
-
-               field_value_items[ field_id ] = file_name;
-            }
          }
 
          ltf_key = string( c_log_transformation_scope_create_update_only );
@@ -1831,6 +1783,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                       make_pair( c_str_parm_field_is_incorrect_field, get_field_name_for_id( handle, "", i->first ) ) ) );
                }
 
+               set< string > fields_set;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   if( !i->second.empty( ) && !tz_abbr.empty( ) )
@@ -1845,9 +1798,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
 
                   execute_object_command( handle, "", method_name_and_args );
+
+                  fields_set.insert( i->first );
                }
 
-               op_instance_apply( handle, "", false );
+               op_instance_apply( handle, "", false, 0, &fields_set );
 
                // NOTE: If a method name has also been provided then execute it now (omitting the version).
                if( !method_id_or_name.empty( ) )

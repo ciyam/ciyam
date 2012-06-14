@@ -718,6 +718,7 @@ struct \$::impl : public \$_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -1210,6 +1211,24 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
    // [<finish validate>]
 }
 
+void `{`$full_class_name`}::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+`{`(`?`$domain_fields`)
+   string error_message;\
+`}
+`{`?`$domain_fields`[`$domain_fields`,
+   if( !is_null( v_\$ )
+    && ( fields_set.count( c_field_id_\$ ) || fields_set.count( c_field_name_\$ ) )
+    && !g_\$_domain.is_valid( v_\$, error_message = "`{`(`?`$domain_mask_\$`)`$domain_mask_\$`}" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_\$,
+       get_module_string( c_field_display_name_\$ ) + " " + error_message ) );\
+`+\n`]`}
+}
+
 void `{`$full_class_name`}::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -1516,6 +1535,10 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
    // [<start to_store>]
 `{`(`?`$user_source`)`#$user_source section=to_store`}
    // [<finish to_store>]
+`{`(`?`$auto_round_fields`)
+`}`{`?`$auto_round_fields`[`$auto_round_fields`%,`,\
+   v_\0.round( \1, \2 );\
+`+\n`]`}
 }
 
 void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
@@ -2061,6 +2084,14 @@ void `{`$full_class_name`}::validate( unsigned state, bool is_internal )
    parent_class_type::validate( state, is_internal );\
 `}
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void `{`$full_class_name`}::validate_set_fields( set< string >& fields_set )
+{
+`{`(`?`$parent_class`)\
+   parent_class_type::validate_set_fields( fields_set );\
+`}
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void `{`$full_class_name`}::after_fetch( )

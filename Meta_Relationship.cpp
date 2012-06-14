@@ -861,6 +861,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -1261,6 +1262,46 @@ void Meta_Relationship::impl::validate( unsigned state, bool is_internal, valida
 
    // [<start validate>]
    // [<finish validate>]
+}
+
+void Meta_Relationship::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Child_Class_File_Field_Name )
+    && ( fields_set.count( c_field_id_Child_Class_File_Field_Name ) || fields_set.count( c_field_name_Child_Class_File_Field_Name ) )
+    && !g_Child_Class_File_Field_Name_domain.is_valid( v_Child_Class_File_Field_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_File_Field_Name,
+       get_module_string( c_field_display_name_Child_Class_File_Field_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Child_Class_Name )
+    && ( fields_set.count( c_field_id_Child_Class_Name ) || fields_set.count( c_field_name_Child_Class_Name ) )
+    && !g_Child_Class_Name_domain.is_valid( v_Child_Class_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_Name,
+       get_module_string( c_field_display_name_Child_Class_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Child_Name )
+    && ( fields_set.count( c_field_id_Child_Name ) || fields_set.count( c_field_name_Child_Name ) )
+    && !g_Child_Name_domain.is_valid( v_Child_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Name,
+       get_module_string( c_field_display_name_Child_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Field_Id )
+    && ( fields_set.count( c_field_id_Field_Id ) || fields_set.count( c_field_name_Field_Id ) )
+    && !g_Field_Id_domain.is_valid( v_Field_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Field_Id,
+       get_module_string( c_field_display_name_Field_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 }
 
 void Meta_Relationship::impl::after_fetch( )
@@ -1890,6 +1931,11 @@ void Meta_Relationship::clear( )
 void Meta_Relationship::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Relationship::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Relationship::after_fetch( )

@@ -623,6 +623,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -1595,6 +1596,28 @@ void Meta_Package::impl::validate( unsigned state, bool is_internal, validation_
    // [<finish validate>]
 }
 
+void Meta_Package::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Plural )
+    && ( fields_set.count( c_field_id_Plural ) || fields_set.count( c_field_name_Plural ) )
+    && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
+       get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
+}
+
 void Meta_Package::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -2150,6 +2173,11 @@ void Meta_Package::clear( )
 void Meta_Package::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Package::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Package::after_fetch( )

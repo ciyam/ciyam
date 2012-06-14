@@ -586,6 +586,7 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -832,6 +833,28 @@ void Meta_Procedure::impl::validate( unsigned state, bool is_internal, validatio
 
    // [<start validate>]
    // [<finish validate>]
+}
+
+void Meta_Procedure::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Id )
+    && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
+    && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+       get_module_string( c_field_display_name_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 }
 
 void Meta_Procedure::impl::after_fetch( )
@@ -1244,6 +1267,11 @@ void Meta_Procedure::clear( )
 void Meta_Procedure::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Procedure::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Procedure::after_fetch( )

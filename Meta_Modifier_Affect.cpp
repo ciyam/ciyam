@@ -618,6 +618,7 @@ struct Meta_Modifier_Affect::impl : public Meta_Modifier_Affect_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -906,6 +907,14 @@ void Meta_Modifier_Affect::impl::validate( unsigned state, bool is_internal, val
 
    // [<start validate>]
    // [<finish validate>]
+}
+
+void Meta_Modifier_Affect::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
 }
 
 void Meta_Modifier_Affect::impl::after_fetch( )
@@ -1250,6 +1259,11 @@ void Meta_Modifier_Affect::clear( )
 void Meta_Modifier_Affect::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Modifier_Affect::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Modifier_Affect::after_fetch( )

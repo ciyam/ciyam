@@ -688,10 +688,10 @@ void class_base::op_destroy( const string& key, op_destroy_rc* p_rc, bool is_int
    }
 }
 
-void class_base::op_apply( op_apply_rc* p_rc, bool is_internal )
+void class_base::op_apply( op_apply_rc* p_rc, bool is_internal, set< string >* p_fields_set )
 {
    instance_op_rc rc;
-   finish_instance_op( *p_dynamic_instance, true, is_internal, p_rc ? &rc : 0 );
+   finish_instance_op( *p_dynamic_instance, true, is_internal, p_rc ? &rc : 0, p_fields_set );
 
    if( p_rc )
       *p_rc = ( op_apply_rc )( int )rc;
@@ -733,10 +733,14 @@ void class_base::prepare( bool for_create )
    to_store( is_create || for_create, false );
 }
 
-bool class_base::is_valid( bool is_internal )
+bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
 {
    validation_errors.clear( );
-   validate( get_state( ), is_internal );
+
+   if( !p_fields_set )
+      validate( get_state( ), is_internal );
+   else
+      validate_set_fields( *p_fields_set );
 
    IF_IS_TRACING( TRACE_CLASSOPS )
    {

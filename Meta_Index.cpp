@@ -665,6 +665,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -1283,6 +1284,14 @@ void Meta_Index::impl::validate( unsigned state, bool is_internal, validation_er
    // [<finish validate>]
 }
 
+void Meta_Index::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+}
+
 void Meta_Index::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -1679,6 +1688,11 @@ void Meta_Index::clear( )
 void Meta_Index::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Index::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Index::after_fetch( )

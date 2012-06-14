@@ -985,6 +985,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -5873,6 +5874,64 @@ void Meta_Model::impl::validate( unsigned state, bool is_internal, validation_er
    // [<finish validate>]
 }
 
+void Meta_Model::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Id )
+    && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
+    && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+       get_module_string( c_field_display_name_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Next_Class_Id )
+    && ( fields_set.count( c_field_id_Next_Class_Id ) || fields_set.count( c_field_name_Next_Class_Id ) )
+    && !g_Next_Class_Id_domain.is_valid( v_Next_Class_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Class_Id,
+       get_module_string( c_field_display_name_Next_Class_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Next_List_Id )
+    && ( fields_set.count( c_field_id_Next_List_Id ) || fields_set.count( c_field_name_Next_List_Id ) )
+    && !g_Next_List_Id_domain.is_valid( v_Next_List_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_List_Id,
+       get_module_string( c_field_display_name_Next_List_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Next_Specification_Id )
+    && ( fields_set.count( c_field_id_Next_Specification_Id ) || fields_set.count( c_field_name_Next_Specification_Id ) )
+    && !g_Next_Specification_Id_domain.is_valid( v_Next_Specification_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Specification_Id,
+       get_module_string( c_field_display_name_Next_Specification_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Next_View_Id )
+    && ( fields_set.count( c_field_id_Next_View_Id ) || fields_set.count( c_field_name_Next_View_Id ) )
+    && !g_Next_View_Id_domain.is_valid( v_Next_View_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_View_Id,
+       get_module_string( c_field_display_name_Next_View_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Version )
+    && ( fields_set.count( c_field_id_Version ) || fields_set.count( c_field_name_Version ) )
+    && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
+       get_module_string( c_field_display_name_Version ) + " " + error_message ) );
+
+   if( !is_null( v_Year_Created )
+    && ( fields_set.count( c_field_id_Year_Created ) || fields_set.count( c_field_name_Year_Created ) )
+    && !g_Year_Created_domain.is_valid( v_Year_Created, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Year_Created,
+       get_module_string( c_field_display_name_Year_Created ) + " " + error_message ) );
+}
+
 void Meta_Model::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -6553,6 +6612,11 @@ void Meta_Model::clear( )
 void Meta_Model::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Model::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Model::after_fetch( )

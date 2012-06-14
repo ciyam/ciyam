@@ -1628,6 +1628,7 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -1772,6 +1773,8 @@ void Meta_Class::impl::impl_Generate( )
    vector< string > domain_fields;
    map< string, string > domain_types;
    map< string, string > domain_masks;
+
+   vector< string > auto_round_fields;
 
    set< string > parent_types;
 
@@ -1937,6 +1940,35 @@ void Meta_Class::impl::impl_Generate( )
                   domain_masks.insert( make_pair( get_obj( ).child_Field( ).Name( ), domain_mask ) );
             }
 
+            if( get_obj( ).child_Field( ).Type( ).Auto_Round( ) )
+            {
+               string method;
+               switch( get_obj( ).child_Field( ).Type( ).Rounding_Method( ) )
+               {
+                  case 1:
+                  method = "e_round_method_up";
+                  break;
+
+                  case 2:
+                  method = "e_round_method_down";
+                  break;
+
+                  case 3:
+                  method = "e_round_method_normal";
+                  break;
+
+                  case 4:
+                  method = "e_round_method_bankers";
+                  break;
+
+                  default:
+                  throw runtime_error( "unknown round method #" + to_string( get_obj( ).child_Field( ).Type( ).Rounding_Method( ) ) );
+               }
+
+               auto_round_fields.push_back( get_obj( ).child_Field( ).Name( ) + ","
+                + to_string( get_obj( ).child_Field( ).Type( ).Numeric_Decimals( ) ) + "," + method );
+            }
+
             if( get_obj( ).child_Field( ).Transient( ) )
                transient_fields.push_back( get_obj( ).child_Field( ).Id( ) + "," + get_obj( ).child_Field( ).Name( ) );
 
@@ -2049,6 +2081,18 @@ void Meta_Class::impl::impl_Generate( )
       outf << "\x60{\x60}\n";
    }
 
+   if( !auto_round_fields.empty( ) )
+   {
+      outf << "\x60{\x60$auto_round_fields\x60=\x60'";
+      for( size_t i = 0; i < auto_round_fields.size( ); i++ )
+      {
+         if( i > 0 )
+            outf << ' ';
+         outf << auto_round_fields[ i ];
+      }
+      outf << "\x60'\x60}\n";
+   }
+
    if( !commandable_fields.empty( ) )
    {
       outf << "\x60{\x60$commandable_fields\x60=\x60'";
@@ -2131,7 +2175,7 @@ void Meta_Class::impl::impl_Generate( )
             break;
 
             default:
-            throw runtime_error( "unknown cascade op #" + get_obj( ).child_Relationship_Parent( ).Cascade_Op( ) );
+            throw runtime_error( "unknown cascade op #" + to_string( get_obj( ).child_Relationship_Parent( ).Cascade_Op( ) ) );
          }
 
          child_info.insert( make_pair( sort_name, get_obj( ).child_Relationship_Parent( ).Child_Name( ) + ','
@@ -3069,6 +3113,52 @@ void Meta_Class::impl::validate( unsigned state, bool is_internal, validation_er
 
    // [<start validate>]
    // [<finish validate>]
+}
+
+void Meta_Class::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Id )
+    && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
+    && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+       get_module_string( c_field_display_name_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Next_Field_Id )
+    && ( fields_set.count( c_field_id_Next_Field_Id ) || fields_set.count( c_field_name_Next_Field_Id ) )
+    && !g_Next_Field_Id_domain.is_valid( v_Next_Field_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Field_Id,
+       get_module_string( c_field_display_name_Next_Field_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Next_Procedure_Id )
+    && ( fields_set.count( c_field_id_Next_Procedure_Id ) || fields_set.count( c_field_name_Next_Procedure_Id ) )
+    && !g_Next_Procedure_Id_domain.is_valid( v_Next_Procedure_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Procedure_Id,
+       get_module_string( c_field_display_name_Next_Procedure_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Plural )
+    && ( fields_set.count( c_field_id_Plural ) || fields_set.count( c_field_name_Plural ) )
+    && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
+       get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
+
+   if( !is_null( v_Static_Instance_Key )
+    && ( fields_set.count( c_field_id_Static_Instance_Key ) || fields_set.count( c_field_name_Static_Instance_Key ) )
+    && !g_Static_Instance_Key_domain.is_valid( v_Static_Instance_Key, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Static_Instance_Key,
+       get_module_string( c_field_display_name_Static_Instance_Key ) + " " + error_message ) );
 }
 
 void Meta_Class::impl::after_fetch( )
@@ -4230,6 +4320,11 @@ void Meta_Class::clear( )
 void Meta_Class::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Class::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Class::after_fetch( )

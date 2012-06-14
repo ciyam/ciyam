@@ -197,13 +197,13 @@ class CLASS_BASE_DECL_SPEC class_base
    void op_destroy( op_destroy_rc* p_rc = 0, bool is_internal = true ) { op_destroy( get_key( ), p_rc, is_internal ); }
    void op_destroy( const std::string& key, op_destroy_rc* p_rc = 0, bool is_internal = true );
 
-   void op_apply( op_apply_rc* p_rc = 0, bool is_internal = true );
+   void op_apply( op_apply_rc* p_rc = 0, bool is_internal = true, std::set< std::string >* p_fields_set = 0 );
    void op_cancel( bool is_internal = true );
 
    void init( bool for_create );
    void prepare( bool for_create );
 
-   bool is_valid( bool is_internal );
+   bool is_valid( bool is_internal, std::set< std::string >* p_fields_set = 0 );
    bool has_changed( ) const;
 
    void link_to_graph_parent( );
@@ -480,6 +480,7 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual void clear( ) = 0;
    
    virtual void validate( unsigned state, bool is_internal ) = 0;
+   virtual void validate_set_fields( std::set< std::string >& fields_set ) = 0;
 
    void after_fetch_from_db( );
 

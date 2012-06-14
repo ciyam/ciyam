@@ -2851,6 +2851,7 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    bool value_will_be_provided( const string& field_name );
 
    void validate( unsigned state, bool is_internal, validation_error_container* p_validation_errors );
+   void validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors );
 
    void after_fetch( );
    void finalise_fetch( );
@@ -5217,6 +5218,52 @@ void Meta_Specification::impl::validate( unsigned state, bool is_internal, valid
    // [<finish validate>]
 }
 
+void Meta_Specification::impl::validate_set_fields( set< string >& fields_set, validation_error_container* p_validation_errors )
+{
+   ( void )fields_set;
+
+   if( !p_validation_errors )
+      throw runtime_error( "unexpected null validation_errors container" );
+
+   string error_message;
+
+   if( !is_null( v_Comments )
+    && ( fields_set.count( c_field_id_Comments ) || fields_set.count( c_field_name_Comments ) )
+    && !g_Comments_domain.is_valid( v_Comments, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Comments,
+       get_module_string( c_field_display_name_Comments ) + " " + error_message ) );
+
+   if( !is_null( v_Id )
+    && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
+    && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
+       get_module_string( c_field_display_name_Id ) + " " + error_message ) );
+
+   if( !is_null( v_Name )
+    && ( fields_set.count( c_field_id_Name ) || fields_set.count( c_field_name_Name ) )
+    && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
+       get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Options )
+    && ( fields_set.count( c_field_id_Options ) || fields_set.count( c_field_name_Options ) )
+    && !g_Options_domain.is_valid( v_Options, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Options,
+       get_module_string( c_field_display_name_Options ) + " " + error_message ) );
+
+   if( !is_null( v_Test_Value )
+    && ( fields_set.count( c_field_id_Test_Value ) || fields_set.count( c_field_name_Test_Value ) )
+    && !g_Test_Value_domain.is_valid( v_Test_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Test_Value,
+       get_module_string( c_field_display_name_Test_Value ) + " " + error_message ) );
+
+   if( !is_null( v_Value )
+    && ( fields_set.count( c_field_id_Value ) || fields_set.count( c_field_name_Value ) )
+    && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
+       get_module_string( c_field_display_name_Value ) + " " + error_message ) );
+}
+
 void Meta_Specification::impl::after_fetch( )
 {
    set< string > required_transients;
@@ -7569,6 +7616,11 @@ void Meta_Specification::clear( )
 void Meta_Specification::validate( unsigned state, bool is_internal )
 {
    p_impl->validate( state, is_internal, &validation_errors );
+}
+
+void Meta_Specification::validate_set_fields( set< string >& fields_set )
+{
+   p_impl->validate_set_fields( fields_set, &validation_errors );
 }
 
 void Meta_Specification::after_fetch( )
