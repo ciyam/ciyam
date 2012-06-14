@@ -20,5 +20,7 @@ frac "fractional component"
 trunc "whole number component"
 round "round numeric value" <val//decimals>[<opt/up>|<opt/down>|<opt/normal>|<opt/bankers>]
 round_table "display sample table of rounding values"
+digits "display number of digits"
+whole_digits "display number of whole digits"
 format "format current value according to numeric mask" <val//mask>
 exit "exit program"

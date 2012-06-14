@@ -279,6 +279,10 @@ void test_numeric_command_functor::operator ( )( const string& command, const pa
 
          cout << '\n';
       }
+      else if( command == c_cmd_test_numeric_digits )
+         cout << ( int )num.digits( ) << endl;
+      else if( command == c_cmd_test_numeric_whole_digits )
+         cout << ( int )num.whole_digits( ) << endl;
       else if( command == c_cmd_test_numeric_format )
       {
          string mask( get_parm_val( parameters, c_cmd_parm_test_numeric_format_mask ) );

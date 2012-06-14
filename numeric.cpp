@@ -680,7 +680,9 @@ uint8_t numeric::whole_digits( ) const
       }
    }
 
-   return digits - ( decimals & c_decimals_mask );
+   int val = digits - ( decimals & c_decimals_mask );
+
+   return val > 0 ? val : 0;
 }
 
 void numeric::output_to_char_buffer( char* p_buf ) const

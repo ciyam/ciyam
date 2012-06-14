@@ -104,6 +104,12 @@ error: overflow occurred
 > add 1
 111111111111111111
 
+> digits
+18
+
+> whole_digits
+18
+
 > div 111111111111111111
 1
 

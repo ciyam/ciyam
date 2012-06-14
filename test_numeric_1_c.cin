@@ -36,3 +36,5 @@ div 3
 mul 3
 mul 4
 div 4
+digits
+whole_digits

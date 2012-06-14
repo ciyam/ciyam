@@ -33,4 +33,6 @@ mul 10
 mul 10
 mul 10
 add 1
+digits
+whole_digits
 div 111111111111111111

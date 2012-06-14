@@ -239,4 +239,10 @@ None Up Down Normal Bankers
 > div -4
 error: underflow occurred
 
+> digits
+1
+
+> whole_digits
+0
+
 > 
