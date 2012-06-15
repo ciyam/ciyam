@@ -912,6 +912,7 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_tvalue=$specification_\0_tvalue\
  arg_value=$specification_\0_value\
  arg_evalue=$specification_\0_evalue\
+ arg_testop=$specification_\0_testop\
  arg_modifier=$specification_\0_modifier\
  arg_not_eq=$specification_\0_not_eq\
  arg_not_dflt=$specification_\0_not_dflt\

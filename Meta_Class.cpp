@@ -1946,19 +1946,19 @@ void Meta_Class::impl::impl_Generate( )
                switch( get_obj( ).child_Field( ).Type( ).Rounding_Method( ) )
                {
                   case 1:
-                  method = "e_round_method_up";
+                  method = "numeric::e_round_method_up";
                   break;
 
                   case 2:
-                  method = "e_round_method_down";
+                  method = "numeric::e_round_method_down";
                   break;
 
                   case 3:
-                  method = "e_round_method_normal";
+                  method = "numeric::e_round_method_normal";
                   break;
 
                   case 4:
-                  method = "e_round_method_bankers";
+                  method = "numeric::e_round_method_bankers";
                   break;
 
                   default:
