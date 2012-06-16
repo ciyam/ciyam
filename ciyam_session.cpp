@@ -146,6 +146,29 @@ inline string convert_local_to_utc( const string& local, const string& tz_abbr )
    return s;
 }
 
+string& remove_uid_extra_from_log_command( string& log_command )
+{
+
+   string::size_type pos = log_command.find( ' ' );
+   if( pos != string::npos )
+   {
+      string::size_type npos = log_command.find( ' ', pos + 1 );
+      if( npos != string::npos )
+      {
+         string uid_info( log_command.substr( pos + 1, npos - pos - 1 ) );
+
+         string::size_type xpos = uid_info.find_first_of( "!:;@#" );
+         if( xpos != string::npos )
+         {
+            log_command = log_command.substr( 0, pos + 1 )
+             + uid_info.substr( 0, xpos ) + log_command.substr( npos );
+         }
+      }
+   }
+
+   return log_command;
+}
+
 string resolve_module_id( const string& id_or_name, const map< string, string >* p_transformations = 0 )
 {
    string module_id( id_or_name );
@@ -1556,7 +1579,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                key = new_key;
          }
 
-         transaction_log_command( next_command );
+         transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
@@ -1693,7 +1716,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set_dtm_if_now( dtm, next_command );
 
-         transaction_log_command( next_command );
+         transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
@@ -1848,7 +1871,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          set_dtm_if_now( dtm, next_command );
 
-         transaction_log_command( next_command );
+         transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
@@ -1950,7 +1973,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                skip_transaction = true;
                method_name_and_args.erase( 0, 1 );
             }
-            transaction_log_command( next_command );
+
+            transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
          }
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
