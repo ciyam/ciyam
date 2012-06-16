@@ -1345,6 +1345,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
    // [<start after_fetch>]
 `{`(`?`$user_source`)`#$user_source section=after_fetch`}
    // [<finish after_fetch>]
+`{`(`?`$auto_round_fields`)
+`}`{`?`$auto_round_fields`[`$auto_round_fields`%,`,\
+   v_\0.round( \1, \2 );\
+`+\n`]`}
 }
 
 void `{`$full_class_name`}::impl::finalise_fetch( )
@@ -1695,6 +1699,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
    // [<start for_store>]
 `{`(`?`$user_source`)`#$user_source section=for_store`}
    // [<finish for_store>]
+`{`(`?`$auto_round_fields`)
+`}`{`?`$auto_round_fields`[`$auto_round_fields`%,`,\
+   v_\0.round( \1, \2 );\
+`+\n`]`}
 }
 
 void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal )

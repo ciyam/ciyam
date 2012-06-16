@@ -44,6 +44,17 @@
  arg_actions=$specification_\0_actions arg_lsfield=$specification_\0_lsfield arg_mark_proc=$specification_\0_mark_proc\
  arg_mfield=$specification_\0_mfield arg_owner=$specification_\0_owner arg_pfield=$specification_\0_pfield\
  arg_rfield=$specification_\0_rfield arg_ufield=$specification_\0_ufield arg_umchild=$specification_\0_umchild arg_umclass=$specification_\0_umclass`}\
+`,\
+`@eq`(`'\1`'`,`'for_user_reputation`'`)
+`{`#for_user_reputation.spec.xrep section=after_fetch module_name=$module_name class_name=$class_name\
+ arg_reputation=$specification_\0_reputation arg_weighting=$specification_\0_weighting arg_additional=$specification_\0_additional`}\
+### to_store
+`,\
+`@eq`(`'\1`'`,`'for_user_reputation_rating`'`)
+`{`#for_user_reputation_rating.spec.xrep section=to_store class_name=$class_name\
+ arg_amt=$specification_\0_amt arg_dest=$specification_\0_dest arg_penalty=$specification_\0_penalty\
+ arg_src=$specification_\0_src arg_user_rating=$specification_\0_user_rating arg_user_weighting=$specification_\0_user_weighting\
+ arg_weighted_amt=$specification_\0_weighted_amt arg_weighting=$specification_\0_weighting`}\
 ### for_store
 `,\
 `@eq`(`'\1`'`,`'for_user_account`'`)
@@ -61,6 +72,12 @@
 `{`#for_user_account_user.spec.xrep section=for_store class_name=$class_name\
  arg_field=$specification_\0_field arg_child=$specification_\0_child arg_sfield=$specification_\0_sfield arg_active=$specification_\0_active\
  arg_active_label=$specification_\0_active_label arg_inactive=$specification_\0_inactive arg_inactive_label=$specification_\0_inactive_label`}\
+`,\
+`@eq`(`'\1`'`,`'for_user_reputation_rating`'`)
+`{`#for_user_reputation_rating.spec.xrep section=for_store class_name=$class_name\
+ arg_amt=$specification_\0_amt arg_dest=$specification_\0_dest arg_penalty=$specification_\0_penalty\
+ arg_src=$specification_\0_src arg_user_rating=$specification_\0_user_rating arg_user_weighting=$specification_\0_user_weighting\
+ arg_weighted_amt=$specification_\0_weighted_amt arg_weighting=$specification_\0_weighting`}\
 ### after_store
 `,\
 `@eq`(`'\1`'`,`'for_user_account`'`)
@@ -72,6 +89,19 @@
  arg_actions=$specification_\0_actions arg_lsfield=$specification_\0_lsfield arg_mark_proc=$specification_\0_mark_proc\
  arg_mfield=$specification_\0_mfield arg_owner=$specification_\0_owner arg_pfield=$specification_\0_pfield\
  arg_rfield=$specification_\0_rfield arg_ufield=$specification_\0_ufield arg_umchild=$specification_\0_umchild arg_umclass=$specification_\0_umclass`}\
+`,\
+`@eq`(`'\1`'`,`'for_user_reputation_rating`'`)
+`{`#for_user_reputation_rating.spec.xrep section=after_store class_name=$class_name\
+ arg_amt=$specification_\0_amt arg_dest=$specification_\0_dest arg_penalty=$specification_\0_penalty\
+ arg_src=$specification_\0_src arg_user_rating=$specification_\0_user_rating arg_user_weighting=$specification_\0_user_weighting\
+ arg_weighted_amt=$specification_\0_weighted_amt arg_weighting=$specification_\0_weighting`}\
+### for_destroy
+`,\
+`@eq`(`'\1`'`,`'for_user_reputation_rating`'`)
+`{`#for_user_reputation_rating.spec.xrep section=for_destroy class_name=$class_name\
+ arg_amt=$specification_\0_amt arg_dest=$specification_\0_dest arg_penalty=$specification_\0_penalty\
+ arg_src=$specification_\0_src arg_user_rating=$specification_\0_user_rating arg_user_weighting=$specification_\0_user_weighting\
+ arg_weighted_amt=$specification_\0_weighted_amt arg_weighting=$specification_\0_weighting`}\
 ### get_required_field_names
 `,\
 `@eq`(`'\1`'`,`'for_user_account`'`)

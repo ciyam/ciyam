@@ -2610,7 +2610,7 @@ void Meta_Model::impl::impl_Generate( )
                            id += "+" + get_obj( ).child_View( ).child_View_Field( ).Source_Edit_Child( ).Id( );
 
                            parent_dfield_info.insert( make_pair( field_num,
-                            get_obj( ).child_View( ).child_View_Field( ).Source_Parent( ).Name( )
+                            get_obj( ).child_View( ).child_View_Field( ).Source_Child( ).Class( ).Name( )
                             + "_" + get_obj( ).child_View( ).child_View_Field( ).Source_Edit_Child( ).Name( ) ) );
                         }
 
