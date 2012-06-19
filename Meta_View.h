@@ -51,19 +51,20 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
       e_field_id_Access_Restriction = 2,
       e_field_id_Allow_Copy_Action = 3,
       e_field_id_Allow_Printable_Version = 4,
-      e_field_id_Change_Permission = 5,
-      e_field_id_Change_Restriction = 6,
-      e_field_id_Class = 7,
-      e_field_id_Id = 8,
-      e_field_id_Model = 9,
-      e_field_id_Name = 10,
-      e_field_id_PDF_Font_Type = 11,
-      e_field_id_PDF_View_Type = 12,
-      e_field_id_Print_Without_Highlight = 13,
-      e_field_id_Title = 14,
-      e_field_id_Type = 15,
-      e_field_id_Type_Key = 16,
-      e_field_id_Use_First_Row_As_Header = 17
+      e_field_id_Auto_Back_After_Create = 5,
+      e_field_id_Change_Permission = 6,
+      e_field_id_Change_Restriction = 7,
+      e_field_id_Class = 8,
+      e_field_id_Id = 9,
+      e_field_id_Model = 10,
+      e_field_id_Name = 11,
+      e_field_id_PDF_Font_Type = 12,
+      e_field_id_PDF_View_Type = 13,
+      e_field_id_Print_Without_Highlight = 14,
+      e_field_id_Title = 15,
+      e_field_id_Type = 16,
+      e_field_id_Type_Key = 17,
+      e_field_id_Use_First_Row_As_Header = 18
    };
 
    Meta_View( );
@@ -77,6 +78,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
 
    bool Allow_Printable_Version( ) const;
    void Allow_Printable_Version( bool Allow_Printable_Version );
+
+   bool Auto_Back_After_Create( ) const;
+   void Auto_Back_After_Create( bool Auto_Back_After_Create );
 
    int Change_Restriction( ) const;
    void Change_Restriction( int Change_Restriction );

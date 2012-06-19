@@ -22763,6 +22763,23 @@
       </specifications>
      </field>
      <field/>
+      <id>118115
+      <name>Auto_Back_After_Create
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>118103
       <name>Change_Restriction
       <type>int
@@ -33903,6 +33920,7 @@
      <field_info>301830:116101!@group:301500+116101
      <field_info>@tab:Advanced_UI_Options
      <field_info>118113
+     <field_info>118115
      <field_info>118109;force
      <field_info>118106
      <field_info>118111;force+enum=658

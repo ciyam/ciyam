@@ -9310,6 +9310,8 @@ void modifier_field_value_specification::add_specification_data( model& m, speci
 
    bool is_text_type( !is_non_string_type( field_type ) );
    spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
+
+   spec_data.data_pairs.push_back( make_pair( "testop", "" ) );
 }
 
 string modifier_field_value_specification::static_class_name( ) { return "modifier_field_value"; }

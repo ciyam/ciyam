@@ -349,6 +349,7 @@ const char* const c_view_type_extra_vtabc = "vtabc";
 const char* const c_view_type_extra_no_edit = "no_edit";
 const char* const c_view_type_extra_can_copy = "can_copy";
 const char* const c_view_type_extra_no_print = "no_print";
+const char* const c_view_type_extra_auto_back = "auto_back";
 const char* const c_view_type_extra_user_info = "user_info";
 const char* const c_view_type_extra_owner_edit = "owner_edit";
 const char* const c_view_type_extra_admin_edit = "admin_edit";
