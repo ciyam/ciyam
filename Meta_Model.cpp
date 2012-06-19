@@ -1593,6 +1593,13 @@ void Meta_Model::impl::impl_Generate( )
                extras += "can_copy";
             }
 
+            if( get_obj( ).child_View( ).Auto_Back_After_Create( ) )
+            {
+               if( !extras.empty( ) )
+                  extras += ",";
+               extras += "auto_back";
+            }
+
             if( !get_obj( ).child_View( ).Allow_Printable_Version( ) )
             {
                if( !extras.empty( ) )
@@ -4923,7 +4930,9 @@ void Meta_Model::impl::impl_Generate( )
 
             for( size_t i = 0; i < column_ids.size( ); i++ )
             {
-               string cnum( '0' + to_string( i ) );
+               string cnum( to_string( i ) );
+               if( cnum.length( ) < 2 )
+                  cnum = '0' + cnum;
 
                string column_id( column_ids[ i ] );
                if( !column_pids[ i ].empty( ) )

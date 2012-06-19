@@ -7382,6 +7382,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_view_auto_back_after_create
+     <field>118115
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_view_allow_printable_version
      <field>118109
      <ftype>bool

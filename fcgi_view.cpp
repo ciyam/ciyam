@@ -636,7 +636,19 @@ bool output_view_form( ostream& os, const string& act,
             os << " + '&cont=' + document." << source.id << ".cont.checked";
 #endif
 
-         os << " + '&exec=" << exec << "&flags=" << source.state << "', false );\" style=\"cursor:pointer\">";
+         bool go_back_after_save = false;
+         if( view_extras.count( c_view_type_extra_auto_back ) )
+            go_back_after_save = is_new_record;
+
+         if( go_back_after_save )
+            os << " + '&back=1'";
+
+         os << " + '&exec=" << exec << "&flags=" << source.state << "', false );";
+
+         if( go_back_after_save )
+            os << " if( !had_act_error ) jump_back = true;";
+
+         os << "\" style=\"cursor:pointer\">";
 
          os << c_nbsp;
          os << "<input id=\"undo\" name=\"undo\" type=\"button\" class=\"button\"";
