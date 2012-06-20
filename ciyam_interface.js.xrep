@@ -300,6 +300,8 @@ function trim( str )
 
 function load( )
 {
+   had_act_error = false;
+
    clearTimeout( warn_refresh_timer_id );
 
    // NOTE: This is necessary (at least for Firefox) to force a page

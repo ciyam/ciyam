@@ -195,19 +195,19 @@ void setup_list_fields( list_source& list,
             }
          }
 
-         if( extra_data.count( c_field_extra_text ) )
+         if( extra_data.count( c_field_extra_html ) )
+            list.html_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_text ) )
             list.text_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_notes ) )
             list.notes_fields.insert( value_id );
-         else if( extra_data.count( c_field_extra_content ) )
-            list.content_fields.insert( value_id );
          else if( extra_data.count( c_list_type_extra_actions ) )
             ( list.lici->second )->extras.insert( make_pair( c_list_type_extra_actions, field_id ) );
 
          if( extra_data.count( c_field_extra_url ) )
             list.url_fields.insert( value_id );
-         else if( extra_data.count( c_field_extra_http ) )
-            list.http_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_href ) )
+            list.href_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_flink ) )
             list.file_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_image ) )
@@ -2819,7 +2819,7 @@ void output_list_form( ostream& os,
              && ( !is_foreign_link || source.link_fields.count( source_value_id ) )
              && ( !sess_info.checkbox_bools || !source.bool_fields.count( source_value_id ) )
              && ( !source.url_fields.count( source_value_id )
-             && !source.http_fields.count( source_value_id ) && !source.mailto_fields.count( source_value_id )
+             && !source.href_fields.count( source_value_id ) && !source.mailto_fields.count( source_value_id )
              && !source.file_fields.count( source_value_id ) && !source.image_fields.count( source_value_id ) )
              && ( !source.admin_link_fields.count( source_value_id ) || sess_info.is_admin_user ) )
             {
@@ -2849,11 +2849,11 @@ void output_list_form( ostream& os,
             }
 
             if( !is_printable && !cell_data.empty( ) && ( source.url_fields.count( source_value_id )
-             || source.http_fields.count( source_value_id ) || source.mailto_fields.count( source_value_id ) ) )
+             || source.href_fields.count( source_value_id ) || source.mailto_fields.count( source_value_id ) ) )
             {
                string type, extra;
 
-               if( source.http_fields.count( source_value_id ) )
+               if( source.href_fields.count( source_value_id ) )
                {
                   if( cell_data.find( "//" ) == string::npos )
                      type = "http://";
@@ -3061,7 +3061,7 @@ void output_list_form( ostream& os,
                was_output = true;
                os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
             }
-            else if( source.content_fields.count( source_value_id ) )
+            else if( source.html_fields.count( source_value_id ) )
             {
                was_output = true;
 

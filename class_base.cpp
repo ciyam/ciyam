@@ -3922,7 +3922,7 @@ string meta_field_extras( int uom, int extra, bool transient, int max_size,
       break;
 
       case 2:
-      all_extras.push_back( "http" );
+      all_extras.push_back( "href" );
       break;
 
       case 3:
@@ -3950,7 +3950,7 @@ string meta_field_extras( int uom, int extra, bool transient, int max_size,
       break;
 
       case 9:
-      all_extras.push_back( "content" );
+      all_extras.push_back( "html" );
       break;
 
       case 10:
