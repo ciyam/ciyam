@@ -316,7 +316,8 @@ set< int > g_uom_enum;
 
 const int c_enum_field_extra_none( 0 );
 const int c_enum_field_extra_file( 1 );
-const int c_enum_field_extra_http( 2 );
+const int c_enum_field_extra_href( 2 );
+const int c_enum_field_extra_html( 9 );
 const int c_enum_field_extra_text( 23 );
 const int c_enum_field_extra_notes( 4 );
 const int c_enum_field_extra_order( 5 );
@@ -325,7 +326,6 @@ const int c_enum_field_extra_image( 3 );
 const int c_enum_field_extra_mailto( 7 );
 const int c_enum_field_extra_file_link( 21 );
 const int c_enum_field_extra_actions( 8 );
-const int c_enum_field_extra_content( 9 );
 const int c_enum_field_extra_filename( 22 );
 const int c_enum_field_extra_password( 10 );
 const int c_enum_field_extra_defcurrent( 11 );
@@ -359,7 +359,9 @@ string get_enum_string_field_extra( int val )
    else if( to_string( val ) == to_string( "1" ) )
       string_name = "enum_field_extra_file";
    else if( to_string( val ) == to_string( "2" ) )
-      string_name = "enum_field_extra_http";
+      string_name = "enum_field_extra_href";
+   else if( to_string( val ) == to_string( "9" ) )
+      string_name = "enum_field_extra_html";
    else if( to_string( val ) == to_string( "23" ) )
       string_name = "enum_field_extra_text";
    else if( to_string( val ) == to_string( "4" ) )
@@ -376,8 +378,6 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_file_link";
    else if( to_string( val ) == to_string( "8" ) )
       string_name = "enum_field_extra_actions";
-   else if( to_string( val ) == to_string( "9" ) )
-      string_name = "enum_field_extra_content";
    else if( to_string( val ) == to_string( "22" ) )
       string_name = "enum_field_extra_filename";
    else if( to_string( val ) == to_string( "10" ) )
@@ -2589,6 +2589,9 @@ void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 //nyi
    Result = e_sql_char_type_std;
 
+   if( get_obj( ).Extra( ) == c_enum_field_extra_html )
+      Result = e_sql_char_type_large;
+
    if( get_obj( ).Extra( ) == c_enum_field_extra_text )
       Result = e_sql_char_type_large;
 
@@ -2600,9 +2603,6 @@ void Meta_Field::impl::impl_Get_Text_Type( int& Result )
       Result = e_sql_char_type_small;
 
    if( get_obj( ).Type( ).Max_Size( ) > c_sql_std_char_size )
-      Result = e_sql_char_type_large;
-
-   if( get_obj( ).Extra( ) == c_enum_field_extra_content )
       Result = e_sql_char_type_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_user_perms )
@@ -6453,6 +6453,7 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_0", get_enum_string_field_extra( 0 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_1", get_enum_string_field_extra( 1 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_2", get_enum_string_field_extra( 2 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_9", get_enum_string_field_extra( 9 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_23", get_enum_string_field_extra( 23 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_4", get_enum_string_field_extra( 4 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_5", get_enum_string_field_extra( 5 ) ) );
@@ -6461,7 +6462,6 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_7", get_enum_string_field_extra( 7 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_21", get_enum_string_field_extra( 21 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_8", get_enum_string_field_extra( 8 ) ) );
-   pairs.push_back( make_pair( "enum_field_extra_9", get_enum_string_field_extra( 9 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_22", get_enum_string_field_extra( 22 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_10", get_enum_string_field_extra( 10 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_11", get_enum_string_field_extra( 11 ) ) );
@@ -6548,6 +6548,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 0 );
    g_field_extra_enum.insert( 1 );
    g_field_extra_enum.insert( 2 );
+   g_field_extra_enum.insert( 9 );
    g_field_extra_enum.insert( 23 );
    g_field_extra_enum.insert( 4 );
    g_field_extra_enum.insert( 5 );
@@ -6556,7 +6557,6 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 7 );
    g_field_extra_enum.insert( 21 );
    g_field_extra_enum.insert( 8 );
-   g_field_extra_enum.insert( 9 );
    g_field_extra_enum.insert( 22 );
    g_field_extra_enum.insert( 10 );
    g_field_extra_enum.insert( 11 );

@@ -484,7 +484,11 @@
     </value>
     <value/>
      <data>2
-     <name>enum_field_extra_http
+     <name>enum_field_extra_href
+    </value>
+    <value/>
+     <data>9
+     <name>enum_field_extra_html
     </value>
     <value/>
      <data>23
@@ -517,10 +521,6 @@
     <value/>
      <data>8
      <name>enum_field_extra_actions
-    </value>
-    <value/>
-     <data>9
-     <name>enum_field_extra_content
     </value>
     <value/>
      <data>22

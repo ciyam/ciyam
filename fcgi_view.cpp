@@ -137,12 +137,12 @@ void setup_view_fields( view_source& view,
          if( !fld.extra.empty( ) )
             parse_field_extra( fld.extra, extra_data );
 
-         if( extra_data.count( c_field_extra_text ) )
+         if( extra_data.count( c_field_extra_html ) )
+            view.html_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_text ) )
             view.text_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_notes ) )
             view.notes_fields.insert( value_id );
-         else if( extra_data.count( c_field_extra_content ) )
-            view.content_fields.insert( value_id );
 
          if( extra_data.count( c_view_field_extra_upper ) )
             view.upper_fields.insert( value_id );
@@ -259,8 +259,8 @@ void setup_view_fields( view_source& view,
 
          if( extra_data.count( c_field_extra_url ) )
             view.url_fields.insert( value_id );
-         else if( extra_data.count( c_field_extra_http ) )
-            view.http_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_href ) )
+            view.href_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_flink ) )
             view.file_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_image ) )
@@ -1227,7 +1227,7 @@ bool output_view_form( ostream& os, const string& act,
          is_special_field = true;
 
       if( source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id )
-       || source.content_fields.count( source_value_id ) || source.enum_fields.count( source_value_id )
+       || source.html_fields.count( source_value_id ) || source.enum_fields.count( source_value_id )
        || source.bool_fields.count( source_value_id ) || source.protected_fields.count( source_value_id ) )
          is_special_field = true;
 
@@ -1745,11 +1745,11 @@ bool output_view_form( ostream& os, const string& act,
          bool add_to_field_list = false;
 
          if( !is_printable && !cell_data.empty( ) && ( source.url_fields.count( source_value_id )
-          || source.http_fields.count( source_value_id ) || source.mailto_fields.count( source_value_id ) ) )
+          || source.href_fields.count( source_value_id ) || source.mailto_fields.count( source_value_id ) ) )
          {
             string type, extra;
 
-            if( source.http_fields.count( source_value_id ) )
+            if( source.href_fields.count( source_value_id ) )
             {
                if( cell_data.find( "//" ) == string::npos )
                   type = "http://";
@@ -1836,7 +1836,7 @@ bool output_view_form( ostream& os, const string& act,
             else
                os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
          }
-         else if( source.content_fields.count( source_value_id ) )
+         else if( source.html_fields.count( source_value_id ) )
          {
             if( has_value )
                cell_data = user_values.find( source_field_id )->second;

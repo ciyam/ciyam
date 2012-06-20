@@ -10,8 +10,8 @@ user_defined_enum_add -id=513 zero_padding int 0=none,1=decimals,2=all\\_digits
 user_defined_enum_add -id=514 fraction_limit int 0=none,2=halves,4=quarters
 user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_group,3=user_other
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
-user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=http,23=text,4=notes,5=order,6=active\
-,3=image,7=mailto,21=file\\_link,8=actions,9=content,22=filename,10=password,11=defcurrent,17=permission\
+user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active\
+,3=image,7=mailto,21=file\\_link,8=actions,22=filename,10=password,11=defcurrent,17=permission\
 ,24=orientation,25=epassword,26=hpassword,27=hpassword\\_salt,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level\
 ,15=create\\_datetime,16=modify\\_datetime,19=replace\\_underbars,20=enforce\\_uppercase\
 ,-2=user\\_group,-3=user\\_other,-1=owning\\_user,-4=create\\_user\\_key,-5=modify\\_user\\_key

@@ -575,7 +575,8 @@ struct source
 
    std::set< std::string > url_fields;
    std::set< std::string > link_fields;
-   std::set< std::string > http_fields;
+   std::set< std::string > href_fields;
+   std::set< std::string > html_fields;
    std::set< std::string > file_fields;
    std::set< std::string > text_fields;
    std::set< std::string > image_fields;
@@ -586,7 +587,6 @@ struct source
    std::set< std::string > hidden_fields;
    std::set< std::string > larger_fields;
    std::set< std::string > mailto_fields;
-   std::set< std::string > content_fields;
    std::set< std::string > smaller_fields;
    std::set< std::string > non_link_fields;
    std::set< std::string > non_print_fields;
