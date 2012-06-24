@@ -694,6 +694,11 @@ struct view_source : source
    ids fkey_ids;
    values fkey_values;
 
+   std::string vextra1_id;
+   std::string vextra2_id;
+   std::string vextra1_value;
+   std::string vextra2_value;
+
    bool has_quick_link;
    std::string quick_link_value_id;
 

@@ -73,7 +73,7 @@ bool populate_list_info( list_source& list,
  const std::map< std::string, std::string >& list_search_text,
  const std::map< std::string, std::string >& list_search_values,
  const std::string& listinfo, const std::string& listsort, const std::string& parent_key, bool is_printable,
- const std::string& view_cid, const std::string& view_pfield, const std::set< std::string >* p_specials,
+ const view_source* p_view, const std::string& view_pfield, const std::set< std::string >* p_specials,
  const session_info& sess_info, const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0,
  std::string* p_pdf_view_file_name = 0 );
 

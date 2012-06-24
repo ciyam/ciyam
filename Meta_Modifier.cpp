@@ -475,6 +475,8 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -642,6 +644,14 @@ void Meta_Modifier::impl::get_foreign_key_values( foreign_key_data_container& fo
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Class, v_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Modifier, v_Source_Modifier ) );
+}
+
+void Meta_Modifier::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Modifier::impl::clear( )
@@ -1223,19 +1233,19 @@ const char* Meta_Modifier::get_field_name(
    return p_name;
 }
 
-string Meta_Modifier::get_field_display_name( const string& id ) const
+string Meta_Modifier::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Class )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
       display_name = get_module_string( c_field_display_name_Class );
-   else if( id == c_field_id_Internal )
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Source_Modifier )
+   else if( id_or_name == c_field_id_Source_Modifier || id_or_name == c_field_name_Source_Modifier )
       display_name = get_module_string( c_field_display_name_Source_Modifier );
 
    return display_name;
@@ -1397,6 +1407,11 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Modifier::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Modifier::class_id( ) const

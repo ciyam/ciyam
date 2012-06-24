@@ -711,6 +711,8 @@ void class_base::init( bool for_create )
 {
    bool is_create( op == e_op_type_create );
 
+   set_default_values( );
+
    if( is_create || for_create )
       at_create( );
 }
@@ -1771,6 +1773,8 @@ void class_base::set_graph_parent( class_base* p_parent, const string& fk_field,
 
    if( get_graph_depth( ) > c_max_graph_depth )
       throw runtime_error( "maximum graph depth exceeded" );
+
+   set_default_values( );
 }
 
 void class_base::trace( const string& s ) const

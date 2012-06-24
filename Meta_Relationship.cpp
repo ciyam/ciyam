@@ -856,6 +856,8 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -1148,6 +1150,14 @@ void Meta_Relationship::impl::get_foreign_key_values( foreign_key_data_container
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Model, v_Model ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Class, v_Parent_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Relationship, v_Source_Relationship ) );
+}
+
+void Meta_Relationship::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Relationship::impl::clear( )
@@ -2315,41 +2325,41 @@ const char* Meta_Relationship::get_field_name(
    return p_name;
 }
 
-string Meta_Relationship::get_field_display_name( const string& id ) const
+string Meta_Relationship::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Cascade_Op )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Cascade_Op || id_or_name == c_field_name_Cascade_Op )
       display_name = get_module_string( c_field_display_name_Cascade_Op );
-   else if( id == c_field_id_Child_Class )
+   else if( id_or_name == c_field_id_Child_Class || id_or_name == c_field_name_Child_Class )
       display_name = get_module_string( c_field_display_name_Child_Class );
-   else if( id == c_field_id_Child_Class_File_Field_Name )
+   else if( id_or_name == c_field_id_Child_Class_File_Field_Name || id_or_name == c_field_name_Child_Class_File_Field_Name )
       display_name = get_module_string( c_field_display_name_Child_Class_File_Field_Name );
-   else if( id == c_field_id_Child_Class_Name )
+   else if( id_or_name == c_field_id_Child_Class_Name || id_or_name == c_field_name_Child_Class_Name )
       display_name = get_module_string( c_field_display_name_Child_Class_Name );
-   else if( id == c_field_id_Child_Name )
+   else if( id_or_name == c_field_id_Child_Name || id_or_name == c_field_name_Child_Name )
       display_name = get_module_string( c_field_display_name_Child_Name );
-   else if( id == c_field_id_Extra )
+   else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
       display_name = get_module_string( c_field_display_name_Extra );
-   else if( id == c_field_id_Field_Id )
+   else if( id_or_name == c_field_id_Field_Id || id_or_name == c_field_name_Field_Id )
       display_name = get_module_string( c_field_display_name_Field_Id );
-   else if( id == c_field_id_Field_Key )
+   else if( id_or_name == c_field_id_Field_Key || id_or_name == c_field_name_Field_Key )
       display_name = get_module_string( c_field_display_name_Field_Key );
-   else if( id == c_field_id_Internal )
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id == c_field_id_Mandatory )
+   else if( id_or_name == c_field_id_Mandatory || id_or_name == c_field_name_Mandatory )
       display_name = get_module_string( c_field_display_name_Mandatory );
-   else if( id == c_field_id_Model )
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Parent_Class )
+   else if( id_or_name == c_field_id_Parent_Class || id_or_name == c_field_name_Parent_Class )
       display_name = get_module_string( c_field_display_name_Parent_Class );
-   else if( id == c_field_id_Source_Relationship )
+   else if( id_or_name == c_field_id_Source_Relationship || id_or_name == c_field_name_Source_Relationship )
       display_name = get_module_string( c_field_display_name_Source_Relationship );
-   else if( id == c_field_id_Transient )
+   else if( id_or_name == c_field_id_Transient || id_or_name == c_field_name_Transient )
       display_name = get_module_string( c_field_display_name_Transient );
 
    return display_name;
@@ -2552,6 +2562,11 @@ class_base* Meta_Relationship::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Relationship::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Relationship::class_id( ) const

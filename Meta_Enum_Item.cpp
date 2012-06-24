@@ -490,6 +490,8 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -860,6 +862,14 @@ const string& Meta_Enum_Item::impl::get_foreign_key_value( const string& field )
 void Meta_Enum_Item::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Enum, v_Enum ) );
+}
+
+void Meta_Enum_Item::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Enum_Item::impl::clear( )
@@ -1445,21 +1455,21 @@ const char* Meta_Enum_Item::get_field_name(
    return p_name;
 }
 
-string Meta_Enum_Item::get_field_display_name( const string& id ) const
+string Meta_Enum_Item::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Enum )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
       display_name = get_module_string( c_field_display_name_Enum );
-   else if( id == c_field_id_Internal )
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id == c_field_id_Label )
+   else if( id_or_name == c_field_id_Label || id_or_name == c_field_name_Label )
       display_name = get_module_string( c_field_display_name_Label );
-   else if( id == c_field_id_Order )
+   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
       display_name = get_module_string( c_field_display_name_Order );
-   else if( id == c_field_id_Value )
+   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
       display_name = get_module_string( c_field_display_name_Value );
 
    return display_name;
@@ -1602,6 +1612,11 @@ class_base* Meta_Enum_Item::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Enum_Item::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Enum_Item::class_id( ) const

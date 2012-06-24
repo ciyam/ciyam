@@ -45,6 +45,7 @@ user_defined_enum_add -id=660 view_field_restrict int 0=none,1=owner\\_only,2=ad
 user_defined_enum_add -id=661 view_field_access_scope int 0=all,1=create\\_only,2=post\\_create,3=editing\\_only,4=viewing\\_only,5=updating\\_only
 user_defined_enum_add -id=662 view_field_change_scope int 0=all,1=create\\_only,2=update\\_only,3=always\\_editable
 user_defined_enum_add -id=663 view_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
+user_defined_enum_add -id=664 view_field_child_list_extra_option int 0=none,1=extra1,2=extra2
 user_defined_enum_add -id=670 view_field_new_source int 0=none,1=user,2=group,3=other,4=value
 user_defined_enum_add -id=671 view_field_trigger_option int 0=none,1=key1,2=key2,3=key3,4=key4,5=key5,6=key6,7=key7,8=key8,9=key9,10=key0
 user_defined_enum_add -id=672 view_field_trigger_behaviour int 0=normal,1=send\\_always,2=fetch\\_always,3=send\\_and\\_fetch\\_always
@@ -504,6 +505,7 @@ field_add -id=120123 View_Field Enum_Starts_At int mand -def=0 -e=view_field_enu
 field_add -id=120124 View_Field Enum_Finishes_At int mand -def=0 -e=view_field_enum_at
 field_add -id=120125 View_Field Font_Size int mand -def=0 -e=font_size
 field_add -id=120126 View_Field Ignore_Manual_Links bool mand -def=0
+field_add -id=120127 View_Field Child_List_Extra_Option int mand -def=0 -e=view_field_child_list_extra_option
 procedure_add -id=120410 View_Field Move_Up
 procedure_arg_add -id=120411 View_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=120412 View_Field Move_Up Restrict_Values string in
@@ -1038,13 +1040,13 @@ modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:rel
 ,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Enum_Starts_At:relegate,Enum_Finishes_At:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
-,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate\
+,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate,Child_List_Extra_Option:relegate\
 ,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate
 modifier_add -id=500715 View_Field Is_Key Mandatory_Option:relegate,Date_Precision_Option:relegate\
 ,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Ignore_Manual_Links:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
-,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Tab_Name:relegate
+,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate,Child_List_Extra_Option:relegate,Tab_Name:relegate
 modifier_add -id=500716 View_Field Is_Not_Date Date_Precision_Option:relegate
 modifier_add -id=500719 View_Field Hide_New_Value New_Value:relegate
 modifier_add -id=500720 View_Field Hide_Non_FK_Fields Source_Field:relegate\
@@ -1857,7 +1859,7 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
-,Mandatory_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Ignore_Manual_Links\
+,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Ignore_Manual_Links\
 ,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
 ,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name"
@@ -1882,7 +1884,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
 ,Source_Parent_Class:Name;hidden+fkey2,Source_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link+force\
 ,Source_Parent:Name!@fkey1:{Class}+Is_Foreign_Key=1+Name;link+force\
-,Source_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link+force,Source_Child_Class:Name;hidden+fkey3\
+,Source_Child:Name!@fkey2:{Class}+Name;link+force,Source_Child_Class:Name;hidden+fkey3\
 ,Source_Grandchild:Name!@fkey3:{Class}+Is_Foreign_Key=0+Name;link\
 ,Child_Relationship:Child_Name!@fkey1:Parent_Class+@sort;force,Child_Rel_Child_Class:Name;hidden+fkey4\
 ,Use_Child_Rel_Source_Parent;force,Child_Rel_Source_Field:Name!@fkey4:{Class}+Is_Foreign_Key=0+Name;link\

@@ -1333,6 +1333,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
             if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                instance_set_variable( handle, context, i->first, i->second );
+            else
+            {
+               // NOTE: Field values are being set here as they may be required for
+               // determining details to be used for performing the iteration query.
+               string method_name_and_args( "set " );
+               method_name_and_args += i->first + " ";
+               method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+
+               execute_object_command( handle, context, method_name_and_args );
+            }
          }
 
          try

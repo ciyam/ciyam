@@ -618,6 +618,8 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -1512,6 +1514,14 @@ void Meta_Package::impl::get_foreign_key_values( foreign_key_data_container& for
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Model, v_Model ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Package_Type, v_Package_Type ) );
+}
+
+void Meta_Package::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Package::impl::clear( )
@@ -2457,31 +2467,31 @@ const char* Meta_Package::get_field_name(
    return p_name;
 }
 
-string Meta_Package::get_field_display_name( const string& id ) const
+string Meta_Package::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Actions )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id == c_field_id_Install_Details )
+   else if( id_or_name == c_field_id_Install_Details || id_or_name == c_field_name_Install_Details )
       display_name = get_module_string( c_field_display_name_Install_Details );
-   else if( id == c_field_id_Installed )
+   else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
       display_name = get_module_string( c_field_display_name_Installed );
-   else if( id == c_field_id_Key )
+   else if( id_or_name == c_field_id_Key || id_or_name == c_field_name_Key )
       display_name = get_module_string( c_field_display_name_Key );
-   else if( id == c_field_id_Model )
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Package_Type )
+   else if( id_or_name == c_field_id_Package_Type || id_or_name == c_field_name_Package_Type )
       display_name = get_module_string( c_field_display_name_Package_Type );
-   else if( id == c_field_id_Plural )
+   else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
       display_name = get_module_string( c_field_display_name_Plural );
-   else if( id == c_field_id_Type_Name )
+   else if( id_or_name == c_field_id_Type_Name || id_or_name == c_field_name_Type_Name )
       display_name = get_module_string( c_field_display_name_Type_Name );
-   else if( id == c_field_id_Usage_Count )
+   else if( id_or_name == c_field_id_Usage_Count || id_or_name == c_field_name_Usage_Count )
       display_name = get_module_string( c_field_display_name_Usage_Count );
 
    return display_name;
@@ -2625,6 +2635,11 @@ class_base* Meta_Package::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Package::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Package::class_id( ) const

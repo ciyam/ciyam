@@ -1797,6 +1797,24 @@
    </values>
   </enum>
   <enum/>
+   <id>664
+   <name>enum_view_field_child_list_extra_option
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_view_field_child_list_extra_option_none
+    </value>
+    <value/>
+     <data>1
+     <name>enum_view_field_child_list_extra_option_extra1
+    </value>
+    <value/>
+     <data>2
+     <name>enum_view_field_child_list_extra_option_extra2
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>678
    <name>enum_view_field_date_precision_option
    <values/>
@@ -3497,7 +3515,7 @@
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
-     <pextra>@fkey2:300700+107108=0+107101
+     <pextra>@fkey2:300700+107101
     </field>
     <field/>
      <name>field_list_field_source_child_class
@@ -7650,6 +7668,14 @@
      <extra>enum=677
      <mandatory>true
      <modifiers>8000:relegate,10000:relegate,1000:relegate
+    </field>
+    <field/>
+     <name>field_view_field_child_list_extra_option
+     <field>120127
+     <ftype>int
+     <extra>enum=664
+     <mandatory>true
+     <modifiers>10000:relegate,1000:relegate
     </field>
     <field/>
      <name>field_view_field_date_precision_option
