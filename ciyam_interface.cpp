@@ -2123,7 +2123,7 @@ void request_handler::process_request( )
                }
 
                if( !populate_list_info( list, list_selections, list_search_text,
-                list_search_values, list_page_info, listsort, "", false, "", "", 0, *p_session_info ) )
+                list_search_values, list_page_info, listsort, "", false, 0, "", 0, *p_session_info ) )
                   had_send_or_recv_error = true;
             }
 
@@ -2351,6 +2351,11 @@ void request_handler::process_request( )
                         view.key_values.value8 = item_values[ field_num ];
                      else if( view.key_ids.id9 == view.value_ids[ i ] )
                         view.key_values.value9 = item_values[ field_num ];
+
+                     if( view.vextra1_id == view.value_ids[ i ] )
+                        view.vextra1_value = item_values[ field_num ];
+                     else if( view.vextra2_id == view.value_ids[ i ] )
+                        view.vextra2_value = item_values[ field_num ];
 
                      view.field_values[ view.value_ids[ i ] ] = item_values[ field_num++ ];
                   }
@@ -2798,7 +2803,7 @@ void request_handler::process_request( )
                         {
                            if( !populate_list_info( child_list, list_selections,
                             list_search_text, list_search_values, child_list_info, child_list_sort, data,
-                            ( cmd == c_cmd_pview ), view.cid, child_list.new_pfield, 0, *p_session_info ) )
+                            ( cmd == c_cmd_pview ), &view, child_list.new_pfield, 0, *p_session_info ) )
                               had_send_or_recv_error = true;
                         }
 
@@ -2967,7 +2972,7 @@ void request_handler::process_request( )
             }
 
             if( !populate_list_info( list, list_selections, list_search_text, list_search_values,
-             list_page_info, listsort, "", ( cmd == c_cmd_plist ), "", "", &specials, *p_session_info ) )
+             list_page_info, listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info ) )
                had_send_or_recv_error = true;
 
             string link_name( get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) );
@@ -2976,7 +2981,7 @@ void request_handler::process_request( )
             if( cmd == c_cmd_plist && !had_send_or_recv_error && !list.pdf_spec_name.empty( ) )
             {
                populate_list_info( list, list_selections, list_search_text, list_search_values,
-                list_page_info, listsort, "", ( cmd == c_cmd_plist ), "", "", &specials, *p_session_info,
+                list_page_info, listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info,
                 &list.pdf_spec_name, &link_name, &pdf_list_file_name );
             }
          }

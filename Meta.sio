@@ -23408,6 +23408,32 @@
       </specifications>
      </field>
      <field/>
+      <id>120127
+      <name>Child_List_Extra_Option
+      <type>int
+      <mandatory>true
+      <enum_id>664
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>120118
       <name>Date_Precision_Option
       <type>int
@@ -28604,7 +28630,7 @@
      <field_info>302170:106101;hidden+fkey2+filename+max_size=30
      <field_info>302140:107101!@fkey1:300700+107108=0+107101;link+force
      <field_info>302150:107101!@fkey1:300700+107108=1+107101;link+force
-     <field_info>302160:107101!@fkey2:300700+107108=0+107101;link+force
+     <field_info>302160:107101!@fkey2:300700+107101;link+force
      <field_info>302175:106101;hidden+fkey3+filename+max_size=30
      <field_info>302165:107101!@fkey3:300700+107108=0+107101;link
      <field_info>302193:113105!@fkey1:301320+@sort;force
@@ -33741,6 +33767,7 @@
      <field_info>120111;enum=675
      <field_info>120112;enum=676
      <field_info>120114;enum=677
+     <field_info>120127;enum=664
      <field_info>120118;enum=678
      <field_info>120125;enum=635
      <field_info>120121
@@ -34371,6 +34398,12 @@
     <name>view_field_change_scope
     <type>int
     <key_values>0=all,1=create\_only,2=update\_only,3=always\_editable
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>664
+    <name>view_field_child_list_extra_option
+    <type>int
+    <key_values>0=none,1=extra1,2=extra2
    </user_defined_enum>
    <user_defined_enum/>
     <id>678

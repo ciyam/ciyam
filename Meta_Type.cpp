@@ -837,6 +837,8 @@ struct Meta_Type::impl : public Meta_Type_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -1186,6 +1188,14 @@ const string& Meta_Type::impl::get_foreign_key_value( const string& field )
 void Meta_Type::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Workgroup, v_Workgroup ) );
+}
+
+void Meta_Type::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Type::impl::clear( )
@@ -2445,51 +2455,51 @@ const char* Meta_Type::get_field_name(
    return p_name;
 }
 
-string Meta_Type::get_field_display_name( const string& id ) const
+string Meta_Type::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Auto_Round )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Auto_Round || id_or_name == c_field_name_Auto_Round )
       display_name = get_module_string( c_field_display_name_Auto_Round );
-   else if( id == c_field_id_Date_Precision )
+   else if( id_or_name == c_field_id_Date_Precision || id_or_name == c_field_name_Date_Precision )
       display_name = get_module_string( c_field_display_name_Date_Precision );
-   else if( id == c_field_id_Fraction_Limit )
+   else if( id_or_name == c_field_id_Fraction_Limit || id_or_name == c_field_name_Fraction_Limit )
       display_name = get_module_string( c_field_display_name_Fraction_Limit );
-   else if( id == c_field_id_Id )
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id == c_field_id_Int_Type )
+   else if( id_or_name == c_field_id_Int_Type || id_or_name == c_field_name_Int_Type )
       display_name = get_module_string( c_field_display_name_Int_Type );
-   else if( id == c_field_id_Internal )
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
       display_name = get_module_string( c_field_display_name_Internal );
-   else if( id == c_field_id_Max_Size )
+   else if( id_or_name == c_field_id_Max_Size || id_or_name == c_field_name_Max_Size )
       display_name = get_module_string( c_field_display_name_Max_Size );
-   else if( id == c_field_id_Max_Value )
+   else if( id_or_name == c_field_id_Max_Value || id_or_name == c_field_name_Max_Value )
       display_name = get_module_string( c_field_display_name_Max_Value );
-   else if( id == c_field_id_Min_Value )
+   else if( id_or_name == c_field_id_Min_Value || id_or_name == c_field_name_Min_Value )
       display_name = get_module_string( c_field_display_name_Min_Value );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Numeric_Decimals )
+   else if( id_or_name == c_field_id_Numeric_Decimals || id_or_name == c_field_name_Numeric_Decimals )
       display_name = get_module_string( c_field_display_name_Numeric_Decimals );
-   else if( id == c_field_id_Numeric_Digits )
+   else if( id_or_name == c_field_id_Numeric_Digits || id_or_name == c_field_name_Numeric_Digits )
       display_name = get_module_string( c_field_display_name_Numeric_Digits );
-   else if( id == c_field_id_Numeric_Type )
+   else if( id_or_name == c_field_id_Numeric_Type || id_or_name == c_field_name_Numeric_Type )
       display_name = get_module_string( c_field_display_name_Numeric_Type );
-   else if( id == c_field_id_Primitive )
+   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
       display_name = get_module_string( c_field_display_name_Primitive );
-   else if( id == c_field_id_Rounding_Method )
+   else if( id_or_name == c_field_id_Rounding_Method || id_or_name == c_field_name_Rounding_Method )
       display_name = get_module_string( c_field_display_name_Rounding_Method );
-   else if( id == c_field_id_Show_Plus_Sign )
+   else if( id_or_name == c_field_id_Show_Plus_Sign || id_or_name == c_field_name_Show_Plus_Sign )
       display_name = get_module_string( c_field_display_name_Show_Plus_Sign );
-   else if( id == c_field_id_String_Domain )
+   else if( id_or_name == c_field_id_String_Domain || id_or_name == c_field_name_String_Domain )
       display_name = get_module_string( c_field_display_name_String_Domain );
-   else if( id == c_field_id_Time_Precision )
+   else if( id_or_name == c_field_id_Time_Precision || id_or_name == c_field_name_Time_Precision )
       display_name = get_module_string( c_field_display_name_Time_Precision );
-   else if( id == c_field_id_Workgroup )
+   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
       display_name = get_module_string( c_field_display_name_Workgroup );
-   else if( id == c_field_id_Zero_Padding )
+   else if( id_or_name == c_field_id_Zero_Padding || id_or_name == c_field_name_Zero_Padding )
       display_name = get_module_string( c_field_display_name_Zero_Padding );
 
    return display_name;
@@ -2600,6 +2610,11 @@ class_base* Meta_Type::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Type::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Type::class_id( ) const

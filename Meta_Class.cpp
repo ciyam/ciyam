@@ -1623,6 +1623,8 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -2973,6 +2975,14 @@ void Meta_Class::impl::get_foreign_key_values( foreign_key_data_container& forei
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Quick_Link_Field, v_Quick_Link_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Class, v_Source_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Model, v_Source_Model ) );
+}
+
+void Meta_Class::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Class::impl::clear( )
@@ -4724,43 +4734,43 @@ const char* Meta_Class::get_field_name(
    return p_name;
 }
 
-string Meta_Class::get_field_display_name( const string& id ) const
+string Meta_Class::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Commands_File )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
       display_name = get_module_string( c_field_display_name_Commands_File );
-   else if( id == c_field_id_Delay_Initial_Records )
+   else if( id_or_name == c_field_id_Delay_Initial_Records || id_or_name == c_field_name_Delay_Initial_Records )
       display_name = get_module_string( c_field_display_name_Delay_Initial_Records );
-   else if( id == c_field_id_Extra )
+   else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
       display_name = get_module_string( c_field_display_name_Extra );
-   else if( id == c_field_id_Header_File )
+   else if( id_or_name == c_field_id_Header_File || id_or_name == c_field_name_Header_File )
       display_name = get_module_string( c_field_display_name_Header_File );
-   else if( id == c_field_id_Id )
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id == c_field_id_Model )
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Next_Field_Id )
+   else if( id_or_name == c_field_id_Next_Field_Id || id_or_name == c_field_name_Next_Field_Id )
       display_name = get_module_string( c_field_display_name_Next_Field_Id );
-   else if( id == c_field_id_Next_Procedure_Id )
+   else if( id_or_name == c_field_id_Next_Procedure_Id || id_or_name == c_field_name_Next_Procedure_Id )
       display_name = get_module_string( c_field_display_name_Next_Procedure_Id );
-   else if( id == c_field_id_Plural )
+   else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
       display_name = get_module_string( c_field_display_name_Plural );
-   else if( id == c_field_id_Quick_Link_Field )
+   else if( id_or_name == c_field_id_Quick_Link_Field || id_or_name == c_field_name_Quick_Link_Field )
       display_name = get_module_string( c_field_display_name_Quick_Link_Field );
-   else if( id == c_field_id_Source_Class )
+   else if( id_or_name == c_field_id_Source_Class || id_or_name == c_field_name_Source_Class )
       display_name = get_module_string( c_field_display_name_Source_Class );
-   else if( id == c_field_id_Source_File )
+   else if( id_or_name == c_field_id_Source_File || id_or_name == c_field_name_Source_File )
       display_name = get_module_string( c_field_display_name_Source_File );
-   else if( id == c_field_id_Source_Model )
+   else if( id_or_name == c_field_id_Source_Model || id_or_name == c_field_name_Source_Model )
       display_name = get_module_string( c_field_display_name_Source_Model );
-   else if( id == c_field_id_Static_Instance_Key )
+   else if( id_or_name == c_field_id_Static_Instance_Key || id_or_name == c_field_name_Static_Instance_Key )
       display_name = get_module_string( c_field_display_name_Static_Instance_Key );
-   else if( id == c_field_id_Type )
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
       display_name = get_module_string( c_field_display_name_Type );
 
    return display_name;
@@ -5274,6 +5284,11 @@ class_base* Meta_Class::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Class::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Class::class_id( ) const

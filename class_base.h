@@ -360,6 +360,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const = 0;
 
+   virtual std::string get_field_display_name( const std::string& id_or_name ) const = 0;
+
    void get_alternative_key_field_info( std::vector< key_field_info_container >& all_key_field_info ) const;
 
    virtual const procedure_info_container& get_procedure_info( ) const = 0;
@@ -536,8 +538,6 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual const char* get_field_name( const std::string& id,
     bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const = 0;
 
-   virtual std::string get_field_display_name( const std::string& id ) const = 0;
-
    virtual void set_foreign_key_value( const std::string& field, const std::string& value ) = 0;
 
    virtual const std::string& get_foreign_key_value( const std::string& field ) = 0;
@@ -548,6 +548,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual class_base* get_next_foreign_key_child(
     size_t child_num, std::string& next_child_field, cascade_op op, bool is_internal = false ) = 0;
+
+   virtual void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const = 0;
 
    void add_validation_error( const std::string& source, const std::string& error_message );
 
@@ -686,6 +688,11 @@ struct class_base_accessor
    class_base* get_next_foreign_key_child( size_t child_num, std::string& next_child_field, cascade_op op )
    {
       return cb.get_next_foreign_key_child( child_num, next_child_field, op );
+   }
+
+   void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const
+   {
+      cb.add_extra_paging_info( paging_info );
    }
 
    void add_validation_error( const std::string& source, const std::string& error_message )

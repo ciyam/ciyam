@@ -362,6 +362,8 @@ struct Meta_Initial_Record_Value::impl : public Meta_Initial_Record_Value_comman
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -505,6 +507,14 @@ void Meta_Initial_Record_Value::impl::get_foreign_key_values( foreign_key_data_c
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Field, v_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Initial_Record, v_Initial_Record ) );
+}
+
+void Meta_Initial_Record_Value::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Initial_Record_Value::impl::clear( )
@@ -925,17 +935,17 @@ const char* Meta_Initial_Record_Value::get_field_name(
    return p_name;
 }
 
-string Meta_Initial_Record_Value::get_field_display_name( const string& id ) const
+string Meta_Initial_Record_Value::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Field )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Field || id_or_name == c_field_name_Field )
       display_name = get_module_string( c_field_display_name_Field );
-   else if( id == c_field_id_Initial_Record )
+   else if( id_or_name == c_field_id_Initial_Record || id_or_name == c_field_name_Initial_Record )
       display_name = get_module_string( c_field_display_name_Initial_Record );
-   else if( id == c_field_id_Value )
+   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
       display_name = get_module_string( c_field_display_name_Value );
 
    return display_name;
@@ -1035,6 +1045,11 @@ class_base* Meta_Initial_Record_Value::get_next_foreign_key_child(
    ( void )op;
 
    return p_class_base;
+}
+
+void Meta_Initial_Record_Value::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Initial_Record_Value::class_id( ) const

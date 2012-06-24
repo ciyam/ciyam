@@ -348,14 +348,18 @@ void setup_list_fields( list_source& list,
 
          if( !fld.pclass.empty( ) )
          {
-            list.fk_field_ids.push_back( field_id );
-            list.fk_field_classes[ field_id ] = fld.pclass;
+            // NOTE: If the field is hidden then don't add the parent field in order to
+            // help prevent the application server from performing unnecessary queries.
+            if( !is_hidden )
+            {
+               list.fk_field_ids.push_back( field_id );
+               list.fk_field_classes[ field_id ] = fld.pclass;
+            }
          }
 
          if( !fld.pfield.empty( ) )
          {
-            // NOTE: If the field is hidden then don't add the parent field in order to
-            // help prevent the application server from performing unnecessary queries.
+            // NOTE: see above...
             if( !is_hidden )
             {
                list.field_list += "." + fld.pfield;
@@ -2748,6 +2752,11 @@ void output_list_form( ostream& os,
             bool is_foreign_link = false;
             size_t num_fk_fields( source.fk_field_ids.size( ) );
 
+            bool inc_fk_column = false;
+
+            if( fk_column < num_fk_fields && source.fk_field_ids[ fk_column ] == source_field_id )
+               inc_fk_column = true;
+
             if( num_fk_fields && !fk_refs.count( source_field_id )
              && fk_column < num_fk_fields && source.fk_field_ids[ fk_column ] == source_field_id )
             {
@@ -2759,18 +2768,19 @@ void output_list_form( ostream& os,
                   if( mod_info.view_cids.count( source.fk_field_classes.find( source_field_id )->second ) )
                   {
                      view_id = mod_info.view_cids.find( source.fk_field_classes.find( source_field_id )->second )->second;
-                     view_key = columns[ columns.size( ) - source.fk_field_ids.size( ) + fk_column ];
+                     view_key = columns[ source.field_ids.size( ) + fk_column ];
                   }
                   else
                      view_id.erase( );
                }
-
-               ++fk_column;
             }
             else if( had_link || source.non_link_fields.count( source_value_id )
              || ( source.owner_link_fields.count( source_value_id ) && !has_owner_parent )
              || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) )
                view_id.erase( ); // NOTE: Only provide a hyperlink to the first non-fk link permitted field.
+
+            if( inc_fk_column )
+               ++fk_column;
 
             // NOTE: Do not allow the hyperlink if the view requires a permission that the user does not have.
             if( !view_id.empty( ) )

@@ -55,37 +55,38 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
       e_field_id_Change_Permission = 4,
       e_field_id_Change_Restriction = 5,
       e_field_id_Change_Scope = 6,
-      e_field_id_Class = 7,
-      e_field_id_Date_Precision_Option = 8,
-      e_field_id_Enum_Finishes_At = 9,
-      e_field_id_Enum_Starts_At = 10,
-      e_field_id_FK_Trigger_Behaviour = 11,
-      e_field_id_FK_Trigger_Option = 12,
-      e_field_id_Font_Size = 13,
-      e_field_id_Ignore_Manual_Links = 14,
-      e_field_id_Link_Permission = 15,
-      e_field_id_Link_Restriction = 16,
-      e_field_id_Mandatory_Option = 17,
-      e_field_id_Name = 18,
-      e_field_id_New_Source = 19,
-      e_field_id_New_Value = 20,
-      e_field_id_Order = 21,
-      e_field_id_Restriction_Spec = 22,
-      e_field_id_Show_Hide_Start_Point = 23,
-      e_field_id_Sort_Manually = 24,
-      e_field_id_Source_Child = 25,
-      e_field_id_Source_Edit_Child = 26,
-      e_field_id_Source_Field = 27,
-      e_field_id_Source_Parent = 28,
-      e_field_id_Source_Parent_Class = 29,
-      e_field_id_Tab_Name = 30,
-      e_field_id_Trigger_Behaviour = 31,
-      e_field_id_Trigger_For_State = 32,
-      e_field_id_Trigger_Option = 33,
-      e_field_id_Type = 34,
-      e_field_id_Use_Full_Width = 35,
-      e_field_id_Use_Source_Parent = 36,
-      e_field_id_View = 37
+      e_field_id_Child_List_Extra_Option = 7,
+      e_field_id_Class = 8,
+      e_field_id_Date_Precision_Option = 9,
+      e_field_id_Enum_Finishes_At = 10,
+      e_field_id_Enum_Starts_At = 11,
+      e_field_id_FK_Trigger_Behaviour = 12,
+      e_field_id_FK_Trigger_Option = 13,
+      e_field_id_Font_Size = 14,
+      e_field_id_Ignore_Manual_Links = 15,
+      e_field_id_Link_Permission = 16,
+      e_field_id_Link_Restriction = 17,
+      e_field_id_Mandatory_Option = 18,
+      e_field_id_Name = 19,
+      e_field_id_New_Source = 20,
+      e_field_id_New_Value = 21,
+      e_field_id_Order = 22,
+      e_field_id_Restriction_Spec = 23,
+      e_field_id_Show_Hide_Start_Point = 24,
+      e_field_id_Sort_Manually = 25,
+      e_field_id_Source_Child = 26,
+      e_field_id_Source_Edit_Child = 27,
+      e_field_id_Source_Field = 28,
+      e_field_id_Source_Parent = 29,
+      e_field_id_Source_Parent_Class = 30,
+      e_field_id_Tab_Name = 31,
+      e_field_id_Trigger_Behaviour = 32,
+      e_field_id_Trigger_For_State = 33,
+      e_field_id_Trigger_Option = 34,
+      e_field_id_Type = 35,
+      e_field_id_Use_Full_Width = 36,
+      e_field_id_Use_Source_Parent = 37,
+      e_field_id_View = 38
    };
 
    Meta_View_Field( );
@@ -102,6 +103,9 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    int Change_Scope( ) const;
    void Change_Scope( int Change_Scope );
+
+   int Child_List_Extra_Option( ) const;
+   void Child_List_Extra_Option( int Child_List_Extra_Option );
 
    int Date_Precision_Option( ) const;
    void Date_Precision_Option( int Date_Precision_Option );
@@ -289,6 +293,8 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
+   std::string get_field_display_name( const std::string& id_or_name ) const;
+
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }
 
    void get_text_search_fields( std::vector< std::string >& fields ) const { return static_get_text_search_fields( fields ); }
@@ -374,8 +380,6 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
    const char* get_field_id( const std::string& name, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
    const char* get_field_name( const std::string& id, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
 
-   std::string get_field_display_name( const std::string& id ) const;
-
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
    virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
@@ -410,6 +414,8 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    class_base* get_next_foreign_key_child( size_t child_num,
     std::string& next_child_field, cascade_op op, bool is_internal = false );
+
+   void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const;
 };
 
 inline std::string to_string( const Meta_View_Field& c ) { return c.get_key( ); }

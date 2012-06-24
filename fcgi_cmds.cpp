@@ -1258,7 +1258,7 @@ bool populate_list_info( list_source& list,
  const map< string, string >& list_search_text,
  const map< string, string >& list_search_values,
  const string& listinfo, const string& listsort, const string& parent_key, bool is_printable,
- const string& view_cid, const string& view_pfield, const set< string >* p_specials,
+ const view_source* p_view, const string& view_pfield, const set< string >* p_specials,
  const session_info& sess_info, const string* p_pdf_spec_name, const string* p_pdf_link_filename,
  string* p_pdf_view_file_name )
 {
@@ -1395,6 +1395,23 @@ bool populate_list_info( list_source& list,
    determine_fixed_query_info( fixed_fields, fixed_key_values, num_fixed_key_values,
     is_reverse, list, fixed_parent_field, fixed_parent_keyval, list_selections, sess_info, &set_field_values );
 
+   if( p_view && ( !p_view->vextra1_id.empty( ) || !p_view->vextra2_id.empty( ) ) )
+   {
+      if( !p_view->vextra1_id.empty( ) )
+      {
+         if( !set_field_values.empty( ) )
+            set_field_values += ',';
+         set_field_values += "@vextra1=" + p_view->vextra1_value;
+      }
+
+      if( !p_view->vextra2_id.empty( ) )
+      {
+         if( !set_field_values.empty( ) )
+            set_field_values += ',';
+         set_field_values += "@vextra2=" + p_view->vextra2_value;
+      }
+   }
+
    if( listsort.size( ) == 2 )
    {
       int sort_field = atoi( listsort.substr( 0, 1 ).c_str( ) );
@@ -1474,9 +1491,9 @@ bool populate_list_info( list_source& list,
    string key_info( key_prefix );
    string class_info( list.cid );
 
-   if( !view_cid.empty( ) && list.type != c_list_type_user_child )
+   if( p_view && !p_view->cid.empty( ) && list.type != c_list_type_user_child )
    {
-      class_info = view_cid;
+      class_info = p_view->cid;
       class_info += ":_" + list.new_pfield;
 
       key_info = parent_key + ":" + key_info;

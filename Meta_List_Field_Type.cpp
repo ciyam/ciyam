@@ -532,6 +532,8 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -804,6 +806,14 @@ const string& Meta_List_Field_Type::impl::get_foreign_key_value( const string& f
 void Meta_List_Field_Type::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    ( void )foreign_key_values;
+}
+
+void Meta_List_Field_Type::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_List_Field_Type::impl::clear( )
@@ -1730,49 +1740,49 @@ const char* Meta_List_Field_Type::get_field_name(
    return p_name;
 }
 
-string Meta_List_Field_Type::get_field_display_name( const string& id ) const
+string Meta_List_Field_Type::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Allow_Child_Rel_Select_Specifics )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Allow_Child_Rel_Select_Specifics || id_or_name == c_field_name_Allow_Child_Rel_Select_Specifics )
       display_name = get_module_string( c_field_display_name_Allow_Child_Rel_Select_Specifics );
-   else if( id == c_field_id_Allow_Exclude_In_Use_FK )
+   else if( id_or_name == c_field_id_Allow_Exclude_In_Use_FK || id_or_name == c_field_name_Allow_Exclude_In_Use_FK )
       display_name = get_module_string( c_field_display_name_Allow_Exclude_In_Use_FK );
-   else if( id == c_field_id_Allow_Link_Permission )
+   else if( id_or_name == c_field_id_Allow_Link_Permission || id_or_name == c_field_name_Allow_Link_Permission )
       display_name = get_module_string( c_field_display_name_Allow_Link_Permission );
-   else if( id == c_field_id_Allow_Link_Restriction )
+   else if( id_or_name == c_field_id_Allow_Link_Restriction || id_or_name == c_field_name_Allow_Link_Restriction )
       display_name = get_module_string( c_field_display_name_Allow_Link_Restriction );
-   else if( id == c_field_id_Allow_Link_Type )
+   else if( id_or_name == c_field_id_Allow_Link_Type || id_or_name == c_field_name_Allow_Link_Type )
       display_name = get_module_string( c_field_display_name_Allow_Link_Type );
-   else if( id == c_field_id_Allow_Procedure )
+   else if( id_or_name == c_field_id_Allow_Procedure || id_or_name == c_field_name_Allow_Procedure )
       display_name = get_module_string( c_field_display_name_Allow_Procedure );
-   else if( id == c_field_id_Allow_Restriction_Field )
+   else if( id_or_name == c_field_id_Allow_Restriction_Field || id_or_name == c_field_name_Allow_Restriction_Field )
       display_name = get_module_string( c_field_display_name_Allow_Restriction_Field );
-   else if( id == c_field_id_Allow_Restriction_Spec )
+   else if( id_or_name == c_field_id_Allow_Restriction_Spec || id_or_name == c_field_name_Allow_Restriction_Spec )
       display_name = get_module_string( c_field_display_name_Allow_Restriction_Spec );
-   else if( id == c_field_id_Allow_Restriction_Value )
+   else if( id_or_name == c_field_id_Allow_Restriction_Value || id_or_name == c_field_name_Allow_Restriction_Value )
       display_name = get_module_string( c_field_display_name_Allow_Restriction_Value );
-   else if( id == c_field_id_Allow_Search_Option_Limit )
+   else if( id_or_name == c_field_id_Allow_Search_Option_Limit || id_or_name == c_field_name_Allow_Search_Option_Limit )
       display_name = get_module_string( c_field_display_name_Allow_Search_Option_Limit );
-   else if( id == c_field_id_Allow_Select_Specifics )
+   else if( id_or_name == c_field_id_Allow_Select_Specifics || id_or_name == c_field_name_Allow_Select_Specifics )
       display_name = get_module_string( c_field_display_name_Allow_Select_Specifics );
-   else if( id == c_field_id_Is_Restrict_Search )
+   else if( id_or_name == c_field_id_Is_Restrict_Search || id_or_name == c_field_name_Is_Restrict_Search )
       display_name = get_module_string( c_field_display_name_Is_Restrict_Search );
-   else if( id == c_field_id_List_Field_Name )
+   else if( id_or_name == c_field_id_List_Field_Name || id_or_name == c_field_name_List_Field_Name )
       display_name = get_module_string( c_field_display_name_List_Field_Name );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Needs_Restriction_Field )
+   else if( id_or_name == c_field_id_Needs_Restriction_Field || id_or_name == c_field_name_Needs_Restriction_Field )
       display_name = get_module_string( c_field_display_name_Needs_Restriction_Field );
-   else if( id == c_field_id_Needs_Source )
+   else if( id_or_name == c_field_id_Needs_Source || id_or_name == c_field_name_Needs_Source )
       display_name = get_module_string( c_field_display_name_Needs_Source );
-   else if( id == c_field_id_Needs_Switch_Type )
+   else if( id_or_name == c_field_id_Needs_Switch_Type || id_or_name == c_field_name_Needs_Switch_Type )
       display_name = get_module_string( c_field_display_name_Needs_Switch_Type );
-   else if( id == c_field_id_Non_Simple_Field )
+   else if( id_or_name == c_field_id_Non_Simple_Field || id_or_name == c_field_name_Non_Simple_Field )
       display_name = get_module_string( c_field_display_name_Non_Simple_Field );
-   else if( id == c_field_id_Trivial_Field_Only )
+   else if( id_or_name == c_field_id_Trivial_Field_Only || id_or_name == c_field_name_Trivial_Field_Only )
       display_name = get_module_string( c_field_display_name_Trivial_Field_Only );
 
    return display_name;
@@ -1871,6 +1881,11 @@ class_base* Meta_List_Field_Type::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_List_Field_Type::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_List_Field_Type::class_id( ) const

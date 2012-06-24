@@ -1136,11 +1136,23 @@ void replace_links_and_output( const string& s,
          vid = next_key.substr( 0, cpos );
          next_key.erase( 0, cpos + 1 );
 
+         if( !mod_info.view_cids.count( vid ) )
+            throw runtime_error( "unknown class id '" + vid + "' in manual link: " + s );
+
          vid = mod_info.view_cids.find( vid )->second;
       }
 
+      string display( next.substr( npos ) );
+
+      string::size_type dtpos = next_key.find( '@' );
+      if( dtpos != string::npos )
+      {
+         display = format_date_time( date_time( next_key.substr( dtpos + 1 ) ), display.c_str( ) );
+         next_key.erase( dtpos );
+      }
+
       bool is_href = false;
-      if( output_hrefs )
+      if( output_hrefs && !next_key.empty( ) )
       {
          is_href = true;
          os << "<a href=\"" << get_module_page_name( module_ref )
@@ -1167,10 +1179,10 @@ void replace_links_and_output( const string& s,
 
       if( is_content )
          os << unescaped(
-          replace_crlfs_and_spaces( next.substr( npos ), "<br/>", "&nbsp;" ) );
+          replace_crlfs_and_spaces( display, "<br/>", "&nbsp;" ) );
       else
          os << data_or_nbsp( unescaped(
-          replace_crlfs_and_spaces( escape_markup( next.substr( npos ) ), "<br/>", "&nbsp;" ) ) );
+          replace_crlfs_and_spaces( escape_markup( display ), "<br/>", "&nbsp;" ) ) );
 
       if( is_href )
          os << "</a>";

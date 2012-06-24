@@ -2846,6 +2846,8 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -4621,6 +4623,14 @@ void Meta_Specification::impl::get_foreign_key_values( foreign_key_data_containe
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Test_Field_Class, v_Test_Field_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Test_Parent, v_Test_Parent ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Test_Parent_Class, v_Test_Parent_Class ) );
+}
+
+void Meta_Specification::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Specification::impl::clear( )
@@ -9100,151 +9110,151 @@ const char* Meta_Specification::get_field_name(
    return p_name;
 }
 
-string Meta_Specification::get_field_display_name( const string& id ) const
+string Meta_Specification::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Actions )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id == c_field_id_All_Strings )
+   else if( id_or_name == c_field_id_All_Strings || id_or_name == c_field_name_All_Strings )
       display_name = get_module_string( c_field_display_name_All_Strings );
-   else if( id == c_field_id_All_Vars )
+   else if( id_or_name == c_field_id_All_Vars || id_or_name == c_field_name_All_Vars )
       display_name = get_module_string( c_field_display_name_All_Vars );
-   else if( id == c_field_id_Child_Rel_Child_Class )
+   else if( id_or_name == c_field_id_Child_Rel_Child_Class || id_or_name == c_field_name_Child_Rel_Child_Class )
       display_name = get_module_string( c_field_display_name_Child_Rel_Child_Class );
-   else if( id == c_field_id_Child_Rel_Field_Key )
+   else if( id_or_name == c_field_id_Child_Rel_Field_Key || id_or_name == c_field_name_Child_Rel_Field_Key )
       display_name = get_module_string( c_field_display_name_Child_Rel_Field_Key );
-   else if( id == c_field_id_Child_Relationship )
+   else if( id_or_name == c_field_id_Child_Relationship || id_or_name == c_field_name_Child_Relationship )
       display_name = get_module_string( c_field_display_name_Child_Relationship );
-   else if( id == c_field_id_Child_Specification_Type )
+   else if( id_or_name == c_field_id_Child_Specification_Type || id_or_name == c_field_name_Child_Specification_Type )
       display_name = get_module_string( c_field_display_name_Child_Specification_Type );
-   else if( id == c_field_id_Class )
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
       display_name = get_module_string( c_field_display_name_Class );
-   else if( id == c_field_id_Comments )
+   else if( id_or_name == c_field_id_Comments || id_or_name == c_field_name_Comments )
       display_name = get_module_string( c_field_display_name_Comments );
-   else if( id == c_field_id_Enum )
+   else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
       display_name = get_module_string( c_field_display_name_Enum );
-   else if( id == c_field_id_Enum_Item )
+   else if( id_or_name == c_field_id_Enum_Item || id_or_name == c_field_name_Enum_Item )
       display_name = get_module_string( c_field_display_name_Enum_Item );
-   else if( id == c_field_id_Enum_Item_2 )
+   else if( id_or_name == c_field_id_Enum_Item_2 || id_or_name == c_field_name_Enum_Item_2 )
       display_name = get_module_string( c_field_display_name_Enum_Item_2 );
-   else if( id == c_field_id_Enum_Item_3 )
+   else if( id_or_name == c_field_id_Enum_Item_3 || id_or_name == c_field_name_Enum_Item_3 )
       display_name = get_module_string( c_field_display_name_Enum_Item_3 );
-   else if( id == c_field_id_Enum_Item_4 )
+   else if( id_or_name == c_field_id_Enum_Item_4 || id_or_name == c_field_name_Enum_Item_4 )
       display_name = get_module_string( c_field_display_name_Enum_Item_4 );
-   else if( id == c_field_id_Enum_Item_5 )
+   else if( id_or_name == c_field_id_Enum_Item_5 || id_or_name == c_field_name_Enum_Item_5 )
       display_name = get_module_string( c_field_display_name_Enum_Item_5 );
-   else if( id == c_field_id_Field )
+   else if( id_or_name == c_field_id_Field || id_or_name == c_field_name_Field )
       display_name = get_module_string( c_field_display_name_Field );
-   else if( id == c_field_id_Field_Class )
+   else if( id_or_name == c_field_id_Field_Class || id_or_name == c_field_name_Field_Class )
       display_name = get_module_string( c_field_display_name_Field_Class );
-   else if( id == c_field_id_Field_Pairs )
+   else if( id_or_name == c_field_id_Field_Pairs || id_or_name == c_field_name_Field_Pairs )
       display_name = get_module_string( c_field_display_name_Field_Pairs );
-   else if( id == c_field_id_Field_Values )
+   else if( id_or_name == c_field_id_Field_Values || id_or_name == c_field_name_Field_Values )
       display_name = get_module_string( c_field_display_name_Field_Values );
-   else if( id == c_field_id_Fields )
+   else if( id_or_name == c_field_id_Fields || id_or_name == c_field_name_Fields )
       display_name = get_module_string( c_field_display_name_Fields );
-   else if( id == c_field_id_Id )
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id == c_field_id_Is_Required_For_UI_Gen )
+   else if( id_or_name == c_field_id_Is_Required_For_UI_Gen || id_or_name == c_field_name_Is_Required_For_UI_Gen )
       display_name = get_module_string( c_field_display_name_Is_Required_For_UI_Gen );
-   else if( id == c_field_id_Model )
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
       display_name = get_module_string( c_field_display_name_Model );
-   else if( id == c_field_id_Modifier )
+   else if( id_or_name == c_field_id_Modifier || id_or_name == c_field_name_Modifier )
       display_name = get_module_string( c_field_display_name_Modifier );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Options )
+   else if( id_or_name == c_field_id_Options || id_or_name == c_field_name_Options )
       display_name = get_module_string( c_field_display_name_Options );
-   else if( id == c_field_id_Order )
+   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
       display_name = get_module_string( c_field_display_name_Order );
-   else if( id == c_field_id_Other_Class )
+   else if( id_or_name == c_field_id_Other_Class || id_or_name == c_field_name_Other_Class )
       display_name = get_module_string( c_field_display_name_Other_Class );
-   else if( id == c_field_id_Other_Field )
+   else if( id_or_name == c_field_id_Other_Field || id_or_name == c_field_name_Other_Field )
       display_name = get_module_string( c_field_display_name_Other_Field );
-   else if( id == c_field_id_Other_Field_2 )
+   else if( id_or_name == c_field_id_Other_Field_2 || id_or_name == c_field_name_Other_Field_2 )
       display_name = get_module_string( c_field_display_name_Other_Field_2 );
-   else if( id == c_field_id_Other_Procedure )
+   else if( id_or_name == c_field_id_Other_Procedure || id_or_name == c_field_name_Other_Procedure )
       display_name = get_module_string( c_field_display_name_Other_Procedure );
-   else if( id == c_field_id_Other_Procedure_2 )
+   else if( id_or_name == c_field_id_Other_Procedure_2 || id_or_name == c_field_name_Other_Procedure_2 )
       display_name = get_module_string( c_field_display_name_Other_Procedure_2 );
-   else if( id == c_field_id_Parent_Specification )
+   else if( id_or_name == c_field_id_Parent_Specification || id_or_name == c_field_name_Parent_Specification )
       display_name = get_module_string( c_field_display_name_Parent_Specification );
-   else if( id == c_field_id_Parent_Specification_Copy_Child_Links )
+   else if( id_or_name == c_field_id_Parent_Specification_Copy_Child_Links || id_or_name == c_field_name_Parent_Specification_Copy_Child_Links )
       display_name = get_module_string( c_field_display_name_Parent_Specification_Copy_Child_Links );
-   else if( id == c_field_id_Permission )
+   else if( id_or_name == c_field_id_Permission || id_or_name == c_field_name_Permission )
       display_name = get_module_string( c_field_display_name_Permission );
-   else if( id == c_field_id_Procedure )
+   else if( id_or_name == c_field_id_Procedure || id_or_name == c_field_name_Procedure )
       display_name = get_module_string( c_field_display_name_Procedure );
-   else if( id == c_field_id_Procedure_Arg )
+   else if( id_or_name == c_field_id_Procedure_Arg || id_or_name == c_field_name_Procedure_Arg )
       display_name = get_module_string( c_field_display_name_Procedure_Arg );
-   else if( id == c_field_id_Procedure_Arg_2 )
+   else if( id_or_name == c_field_id_Procedure_Arg_2 || id_or_name == c_field_name_Procedure_Arg_2 )
       display_name = get_module_string( c_field_display_name_Procedure_Arg_2 );
-   else if( id == c_field_id_Procedure_Arg_3 )
+   else if( id_or_name == c_field_id_Procedure_Arg_3 || id_or_name == c_field_name_Procedure_Arg_3 )
       display_name = get_module_string( c_field_display_name_Procedure_Arg_3 );
-   else if( id == c_field_id_Protect_Child_Rel )
+   else if( id_or_name == c_field_id_Protect_Child_Rel || id_or_name == c_field_name_Protect_Child_Rel )
       display_name = get_module_string( c_field_display_name_Protect_Child_Rel );
-   else if( id == c_field_id_Protect_Procedure )
+   else if( id_or_name == c_field_id_Protect_Procedure || id_or_name == c_field_name_Protect_Procedure )
       display_name = get_module_string( c_field_display_name_Protect_Procedure );
-   else if( id == c_field_id_Protect_Source_Parent )
+   else if( id_or_name == c_field_id_Protect_Source_Parent || id_or_name == c_field_name_Protect_Source_Parent )
       display_name = get_module_string( c_field_display_name_Protect_Source_Parent );
-   else if( id == c_field_id_Restrict_Values )
+   else if( id_or_name == c_field_id_Restrict_Values || id_or_name == c_field_name_Restrict_Values )
       display_name = get_module_string( c_field_display_name_Restrict_Values );
-   else if( id == c_field_id_Source_Child )
+   else if( id_or_name == c_field_id_Source_Child || id_or_name == c_field_name_Source_Child )
       display_name = get_module_string( c_field_display_name_Source_Child );
-   else if( id == c_field_id_Source_Child_2 )
+   else if( id_or_name == c_field_id_Source_Child_2 || id_or_name == c_field_name_Source_Child_2 )
       display_name = get_module_string( c_field_display_name_Source_Child_2 );
-   else if( id == c_field_id_Source_Child_Class )
+   else if( id_or_name == c_field_id_Source_Child_Class || id_or_name == c_field_name_Source_Child_Class )
       display_name = get_module_string( c_field_display_name_Source_Child_Class );
-   else if( id == c_field_id_Source_Class )
+   else if( id_or_name == c_field_id_Source_Class || id_or_name == c_field_name_Source_Class )
       display_name = get_module_string( c_field_display_name_Source_Class );
-   else if( id == c_field_id_Source_Field )
+   else if( id_or_name == c_field_id_Source_Field || id_or_name == c_field_name_Source_Field )
       display_name = get_module_string( c_field_display_name_Source_Field );
-   else if( id == c_field_id_Source_Field_Class )
+   else if( id_or_name == c_field_id_Source_Field_Class || id_or_name == c_field_name_Source_Field_Class )
       display_name = get_module_string( c_field_display_name_Source_Field_Class );
-   else if( id == c_field_id_Source_Grandchild )
+   else if( id_or_name == c_field_id_Source_Grandchild || id_or_name == c_field_name_Source_Grandchild )
       display_name = get_module_string( c_field_display_name_Source_Grandchild );
-   else if( id == c_field_id_Source_Parent )
+   else if( id_or_name == c_field_id_Source_Parent || id_or_name == c_field_name_Source_Parent )
       display_name = get_module_string( c_field_display_name_Source_Parent );
-   else if( id == c_field_id_Source_Parent_Class )
+   else if( id_or_name == c_field_id_Source_Parent_Class || id_or_name == c_field_name_Source_Parent_Class )
       display_name = get_module_string( c_field_display_name_Source_Parent_Class );
-   else if( id == c_field_id_Specification_Type )
+   else if( id_or_name == c_field_id_Specification_Type || id_or_name == c_field_name_Specification_Type )
       display_name = get_module_string( c_field_display_name_Specification_Type );
-   else if( id == c_field_id_Strings )
+   else if( id_or_name == c_field_id_Strings || id_or_name == c_field_name_Strings )
       display_name = get_module_string( c_field_display_name_Strings );
-   else if( id == c_field_id_Test_Child )
+   else if( id_or_name == c_field_id_Test_Child || id_or_name == c_field_name_Test_Child )
       display_name = get_module_string( c_field_display_name_Test_Child );
-   else if( id == c_field_id_Test_Field )
+   else if( id_or_name == c_field_id_Test_Field || id_or_name == c_field_name_Test_Field )
       display_name = get_module_string( c_field_display_name_Test_Field );
-   else if( id == c_field_id_Test_Field_Class )
+   else if( id_or_name == c_field_id_Test_Field_Class || id_or_name == c_field_name_Test_Field_Class )
       display_name = get_module_string( c_field_display_name_Test_Field_Class );
-   else if( id == c_field_id_Test_Parent )
+   else if( id_or_name == c_field_id_Test_Parent || id_or_name == c_field_name_Test_Parent )
       display_name = get_module_string( c_field_display_name_Test_Parent );
-   else if( id == c_field_id_Test_Parent_Class )
+   else if( id_or_name == c_field_id_Test_Parent_Class || id_or_name == c_field_name_Test_Parent_Class )
       display_name = get_module_string( c_field_display_name_Test_Parent_Class );
-   else if( id == c_field_id_Test_Value )
+   else if( id_or_name == c_field_id_Test_Value || id_or_name == c_field_name_Test_Value )
       display_name = get_module_string( c_field_display_name_Test_Value );
-   else if( id == c_field_id_Use_Source_Parent )
+   else if( id_or_name == c_field_id_Use_Source_Parent || id_or_name == c_field_name_Use_Source_Parent )
       display_name = get_module_string( c_field_display_name_Use_Source_Parent );
-   else if( id == c_field_id_Use_Test_Parent_Child )
+   else if( id_or_name == c_field_id_Use_Test_Parent_Child || id_or_name == c_field_name_Use_Test_Parent_Child )
       display_name = get_module_string( c_field_display_name_Use_Test_Parent_Child );
-   else if( id == c_field_id_Value )
+   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
       display_name = get_module_string( c_field_display_name_Value );
-   else if( id == c_field_id_Value_Label )
+   else if( id_or_name == c_field_id_Value_Label || id_or_name == c_field_name_Value_Label )
       display_name = get_module_string( c_field_display_name_Value_Label );
-   else if( id == c_field_id_Value_Left_Part )
+   else if( id_or_name == c_field_id_Value_Left_Part || id_or_name == c_field_name_Value_Left_Part )
       display_name = get_module_string( c_field_display_name_Value_Left_Part );
-   else if( id == c_field_id_Value_Literal )
+   else if( id_or_name == c_field_id_Value_Literal || id_or_name == c_field_name_Value_Literal )
       display_name = get_module_string( c_field_display_name_Value_Literal );
-   else if( id == c_field_id_Value_Numeric_String )
+   else if( id_or_name == c_field_id_Value_Numeric_String || id_or_name == c_field_name_Value_Numeric_String )
       display_name = get_module_string( c_field_display_name_Value_Numeric_String );
-   else if( id == c_field_id_Value_Right_Part )
+   else if( id_or_name == c_field_id_Value_Right_Part || id_or_name == c_field_name_Value_Right_Part )
       display_name = get_module_string( c_field_display_name_Value_Right_Part );
-   else if( id == c_field_id_Value_String )
+   else if( id_or_name == c_field_id_Value_String || id_or_name == c_field_name_Value_String )
       display_name = get_module_string( c_field_display_name_Value_String );
-   else if( id == c_field_id_Vars )
+   else if( id_or_name == c_field_id_Vars || id_or_name == c_field_name_Vars )
       display_name = get_module_string( c_field_display_name_Vars );
 
    return display_name;
@@ -9525,6 +9535,11 @@ class_base* Meta_Specification::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Specification::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Specification::class_id( ) const

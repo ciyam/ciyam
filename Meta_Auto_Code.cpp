@@ -296,6 +296,8 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -502,6 +504,14 @@ const string& Meta_Auto_Code::impl::get_foreign_key_value( const string& field )
 void Meta_Auto_Code::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    ( void )foreign_key_values;
+}
+
+void Meta_Auto_Code::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Auto_Code::impl::clear( )
@@ -965,17 +975,17 @@ const char* Meta_Auto_Code::get_field_name(
    return p_name;
 }
 
-string Meta_Auto_Code::get_field_display_name( const string& id ) const
+string Meta_Auto_Code::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Exhausted )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Exhausted || id_or_name == c_field_name_Exhausted )
       display_name = get_module_string( c_field_display_name_Exhausted );
-   else if( id == c_field_id_Mask )
+   else if( id_or_name == c_field_id_Mask || id_or_name == c_field_name_Mask )
       display_name = get_module_string( c_field_display_name_Mask );
-   else if( id == c_field_id_Next )
+   else if( id_or_name == c_field_id_Next || id_or_name == c_field_name_Next )
       display_name = get_module_string( c_field_display_name_Next );
 
    return display_name;
@@ -1051,6 +1061,11 @@ class_base* Meta_Auto_Code::get_next_foreign_key_child(
    ( void )op;
 
    return p_class_base;
+}
+
+void Meta_Auto_Code::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Auto_Code::class_id( ) const

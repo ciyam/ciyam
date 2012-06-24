@@ -371,6 +371,11 @@ void setup_view_fields( view_source& view,
                view.fkey_ids.id9 = field_id;
          }
 
+         if( extra_data.count( c_view_field_extra_vextra1 ) )
+            view.vextra1_id = field_id;
+         else if( extra_data.count( c_view_field_extra_vextra2 ) )
+            view.vextra2_id = field_id;
+
          if( !login_opts.count( c_login_opt_allow_multiple )
           && extra_data.count( c_view_field_extra_quick_link ) )
          {

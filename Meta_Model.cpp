@@ -980,6 +980,8 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -2689,6 +2691,24 @@ void Meta_Model::impl::impl_Generate( )
                         parent_field_extra.insert( make_pair( field_num, field_extra ) );
                      }
 
+                     switch( get_obj( ).child_View( ).child_View_Field( ).Child_List_Extra_Option( ) )
+                     {
+                        case 0:
+                        break;
+
+                        case 1:
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "vextra1";
+                        break;
+
+                        case 2:
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "vextra2";
+                        break;
+                     }
+
                      switch( get_obj( ).child_View( ).child_View_Field( ).Font_Size( ) )
                      {
                         case 0: // i.e. normal
@@ -3944,7 +3964,7 @@ void Meta_Model::impl::impl_Generate( )
                         else
                         {
                            column_names.push_back(
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Name( )
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Class( ).Name( )
                             + '_' + get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Name( ) );
 
                            column_pids.push_back( get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Id( ) );
@@ -5747,6 +5767,14 @@ void Meta_Model::impl::get_foreign_key_values( foreign_key_data_container& forei
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Workgroup, v_Workgroup ) );
 }
 
+void Meta_Model::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
+}
+
 void Meta_Model::impl::clear( )
 {
    v_Actions = gv_default_Actions;
@@ -7045,45 +7073,45 @@ const char* Meta_Model::get_field_name(
    return p_name;
 }
 
-string Meta_Model::get_field_display_name( const string& id ) const
+string Meta_Model::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Actions )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
       display_name = get_module_string( c_field_display_name_Actions );
-   else if( id == c_field_id_Add_Packages )
+   else if( id_or_name == c_field_id_Add_Packages || id_or_name == c_field_name_Add_Packages )
       display_name = get_module_string( c_field_display_name_Add_Packages );
-   else if( id == c_field_id_Commands_File )
+   else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
       display_name = get_module_string( c_field_display_name_Commands_File );
-   else if( id == c_field_id_Created )
+   else if( id_or_name == c_field_id_Created || id_or_name == c_field_name_Created )
       display_name = get_module_string( c_field_display_name_Created );
-   else if( id == c_field_id_Id )
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
-   else if( id == c_field_id_Name )
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
       display_name = get_module_string( c_field_display_name_Name );
-   else if( id == c_field_id_Next_Class_Id )
+   else if( id_or_name == c_field_id_Next_Class_Id || id_or_name == c_field_name_Next_Class_Id )
       display_name = get_module_string( c_field_display_name_Next_Class_Id );
-   else if( id == c_field_id_Next_List_Id )
+   else if( id_or_name == c_field_id_Next_List_Id || id_or_name == c_field_name_Next_List_Id )
       display_name = get_module_string( c_field_display_name_Next_List_Id );
-   else if( id == c_field_id_Next_Specification_Id )
+   else if( id_or_name == c_field_id_Next_Specification_Id || id_or_name == c_field_name_Next_Specification_Id )
       display_name = get_module_string( c_field_display_name_Next_Specification_Id );
-   else if( id == c_field_id_Next_View_Id )
+   else if( id_or_name == c_field_id_Next_View_Id || id_or_name == c_field_name_Next_View_Id )
       display_name = get_module_string( c_field_display_name_Next_View_Id );
-   else if( id == c_field_id_Permission )
+   else if( id_or_name == c_field_id_Permission || id_or_name == c_field_name_Permission )
       display_name = get_module_string( c_field_display_name_Permission );
-   else if( id == c_field_id_Source_File )
+   else if( id_or_name == c_field_id_Source_File || id_or_name == c_field_name_Source_File )
       display_name = get_module_string( c_field_display_name_Source_File );
-   else if( id == c_field_id_Status )
+   else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
       display_name = get_module_string( c_field_display_name_Status );
-   else if( id == c_field_id_Use_Package_Demo_Data )
+   else if( id_or_name == c_field_id_Use_Package_Demo_Data || id_or_name == c_field_name_Use_Package_Demo_Data )
       display_name = get_module_string( c_field_display_name_Use_Package_Demo_Data );
-   else if( id == c_field_id_Version )
+   else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
       display_name = get_module_string( c_field_display_name_Version );
-   else if( id == c_field_id_Workgroup )
+   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
       display_name = get_module_string( c_field_display_name_Workgroup );
-   else if( id == c_field_id_Year_Created )
+   else if( id_or_name == c_field_id_Year_Created || id_or_name == c_field_name_Year_Created )
       display_name = get_module_string( c_field_display_name_Year_Created );
 
    return display_name;
@@ -7305,6 +7333,11 @@ class_base* Meta_Model::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Model::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Model::class_id( ) const

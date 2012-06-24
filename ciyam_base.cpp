@@ -5973,7 +5973,7 @@ string get_field_display_name( size_t handle, const string& context, const strin
          field = string( p_id );
    }
 
-   return instance_accessor.get_field_display_name( field );
+   return instance.get_field_display_name( field );
 }
 
 void inline add_next_value( bool as_csv, const string& next_value, string& field_values )
@@ -8469,7 +8469,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
 
             throw runtime_error( get_string_message(
              GS( c_str_index_duplicate ), make_pair( c_str_parm_index_duplicate_field,
-             instance_accessor.get_field_display_name( instance_accessor.get_field_id( field ) ) ),
+             instance.get_field_display_name( instance_accessor.get_field_id( field ) ) ),
              make_pair( c_str_parm_index_duplicate_value,
              instance.get_field_value( instance.get_field_num( field ) ) ),
              make_pair( c_str_parm_index_duplicate_class, instance.get_display_name( ) ) ) );
@@ -8647,6 +8647,8 @@ bool perform_instance_iterate( class_base& instance,
             fixed_info.push_back(
              make_pair( instance.get_graph_parent_fk_field( ), instance.get_graph_parent( )->get_key( ) ) );
          }
+
+         instance_accessor.add_extra_paging_info( paging_info );
 
          // NOTE: If the key info contains any transient field names (for ordering)
          // then these need to be replaced by zero or more persistent field names.

@@ -125,6 +125,8 @@ class META_AUTO_CODE_DECL_SPEC Meta_Auto_Code : public class_base
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
+   std::string get_field_display_name( const std::string& id_or_name ) const;
+
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }
 
    void get_text_search_fields( std::vector< std::string >& fields ) const { return static_get_text_search_fields( fields ); }
@@ -210,8 +212,6 @@ class META_AUTO_CODE_DECL_SPEC Meta_Auto_Code : public class_base
    const char* get_field_id( const std::string& name, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
    const char* get_field_name( const std::string& id, bool* p_sql_numeric = 0, std::string* p_type_name = 0 ) const;
 
-   std::string get_field_display_name( const std::string& id ) const;
-
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
    size_t get_total_child_relationships( ) const;
@@ -221,6 +221,8 @@ class META_AUTO_CODE_DECL_SPEC Meta_Auto_Code : public class_base
 
    class_base* get_next_foreign_key_child( size_t child_num,
     std::string& next_child_field, cascade_op op, bool is_internal = false );
+
+   void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const;
 };
 
 inline std::string to_string( const Meta_Auto_Code& c ) { return c.get_key( ); }

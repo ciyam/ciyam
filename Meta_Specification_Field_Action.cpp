@@ -771,6 +771,8 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
+
    void clear( );
 
    bool value_will_be_provided( const string& field_name );
@@ -1023,6 +1025,14 @@ void Meta_Specification_Field_Action::impl::get_foreign_key_values( foreign_key_
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_New_Record_Class, v_New_Record_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_New_Record_FK_Field, v_New_Record_FK_Field ) );
+}
+
+void Meta_Specification_Field_Action::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   ( void )paging_info;
+
+   // [<start add_extra_paging_info>]
+   // [<finish add_extra_paging_info>]
 }
 
 void Meta_Specification_Field_Action::impl::clear( )
@@ -1671,27 +1681,27 @@ const char* Meta_Specification_Field_Action::get_field_name(
    return p_name;
 }
 
-string Meta_Specification_Field_Action::get_field_display_name( const string& id ) const
+string Meta_Specification_Field_Action::get_field_display_name( const string& id_or_name ) const
 {
-   string display_name( parent_class_type::get_field_display_name( id ) );
+   string display_name( parent_class_type::get_field_display_name( id_or_name ) );
    if( !display_name.empty( ) )
       return display_name;
 
-   if( id.empty( ) )
-      throw runtime_error( "unexpected empty field id for get_field_display_name" );
-   else if( id == c_field_id_Access_Restriction )
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
       display_name = get_module_string( c_field_display_name_Access_Restriction );
-   else if( id == c_field_id_Clone_Key )
+   else if( id_or_name == c_field_id_Clone_Key || id_or_name == c_field_name_Clone_Key )
       display_name = get_module_string( c_field_display_name_Clone_Key );
-   else if( id == c_field_id_Create_Type )
+   else if( id_or_name == c_field_id_Create_Type || id_or_name == c_field_name_Create_Type )
       display_name = get_module_string( c_field_display_name_Create_Type );
-   else if( id == c_field_id_New_Record_Class )
+   else if( id_or_name == c_field_id_New_Record_Class || id_or_name == c_field_name_New_Record_Class )
       display_name = get_module_string( c_field_display_name_New_Record_Class );
-   else if( id == c_field_id_New_Record_FK_Field )
+   else if( id_or_name == c_field_id_New_Record_FK_Field || id_or_name == c_field_name_New_Record_FK_Field )
       display_name = get_module_string( c_field_display_name_New_Record_FK_Field );
-   else if( id == c_field_id_New_Record_FK_Value )
+   else if( id_or_name == c_field_id_New_Record_FK_Value || id_or_name == c_field_name_New_Record_FK_Value )
       display_name = get_module_string( c_field_display_name_New_Record_FK_Value );
-   else if( id == c_field_id_Type )
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
       display_name = get_module_string( c_field_display_name_Type );
 
    return display_name;
@@ -1803,6 +1813,12 @@ class_base* Meta_Specification_Field_Action::get_next_foreign_key_child(
    p_class_base = Meta_Specification::get_next_foreign_key_child( child_num, next_child_field, op );
 
    return p_class_base;
+}
+
+void Meta_Specification_Field_Action::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
+{
+   parent_class_type::add_extra_paging_info( paging_info );
+   p_impl->add_extra_paging_info( paging_info );
 }
 
 const char* Meta_Specification_Field_Action::class_id( ) const
