@@ -483,7 +483,7 @@ void output_list_form( ostream& os,
  const string& pident, const string& oident, const session_info& sess_info,
  const set< string >& specials, bool use_url_checksum, const string& qlink,
  const string& findinfo_and_listsrch, const set< string >& selected_records, bool embed_images,
- bool has_hashval, bool has_owner_parent, bool& has_any_changing, const string* p_pdf_file_name )
+ bool has_hashval, bool has_owner_parent, bool& has_any_changing, int back_count, const string* p_pdf_file_name )
 {
    string list_type( source.lici->second->type );
    const storage_info& sinfo( get_storage_info( ) );
@@ -1781,6 +1781,9 @@ void output_list_form( ostream& os,
                   os << get_display_string( ( source.lici->second )->parents[ i ].name ) << ": ";
                   os << "<select onchange=\"";
 
+                  if( is_child_list )
+                     os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
                   if( use_url_checksum )
                   {
                      checksum_values = ( is_child_list ? string( c_cmd_view )
@@ -1879,6 +1882,9 @@ void output_list_form( ostream& os,
                os << "<input type=\"checkbox\" id=\"check" << i << "\""
                 << ( is_checked ? " checked=\"checked\"" : "" ) << " onclick=\"";
 
+               if( is_child_list )
+                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
                if( use_url_checksum )
                {
                   checksum_values = ( is_child_list ? string( c_cmd_view )
@@ -1974,6 +1980,9 @@ void output_list_form( ostream& os,
                os << get_display_string( ( source.lici->second )->restricts[ i ].name ) << ": ";
                os << "<select onchange=\"";
 
+               if( is_child_list )
+                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
                if( use_url_checksum )
                {
                   string checksum_values( ( is_child_list ? string( c_cmd_view )
@@ -2052,6 +2061,9 @@ void output_list_form( ostream& os,
 
                // NOTE: Remove next/prev page info for a new search.
                os << "query_update( '" << source.id << c_info_suffix << "', '', true ); ";
+
+               if( is_child_list )
+                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
 
                if( use_url_checksum )
                {
@@ -3384,6 +3396,9 @@ void output_list_form( ostream& os,
          {
             os << "&laquo; <a href=\"javascript:";
 
+            if( is_child_list )
+               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
             if( use_url_checksum )
             {
                os << "query_update( '" << c_param_uselextra << "', '', true ); ";
@@ -3401,6 +3416,9 @@ void output_list_form( ostream& os,
          if( !source.next_key_info.empty( ) )
          {
             os << "<a href=\"javascript:";
+
+            if( is_child_list )
+               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
 
             if( use_url_checksum )
             {
