@@ -3400,8 +3400,9 @@ void request_handler::process_request( )
                   output_list_form( extra_content,
                    list, session_id, uselect, "", false,
                    cookies_permitted, true, false, list_selections, list_search_text,
-                   list_search_values, 0, false, "", false, "", oident, *p_session_info, specials, use_url_checksum,
-                   qlink, findinfo + listsrch, selected_records, encrypt_data, !hashval.empty( ), false, has_any_changing_records );
+                   list_search_values, 0, false, "", false, "", oident, *p_session_info,
+                   specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
+                   encrypt_data, !hashval.empty( ), false, has_any_changing_records, back_count );
                }
             }
             else if( cmd == c_cmd_view || cmd == c_cmd_pview )
@@ -3561,7 +3562,7 @@ void request_handler::process_request( )
                          session_id, uselect, "", ( cmd == c_cmd_pview ), cookies_permitted,
                          true, ( act == c_act_edit ), list_selections, list_search_text, list_search_values,
                          state, true, data, keep_checks, ident, "", *p_session_info, specials, use_url_checksum, "",
-                         findinfo + listsrch, selected_records, encrypt_data, !hashval.empty( ), is_owner, has_any_changing_records );
+                         findinfo + listsrch, selected_records, encrypt_data, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
                      }
 
                      extra_content << "</td></tr></table>\n";
@@ -3663,7 +3664,7 @@ void request_handler::process_request( )
                    ( cmd == c_cmd_plist ), cookies_permitted, true, false, list_selections,
                    list_search_text, list_search_values, 0, false, "", keep_checks, "", oident,
                    *p_session_info, specials, use_url_checksum, qlink, findinfo + listsrch,
-                   selected_records, encrypt_data, !hashval.empty( ), false, has_any_changing_records, &pdf_list_file_name );
+                   selected_records, encrypt_data, !hashval.empty( ), false, has_any_changing_records, back_count, &pdf_list_file_name );
 
                   if( cmd != c_cmd_plist )
                      extra_content << "</td></tr></table>\n";

@@ -40,6 +40,6 @@ void output_list_form( std::ostream& os,
  const std::string& pident, const std::string& oident, const session_info& sess_info,
  const std::set< std::string >& specials, bool use_url_checksum, const std::string& qlink,
  const std::string& findinfo_and_listsrch, const std::set< std::string >& selected_records, bool embed_images,
- bool has_hashval, bool has_owner_parent, bool& has_any_changing, const std::string* p_pdf_file_name = 0 );
+ bool has_hashval, bool has_owner_parent, bool& has_any_changing, int back_count, const std::string* p_pdf_file_name = 0 );
 
 #endif

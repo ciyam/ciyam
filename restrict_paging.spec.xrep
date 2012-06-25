@@ -1,0 +1,6 @@
+`{`@eq`(`'add_extra_paging_info`'`,`$section`)\
+   // [(start restrict_paging)]
+   if( get_obj( ).`{`$arg_tfield`}( ) && !get_obj( ).get_variable( "`{`$arg_variable`}" ).empty( ) )
+      paging_info.push_back( make_pair( c_field_id_`{`$arg_page_field`}, get_obj( ).get_variable( "`{`$arg_variable`}" ) ) );
+   // [(finish restrict_paging)]
+`}
