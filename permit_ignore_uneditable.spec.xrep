@@ -1,0 +1,19 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start permit_ignore_uneditable)]
+`{`@eq`(`$arg_tfield`,`'`'`)\
+   state |= c_state_ignore_uneditable;\
+`,\
+   if( `{`$arg_tfield`}( ) )
+      state |= c_state_ignore_uneditable;\
+`}
+   // [(finish permit_ignore_uneditable)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start permit_ignore_uneditable)]
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
+   // [(finish permit_ignore_uneditable)]
+`}

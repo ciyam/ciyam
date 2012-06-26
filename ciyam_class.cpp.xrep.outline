@@ -944,6 +944,9 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_permission_id=$specification_\0_permission_id arg_ufield=$specification_\0_ufield\
  arg_admin_always=$specification_\0_admin_always arg_remove=$specification_\0_remove`}\
 `,\
+`@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)
+`{`#permit_ignore_uneditable.spec.xrep section=get_state arg_tfield=$specification_\0_tfield`}\
+`,\
 `@eq`(`'\1`'`,`'protect_equal`'`)
 `{`#protect_equal.spec.xrep section=get_state\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_label=$specification_\0_label\
@@ -1789,7 +1792,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `,\
 `@eq`(`'\1`'`,`'trigger_clone_default_user_children`'`)
 `{`#trigger_clone_default_user_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
- arg_child=$specification_\0_child arg_ufield=$specification_\0_ufield arg_skip_clones=$specification_\0_skip_clones`}\
+ arg_child=$specification_\0_child arg_ufield=$specification_\0_ufield arg_skip_clones=$specification_\0_skip_clones\
+ arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)
 `{`#update_children.spec.xrep section=after_store full_class_name=$full_class_name\
@@ -2749,6 +2753,9 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `@eq`(`'\1`'`,`'move_up_and_down`'`)
 `{`#move_up_and_down.spec.xrep section=get_always_required_field_names\
  arg_field=$specification_\0_field`}\
+`,\
+`@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
+`{`#permit_ignore_uneditable.spec.xrep section=get_always_required_field_names arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'protect_equal`'`)
 `{`#protect_equal.spec.xrep section=get_always_required_field_names\
