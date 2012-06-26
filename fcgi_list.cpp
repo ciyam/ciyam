@@ -951,8 +951,10 @@ void output_list_form( ostream& os,
 
                int z = ( int )is_select_child;
 
-               if( opt_count <= 2 || ( opt_count == 3 && j == 1 + z ) || ( opt_count == 4 && j == 2 + z )
-                || ( opt_count == 5 && j == 3 + z ) || ( opt_count == 6 && j == 4 + z ) || ( opt_count == 7 && j == 5 + z ) )
+               if( opt_count < 2 || ( opt_count == 2 && j == z )
+                || ( opt_count == 3 && j == 1 + z ) || ( opt_count == 4 && j == 2 + z )
+                || ( opt_count == 5 && j == 3 + z ) || ( opt_count == 6 && j == 4 + z )
+                || ( opt_count == 7 && j == 5 + z ) || ( opt_count == 8 && j == 6 + z ) )
                   break;
             }
 

@@ -3461,6 +3461,10 @@ void request_handler::process_request( )
                   if( !is_editable )
                      state |= c_state_uneditable;
 
+                  // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
+                  if( ident == get_storage_info( ).user_info_view_id && data == p_session_info->user_key )
+                     is_owner = true;
+
                   // NOTE: For new records (and currently for "printable" views) do not output child lists.
                   // FUTURE: For "printable" views it makes sense to be able to have child lists although
                   // they should be identified differently (perhaps as "printchild") as the normal sublists
@@ -3477,6 +3481,7 @@ void request_handler::process_request( )
                      extra_content << "<tr>\n";
 
                      int n = 0;
+                     set< string > children_not_permitted;
                      for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                      {
                         string list_type = child_lists[ i->second ].lici->second->type;
@@ -3500,7 +3505,10 @@ void request_handler::process_request( )
                            is_okay = ( is_owner || p_session_info->is_admin_user );
 
                         if( !is_okay )
+                        {
+                           children_not_permitted.insert( i->first );
                            continue;
+                        }
 
                         string name( get_display_name( mod_info.get_string( child_lists[ i->second ].name ) ) );
 
@@ -3532,30 +3540,10 @@ void request_handler::process_request( )
                      n = 0;
                      for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                      {
-                        if( ++n != vtabc_num )
+                        if( children_not_permitted.count( i->first ) )
                            continue;
 
-                        string list_type = child_lists[ i->second ].lici->second->type;
-
-                        bool is_okay = has_permission( child_lists[ i->second ].perm, *p_session_info );
-                        if( !is_okay )
-                        {
-                           if( is_owner
-                            && ( list_type == c_list_type_child_owner || list_type == c_list_type_child_admin_owner ) )
-                              is_okay = true;
-
-                           if( p_session_info->is_admin_user
-                            && ( list_type == c_list_type_child_admin || list_type == c_list_type_child_admin_owner ) )
-                              is_okay = true;
-                        }
-                        else if( list_type == c_list_type_child_owner )
-                           is_okay = is_owner;
-                        else if( list_type == c_list_type_child_admin )
-                           is_okay = p_session_info->is_admin_user;
-                        else if( list_type == c_list_type_child_admin_owner )
-                           is_okay = ( is_owner || p_session_info->is_admin_user );
-
-                        if( !is_okay )
+                        if( ++n != vtabc_num )
                            continue;
 
                         output_list_form( extra_content, child_lists[ i->second ],

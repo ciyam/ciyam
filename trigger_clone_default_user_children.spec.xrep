@@ -1,6 +1,11 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start trigger_clone_default_user_children)]
+`{`@eq`(`$arg_tfield`,`'`'`)\
    if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
+`,\
+   if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`}
+    && get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
+`}\
    {
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_empty_user( e_create_instance );
       if( cp_empty_user->child_`{`$arg_child`}( ).iterate_forwards( ) )
