@@ -2306,11 +2306,20 @@ void request_handler::process_request( )
                   view.state = state;
                   view.key_info = key_and_version;
 
+                  bool has_always_editable = false;
+
                   size_t field_num = 0;
                   for( size_t i = 0; i < view.field_ids.size( ); i++ )
                   {
                      if( view.field_ids[ i ] == c_key_field )
                         continue;
+
+                     map< string, string > extra_data;
+                     if( !view.vici->second->fields[ i ].extra.empty( ) )
+                        parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
+
+                     if( !( state & c_state_is_changing ) && extra_data.count( c_view_field_extra_always_editable ) )
+                        has_always_editable = true;
 
                      if( view.field_ids[ i ] == view.hpassword_salt_field )
                         hpassword_salt = item_values[ field_num ];
@@ -2483,8 +2492,10 @@ void request_handler::process_request( )
                   if( user_field_info.count( view.fkey_ids.id9 ) )
                      view.fkey_values.value9 = user_field_info[ view.fkey_ids.id9 ];
 
-                  // NOTE: Populate lists for user selection (only if editing an existing or creating a new record).
-                  if( is_new_record || act == c_act_edit )
+                  // NOTE: Populate lists for user selection (only if editing an existing or creating a new
+                  // record or if the view contains one ore more "is_always_editable" fields).
+                  // FUTURE: If not editing or new then only fetch data for the "is_always_editable" fields.
+                  if( cmd != c_cmd_pview && ( is_new_record || has_always_editable || act == c_act_edit ) )
                   {
                      if( !special.empty( ) )
                         specials.insert( special );

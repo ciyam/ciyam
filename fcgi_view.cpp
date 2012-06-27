@@ -1634,8 +1634,10 @@ bool output_view_form( ostream& os, const string& act,
                if( use_url_checksum )
                {
                   string checksum_values( string( cont_act )
-                   + string( c_cmd_view ) + data + source.vici->second->id
-                   + user_select_key + to_string( sess_info.checksum_serial ) );
+                   + string( c_cmd_view ) + data + source.vici->second->id + user_select_key );
+
+                  if( is_in_edit )
+                     checksum_values += sess_info.checksum_serial;
 
                   string new_checksum( get_checksum( sess_info, checksum_values ) );
 
@@ -2083,8 +2085,10 @@ bool output_view_form( ostream& os, const string& act,
                   if( use_url_checksum )
                   {
                      string checksum_values( string( cont_act )
-                      + string( c_cmd_view ) + data + source.vici->second->id
-                      + user_select_key + to_string( sess_info.checksum_serial ) );
+                      + string( c_cmd_view ) + data + source.vici->second->id + user_select_key );
+
+                     if( is_in_edit )
+                        checksum_values += sess_info.checksum_serial;
 
                      string new_checksum( get_checksum( sess_info, checksum_values ) );
 
