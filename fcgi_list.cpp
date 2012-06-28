@@ -917,6 +917,10 @@ void output_list_form( ostream& os,
                   os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
                }
 
+               set< string > parent_extras;
+               if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
+                  split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
+
                const data_container& parent_row_data = source.parent_lists[ i ];
                for( size_t k = 0; k < parent_row_data.size( ); k++ )
                {
@@ -924,6 +928,17 @@ void output_list_form( ostream& os,
 
                   string key( parent_row_data[ k ].first );
                   string display( parent_row_data[ k ].second );
+
+                  if( parent_extras.count( c_parent_extra_manuallink ) )
+                  {
+                     stringstream ss;
+
+                     replace_links_and_output( display, "",
+                      source.module, source.module_ref, ss, false, false, session_id,
+                      sess_info, user_select_key, using_session_cookie, use_url_checksum );
+
+                     display = ss.str( );
+                  }
 
                   // NOTE: Remove parent version information as its not relevant for a select operation.
                   size_t pos = key.find( ' ' );
