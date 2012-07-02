@@ -4,42 +4,67 @@
 `{`@eq`(`$arg_def_value`,`'`'`)\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( get_obj( ).needs_field_value( "`{`$arg_field`}" )
+`{`@eq`(`$arg_check_mod`,`'`'`)\
     || required_transients.count( "`{`$arg_field`}" ) )\
 `,\
+    || required_transients.count( "`{`$arg_field`}" )
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} ) )\
+`}`,\
    if( get_obj( ).get_is_iterating( )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) ) )\
 `}`,\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
 `,\
    if( get_obj( ).get_is_iterating( )
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
 
 `}`}`,\
 `{`@eq`(`$arg_def_value`,`'`'`)\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( !get_obj( ).get_key( ).empty( )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) ) )\
 `,\
    if( get_obj( ).get_is_iterating( )
     && !get_obj( ).get_key( ).empty( )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) ) )\
 `}`,\
 `{`@eq`(`$arg_iter_only`,`'`'`)\
    if( !get_obj( ).get_key( ).empty( )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
 `,\
    if( get_obj( ).get_is_iterating( )
     && !get_obj( ).get_key( ).empty( )
+`{`!`@eq`(`$arg_check_mod`,`'`'`)\
+    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\

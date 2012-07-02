@@ -14,13 +14,26 @@
       // in case of the child or a foreign key of the child is the same class type as this class.
       if( ( !get_obj( ).get_graph_parent( )
        || !get_obj( ).get_graph_parent( )->get_is_iterating( ) )
-       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+`{`@eq`(`$arg_cfield`,`'`'`)\
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, string( "@key" ) ) )
+`,\
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_cfield`} ) ) )
+`}\
       {
          string str( get_obj( ).`{`$arg_field`}( ) );
 
          do
          {
-            str = str`{`!`@eq`(`$arg_separator`,`'`'`) + ( str.empty( ) ? "" : "`{`$arg_separator`}" )`} + get_obj( ).child_`{`$arg_child`}( ).`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`{`$arg_cfield`}`}( );
+            if( !str.empty( ) )
+               str += "`{`$arg_separator`}";
+
+`{`@eq`(`$arg_embed_links`,`'`'`)\
+            str += get_obj( ).child_`{`$arg_child`}( ).`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`{`$arg_cfield`}`}( );
+`,\
+            str += "{" + to_string( get_obj( ).child_`{`$arg_child`}( ).class_id( ) )
+             + "$" + get_obj( ).child_`{`$arg_child`}( ).get_key( ) + ":" + get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cfield`}( ) + "}";
+`}\
+
          } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
 
          get_obj( ).`{`$arg_field`}( str );
