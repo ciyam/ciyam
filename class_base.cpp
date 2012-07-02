@@ -2555,7 +2555,7 @@ string value_label( const string& s )
    {
       if( s[ i ] == ' ' )
          rs += '_';
-      else if( ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
+      else if( s[ i ] == '_' || ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
        || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
          rs += s[ i ];
    }

@@ -8541,7 +8541,8 @@ bool perform_instance_iterate( class_base& instance,
    bool found = false;
 
    TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '"
-    + to_string( instance.class_name( ) ) + "', key_info = '" + key_info + "', direction = " + to_string( direction ) );
+    + to_string( instance.class_name( ) ) + "', key_info = '" + key_info
+    + "', fields = '" + fields + "', direction = " + to_string( direction ) );
 
    oid id;
    string sql, key, key_value( key_info );
