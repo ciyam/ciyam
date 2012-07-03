@@ -1,0 +1,63 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+`{`$order`=`'`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`$order`=`$arg_cfield`}`{`!`@eq`(`$arg_ofield`,`'`'`)`$order`=`$arg_ofield`}\
+   // [(start field_from_child_concat)]
+   if( !is_create )
+   {
+      string str;
+
+`{`@eq`(`$order`,`'`'`)
+      if( get_obj( ).child_`{`$arg_children`}( ).iterate_forwards( "", `{`@eq`(`$arg_cfield`,`'`'`)string( "@key" )`,string( c_field_id_`{`$arg_cfield`} )`} ) )
+`,\
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$order`} ) );
+      key_info += ' ';
+
+      if( get_obj( ).child_`{`$arg_children`}( ).iterate_forwards( key_info, `{`@eq`(`$arg_cfield`,`'`'`)string( "@key" )`,string( c_field_id_`{`$arg_cfield`} )`} ) )
+`}\
+      {
+         do
+         {
+            if( !str.empty( ) )
+               str += "`{`$arg_separator`}";
+
+`{`@eq`(`$arg_embed_links`,`'`'`)\
+            str += get_obj( ).child_`{`$arg_children`}( ).`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`$arg_cfield`}( );
+`,\
+            str += "{" + to_string( get_obj( ).child_`{`$arg_children`}( ).class_id( ) )
+             + "$" + get_obj( ).child_`{`$arg_children`}( ).get_key( ) + ":" + get_obj( ).child_`{`$arg_children`}( ).`{`$arg_cfield`}( ) + "}";
+`}\
+         } while( get_obj( ).child_`{`$arg_children`}( ).iterate_next( ) );
+      }
+
+      get_obj( ).`{`$arg_field`}( str );
+   }
+   // [(finish field_from_child_concat)]
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start field_from_child_concat)]
+`{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
+   if( is_create && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+`,\
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
+    && ( is_create`{`!`@eq`(`$arg_cfield`,`'`'`) || get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}\
+`{`!`@eq`(`$arg_ofield`,`'`'`) || get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`} ) )
+`}\
+   {
+      get_obj( ).`{`$arg_pfield`}( ).op_update( );
+      get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+   }
+   // [(finish field_from_child_concat)]
+`}
+`{`@eq`(`'after_destroy`'`,`$section`)\
+   // [(start field_from_child_concat)]
+`{`@eq`(`$arg_skip_cascade`,`'`'`)\
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+`,\
+   if( !get_obj( ).get_is_being_cascaded( )
+    && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+`}\
+   {
+      get_obj( ).`{`$arg_pfield`}( ).op_update( );
+      get_obj( ).`{`$arg_pfield`}( ).op_apply( );
+   }
+   // [(finish field_from_child_concat)]
+`}
