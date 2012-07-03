@@ -49,6 +49,13 @@
             get_obj( ).op_apply( );
 
             cp_other->iterate_stop( );
+`{`!`@eq`(`$arg_update_parent`,`'`'`)
+            if( !is_null( get_obj( ).`{`$arg_update_parent`}( ) ) )
+            {
+               get_obj( ).`{`$arg_update_parent`}( ).op_update( );
+               get_obj( ).`{`$arg_update_parent`}( ).op_apply( );
+            }
+`}\
          }
          else
             get_obj( ).op_cancel( );
@@ -156,6 +163,13 @@
             get_obj( ).op_apply( );
 
             cp_other->iterate_stop( );
+`{`!`@eq`(`$arg_update_parent`,`'`'`)
+            if( !is_null( get_obj( ).`{`$arg_update_parent`}( ) ) )
+            {
+               get_obj( ).`{`$arg_update_parent`}( ).op_update( );
+               get_obj( ).`{`$arg_update_parent`}( ).op_apply( );
+            }
+`}\
          }
          else
             get_obj( ).op_cancel( );
@@ -219,5 +233,12 @@
    if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
     || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );
+`{`!`@eq`(`$arg_update_parent`,`'`'`)
+   dependents.insert( "`{`$arg_update_parent`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_update_parent`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_update_parent`} ) ) )
+      names.insert( "`{`$arg_update_parent`}" );
+`}\
    // [(finish move_up_and_down)]
 `}
