@@ -8343,12 +8343,14 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                 instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
          }
 
-         // FUTURE: If updating then if only the ver/rev was changed (i.e. no field changes) in all
-         // returned statements (as a derivation might only change field values in one table but it
-         // needs ver/rev to be consistent for all) then the statements could all be discarded.
          vector< string > sql_stmts;
          if( !instance_accessor.get_sql_stmts( sql_stmts ) )
             throw runtime_error( "unexpected get_sql_stmts failure" );
+
+         // NOTE: If updating but no fields apart from the ver/rev ones were changed (by any
+         // derivation) then all update statements are discarded to skip the unnecessary SQL.
+         if( op == class_base::e_op_type_update && instance_accessor.has_skipped_empty_update( ) )
+            sql_stmts.clear( );
 
          if( gtp_session->ap_db.get( ) )
          {

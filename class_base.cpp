@@ -442,6 +442,7 @@ class_cascade::~class_cascade( )
 
 struct class_base::impl
 {
+   bool has_changed_user_fields;
    map< string, string > variables;
 
    search_replace_container search_replacements;
@@ -1183,19 +1184,34 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts )
 
       case e_op_type_update:
       ++revision;
+      p_impl->has_changed_user_fields = false;
+
       if( sql_stmts.empty( ) )
          do_generate_sql( e_generate_sql_type_update, sql_stmts );
+
       retval = true;
       break;
 
       case e_op_type_destroy:
       do_generate_sql( e_generate_sql_type_delete, sql_stmts );
+
       destroy( );
       retval = true;
       break;
    }
 
    return retval;
+}
+
+bool class_base::has_skipped_empty_update( )
+{
+   if( p_impl->has_changed_user_fields )
+      return false;
+   else
+   {
+      --revision;
+      return true;
+   }
 }
 
 void class_base::clean_up( )
@@ -1719,6 +1735,8 @@ string class_base::generate_sql_update( const string& class_name ) const
 
          if( has_field_changed( i ) )
          {
+            p_impl->has_changed_user_fields = true;
+
             sql_stmt += ",";
             sql_stmt += sql_column_names[ j ];
             sql_stmt += '=';

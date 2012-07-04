@@ -471,6 +471,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    bool get_sql_stmts( std::vector< std::string >& sql_stmts );
 
+   bool has_skipped_empty_update( );
+
    void finish( );
    void cancel( );
 
@@ -604,6 +606,8 @@ struct class_base_accessor
    class_base_accessor( class_base& cb ) : cb( cb ) { }
 
    bool get_sql_stmts( std::vector< std::string >& sql_stmts ) { return cb.get_sql_stmts( sql_stmts ); }
+
+   bool has_skipped_empty_update( ) { return cb.has_skipped_empty_update( ); }
 
    void finish( ) { cb.finish( ); }
    void cancel( ) { cb.cancel( ); }
