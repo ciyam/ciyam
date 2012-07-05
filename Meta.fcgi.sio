@@ -9019,7 +9019,7 @@
    <pfldnm>Class
    <nclass>114100
    <nfield>114101
-   <nextra>@view:114170+114151=0+301700=+114101
+   <nextra>@view:114170+114151=0+114147=0+301700=+114101
    <dfield>301410
    <module>Meta
    <columns/>
@@ -9074,7 +9074,7 @@
    <pfldnm>Model
    <nclass>114100
    <nfield>114101
-   <nextra>@view:114170+114151=0+301700=+114163=1+114101
+   <nextra>@view:114170+114151=0+114147=0+301700=+114163=1+114101
    <dfield>301410
    <module>Meta
    <columns/>

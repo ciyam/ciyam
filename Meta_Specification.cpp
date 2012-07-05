@@ -6136,6 +6136,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).add_search_replacement( "Name", "{modifier}", to_string( get_obj( ).Modifier( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{sclass}", to_string( get_obj( ).Source_Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{spfield}", to_string( get_obj( ).Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{spclass}", to_string( get_obj( ).Source_Parent_Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{scfield}", to_string( get_obj( ).Source_Child( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{sc2field}", to_string( get_obj( ).Source_Child_2( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{sfield}", to_string( get_obj( ).Source_Field( ).Name( ) ) );

@@ -1231,6 +1231,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
         <id>600207
         <item>field
        </specification>
@@ -14519,6 +14523,10 @@
        </specification>
        <specification/>
         <id>600166a
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
         <item>field
        </specification>
        <specification/>
@@ -31638,6 +31646,7 @@
      <field_info>301440:109101;109100={modifier}
      <field_info>301494:106101;106100={sclass}
      <field_info>301480:107101;107100={spfield}
+     <field_info>301490:106101;106100={spclass}
      <field_info>301495:107101;107100={scfield}
      <field_info>301496:107101;107100={sc2field}
      <field_info>301481:107101;107100={sfield}
@@ -32847,7 +32856,7 @@
      <pfield_id>301420
      <new_class_id>114100
      <new_field_id>114101
-     <new_ext_info>@view:114170+114151=0+301700=+114101
+     <new_ext_info>@view:114170+114151=0+114147=0+301700=+114101
      <dest_field_id>301410
      <field_info>115105;hidden
      <field_info>115101
@@ -32869,7 +32878,7 @@
      <pfield_id>301400
      <new_class_id>114100
      <new_field_id>114101
-     <new_ext_info>@view:114170+114151=0+301700=+114163=1+114101
+     <new_ext_info>@view:114170+114151=0+114147=0+301700=+114163=1+114101
      <dest_field_id>301410
      <field_info>115105;hidden
      <field_info>115101
