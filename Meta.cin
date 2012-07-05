@@ -1486,7 +1486,7 @@ specification_add -id=600203 {Specification}_Field_Pairs_meta3 meta_spec_field_p
  Field_Pairs Order Specification:Parent_{Specification} Name=field_pair_g_list"
 specification_add -id=600204 {Specification}_Name_from_search_replace field_from_search_replace "Specification Name\
  {Specification_Type}:Specification_Name {Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
-,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Source_Class:Name={sclass},Source_Parent:Name={spfield}\
+,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
 ,Source_Child:Name={scfield},Source_Child_2:Name={sc2field},Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue}\
 ,{Permission}:Name={permission},{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg}\
@@ -1839,10 +1839,10 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 specification_add -id=602530 {Specification}_child_list0 list "@602530_Child_* child:no_new,no_limit\
  Specification Name -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues Parent_{Specification}"
 specification_add -id=602540 {Specification}_child_list1 list "@602540_* child:no_limit Specification Name\
- -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Parent_{Specification_Type}=+Name,{Specification_Type}\
+ -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Is_System=0+Parent_{Specification_Type}=+Name,{Specification_Type}\
  -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Class} Parent_{Specification},@key,restricted"
 specification_add -id=602550 {Specification}_child_list2 list "@602550_* child:no_limit Specification Name\
- -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Parent_{Specification_Type}=+Is_Required_For_UI_Gen=1+Name,{Specification_Type}\
+ -n=Specification_Type:Name!@view:114170+Is_Child_Only=0+Is_System=0+Parent_{Specification_Type}=+Is_Required_For_UI_Gen=1+Name,{Specification_Type}\
  -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues {Model} Parent_{Specification},@key,restricted Is_Required_For_UI_Gen,restricted:1"
 specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_edit+link+fkey1\
 ,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link,Title\
