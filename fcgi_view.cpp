@@ -117,6 +117,10 @@ void setup_view_fields( view_source& view,
       if( !fld.pfield.empty( ) )
          value_id += "." + fld.pfield;
 
+      map< string, string > extra_data;
+      if( !fld.extra.empty( ) )
+         parse_field_extra( fld.extra, extra_data );
+
       if( field_id != c_key_field )
       {
          if( fld.ftype == c_field_type_bool )
@@ -132,10 +136,6 @@ void setup_view_fields( view_source& view,
             view.int_fields.insert( value_id );
          else if( fld.ftype == c_field_type_numeric )
             view.numeric_fields.insert( value_id );
-
-         map< string, string > extra_data;
-         if( !fld.extra.empty( ) )
-            parse_field_extra( fld.extra, extra_data );
 
          if( extra_data.count( c_field_extra_html ) )
             view.html_fields.insert( value_id );
@@ -392,14 +392,28 @@ void setup_view_fields( view_source& view,
       else
          view.value_ids.push_back( value_id );
 
+      bool non_prefixed = false;
+      if( extra_data.count( c_field_extra_non_prefixed ) )
+         non_prefixed = true;
+
       string display_name( get_display_string( fld.name ) );
       if( field_id_counts[ field_id ] > 0 )
-         display_name += " " + get_display_string( fld.pfname );
+      {
+         if( non_prefixed )
+            display_name = get_display_string( fld.pfname );
+         else
+            display_name += " " + get_display_string( fld.pfname );
+      }
       view.display_names.push_back( display_name );
 
       string display_name_for_edit( display_name );
       if( !fld.pdname.empty( ) )
-         display_name_for_edit = get_display_string( fld.name ) + " " + get_display_string( fld.pdname );
+      {
+         if( non_prefixed )
+            display_name_for_edit = get_display_string( fld.pdname );
+         else
+            display_name_for_edit = get_display_string( fld.name ) + " " + get_display_string( fld.pdname );
+      }
       view.edit_display_names.push_back( display_name_for_edit );
 
       if( fld.pclass == view.cid )

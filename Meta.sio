@@ -23635,6 +23635,31 @@
       </specifications>
      </field>
      <field/>
+      <id>120128
+      <name>Label_Without_Prefix
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>120108
       <name>Link_Restriction
       <type>int
@@ -33781,6 +33806,7 @@
      <field_info>120125;enum=635
      <field_info>120121
      <field_info>120126
+     <field_info>120128
      <field_info>120116
      <field_info>120108;enum=663
      <field_info>301915:116101!@group:301500+116101

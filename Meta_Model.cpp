@@ -2758,6 +2758,13 @@ void Meta_Model::impl::impl_Generate( )
                         extras += "ignore_links";
                      }
 
+                     if( get_obj( ).child_View( ).child_View_Field( ).Label_Without_Prefix( ) )
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "non_prefixed";
+                     }
+
                      if( get_obj( ).child_View( ).child_View_Field( ).Show_Hide_Start_Point( ) )
                      {
                         if( !extras.empty( ) )
