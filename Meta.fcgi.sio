@@ -7710,6 +7710,14 @@
      <modifiers>8000:relegate,10000:relegate,1000:relegate
     </field>
     <field/>
+     <name>field_view_field_label_without_prefix
+     <field>120128
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>10000:relegate,1000:relegate
+    </field>
+    <field/>
      <name>field_view_field_show_hide_start_point
      <field>120116
      <ftype>bool

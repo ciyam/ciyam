@@ -64,29 +64,30 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
       e_field_id_FK_Trigger_Option = 13,
       e_field_id_Font_Size = 14,
       e_field_id_Ignore_Manual_Links = 15,
-      e_field_id_Link_Permission = 16,
-      e_field_id_Link_Restriction = 17,
-      e_field_id_Mandatory_Option = 18,
-      e_field_id_Name = 19,
-      e_field_id_New_Source = 20,
-      e_field_id_New_Value = 21,
-      e_field_id_Order = 22,
-      e_field_id_Restriction_Spec = 23,
-      e_field_id_Show_Hide_Start_Point = 24,
-      e_field_id_Sort_Manually = 25,
-      e_field_id_Source_Child = 26,
-      e_field_id_Source_Edit_Child = 27,
-      e_field_id_Source_Field = 28,
-      e_field_id_Source_Parent = 29,
-      e_field_id_Source_Parent_Class = 30,
-      e_field_id_Tab_Name = 31,
-      e_field_id_Trigger_Behaviour = 32,
-      e_field_id_Trigger_For_State = 33,
-      e_field_id_Trigger_Option = 34,
-      e_field_id_Type = 35,
-      e_field_id_Use_Full_Width = 36,
-      e_field_id_Use_Source_Parent = 37,
-      e_field_id_View = 38
+      e_field_id_Label_Without_Prefix = 16,
+      e_field_id_Link_Permission = 17,
+      e_field_id_Link_Restriction = 18,
+      e_field_id_Mandatory_Option = 19,
+      e_field_id_Name = 20,
+      e_field_id_New_Source = 21,
+      e_field_id_New_Value = 22,
+      e_field_id_Order = 23,
+      e_field_id_Restriction_Spec = 24,
+      e_field_id_Show_Hide_Start_Point = 25,
+      e_field_id_Sort_Manually = 26,
+      e_field_id_Source_Child = 27,
+      e_field_id_Source_Edit_Child = 28,
+      e_field_id_Source_Field = 29,
+      e_field_id_Source_Parent = 30,
+      e_field_id_Source_Parent_Class = 31,
+      e_field_id_Tab_Name = 32,
+      e_field_id_Trigger_Behaviour = 33,
+      e_field_id_Trigger_For_State = 34,
+      e_field_id_Trigger_Option = 35,
+      e_field_id_Type = 36,
+      e_field_id_Use_Full_Width = 37,
+      e_field_id_Use_Source_Parent = 38,
+      e_field_id_View = 39
    };
 
    Meta_View_Field( );
@@ -127,6 +128,9 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    bool Ignore_Manual_Links( ) const;
    void Ignore_Manual_Links( bool Ignore_Manual_Links );
+
+   bool Label_Without_Prefix( ) const;
+   void Label_Without_Prefix( bool Label_Without_Prefix );
 
    int Link_Restriction( ) const;
    void Link_Restriction( int Link_Restriction );
