@@ -1,0 +1,26 @@
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_clone_for_fk_children)]
+`{`@eq`(`$arg_tfield`,`'`'`)\
+   if( get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).iterate_forwards( ) )
+`,\
+   if( get_obj( ).`{`$arg_tfield`}( )
+    && get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).iterate_forwards( ) )
+`}\
+   {
+      int child_num = 0;
+      do
+      {
+         string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
+         child_key += ' ' + get_obj( ).get_key( );
+
+         get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).child_`{`$arg_schildren`}( ).op_create( child_key );
+
+         get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).child_`{`$arg_schildren`}( ).`{`$arg_sparent`}(
+          get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).get_key( ) );
+
+         get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).child_`{`$arg_schildren`}( ).op_apply( );
+
+      } while( get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).iterate_next( ) );
+   }
+   // [(start trigger_clone_for_fk_children)]
+`}

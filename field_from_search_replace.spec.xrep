@@ -15,6 +15,9 @@
       get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "`{`$arg_keyrep`}", get_obj( ).get_key( ) );\
 `}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
+`{`@eq`(`$arg_inc_labels`,`'true`'`)\
+      get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "@\\2", get_obj( ).get_field_display_name( "\\0" ) );
+`}\
       get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "\\2", to_string( get_obj( ).\\0( )`{`!`@eq`(`'\\1`'`,`'`'`).\\1( )`} ) );\
 `+\n`]`}
 `{`!`@eq`(`$arg_ofield`,`'`'`)

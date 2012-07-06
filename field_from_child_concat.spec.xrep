@@ -80,12 +80,19 @@
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start field_from_child_concat)]
 `{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
-   if( is_create && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
 `,\
+`{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+`,`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
-    && ( is_create`{`!`@eq`(`$arg_cfield`,`'`'`) || get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}\
-`{`!`@eq`(`$arg_ofield`,`'`'`) || get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`} ) )
-`}\
+    && ( get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )
+    || get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} ) ) )
+`,\
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )`{`!`@eq`(`$arg_cfield`,`'`'`)\
+ && get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
+ && get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`} )
+`}`}`}\
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
