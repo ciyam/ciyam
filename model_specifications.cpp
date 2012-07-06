@@ -5725,6 +5725,7 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
    spec_data.data_pairs.push_back( make_pair( c_data_orightb, options_right_bracket ) );
 
    spec_data.data_pairs.push_back( make_pair( "keyrep", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "inc_labels", "" ) );
 }
 
 string field_from_search_replace_specification::static_class_name( ) { return "field_from_search_replace"; }

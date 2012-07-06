@@ -1295,7 +1295,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield\
  arg_cfield=$specification_\0_cfield arg_field_list=$specification_\0_field_list\
  arg_keyrep=$specification_\0_keyrep arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
- arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb`}\
+ arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb\
+ arg_inc_labels=$specification_\0_inc_labels`}\
 `,\
 `@eq`(`'\1`'`,`'for_cms_gen`'`)
 `{`#for_cms_gen.spec.xrep section=after_fetch full_class_name=$full_class_name\
@@ -1809,6 +1810,11 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#trigger_clone_default_user_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
  arg_child=$specification_\0_child arg_ufield=$specification_\0_ufield arg_skip_clones=$specification_\0_skip_clones\
  arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_clone_for_fk_children`'`)
+`{`#trigger_clone_for_fk_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
+ arg_sparent=$specification_\0_sparent arg_tfield=$specification_\0_tfield\
+ arg_children=$specification_\0_children arg_schildren=$specification_\0_schildren`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)
 `{`#update_children.spec.xrep section=after_store full_class_name=$full_class_name\
