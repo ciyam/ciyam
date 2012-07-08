@@ -306,6 +306,10 @@ void setup_view_fields( view_source& view,
             if( extra_data.count( c_field_extra_security_level ) )
                view.security_level_field = field_id;
 
+            // NOTE: Only one is effective owner field is expected to exist in a view.
+            if( extra_data.count( c_field_extra_is_effective_owner ) )
+               view.is_effective_owner_field = field_id;
+
             if( extra_data.count( c_field_extra_replace_underbars ) )
                view.replace_underbar_fields.insert( value_id );
 
@@ -477,6 +481,13 @@ bool output_view_form( ostream& os, const string& act,
    else
       is_record_owner = false;
 
+   if( !source.is_effective_owner_field.empty( ) )
+   {
+      int is_effective_owner_field = atoi( source.field_values.find( source.is_effective_owner_field )->second.c_str( ) );
+      if( is_effective_owner_field )
+         is_record_owner = true;
+   }
+
    string image_width( to_string( sess_info.image_width ) );
    string image_height( to_string( sess_info.image_height ) );
 
@@ -507,8 +518,9 @@ bool output_view_form( ostream& os, const string& act,
       {
          bool had_any = false;
 
-         if( !is_no_edit && ( !is_admin_edit || sess_info.is_admin_user )
-          && ( !is_owner_edit || owner.empty( ) || owner == sess_info.user_key ) )
+         if( !is_no_edit
+          && ( !is_admin_edit || sess_info.is_admin_user )
+          && ( !is_owner_edit || owner.empty( ) || is_record_owner ) )
          {
             // NOTE: Unowned records (marked as "owner edit") cannot be edited, however,
             // record specific actions will still appear (unless the record is changing
@@ -518,8 +530,8 @@ bool output_view_form( ostream& os, const string& act,
             // "admin" or the user key matches the current user prevent editing.
             if( !( source.state & c_state_uneditable )
              && !( source.state & c_state_is_changing )
-             && ( !is_owner_edit || owner == sess_info.user_key )
-             && ( !is_admin_owner_edit || sess_info.is_admin_user || owner == sess_info.user_key )
+             && ( !is_owner_edit || is_record_owner )
+             && ( !is_admin_owner_edit || sess_info.is_admin_user || is_record_owner )
              && ( sess_info.is_admin_user || mod_info.user_info_view_id != source.vici->second->id || data == sess_info.user_key ) )
             {
                had_any = true;

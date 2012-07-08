@@ -340,6 +340,7 @@ const int c_enum_field_extra_current_year( 14 );
 const int c_enum_field_extra_security_level( 18 );
 const int c_enum_field_extra_create_datetime( 15 );
 const int c_enum_field_extra_modify_datetime( 16 );
+const int c_enum_field_extra_is_effective_owner( 28 );
 const int c_enum_field_extra_replace_underbars( 19 );
 const int c_enum_field_extra_enforce_uppercase( 20 );
 const int c_enum_field_extra_user_group( -2 );
@@ -406,6 +407,8 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_create_datetime";
    else if( to_string( val ) == to_string( "16" ) )
       string_name = "enum_field_extra_modify_datetime";
+   else if( to_string( val ) == to_string( "28" ) )
+      string_name = "enum_field_extra_is_effective_owner";
    else if( to_string( val ) == to_string( "19" ) )
       string_name = "enum_field_extra_replace_underbars";
    else if( to_string( val ) == to_string( "20" ) )
@@ -6491,6 +6494,7 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_18", get_enum_string_field_extra( 18 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_15", get_enum_string_field_extra( 15 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_16", get_enum_string_field_extra( 16 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_28", get_enum_string_field_extra( 28 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_19", get_enum_string_field_extra( 19 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_20", get_enum_string_field_extra( 20 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_-2", get_enum_string_field_extra( -2 ) ) );
@@ -6586,6 +6590,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 18 );
    g_field_extra_enum.insert( 15 );
    g_field_extra_enum.insert( 16 );
+   g_field_extra_enum.insert( 28 );
    g_field_extra_enum.insert( 19 );
    g_field_extra_enum.insert( 20 );
    g_field_extra_enum.insert( -2 );

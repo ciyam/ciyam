@@ -516,10 +516,10 @@ void output_list_form( ostream& os,
 
    if( is_no_new || !allow_list_actions
     || ( is_owner_new && !has_owner_parent )
+    || ( is_admin_new && !sess_info.is_admin_user )
     || source.view.empty( ) || ( ( parent_state & c_state_uneditable )
     && ( !ignore_parent_state || !( parent_state & c_state_ignore_uneditable ) ) )
-    || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) )
-    || ( !sess_info.is_admin_user && ( is_admin_new || list_type == c_list_type_admin ) ) )
+    || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) ) )
       allow_new_record = false;
 
    string image_width( to_string( sess_info.image_width ) );
@@ -1409,8 +1409,8 @@ void output_list_form( ostream& os,
 
             if( !is_no_erase
              && ( !is_owner_erase || has_owner_parent )
-             && ( !is_admin_owner_erase || has_owner_parent || sess_info.is_admin_user )
-             && ( sess_info.is_admin_user || ( list_type != c_list_type_admin && !is_admin_erase ) ) )
+             && ( !is_admin_erase || sess_info.is_admin_user )
+             && ( !is_admin_owner_erase || has_owner_parent || sess_info.is_admin_user ) )
             {
                had_data = true;
 
@@ -1440,7 +1440,7 @@ void output_list_form( ostream& os,
                os << "' );\" style=\"cursor:pointer\"></input>";
             }
 
-            if( sess_info.is_admin_user || ( list_type != c_list_type_admin ) )
+            if( sess_info.is_admin_user || ( list_type != c_list_type_admin && list_type != c_list_type_child_admin ) )
             {
                for( size_t i = 0; i < ( source.lici->second )->actions.size( ); i++ )
                {

@@ -23,7 +23,7 @@
 `{`$enum_field_action_create_access_restriction`=`'0=none 1=owner 2=admin 3=non_admin`'`}
 `{`$enum_field_action_create_type`=`'0=standard 1=confirmation 2=edit_and_save`'`}
 `{`$enum_field_action_type`=`'0=create_record 1=procedure_call`'`}
-`{`$enum_field_extra`=`'0=none 1=file 2=href 9=html 23=text 4=notes 5=order 6=active 3=image 7=mailto 21=file_link 8=actions 22=filename 10=password 11=defcurrent 17=permission 24=orientation 25=epassword 26=hpassword 27=hpassword_salt 13=manual_link 12=user_perms 14=current_year 18=security_level 15=create_datetime 16=modify_datetime 19=replace_underbars 20=enforce_uppercase -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
+`{`$enum_field_extra`=`'0=none 1=file 2=href 9=html 23=text 4=notes 5=order 6=active 3=image 7=mailto 21=file_link 8=actions 22=filename 10=password 11=defcurrent 17=permission 24=orientation 25=epassword 26=hpassword 27=hpassword_salt 13=manual_link 12=user_perms 14=current_year 18=security_level 15=create_datetime 16=modify_datetime 28=is_effective_owner 19=replace_underbars 20=enforce_uppercase -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
 `{`$enum_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 30=Any_Scalar_Type 31=Any_Math_Type 39=Any_Non_Text_Type 40=Date_Or_Time 41=Calendar_Type 45=Any_Date_Or_Time_Type 49=Any_Primitive 50=Any_Relationship 51=Self_Relationship 52=Non_Self_Relationship 99=Any_Type`'`}
 `{`$enum_font_size`=`'0=default 1=large 2=larger 6=small 7=smaller`'`}
 `{`$enum_fraction_limit`=`'0=none 2=halves 4=quarters`'`}
