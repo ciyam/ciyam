@@ -971,7 +971,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
 `{`#unactionable_field_value.spec.xrep section=get_state\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
- arg_value=$specification_\0_value arg_evalue=$specification_\0_evalue arg_not_eq=$specification_\0_not_eq`}\
+ arg_value=$specification_\0_value arg_evalue=$specification_\0_evalue\
+ arg_not_eq=$specification_\0_not_eq arg_fistexttype=$specification_\0_fistexttype`}\
 ### get_state
 `}`]`}
 

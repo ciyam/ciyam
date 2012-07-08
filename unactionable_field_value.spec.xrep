@@ -1,11 +1,18 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start unactionable_field_value)]
 `{`@eq`(`$arg_value`,`'`'`)\
-   if( `{`!`@eq`(`$arg_not_eq`,`'`')!`}is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )\
+`{`@eq`(`$arg_fistexttype`,`'0`'`)\
+   if( `{`!`@eq`(`$arg_not_eq`,`'`')!`}get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) )\
 `,\
-   if( to_string( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) )\
+   if( `{`!`@eq`(`$arg_not_eq`,`'`')!`}is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )\
+`}`,\
+`{`@eq`(`$arg_fistexttype`,`'0`'`)\
+   if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
+ `{`!`@eq`(`$arg_not_eq`,`'`'`)!=`,==`} `{`$arg_value`} )`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}\
+`,\
+   if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
  `{`!`@eq`(`$arg_not_eq`,`'`'`)!=`,==`} "`{`$arg_value`}" )`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}\
-`}
+`}`}
       state |= c_state_unactionable;
    // [(finish unactionable_field_value)]
 `}
