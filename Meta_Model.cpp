@@ -3155,36 +3155,25 @@ void Meta_Model::impl::impl_Generate( )
                    + to_string( get_obj( ).child_List( ).Access_Restriction( ) ) + " in Model::Generate" );
             }
 
-            bool is_admin_or_owner_list = ( is_owner_list || is_admin_list || is_admin_owner_list );
-
             if( get_obj( ).child_List( ).Create_Restriction( ) != 0 )
             {
                if( get_obj( ).child_List( ).Create_Restriction( ) == 1 )
                {
-                  if( !is_admin_or_owner_list )
-                  {
-                     if( !list_extra.empty( ) )
-                        list_extra += ',';
-                     list_extra += "owner_new";
-                  }
+                  if( !list_extra.empty( ) )
+                     list_extra += ',';
+                  list_extra += "owner_new";
                }
                else if( get_obj( ).child_List( ).Create_Restriction( ) == 2 )
                {
-                  if( !is_admin_or_owner_list )
-                  {
-                     if( !list_extra.empty( ) )
-                        list_extra += ',';
-                     list_extra += "admin_new";
-                  }
+                  if( !list_extra.empty( ) )
+                     list_extra += ',';
+                  list_extra += "admin_new";
                }
                else if( get_obj( ).child_List( ).Create_Restriction( ) == 3 )
                {
-                  if( !is_admin_or_owner_list )
-                  {
-                     if( !list_extra.empty( ) )
-                        list_extra += ',';
-                     list_extra += "admin_owner_new";
-                  }
+                  if( !list_extra.empty( ) )
+                     list_extra += ',';
+                  list_extra += "admin_owner_new";
                }
                else if( get_obj( ).child_List( ).Create_Restriction( ) == 4 )
                {
@@ -3210,30 +3199,21 @@ void Meta_Model::impl::impl_Generate( )
             {
                if( get_obj( ).child_List( ).Destroy_Restriction( ) == 1 )
                {
-                  if( !is_admin_or_owner_list )
-                  {
-                     if( !list_extra.empty( ) )
-                        list_extra += ',';
-                     list_extra += "owner_erase";
-                  }
+                  if( !list_extra.empty( ) )
+                     list_extra += ',';
+                  list_extra += "owner_erase";
                }
                else if( get_obj( ).child_List( ).Destroy_Restriction( ) == 2 )
                {
-                  if( !is_admin_or_owner_list )
-                  {
-                     if( !list_extra.empty( ) )
-                        list_extra += ',';
-                     list_extra += "admin_erase";
-                  }
+                  if( !list_extra.empty( ) )
+                     list_extra += ',';
+                  list_extra += "admin_erase";
                }
                else if( get_obj( ).child_List( ).Destroy_Restriction( ) == 3 )
                {
-                  if( !is_admin_or_owner_list )
-                  {
-                     if( !list_extra.empty( ) )
-                        list_extra += ',';
-                     list_extra += "admin_owner_erase";
-                  }
+                  if( !list_extra.empty( ) )
+                     list_extra += ',';
+                  list_extra += "admin_owner_erase";
                }
                else if( get_obj( ).child_List( ).Destroy_Restriction( ) == 4 )
                {

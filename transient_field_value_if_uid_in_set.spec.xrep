@@ -1,0 +1,25 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_value_if_uid_in_set)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      set< string > all_keys;
+      if( !get_obj( ).`{`$arg_sfield`}( ).empty( ) )
+         split_string( get_obj( ).`{`$arg_sfield`}( ), all_keys );
+
+      if( all_keys.count( get_uid( ) ) )
+         get_obj( ).`{`$arg_field`}( `{`$arg_value`} );
+   }
+   // [(finish transient_field_value_if_uid_in_set)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_value_if_uid_in_set)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish transient_field_value_if_uid_in_set)]
+`}

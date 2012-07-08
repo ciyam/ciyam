@@ -579,6 +579,10 @@
      <name>enum_field_extra_modify_datetime
     </value>
     <value/>
+     <data>28
+     <name>enum_field_extra_is_effective_owner
+    </value>
+    <value/>
      <data>19
      <name>enum_field_extra_replace_underbars
     </value>
