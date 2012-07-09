@@ -246,10 +246,13 @@ string gv_default_Id = string( );
 bool gv_default_Installed = bool( 0 );
 int gv_default_Integer = int( 0 );
 bool gv_default_Is_Other_Package = bool( 0 );
+string gv_default_Model = string( );
 string gv_default_Name = string( );
 string gv_default_Numeric = string( );
+string gv_default_Other_Package = string( );
 bool gv_default_Other_Package_Required = bool( 0 );
 string gv_default_Other_Package_Type = string( );
+string gv_default_Package = string( );
 int gv_default_Primitive = int( 6 );
 string gv_default_String = string( );
 string gv_default_Time = string( );
@@ -1216,7 +1219,7 @@ void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Model( ) ) )
+   if( is_create && ( get_obj( ).Model( ) == gv_default_Model ) )
       get_obj( ).Model( get_obj( ).Package( ).Model( ) );
    // [(finish default_to_field)]
 

@@ -254,6 +254,7 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 int gv_default_Cascade_Op = int( 0 );
+string gv_default_Child_Class = string( );
 string gv_default_Child_Class_File_Field_Name = string( );
 string gv_default_Child_Class_Name = string( );
 string gv_default_Child_Name = string( );
@@ -262,7 +263,10 @@ string gv_default_Field_Id = string( );
 string gv_default_Field_Key = string( );
 bool gv_default_Internal = bool( 0 );
 bool gv_default_Mandatory = bool( 1 );
+string gv_default_Model = string( );
 string gv_default_Name = string( );
+string gv_default_Parent_Class = string( );
+string gv_default_Source_Relationship = string( );
 bool gv_default_Transient = bool( 0 );
 
 set< int > g_cascade_op_enum;

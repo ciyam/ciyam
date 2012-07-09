@@ -136,6 +136,7 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 string gv_default_Id = string( );
 string gv_default_Name = string( );
+string gv_default_Workgroup = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]

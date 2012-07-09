@@ -153,6 +153,7 @@ string gv_default_Email = string( );
 string gv_default_Password = string( );
 string gv_default_Permissions = string( );
 string gv_default_User_Id = string( );
+string gv_default_Workgroup = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]

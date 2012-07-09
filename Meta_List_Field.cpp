@@ -497,8 +497,17 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Access_Parent_Modifier = string( );
+string gv_default_Access_Permission = string( );
 int gv_default_Access_Restriction = int( 0 );
 int gv_default_Alignment = int( 0 );
+string gv_default_Child_Rel_Child_Class = string( );
+string gv_default_Child_Rel_Source_Child = string( );
+string gv_default_Child_Rel_Source_Field = string( );
+string gv_default_Child_Rel_Source_Parent = string( );
+string gv_default_Child_Rel_Source_Parent_Class = string( );
+string gv_default_Child_Relationship = string( );
+string gv_default_Class = string( );
 bool gv_default_Exact_Match_Only = bool( 0 );
 bool gv_default_Exclude_In_Use_FK = bool( 0 );
 int gv_default_Font_Size = int( 0 );
@@ -506,22 +515,35 @@ string gv_default_Include_Key_Additions = string( );
 int gv_default_Label_Class = int( 0 );
 int gv_default_Label_Source = int( 0 );
 bool gv_default_Label_Without_Prefix = bool( 0 );
+string gv_default_Link_Permission = string( );
 int gv_default_Link_Restriction = int( 0 );
 int gv_default_Link_Type = int( 0 );
+string gv_default_List = string( );
 string gv_default_Name = string( );
 bool gv_default_Non_Instance_Procedure = bool( 0 );
 int gv_default_Notes_Truncation = int( 0 );
 bool gv_default_Omit_Versions = bool( 0 );
 string gv_default_Order = string( );
+string gv_default_Parent_Class = string( );
 int gv_default_Print_Type = int( 0 );
+string gv_default_Procedure = string( );
 string gv_default_Procedure_Args = string( );
+string gv_default_Restriction_Field = string( );
+string gv_default_Restriction_Spec = string( );
 string gv_default_Restriction_Value = string( );
 bool gv_default_Retain_Selected_Rows = bool( 1 );
 bool gv_default_Reverse_Order = bool( 0 );
 int gv_default_Search_Option_Limit = int( 0 );
 string gv_default_Select_Key_Exclusions = string( );
+string gv_default_Source_Child = string( );
+string gv_default_Source_Child_Class = string( );
+string gv_default_Source_Field = string( );
+string gv_default_Source_Grandchild = string( );
+string gv_default_Source_Parent = string( );
+string gv_default_Source_Parent_Class = string( );
 int gv_default_Switch_Type = int( 0 );
 int gv_default_Trigger_Option = int( 0 );
+string gv_default_Type = string( );
 bool gv_default_Use_Child_Rel_Source_Parent = bool( 0 );
 bool gv_default_Use_In_Text_Search_Title = bool( 0 );
 bool gv_default_Use_Source_Parent = bool( 0 );
@@ -3645,7 +3667,7 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Class( ) ) )
+   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) )
       get_obj( ).Class( get_obj( ).List( ).Class( ) );
    // [(finish default_to_field)]
 

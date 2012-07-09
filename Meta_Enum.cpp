@@ -149,6 +149,7 @@ string gv_default_Id = string( );
 bool gv_default_Internal = bool( 0 );
 string gv_default_Name = string( );
 int gv_default_Primitive = int( 5 );
+string gv_default_Workgroup = string( );
 
 set< int > g_primitive_enum;
 

@@ -346,6 +346,7 @@ bool gv_default_Show_Inaccessible_Modules = bool( 0 );
 bool gv_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool gv_default_Use_URL_Checksum = bool( 1 );
 string gv_default_Version = string( "0.1" );
+string gv_default_Workgroup = string( );
 
 set< int > g_app_auto_days_enum;
 set< int > g_app_print_row_limit_enum;

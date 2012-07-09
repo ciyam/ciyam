@@ -428,6 +428,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 int gv_default_Access_Restriction = int( 0 );
 string gv_default_Clone_Key = string( );
 int gv_default_Create_Type = int( 0 );
+string gv_default_New_Record_Class = string( );
+string gv_default_New_Record_FK_Field = string( );
 string gv_default_New_Record_FK_Value = string( );
 int gv_default_Type = int( 0 );
 

@@ -268,17 +268,22 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Access_Permission = string( );
 int gv_default_Access_Restriction = int( 0 );
 bool gv_default_Allow_Copy_Action = bool( 0 );
 bool gv_default_Allow_Printable_Version = bool( 0 );
 bool gv_default_Auto_Back_After_Create = bool( 0 );
+string gv_default_Change_Permission = string( );
 int gv_default_Change_Restriction = int( 0 );
+string gv_default_Class = string( );
 string gv_default_Id = string( );
+string gv_default_Model = string( );
 string gv_default_Name = string( );
 int gv_default_PDF_Font_Type = int( 0 );
 int gv_default_PDF_View_Type = int( 0 );
 bool gv_default_Print_Without_Highlight = bool( 0 );
 string gv_default_Title = string( "?" );
+string gv_default_Type = string( );
 string gv_default_Type_Key = string( );
 bool gv_default_Use_First_Row_As_Header = bool( 0 );
 
@@ -1911,7 +1916,7 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Name( ) ) )
+   if( is_create && ( get_obj( ).Name( ) == gv_default_Name ) )
       get_obj( ).Name( get_obj( ).Type( ).View_Name( ) );
    // [(finish default_to_field)]
 
