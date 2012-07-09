@@ -296,10 +296,12 @@ string gv_default_Next_Class_Id = string( );
 string gv_default_Next_List_Id = string( );
 string gv_default_Next_Specification_Id = string( );
 string gv_default_Next_View_Id = string( );
+string gv_default_Permission = string( );
 string gv_default_Source_File = string( );
 string gv_default_Status = string( );
 bool gv_default_Use_Package_Demo_Data = bool( 0 );
 string gv_default_Version = string( "0.1" );
+string gv_default_Workgroup = string( );
 int gv_default_Year_Created = int( );
 
 set< int > g_add_packages_enum;
@@ -6105,22 +6107,22 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
    // [(finish file_link)]
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Next_Class_Id( ) ) )
+   if( is_create && ( get_obj( ).Next_Class_Id( ) == gv_default_Next_Class_Id ) )
       get_obj( ).Next_Class_Id( get_obj( ).Id( ) + "C100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Next_Specification_Id( ) ) )
+   if( is_create && ( get_obj( ).Next_Specification_Id( ) == gv_default_Next_Specification_Id ) )
       get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Next_List_Id( ) ) )
+   if( is_create && ( get_obj( ).Next_List_Id( ) == gv_default_Next_List_Id ) )
       get_obj( ).Next_List_Id( get_obj( ).Id( ) + "L100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Next_View_Id( ) ) )
+   if( is_create && ( get_obj( ).Next_View_Id( ) == gv_default_Next_View_Id ) )
       get_obj( ).Next_View_Id( get_obj( ).Id( ) + "V100" );
    // [(finish default_to_field)]
 

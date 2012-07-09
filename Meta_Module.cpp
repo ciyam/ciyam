@@ -137,6 +137,8 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Application = string( );
+string gv_default_Model = string( );
 string gv_default_Order = string( );
 
 // [<start anonymous>]

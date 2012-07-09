@@ -144,6 +144,7 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Enum = string( );
 bool gv_default_Internal = bool( 0 );
 string gv_default_Label = string( );
 string gv_default_Order = string( );

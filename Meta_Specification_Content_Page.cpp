@@ -639,6 +639,52 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Actions_Field = string( );
+string gv_default_Child_Self_Relationship = string( );
+string gv_default_Clone_Permitted_Field = string( );
+string gv_default_Code_Field = string( );
+string gv_default_Content_Type = string( );
+string gv_default_Create_Copy_Output_Arg = string( );
+string gv_default_Create_Copy_Procedure = string( );
+string gv_default_File_Name_Field = string( );
+string gv_default_File_Name_Gen_Field = string( );
+string gv_default_Frag_Code_Field = string( );
+string gv_default_Frag_Content_Field = string( );
+string gv_default_Frag_Group_Field = string( );
+string gv_default_Fragment_Class = string( );
+string gv_default_Generate_Children_Field = string( );
+string gv_default_Generate_Output_Arg = string( );
+string gv_default_Generate_Procedure = string( );
+string gv_default_Group_Base_Path_Field = string( );
+string gv_default_Group_Class = string( );
+string gv_default_Group_Extra_Field = string( );
+string gv_default_Group_Field = string( );
+string gv_default_Group_Name_Field = string( );
+string gv_default_Hyperlink_Title_Field = string( );
+string gv_default_Link_Class = string( );
+string gv_default_Link_Content_Field = string( );
+string gv_default_Link_Group_Field = string( );
+string gv_default_Link_Name_Field = string( );
+string gv_default_Link_Page_Link_Child = string( );
+string gv_default_Meta_Content_Field = string( );
+string gv_default_Next_Child_Num_Field = string( );
+string gv_default_Order_Field = string( );
+string gv_default_Owned_Links_Field = string( );
+string gv_default_Page_Field = string( );
+string gv_default_Page_File_Class = string( );
+string gv_default_Page_File_Field = string( );
+string gv_default_Page_File_Name_Field = string( );
+string gv_default_Page_File_Name_Gen_Field = string( );
+string gv_default_Page_Link_Class = string( );
+string gv_default_Page_Page_Link_Child = string( );
+string gv_default_Parent_Page_Field = string( );
+string gv_default_Sub_Title_Field = string( );
+string gv_default_Text_Content_Field = string( );
+string gv_default_Title_Field = string( );
+string gv_default_Variable_Class = string( );
+string gv_default_Variable_Name = string( );
+string gv_default_Variable_Value = string( );
+
 // [<start anonymous>]
 // [<finish anonymous>]
 

@@ -415,6 +415,11 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Child_File_Field = string( );
+string gv_default_Source_Child_File_Field = string( );
+string gv_default_Source_Child_Rel_Child_Class = string( );
+string gv_default_Source_Child_Relationship = string( );
+
 // [<start anonymous>]
 // [<finish anonymous>]
 

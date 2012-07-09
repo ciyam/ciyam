@@ -176,6 +176,7 @@ string gv_default_Next_Enum_Id = string( "E100" );
 string gv_default_Next_Model_Id = string( "M100" );
 string gv_default_Next_Permission_Id = string( "P100" );
 string gv_default_Next_Type_Id = string( "T100" );
+string gv_default_Standard_Package = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]

@@ -173,6 +173,8 @@ bool gv_default_Internal = bool( 0 );
 string gv_default_Name = string( );
 string gv_default_Order = string( );
 int gv_default_Primitive = int( 0 );
+string gv_default_Procedure = string( );
+string gv_default_Source_Procedure_Arg = string( );
 int gv_default_Type = int( 0 );
 
 set< int > g_primitive_enum;

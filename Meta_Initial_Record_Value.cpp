@@ -136,6 +136,8 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Field = string( );
+string gv_default_Initial_Record = string( );
 string gv_default_Value = string( );
 
 // [<start anonymous>]

@@ -295,7 +295,9 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Class = string( );
 string gv_default_Default = string( );
+string gv_default_Enum = string( );
 int gv_default_Extra = int( 0 );
 string gv_default_Id = string( );
 bool gv_default_Internal = bool( 0 );
@@ -304,9 +306,12 @@ bool gv_default_Is_Text_Type = bool( 1 );
 bool gv_default_Mandatory = bool( 1 );
 string gv_default_Name = string( );
 numeric gv_default_Numeric_Decimals = numeric( 0 );
+string gv_default_Parent_Class = string( );
 string gv_default_Parent_Class_Name = string( );
 int gv_default_Primitive = int( 0 );
+string gv_default_Source_Field = string( );
 bool gv_default_Transient = bool( 0 );
+string gv_default_Type = string( );
 int gv_default_UOM = int( 0 );
 bool gv_default_Use_In_Text_Search = bool( 0 );
 

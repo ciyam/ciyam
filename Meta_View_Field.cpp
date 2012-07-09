@@ -397,11 +397,14 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Access_Permission = string( );
 int gv_default_Access_Restriction = int( 0 );
 int gv_default_Access_Scope = int( 0 );
+string gv_default_Change_Permission = string( );
 int gv_default_Change_Restriction = int( 0 );
 int gv_default_Change_Scope = int( 0 );
 int gv_default_Child_List_Extra_Option = int( 0 );
+string gv_default_Class = string( );
 int gv_default_Date_Precision_Option = int( 0 );
 int gv_default_Enum_Finishes_At = int( 0 );
 int gv_default_Enum_Starts_At = int( 0 );
@@ -410,20 +413,29 @@ int gv_default_FK_Trigger_Option = int( 0 );
 int gv_default_Font_Size = int( 0 );
 bool gv_default_Ignore_Manual_Links = bool( 0 );
 bool gv_default_Label_Without_Prefix = bool( 0 );
+string gv_default_Link_Permission = string( );
 int gv_default_Link_Restriction = int( 4 );
 int gv_default_Mandatory_Option = int( 0 );
 string gv_default_Name = string( );
 int gv_default_New_Source = int( 0 );
 string gv_default_New_Value = string( );
 string gv_default_Order = string( );
+string gv_default_Restriction_Spec = string( );
 bool gv_default_Show_Hide_Start_Point = bool( 0 );
 bool gv_default_Sort_Manually = bool( 0 );
+string gv_default_Source_Child = string( );
+string gv_default_Source_Edit_Child = string( );
+string gv_default_Source_Field = string( );
+string gv_default_Source_Parent = string( );
+string gv_default_Source_Parent_Class = string( );
 string gv_default_Tab_Name = string( );
 int gv_default_Trigger_Behaviour = int( 0 );
 int gv_default_Trigger_For_State = int( 0 );
 int gv_default_Trigger_Option = int( 0 );
+string gv_default_Type = string( );
 bool gv_default_Use_Full_Width = bool( 0 );
 bool gv_default_Use_Source_Parent = bool( 0 );
+string gv_default_View = string( );
 
 set< int > g_view_field_restrict_enum;
 set< int > g_view_field_access_scope_enum;
@@ -2932,7 +2944,7 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Class( ) ) )
+   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) )
       get_obj( ).Class( get_obj( ).View( ).Class( ) );
    // [(finish default_to_field)]
 

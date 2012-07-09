@@ -259,11 +259,15 @@ bool gv_default_Delay_Initial_Records = bool( 0 );
 int gv_default_Extra = int( 0 );
 string gv_default_Header_File = string( );
 string gv_default_Id = string( );
+string gv_default_Model = string( );
 string gv_default_Name = string( );
 string gv_default_Next_Field_Id = string( );
 string gv_default_Next_Procedure_Id = string( );
 string gv_default_Plural = string( );
+string gv_default_Quick_Link_Field = string( );
+string gv_default_Source_Class = string( );
 string gv_default_Source_File = string( );
+string gv_default_Source_Model = string( );
 string gv_default_Static_Instance_Key = string( );
 int gv_default_Type = int( 0 );
 
@@ -3329,12 +3333,12 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_auto_int_inc)]
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Next_Field_Id( ) ) )
+   if( is_create && ( get_obj( ).Next_Field_Id( ) == gv_default_Next_Field_Id ) )
       get_obj( ).Next_Field_Id( get_obj( ).Id( ) + "F100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Next_Procedure_Id( ) ) )
+   if( is_create && ( get_obj( ).Next_Procedure_Id( ) == gv_default_Next_Procedure_Id ) )
       get_obj( ).Next_Procedure_Id( get_obj( ).Id( ) + "P100" );
    // [(finish default_to_field)]
 

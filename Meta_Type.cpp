@@ -256,6 +256,7 @@ int gv_default_Rounding_Method = int( 3 );
 bool gv_default_Show_Plus_Sign = bool( 0 );
 int gv_default_String_Domain = int( 0 );
 int gv_default_Time_Precision = int( 0 );
+string gv_default_Workgroup = string( );
 int gv_default_Zero_Padding = int( 0 );
 
 set< int > g_date_precision_enum;

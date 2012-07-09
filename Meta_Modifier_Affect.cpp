@@ -188,9 +188,13 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Class = string( );
 int gv_default_Extra = int( 0 );
+string gv_default_Field = string( );
 bool gv_default_Internal = bool( 0 );
+string gv_default_Modifier = string( );
 int gv_default_Scope = int( 0 );
+string gv_default_Source_Modifier_Affect = string( );
 int gv_default_Type = int( 0 );
 
 set< int > g_modifier_affect_extra_enum;
@@ -974,7 +978,7 @@ void Meta_Modifier_Affect::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && is_null( get_obj( ).Class( ) ) )
+   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) )
       get_obj( ).Class( get_obj( ).Modifier( ).Class( ) );
    // [(finish default_to_field)]
 

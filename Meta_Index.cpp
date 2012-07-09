@@ -189,8 +189,15 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Class = string( );
+string gv_default_Field_1 = string( );
+string gv_default_Field_2 = string( );
+string gv_default_Field_3 = string( );
+string gv_default_Field_4 = string( );
+string gv_default_Field_5 = string( );
 bool gv_default_Internal = bool( 0 );
 string gv_default_Order = string( );
+string gv_default_Source_Index = string( );
 bool gv_default_Unique = bool( 1 );
 
 // [<start anonymous>]

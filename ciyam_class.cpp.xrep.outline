@@ -398,6 +398,8 @@ external_aliases_lookup_container g_external_aliases_lookup;
 `{`?`$all_fields`[`$all_fields`%,`,\
 `{`?`$standard_fields`&`@in`(`'\0`'`,`$standard_fields`)\
 \1 gv_default_\0 = \1(`{`(`?`$field_default_\0`) `{`$field_default_\0`}`} );
+`,`?`$parent_fields`&`@in`(`'\0`'`,`$parent_fields`)\
+string gv_default_\0 = string( );
 `}`]`}
 `{`(`?`$all_enums`)`[`$all_enums`%,`,\
 set< \1 > g_\0_enum;
