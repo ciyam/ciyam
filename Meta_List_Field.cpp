@@ -3738,6 +3738,9 @@ void Meta_List_Field::impl::for_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start for_store>]
+//nyi
+   if( get_obj( ).Type( ).get_key( ) == "user_action_event" && get_obj( ).Access_Restriction( ) > 3 )
+      throw runtime_error( "Invalid Access Restriction for 'user_action_event' field." );
    // [<finish for_store>]
 }
 

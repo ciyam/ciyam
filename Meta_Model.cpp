@@ -4632,8 +4632,16 @@ void Meta_Model::impl::impl_Generate( )
                         case 0:
                         break;
 
+                        case 1: // i.e. owner_only
+                        actions += '#';
+                        break;
+
                         case 2: // i.e. admin_only
                         actions += '@';
+                        break;
+
+                        case 3: // i.e. admin_owner_only
+                        actions += '%';
                         break;
 
                         default:
