@@ -1220,7 +1220,7 @@ void output_actions( ostream& os,
 
    // NOTE: Full action syntax is as follows (spaces are just here for clarity):
    //
-   // [*?][@~#] [<][>] [!][^][-][_] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [%@id|value] [&[!]perm]
+   // [*?][@~#%] [<][>] [!][^][-][_] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [%@id|value] [&[!]perm]
    //
    // where args can be: @rfields|@rvalues|value
 
@@ -1301,9 +1301,10 @@ void output_actions( ostream& os,
          next_action.erase( 0, 1 );
       }
 
-      // NOTE: Actions starting with '@' will only be available to an "admin" user, actions starting
-      // with '~' are available to any user *except* the "admin" user and, finally, the actions that
-      // start with '#' are only applicable to the user that owns the record (if specified as owned).
+      // NOTE: Actions starting with '@' will only be available to an "admin" user while actions with
+      // '~' are available to any user *except* the "admin" user. Actions starting with '#' will only
+      // be applicable to the user that owns the record (if specified as owned) whilst those starting
+      // with '%' are applicable to either the "owner" or the "admin" user.
       if( next_action[ 0 ] == '@' )
       {
          if( !sess_info.is_admin_user )
@@ -1321,6 +1322,13 @@ void output_actions( ostream& os,
       else if( next_action[ 0 ] == '#' )
       {
          if( sess_info.user_key != owner )
+            continue;
+
+         next_action.erase( 0, 1 );
+      }
+      else if( next_action[ 0 ] == '%' )
+      {
+         if( !sess_info.is_admin_user && sess_info.user_key != owner )
             continue;
 
          next_action.erase( 0, 1 );

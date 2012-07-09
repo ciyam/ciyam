@@ -1500,6 +1500,24 @@ void output_list_form( ostream& os,
                         next_action.erase( 0, 1 );
                   }
 
+                  // NOTE: Actions starting with '#' will only be available to an "owner".
+                  if( next_action[ 0 ] == '#' )
+                  {
+                     if( !has_owner_parent )
+                        continue;
+                     else
+                        next_action.erase( 0, 1 );
+                  }
+
+                  // NOTE: Actions starting with '%' will only be available to an "owner" or the "admin" user.
+                  if( next_action[ 0 ] == '%' )
+                  {
+                     if( !sess_info.is_admin_user && !has_owner_parent )
+                        continue;
+                     else
+                        next_action.erase( 0, 1 );
+                  }
+
                   // NOTE: Actions starting with '+' will retain the list row "checks".
                   bool keep_checks = false;
                   if( next_action[ 0 ] == '+' )
