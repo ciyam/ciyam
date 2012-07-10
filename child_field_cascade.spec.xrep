@@ -55,7 +55,7 @@
 `}\
                {
                   has_changed = true;
-                  get_obj( ).child_Photo( ).\\\\\\\\0( get_obj( ).\\\\\\\\1( ) );
+                  get_obj( ).child_`{`$arg_child`}( ).\\\\\\\\0( get_obj( ).\\\\\\\\1( ) );
                }
 `}`+\n`]`}
                if( has_changed )
