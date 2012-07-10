@@ -1938,7 +1938,7 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `{`@eq`(`'\1`'`,`'filter_field_value`'`)\
 `{`#filter_field_value.spec.xrep section=is_filtered arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
- arg_value=$specification_\0_value arg_tfield=$specification_\0_tfield`}
+ arg_value=$specification_\0_value arg_tfield=$specification_\0_tfield arg_perm=$specification_\0_perm`}
 `,\
 `@eq`(`'\1`'`,`'filter_perm_restricted`'`)\
 `{`#filter_perm_restricted.spec.xrep section=is_filtered arg_name=\0\

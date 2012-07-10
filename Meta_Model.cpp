@@ -4756,6 +4756,7 @@ void Meta_Model::impl::impl_Generate( )
 
                   if( specification_type == "filter_field_value"
                    || specification_type == "filter_perm_restricted"
+                   || specification_type == "filter_field_value_perm"
                    || ( !has_security_level_field && specification_type == "filter_security_level" )
                    || ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( ) && specification_type == "filter_non_uid" ) )
                   {
