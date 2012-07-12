@@ -1751,7 +1751,7 @@ specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
 ,{Package_Type}:Name;new_edit+force,Install_Details;no_edit,Actions,Key;hidden"
-specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child Package_Option Name,Value {Package}"
+specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child:no_limit Package_Option Name,Value {Package}"
 specification_add -id=601560 {Package_Option}_view view "? standard Package_Option\
  {Package}:Name;no_edit+link,Name;no_edit,String,Datetime,Date,Time,Numeric,Integer,Use_Option\
 ,Other_Package:Name!@fkey1:{Model}+@key1:{Package_Type},{Model};hidden+fkey1,Other_Package_Type;hidden+key1"

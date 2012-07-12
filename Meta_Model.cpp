@@ -4755,6 +4755,7 @@ void Meta_Model::impl::impl_Generate( )
                   string specification_type( p_sclass->child_Specification( ).Specification_Type( ) );
 
                   if( specification_type == "filter_field_value"
+                   || specification_type == "filter_fk_in_uid_set"
                    || specification_type == "filter_perm_restricted"
                    || specification_type == "filter_field_value_perm"
                    || ( !has_security_level_field && specification_type == "filter_security_level" )

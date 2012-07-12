@@ -22,6 +22,10 @@
  arg_actions=$specification_\\0_actions arg_lsfield=$specification_\\0_lsfield arg_mark_proc=$specification_\\0_mark_proc\
  arg_mfield=$specification_\\0_mfield arg_owner=$specification_\\0_owner arg_pfield=$specification_\\0_pfield\
  arg_rfield=$specification_\\0_rfield arg_ufield=$specification_\\0_ufield arg_umchild=$specification_\\0_umchild arg_umclass=$specification_\\0_umclass`}\
+`,\
+`@eq`(`'\\1`'`,`'for_user_ignore`'`)`&`@eq`(`'\$`'`,`$specification_\\0_ignore_proc`)
+`{`#for_user_ignore.spec.xrep section=ignore_procedure module_name=$module_name class_name=$class_name\
+ arg_children=$specification_\\0_children arg_self=$specification_\\0_self arg_other=$specification_\\0_other`}\
 ### value_will_be_provided
 `,\
 `@eq`(`'\1`'`,`'for_user_account`'`)
