@@ -241,6 +241,8 @@ bool CIYAM_BASE_DECL_SPEC is_system_uid( );
 
 bool CIYAM_BASE_DECL_SPEC is_admin_uid_key( const std::string& key );
 
+bool CIYAM_BASE_DECL_SPEC is_uid_not_self_and_not_in_set( const std::string& key, const std::string& key_set );
+
 bool CIYAM_BASE_DECL_SPEC has_sec_level( const std::string& level );
 
 std::string CIYAM_BASE_DECL_SPEC get_dtm( );

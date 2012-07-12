@@ -1,0 +1,35 @@
+`{`@eq`(`'is_filtered`'`,`$section`)\
+   // [(start filter_fk_in_uid_set)]
+   if( !is_system_uid( ) && get_obj( ).has_filter( "`{`$arg_id`}" ) )
+   {
+      string key( get_obj( ).`{`$arg_spfield`}( ) );
+
+`{`@eq`(`$arg_vname`,`'`'`)\
+      get_obj( ).`{`$arg_spfield`}( get_uid( ) );
+      string key_set( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( ) );
+`,\
+      string key_set( get_obj( ).get_variable( "`{`$arg_vname`}" ) );
+`}
+      if( !key_set.empty( ) )
+      {
+         set< string > keys;
+         split_string( key_set, keys );
+
+         if( keys.count( key ) )
+            return true;
+      }
+   }
+   // [(finish filter_fk_in_uid_set)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start filter_fk_in_uid_set)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      dependents.insert( "`{`$arg_spfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
+         names.insert( "`{`$arg_spfield`}" );
+   }
+   // [(finish filter_fk_in_uid_set)]
+`}

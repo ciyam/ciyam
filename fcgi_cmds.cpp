@@ -522,8 +522,8 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
          field_values += ",";
 
       field_values += "@extra1="
-       + escaped( sess_info.user_extra1, "\"" )
-       + ",@extra2=" + escaped( sess_info.user_extra2, "\"" );
+       + escaped( escaped( sess_info.user_extra1, "," ), "\"" )
+       + ",@extra2=" + escaped( escaped( sess_info.user_extra2, "," ), "\"" );
    }
 
    if( !field_values.empty( ) )
@@ -667,8 +667,8 @@ bool fetch_list_info( const string& module,
             fetch_cmd += ',';
 
          fetch_cmd += "@extra1="
-          + escaped( sess_info.user_extra1, "\"" )
-          + ",@extra2=" + escaped( sess_info.user_extra2, "\"" );
+          + escaped( escaped( sess_info.user_extra1, "," ), "\"" )
+          + ",@extra2=" + escaped( escaped( sess_info.user_extra2, "," ), "\"" );
       }
 
       fetch_cmd += "\"";

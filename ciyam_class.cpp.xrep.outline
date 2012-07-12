@@ -1332,7 +1332,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
- arg_permission_id=$specification_\0_permission_id arg_altfield=$specification_\0_altfield`}\
+ arg_permission_id=$specification_\0_permission_id arg_altfield=$specification_\0_altfield\
+ arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -1939,6 +1940,11 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `{`#filter_field_value.spec.xrep section=is_filtered arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
  arg_value=$specification_\0_value arg_tfield=$specification_\0_tfield arg_perm=$specification_\0_perm`}
+`,\
+`@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)\
+`{`#filter_fk_in_uid_set.spec.xrep section=is_filtered arg_name=\0\
+ arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield\
+ arg_scfield=$specification_\0_scfield arg_vname=$specification_\0_vname`}
 `,\
 `@eq`(`'\1`'`,`'filter_perm_restricted`'`)\
 `{`#filter_perm_restricted.spec.xrep section=is_filtered arg_name=\0\
@@ -2703,6 +2709,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'filter_field_value`'`)
 `{`#filter_field_value.spec.xrep section=get_required_field_names arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)
+`{`#filter_fk_in_uid_set.spec.xrep section=get_required_field_names arg_name=\0\
+ arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'filter_perm_restricted`'`)
 `{`#filter_perm_restricted.spec.xrep section=get_required_field_names arg_name=\0\

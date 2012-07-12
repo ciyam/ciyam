@@ -5269,6 +5269,26 @@ bool is_admin_uid_key( const string& key )
    return key == "admin";
 }
 
+bool is_uid_not_self_and_not_in_set( const string& key, const string& key_set )
+{
+   bool rc = false;
+
+   if( !is_admin_uid_key( key ) )
+   {
+      if( key_set.empty( ) )
+         rc = ( key != get_uid( ) );
+      else if( key != get_uid( ) )
+      {
+         set< string > keys;
+         split( key_set, keys );
+
+         rc = !keys.count( key );
+      }
+   }
+
+   return rc;
+}
+
 bool has_sec_level( const string& level )
 {
    // NOTE: Security level strings (e.g. XXXX) are shorter for higher.
