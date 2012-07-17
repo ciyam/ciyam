@@ -2390,6 +2390,8 @@ void output_list_form( ostream& os,
          }
       }
 
+      string extra_effect;
+
       // NOTE: Determine whether rows should be displayed differently according to class scoped modifiers
       // and state. It is being assumed here that the original list fields and source fields have the same
       // offsets.
@@ -2408,6 +2410,9 @@ void output_list_form( ostream& os,
             if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
              || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
                display_effect = new_effect;
+
+            if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+               extra_effect = new_effect;
          }
       }
 
@@ -2642,11 +2647,23 @@ void output_list_form( ostream& os,
             is_first_column = false;
 
             if( row++ % 2 == 0 )
-               os << "<tr class=\"" << row_class_suffix << "\">\n";
+            {
+               os << "<tr class=\"" << row_class_suffix;
+
+               if( !extra_effect.empty( ) )
+                  os << " " << extra_effect;
+
+               os << "\">\n";
+            }
             else
             {
                was_odd = true;
-               os << "<tr class=\"odd_" << row_class_suffix << "\">\n";
+               os << "<tr class=\"odd_" << row_class_suffix;
+
+               if( !extra_effect.empty( ) )
+                  os << " odd_" << extra_effect;
+
+               os << "\">\n";
             }
 
             if( ( keep_checks && selected_records.count( key ) ) || rci != source.row_errors.end( ) )
@@ -2713,7 +2730,7 @@ void output_list_form( ostream& os,
             // NOTE: Determine whether fields should be protected, relegated or displayed differently according
             // to modifiers and state. It is being assumed here that the original list fields and source fields
             // have the same offsets.
-            string display_effect, view_edit_effect;
+            string extra_effect, display_effect, view_edit_effect;
             if( !is_printable || !extras.count( c_list_type_extra_print_no_highlight ) )
             {
                for( size_t k = 0; k < ARRAY_SIZE( state_modifiers ); k++ )
@@ -2732,6 +2749,9 @@ void output_list_form( ostream& os,
                   if( new_effect == c_modifier_effect_relegate
                    || ( view_edit_effect.empty( ) && new_effect == c_modifier_effect_protect ) )
                      view_edit_effect = new_effect;
+
+                  if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+                     extra_effect = new_effect;
                }
             }
 
@@ -2748,6 +2768,9 @@ void output_list_form( ostream& os,
                class_tag += " highlight";
             else if( display_effect == c_modifier_effect_highlight1 )
                class_tag += " highlight1";
+
+            if( !extra_effect.empty( ) )
+               class_tag += " " + extra_effect;
 
             if( source.force_right_fields.count( source_value_id ) )
                class_tag += " right";

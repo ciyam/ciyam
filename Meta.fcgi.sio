@@ -1324,6 +1324,14 @@
      <data>5
      <name>enum_modifier_affect_type_highlight1
     </value>
+    <value/>
+     <data>6
+     <name>enum_modifier_affect_type_extralight
+    </value>
+    <value/>
+     <data>7
+     <name>enum_modifier_affect_type_extralight1
+    </value>
    </values>
   </enum>
   <enum/>

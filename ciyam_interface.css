@@ -722,6 +722,46 @@ td.list
       color: blue;
    }
 
+   tbody td.extralight
+   {
+      background: #ffe5cc;
+   }
+
+   tbody td.extralight a:link
+   {
+      background: #ffe5cc;
+   }
+
+   tbody td.extralight a:active
+   {
+      background: #ffe5cc;
+   }
+
+   tbody td.extralight a:visited
+   {
+      background: #ffe5cc;
+   }
+
+   tbody td.extralight1
+   {
+      background: #d9deea;
+   }
+
+   tbody td.extralight1 a:link
+   {
+      background: #d9deea;
+   }
+
+   tbody td.extralight1 a:active
+   {
+      background: #d9deea;
+   }
+
+   tbody td.extralight1 a:visited
+   {
+      background: #d9deea;
+   }
+
    tbody th
    {
       background: #999;
@@ -772,6 +812,46 @@ td.list
       color: gray;
    }
 
+   tbody tr.lowlight td.extralight
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.lowlight td.extralight a:link
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.lowlight td.extralight a:active
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.lowlight td.extralight a:visited
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.lowlight td.extralight1
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.lowlight td.extralight1 a:link
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.lowlight td.extralight1 a:active
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.lowlight td.extralight1 a:visited
+   {
+      background: #d9deea;
+   }
+
    tbody tr.odd_lowlight td
    {
       color: gray;
@@ -794,6 +874,46 @@ td.list
    {
       color: gray;
       background: #eee;
+   }
+
+   tbody tr.odd_lowlight td.extralight
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_lowlight td.extralight a:link
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_lowlight td.extralight a:active
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_lowlight td.extralight a:visited
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_lowlight td.extralight1
+   {
+      background: #c9ceda;
+   }
+
+   tbody tr.odd_lowlight td.extralight1 a:link
+   {
+      background: #c9ceda;
+   }
+
+   tbody tr.odd_lowlight td.extralight1 a:active
+   {
+      background: #c9ceda;
+   }
+
+   tbody tr.odd_lowlight td.extralight1 a:visited
+   {
+      background: #c9ceda;
    }
 
    tbody tr.lowlight1 td
@@ -926,6 +1046,86 @@ td.list
    {
       color: blue;
       background: #eee;
+   }
+
+   tbody tr.extralight td
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.extralight td a:link
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.extralight td a:active
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.extralight td a:visited
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.odd_extralight td
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_extralight td a:link
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_extralight td a:active
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.odd_extralight td a:visited
+   {
+      background: #efd5bc;
+   }
+
+   tbody tr.extralight1 td
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.extralight1 td a:link
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.extralight1 td a:active
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.extralight1 td a:visited
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.odd_extralight1 td
+   {
+      background: #c9ceda;
+   }
+
+   tbody tr.odd_extralight1 td a:link
+   {
+      background: #c9ceda;
+   }
+
+   tbody tr.odd_extralight1 td a:active
+   {
+      background: #c9ceda;
+   }
+
+   tbody tr.odd_extralight1 td a:visited
+   {
+      background: #c9ceda;
    }
 }
 /* END SCREEN */

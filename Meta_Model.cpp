@@ -1689,6 +1689,14 @@ void Meta_Model::impl::impl_Generate( )
                               modifiers += "highlight1";
                               break;
 
+                              case 6:
+                              modifiers += "extralight";
+                              break;
+
+                              case 7:
+                              modifiers += "extralight1";
+                              break;
+
                               default:
                               throw runtime_error( "unknown modifier type #" + to_string( type ) + " in Model::Generate" );
                            }
@@ -2847,6 +2855,14 @@ void Meta_Model::impl::impl_Generate( )
 
                                        case 5:
                                        modifiers += "highlight1";
+                                       break;
+
+                                       case 6:
+                                       modifiers += "extralight";
+                                       break;
+
+                                       case 7:
+                                       modifiers += "extralight1";
                                        break;
 
                                        default:
@@ -4052,6 +4068,14 @@ void Meta_Model::impl::impl_Generate( )
                                        modifiers += "highlight1";
                                        break;
 
+                                       case 6:
+                                       modifiers += "extralight";
+                                       break;
+
+                                       case 7:
+                                       modifiers += "extralight1";
+                                       break;
+
                                        default:
                                        throw runtime_error( "unknown modifier type #" + to_string( type ) + " in Model::Generate" );
                                     }
@@ -4730,6 +4754,14 @@ void Meta_Model::impl::impl_Generate( )
 
                               case 5:
                               modifiers += "highlight1";
+                              break;
+
+                              case 6:
+                              modifiers += "extralight";
+                              break;
+
+                              case 7:
+                              modifiers += "extralight1";
                               break;
 
                               default:
