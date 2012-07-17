@@ -248,6 +248,8 @@ const int c_enum_modifier_affect_type_lowlight( 2 );
 const int c_enum_modifier_affect_type_lowlight1( 3 );
 const int c_enum_modifier_affect_type_highlight( 4 );
 const int c_enum_modifier_affect_type_highlight1( 5 );
+const int c_enum_modifier_affect_type_extralight( 6 );
+const int c_enum_modifier_affect_type_extralight1( 7 );
 
 string get_enum_string_modifier_affect_type( int val )
 {
@@ -267,6 +269,10 @@ string get_enum_string_modifier_affect_type( int val )
       string_name = "enum_modifier_affect_type_highlight";
    else if( to_string( val ) == to_string( "5" ) )
       string_name = "enum_modifier_affect_type_highlight1";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_modifier_affect_type_extralight";
+   else if( to_string( val ) == to_string( "7" ) )
+      string_name = "enum_modifier_affect_type_extralight1";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for modifier_affect_type" );
 
@@ -2097,6 +2103,8 @@ void Meta_Modifier_Affect::static_get_all_enum_pairs( vector< pair< string, stri
    pairs.push_back( make_pair( "enum_modifier_affect_type_3", get_enum_string_modifier_affect_type( 3 ) ) );
    pairs.push_back( make_pair( "enum_modifier_affect_type_4", get_enum_string_modifier_affect_type( 4 ) ) );
    pairs.push_back( make_pair( "enum_modifier_affect_type_5", get_enum_string_modifier_affect_type( 5 ) ) );
+   pairs.push_back( make_pair( "enum_modifier_affect_type_6", get_enum_string_modifier_affect_type( 6 ) ) );
+   pairs.push_back( make_pair( "enum_modifier_affect_type_7", get_enum_string_modifier_affect_type( 7 ) ) );
 }
 
 void Meta_Modifier_Affect::static_get_sql_indexes( vector< string >& indexes )
@@ -2150,6 +2158,8 @@ void Meta_Modifier_Affect::static_class_init( const char* p_module_name )
    g_modifier_affect_type_enum.insert( 3 );
    g_modifier_affect_type_enum.insert( 4 );
    g_modifier_affect_type_enum.insert( 5 );
+   g_modifier_affect_type_enum.insert( 6 );
+   g_modifier_affect_type_enum.insert( 7 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

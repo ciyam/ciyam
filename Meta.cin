@@ -18,7 +18,7 @@ user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=href,9=html,23=tex
 user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg
 user_defined_enum_add -id=540 modifier_affect_scope int 0=field,1=class
 user_defined_enum_add -id=550 modifier_affect_type int 0=protect,1=relegate\
-,2=lowlight,3=lowlight1,4=highlight,5=highlight1
+,2=lowlight,3=lowlight1,4=highlight,5=highlight1,6=extralight,7=extralight1
 user_defined_enum_add -id=560 modifier_affect_extra int 0=none,1=list\\_only,2=view\\_only
 user_defined_enum_add -id=570 arg_type int 0=in,1=out
 user_defined_enum_add -id=575 add_packages int 0=none,1=Standard,2=Standard_User,3=Standard_User_Group

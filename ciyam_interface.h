@@ -283,7 +283,9 @@ const char* const c_modifier_effect_relegate = "relegate";
 const char* const c_modifier_effect_lowlight = "lowlight";
 const char* const c_modifier_effect_lowlight1 = "lowlight1";
 const char* const c_modifier_effect_highlight = "highlight";
+const char* const c_modifier_effect_extralight = "extralight";
 const char* const c_modifier_effect_highlight1 = "highlight1";
+const char* const c_modifier_effect_extralight1 = "extralight1";
 
 const char* const c_list_extra_find = "find";
 

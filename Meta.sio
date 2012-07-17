@@ -34331,7 +34331,7 @@
     <id>550
     <name>modifier_affect_type
     <type>int
-    <key_values>0=protect,1=relegate,2=lowlight,3=lowlight1,4=highlight,5=highlight1
+    <key_values>0=protect,1=relegate,2=lowlight,3=lowlight1,4=highlight,5=highlight1,6=extralight,7=extralight1
    </user_defined_enum>
    <user_defined_enum/>
     <id>506

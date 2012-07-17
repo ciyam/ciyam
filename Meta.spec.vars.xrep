@@ -48,7 +48,7 @@
 `{`$enum_list_text_match_highlight`=`'0=none 1=highlight 2=highlight1`'`}
 `{`$enum_modifier_affect_extra`=`'0=none 1=list_only 2=view_only`'`}
 `{`$enum_modifier_affect_scope`=`'0=field 1=class`'`}
-`{`$enum_modifier_affect_type`=`'0=protect 1=relegate 2=lowlight 3=lowlight1 4=highlight 5=highlight1`'`}
+`{`$enum_modifier_affect_type`=`'0=protect 1=relegate 2=lowlight 3=lowlight1 4=highlight 5=highlight1 6=extralight 7=extralight1`'`}
 `{`$enum_numeric_type`=`'0=normal 1=bytes`'`}
 `{`$enum_pdf_font_type`=`'0=Times_Roman 1=Helvetica 20=SimSun 21=SimHei`'`}
 `{`$enum_primitive`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool`'`}
