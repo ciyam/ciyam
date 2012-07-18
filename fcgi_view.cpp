@@ -1963,6 +1963,9 @@ bool output_view_form( ostream& os, const string& act,
             if( is_in_edit || ( source.state & c_state_uneditable ) || ( source.state & c_state_is_changing ) )
                can_attach_or_remove_file = false;
 
+            if( !sess_info.is_admin_user && mod_info.user_info_view_id == source.vici->second->id && data != sess_info.user_key )
+               can_attach_or_remove_file = false;
+
             // NOTE: If an instance can be identified as having been created by the currently logged in
             // user then if a file has yet to be attached this will be allowed, as it logically follows
             // that if a user can create a record they should also be able to attach a file to it.

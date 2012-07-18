@@ -1719,6 +1719,7 @@ string class_base::generate_sql_update( const string& class_name ) const
    else
    {
       done = false;
+
       vector< string > sql_column_values;
       get_sql_column_values( sql_column_values, &done, &class_name );
 
