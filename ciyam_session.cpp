@@ -948,6 +948,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    set_dtm( "" );
    set_uid( "" );
    set_tz_abbr( "" );
+   set_tmp_directory( "" );
    set_last_session_cmd( command );
 
    try
@@ -1177,6 +1178,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_reverse( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_reverse ) );
          string uid( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_uid ) );
          string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tz_abbr ) );
+         string tmp_dir( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tmp_dir ) );
          string filters( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_filters ) );
          string perms( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_perms ) );
          string security_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_security_info ) );
@@ -1349,6 +1351,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             set_uid( uid );
             set_tz_abbr( tz_abbr );
+            set_tmp_directory( tmp_dir );
             
             set< string > perm_set;
             if( !perms.empty( ) )

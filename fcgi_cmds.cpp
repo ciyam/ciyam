@@ -486,6 +486,8 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
+   fetch_cmd += " -td=tmp/" + sess_info.session_id;
+
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;
 
@@ -516,13 +518,12 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
 
    string field_values( set_field_values );
 
-   if( !field_values.empty( ) )
-      field_values += ",";
-   field_values += "@tmpdir=tmp/" + sess_info.session_id;
-
    if( !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
    {
-      field_values += ",@extra1="
+      if( !field_values.empty( ) )
+         field_values += ",";
+
+      field_values += "@extra1="
        + escaped( escaped( sess_info.user_extra1, "," ), "\"" )
        + ",@extra2=" + escaped( escaped( sess_info.user_extra2, "," ), "\"" );
    }
@@ -631,6 +632,8 @@ bool fetch_list_info( const string& module,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
+   fetch_cmd += " -td=tmp/" + sess_info.session_id;
+
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;
 
@@ -662,13 +665,12 @@ bool fetch_list_info( const string& module,
       if( !set_field_values.empty( ) )
          fetch_cmd += escaped( set_field_values, "\"" );
 
-      if( !set_field_values.empty( ) )
-         fetch_cmd += ',';
-      fetch_cmd += "@tmpdir=tmp/" + sess_info.session_id;
-
       if( !mod_info.user_extra1_field_id.empty( ) || !mod_info.user_extra2_field_id.empty( ) )
       {
-         fetch_cmd += ",@extra1="
+         if( !set_field_values.empty( ) )
+            fetch_cmd += ',';
+
+         fetch_cmd += "@extra1="
           + escaped( escaped( sess_info.user_extra1, "," ), "\"" )
           + ",@extra2=" + escaped( escaped( sess_info.user_extra2, "," ), "\"" );
       }

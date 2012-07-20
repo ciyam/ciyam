@@ -228,6 +228,8 @@ struct session
 
    set< string > perms;
 
+   string tmp_directory;
+
    size_t sql_count;
    size_t next_handle;
 
@@ -5342,6 +5344,16 @@ const set< string >& get_perms( )
 void set_perms( const set< string >& perms )
 {
    gtp_session->perms = perms;
+}
+
+string get_tmp_directory( )
+{
+   return gtp_session->tmp_directory;
+}
+
+void set_tmp_directory( const string& tmp_directory )
+{
+   gtp_session->tmp_directory = tmp_directory;
 }
 
 size_t get_next_handle( )

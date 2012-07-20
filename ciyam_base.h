@@ -257,6 +257,9 @@ void CIYAM_BASE_DECL_SPEC set_tz_abbr( const std::string& tz_abbr );
 const std::set< std::string > CIYAM_BASE_DECL_SPEC& get_perms( );
 void CIYAM_BASE_DECL_SPEC set_perms( const std::set< std::string >& perms );
 
+std::string CIYAM_BASE_DECL_SPEC get_tmp_directory( );
+void CIYAM_BASE_DECL_SPEC set_tmp_directory( const std::string& tmp_directory );
+
 size_t CIYAM_BASE_DECL_SPEC get_next_handle( );
 
 void CIYAM_BASE_DECL_SPEC module_list( std::ostream& os );
