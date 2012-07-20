@@ -1147,8 +1147,24 @@ void replace_links_and_output( const string& s,
       string::size_type dtpos = next_key.find( '@' );
       if( dtpos != string::npos )
       {
-         display = format_date_time( date_time( next_key.substr( dtpos + 1 ) ), display.c_str( ) );
+         string date_time_str( next_key.substr( dtpos + 1 ) );
          next_key.erase( dtpos );
+
+         dtpos = display.find( ';' );
+         if( dtpos == string::npos )
+            display = format_date_time( date_time( date_time_str ), display.c_str( ) );
+         else
+         {
+            string formatted = format_date_time( date_time( date_time_str ), display.substr( 0, dtpos ).c_str( ) );
+            display.erase( 0, dtpos + 1 );
+
+            dtpos = display.find( '@' );
+            if( dtpos != string::npos )
+            {
+               display.erase( dtpos, 1 );
+               display.insert( dtpos, formatted );
+            }
+         }
       }
 
       bool is_href = false;

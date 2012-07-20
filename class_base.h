@@ -48,8 +48,6 @@ const char* const c_dtm_now = "@now";
 const char* const c_date_today = "@today";
 const char* const c_date_tomorrow = "@tomorrow";
 
-const char* const c_clone_key = "_clone_";
-
 const char* const c_object_variable_skip_fk_handling = "@skip_fk_handling";
 
 struct class_cascade;

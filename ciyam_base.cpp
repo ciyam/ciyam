@@ -7986,7 +7986,9 @@ void begin_instance_op( instance_op op, class_base& instance,
    if( is_minimal_update )
       TRACE_LOG( TRACE_CLASSOPS, "*** minimal update ***" );
 
-   // NOTE: For scoped lock holder.
+   // NOTE: A create op can be started (but not applied) without an instance key (this is to help with record
+   // preparation when cloning in order to create a new instance).
+   if( op != e_instance_op_create || !key_for_op.empty( ) )
    {
       bool obtained_lock = false;
 
