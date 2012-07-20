@@ -1376,7 +1376,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // so it can be determined that cloning has occurred. The instance create is then
                   // cancelled so that the "to_store" that occurs after setting fields (via another
                   // prepare call) no longer behaves as though a clone has just occurred.
-                  op_instance_create( handle, context, c_clone_key + key_info, false );
+                  op_instance_create( handle, context, key_info, false );
                   prepare_object_instance( handle, context, true );
                   op_instance_cancel( handle, context );
                }
