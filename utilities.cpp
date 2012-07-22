@@ -71,6 +71,8 @@ using namespace std;
 namespace
 {
 
+const int c_char_size = 256;
+
 const unsigned char c_space = 0x20;
 const unsigned char c_low_mask = 0x3f;
 const unsigned char c_high_mask = 0xc0;
@@ -592,6 +594,77 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars )
    }
 
    return s;
+}
+
+boyer_moore::boyer_moore( const std::string& pattern )
+ :
+ pattern( pattern ),
+ slide( c_char_size ),
+ jump( pattern.size( ) )
+{
+   for( int i = 0; i < c_char_size; ++i )
+      slide[ i ] = pattern.length( );
+
+   int psize = ( int )( pattern.size( ) );
+
+   for( int i = 0; i < psize; ++i )
+      slide[ pattern[ i ] ] = psize - i - 1;
+
+   for( int i = 0; i < psize; ++i )
+      jump[ i ] = 2 * psize - i - 1;
+
+   vector< int > matches( pattern.size( ) );
+
+   int curr = psize - 1;
+   int match = curr + 1;
+   while( curr >= 0 )
+   {
+      while( match < psize && pattern[ curr ] != pattern[ match ] )
+      {
+         jump[ match ] = std::min( jump[ match ], psize - curr - 1 );
+         match = matches[ match ];
+      }
+
+      matches[ curr ] = match;
+      --curr;
+      --match;
+   }
+
+   int curr_match = matches[ 0 ];
+   for( int i = 0; i < psize; ++i )
+   {
+      jump[ i ] = std::min( jump[ i ], psize + curr_match - i );
+
+      if( jump[ i ] > psize )
+         jump[ i ] = psize;
+
+      if( curr_match == i )
+         curr_match = matches[ curr_match ];
+   }
+}
+
+string::size_type boyer_moore::find( const std::string& text )
+{
+   if( text.empty( ) || pattern.empty( ) || text.size( ) < pattern.size( ) )
+      return string::npos;
+ 
+   int text_i = pattern.size( ) - 1;
+   while( text_i < ( int )( text.size( ) ) )
+   {
+      int pattern_i = ( int )( pattern.size( ) - 1 );
+      while( pattern_i >= 0 && text[ text_i ] == pattern[ pattern_i ] )
+      {
+         --text_i;
+         --pattern_i;
+      }
+ 
+      if( pattern_i < 0 )
+         return text_i + 1;
+ 
+      text_i += std::max( slide[ pattern[ pattern_i ] ], jump[ pattern_i ] );
+   }
+
+   return string::npos;
 }
 
 bool wildcard_match( const char* p_expr, const char* p_data )
@@ -1336,7 +1409,10 @@ void buffer_file_lines( const string& file_name,
    size_t line_num = 0;
    while( getline( inpf, next ) )
    {
-      remove_trailing_cr_from_text_file_line( next, ++line_num == 1 );
+      ++line_num;
+
+      if( strip_extra_crs )
+         remove_trailing_cr_from_text_file_line( next, line_num == 1 );
 
       if( !skip_blank_lines || !next.empty( ) )
          lines.push_back( next );
@@ -1356,7 +1432,10 @@ void buffer_file_lines( const string& file_name, set< string >& lines, bool stri
    size_t line_num = 0;
    while( getline( inpf, next ) )
    {
-      remove_trailing_cr_from_text_file_line( next, ++line_num == 1 );
+      ++line_num;
+
+      if( strip_extra_crs )
+         remove_trailing_cr_from_text_file_line( next, line_num == 1 );
 
       if( !next.empty( ) )
          lines.insert( next );

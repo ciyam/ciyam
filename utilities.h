@@ -471,6 +471,20 @@ template< typename T > inline T from_string( const std::string& s )
 #     endif
 #  endif
 
+class boyer_moore
+{
+   public:
+   boyer_moore( const std::string& pattern );
+
+   std::string::size_type find( const std::string& text );
+
+   private:
+   std::string pattern;
+
+   std::vector< int > jump;
+   std::vector< int > slide;
+};
+
 bool wildcard_match( const char* p_expr, const char* p_data );
 
 inline bool wildcard_match( const char* p_expr, const std::string& data ) { return wildcard_match( p_expr, data.c_str( ) ); }
