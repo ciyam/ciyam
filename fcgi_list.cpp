@@ -1399,7 +1399,8 @@ void output_list_form( ostream& os,
          // NOTE: Deleting and other operations that change data are not permitted for the
          // child lists if the parent is found to be uneditable (unless purposefully ignoring).
          // FUTURE: Non-modifying actions ought to be permitted (if they can be identified as such).
-         if( ignore_parent_state || !( parent_state & c_state_uneditable ) )
+         if( !( parent_state & c_state_uneditable )
+          || ( ignore_parent_state && ( parent_state & c_state_ignore_uneditable ) ) )
          {
             if( ( source.lici->second )->extras.count( c_list_type_extra_erase_if_default_other ) )
             {

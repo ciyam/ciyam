@@ -3450,7 +3450,7 @@ void save_attachment( const string& encoding, const string& data, const string& 
 
 string convert_html_to_text( const string& html )
 {
-   return html_to_text( html );
+   return extract_text_from_html( html );
 }
 
 void meta_relationship_child_name( string& name,

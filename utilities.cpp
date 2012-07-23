@@ -636,7 +636,10 @@ boyer_moore::boyer_moore( const std::string& pattern )
       jump[ i ] = std::min( jump[ i ], psize + curr_match - i );
 
       if( jump[ i ] > psize )
-         jump[ i ] = psize;
+      {
+         jump[ i ] -= psize;
+         jump[ i ] *= 2;
+      }
 
       if( curr_match == i )
          curr_match = matches[ curr_match ];
@@ -1706,5 +1709,98 @@ void read_strings( const string& filename, map< string, string >& strings,
 
    if( !inpf.eof( ) )
       throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
+}
+
+string extract_text_from_html( const string& html )
+{
+   string text;
+
+   string token;
+   size_t tok_pos = 0;
+   bool in_token = false;
+   bool had_first_non_white = false;
+   for( size_t i = 0; i < html.size( ); i++ )
+   {
+      if( html[ i ] == '<' )
+      {
+         tok_pos = i;
+         in_token = true;
+      }
+      else if( html[ i ] == '>' )
+      {
+         in_token = false;
+         token = lower( html.substr( tok_pos, i - tok_pos + 1 ) );
+
+         // NOTE: Ignore text that is within an "empty span".
+         if( token == "<span>" )
+            in_token = true;
+
+         if( token == "<br>" || token == "<br/>" )
+            text += '\n';
+         else if( token == "</p>" || token == "</title>" )
+            text += "\n\n";
+      }
+      else if( !in_token )
+      {
+         if( html[ i ] == '&' )
+         {
+            had_first_non_white = true;
+            string::size_type pos = html.find( ';', i + 1 );
+            if( pos != string::npos )
+            {
+               string special = lower( html.substr( i + 1, pos - i - 1 ) );
+               if( !special.empty( ) )
+               {
+                  if( special[ 0 ] == '#' )
+                  {
+                     char ch = 0;
+                     for( size_t j = 1; j < special.size( ); j++ )
+                     {
+                        ch = ch * 10;
+                        ch += special[ j ] - '0';
+                     }
+
+                     text += ch;
+                  }
+                  else if( special == "gt" )
+                     text += '>';
+                  else if( special == "lt" )
+                     text += '<';
+                  else if( special == "amp" )
+                     text += '&';
+                  else if( special == "apos" )
+                     text += "'";
+                  else if( special == "circ" )
+                     text += '^';
+                  else if( special == "nbsp" )
+                     text += ' ';
+                  else if( special == "tilde" )
+                     text += '~';
+                  else if( special == "quote" )
+                     text += '"';
+                  else
+                     text += '?' + special + '?';
+               }
+
+               i = pos;
+               continue;
+            }
+         }
+
+         if( html[ i ] != '\r' && html[ i ] != '\n' )
+         {
+            if( had_first_non_white || ( html[ i ] != ' ' && html[ i ] != '\t' ) )
+            {
+               text += html[ i ];
+               if( html[ i ] != ' ' && html[ i ] != '\t' )
+                  had_first_non_white = true;
+            }
+         }
+         else
+            had_first_non_white = false;
+      }
+   }
+
+   return text;
 }
 
