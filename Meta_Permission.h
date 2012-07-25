@@ -31,8 +31,8 @@ class Meta_List_Field;
 class Meta_List;
 class Meta_View_Field;
 class Meta_View;
-class Meta_Model;
 class Meta_Specification;
+class Meta_Model;
 class Meta_Workgroup;
 
 class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
@@ -41,8 +41,8 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    friend class Meta_List;
    friend class Meta_View_Field;
    friend class Meta_View;
-   friend class Meta_Model;
    friend class Meta_Specification;
+   friend class Meta_Model;
    friend class Meta_Workgroup;
 
    public:
@@ -98,6 +98,12 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
 
    Meta_View_Field& child_View_Field_Link( );
    const Meta_View_Field& child_View_Field_Link( ) const;
+
+   Meta_Specification& child_Specification_Other_Permission_2( );
+   const Meta_Specification& child_Specification_Other_Permission_2( ) const;
+
+   Meta_Specification& child_Specification_Other( );
+   const Meta_Specification& child_Specification_Other( ) const;
 
    Meta_Model& child_Model( );
    const Meta_Model& child_Model( ) const;
@@ -271,8 +277,8 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    virtual void setup_graph_parent( Meta_List& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Model& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Model& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Workgroup& o,
     const std::string& foreign_key_field, const std::string& init_value );

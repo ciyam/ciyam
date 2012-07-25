@@ -2912,7 +2912,9 @@ void Meta_Model::impl::impl_Generate( )
                for( size_t i = 0; i < field_ids.size( ); i++ )
                {
                   string fnum( to_string( i ) );
-                  if( fnum.length( ) < 2 )
+                  if( fnum.length( ) < 3 )
+                     fnum = '0' + fnum;
+                  if( fnum.length( ) < 3 )
                      fnum = '0' + fnum;
 
                   if( i > 0 )
@@ -2925,7 +2927,9 @@ void Meta_Model::impl::impl_Generate( )
                for( size_t i = 0; i < field_ids.size( ); i++ )
                {
                   string fnum( to_string( i ) );
-                  if( fnum.length( ) < 2 )
+                  if( fnum.length( ) < 3 )
+                     fnum = '0' + fnum;
+                  if( fnum.length( ) < 3 )
                      fnum = '0' + fnum;
 
                   outf << "\x60{\x60$specification_" << specification_name

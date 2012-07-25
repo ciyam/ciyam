@@ -37,8 +37,8 @@
 #include "Meta_List.h"
 #include "Meta_View_Field.h"
 #include "Meta_View.h"
-#include "Meta_Model.h"
 #include "Meta_Specification.h"
+#include "Meta_Model.h"
 #include "Meta_Workgroup.h"
 
 #include "ciyam_base.h"
@@ -538,6 +538,50 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
       return *cp_child_View_Field_Link;
    }
 
+   Meta_Specification& impl_child_Specification_Other_Permission_2( )
+   {
+      if( !cp_child_Specification_Other_Permission_2 )
+      {
+         cp_child_Specification_Other_Permission_2.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other_Permission_2, "301332" );
+      }
+      return *cp_child_Specification_Other_Permission_2;
+   }
+
+   const Meta_Specification& impl_child_Specification_Other_Permission_2( ) const
+   {
+      if( !cp_child_Specification_Other_Permission_2 )
+      {
+         cp_child_Specification_Other_Permission_2.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other_Permission_2, "301332" );
+      }
+      return *cp_child_Specification_Other_Permission_2;
+   }
+
+   Meta_Specification& impl_child_Specification_Other( )
+   {
+      if( !cp_child_Specification_Other )
+      {
+         cp_child_Specification_Other.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other, "301331" );
+      }
+      return *cp_child_Specification_Other;
+   }
+
+   const Meta_Specification& impl_child_Specification_Other( ) const
+   {
+      if( !cp_child_Specification_Other )
+      {
+         cp_child_Specification_Other.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other, "301331" );
+      }
+      return *cp_child_Specification_Other;
+   }
+
    Meta_Model& impl_child_Model( )
    {
       if( !cp_child_Model )
@@ -647,6 +691,8 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
    mutable class_pointer< Meta_List > cp_child_List_Destroy;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Link;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Link;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Other_Permission_2;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
    mutable class_pointer< Meta_Model > cp_child_Model;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
 };
@@ -1122,6 +1168,26 @@ const Meta_View_Field& Meta_Permission::child_View_Field_Link( ) const
    return p_impl->impl_child_View_Field_Link( );
 }
 
+Meta_Specification& Meta_Permission::child_Specification_Other_Permission_2( )
+{
+   return p_impl->impl_child_Specification_Other_Permission_2( );
+}
+
+const Meta_Specification& Meta_Permission::child_Specification_Other_Permission_2( ) const
+{
+   return p_impl->impl_child_Specification_Other_Permission_2( );
+}
+
+Meta_Specification& Meta_Permission::child_Specification_Other( )
+{
+   return p_impl->impl_child_Specification_Other( );
+}
+
+const Meta_Specification& Meta_Permission::child_Specification_Other( ) const
+{
+   return p_impl->impl_child_Specification_Other( );
+}
+
 Meta_Model& Meta_Permission::child_Model( )
 {
    return p_impl->impl_child_Model( );
@@ -1404,14 +1470,14 @@ void Meta_Permission::setup_graph_parent( Meta_View& o, const string& foreign_ke
    static_cast< Meta_View& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
-void Meta_Permission::setup_graph_parent( Meta_Model& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Model& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
 void Meta_Permission::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
 {
    static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Permission::setup_graph_parent( Meta_Model& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Model& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
 void Meta_Permission::setup_graph_parent(
@@ -1433,7 +1499,7 @@ void Meta_Permission::set_total_child_relationships( size_t new_total_child_rela
 
 size_t Meta_Permission::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 12;
+   size_t rc = 14;
 
    if( !is_internal )
    {
@@ -1466,7 +1532,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 12 )
+   if( child_num >= 14 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1561,12 +1627,28 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          case 10:
          if( op == e_cascade_op_restrict )
          {
+            next_child_field = "301332";
+            p_class_base = &child_Specification_Other_Permission_2( );
+         }
+         break;
+
+         case 11:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301331";
+            p_class_base = &child_Specification_Other( );
+         }
+         break;
+
+         case 12:
+         if( op == e_cascade_op_restrict )
+         {
             next_child_field = "301600";
             p_class_base = &child_Model( );
          }
          break;
 
-         case 11:
+         case 13:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301499";
@@ -1661,6 +1743,10 @@ class_base& Meta_Permission::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Field_Link( );
    else if( sub_context == "_301915" || sub_context == "child_View_Field_Link" )
       p_class_base = &child_View_Field_Link( );
+   else if( sub_context == "_301332" || sub_context == "child_Specification_Other_Permission_2" )
+      p_class_base = &child_Specification_Other_Permission_2( );
+   else if( sub_context == "_301331" || sub_context == "child_Specification_Other" )
+      p_class_base = &child_Specification_Other( );
    else if( sub_context == "_301600" || sub_context == "child_Model" )
       p_class_base = &child_Model( );
    else if( sub_context == "_301499" || sub_context == "child_Specification" )

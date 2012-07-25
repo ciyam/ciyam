@@ -155,6 +155,8 @@ const char* const c_field_id_Order = "115105";
 const char* const c_field_id_Other_Class = "301421";
 const char* const c_field_id_Other_Field = "301435";
 const char* const c_field_id_Other_Field_2 = "301436";
+const char* const c_field_id_Other_Permission = "301331";
+const char* const c_field_id_Other_Permission_2 = "301332";
 const char* const c_field_id_Other_Procedure = "301451";
 const char* const c_field_id_Other_Procedure_2 = "301452";
 const char* const c_field_id_Parent_Specification = "301405";
@@ -272,6 +274,8 @@ const char* const c_field_name_Order = "Order";
 const char* const c_field_name_Other_Class = "Other_Class";
 const char* const c_field_name_Other_Field = "Other_Field";
 const char* const c_field_name_Other_Field_2 = "Other_Field_2";
+const char* const c_field_name_Other_Permission = "Other_Permission";
+const char* const c_field_name_Other_Permission_2 = "Other_Permission_2";
 const char* const c_field_name_Other_Procedure = "Other_Procedure";
 const char* const c_field_name_Other_Procedure_2 = "Other_Procedure_2";
 const char* const c_field_name_Parent_Specification = "Parent_Specification";
@@ -389,6 +393,8 @@ const char* const c_field_display_name_Order = "field_specification_order";
 const char* const c_field_display_name_Other_Class = "field_specification_other_class";
 const char* const c_field_display_name_Other_Field = "field_specification_other_field";
 const char* const c_field_display_name_Other_Field_2 = "field_specification_other_field_2";
+const char* const c_field_display_name_Other_Permission = "field_specification_other_permission";
+const char* const c_field_display_name_Other_Permission_2 = "field_specification_other_permission_2";
 const char* const c_field_display_name_Other_Procedure = "field_specification_other_procedure";
 const char* const c_field_display_name_Other_Procedure_2 = "field_specification_other_procedure_2";
 const char* const c_field_display_name_Parent_Specification = "field_specification_parent_specification";
@@ -601,31 +607,33 @@ const uint64_t c_modifier_Hide_Options = UINT64_C( 0x20000 );
 const uint64_t c_modifier_Hide_Other_Class = UINT64_C( 0x40000 );
 const uint64_t c_modifier_Hide_Other_Field = UINT64_C( 0x80000 );
 const uint64_t c_modifier_Hide_Other_Field_2 = UINT64_C( 0x100000 );
-const uint64_t c_modifier_Hide_Other_Procedure = UINT64_C( 0x200000 );
-const uint64_t c_modifier_Hide_Other_Procedure_2 = UINT64_C( 0x400000 );
-const uint64_t c_modifier_Hide_Permission = UINT64_C( 0x800000 );
-const uint64_t c_modifier_Hide_Procedure = UINT64_C( 0x1000000 );
-const uint64_t c_modifier_Hide_Procedure_Arg = UINT64_C( 0x2000000 );
-const uint64_t c_modifier_Hide_Procedure_Arg_2 = UINT64_C( 0x4000000 );
-const uint64_t c_modifier_Hide_Procedure_Arg_3 = UINT64_C( 0x8000000 );
-const uint64_t c_modifier_Hide_Source_Child = UINT64_C( 0x10000000 );
-const uint64_t c_modifier_Hide_Source_Child_2 = UINT64_C( 0x20000000 );
-const uint64_t c_modifier_Hide_Source_Class = UINT64_C( 0x40000000 );
-const uint64_t c_modifier_Hide_Source_Field = UINT64_C( 0x80000000 );
-const uint64_t c_modifier_Hide_Source_Grandchild = UINT64_C( 0x100000000 );
-const uint64_t c_modifier_Hide_Source_Parent = UINT64_C( 0x200000000 );
-const uint64_t c_modifier_Hide_Test_Child = UINT64_C( 0x400000000 );
-const uint64_t c_modifier_Hide_Test_Field = UINT64_C( 0x800000000 );
-const uint64_t c_modifier_Hide_Test_Parent = UINT64_C( 0x1000000000 );
-const uint64_t c_modifier_Hide_Test_Value = UINT64_C( 0x2000000000 );
-const uint64_t c_modifier_Hide_Use_Source_Parent = UINT64_C( 0x4000000000 );
-const uint64_t c_modifier_Hide_Use_Test_Parent_Child = UINT64_C( 0x8000000000 );
-const uint64_t c_modifier_Hide_Value = UINT64_C( 0x10000000000 );
-const uint64_t c_modifier_Protect_Child_Relationship = UINT64_C( 0x20000000000 );
-const uint64_t c_modifier_Protect_Class = UINT64_C( 0x40000000000 );
-const uint64_t c_modifier_Protect_Enum = UINT64_C( 0x80000000000 );
-const uint64_t c_modifier_Protect_Procedure = UINT64_C( 0x100000000000 );
-const uint64_t c_modifier_Protect_Source_Parent = UINT64_C( 0x200000000000 );
+const uint64_t c_modifier_Hide_Other_Permission = UINT64_C( 0x200000 );
+const uint64_t c_modifier_Hide_Other_Permission_2 = UINT64_C( 0x400000 );
+const uint64_t c_modifier_Hide_Other_Procedure = UINT64_C( 0x800000 );
+const uint64_t c_modifier_Hide_Other_Procedure_2 = UINT64_C( 0x1000000 );
+const uint64_t c_modifier_Hide_Permission = UINT64_C( 0x2000000 );
+const uint64_t c_modifier_Hide_Procedure = UINT64_C( 0x4000000 );
+const uint64_t c_modifier_Hide_Procedure_Arg = UINT64_C( 0x8000000 );
+const uint64_t c_modifier_Hide_Procedure_Arg_2 = UINT64_C( 0x10000000 );
+const uint64_t c_modifier_Hide_Procedure_Arg_3 = UINT64_C( 0x20000000 );
+const uint64_t c_modifier_Hide_Source_Child = UINT64_C( 0x40000000 );
+const uint64_t c_modifier_Hide_Source_Child_2 = UINT64_C( 0x80000000 );
+const uint64_t c_modifier_Hide_Source_Class = UINT64_C( 0x100000000 );
+const uint64_t c_modifier_Hide_Source_Field = UINT64_C( 0x200000000 );
+const uint64_t c_modifier_Hide_Source_Grandchild = UINT64_C( 0x400000000 );
+const uint64_t c_modifier_Hide_Source_Parent = UINT64_C( 0x800000000 );
+const uint64_t c_modifier_Hide_Test_Child = UINT64_C( 0x1000000000 );
+const uint64_t c_modifier_Hide_Test_Field = UINT64_C( 0x2000000000 );
+const uint64_t c_modifier_Hide_Test_Parent = UINT64_C( 0x4000000000 );
+const uint64_t c_modifier_Hide_Test_Value = UINT64_C( 0x8000000000 );
+const uint64_t c_modifier_Hide_Use_Source_Parent = UINT64_C( 0x10000000000 );
+const uint64_t c_modifier_Hide_Use_Test_Parent_Child = UINT64_C( 0x20000000000 );
+const uint64_t c_modifier_Hide_Value = UINT64_C( 0x40000000000 );
+const uint64_t c_modifier_Protect_Child_Relationship = UINT64_C( 0x80000000000 );
+const uint64_t c_modifier_Protect_Class = UINT64_C( 0x100000000000 );
+const uint64_t c_modifier_Protect_Enum = UINT64_C( 0x200000000000 );
+const uint64_t c_modifier_Protect_Procedure = UINT64_C( 0x400000000000 );
+const uint64_t c_modifier_Protect_Source_Parent = UINT64_C( 0x800000000000 );
 
 set< string > g_derivations;
 
@@ -7542,6 +7550,8 @@ string Meta_Specification_Content_Page::static_get_sql_columns( )
     "C_Other_Class VARCHAR(64) NOT NULL,"
     "C_Other_Field VARCHAR(64) NOT NULL,"
     "C_Other_Field_2 VARCHAR(64) NOT NULL,"
+    "C_Other_Permission VARCHAR(64) NOT NULL,"
+    "C_Other_Permission_2 VARCHAR(64) NOT NULL,"
     "C_Other_Procedure VARCHAR(64) NOT NULL,"
     "C_Other_Procedure_2 VARCHAR(64) NOT NULL,"
     "C_Parent_Specification VARCHAR(64) NOT NULL,"

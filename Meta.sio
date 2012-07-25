@@ -10660,6 +10660,14 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600290
         <item>field
        </specification>
@@ -10689,6 +10697,22 @@
       <specifications/>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -12232,6 +12256,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600119a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600119b
+      <item>class
+     </specification>
+     <specification/>
       <id>600120
       <item>class
      </specification>
@@ -13714,6 +13746,74 @@
        </specification>
        <specification/>
         <id>620131
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301331
+      <name>Other_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>201331
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500686a
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301332
+      <name>Other_{Permission}_2
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>201332
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500686b
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
         <item>field
        </specification>
       </specifications>
@@ -15882,6 +15982,14 @@
         <item>field
        </specification>
        <specification/>
+        <id>600119a
+        <item>field
+       </specification>
+       <specification/>
+        <id>600119b
+        <item>field
+       </specification>
+       <specification/>
         <id>600121
         <item>field
        </specification>
@@ -16412,6 +16520,14 @@
      <modifier/>
       <id>500611
       <name>Hide_Other_Field_2
+     </modifier>
+     <modifier/>
+      <id>500686a
+      <name>Hide_Other_Permission
+     </modifier>
+     <modifier/>
+      <id>500686b
+      <name>Hide_Other_Permission_2
      </modifier>
      <modifier/>
       <id>500626
@@ -18323,6 +18439,14 @@
       <item>pclass
      </specification>
      <specification/>
+      <id>600119a
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>600119b
+      <item>pclass
+     </specification>
+     <specification/>
       <id>600121
       <item>pclass
      </specification>
@@ -19824,6 +19948,48 @@
        <specification/>
         <id>620131
         <item>cfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114200
+      <name>Needs_Other_Permission
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600119a
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114201
+      <name>Needs_Other_Permission_2
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600119b
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -25670,6 +25836,24 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201332
+    <name>Other_{Permission}_2_{Specification}
+    <parent_id>116100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201331
+    <name>Other_{Permission}_{Specification}
+    <parent_id>116100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201452
     <name>Other_{Procedure}_2_{Specification}
     <parent_id>111100
@@ -30822,6 +31006,8 @@
      <field_info>114117
      <field_info>114136
      <field_info>114180
+     <field_info>114200
+     <field_info>114201
      <field_info>@tab:Basic_Options
      <field_info>114118
      <field_info>114123
@@ -31278,6 +31464,32 @@
     </data>
    </specification>
    <specification/>
+    <id>600119a
+    <name>{Specification}_Hide_Other_Permission
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <modifier_id>500686a
+     <field_id>301410
+     <pfield_id>114200
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600119b
+    <name>{Specification}_Hide_Other_Permission_2
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <modifier_id>500686b
+     <field_id>301410
+     <pfield_id>114201
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600104c
     <name>{Specification}_Hide_Other_Procedure
     <type>modifier_field_value
@@ -31699,6 +31911,8 @@
      <field_info>301485:107101;107100={tfield}
      <field_info>115103={tvalue}
      <field_info>301499:116101;116100={permission}
+     <field_info>301331:116101;116100={opermission}
+     <field_info>301332:116101;116100={o2permission}
      <field_info>301450:111101;111100={procedure}
      <field_info>301498:112101;112100={procedure_arg}
      <field_info>301475:113101;113100={cname}
@@ -32828,6 +33042,10 @@
      <field_info>115103={tvalue}
      <field_info>301499:116101;116100={permission}
      <field_info>301499:116102;116100={permission_id}
+     <field_info>301331:116101;116100={opermission}
+     <field_info>301331:116102;116100={opermission_id}
+     <field_info>301332:116101;116100={o2permission}
+     <field_info>301332:116102;116100={o2permission_id}
      <field_info>301450:111101;111100={procedure}
      <field_info>301450:111103;111100={procedure_id}
      <field_info>301498:112101;112100={procedure_arg}
@@ -33057,6 +33275,8 @@
      <field_info>301488:107101!@fkey6:300700+107101;link
      <field_info>115103
      <field_info>301499:116101!@group:301500+116101
+     <field_info>301331:116101!@group:301500+116101
+     <field_info>301332:116101!@group:301500+116101
      <field_info>115104
      <field_info>115108
      <field_info>115123;no_edit
