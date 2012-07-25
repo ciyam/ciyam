@@ -1963,7 +1963,8 @@ void view_specification::add_specification_data( model& m, specification_data& s
    for( size_t i = 0; i < field_info.size( ); i++ )
    {
       string fnum;
-      fnum += ( '0' + ( i / 10 ) );
+      fnum += ( '0' + ( i / 100 ) );
+      fnum += ( '0' + ( i % 100 / 10 ) );
       fnum += ( '0' + ( i % 10 ) );
 
       if( i > 0 )
@@ -1975,7 +1976,8 @@ void view_specification::add_specification_data( model& m, specification_data& s
    for( size_t i = 0; i < field_info.size( ); i++ )
    {
       string fnum;
-      fnum += ( '0' + ( i / 10 ) );
+      fnum += ( '0' + ( i / 100 ) );
+      fnum += ( '0' + ( i % 100 / 10 ) );
       fnum += ( '0' + ( i % 10 ) );
 
       string extra, pfield, pfield_info;

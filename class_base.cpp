@@ -1564,9 +1564,15 @@ void class_base::perform_field_search_replacements( )
                replace.erase( npos );
             }
 
+            // NOTE: If another optional prefix follows then it is assumed
+            // that the search/replace following this optional prefix must
+            // have been empty.
             bool was_at_end( epos == str.length( ) - 1 );
+            if( !was_at_end && str[ epos + 1 ] == '[' )
+               was_at_end = true;
 
             str.erase( pos, epos - pos + 1 );
+
             if( !was_at_end )
                str.insert( pos, replace );
             else if( !empty_replace.empty( ) )

@@ -4710,7 +4710,7 @@
      <ftype>@class
      <extra>link+fkey2+force
      <mandatory>true
-     <modifiers>40000000000:protect
+     <modifiers>100000000000:protect
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -4770,7 +4770,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>10000000000:relegate
+     <modifiers>40000000000:relegate
     </field>
     <field/>
      <name>field_specification_modifier
@@ -4790,7 +4790,7 @@
      <ftype>@class
      <extra>link+fkey5
      <mandatory>false
-     <modifiers>1000000:relegate,100000000000:protect
+     <modifiers>4000000:relegate,400000000000:protect
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -4802,7 +4802,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>2000000:relegate
+     <modifiers>8000000:relegate
      <pclass>112100
      <pfield>112101
      <pfname>field_procedure_arg_name
@@ -4814,7 +4814,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>4000000:relegate
+     <modifiers>10000000:relegate
      <pclass>112100
      <pfield>112101
      <pfname>field_procedure_arg_name
@@ -4826,7 +4826,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>8000000:relegate
+     <modifiers>20000000:relegate
      <pclass>112100
      <pfield>112101
      <pfname>field_procedure_arg_name
@@ -4838,7 +4838,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>200000:relegate
+     <modifiers>800000:relegate
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -4850,7 +4850,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>400000:relegate
+     <modifiers>1000000:relegate
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -4862,7 +4862,7 @@
      <ftype>@class
      <extra>link+fkey3
      <mandatory>false
-     <modifiers>200:relegate,80000000000:protect
+     <modifiers>200:relegate,200000000000:protect
      <pclass>103100
      <pfield>103101
      <pfname>field_enum_name
@@ -4934,7 +4934,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>4000000000:relegate
+     <modifiers>10000000000:relegate
     </field>
     <field/>
      <name>field_specification_source_class
@@ -4942,7 +4942,7 @@
      <ftype>@class
      <extra>no_edit+link+fkey7+filename+max_size=30
      <mandatory>false
-     <modifiers>40000000:relegate
+     <modifiers>100000000:relegate
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -4954,7 +4954,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>80000000:relegate
+     <modifiers>200000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -4978,7 +4978,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>200000000:relegate,200000000000:protect
+     <modifiers>800000000:relegate,800000000000:protect
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -4990,7 +4990,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>10000000:relegate
+     <modifiers>40000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5014,7 +5014,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>20000000:relegate
+     <modifiers>80000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5026,7 +5026,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>100000000:relegate
+     <modifiers>400000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5038,7 +5038,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>100:relegate,20000000000:protect
+     <modifiers>100:relegate,80000000000:protect
      <pclass>113100
      <pfield>113105
      <pfname>field_relationship_child_name
@@ -5050,7 +5050,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>8000000000:relegate
+     <modifiers>20000000000:relegate
     </field>
     <field/>
      <name>field_specification_test_field
@@ -5058,7 +5058,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>800000000:relegate
+     <modifiers>2000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5082,7 +5082,7 @@
      <ftype>@class
      <extra>link+force+forced
      <mandatory>false
-     <modifiers>8000000000:relegate,1000000000:relegate
+     <modifiers>20000000000:relegate,4000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5094,7 +5094,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>8000000000:relegate,400000000:relegate
+     <modifiers>20000000000:relegate,1000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5106,7 +5106,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>2000000000:relegate
+     <modifiers>8000000000:relegate
     </field>
     <field/>
      <name>field_specification_permission
@@ -5114,7 +5114,31 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate
+     <modifiers>2000000:relegate
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
+    </field>
+    <field/>
+     <name>field_specification_other_permission
+     <field>301331
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>200000:relegate
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
+    </field>
+    <field/>
+     <name>field_specification_other_permission_2
+     <field>301332
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>400000:relegate
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -5243,7 +5267,7 @@
      <ftype>@class
      <extra>link+fkey2
      <mandatory>true
-     <modifiers>40000000000:protect
+     <modifiers>100000000000:protect
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -5861,7 +5885,7 @@
      <ftype>@class
      <extra>link+fkey2
      <mandatory>true
-     <modifiers>40000000000:protect
+     <modifiers>100000000000:protect
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -5873,7 +5897,7 @@
      <ftype>@class
      <extra>force+link
      <mandatory>false
-     <modifiers>100:relegate,20000000000:protect
+     <modifiers>100:relegate,80000000000:protect
      <pclass>113100
      <pfield>113105
      <pfname>field_relationship_child_name
@@ -5894,7 +5918,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>400000000000:relegate
+     <modifiers>1000000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5906,7 +5930,7 @@
      <ftype>@class
      <extra>force+link
      <mandatory>false
-     <modifiers>200000000:relegate,200000000000:protect
+     <modifiers>800000000:relegate,800000000000:protect
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5948,7 +5972,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>400000000000:relegate
+     <modifiers>1000000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -6049,7 +6073,7 @@
      <ftype>@class
      <extra>link+fkey2
      <mandatory>true
-     <modifiers>40000000000:protect
+     <modifiers>100000000000:protect
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -6089,7 +6113,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>1000000:relegate,100000000000:protect
+     <modifiers>4000000:relegate,400000000000:protect
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -6101,7 +6125,7 @@
      <ftype>@class
      <extra>link+fkey3
      <mandatory>false
-     <modifiers>400000000000:relegate
+     <modifiers>1000000000000:relegate
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -6113,7 +6137,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>400000000000:relegate
+     <modifiers>1000000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -6125,7 +6149,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>400000000000:relegate
+     <modifiers>1000000000000:relegate
     </field>
     <field/>
      <name>field_specification_field_action_clone_key
@@ -6133,7 +6157,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>400000000000:relegate
+     <modifiers>1000000000000:relegate
     </field>
     <field/>
      <name>field_specification_use_source_parent
@@ -6141,7 +6165,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>4000000000:relegate
+     <modifiers>10000000000:relegate
     </field>
     <field/>
      <name>field_specification_source_field
@@ -6149,7 +6173,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>80000000:relegate
+     <modifiers>200000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -6173,7 +6197,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>200000000:relegate,200000000000:protect
+     <modifiers>800000000:relegate,800000000000:protect
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -6185,7 +6209,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>10000000:relegate
+     <modifiers>40000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -6197,7 +6221,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>10000000000:relegate
+     <modifiers>40000000000:relegate
     </field>
     <field/>
      <name>field_specification_field_action_access_restriction
@@ -6727,6 +6751,22 @@
     <field/>
      <name>field_specification_type_needs_permission
      <field>114180
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_needs_other_permission
+     <field>114200
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_needs_other_permission_2
+     <field>114201
      <ftype>bool
      <extra>
      <mandatory>true
