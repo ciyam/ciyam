@@ -1632,6 +1632,13 @@ void Meta_Model::impl::impl_Generate( )
                extras += "first_row_as_header";
             }
 
+            if( get_obj( ).child_View( ).Ignore_Unactionable_Records( ) )
+            {
+               if( !extras.empty( ) )
+                  extras += ",";
+               extras += "ignore_unactionable";
+            }
+
             if( !is_null( get_obj( ).child_View( ).Class( ).Static_Instance_Key( ) ) )
             {
                if( !extras.empty( ) )

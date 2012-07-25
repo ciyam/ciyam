@@ -72,7 +72,7 @@ template< typename T > struct cache_region;
 // it is assumed that type "T" is P.O.D. and therefore must also not throw during an assignment
 // operation. Other exceptions that might occur will not affect the internal consistency of the
 // cache, however, the state is not guaranteed to be the same as it was prior to the calling of
-// the cache function from which the user exception threw out of (i.e. the "basic guarrantee").
+// the cache function from which the user exception threw out of (i.e. the "basic guarantee").
 
 template< typename T > class cache_base
 {

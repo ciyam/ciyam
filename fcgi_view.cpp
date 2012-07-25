@@ -569,7 +569,9 @@ bool output_view_form( ostream& os, const string& act,
                all_actions = "create_copy$" + source.vici->second->cid + "%" + data + all_actions;
             }
 
-            if( !all_actions.empty( ) && !( source.state & c_state_unactionable ) )
+            if( !all_actions.empty( )
+             && ( !( source.state & c_state_unactionable )
+             || view_extras.count( c_view_type_extra_ignore_unactionable ) ) )
             {
                if( had_any )
                   os << c_nbsp;
@@ -586,7 +588,9 @@ bool output_view_form( ostream& os, const string& act,
          {
             is_editable = false;
 
-            if( !source.actions_value.empty( ) && !( source.state & c_state_unactionable ) )
+            if( !source.actions_value.empty( )
+             && ( !( source.state & c_state_unactionable )
+             || view_extras.count( c_view_type_extra_ignore_unactionable ) ) )
             {
                if( had_any )
                   os << c_nbsp;

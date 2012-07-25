@@ -5603,7 +5603,7 @@
 `{`$specification_View_view_extra`=`'`'`}
 `{`$specification_View_view_mods`=`'`'`}
 `{`$specification_View_view_binfo`=`'`'`}
-`{`$specification_View_view_fnums`=`'00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18`'`}
+`{`$specification_View_view_fnums`=`'00 01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19`'`}
 `{`$specification_View_view_field00`=`'301800`'`}
 `{`$specification_View_view_ftype00`=`'@class`'`}
 `{`$specification_View_view_extra00`=`'no_edit+link+fkey1+filename+max_size=30`'`}
@@ -5748,6 +5748,12 @@
 `{`$specification_View_view_fmods18`=`'`'`}
 `{`$specification_View_view_fname18`=`'field_view_use_first_row_as_header`'`}
 `{`$specification_View_view_fmand18`=`'true`'`}
+`{`$specification_View_view_field19`=`'118116`'`}
+`{`$specification_View_view_ftype19`=`'bool`'`}
+`{`$specification_View_view_extra19`=`'`'`}
+`{`$specification_View_view_fmods19`=`'`'`}
+`{`$specification_View_view_fname19`=`'field_view_ignore_unactionable_records`'`}
+`{`$specification_View_view_fmand19`=`'true`'`}
 `{`}
 `{`$specification_View_child_list0_id`=`'602620`'`}
 `{`$specification_View_child_list0_cid`=`'118100`'`}
