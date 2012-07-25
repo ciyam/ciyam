@@ -22856,6 +22856,23 @@
       </specifications>
      </field>
      <field/>
+      <id>118116
+      <name>Ignore_Unactionable_Records
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>118101
       <name>Name
       <type>1020
@@ -33989,6 +34006,7 @@
      <field_info>118111;force+enum=658
      <field_info>118112;enum=654
      <field_info>118114
+     <field_info>118116
     </data>
    </specification>
    <specification/>

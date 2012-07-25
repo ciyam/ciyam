@@ -56,15 +56,16 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
       e_field_id_Change_Restriction = 7,
       e_field_id_Class = 8,
       e_field_id_Id = 9,
-      e_field_id_Model = 10,
-      e_field_id_Name = 11,
-      e_field_id_PDF_Font_Type = 12,
-      e_field_id_PDF_View_Type = 13,
-      e_field_id_Print_Without_Highlight = 14,
-      e_field_id_Title = 15,
-      e_field_id_Type = 16,
-      e_field_id_Type_Key = 17,
-      e_field_id_Use_First_Row_As_Header = 18
+      e_field_id_Ignore_Unactionable_Records = 10,
+      e_field_id_Model = 11,
+      e_field_id_Name = 12,
+      e_field_id_PDF_Font_Type = 13,
+      e_field_id_PDF_View_Type = 14,
+      e_field_id_Print_Without_Highlight = 15,
+      e_field_id_Title = 16,
+      e_field_id_Type = 17,
+      e_field_id_Type_Key = 18,
+      e_field_id_Use_First_Row_As_Header = 19
    };
 
    Meta_View( );
@@ -87,6 +88,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
 
    const std::string& Id( ) const;
    void Id( const std::string& Id );
+
+   bool Ignore_Unactionable_Records( ) const;
+   void Ignore_Unactionable_Records( bool Ignore_Unactionable_Records );
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );

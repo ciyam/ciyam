@@ -474,6 +474,7 @@ field_add -id=118112 View PDF_Font_Type int mand -def=0 -e=pdf_font_type
 field_add -id=118113 View Allow_Copy_Action bool mand -def=0
 field_add -id=118114 View Use_First_Row_As_Header bool mand -def=0
 field_add -id=118115 View Auto_Back_After_Create bool mand -def=0
+field_add -id=118116 View Ignore_Unactionable_Records bool mand -def=0
 procedure_add -id=118410 View Generate_PDF_View
 class_add -id=119100 View_Field_Type View_Field_Types
 field_add -id=119101 View_Field_Type Name str30 mand
@@ -1850,7 +1851,7 @@ specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_e
 ,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
 ,@tab:Advanced_UI_Options,Allow_Copy_Action,Auto_Back_After_Create,Allow_Printable_Version;force\
-,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header"
+,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header,Ignore_Unactionable_Records"
 specification_add -id=602620 {View}_child_list0 list "@602620_* child:sort_no_limit View Name,Access_Restriction {Model}"
 specification_add -id=602710 {View_Field}_view view "? standard View_Field {View}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
