@@ -1,0 +1,23 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`$op`=`'&&`'`}`{`@eq`(`$arg_op`,`'or`'`)`$op`=`'||`'`}\
+   // [(start transient_permission_from_other_perms)]
+   if( !get_obj( ).get_key( ).empty( ) )
+   {
+      set< string > perms;
+      string value( get_obj( ).`{`$arg_field`}( ) );
+
+      if( !value.empty( ) )
+         split_string( value, perms );
+
+      if( perms.count( "`{`$arg_lpermission_id`}" ) // i.e. `{`$arg_lpermission`}
+       `{`$op`} perms.count( "`{`$arg_rpermission_id`}" ) ) // i.e. `{`$arg_rpermission`}
+      {
+         if( !value.empty( ) )
+            value += ',';
+         value += "`{`$arg_permission_id`}"; // i.e. `{`$arg_permission`}
+
+         get_obj( ).`{`$arg_field`}( value );
+      }
+   }
+   // [(finish transient_permission_from_other_perms)]
+`}

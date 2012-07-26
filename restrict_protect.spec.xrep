@@ -1,0 +1,47 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start restrict_protect)]
+   if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
+`{`!`@eq`(`$arg_admin_always`,`'`'`)
+    && !is_admin_uid( )`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && !get_obj( ).`{`$arg_tfield`}( )`}\
+`{`!`@eq`(`$arg_permission`,`'`'`)
+    && !get_perms( ).count( "`{`$arg_permission_id`}" )`} )`{`!`@eq`(`$arg_permission`,`'`'`) // i.e. `{`$arg_permission`}`}
+`{`!`@eq`(`$arg_no_ignore`,`'`'`)\
+   {
+`}`{`@eq`(`$arg_scope`,`'edit`'`)\
+      state |= ( c_state_uneditable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`} );\
+`,`@eq`(`$arg_scope`,`'delete`'`)\
+      state |= ( c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`} );\
+`,\
+      state |= ( c_state_uneditable | c_state_undeletable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`} );\
+`}`{`!`@eq`(`$arg_no_ignore`,`'`'`)
+      state &= ~c_state_ignore_uneditable;
+   }\
+`}
+   // [(finish restrict_protect)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start restrict_protect)]
+`{`@eq`(`$arg_pfield`,`'`'`)\
+   dependents.insert( "`{`$arg_field`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );\
+`,\
+   dependents.insert( "`{`$arg_pfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+      names.insert( "`{`$arg_pfield`}" );\
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );\
+`}
+   // [(finish restrict_protect)]
+`}

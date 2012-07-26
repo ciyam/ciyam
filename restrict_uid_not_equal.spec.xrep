@@ -1,0 +1,62 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+`{`$has_other_conds`=`'`'`}\
+`{`!`@eq`(`$arg_admin_always`,`'`'`)`|`!`@eq`(`$arg_perm`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`$has_other_conds`=`'true`'`}\
+   // [(start restrict_uid_not_equal)]
+`{`@eq`(`$has_other_conds`,`'`'`)\
+`{`@eq`(`$arg_sfield`,`'`'`)\
+   if( get_uid( ) != get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
+`,\
+   if( get_obj( ).`{`$arg_sfield`}( )`{`!`@eq`(`$arg_scfield`,`'`'`).`{`$arg_scfield`}( )`}
+    || ( get_uid( ) != get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
+`}`,\
+`{`@eq`(`$arg_admin_always`,`'`'`)\
+`{`@eq`(`$arg_perm`,`'`'`)\
+   if( !get_obj( ).`{`$arg_tfield`}( )
+`,\
+   if( !get_perms( ).count( "`{`$arg_perm_id`}" )  // i.e. `{`$arg_perm`}
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && !get_obj( ).`{`$arg_tfield`}( )
+`}`}`,\
+   if( !is_admin_uid( )
+`{`!`@eq`(`$arg_perm`,`'`'`)\
+    && !get_perms( ).count( "`{`$arg_perm_id`}" )  // i.e. `{`$arg_perm`}
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && !get_obj( ).`{`$arg_tfield`}( )
+`}`}\
+`{`@eq`(`$arg_sfield`,`'`'`)\
+    && ( get_uid( ) != get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
+`,\
+    && ( get_obj( ).`{`$arg_sfield`}( )`{`!`@eq`(`$arg_scfield`,`'`'`).`{`$arg_scfield`}( )`}
+    || ( get_uid( ) != get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) ) )
+`}`}\
+`{`@eq`(`$arg_scope`,`'edit`'`)\
+      state |= ( c_state_uneditable`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
+`,`@eq`(`$arg_scope`,`'delete`'`)\
+      state |= ( c_state_undeletable`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
+`,\
+      state |= ( c_state_uneditable | c_state_undeletable`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
+`}\
+   // [(finish restrict_uid_not_equal)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start restrict_uid_not_equal)]
+   dependents.insert( "`{`$arg_ufield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
+      names.insert( "`{`$arg_ufield`}" );
+`{`!`@eq`(`$arg_sfield`,`'`'`)
+   dependents.insert( "`{`$arg_sfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+      names.insert( "`{`$arg_sfield`}" );
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
+`}\
+   // [(finish restrict_uid_not_equal)]
+`}

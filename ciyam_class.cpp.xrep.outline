@@ -965,6 +965,19 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_label=$specification_\0_label\
  arg_value=$specification_\0_value arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing`}\
 `,\
+`@eq`(`'\1`'`,`'restrict_protect`'`)
+`{`#restrict_protect.spec.xrep section=get_state\
+ arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield\
+ arg_permission=$specification_\0_permission arg_permission_id=$specification_\0_permission_id\
+ arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
+ arg_admin_always=$specification_\0_admin_always arg_no_ignore=$specification_\0_no_ignore`}\
+`,\
+`@eq`(`'\1`'`,`'restrict_uid_not_equal`'`)
+`{`#restrict_uid_not_equal.spec.xrep section=get_state\
+ arg_admin_always=$specification_\0_admin_always arg_perm=$specification_\0_perm arg_perm_id=$specification_\0_perm_id\
+ arg_sfield=$specification_\0_sfield arg_scfield=$specification_\0_scfield arg_scope=$specification_\0_scope\
+ arg_tfield=$specification_\0_tfield arg_ufield=$specification_\0_ufield arg_unactionable=$specification_\0_unactionable`}\
+`,\
 `@eq`(`'\1`'`,`'state_protect`'`)`{`;NOTE: This can be removed when modeller.exe is no longer used.`}
 `{`#$specification_\0_spec_file section=get_state name=\0\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_label=$specification_\0_label\
@@ -1333,7 +1346,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id arg_altfield=$specification_\0_altfield\
- arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname`}\
+ arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname\
+ arg_not_iterating=$specification_\0_not_iterating arg_check_editable=$specification_\0_check_editable`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -1373,6 +1387,13 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_tvalue=$specification_\0_tvalue arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id`}\
+`,\
+`@eq`(`'\1`'`,`'transient_permission_from_other_perms`'`)
+`{`#transient_permission_from_other_perms.spec.xrep section=after_fetch class_name=$class_name\
+ arg_field=$specification_\0_field arg_op=$specification_\0_op arg_permission=$specification_\0_permission\
+ arg_permission_id=$specification_\0_permission_id arg_lpermission=$specification_\0_lpermission\
+ arg_lpermission_id=$specification_\0_lpermission_id arg_rpermission=$specification_\0_rpermission\
+ arg_rpermission_id=$specification_\0_rpermission_id`}\
 `,\
 `@eq`(`'\1`'`,`'transient_search_rep_from_child_vars`'`)
 `{`#transient_search_rep_from_child_vars.spec.xrep section=after_fetch class_name=$class_name\
@@ -2816,6 +2837,14 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `@eq`(`'\1`'`,`'protect_not_equal`'`)
 `{`#protect_not_equal.spec.xrep section=get_always_required_field_names\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield`}\
+`,\
+`@eq`(`'\1`'`,`'restrict_protect`'`)
+`{`#restrict_protect.spec.xrep section=get_always_required_field_names\
+ arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'restrict_uid_not_equal`'`)
+`{`#restrict_uid_not_equal.spec.xrep section=get_always_required_field_names\
+ arg_ufield=$specification_\0_ufield arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'state_protect`'`)`{`;NOTE: This can be removed when modeller.exe is no longer used.`}
 `{`#$specification_\0_spec_file section=get_always_required_field_names name=\0\

@@ -25,35 +25,42 @@
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
     || get_obj( ).`{`$arg_altfield`}( )
 `}\
-    || get_perms( ).count( "`{`$arg_permission_id`}" ) ) )  // i.e. `{`$arg_permission`}
+    || get_perms( ).count( "`{`$arg_permission_id`}" ) ) ) // i.e. `{`$arg_permission`}
 `}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
-   if( is_admin_uid( ) || `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
+   if( is_admin_uid( ) || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
 `{`$arg_ufield`}( ).get_key( )`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), \
-`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} )
+`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} )
 `,\
    if( is_admin_uid( )
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
     || get_obj( ).`{`$arg_altfield`}( )
 `}\
-    || get_perms( ).count( "`{`$arg_permission_id`}" )  // i.e. `{`$arg_permission`}
-    || `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
-`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} )
+    || get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
+    || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
+`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} )
 `}`,\
    if( get_obj( ).`{`$arg_tfield`}( )
 `{`@eq`(`$arg_permission_id`,`'`'`)\
-    && ( is_admin_uid( ) || `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
+    && ( is_admin_uid( ) || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
 `{`$arg_ufield`}( ).get_key( )`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), \
-`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} ) )
+`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} ) )
 `,\
     && ( is_admin_uid( )
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
     || get_obj( ).`{`$arg_altfield`}( )
 `}\
-    || get_perms( ).count( "`{`$arg_permission_id`}" )  // i.e. `{`$arg_permission`}
-    || `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
-`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} ) )
+    || get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
+    || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
+`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} ) )
 `}`}`}`,\
 `{`@eq`(`$arg_ufield`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\
@@ -63,10 +70,10 @@
 `,\
    if( get_obj( ).`{`$arg_altfield`}( ) )
 `}`,\
-   if( `{`!`@eq`(`$arg_altfield`,`'`'`)get_obj( ).`{`$arg_altfield`}( ) || `}get_perms( ).count( "`{`$arg_permission_id`}" ) )  // i.e. `{`$arg_permission`}
+   if( `{`!`@eq`(`$arg_altfield`,`'`'`)get_obj( ).`{`$arg_altfield`}( ) || `}get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
 `}`,\
 `{`@eq`(`$arg_altfield`,`'`'`)\
-   if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" ) && `}get_obj( ).`{`$arg_tfield`}( ) )  // i.e. `{`$arg_permission`}
+   if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" ) && `}get_obj( ).`{`$arg_tfield`}( ) ) // i.e. `{`$arg_permission`}
 `,\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
    if( get_obj( ).`{`$arg_tfield`}( ) && get_obj( ).`{`$arg_altfield`}( ) )
@@ -76,33 +83,44 @@
 `}`}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_altfield`,`'`'`)\
-   if( `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
-`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} )
+   if( `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
+`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} )
 `,\
-   if( get_obj( ).`{`$arg_altfield`}( ) ||`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
+   if( get_obj( ).`{`$arg_altfield`}( ) || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
 `{`$arg_ufield`}( ).get_key( )`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), \
-`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} )
+`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} )
 `}`,\
    if( get_obj( ).`{`$arg_tfield`}( )
 `{`@eq`(`$arg_permission_id`,`'`'`)\
 `{`@eq`(`$arg_altfield`,`'`'`)\
-    && `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
-`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} )
+    && `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
+`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} )
 `,\
-    && ( get_obj( ).`{`$arg_altfield`}( ) ||`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
+    && ( get_obj( ).`{`$arg_altfield`}( ) || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
 `{`$arg_ufield`}( ).get_key( )`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), \
-`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} ) )
+`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} ) )
 `}`,\
 `{`@eq`(`$arg_altfield`,`'`'`)\
-    && ( get_perms( ).count( "`{`$arg_permission_id`}" ) || `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
+    && ( get_perms( ).count( "`{`$arg_permission_id`}" ) || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).\
 `{`$arg_ufield`}( ).get_key( )`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), \
-`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} ) )  // i.e. `{`$arg_permission`}
+`{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} ) ) // i.e. `{`$arg_permission`}
 `,\
     && ( get_perms( ).count( "`{`$arg_permission_id`}" ) || get_obj( ).`{`$arg_altfield`}( )
-    || `{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
-`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )`,get_obj( ).`{`$arg_ufield`}( )`} )`} ) )  // i.e. `{`$arg_permission`}
+    || `{`!`@eq`(`$arg_check_editable`,`'`'`)\
+( !( get_state( ) & c_state_uneditable ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
+`,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
+`,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_check_editable`,`'`'`) )`} ) ) // i.e. `{`$arg_permission`}
 `}`}`}`}`}\
    {
+`{`@eq`(`$arg_not_iterating`,`'`'`)\
       string actions( get_obj( ).`{`$arg_actions`}( ) );
 
       if( !actions.empty( ) )
@@ -117,6 +135,24 @@
       actions += c_procedure_id_`{`$arg_procedure`};
 
       get_obj( ).`{`$arg_actions`}( actions );
+`,\
+      if( !get_obj( ).get_is_iterating( ) )
+      {
+         string actions( get_obj( ).`{`$arg_actions`}( ) );
+
+         if( !actions.empty( ) )
+            actions += ',';
+`{`@eq`(`$arg_prompt`,`'true`'`)\
+         actions += '?';
+`}\
+`{`@eq`(`$arg_back_for_view`,`'true`'`)\
+         actions += '<';
+`}\
+         actions += c_procedure_id_`{`$arg_procedure`};
+
+         get_obj( ).`{`$arg_actions`}( actions );
+      }
+`}\
    }
    // [(start transient_field_action)]
 `}
