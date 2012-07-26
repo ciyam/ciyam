@@ -1546,11 +1546,11 @@ void class_base::perform_field_search_replacements( )
       {
          while( true )
          {
-            string::size_type pos = str.find_last_of( '[' );
+            string::size_type pos = str.find( '[' );
             if( pos == string::npos )
                break;
 
-            string::size_type epos = str.find( ']', pos );
+            string::size_type epos = str.find( ']', pos + 1 );
             if( epos == string::npos )
                throw runtime_error( "unexpected missing ']' in '" + str + "'" );
 

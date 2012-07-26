@@ -970,7 +970,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield\
  arg_permission=$specification_\0_permission arg_permission_id=$specification_\0_permission_id\
  arg_scope=$specification_\0_scope arg_changing=$specification_\0_changing\
- arg_admin_always=$specification_\0_admin_always arg_no_ignore=$specification_\0_no_ignore`}\
+ arg_admin_always=$specification_\0_admin_always arg_no_ignore=$specification_\0_no_ignore\
+ arg_unactionable=$specification_\0_unactionable`}\
 `,\
 `@eq`(`'\1`'`,`'restrict_uid_not_equal`'`)
 `{`#restrict_uid_not_equal.spec.xrep section=get_state\
@@ -1347,7 +1348,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id arg_altfield=$specification_\0_altfield\
  arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname\
- arg_not_iterating=$specification_\0_not_iterating arg_check_editable=$specification_\0_check_editable`}\
+ arg_not_iterating=$specification_\0_not_iterating arg_state=$specification_\0_state`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
