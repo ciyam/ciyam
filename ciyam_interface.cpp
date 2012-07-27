@@ -3472,10 +3472,6 @@ void request_handler::process_request( )
                   if( !is_editable )
                      state |= c_state_uneditable;
 
-                  // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
-                  if( ident == get_storage_info( ).user_info_view_id && data == p_session_info->user_key )
-                     is_owner = true;
-
                   // NOTE: For new records (and currently for "printable" views) do not output child lists.
                   // FUTURE: For "printable" views it makes sense to be able to have child lists although
                   // they should be identified differently (perhaps as "printchild") as the normal sublists

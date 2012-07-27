@@ -1371,9 +1371,14 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_from_file.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_suffix=$specification_\0_suffix`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_from_key`'`)
+`{`#transient_field_from_key.spec.xrep section=after_fetch class_name=$class_name\
+ arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=after_fetch class_name=$class_name\
- arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_value=$specification_\0_value`}\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_value=$specification_\0_value\
+ arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'transient_fk_field`'`)
 `{`#transient_fk_field.spec.xrep section=after_fetch class_name=$class_name\
