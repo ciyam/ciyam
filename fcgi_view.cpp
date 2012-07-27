@@ -61,6 +61,75 @@ inline string format_numeric_value( const numeric& n, const string& mask )
    return format_numeric( n, mask );
 }
 
+void output_view_tabs( ostream& os, const view_source& source,
+ const session_info& sess_info, int vtab_num, bool is_in_edit, const string& data,
+ const string& user_select_key, bool use_url_checksum, const string& cont_act, int back_count )
+{
+   const storage_info& sinfo( get_storage_info( ) );
+
+   const module_info& mod_info( *sinfo.modules_index.find( source.module )->second );
+
+   os << "<tr><td colspan=\"2\">\n";
+   os << "<table class=\"nonchildtabs\">\n";
+
+   os << "<thead>\n";
+   os << "<tr>\n";
+
+   for( size_t i = 0; i < source.tab_names.size( ); i++ )
+   {
+      if( i + 1 == vtab_num )
+         os << "<th class=\"tab\" align=\"center\">" << mod_info.get_string( source.tab_names[ i ] ) << "</th>\n";
+      else
+      {
+         if( !is_in_edit )
+         {
+            os << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
+
+            if( use_url_checksum )
+            {
+               string checksum_values( string( c_cmd_view ) + data + source.vici->second->id + user_select_key );
+
+               string new_checksum_value( get_checksum( sess_info, checksum_values ) );
+
+               os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+            }
+
+            os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+            os << "query_update( 'vtab', '" << ( i + 1 )
+             << "' );\">" << mod_info.get_string( source.tab_names[ i ] ) << "</a></td>\n";
+         }
+         else
+         {
+            os << "<td class=\"tab\" align=\"center\"><a href=\"#\" onclick=\"javascript:";
+
+            if( use_url_checksum )
+            {
+               string checksum_values( string( c_cmd_view ) + data + source.vici->second->id + user_select_key );
+
+               string new_checksum_value( get_checksum( sess_info, checksum_values ) );
+
+               os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+            }
+
+            os << "query_update( 'vtab', '" << ( i + 1 ) << "', true ); ";
+
+            os << "dyn_load( null, 'act="
+             << cont_act << "&app=' + get_all_field_values( document." << source.id << " ), false ); ";
+
+            os << "event.returnValue = false; return false;";
+
+            os << "\">" << mod_info.get_string( source.tab_names[ i ] ) << "</a></td>\n";
+         }
+      }
+   }
+
+   os << "</tr>\n";
+   os << "</thead>\n";
+
+   os << "</table>\n";
+   os << "</tr>\n";
+}
+
 }
 
 void setup_view_fields( view_source& view,
@@ -487,6 +556,10 @@ bool output_view_form( ostream& os, const string& act,
       if( is_effective_owner_field )
          is_record_owner = true;
    }
+
+   // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
+   if( source.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
+      is_record_owner = true;
 
    string image_width( to_string( sess_info.image_width ) );
    string image_height( to_string( sess_info.image_height ) );
@@ -969,7 +1042,7 @@ bool output_view_form( ostream& os, const string& act,
        && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
          continue;
 
-      if( !is_new_record && !sess_info.is_admin_user && owner != sess_info.user_key
+      if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
        && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
          continue;
 
@@ -1068,65 +1141,8 @@ bool output_view_form( ostream& os, const string& act,
          ++num_displayed; // NOTE: Increment for even/odd row display of row following the tabs.
          has_displayed_tabs = true;
 
-         os << "<tr><td colspan=\"2\">\n";
-         os << "<table class=\"nonchildtabs\">\n";
-
-         os << "<thead>\n";
-         os << "<tr>\n";
-
-         for( size_t i = 0; i < source.tab_names.size( ); i++ )
-         {
-            if( i + 1 == vtab_num )
-               os << "<th class=\"tab\" align=\"center\">" << mod_info.get_string( source.tab_names[ i ] ) << "</th>\n";
-            else
-            {
-               if( !is_in_edit )
-               {
-                  os << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
-
-                  if( use_url_checksum )
-                  {
-                     string checksum_values( string( c_cmd_view ) + data + source.vici->second->id + user_select_key );
-
-                     string new_checksum_value( get_checksum( sess_info, checksum_values ) );
-
-                     os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
-                  }
-
-                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-                  os << "query_update( 'vtab', '" << ( i + 1 )
-                   << "' );\">" << mod_info.get_string( source.tab_names[ i ] ) << "</a></td>\n";
-               }
-               else
-               {
-                  os << "<td class=\"tab\" align=\"center\"><a href=\"#\" onclick=\"javascript:";
-
-                  if( use_url_checksum )
-                  {
-                     string checksum_values( string( c_cmd_view ) + data + source.vici->second->id + user_select_key );
-
-                     string new_checksum_value( get_checksum( sess_info, checksum_values ) );
-
-                     os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
-                  }
-
-                  os << "query_update( 'vtab', '" << ( i + 1 ) << "', true ); ";
-
-                  os << "dyn_load( null, 'act="
-                   << cont_act << "&app=' + get_all_field_values( document." << source.id << " ), false ); ";
-
-                  os << "event.returnValue = false; return false;";
-
-                  os << "\">" << mod_info.get_string( source.tab_names[ i ] ) << "</a></td>\n";
-               }
-            }
-         }
-
-         os << "</tr>\n";
-         os << "</thead>\n";
-
-         os << "</table>\n";
-         os << "</tr>\n";
+         output_view_tabs( os, source, sess_info, vtab_num,
+          is_in_edit, data, user_select_key, use_url_checksum, cont_act, back_count );
       }
 
       // NOTE: Determine whether fields should be protected, relegated or displayed differently according
@@ -2614,6 +2630,11 @@ bool output_view_form( ostream& os, const string& act,
          os << "<tbody>\n";
       }
    }
+
+   if( display_tabs && !has_displayed_tabs )
+      output_view_tabs( os, source, sess_info, vtab_num,
+       is_in_edit, data, user_select_key, use_url_checksum, cont_act, back_count );
+
    os << "</tbody>\n";
    os << "</table>\n";
 

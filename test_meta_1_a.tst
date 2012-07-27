@@ -39,7 +39,10 @@ Template,M001C101F103
 Password,M001C101F104
 Description,M001C101F105
 Email,M001C101F106
-Permissions,M001C101F107
+Hide_Email,M001C101F107
+Permissions,M001C101F108
+Is_Self_Or_Admin,M001C101F109
+Key,M001C101F110
 
 > perform_fetch Meta Enum "" Name,Id -min
 Day_Type,E100

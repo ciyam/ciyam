@@ -6,7 +6,11 @@
       if( !get_obj( ).`{`$arg_sfield`}( ).empty( ) )
          split_string( get_obj( ).`{`$arg_sfield`}( ), all_keys );
 
+`{`@eq`(`$arg_admin_always`,`'`'`)\
       if( all_keys.count( get_uid( ) ) )
+`,\
+      if( is_admin_uid( ) || all_keys.count( get_uid( ) ) )
+`}\
          get_obj( ).`{`$arg_field`}( `{`$arg_value`} );
    }
    // [(finish transient_field_value_if_uid_in_set)]
