@@ -1850,9 +1850,11 @@ bool populate_list_info( list_source& list,
    return okay;
 }
 
-void fetch_user_record( const string& gid,
- const string& module_id, const string& module_name, const module_info& mod_info,
- session_info& sess_info, bool is_authorised, bool check_password, const string& username, const string& password )
+void fetch_user_record(
+ const string& gid, const string& module_id,
+ const string& module_name, const module_info& mod_info,
+ session_info& sess_info, bool is_authorised, bool check_password,
+ const string& username, const string& password, const string& unique_data )
 {
    string field_list( mod_info.user_uid_field_id );
    field_list += "," + mod_info.user_pwd_field_id;
@@ -1913,12 +1915,16 @@ void fetch_user_record( const string& gid,
       if( user_password.length( ) < 20 )
       {
          sess_info.clear_password = user_password;
-         user_password = lower( sha1( gid + user_password ).get_digest_as_string( ) );
+         user_password = hash_password( gid + user_data[ 1 ] + username );
       }
       else
          user_password = password_decrypt( user_password, get_server_id( ) );
 
-      if( user_data[ 0 ] != username || ( !is_authorised && user_password != password ) )
+      string final_password( user_password );
+      if( !unique_data.empty( ) )
+         final_password = sha1( user_password + unique_data ).get_digest_as_string( );
+
+      if( user_data[ 0 ] != username || ( !is_authorised && password != final_password ) )
          throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
       sess_info.user_pwd_hash = user_password;

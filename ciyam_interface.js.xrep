@@ -606,7 +606,7 @@ function process( )
    }
 
    if( uniqueId != '' )
-      sessionStorage.setItem( 'uuid', uniqueId );
+      sessionStorage.setItem( 'unique', uniqueId );
 
    if( jump_back && !had_act_error )
       history.back( );
@@ -857,11 +857,11 @@ function hash_password( salt, pwd, skip_id )
    else
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
 
-   if( sessionStorage.getItem( 'uuid' ) != null )
-      uniqueId = sessionStorage.getItem( 'uuid' );
+   if( sessionStorage.getItem( 'unique' ) != null )
+      uniqueId = sessionStorage.getItem( 'unique' );
 
    if( skip_id != true && uniqueId != '' )
-      retval += '@' + uniqueId;
+      retval = hex_sha1( retval + uniqueId ).toLowerCase( );
 
    if( encryptPosts )
    {
