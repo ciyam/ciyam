@@ -799,7 +799,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                else
                {
                   ++tab_id;
-                  view.tabs.push_back( fld.name );
+                  view.tabs.push_back( make_pair( fld.name, fld.extra ) );
                }
 
                reader.finish_section( c_section_field );

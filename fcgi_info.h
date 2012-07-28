@@ -244,7 +244,7 @@ struct view_info
 
    std::vector< fld_info > fields;
 
-   std::vector< std::string > tabs;
+   std::vector< std::pair< std::string, std::string > > tabs;
 };
 
 struct list_info
@@ -706,6 +706,7 @@ struct view_source : source
    std::string actions_value;
 
    std::vector< std::string > tab_names;
+   std::vector< std::string > tab_extras;
 
    std::vector< int > field_tab_ids;
 

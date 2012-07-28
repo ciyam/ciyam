@@ -1753,6 +1753,42 @@ void Meta_Model::impl::impl_Generate( )
                do
                {
                   ++field_num;
+
+                  string access_restriction;
+                  switch( get_obj( ).child_View( ).child_View_Field( ).Access_Restriction( ) )
+                  {
+                     case 0:
+                     break;
+
+                     case 1:
+                     access_restriction = "owner_only";
+                     break;
+
+                     case 2:
+                     access_restriction = "admin_only";
+                     break;
+
+                     case 3:
+                     access_restriction = "admin_owner_only";
+                     break;
+
+                     case 4: // i.e. denied_always
+                     access_restriction = "hidden";
+                     break;
+
+                     default:
+                     throw runtime_error( "unexpected access restriction #"
+                      + to_string( get_obj( ).child_View( ).child_View_Field( ).Access_Restriction( ) ) + " in Model::Generate" );
+                  }
+
+                  string access_perm = get_obj( ).child_View( ).child_View_Field( ).Access_Permission( ).Id( );
+                  if( !access_perm.empty( ) )
+                  {
+                     if( access_restriction.empty( ) )
+                        access_restriction = "hidden";
+                     access_restriction += "=!" + access_perm;
+                  }
+
                   if( get_obj( ).child_View( ).child_View_Field( ).Type( ).get_key( ) == "field" )
                   {
                      string field_name( "field_" );
@@ -1777,46 +1813,11 @@ void Meta_Model::impl::impl_Generate( )
                             + to_string( get_obj( ).child_View( ).child_View_Field( ).Access_Scope( ) ) + " in Model::Generate" );
                      }
 
-                     switch( get_obj( ).child_View( ).child_View_Field( ).Access_Restriction( ) )
+                     if( !access_restriction.empty( ) )
                      {
-                        case 0:
-                        break;
-
-                        case 1:
                         if( !extras.empty( ) )
                            extras += '+';
-                        extras += "owner_only";
-                        break;
-
-                        case 2:
-                        if( !extras.empty( ) )
-                           extras += '+';
-                        extras += "admin_only";
-                        break;
-
-                        case 3:
-                        if( !extras.empty( ) )
-                           extras += '+';
-                        extras += "admin_owner_only";
-                        break;
-
-                        case 4: // i.e. denied_always
-                        if( !extras.empty( ) )
-                           extras += '+';
-                        extras += "hidden";
-                        break;
-
-                        default:
-                        throw runtime_error( "unexpected access restriction #"
-                         + to_string( get_obj( ).child_View( ).child_View_Field( ).Access_Restriction( ) ) + " in Model::Generate" );
-                     }
-
-                     string access_perm = get_obj( ).child_View( ).child_View_Field( ).Access_Permission( ).Id( );
-                     if( !access_perm.empty( ) )
-                     {
-                        if( extras.empty( ) )
-                           extras = "hidden";
-                        extras += "=!" + access_perm;
+                        extras += access_restriction;
                      }
 
                      if( get_obj( ).child_View( ).child_View_Field( ).Change_Scope( ) != 0 )
@@ -2898,7 +2899,7 @@ void Meta_Model::impl::impl_Generate( )
                      field_ids.push_back( "@tab" );
                      field_names.push_back( lower( get_obj( ).child_View( ).child_View_Field( ).Name( ) ) );
                      field_types.push_back( "" );
-                     field_extras.push_back( "" );
+                     field_extras.push_back( access_restriction );
                      field_modifiers.push_back( "" );
                      field_mandatory.push_back( "false" );
 

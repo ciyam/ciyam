@@ -23457,7 +23457,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>500710
+        <id>500715
         <affect>relegate
        </modifier>
       </modifiers>
@@ -23486,6 +23486,10 @@
         <id>500710
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500715
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -23504,6 +23508,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500715
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -23558,6 +23566,10 @@
        </modifier>
        <modifier/>
         <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
         <affect>relegate
        </modifier>
       </modifiers>
@@ -23778,6 +23790,10 @@
       <modifiers/>
        <modifier/>
         <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
         <affect>relegate
        </modifier>
       </modifiers>
@@ -24113,6 +24129,10 @@
        </modifier>
        <modifier/>
         <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
         <affect>relegate
        </modifier>
       </modifiers>
@@ -24545,6 +24565,10 @@
       <modifiers/>
        <modifier/>
         <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
         <affect>relegate
        </modifier>
       </modifiers>
