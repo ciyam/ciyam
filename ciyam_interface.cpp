@@ -78,7 +78,6 @@
 #include "crypt_stream.h"
 #include "ciyam_interface.h"
 
-#define USE_UUID_FOR_LOGIN
 //#define ALLOW_MULTIPLE_RECORD_ENTRY
 
 #ifdef _WIN32
@@ -185,9 +184,7 @@ mutex g_session_mutex;
 
 session_container g_sessions;
 
-#ifdef USE_UUID_FOR_LOGIN
-deque< string > g_uuids;
-#endif
+map< string, string > g_uuid_for_ip_addr;
 
 }
 
@@ -452,53 +449,25 @@ void output_login_logout( ostream& os, const string& extra_details, const string
    os << "</div>\n";
 }
 
-#ifdef USE_UUID_FOR_LOGIN
-bool valid_uuid( const string& uuid )
+string get_unique( const string& id, const string& ip_addr )
 {
-   bool retval = false;
+   // FUTURE: If a huge number of connections are made from different IP addresses that
+   // never perform a successful login then the map being used could chew up very large
+   // amounts of memory (perhaps also need an IP address to timestamp map so that those
+   // unsuccessful IP address entries that are older can be removed periodically).
+   if( !g_uuid_for_ip_addr.count( ip_addr ) )
+      g_uuid_for_ip_addr.insert( make_pair( ip_addr, uuid( ).as_string( ) ) );
 
-   guard g( g_session_mutex );
+   string unique( g_uuid_for_ip_addr[ ip_addr ] );
 
-   for( size_t i = 0; i < g_uuids.size( ); i++ )
-   {
-      if( uuid == g_uuids[ i ] )
-      {
-         retval = true;
-         break;
-      }
-   }
-
-   return retval;
+   return sha1( id + unique ).get_digest_as_string( );
 }
 
-string get_latest_uuid( )
+void clear_unique( map< string, string >& input_data )
 {
-   guard g( g_session_mutex );
-
-   return g_uuids.back( );
+   if( g_uuid_for_ip_addr.count( input_data[ c_http_param_raddr ] ) )
+      g_uuid_for_ip_addr.erase( input_data[ c_http_param_raddr ] );
 }
-
-void strip_password( string& password, bool is_status_cmd )
-{
-   // NOTE: In order to help prevent a login replay attack a UUID that was
-   // passed to the client must be appended to the password after an '@'.
-   string::size_type pos = password.find( '@' );
-   if( pos == string::npos )
-   {
-      if( !is_status_cmd )
-         password.erase( );
-   }
-   else
-   {
-      string uuid = password.substr( pos + 1 );
-
-      if( !valid_uuid( uuid ) )
-         password.erase( );
-      else
-         password.erase( pos );
-   }
-}
-#endif
 
 void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true )
 {
@@ -557,25 +526,11 @@ void timeout_handler::on_start( )
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );
 
-#ifdef USE_UUID_FOR_LOGIN
-   int iter = 0;
-#endif
    while( true )
    {
       msleep( 1000 );
 
       guard g( g_session_mutex );
-
-#ifdef USE_UUID_FOR_LOGIN
-      if( ++iter > 9 )
-      {
-         iter = 0;
-         g_uuids.push_back( uuid( ).as_string( ) );
-
-         if( g_uuids.size( ) > 3 )
-            g_uuids.pop_front( );
-      }
-#endif
 
       vector< session_iterator > dead_sessions;
 
@@ -721,6 +676,7 @@ void request_handler::process_request( )
    string hash;
    string user;
    string title;
+   string unique_id;
    string module_id;
    string module_ref;
    string module_name;
@@ -899,6 +855,8 @@ void request_handler::process_request( )
          temp_session = true;
          session_id = c_new_session;
       }
+      else
+         unique_id = get_unique( g_id, input_data[ c_http_param_raddr ] );
 
       if( session_id.empty( ) || session_id == c_new_session )
       {
@@ -1155,11 +1113,6 @@ void request_handler::process_request( )
                         throw runtime_error( "unexpected missing user information" );
 
                      string activate_password( password );
-#ifdef USE_UUID_FOR_LOGIN
-                     string::size_type pos = activate_password.find( '@' );
-                     if( pos != string::npos )
-                        activate_password.erase( pos );
-#endif
 
                      // NOTE: An inactive account is expected to have its password being the same as the
                      // user id so this is checked before activation will be performed and therefore the
@@ -1193,12 +1146,10 @@ void request_handler::process_request( )
                      }
                   }
 
-#ifdef USE_UUID_FOR_LOGIN
-                  strip_password( password, cmd == c_cmd_status );
-#endif
+                  fetch_user_record( g_id, module_id, module_name, mod_info, *p_session_info,
+                   is_authorised || !base64_data.empty( ), !using_anonymous, username, password, unique_id );
 
-                  fetch_user_record( g_id, module_id, module_name,
-                   mod_info, *p_session_info, is_authorised || !base64_data.empty( ), !using_anonymous, username, password );
+                  clear_unique( input_data );
 
                   pwd_hash = p_session_info->user_pwd_hash;
 
@@ -1215,9 +1166,7 @@ void request_handler::process_request( )
                            parse_input( ( char* )decoded.c_str( ), decoded.size( ), input_data, '&', true );
 
                         password = input_data[ c_param_password ];
-#ifdef USE_UUID_FOR_LOGIN
-                        strip_password( password, cmd == c_cmd_status );
-#endif
+
                         if( password != p_session_info->user_pwd_hash )
                            throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
                      }
@@ -1610,7 +1559,7 @@ void request_handler::process_request( )
              && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
              || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
                fetch_user_record( g_id, module_id, module_name, mod_info,
-                *p_session_info, is_authorised, false, p_session_info->user_id, "" );
+                *p_session_info, is_authorised, false, p_session_info->user_id, "", "" );
          }
          catch( ... )
          {
@@ -1970,14 +1919,6 @@ void request_handler::process_request( )
             {
                string new_password( input_data[ c_param_newpwd ] );
                string old_password( input_data[ c_param_password ] );
-
-               string::size_type pos = new_password.find( '@' );
-               if( pos != string::npos )
-                  new_password.erase( pos );
-
-               pos = old_password.find( '@' );
-               if( pos != string::npos )
-                  old_password.erase( pos );
 
                if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
                   throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
@@ -3996,14 +3937,7 @@ void request_handler::process_request( )
       if( cmd != c_cmd_status )
       {
          extra_content_func += " serverId = '" + g_id + "';";
-#ifdef USE_UUID_FOR_LOGIN
-         extra_content_func += " uniqueId = '" + get_latest_uuid( ) + "';";
-
-         // NOTE: Because the server generates a new UUID every 10 seconds (and keeps the previous
-         // two generated UUIDs) if the login hasn't occurred within 30 seconds then refresh.
-         if( is_login_screen )
-            extra_content_func += " auto_refresh_seconds = 30; auto_refresh( );";
-#endif
+         extra_content_func += " uniqueId = '" + unique_id + "';";
       }
 
       extra_content << "<input type=\"hidden\" value=\"" << extra_content_func << "\" id=\"extra_content_func\"/>\n";
@@ -4040,13 +3974,18 @@ void request_handler::process_request( )
          }
       }
 
-      string login_html( !cookies_permitted || !get_storage_info( ).login_days
-       || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
+      if( !is_logged_in )
+      {
+         string login_html( !cookies_permitted || !get_storage_info( ).login_days
+          || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-      output_login_logout( extra_content, login_html, osstr.str( ) );
+         output_login_logout( extra_content, login_html, osstr.str( ) );
+      }
 
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
+      else
+         extra_content << "<input type=\"hidden\" value=\"uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
    }
    catch( ... )
    {
@@ -4224,10 +4163,6 @@ int main( int argc, char* argv[ ] )
 
       if( !exe_path.empty( ) )
          _chdir( exe_path.c_str( ) );
-
-#ifdef USE_UUID_FOR_LOGIN
-      g_uuids.push_back( uuid( ).as_string( ) );
-#endif
 
       init_log( );
 
