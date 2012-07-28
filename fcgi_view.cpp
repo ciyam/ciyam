@@ -63,7 +63,8 @@ inline string format_numeric_value( const numeric& n, const string& mask )
 
 void output_view_tabs( ostream& os, const view_source& source,
  const session_info& sess_info, int vtab_num, bool is_in_edit, const string& data,
- const string& user_select_key, bool use_url_checksum, const string& cont_act, int back_count )
+ const string& user_select_key, bool use_url_checksum, const string& cont_act, int back_count,
+ bool is_new_record, bool is_record_owner )
 {
    const storage_info& sinfo( get_storage_info( ) );
 
@@ -77,6 +78,22 @@ void output_view_tabs( ostream& os, const view_source& source,
 
    for( size_t i = 0; i < source.tab_names.size( ); i++ )
    {
+      map< string, string > extra_data;
+      if( !source.tab_extras[ i ].empty( ) )
+         parse_field_extra( source.tab_extras[ i ], extra_data );
+
+      if( !sess_info.is_admin_user
+       && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
+         continue;
+
+      if( !is_new_record && !is_record_owner
+       && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
+         continue;
+
+      if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
+       && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
+         continue;
+
       if( i + 1 == vtab_num )
          os << "<th class=\"tab\" align=\"center\">" << mod_info.get_string( source.tab_names[ i ] ) << "</th>\n";
       else
@@ -156,7 +173,10 @@ void setup_view_fields( view_source& view,
    view.attached_file_field = vinfo.file_field_id;
 
    for( size_t i = 0; i < vinfo.tabs.size( ); i++ )
-      view.tab_names.push_back( mod_info.get_string( ident + "_" + vinfo.tabs[ i ] ) );
+   {
+      view.tab_names.push_back( mod_info.get_string( ident + "_" + vinfo.tabs[ i ].first ) );
+      view.tab_extras.push_back( vinfo.tabs[ i ].second );
+   }
 
    map< string, size_t > field_id_counts;
    for( size_t i = 0; i < vinfo.fields.size( ); i++ )
@@ -1075,6 +1095,28 @@ bool output_view_form( ostream& os, const string& act,
       if( !is_in_edit && skip_tab_num == source.field_tab_ids[ i ] )
          continue;
 
+      // NOTE: If the field belongs to a tab which the user does not have access to
+      // then this field must be skipped (otherwise URL tampering could allow these
+      // fields to appear as 'vtab' is not part of the URL checksum).
+      if( ( source.field_tab_ids[ i ] != 0 && vtab_num == source.field_tab_ids[ i ] ) )
+      {
+         map< string, string > extra_data;
+         if( !source.tab_extras[ vtab_num - 1 ].empty( ) )
+            parse_field_extra( source.tab_extras[ vtab_num - 1 ], extra_data );
+
+         if( !sess_info.is_admin_user
+          && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
+            continue;
+
+         if( !is_new_record && !is_record_owner
+          && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
+            continue;
+
+         if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
+          && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
+            continue;
+      }
+
       string show_opt( c_show_prefix );
       show_opt += '0' + source.field_tab_ids[ i ];
 
@@ -1141,8 +1183,8 @@ bool output_view_form( ostream& os, const string& act,
          ++num_displayed; // NOTE: Increment for even/odd row display of row following the tabs.
          has_displayed_tabs = true;
 
-         output_view_tabs( os, source, sess_info, vtab_num,
-          is_in_edit, data, user_select_key, use_url_checksum, cont_act, back_count );
+         output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data,
+          user_select_key, use_url_checksum, cont_act, back_count, is_new_record, is_record_owner );
       }
 
       // NOTE: Determine whether fields should be protected, relegated or displayed differently according
@@ -2632,8 +2674,8 @@ bool output_view_form( ostream& os, const string& act,
    }
 
    if( display_tabs && !has_displayed_tabs )
-      output_view_tabs( os, source, sess_info, vtab_num,
-       is_in_edit, data, user_select_key, use_url_checksum, cont_act, back_count );
+      output_view_tabs( os, source, sess_info, vtab_num, is_in_edit, data,
+       user_select_key, use_url_checksum, cont_act, back_count, is_new_record, is_record_owner );
 
    os << "</tbody>\n";
    os << "</table>\n";

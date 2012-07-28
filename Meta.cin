@@ -1044,15 +1044,17 @@ modifier_add -id=500706 View_Field Is_Print_Version Type:relegate,Source_Edit_Ch
 ,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate,Mandatory_Option:relegate,Ignore_Manual_Links:relegate,Show_Hide_Start_Point:relegate\
 ,Enum_Starts_At:relegate,Enum_Finishes_At:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
 ,Access_Scope:relegate,Change_Scope:relegate,Change_Restriction:relegate,Change_{Permission}:relegate
-modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:relegate,Access_Restriction:relegate\
+modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:relegate\
 ,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Enum_Starts_At:relegate,Enum_Finishes_At:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate,Child_List_Extra_Option:relegate\
 ,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Ignore_Manual_Links:relegate,Label_Without_Prefix:relegate,Show_Hide_Start_Point:relegate
 modifier_add -id=500715 View_Field Is_Key Mandatory_Option:relegate,Date_Precision_Option:relegate\
-,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate\
-,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Ignore_Manual_Links:relegate,Label_Without_Prefix:relegate\
+,Font_Size:relegate,Use_Full_Width:relegate,Show_Hide_Start_Point:relegate,Access_Scope:relegate,Access_Restriction:relegate,Access_{Permission}:relegate\
+,Change_Scope:relegate,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate\
+,Link_Restriction:relegate,Link_{Permission}:relegate,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate\
+,Ignore_Manual_Links:relegate,Label_Without_Prefix:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate,Child_List_Extra_Option:relegate,Tab_Name:relegate
 modifier_add -id=500716 View_Field Is_Not_Date Date_Precision_Option:relegate
