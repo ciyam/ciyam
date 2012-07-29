@@ -28,6 +28,7 @@
 #  endif
 
 class Meta_List_Field;
+class Meta_Modifier;
 class Meta_Permission;
 class Meta_Class;
 class Meta_Model;
@@ -37,6 +38,7 @@ class Meta_List_Type;
 class META_LIST_DECL_SPEC Meta_List : public class_base
 {
    friend class Meta_List_Field;
+   friend class Meta_Modifier;
    friend class Meta_Permission;
    friend class Meta_Class;
    friend class Meta_Model;
@@ -49,47 +51,48 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Access_Permission = 1,
-      e_field_id_Access_Restriction = 2,
-      e_field_id_Allow_Quick_Link = 3,
-      e_field_id_Allow_Text_Search = 4,
-      e_field_id_Class = 5,
-      e_field_id_Create_Only_If_Default_Other = 6,
-      e_field_id_Create_Permission = 7,
-      e_field_id_Create_Restriction = 8,
-      e_field_id_Destroy_Only_If_Default_Other = 9,
-      e_field_id_Destroy_Permission = 10,
-      e_field_id_Destroy_Restriction = 11,
-      e_field_id_Direction = 12,
-      e_field_id_Display_Only_If_Default_Other = 13,
-      e_field_id_Display_Row_Limit = 14,
-      e_field_id_Display_Security_Level = 15,
-      e_field_id_Id = 16,
-      e_field_id_Ignore_Implicit_Ordering = 17,
-      e_field_id_Ignore_Unactionable_Records = 18,
-      e_field_id_Ignore_Uneditable_Parent = 19,
-      e_field_id_Ignore_User_Id_Filter = 20,
-      e_field_id_Is_Child = 21,
-      e_field_id_Is_Home = 22,
-      e_field_id_Is_Variation = 23,
-      e_field_id_Limit_Scroll_And_New = 24,
-      e_field_id_Model = 25,
-      e_field_id_Multiline_Truncate_For_Print = 26,
-      e_field_id_Name = 27,
-      e_field_id_Number_Multiple_Pages = 28,
-      e_field_id_PDF_Font_Type = 29,
-      e_field_id_PDF_List_Type = 30,
-      e_field_id_Parent_Class = 31,
-      e_field_id_Parent_Field = 32,
-      e_field_id_Print_Restriction = 33,
-      e_field_id_Print_Without_Highlight = 34,
-      e_field_id_Search_Option_Limit = 35,
-      e_field_id_Sort_Rows_In_UI = 36,
-      e_field_id_Style = 37,
-      e_field_id_Text_Match_Highlight = 38,
-      e_field_id_Title = 39,
-      e_field_id_Type = 40,
-      e_field_id_Variation_Name = 41
+      e_field_id_Access_Parent_Modifier = 1,
+      e_field_id_Access_Permission = 2,
+      e_field_id_Access_Restriction = 3,
+      e_field_id_Allow_Quick_Link = 4,
+      e_field_id_Allow_Text_Search = 5,
+      e_field_id_Class = 6,
+      e_field_id_Create_Only_If_Default_Other = 7,
+      e_field_id_Create_Permission = 8,
+      e_field_id_Create_Restriction = 9,
+      e_field_id_Destroy_Only_If_Default_Other = 10,
+      e_field_id_Destroy_Permission = 11,
+      e_field_id_Destroy_Restriction = 12,
+      e_field_id_Direction = 13,
+      e_field_id_Display_Only_If_Default_Other = 14,
+      e_field_id_Display_Row_Limit = 15,
+      e_field_id_Display_Security_Level = 16,
+      e_field_id_Id = 17,
+      e_field_id_Ignore_Implicit_Ordering = 18,
+      e_field_id_Ignore_Unactionable_Records = 19,
+      e_field_id_Ignore_Uneditable_Parent = 20,
+      e_field_id_Ignore_User_Id_Filter = 21,
+      e_field_id_Is_Child = 22,
+      e_field_id_Is_Home = 23,
+      e_field_id_Is_Variation = 24,
+      e_field_id_Limit_Scroll_And_New = 25,
+      e_field_id_Model = 26,
+      e_field_id_Multiline_Truncate_For_Print = 27,
+      e_field_id_Name = 28,
+      e_field_id_Number_Multiple_Pages = 29,
+      e_field_id_PDF_Font_Type = 30,
+      e_field_id_PDF_List_Type = 31,
+      e_field_id_Parent_Class = 32,
+      e_field_id_Parent_Field = 33,
+      e_field_id_Print_Restriction = 34,
+      e_field_id_Print_Without_Highlight = 35,
+      e_field_id_Search_Option_Limit = 36,
+      e_field_id_Sort_Rows_In_UI = 37,
+      e_field_id_Style = 38,
+      e_field_id_Text_Match_Highlight = 39,
+      e_field_id_Title = 40,
+      e_field_id_Type = 41,
+      e_field_id_Variation_Name = 42
    };
 
    Meta_List( );
@@ -193,6 +196,10 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    const std::string& Variation_Name( ) const;
    void Variation_Name( const std::string& Variation_Name );
+
+   Meta_Modifier& Access_Parent_Modifier( );
+   const Meta_Modifier& Access_Parent_Modifier( ) const;
+   void Access_Parent_Modifier( const std::string& key );
 
    Meta_Permission& Access_Permission( );
    const Meta_Permission& Access_Permission( ) const;
@@ -391,6 +398,7 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Modifier& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
@@ -398,6 +406,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    virtual void setup_foreign_key( Meta_List_Type& o, const std::string& value );
 
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_Modifier& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Permission& o,
     const std::string& foreign_key_field, const std::string& init_value );

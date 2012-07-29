@@ -842,6 +842,7 @@ relationship_add -id=201994 -fid=301994 List Create_{Permission} Permission opt 
 relationship_add -id=201995 -fid=301995 List Destroy_{Permission} Permission opt restrict
 relationship_add -id=201996 -fid=301996 List Parent_Field Field opt restrict
 relationship_add -id=201997 -fid=301997 List Parent_Class Class opt destroy
+relationship_add -id=201998 -fid=301998 List Access_Parent_Modifier Modifier opt destroy
 relationship_add -id=202100 -fid=302100 List_Field {List} List mand destroy
 relationship_add -id=202110 -fid=302110 List_Field {Class} Class mand destroy
 relationship_add -id=202115 -fid=302115 List_Field Parent_Class Class opt destroy
@@ -1066,7 +1067,7 @@ modifier_add -id=500730 View_Field Hide_FK_Fields Source_Parent:relegate\
 ,New_Source:relegate,New_Value:relegate,Link_Restriction:relegate,Link_{Permission}:relegate,FK_Trigger_Option:relegate,FK_Trigger_Behaviour:relegate
 modifier_add -id=500740 View_Field Is_Not_Enum Enum_Starts_At:relegate,Enum_Finishes_At:relegate
 modifier_add -id=500800 List Is_Child Is_Variation:relegate
-modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Ignore_Uneditable_Parent:relegate
+modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Access_Parent_Modifier:relegate,Ignore_Uneditable_Parent:relegate
 modifier_add -id=500812 List Is_Not_Unlimited Sort_Rows_In_UI:relegate
 modifier_add -id=500815 List Is_Not_Search_Style Allow_Quick_Link:relegate,Search_Option_Limit:relegate
 modifier_add -id=500820 List Cannot_Text_Search Text_Match_Highlight:relegate
@@ -1882,9 +1883,9 @@ specification_add -id=602720 {View_Field}_child_list0 list "@602720_* child:no_l
  View_Field Name -act=+!120410+@rfields+@rvalues,+!^120420+@rfields+@rvalues {View}"
 specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_edit+link+fkey1\
 ,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link+fkey2\
-,Parent_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link,Title,Style;force\
+,Parent_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force,Parent_Class;hidden+fkey3,Title,Style;force\
 ,@tab:Security_Options\
-,Print_Restriction,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
+,Print_Restriction,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name,Access_Parent_Modifier:Name!@fkey3:{Class}+Name\
 ,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name\
 ,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name\
 ,@tab:Basic_UI_Options\

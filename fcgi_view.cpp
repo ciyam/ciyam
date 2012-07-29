@@ -1117,65 +1117,6 @@ bool output_view_form( ostream& os, const string& act,
             continue;
       }
 
-      string show_opt( c_show_prefix );
-      show_opt += '0' + source.field_tab_ids[ i ];
-
-      // NOTE: The first field in a tab (including fields before any tabs) that contains the "show"
-      // extra will only be shown (and any following fields from the same tab) if the user chooses.
-      // This feature is not used for new records (perhaps this should be an option in the future).
-      if( !is_printable && !is_new_record && extra_data.count( c_view_field_extra_show )
-       && ( source.field_tab_ids[ i ] == 0 || vtab_num == source.field_tab_ids[ i ] ) )
-      {
-         if( ++num_displayed % 2 == 1 )
-            os << "<tr class=\"list\">\n";
-         else
-            os << "<tr class=\"list odd_data\">\n";
-
-         os << "<td class=\"list center\" colspan=\"2\">";
-
-         if( !is_in_edit )
-            os << "<a href=\"javascript:";
-         else
-            os << "<a href=\"#\" onclick=\"javascript:";
-
-         bool show = show_opts.count( show_opt ) && show_opts.find( show_opt )->second == "1";
-
-         if( !show )
-            skip_tab_num = source.field_tab_ids[ i ];
-
-         string show_less_image( "show_less.gif" );
-         string show_more_image( "show_more.gif" );
-
-         if( !is_in_edit )
-         {
-            os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-
-            if( !show )
-               os << "query_update( '" << show_opt
-                << "', '1' );\"><img src=\"" << show_more_image << "\" border=\"0\"></a>";
-            else
-               os << "query_update( '" << show_opt
-                << "', '0' );\"><img src=\"" << show_less_image << "\" border=\"0\"></a>";
-         }
-         else
-         {
-            os << "query_update( '" << show_opt << "', '" << ( show ? "0" : "1" ) << "', true ); ";
-
-            os << "dyn_load( null, 'act="
-             << cont_act << "&app=' + get_all_field_values( document." << source.id << " ), false ); ";
-
-            os << "event.returnValue = false; return false;";
-
-            os << "\">" << ( show ? "<img src=\"" + show_less_image + "\" border=\"0\">"
-             : "<img src=\"" + show_more_image + "\" border=\"0\">" ) << "</a>";
-         }
-
-         os << "</td></tr>\n";
-
-         if( !show && !is_in_edit )
-            continue;
-      }
-
       // NOTE: If tabs exist and should be displayed (and haven't already been) then output them
       // now (after any context fields that preceeded the first tab heading have been displayed).
       if( display_tabs && !has_displayed_tabs && source.field_tab_ids[ i ] )
@@ -1247,6 +1188,65 @@ bool output_view_form( ostream& os, const string& act,
       if( is_printable
        && source_field_id == source.attached_file_field && !source.image_fields.count( source_value_id ) )
          continue;
+
+      string show_opt( c_show_prefix );
+      show_opt += '0' + source.field_tab_ids[ i ];
+
+      // NOTE: The first field in a tab (including fields before any tabs) that contains the "show"
+      // extra will only be shown (and any following fields from the same tab) if the user chooses.
+      // This feature is not used for new records (perhaps this should be an option in the future).
+      if( !is_printable && !is_new_record && extra_data.count( c_view_field_extra_show )
+       && ( source.field_tab_ids[ i ] == 0 || vtab_num == source.field_tab_ids[ i ] ) )
+      {
+         if( ++num_displayed % 2 == 1 )
+            os << "<tr class=\"list\">\n";
+         else
+            os << "<tr class=\"list odd_data\">\n";
+
+         os << "<td class=\"list center\" colspan=\"2\">";
+
+         if( !is_in_edit )
+            os << "<a href=\"javascript:";
+         else
+            os << "<a href=\"#\" onclick=\"javascript:";
+
+         bool show = show_opts.count( show_opt ) && show_opts.find( show_opt )->second == "1";
+
+         if( !show )
+            skip_tab_num = source.field_tab_ids[ i ];
+
+         string show_less_image( "show_less.gif" );
+         string show_more_image( "show_more.gif" );
+
+         if( !is_in_edit )
+         {
+            os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
+            if( !show )
+               os << "query_update( '" << show_opt
+                << "', '1' );\"><img src=\"" << show_more_image << "\" border=\"0\"></a>";
+            else
+               os << "query_update( '" << show_opt
+                << "', '0' );\"><img src=\"" << show_less_image << "\" border=\"0\"></a>";
+         }
+         else
+         {
+            os << "query_update( '" << show_opt << "', '" << ( show ? "0" : "1" ) << "', true ); ";
+
+            os << "dyn_load( null, 'act="
+             << cont_act << "&app=' + get_all_field_values( document." << source.id << " ), false ); ";
+
+            os << "event.returnValue = false; return false;";
+
+            os << "\">" << ( show ? "<img src=\"" + show_less_image + "\" border=\"0\">"
+             : "<img src=\"" + show_more_image + "\" border=\"0\">" ) << "</a>";
+         }
+
+         os << "</td></tr>\n";
+
+         if( !show && !is_in_edit )
+            continue;
+      }
 
       if( !is_new_record && source_field_id == c_key_field )
          cell_data = data;

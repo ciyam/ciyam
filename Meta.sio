@@ -4454,6 +4454,28 @@
     </specifications>
     <fields/>
      <field/>
+      <id>301998
+      <name>Access_Parent_Modifier
+      <type>@class
+      <mandatory>false
+      <class_id>109100
+      <relationship_id>201998
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500810
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>122103
       <name>Access_Restriction
       <type>int
@@ -5121,6 +5143,10 @@
        <specification/>
         <id>600494
         <item>src_field
+       </specification>
+       <specification/>
+        <id>602800
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -25239,6 +25265,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201998
+    <name>Access_Parent_Modifier_{List}
+    <parent_id>109100
+    <child_id>122100
+    <cascade_op>destroy
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>202130
     <name>Access_{Permission}_{List_Field}
     <parent_id>116100
@@ -29172,13 +29207,15 @@
      <field_info>122111;no_edit+non_new
      <field_info>301991:121101;force+max_size=30
      <field_info>301992:106101!@fkey1:300600+106101;new_edit+link+fkey2
-     <field_info>301996:107101!@fkey2:300700+107108=1+107101;link
+     <field_info>301996:107101!@fkey2:300700+107108=1+107101;link+force
+     <field_info>301997;hidden+fkey3
      <field_info>122106
      <field_info>122107;force+enum=685
      <field_info>@tab:Security_Options
      <field_info>122123;enum=681
      <field_info>122103;enum=680
      <field_info>301993:116101!@group:301500+116101
+     <field_info>301998:109101!@fkey3:300900+109101
      <field_info>122104;enum=680
      <field_info>301994:116101!@group:301500+116101
      <field_info>122105;enum=680

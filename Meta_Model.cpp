@@ -3185,6 +3185,30 @@ void Meta_Model::impl::impl_Generate( )
                    + to_string( get_obj( ).child_List( ).Access_Restriction( ) ) + " in Model::Generate" );
             }
 
+            if( !is_null( get_obj( ).child_List( ).Access_Parent_Modifier( ) ) )
+            {
+               Meta_Class* p_parent_Class = &get_obj( ).child_List( ).Parent_Class( );
+               string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
+               if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
+               {
+                  uint64_t flag_value( UINT64_C( 0x100 ) );
+                  do
+                  {
+                     ostringstream osstr;
+                     osstr << hex << flag_value;
+                     flag_value <<= 1;
+
+                     if( get_obj( ).child_List( ).Access_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
+                     {
+                        if( !list_extra.empty( ) )
+                           list_extra += ',';
+                        list_extra += "pstate=" + osstr.str( );
+                     }
+                  } while( p_parent_Class->child_Modifier( ).iterate_next( ) );
+               }
+            }
+
             if( get_obj( ).child_List( ).Create_Restriction( ) != 0 )
             {
                if( get_obj( ).child_List( ).Create_Restriction( ) == 1 )
