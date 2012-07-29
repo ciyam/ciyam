@@ -3127,13 +3127,22 @@
      <name>field_list_parent_field
      <field>301996
      <ftype>@class
-     <extra>link
+     <extra>link+force
      <mandatory>false
      <modifiers>800:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
      <pextra>@fkey2:300700+107108=1+107101
+    </field>
+    <field/>
+     <name>field_list_parent_class
+     <field>301997
+     <ftype>@class
+     <extra>hidden+fkey3
+     <mandatory>false
+     <modifiers>
+     <pclass>106100
     </field>
     <field/>
      <name>field_list_title
@@ -3186,6 +3195,18 @@
      <pfield>116101
      <pfname>field_permission_name
      <pextra>@group:301500+116101
+    </field>
+    <field/>
+     <name>field_list_access_parent_modifier
+     <field>301998
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>800:relegate
+     <pclass>109100
+     <pfield>109101
+     <pfname>field_modifier_name
+     <pextra>@fkey3:300900+109101
     </field>
     <field/>
      <name>field_list_create_restriction

@@ -306,6 +306,7 @@ const char* const c_list_type_child_admin_owner = "child_admin_owner";
 const char* const c_list_type_extra_limit = "limit";
 const char* const c_list_type_extra_fixed = "fixed";
 const char* const c_list_type_extra_no_new = "no_new";
+const char* const c_list_type_extra_pstate = "pstate";
 const char* const c_list_type_extra_search = "search";
 const char* const c_list_type_extra_actions = "actions";
 const char* const c_list_type_extra_no_erase = "no_erase";

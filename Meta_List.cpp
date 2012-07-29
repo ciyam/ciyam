@@ -34,6 +34,7 @@
 #include "Meta_List.h"
 
 #include "Meta_List_Field.h"
+#include "Meta_Modifier.h"
 #include "Meta_Permission.h"
 #include "Meta_Class.h"
 #include "Meta_Model.h"
@@ -60,6 +61,11 @@ using namespace std;
 // [<start namespaces>]
 // [<finish namespaces>]
 
+template< > inline string to_string( const Meta_Modifier& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_Permission& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -83,6 +89,11 @@ template< > inline string to_string( const Meta_Field& c )
 template< > inline string to_string( const Meta_List_Type& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Modifier& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
 }
 
 inline void from_string( Meta_Permission& c, const string& s )
@@ -121,6 +132,7 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Access_Parent_Modifier = "301998";
 const char* const c_field_id_Access_Permission = "301993";
 const char* const c_field_id_Access_Restriction = "122103";
 const char* const c_field_id_Allow_Quick_Link = "122119";
@@ -163,6 +175,7 @@ const char* const c_field_id_Title = "122106";
 const char* const c_field_id_Type = "301991";
 const char* const c_field_id_Variation_Name = "122109";
 
+const char* const c_field_name_Access_Parent_Modifier = "Access_Parent_Modifier";
 const char* const c_field_name_Access_Permission = "Access_Permission";
 const char* const c_field_name_Access_Restriction = "Access_Restriction";
 const char* const c_field_name_Allow_Quick_Link = "Allow_Quick_Link";
@@ -205,6 +218,7 @@ const char* const c_field_name_Title = "Title";
 const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Variation_Name = "Variation_Name";
 
+const char* const c_field_display_name_Access_Parent_Modifier = "field_list_access_parent_modifier";
 const char* const c_field_display_name_Access_Permission = "field_list_access_permission";
 const char* const c_field_display_name_Access_Restriction = "field_list_access_restriction";
 const char* const c_field_display_name_Allow_Quick_Link = "field_list_allow_quick_link";
@@ -247,7 +261,7 @@ const char* const c_field_display_name_Title = "field_list_title";
 const char* const c_field_display_name_Type = "field_list_type";
 const char* const c_field_display_name_Variation_Name = "field_list_variation_name";
 
-const int c_num_fields = 41;
+const int c_num_fields = 42;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -291,11 +305,13 @@ const char* const c_all_sorted_field_ids[ ] =
    "301994",
    "301995",
    "301996",
-   "301997"
+   "301997",
+   "301998"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Access_Parent_Modifier",
    "Access_Permission",
    "Access_Restriction",
    "Allow_Quick_Link",
@@ -400,6 +416,7 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string gv_default_Access_Parent_Modifier = string( );
 string gv_default_Access_Permission = string( );
 int gv_default_Access_Restriction = int( 0 );
 bool gv_default_Allow_Quick_Link = bool( 0 );
@@ -807,6 +824,8 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+         string_getter< Meta_Modifier >( cmd_handler.p_Meta_List->Access_Parent_Modifier( ), cmd_handler.retval );
       else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Access_Permission( ), cmd_handler.retval );
       else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
@@ -899,6 +918,9 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+         func_string_setter< Meta_List, Meta_Modifier >(
+          *cmd_handler.p_Meta_List, &Meta_List::Access_Parent_Modifier, field_value );
       else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Permission, field_value );
@@ -1036,6 +1058,8 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+         cmd_handler.retval = cmd_handler.p_Meta_List->Access_Parent_Modifier( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
          cmd_handler.retval = cmd_handler.p_Meta_List->Access_Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
@@ -1181,6 +1205,36 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    const string& impl_Variation_Name( ) const { return lazy_fetch( p_obj ), v_Variation_Name; }
    void impl_Variation_Name( const string& Variation_Name ) { v_Variation_Name = Variation_Name; }
+
+   Meta_Modifier& impl_Access_Parent_Modifier( )
+   {
+      if( !cp_Access_Parent_Modifier )
+      {
+         cp_Access_Parent_Modifier.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Parent_Modifier, c_field_id_Access_Parent_Modifier, v_Access_Parent_Modifier );
+      }
+      return *cp_Access_Parent_Modifier;
+   }
+
+   const Meta_Modifier& impl_Access_Parent_Modifier( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Access_Parent_Modifier )
+      {
+         cp_Access_Parent_Modifier.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Parent_Modifier, c_field_id_Access_Parent_Modifier, v_Access_Parent_Modifier );
+      }
+      return *cp_Access_Parent_Modifier;
+   }
+
+   void impl_Access_Parent_Modifier( const string& key )
+   {
+      class_base_accessor cba( impl_Access_Parent_Modifier( ) );
+      cba.set_key( key );
+   }
 
    Meta_Permission& impl_Access_Permission( )
    {
@@ -1528,6 +1582,9 @@ struct Meta_List::impl : public Meta_List_command_handler
    int v_Text_Match_Highlight;
    string v_Title;
    string v_Variation_Name;
+
+   string v_Access_Parent_Modifier;
+   mutable class_pointer< Meta_Modifier > cp_Access_Parent_Modifier;
 
    string v_Access_Permission;
    mutable class_pointer< Meta_Permission > cp_Access_Permission;
@@ -2414,166 +2471,170 @@ string Meta_List::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Access_Permission( ) );
+      retval = to_string( impl_Access_Parent_Modifier( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Access_Restriction( ) );
+      retval = to_string( impl_Access_Permission( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Allow_Quick_Link( ) );
+      retval = to_string( impl_Access_Restriction( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Allow_Text_Search( ) );
+      retval = to_string( impl_Allow_Quick_Link( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Class( ) );
+      retval = to_string( impl_Allow_Text_Search( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Create_Only_If_Default_Other( ) );
+      retval = to_string( impl_Class( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Create_Permission( ) );
+      retval = to_string( impl_Create_Only_If_Default_Other( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Create_Restriction( ) );
+      retval = to_string( impl_Create_Permission( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Destroy_Only_If_Default_Other( ) );
+      retval = to_string( impl_Create_Restriction( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Destroy_Permission( ) );
+      retval = to_string( impl_Destroy_Only_If_Default_Other( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Destroy_Restriction( ) );
+      retval = to_string( impl_Destroy_Permission( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Direction( ) );
+      retval = to_string( impl_Destroy_Restriction( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Display_Only_If_Default_Other( ) );
+      retval = to_string( impl_Direction( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Display_Row_Limit( ) );
+      retval = to_string( impl_Display_Only_If_Default_Other( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Display_Security_Level( ) );
+      retval = to_string( impl_Display_Row_Limit( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Display_Security_Level( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Ignore_Implicit_Ordering( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Ignore_Unactionable_Records( ) );
+      retval = to_string( impl_Ignore_Implicit_Ordering( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Ignore_Uneditable_Parent( ) );
+      retval = to_string( impl_Ignore_Unactionable_Records( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Ignore_User_Id_Filter( ) );
+      retval = to_string( impl_Ignore_Uneditable_Parent( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Is_Child( ) );
+      retval = to_string( impl_Ignore_User_Id_Filter( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Is_Home( ) );
+      retval = to_string( impl_Is_Child( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Is_Variation( ) );
+      retval = to_string( impl_Is_Home( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Limit_Scroll_And_New( ) );
+      retval = to_string( impl_Is_Variation( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Limit_Scroll_And_New( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Multiline_Truncate_For_Print( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Multiline_Truncate_For_Print( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Number_Multiple_Pages( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 28:
-      retval = to_string( impl_PDF_Font_Type( ) );
+      retval = to_string( impl_Number_Multiple_Pages( ) );
       break;
 
       case 29:
-      retval = to_string( impl_PDF_List_Type( ) );
+      retval = to_string( impl_PDF_Font_Type( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_PDF_List_Type( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Parent_Field( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Print_Restriction( ) );
+      retval = to_string( impl_Parent_Field( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Print_Without_Highlight( ) );
+      retval = to_string( impl_Print_Restriction( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Search_Option_Limit( ) );
+      retval = to_string( impl_Print_Without_Highlight( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Sort_Rows_In_UI( ) );
+      retval = to_string( impl_Search_Option_Limit( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Style( ) );
+      retval = to_string( impl_Sort_Rows_In_UI( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Text_Match_Highlight( ) );
+      retval = to_string( impl_Style( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Title( ) );
+      retval = to_string( impl_Text_Match_Highlight( ) );
       break;
 
       case 39:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Title( ) );
       break;
 
       case 40:
+      retval = to_string( impl_Type( ) );
+      break;
+
+      case 41:
       retval = to_string( impl_Variation_Name( ) );
       break;
 
@@ -2589,166 +2650,170 @@ void Meta_List::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_List::impl, Meta_Permission >( *this, &Meta_List::impl::impl_Access_Permission, value );
+      func_string_setter< Meta_List::impl, Meta_Modifier >( *this, &Meta_List::impl::impl_Access_Parent_Modifier, value );
       break;
 
       case 1:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Access_Restriction, value );
+      func_string_setter< Meta_List::impl, Meta_Permission >( *this, &Meta_List::impl::impl_Access_Permission, value );
       break;
 
       case 2:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Allow_Quick_Link, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Access_Restriction, value );
       break;
 
       case 3:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Allow_Text_Search, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Allow_Quick_Link, value );
       break;
 
       case 4:
-      func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Class, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Allow_Text_Search, value );
       break;
 
       case 5:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Create_Only_If_Default_Other, value );
+      func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Class, value );
       break;
 
       case 6:
-      func_string_setter< Meta_List::impl, Meta_Permission >( *this, &Meta_List::impl::impl_Create_Permission, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Create_Only_If_Default_Other, value );
       break;
 
       case 7:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Create_Restriction, value );
+      func_string_setter< Meta_List::impl, Meta_Permission >( *this, &Meta_List::impl::impl_Create_Permission, value );
       break;
 
       case 8:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Destroy_Only_If_Default_Other, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Create_Restriction, value );
       break;
 
       case 9:
-      func_string_setter< Meta_List::impl, Meta_Permission >( *this, &Meta_List::impl::impl_Destroy_Permission, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Destroy_Only_If_Default_Other, value );
       break;
 
       case 10:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Destroy_Restriction, value );
+      func_string_setter< Meta_List::impl, Meta_Permission >( *this, &Meta_List::impl::impl_Destroy_Permission, value );
       break;
 
       case 11:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Direction, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Destroy_Restriction, value );
       break;
 
       case 12:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Only_If_Default_Other, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Direction, value );
       break;
 
       case 13:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Display_Row_Limit, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Only_If_Default_Other, value );
       break;
 
       case 14:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Security_Level, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Display_Row_Limit, value );
       break;
 
       case 15:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Id, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Security_Level, value );
       break;
 
       case 16:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Implicit_Ordering, value );
+      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Id, value );
       break;
 
       case 17:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Unactionable_Records, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Implicit_Ordering, value );
       break;
 
       case 18:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Uneditable_Parent, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Unactionable_Records, value );
       break;
 
       case 19:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_User_Id_Filter, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Uneditable_Parent, value );
       break;
 
       case 20:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Child, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_User_Id_Filter, value );
       break;
 
       case 21:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Home, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Child, value );
       break;
 
       case 22:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Variation, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Home, value );
       break;
 
       case 23:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Limit_Scroll_And_New, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Variation, value );
       break;
 
       case 24:
-      func_string_setter< Meta_List::impl, Meta_Model >( *this, &Meta_List::impl::impl_Model, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Limit_Scroll_And_New, value );
       break;
 
       case 25:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Multiline_Truncate_For_Print, value );
+      func_string_setter< Meta_List::impl, Meta_Model >( *this, &Meta_List::impl::impl_Model, value );
       break;
 
       case 26:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Name, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Multiline_Truncate_For_Print, value );
       break;
 
       case 27:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Number_Multiple_Pages, value );
+      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Name, value );
       break;
 
       case 28:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_Font_Type, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Number_Multiple_Pages, value );
       break;
 
       case 29:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_List_Type, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_Font_Type, value );
       break;
 
       case 30:
-      func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_List_Type, value );
       break;
 
       case 31:
-      func_string_setter< Meta_List::impl, Meta_Field >( *this, &Meta_List::impl::impl_Parent_Field, value );
+      func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Parent_Class, value );
       break;
 
       case 32:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Print_Restriction, value );
+      func_string_setter< Meta_List::impl, Meta_Field >( *this, &Meta_List::impl::impl_Parent_Field, value );
       break;
 
       case 33:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Print_Without_Highlight, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Print_Restriction, value );
       break;
 
       case 34:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Search_Option_Limit, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Print_Without_Highlight, value );
       break;
 
       case 35:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Sort_Rows_In_UI, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Search_Option_Limit, value );
       break;
 
       case 36:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Style, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Sort_Rows_In_UI, value );
       break;
 
       case 37:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Text_Match_Highlight, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Style, value );
       break;
 
       case 38:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Title, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Text_Match_Highlight, value );
       break;
 
       case 39:
-      func_string_setter< Meta_List::impl, Meta_List_Type >( *this, &Meta_List::impl::impl_Type, value );
+      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Title, value );
       break;
 
       case 40:
+      func_string_setter< Meta_List::impl, Meta_List_Type >( *this, &Meta_List::impl::impl_Type, value );
+      break;
+
+      case 41:
       func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Variation_Name, value );
       break;
 
@@ -2822,6 +2887,8 @@ void Meta_List::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
+      impl_Access_Parent_Modifier( "" );
    else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       impl_Access_Permission( "" );
    else if( field == c_field_id_Class || field == c_field_name_Class )
@@ -2846,6 +2913,8 @@ void Meta_List::impl::set_foreign_key_value( const string& field, const string& 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
+      v_Access_Parent_Modifier = value;
    else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       v_Access_Permission = value;
    else if( field == c_field_id_Class || field == c_field_name_Class )
@@ -2870,6 +2939,8 @@ const string& Meta_List::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
+      return v_Access_Parent_Modifier;
    else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       return v_Access_Permission;
    else if( field == c_field_id_Class || field == c_field_name_Class )
@@ -2892,6 +2963,7 @@ const string& Meta_List::impl::get_foreign_key_value( const string& field )
 
 void Meta_List::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Access_Parent_Modifier, v_Access_Parent_Modifier ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Access_Permission, v_Access_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Class, v_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Create_Permission, v_Create_Permission ) );
@@ -2945,6 +3017,10 @@ void Meta_List::impl::clear( )
    v_Text_Match_Highlight = gv_default_Text_Match_Highlight;
    v_Title = gv_default_Title;
    v_Variation_Name = gv_default_Variation_Name;
+
+   v_Access_Parent_Modifier = string( );
+   if( cp_Access_Parent_Modifier )
+      p_obj->setup_foreign_key( *cp_Access_Parent_Modifier, v_Access_Parent_Modifier );
 
    v_Access_Permission = string( );
    if( cp_Access_Permission )
@@ -3161,6 +3237,9 @@ void Meta_List::impl::after_fetch( )
    set< string > required_transients;
 
    p_obj->get_required_field_names( required_transients, true );
+
+   if( cp_Access_Parent_Modifier )
+      p_obj->setup_foreign_key( *cp_Access_Parent_Modifier, v_Access_Parent_Modifier );
 
    if( cp_Access_Permission )
       p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
@@ -3703,6 +3782,21 @@ void Meta_List::Variation_Name( const string& Variation_Name )
    p_impl->impl_Variation_Name( Variation_Name );
 }
 
+Meta_Modifier& Meta_List::Access_Parent_Modifier( )
+{
+   return p_impl->impl_Access_Parent_Modifier( );
+}
+
+const Meta_Modifier& Meta_List::Access_Parent_Modifier( ) const
+{
+   return p_impl->impl_Access_Parent_Modifier( );
+}
+
+void Meta_List::Access_Parent_Modifier( const string& key )
+{
+   p_impl->impl_Access_Parent_Modifier( key );
+}
+
 Meta_Permission& Meta_List::Access_Permission( )
 {
    return p_impl->impl_Access_Permission( );
@@ -3964,6 +4058,16 @@ const char* Meta_List::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Access_Parent_Modifier )
+   {
+      p_id = c_field_id_Access_Parent_Modifier;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Modifier";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Access_Permission )
    {
       p_id = c_field_id_Access_Permission;
@@ -4385,6 +4489,16 @@ const char* Meta_List::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Access_Parent_Modifier )
+   {
+      p_name = c_field_name_Access_Parent_Modifier;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Modifier";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Access_Permission )
    {
       p_name = c_field_name_Access_Permission;
@@ -4805,6 +4919,8 @@ string Meta_List::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Access_Parent_Modifier || id_or_name == c_field_name_Access_Parent_Modifier )
+      display_name = get_module_string( c_field_display_name_Access_Parent_Modifier );
    else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
       display_name = get_module_string( c_field_display_name_Access_Permission );
    else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
@@ -4911,6 +5027,11 @@ void Meta_List::get_foreign_key_values( foreign_key_data_container& foreign_key_
    p_impl->get_foreign_key_values( foreign_key_values );
 }
 
+void Meta_List::setup_foreign_key( Meta_Modifier& o, const string& value )
+{
+   static_cast< Meta_Modifier& >( o ).set_key( value );
+}
+
 void Meta_List::setup_foreign_key( Meta_Permission& o, const string& value )
 {
    static_cast< Meta_Permission& >( o ).set_key( value );
@@ -4939,6 +5060,13 @@ void Meta_List::setup_foreign_key( Meta_List_Type& o, const string& value )
 void Meta_List::setup_graph_parent( Meta_List_Field& o, const string& foreign_key_field )
 {
    static_cast< Meta_List_Field& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_List::setup_graph_parent(
+ Meta_Modifier& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Modifier& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Modifier& >( o ).set_key( init_value );
 }
 
 void Meta_List::setup_graph_parent(
@@ -5110,6 +5238,8 @@ class_base& Meta_List::get_or_create_graph_child( const string& context )
       throw runtime_error( "unexpected empty sub-context" );
    else if( sub_context == "_302100" || sub_context == "child_List_Field" )
       p_class_base = &child_List_Field( );
+   else if( sub_context == c_field_id_Access_Parent_Modifier || sub_context == c_field_name_Access_Parent_Modifier )
+      p_class_base = &Access_Parent_Modifier( );
    else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )
       p_class_base = &Access_Permission( );
    else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )
@@ -5142,6 +5272,7 @@ void Meta_List::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Access_Parent_Modifier" );
    names.push_back( "C_Access_Permission" );
    names.push_back( "C_Access_Restriction" );
    names.push_back( "C_Allow_Quick_Link" );
@@ -5193,6 +5324,7 @@ void Meta_List::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( sql_quote( to_string( Access_Parent_Modifier( ) ) ) );
    values.push_back( sql_quote( to_string( Access_Permission( ) ) ) );
    values.push_back( to_string( Access_Restriction( ) ) );
    values.push_back( to_string( Allow_Quick_Link( ) ) );
@@ -5417,6 +5549,7 @@ void Meta_List::static_get_class_info( class_info_container& class_info )
 
 void Meta_List::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "301998", "Access_Parent_Modifier", "Meta_Modifier", false ) );
    all_field_info.push_back( field_info( "301993", "Access_Permission", "Meta_Permission", false ) );
    all_field_info.push_back( field_info( "122103", "Access_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "122119", "Allow_Quick_Link", "bool", false ) );
@@ -5464,6 +5597,7 @@ void Meta_List::static_get_foreign_key_info( foreign_key_info_container& foreign
 {
    ( void )foreign_key_info;
 
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Access_Parent_Modifier, make_pair( "Meta.122100", "Meta_Modifier" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Access_Permission, make_pair( "Meta.122100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Class, make_pair( "Meta.122100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Create_Permission, make_pair( "Meta.122100", "Meta_Permission" ) ) );
@@ -5494,166 +5628,170 @@ const char* Meta_List::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "301993";
+      p_id = "301998";
       break;
 
       case 2:
-      p_id = "122103";
+      p_id = "301993";
       break;
 
       case 3:
-      p_id = "122119";
+      p_id = "122103";
       break;
 
       case 4:
-      p_id = "122114";
+      p_id = "122119";
       break;
 
       case 5:
-      p_id = "301992";
+      p_id = "122114";
       break;
 
       case 6:
-      p_id = "122140";
+      p_id = "301992";
       break;
 
       case 7:
-      p_id = "301994";
+      p_id = "122140";
       break;
 
       case 8:
-      p_id = "122104";
+      p_id = "301994";
       break;
 
       case 9:
-      p_id = "122142";
+      p_id = "122104";
       break;
 
       case 10:
-      p_id = "301995";
+      p_id = "122142";
       break;
 
       case 11:
-      p_id = "122105";
+      p_id = "301995";
       break;
 
       case 12:
-      p_id = "122112";
+      p_id = "122105";
       break;
 
       case 13:
-      p_id = "122141";
+      p_id = "122112";
       break;
 
       case 14:
-      p_id = "122113";
+      p_id = "122141";
       break;
 
       case 15:
-      p_id = "122139";
+      p_id = "122113";
       break;
 
       case 16:
-      p_id = "122111";
+      p_id = "122139";
       break;
 
       case 17:
-      p_id = "122135";
+      p_id = "122111";
       break;
 
       case 18:
-      p_id = "122120";
+      p_id = "122135";
       break;
 
       case 19:
-      p_id = "122138";
+      p_id = "122120";
       break;
 
       case 20:
-      p_id = "122124";
+      p_id = "122138";
       break;
 
       case 21:
-      p_id = "122102";
+      p_id = "122124";
       break;
 
       case 22:
-      p_id = "122121";
+      p_id = "122102";
       break;
 
       case 23:
-      p_id = "122110";
+      p_id = "122121";
       break;
 
       case 24:
-      p_id = "122116";
+      p_id = "122110";
       break;
 
       case 25:
-      p_id = "301990";
+      p_id = "122116";
       break;
 
       case 26:
-      p_id = "122143";
+      p_id = "301990";
       break;
 
       case 27:
-      p_id = "122101";
+      p_id = "122143";
       break;
 
       case 28:
-      p_id = "122144";
+      p_id = "122101";
       break;
 
       case 29:
-      p_id = "122137";
+      p_id = "122144";
       break;
 
       case 30:
-      p_id = "122136";
+      p_id = "122137";
       break;
 
       case 31:
-      p_id = "301997";
+      p_id = "122136";
       break;
 
       case 32:
-      p_id = "301996";
+      p_id = "301997";
       break;
 
       case 33:
-      p_id = "122123";
+      p_id = "301996";
       break;
 
       case 34:
-      p_id = "122118";
+      p_id = "122123";
       break;
 
       case 35:
-      p_id = "122117";
+      p_id = "122118";
       break;
 
       case 36:
-      p_id = "122122";
+      p_id = "122117";
       break;
 
       case 37:
-      p_id = "122107";
+      p_id = "122122";
       break;
 
       case 38:
-      p_id = "122115";
+      p_id = "122107";
       break;
 
       case 39:
-      p_id = "122106";
+      p_id = "122115";
       break;
 
       case 40:
-      p_id = "301991";
+      p_id = "122106";
       break;
 
       case 41:
+      p_id = "301991";
+      break;
+
+      case 42:
       p_id = "122109";
       break;
    }
@@ -5671,166 +5809,170 @@ const char* Meta_List::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Access_Permission";
+      p_id = "Access_Parent_Modifier";
       break;
 
       case 2:
-      p_id = "Access_Restriction";
+      p_id = "Access_Permission";
       break;
 
       case 3:
-      p_id = "Allow_Quick_Link";
+      p_id = "Access_Restriction";
       break;
 
       case 4:
-      p_id = "Allow_Text_Search";
+      p_id = "Allow_Quick_Link";
       break;
 
       case 5:
-      p_id = "Class";
+      p_id = "Allow_Text_Search";
       break;
 
       case 6:
-      p_id = "Create_Only_If_Default_Other";
+      p_id = "Class";
       break;
 
       case 7:
-      p_id = "Create_Permission";
+      p_id = "Create_Only_If_Default_Other";
       break;
 
       case 8:
-      p_id = "Create_Restriction";
+      p_id = "Create_Permission";
       break;
 
       case 9:
-      p_id = "Destroy_Only_If_Default_Other";
+      p_id = "Create_Restriction";
       break;
 
       case 10:
-      p_id = "Destroy_Permission";
+      p_id = "Destroy_Only_If_Default_Other";
       break;
 
       case 11:
-      p_id = "Destroy_Restriction";
+      p_id = "Destroy_Permission";
       break;
 
       case 12:
-      p_id = "Direction";
+      p_id = "Destroy_Restriction";
       break;
 
       case 13:
-      p_id = "Display_Only_If_Default_Other";
+      p_id = "Direction";
       break;
 
       case 14:
-      p_id = "Display_Row_Limit";
+      p_id = "Display_Only_If_Default_Other";
       break;
 
       case 15:
-      p_id = "Display_Security_Level";
+      p_id = "Display_Row_Limit";
       break;
 
       case 16:
-      p_id = "Id";
+      p_id = "Display_Security_Level";
       break;
 
       case 17:
-      p_id = "Ignore_Implicit_Ordering";
+      p_id = "Id";
       break;
 
       case 18:
-      p_id = "Ignore_Unactionable_Records";
+      p_id = "Ignore_Implicit_Ordering";
       break;
 
       case 19:
-      p_id = "Ignore_Uneditable_Parent";
+      p_id = "Ignore_Unactionable_Records";
       break;
 
       case 20:
-      p_id = "Ignore_User_Id_Filter";
+      p_id = "Ignore_Uneditable_Parent";
       break;
 
       case 21:
-      p_id = "Is_Child";
+      p_id = "Ignore_User_Id_Filter";
       break;
 
       case 22:
-      p_id = "Is_Home";
+      p_id = "Is_Child";
       break;
 
       case 23:
-      p_id = "Is_Variation";
+      p_id = "Is_Home";
       break;
 
       case 24:
-      p_id = "Limit_Scroll_And_New";
+      p_id = "Is_Variation";
       break;
 
       case 25:
-      p_id = "Model";
+      p_id = "Limit_Scroll_And_New";
       break;
 
       case 26:
-      p_id = "Multiline_Truncate_For_Print";
+      p_id = "Model";
       break;
 
       case 27:
-      p_id = "Name";
+      p_id = "Multiline_Truncate_For_Print";
       break;
 
       case 28:
-      p_id = "Number_Multiple_Pages";
+      p_id = "Name";
       break;
 
       case 29:
-      p_id = "PDF_Font_Type";
+      p_id = "Number_Multiple_Pages";
       break;
 
       case 30:
-      p_id = "PDF_List_Type";
+      p_id = "PDF_Font_Type";
       break;
 
       case 31:
-      p_id = "Parent_Class";
+      p_id = "PDF_List_Type";
       break;
 
       case 32:
-      p_id = "Parent_Field";
+      p_id = "Parent_Class";
       break;
 
       case 33:
-      p_id = "Print_Restriction";
+      p_id = "Parent_Field";
       break;
 
       case 34:
-      p_id = "Print_Without_Highlight";
+      p_id = "Print_Restriction";
       break;
 
       case 35:
-      p_id = "Search_Option_Limit";
+      p_id = "Print_Without_Highlight";
       break;
 
       case 36:
-      p_id = "Sort_Rows_In_UI";
+      p_id = "Search_Option_Limit";
       break;
 
       case 37:
-      p_id = "Style";
+      p_id = "Sort_Rows_In_UI";
       break;
 
       case 38:
-      p_id = "Text_Match_Highlight";
+      p_id = "Style";
       break;
 
       case 39:
-      p_id = "Title";
+      p_id = "Text_Match_Highlight";
       break;
 
       case 40:
-      p_id = "Type";
+      p_id = "Title";
       break;
 
       case 41:
+      p_id = "Type";
+      break;
+
+      case 42:
       p_id = "Variation_Name";
       break;
    }
@@ -5847,88 +5989,90 @@ int Meta_List::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+   else if( field == c_field_id_Access_Parent_Modifier || field == c_field_name_Access_Parent_Modifier )
       rc += 1;
-   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       rc += 2;
-   else if( field == c_field_id_Allow_Quick_Link || field == c_field_name_Allow_Quick_Link )
+   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
       rc += 3;
-   else if( field == c_field_id_Allow_Text_Search || field == c_field_name_Allow_Text_Search )
+   else if( field == c_field_id_Allow_Quick_Link || field == c_field_name_Allow_Quick_Link )
       rc += 4;
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( field == c_field_id_Allow_Text_Search || field == c_field_name_Allow_Text_Search )
       rc += 5;
-   else if( field == c_field_id_Create_Only_If_Default_Other || field == c_field_name_Create_Only_If_Default_Other )
+   else if( field == c_field_id_Class || field == c_field_name_Class )
       rc += 6;
-   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+   else if( field == c_field_id_Create_Only_If_Default_Other || field == c_field_name_Create_Only_If_Default_Other )
       rc += 7;
-   else if( field == c_field_id_Create_Restriction || field == c_field_name_Create_Restriction )
+   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
       rc += 8;
-   else if( field == c_field_id_Destroy_Only_If_Default_Other || field == c_field_name_Destroy_Only_If_Default_Other )
+   else if( field == c_field_id_Create_Restriction || field == c_field_name_Create_Restriction )
       rc += 9;
-   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+   else if( field == c_field_id_Destroy_Only_If_Default_Other || field == c_field_name_Destroy_Only_If_Default_Other )
       rc += 10;
-   else if( field == c_field_id_Destroy_Restriction || field == c_field_name_Destroy_Restriction )
+   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
       rc += 11;
-   else if( field == c_field_id_Direction || field == c_field_name_Direction )
+   else if( field == c_field_id_Destroy_Restriction || field == c_field_name_Destroy_Restriction )
       rc += 12;
-   else if( field == c_field_id_Display_Only_If_Default_Other || field == c_field_name_Display_Only_If_Default_Other )
+   else if( field == c_field_id_Direction || field == c_field_name_Direction )
       rc += 13;
-   else if( field == c_field_id_Display_Row_Limit || field == c_field_name_Display_Row_Limit )
+   else if( field == c_field_id_Display_Only_If_Default_Other || field == c_field_name_Display_Only_If_Default_Other )
       rc += 14;
-   else if( field == c_field_id_Display_Security_Level || field == c_field_name_Display_Security_Level )
+   else if( field == c_field_id_Display_Row_Limit || field == c_field_name_Display_Row_Limit )
       rc += 15;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Display_Security_Level || field == c_field_name_Display_Security_Level )
       rc += 16;
-   else if( field == c_field_id_Ignore_Implicit_Ordering || field == c_field_name_Ignore_Implicit_Ordering )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 17;
-   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
+   else if( field == c_field_id_Ignore_Implicit_Ordering || field == c_field_name_Ignore_Implicit_Ordering )
       rc += 18;
-   else if( field == c_field_id_Ignore_Uneditable_Parent || field == c_field_name_Ignore_Uneditable_Parent )
+   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
       rc += 19;
-   else if( field == c_field_id_Ignore_User_Id_Filter || field == c_field_name_Ignore_User_Id_Filter )
+   else if( field == c_field_id_Ignore_Uneditable_Parent || field == c_field_name_Ignore_Uneditable_Parent )
       rc += 20;
-   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
+   else if( field == c_field_id_Ignore_User_Id_Filter || field == c_field_name_Ignore_User_Id_Filter )
       rc += 21;
-   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
+   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
       rc += 22;
-   else if( field == c_field_id_Is_Variation || field == c_field_name_Is_Variation )
+   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
       rc += 23;
-   else if( field == c_field_id_Limit_Scroll_And_New || field == c_field_name_Limit_Scroll_And_New )
+   else if( field == c_field_id_Is_Variation || field == c_field_name_Is_Variation )
       rc += 24;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Limit_Scroll_And_New || field == c_field_name_Limit_Scroll_And_New )
       rc += 25;
-   else if( field == c_field_id_Multiline_Truncate_For_Print || field == c_field_name_Multiline_Truncate_For_Print )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 26;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Multiline_Truncate_For_Print || field == c_field_name_Multiline_Truncate_For_Print )
       rc += 27;
-   else if( field == c_field_id_Number_Multiple_Pages || field == c_field_name_Number_Multiple_Pages )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 28;
-   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
+   else if( field == c_field_id_Number_Multiple_Pages || field == c_field_name_Number_Multiple_Pages )
       rc += 29;
-   else if( field == c_field_id_PDF_List_Type || field == c_field_name_PDF_List_Type )
+   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
       rc += 30;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_PDF_List_Type || field == c_field_name_PDF_List_Type )
       rc += 31;
-   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 32;
-   else if( field == c_field_id_Print_Restriction || field == c_field_name_Print_Restriction )
+   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
       rc += 33;
-   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
+   else if( field == c_field_id_Print_Restriction || field == c_field_name_Print_Restriction )
       rc += 34;
-   else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
+   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
       rc += 35;
-   else if( field == c_field_id_Sort_Rows_In_UI || field == c_field_name_Sort_Rows_In_UI )
+   else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
       rc += 36;
-   else if( field == c_field_id_Style || field == c_field_name_Style )
+   else if( field == c_field_id_Sort_Rows_In_UI || field == c_field_name_Sort_Rows_In_UI )
       rc += 37;
-   else if( field == c_field_id_Text_Match_Highlight || field == c_field_name_Text_Match_Highlight )
+   else if( field == c_field_id_Style || field == c_field_name_Style )
       rc += 38;
-   else if( field == c_field_id_Title || field == c_field_name_Title )
+   else if( field == c_field_id_Text_Match_Highlight || field == c_field_name_Text_Match_Highlight )
       rc += 39;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Title || field == c_field_name_Title )
       rc += 40;
-   else if( field == c_field_id_Variation_Name || field == c_field_name_Variation_Name )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 41;
+   else if( field == c_field_id_Variation_Name || field == c_field_name_Variation_Name )
+      rc += 42;
 
    return rc - 1;
 }
@@ -5956,6 +6100,7 @@ string Meta_List::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Access_Parent_Modifier VARCHAR(64) NOT NULL,"
     "C_Access_Permission VARCHAR(64) NOT NULL,"
     "C_Access_Restriction INTEGER NOT NULL,"
     "C_Allow_Quick_Link INTEGER NOT NULL,"

@@ -1348,7 +1348,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id arg_altfield=$specification_\0_altfield\
  arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname\
- arg_not_iterating=$specification_\0_not_iterating arg_state=$specification_\0_state`}\
+ arg_not_iterating=$specification_\0_not_iterating arg_state=$specification_\0_state\
+ arg_admin_never=$specification_\0_admin_never`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\

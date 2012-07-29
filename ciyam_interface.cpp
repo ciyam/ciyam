@@ -3452,6 +3452,17 @@ void request_handler::process_request( )
                         else if( list_type == c_list_type_child_admin_owner )
                            is_okay = ( is_owner || p_session_info->is_admin_user );
 
+                        if( child_lists[ i->second ].lici->second->extras.count( c_list_type_extra_pstate ) )
+                        {
+                           istringstream isstr( child_lists[ i->second ].lici->second->extras[ c_list_type_extra_pstate ] );
+
+                           uint64_t flag;
+                           isstr >> hex >> flag;
+
+                           if( !( state & flag ) )
+                              is_okay = false;
+                        }
+
                         if( !is_okay )
                         {
                            children_not_permitted.insert( i->first );
