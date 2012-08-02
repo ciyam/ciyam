@@ -1,7 +1,6 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
    // [(start filter_security_level)]
-   if( get_obj( ).has_filter( "`{`$arg_id`}" )
-    || get_obj( ).has_filter( "`{`$arg_name`}" ) )
+   if( get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
       if( !has_sec_level( get_obj( ).`{`$arg_slevel`}( ) ) )
          return true;

@@ -1849,7 +1849,7 @@ void request_handler::process_request( )
                               fieldlist += ",";
                            fieldlist += view.user_force_fields[ i ];
 
-                           if( !extra.empty( ) )
+                           if( !fieldlist.empty( ) )
                               extra += ",";
                            extra += escaped( user_field_info[ view.user_force_fields[ i ] ], "," );
                         }

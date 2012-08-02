@@ -1985,6 +1985,7 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `@eq`(`'\1`'`,`'non_uid_filter`'`)\
 `{`#non_uid_filter.spec.xrep section=is_filtered class_name=$class_name module_name=$module_name\
  arg_name=\0 arg_id=$specification_\0_id arg_pclass=$specification_\0_pclass arg_cfield=$specification_\0_cfield`}
+### is_filtered
 `}`]`}
    // [<start is_filtered>]
 `{`(`?`$user_source`)`#$user_source section=is_filtered`}

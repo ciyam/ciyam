@@ -3564,30 +3564,31 @@ void Meta_Model::impl::impl_Generate( )
 
                do
                {
+                  string extras;
+
+                  if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) != 0 )
+                  {
+                     if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 1 )
+                        extras = "owner_only";
+                     else if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 2 )
+                        extras = "admin_only";
+                     else if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 3 )
+                        extras = "admin_owner_only";
+                     else if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 4 )
+                        extras = "hidden";
+                     else
+                        throw runtime_error( "unexpected Access_Restriction value #"
+                         + to_string( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) )
+                         + " in Model::Generate" );
+
+                     if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
+                        extras += "=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
+                  }
+                  else if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
+                     extras += "hidden=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
+
                   if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "field" )
                   {
-                     string extras;
-                     if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) != 0 )
-                     {
-                        if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 1 )
-                           extras = "owner_only";
-                        else if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 2 )
-                           extras = "admin_only";
-                        else if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 3 )
-                           extras = "admin_owner_only";
-                        else if( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) == 4 )
-                           extras = "hidden";
-                        else
-                           throw runtime_error( "unexpected Access_Restriction value #"
-                            + to_string( get_obj( ).child_List( ).child_List_Field( ).Access_Restriction( ) )
-                            + " in Model::Generate" );
-
-                        if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
-                           extras += "=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
-                     }
-                     else if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
-                        extras += "hidden=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
-
                      if( extras != "hidden" )
                      {
                         switch( get_obj( ).child_List( ).child_List_Field( ).Link_Restriction( ) )
@@ -4254,6 +4255,14 @@ void Meta_Model::impl::impl_Generate( )
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
 
+                     if( !extras.empty( ) )
+                     {
+                        if( pextras.empty( ) )
+                           pextras = extras;
+                        else
+                           pextras = extras + "+" + pextras;
+                     }
+
                      // NOTE: It is being assumed here that the only reason for using a "static instance key" is for a "folder".
                      if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) )
                       && !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Parent_Class( ).Static_Instance_Key( ) ) )
@@ -4490,6 +4499,14 @@ void Meta_Model::impl::impl_Generate( )
                       p_field->Type( ).String_Domain( ), p_field->Type( ).Date_Precision( ),
                       p_field->Type( ).Time_Precision( ), p_field->Type( ).Show_Plus_Sign( ),
                       p_field->Type( ).Zero_Padding( ), p_field->Type( ).Int_Type( ), p_field->Type( ).Numeric_Type( ) ) );
+
+                     if( !extras.empty( ) )
+                     {
+                        if( field_extras.empty( ) )
+                           field_extras = extras;
+                        else
+                           field_extras = extras + "+" + field_extras;
+                     }
 
                      if( get_obj( ).child_List( ).child_List_Field( ).Exact_Match_Only( ) )
                      {
@@ -6183,7 +6200,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
 
    // [(start default_to_field)]
    if( is_create && ( get_obj( ).Next_Specification_Id( ) == gv_default_Next_Specification_Id ) )
-      get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S100" );
+      get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S1000" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]

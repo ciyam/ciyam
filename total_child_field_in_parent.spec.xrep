@@ -4,6 +4,7 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
+    && get_obj( ).get_variable( "@total_child_field_in_parent" ).empty( )
     && ( !is_change_locked( get_obj( ).`{`$arg_pfield`}( ) )
     || is_update_locked_by_own_session( get_obj( ).`{`$arg_pfield`}( ) ) ) )
    {
@@ -69,6 +70,7 @@
       }
    }
    else if( !is_create
+    && get_obj( ).get_variable( "@total_child_field_in_parent" ).empty( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && ( get_obj( ).`{`$arg_tfield`}( ).has_changed( )
     && is_null( get_obj( ).get_original_field_value( c_field_id_`{`$arg_tfield`} ) ) )
@@ -82,9 +84,10 @@
 
       class_base* p_parent = get_obj( ).get_graph_parent( );
 
-      if( !p_parent || !p_parent->get_is_editing( )
+      if( !is_null( original.`{`$arg_pfield`}( ) )
+       && ( !p_parent || !p_parent->get_is_editing( )
        || p_parent->get_key( ) != original.`{`$arg_pfield`}( ).get_key( )
-       || strcmp( p_parent->lock_class_id( ), original.`{`$arg_pfield`}( ).lock_class_id( ) ) )
+       || strcmp( p_parent->lock_class_id( ), original.`{`$arg_pfield`}( ).lock_class_id( ) ) ) )
       {
          original.`{`$arg_pfield`}( ).op_update( );
          original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );
@@ -99,6 +102,7 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)]
    if( !get_obj( ).get_is_being_cascaded( )
+    && get_obj( ).get_variable( "@total_child_field_in_parent" ).empty( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
