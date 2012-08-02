@@ -29321,7 +29321,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>105104
-     <append_value>"S100"
+     <append_value>"S1000"
      <for_store>true
     </data>
    </specification>

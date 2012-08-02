@@ -2,19 +2,16 @@
    // [(start filter_field_value)]
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_perm`,`'`'`)\
-   if( get_obj( ).has_filter( "`{`$arg_id`}" )
-    || get_obj( ).has_filter( "`{`$arg_name`}" ) )
+   if( get_obj( ).has_filter( "`{`$arg_id`}" ) // i.e. `{`$arg_name`}
 `,\
    if( !get_perms( ).count( "`{`$arg_perm`}" )
-    && ( get_obj( ).has_filter( "`{`$arg_id`}" )
-    || get_obj( ).has_filter( "`{`$arg_name`}" ) ) )
+    && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
 `}`,\
    if( get_obj( ).`{`$arg_tfield`}( )
 `{`!`@eq`(`$arg_perm`,`'`'`)\
     && !get_perms( ).count( "`{`$arg_perm`}" )
 `}\
-    && ( get_obj( ).has_filter( "`{`$arg_id`}" )
-    || get_obj( ).has_filter( "`{`$arg_name`}" ) ) )
+    && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
 `}\
    {
       if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`} )

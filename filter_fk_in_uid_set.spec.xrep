@@ -1,6 +1,6 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
    // [(start filter_fk_in_uid_set)]
-   if( !is_system_uid( ) && get_obj( ).has_filter( "`{`$arg_id`}" ) )
+   if( !is_system_uid( ) && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
       string key( get_obj( ).`{`$arg_spfield`}( ) );
 

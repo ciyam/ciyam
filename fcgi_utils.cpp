@@ -1716,9 +1716,13 @@ void determine_fixed_query_info( string& fixed_fields,
 
          // NOTE: A "reverse" checked restriction will result in the list order being reversed.
          bool reverse_checked = false;
-         if( ( list.lici->second )->restricts[ i ].operations.count( c_operation_rchecked )
-          || ( list.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
+         bool reverse_unchecked = false;
+
+         if( ( list.lici->second )->restricts[ i ].operations.count( c_operation_rchecked ) )
             reverse_checked = true;
+
+         if( ( list.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
+            reverse_unchecked = true;
 
          if( ( !unchecked && !list_selections.count( name ) )
           || ( list_selections.count( name ) && list_selections.find( name )->second == c_true ) )
@@ -1733,7 +1737,7 @@ void determine_fixed_query_info( string& fixed_fields,
             }
             else
             {
-               if( !reverse_checked )
+               if( !reverse_unchecked )
                   value = ( list.lici->second )->restricts[ i ].operations[ c_operation_unchecked ];
                else
                   value = ( list.lici->second )->restricts[ i ].operations[ c_operation_runchecked ];
@@ -1760,6 +1764,9 @@ void determine_fixed_query_info( string& fixed_fields,
 
                fixed_key_values += value;
             }
+
+            if( reverse_unchecked )
+               is_reverse = !is_reverse;
          }
          else if( reverse_checked )
             is_reverse = !is_reverse;
