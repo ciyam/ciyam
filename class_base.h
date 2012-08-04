@@ -150,10 +150,23 @@ struct CLASS_BASE_DECL_SPEC class_cascade
    impl* p_impl;
 };
 
+struct CLASS_BASE_DECL_SPEC class_after_store
+{
+   class_after_store( class_base& cb );
+   ~class_after_store( );
+
+   struct impl;
+   impl* p_impl;
+};
+
 class CLASS_BASE_DECL_SPEC class_base
 {
    friend struct class_cascade;
+   friend struct class_after_store;
+
    friend struct class_cascade::impl;
+   friend struct class_after_store::impl;
+
    friend struct class_base_accessor;
 
    public:
@@ -287,6 +300,8 @@ class CLASS_BASE_DECL_SPEC class_base
    std::string get_attached_file_path( const std::string& file_name );
 
    bool get_is_singular( ) const { return is_singular; }
+
+   bool get_is_after_store( ) const { return is_after_store; }
 
    bool get_is_being_cascaded( ) const { return is_being_cascaded; }
    bool get_is_dynamic_enabled( ) const { return is_dynamic_enabled; }
@@ -449,6 +464,8 @@ class CLASS_BASE_DECL_SPEC class_base
    bool is_fetching;
    bool is_executing;
    bool is_preparing;
+
+   bool is_after_store;
 
    bool is_being_cascaded;
    bool is_dynamic_enabled;

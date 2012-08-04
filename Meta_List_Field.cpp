@@ -478,6 +478,7 @@ const uint64_t c_modifier_Hide_Select_Specifics = UINT64_C( 0x8000000 );
 const uint64_t c_modifier_Hide_Switch_Type = UINT64_C( 0x10000000 );
 const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x20000000 );
 const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x40000000 );
+const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x80000000 );
 
 domain_string_max_size< 100 > g_Include_Key_Additions_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -2968,6 +2969,11 @@ uint64_t Meta_List_Field::impl::get_state( ) const
    if( is_null( get_obj( ).Parent_Class( ) ) )
       state |= c_modifier_Is_Not_View_Child;
    // [(finish modifier_field_null)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Type( ).Is_Restrict_Search( ) == true )
+      state |= c_modifier_Is_Restrict_Search;
+   // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    if( get_obj( ).Type( ).Is_Restrict_Search( ) == false )
@@ -6412,6 +6418,14 @@ void Meta_List_Field::get_always_required_field_names(
     || ( !required_transients && !is_field_transient( e_field_id_Parent_Class ) ) )
       names.insert( "Parent_Class" );
    // [(finish modifier_field_null)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Type" ); // (for Is_Restrict_Search modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Type ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Type" ); // (for Is_Not_Restrict_Search modifier)

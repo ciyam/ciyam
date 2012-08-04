@@ -4148,7 +4148,7 @@ void Meta_Model::impl::impl_Generate( )
                      Meta_Field* p_field;
                      bool is_mandatory = false;
 
-                     string dextras;
+                     string dextras( extras );
 
                      switch( get_obj( ).child_List( ).child_List_Field( ).Font_Size( ) )
                      {
@@ -4254,14 +4254,6 @@ void Meta_Model::impl::impl_Generate( )
 
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
-
-                     if( !extras.empty( ) )
-                     {
-                        if( pextras.empty( ) )
-                           pextras = extras;
-                        else
-                           pextras = extras + "+" + pextras;
-                     }
 
                      // NOTE: It is being assumed here that the only reason for using a "static instance key" is for a "folder".
                      if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) )

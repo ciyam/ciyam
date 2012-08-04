@@ -96,48 +96,50 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
       e_field_id_Other_Class = 28,
       e_field_id_Other_Field = 29,
       e_field_id_Other_Field_2 = 30,
-      e_field_id_Other_Permission = 31,
-      e_field_id_Other_Permission_2 = 32,
-      e_field_id_Other_Procedure = 33,
-      e_field_id_Other_Procedure_2 = 34,
-      e_field_id_Parent_Specification = 35,
-      e_field_id_Parent_Specification_Copy_Child_Links = 36,
-      e_field_id_Permission = 37,
-      e_field_id_Procedure = 38,
-      e_field_id_Procedure_Arg = 39,
-      e_field_id_Procedure_Arg_2 = 40,
-      e_field_id_Procedure_Arg_3 = 41,
-      e_field_id_Protect_Child_Rel = 42,
-      e_field_id_Protect_Procedure = 43,
-      e_field_id_Protect_Source_Parent = 44,
-      e_field_id_Restrict_Values = 45,
-      e_field_id_Source_Child = 46,
-      e_field_id_Source_Child_2 = 47,
-      e_field_id_Source_Child_Class = 48,
-      e_field_id_Source_Class = 49,
-      e_field_id_Source_Field = 50,
-      e_field_id_Source_Field_Class = 51,
-      e_field_id_Source_Grandchild = 52,
-      e_field_id_Source_Parent = 53,
-      e_field_id_Source_Parent_Class = 54,
-      e_field_id_Specification_Type = 55,
-      e_field_id_Strings = 56,
-      e_field_id_Test_Child = 57,
-      e_field_id_Test_Field = 58,
-      e_field_id_Test_Field_Class = 59,
-      e_field_id_Test_Parent = 60,
-      e_field_id_Test_Parent_Class = 61,
-      e_field_id_Test_Value = 62,
-      e_field_id_Use_Source_Parent = 63,
-      e_field_id_Use_Test_Parent_Child = 64,
-      e_field_id_Value = 65,
-      e_field_id_Value_Label = 66,
-      e_field_id_Value_Left_Part = 67,
-      e_field_id_Value_Literal = 68,
-      e_field_id_Value_Numeric_String = 69,
-      e_field_id_Value_Right_Part = 70,
-      e_field_id_Value_String = 71,
-      e_field_id_Vars = 72
+      e_field_id_Other_Modifier = 31,
+      e_field_id_Other_Modifier_2 = 32,
+      e_field_id_Other_Permission = 33,
+      e_field_id_Other_Permission_2 = 34,
+      e_field_id_Other_Procedure = 35,
+      e_field_id_Other_Procedure_2 = 36,
+      e_field_id_Parent_Specification = 37,
+      e_field_id_Parent_Specification_Copy_Child_Links = 38,
+      e_field_id_Permission = 39,
+      e_field_id_Procedure = 40,
+      e_field_id_Procedure_Arg = 41,
+      e_field_id_Procedure_Arg_2 = 42,
+      e_field_id_Procedure_Arg_3 = 43,
+      e_field_id_Protect_Child_Rel = 44,
+      e_field_id_Protect_Procedure = 45,
+      e_field_id_Protect_Source_Parent = 46,
+      e_field_id_Restrict_Values = 47,
+      e_field_id_Source_Child = 48,
+      e_field_id_Source_Child_2 = 49,
+      e_field_id_Source_Child_Class = 50,
+      e_field_id_Source_Class = 51,
+      e_field_id_Source_Field = 52,
+      e_field_id_Source_Field_Class = 53,
+      e_field_id_Source_Grandchild = 54,
+      e_field_id_Source_Parent = 55,
+      e_field_id_Source_Parent_Class = 56,
+      e_field_id_Specification_Type = 57,
+      e_field_id_Strings = 58,
+      e_field_id_Test_Child = 59,
+      e_field_id_Test_Field = 60,
+      e_field_id_Test_Field_Class = 61,
+      e_field_id_Test_Parent = 62,
+      e_field_id_Test_Parent_Class = 63,
+      e_field_id_Test_Value = 64,
+      e_field_id_Use_Source_Parent = 65,
+      e_field_id_Use_Test_Parent_Child = 66,
+      e_field_id_Value = 67,
+      e_field_id_Value_Label = 68,
+      e_field_id_Value_Left_Part = 69,
+      e_field_id_Value_Literal = 70,
+      e_field_id_Value_Numeric_String = 71,
+      e_field_id_Value_Right_Part = 72,
+      e_field_id_Value_String = 73,
+      e_field_id_Vars = 74
    };
 
    Meta_Specification( );
@@ -297,6 +299,14 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
    Meta_Field& Other_Field_2( );
    const Meta_Field& Other_Field_2( ) const;
    void Other_Field_2( const std::string& key );
+
+   Meta_Modifier& Other_Modifier( );
+   const Meta_Modifier& Other_Modifier( ) const;
+   void Other_Modifier( const std::string& key );
+
+   Meta_Modifier& Other_Modifier_2( );
+   const Meta_Modifier& Other_Modifier_2( ) const;
+   void Other_Modifier_2( const std::string& key );
 
    Meta_Permission& Other_Permission( );
    const Meta_Permission& Other_Permission( ) const;

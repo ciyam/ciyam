@@ -275,7 +275,7 @@ int main( int argc, char* argv[ ] )
             is_default = true;
 
 #ifdef _WIN32
-         if( socket.connect( address ) )
+         if( socket.connect( address, is_default ? 2500 : c_greeting_timeout ) )
 #else
          // NOTE: If the server was started asynchronously in a script immediately prior
          // to the client then wait for half a second and then try again just to be sure.

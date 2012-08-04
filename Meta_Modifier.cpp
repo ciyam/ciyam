@@ -35,8 +35,8 @@
 
 #include "Meta_List_Field.h"
 #include "Meta_List.h"
-#include "Meta_Modifier_Affect.h"
 #include "Meta_Specification.h"
+#include "Meta_Modifier_Affect.h"
 #include "Meta_Class.h"
 #include "Meta_Modifier.h"
 
@@ -419,6 +419,50 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
       return *cp_child_List_Access_Parent;
    }
 
+   Meta_Specification& impl_child_Specification_Other_Modifier_2( )
+   {
+      if( !cp_child_Specification_Other_Modifier_2 )
+      {
+         cp_child_Specification_Other_Modifier_2.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other_Modifier_2, "301442" );
+      }
+      return *cp_child_Specification_Other_Modifier_2;
+   }
+
+   const Meta_Specification& impl_child_Specification_Other_Modifier_2( ) const
+   {
+      if( !cp_child_Specification_Other_Modifier_2 )
+      {
+         cp_child_Specification_Other_Modifier_2.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other_Modifier_2, "301442" );
+      }
+      return *cp_child_Specification_Other_Modifier_2;
+   }
+
+   Meta_Specification& impl_child_Specification_Other( )
+   {
+      if( !cp_child_Specification_Other )
+      {
+         cp_child_Specification_Other.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other, "301441" );
+      }
+      return *cp_child_Specification_Other;
+   }
+
+   const Meta_Specification& impl_child_Specification_Other( ) const
+   {
+      if( !cp_child_Specification_Other )
+      {
+         cp_child_Specification_Other.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Specification_Other, "301441" );
+      }
+      return *cp_child_Specification_Other;
+   }
+
    Meta_Modifier& impl_child_Modifier_Source( )
    {
       if( !cp_child_Modifier_Source )
@@ -545,6 +589,8 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
 
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Access_Parent;
    mutable class_pointer< Meta_List > cp_child_List_Access_Parent;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Other_Modifier_2;
+   mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
    mutable class_pointer< Meta_Modifier > cp_child_Modifier_Source;
    mutable class_pointer< Meta_Modifier_Affect > cp_child_Modifier_Affect;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
@@ -1018,6 +1064,26 @@ const Meta_List& Meta_Modifier::child_List_Access_Parent( ) const
    return p_impl->impl_child_List_Access_Parent( );
 }
 
+Meta_Specification& Meta_Modifier::child_Specification_Other_Modifier_2( )
+{
+   return p_impl->impl_child_Specification_Other_Modifier_2( );
+}
+
+const Meta_Specification& Meta_Modifier::child_Specification_Other_Modifier_2( ) const
+{
+   return p_impl->impl_child_Specification_Other_Modifier_2( );
+}
+
+Meta_Specification& Meta_Modifier::child_Specification_Other( )
+{
+   return p_impl->impl_child_Specification_Other( );
+}
+
+const Meta_Specification& Meta_Modifier::child_Specification_Other( ) const
+{
+   return p_impl->impl_child_Specification_Other( );
+}
+
 Meta_Modifier& Meta_Modifier::child_Modifier_Source( )
 {
    return p_impl->impl_child_Modifier_Source( );
@@ -1327,6 +1393,11 @@ void Meta_Modifier::setup_graph_parent( Meta_List& o, const string& foreign_key_
    static_cast< Meta_List& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_Modifier::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Modifier::setup_graph_parent( Meta_Modifier& o, const string& foreign_key_field )
 {
    static_cast< Meta_Modifier& >( o ).set_graph_parent( this, foreign_key_field );
@@ -1335,11 +1406,6 @@ void Meta_Modifier::setup_graph_parent( Meta_Modifier& o, const string& foreign_
 void Meta_Modifier::setup_graph_parent( Meta_Modifier_Affect& o, const string& foreign_key_field )
 {
    static_cast< Meta_Modifier_Affect& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
-void Meta_Modifier::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
 void Meta_Modifier::setup_graph_parent(
@@ -1368,7 +1434,7 @@ void Meta_Modifier::set_total_child_relationships( size_t new_total_child_relati
 
 size_t Meta_Modifier::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 5;
+   size_t rc = 7;
 
    if( !is_internal )
    {
@@ -1401,7 +1467,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 5 )
+   if( child_num >= 7 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1430,6 +1496,22 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          break;
 
          case 2:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301442";
+            p_class_base = &child_Specification_Other_Modifier_2( );
+         }
+         break;
+
+         case 3:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "301441";
+            p_class_base = &child_Specification_Other( );
+         }
+         break;
+
+         case 4:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300910";
@@ -1437,7 +1519,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 3:
+         case 5:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301000";
@@ -1445,7 +1527,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 4:
+         case 6:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301440";
@@ -1524,6 +1606,10 @@ class_base& Meta_Modifier::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Field_Access_Parent( );
    else if( sub_context == "_301998" || sub_context == "child_List_Access_Parent" )
       p_class_base = &child_List_Access_Parent( );
+   else if( sub_context == "_301442" || sub_context == "child_Specification_Other_Modifier_2" )
+      p_class_base = &child_Specification_Other_Modifier_2( );
+   else if( sub_context == "_301441" || sub_context == "child_Specification_Other" )
+      p_class_base = &child_Specification_Other( );
    else if( sub_context == "_300910" || sub_context == "child_Modifier_Source" )
       p_class_base = &child_Modifier_Source( );
    else if( sub_context == "_301000" || sub_context == "child_Modifier_Affect" )

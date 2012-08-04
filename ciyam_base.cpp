@@ -737,11 +737,22 @@ bool storage_handler::obtain_lock( size_t& handle,
             // multiple separate operations (belonging to the same session) to occur within a single command.
             if( ( lock_instance.empty( ) || next_lock_instance.empty( ) || lock_instance == next_lock_instance )
              && ( ( !locks_can_coexist( type, next_lock.type )
-             && ( p_session != next_lock.p_session || p_class_base || p_class_base == next_lock.p_class_base ) )
+             && ( p_session != next_lock.p_session || p_root_class || p_root_class == next_lock.p_root_class ) )
              || ( next_lock.tx_type && p_session != next_lock.p_session && !locks_can_coexist( type, next_lock.tx_type ) ) ) )
             {
-               lock_conflict = true;
-               break;
+               // NOTE: Allow "update" locks to be obtained for an already "update" locked instance provided
+               // that the instances are separate but owned by the same session and that the existing locked
+               // instance is in the "after_store" trigger.
+               if( p_session != next_lock.p_session
+                || ( p_class_base == next_lock.p_class_base )
+                || type != next_lock.type || type != op_lock::e_lock_type_update
+                || !next_lock.p_class_base || !next_lock.p_class_base->get_is_after_store( ) )
+               {
+                  lock_conflict = true;
+                  if( !attempts )
+                     TRACE_LOG( TRACE_LOCK_OPS, "*** failed to acquire lock ***" );
+                  break;
+               }
             }
 
             last_lock = next_lock;
@@ -8417,7 +8428,10 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             instance_accessor.after_destroy( internal_operation );
          else if( op == class_base::e_op_type_create || ( op == class_base::e_op_type_update
           && ( handler.get_name( ) == "Meta" || !instance.get_is_minimal_update( ) ) ) )
+         {
+            class_after_store cas( instance );
             instance_accessor.after_store( op == class_base::e_op_type_create, internal_operation );
+         }   
 
          const string& key( instance.get_key( ) );
          storage_handler& handler( *gtp_session->p_storage_handler );

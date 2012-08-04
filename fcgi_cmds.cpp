@@ -383,7 +383,7 @@ bool perform_action( const string& module_name,
          if( !sess_info.tz_abbr.empty( ) )
             act_cmd += " -tz=" + sess_info.tz_abbr;
 
-         if( !fieldlist.empty( ) )
+         if( act == c_act_exec && !fieldlist.empty( ) )
             act_cmd += " \"-v=" + fields_and_values + "\"";
 
          act_cmd += " " + key_list;
@@ -400,7 +400,7 @@ bool perform_action( const string& module_name,
             if( !sess_info.tz_abbr.empty( ) )
                act_cmd += " -tz=" + sess_info.tz_abbr;
 
-            if( !fieldlist.empty( ) )
+            if( act == c_act_exec && !fieldlist.empty( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
 
             act_cmd += " " + code_and_versions[ i ];

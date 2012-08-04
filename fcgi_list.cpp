@@ -1842,6 +1842,9 @@ void output_list_form( ostream& os,
          {
             for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
             {
+               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent ) )
+                  continue;
+
                if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select ) )
                {
                   if( !had_data )
@@ -1936,6 +1939,9 @@ void output_list_form( ostream& os,
 
          for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
          {
+            if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent ) )
+               continue;
+
             if( ( source.lici->second )->parents[ i ].operations.count( c_operation_checked ) )
             {
                if( !had_data )

@@ -386,6 +386,8 @@ field_add -id=114198 Specification_Type Allow_Enum bool mand -def=0
 field_add -id=114199 Specification_Type Allow_Enum_Item bool mand -def=0
 field_add -id=114200 Specification_Type Needs_Other_Permission bool mand -def=0
 field_add -id=114201 Specification_Type Needs_Other_Permission_2 bool mand -def=0
+field_add -id=114202 Specification_Type Needs_Other_Modifier bool mand -def=0
+field_add -id=114203 Specification_Type Needs_Other_Modifier_2 bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -781,6 +783,8 @@ relationship_add -id=201430 -fid=301430 Specification {Field} Field opt restrict
 relationship_add -id=201435 -fid=301435 Specification Other_Field Field opt restrict
 relationship_add -id=201436 -fid=301436 Specification Other_Field_2 Field opt restrict
 relationship_add -id=201440 -fid=301440 Specification {Modifier} Modifier opt restrict
+relationship_add -id=201441 -fid=301441 Specification Other_{Modifier} Modifier opt restrict
+relationship_add -id=201442 -fid=301442 Specification Other_{Modifier}_2 Modifier opt restrict
 relationship_add -id=201450 -fid=301450 Specification {Procedure} Procedure opt restrict
 relationship_add -id=201451 -fid=301451 Specification Other_{Procedure} Procedure opt restrict
 relationship_add -id=201452 -fid=301452 Specification Other_{Procedure}_2 Procedure opt restrict
@@ -1001,6 +1005,8 @@ modifier_add -id=500627 Specification Hide_Other_Procedure_2 Other_{Procedure}_2
 modifier_add -id=500628 Specification Hide_Procedure_Arg_2 Procedure_Arg_2:relegate
 modifier_add -id=500629 Specification Hide_Procedure_Arg_3 Procedure_Arg_3:relegate
 modifier_add -id=500630 Specification Hide_Modifier {Modifier}:relegate
+modifier_add -id=500631 Specification Hide_Other_Modifier Other_{Modifier}:relegate
+modifier_add -id=500632 Specification Hide_Other_Modifier_2 Other_{Modifier}_2:relegate
 modifier_add -id=500640 Specification Hide_Enum {Enum}:relegate
 modifier_add -id=500650 Specification Hide_Enum_Item {Enum_Item}:relegate
 modifier_add -id=500651 Specification Hide_Enum_Item_2 Enum_Item_2:relegate
@@ -1124,7 +1130,8 @@ modifier_add -id=500885 List_Field Hide_Restriction_Field Restriction_Field:rele
 modifier_add -id=500886 List_Field Hide_For_Restriction_Field Use_Source_Parent:relegate\
 ,Source_Field:relegate,Source_Parent:relegate,Source_Child:relegate
 modifier_add -id=500887 List_Field Is_Not_View_Child Access_Parent_Modifier:relegate
-modifier_add -id=500888 List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
+modifier_add -id=500888 List_Field Is_Restrict_Search Use_Source_Parent:relegate
+modifier_add -id=500888a List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
 modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
@@ -1311,6 +1318,8 @@ specification_add -id=600104b {Specification}_Hide_Procedure_Arg_3 modifier_fiel
 specification_add -id=600104c {Specification}_Hide_Other_Procedure modifier_field_value "Specification Hide_Other_Procedure {Specification_Type}:Needs_Other_Procedure false"
 specification_add -id=600104d {Specification}_Hide_Other_Procedure_2 modifier_field_value "Specification Hide_Other_Procedure_2 {Specification_Type}:Needs_Other_Procedure_2 false"
 specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Allow_Modifier false"
+specification_add -id=600105a {Specification}_Hide_Other_Modifier modifier_field_value "Specification Hide_Other_Modifier {Specification_Type}:Needs_Other_Modifier false"
+specification_add -id=600105b {Specification}_Hide_Other_Modifier_2 modifier_field_value "Specification Hide_Other_Modifier_2 {Specification_Type}:Needs_Other_Modifier_2 false"
 specification_add -id=600106 {Specification}_Hide_Enum modifier_field_value "Specification Hide_Enum {Specification_Type}:Allow_Enum false"
 specification_add -id=600107 {Specification}_Hide_Enum_Item modifier_field_value "Specification Hide_Enum_Item {Specification_Type}:Allow_Enum_Item false"
 specification_add -id=600107a {Specification}_Hide_Enum_Item_2 modifier_field_value "Specification Hide_Enum_Item_2 {Specification_Type}:Needs_Enum_Item_2 false"
@@ -1499,7 +1508,8 @@ specification_add -id=600203 {Specification}_Field_Pairs_meta3 meta_spec_field_p
  Field_Pairs Order Specification:Parent_{Specification} Name=field_pair_g_list"
 specification_add -id=600204 {Specification}_Name_from_search_replace field_from_search_replace "Specification Name\
  {Specification_Type}:Specification_Name {Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
-,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
+,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Other_{Modifier}:Name={omodifier},Other_{Modifier}_2:Name={o2modifier}\
+,Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
 ,Source_Child:Name={scfield},Source_Child_2:Name={sc2field},Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue}\
 ,{Permission}:Name={permission},Other_{Permission}:Name={opermission},Other_{Permission}_2:Name={o2permission}\
@@ -1515,9 +1525,9 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,{Field}:Name={field},Field_Class:Name={fclass},{Field}:Id={field_id},{Field}:Mandatory={fmandatory}\
 ,{Field}:Transient={ftransient},{Field}:Numeric_Decimals={fdecimals},{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
 ,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
-,{Modifier}:Name={modifier},Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield}\
-,Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass},Source_Child:Name={scfield},Source_Child:Id={scfield_id}\
-,Source_Child_2:Name={sc2field},Source_Child_2:Id={sc2field_id}\
+,{Modifier}:Name={modifier},Other_{Modifier}:Name={omodifier},Other_{Modifier}_2:Name={o2modifier}\
+,Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield},Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass}\
+,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Source_Child_2:Name={sc2field},Source_Child_2:Id={sc2field_id}\
 ,Source_Field:Name={sfield},Source_Field:Id={sfield_id},Source_Grandchild:Name={sgcfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Field:Id={tfield_id}\
 ,Test_Field_Class:Name={tfclass},Test_Value={tvalue},{Permission}:Name={permission},{Permission}:Id={permission_id}\
@@ -1705,7 +1715,8 @@ specification_add -id=600492 {List_Field}_Link_Restriction_default_1 default_to_
 specification_add -id=600493 {List_Field}_Link_Restriction_default_2 default_to_global "List_Field Link_Restriction 2 -check=Source_Parent -test=Use_Source_Parent=1 -default_only"
 specification_add -id=600494 {List_Field}_Parent_Class_From_List field_from_other_field "List_Field {List}:Parent_Class Parent_Class"
 specification_add -id=600495 {List_Field}_Is_Not_View_Child modifier_field_null "List_Field Is_Not_View_Child Parent_Class"
-specification_add -id=600496 {List_Field}_Is_Not_Restrict_Search modifier_field_value "List_Field Is_Not_Restrict_Search Type:Is_Restrict_Search false"
+specification_add -id=600496 {List_Field}_Is_Restrict_Search modifier_field_value "List_Field Is_Restrict_Search Type:Is_Restrict_Search true"
+specification_add -id=600496a {List_Field}_Is_Not_Restrict_Search modifier_field_value "List_Field Is_Not_Restrict_Search Type:Is_Restrict_Search false"
 specification_add -id=600497 {List_Field}_Source_Parent_Class_2 field_from_other_field "List_Field Child_Rel_Source_Parent_Class Source_Parent_Class -check_null"
 specification_add -id=600498 {List_Field}_Hide_Link_Permission_Field modifier_field_value "List_Field Hide_Link_Permission_Field Type:Allow_Link_Permission false"
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
@@ -1837,7 +1848,8 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
  {Model}:Name;no_edit+link+fkey1,Name;no_edit,Id;no_edit,Comments\
 ,{Specification_Type}:Name;no_edit+link,{Specification_Type}:Notes;no_edit\
 ,{Class}:Name!@fkey1:{Model}+Name;link+fkey2+force,Other_Class:Name!@fkey1:{Model}+Name;link,{Field}:Name!@fkey2:{Class}+Name;link+force\
-,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name,Value,{Modifier}:Name!@fkey2:{Class}+Name;link\
+,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name,Value\
+,{Modifier}:Name!@fkey2:{Class}+Name;link,Other_{Modifier}:Name!@fkey2:{Class}+Name;link,Other_{Modifier}_2:Name!@fkey2:{Class}+Name;link\
 ,{Procedure}:Name!@fkey2:{Class}+Name;link+fkey5,{Procedure_Arg}:Name!@fkey5:{Procedure}+Name\
 ,Procedure_Arg_2:Name!@fkey5:{Procedure}+Name,Procedure_Arg_3:Name!@fkey5:{Procedure}+Name\
 ,Other_{Procedure}:Name!@fkey2:{Class}+Name;link,Other_{Procedure}_2:Name!@fkey2:{Class}+Name;link\
