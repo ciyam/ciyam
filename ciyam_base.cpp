@@ -8431,7 +8431,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          {
             class_after_store cas( instance );
             instance_accessor.after_store( op == class_base::e_op_type_create, internal_operation );
-         }   
+         }
 
          const string& key( instance.get_key( ) );
          storage_handler& handler( *gtp_session->p_storage_handler );
