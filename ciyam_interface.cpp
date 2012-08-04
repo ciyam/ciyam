@@ -2679,8 +2679,6 @@ void request_handler::process_request( )
                   if( vtabc.empty( ) && view.vici->second->extras.count( c_view_type_extra_vtabc ) )
                      vtabc_num = atoi( view.vici->second->extras[ c_view_type_extra_vtabc ].c_str( ) );
 
-                  // NOTE: Obtain data for any specified child lists of the view item (unless creating or editing).
-                  //
                   // FUTURE: Printable views do not currently support child lists.
                   if( !had_send_or_recv_error && !is_new_record && act != c_act_edit && cmd != c_cmd_pview )
                   {
@@ -2737,27 +2735,6 @@ void request_handler::process_request( )
 
                         if( listarg == child_list.id )
                            child_list.row_errors = child_row_errors[ listarg ];
-
-                        string child_list_info( c_list_prefix + to_string( child_lists.size( ) ) + c_info_suffix );
-                        if( input_data.count( child_list_info ) )
-                           child_list_info = input_data[ child_list_info ];
-                        else
-                           child_list_info.erase( );
-
-                        string child_list_sort( c_list_prefix + to_string( child_lists.size( ) ) + c_sort_suffix );
-                        if( input_data.count( child_list_sort ) )
-                           child_list_sort = input_data[ child_list_sort ];
-                        else
-                           child_list_sort.erase( );
-
-                        // NOTE: Only fetch data from the application server for the active child tab.
-                        if( ++num == vtabc_num )
-                        {
-                           if( !populate_list_info( child_list, list_selections,
-                            list_search_text, list_search_values, child_list_info, child_list_sort, data,
-                            ( cmd == c_cmd_pview ), &view, child_list.new_pfield, 0, *p_session_info ) )
-                              had_send_or_recv_error = true;
-                        }
 
                         child_lists.push_back( child_list );
                         child_names.insert( make_pair( mod_info.get_string( child_lists.back( ).name ), child_lists.size( ) - 1 ) );
@@ -3428,10 +3405,11 @@ void request_handler::process_request( )
                      extra_content << "<thead>\n";
                      extra_content << "<tr>\n";
 
-                     int n = 0;
+                     int n = 0, x = 0;
                      set< string > children_not_permitted;
                      for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                      {
+                        ++x;
                         string list_type = child_lists[ i->second ].lici->second->type;
 
                         bool is_okay = has_permission( child_lists[ i->second ].perm, *p_session_info );
@@ -3488,6 +3466,23 @@ void request_handler::process_request( )
 
                            extra_content << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
                            extra_content << "query_update( 'vtabc', '" << n << "' );\">" << name << "</a></td>\n";
+                        }
+
+                        // NOTE: Only fetch data from the application server for the active child tab.
+                        if( n == vtabc_num )
+                        {
+                           string child_list_info( c_list_prefix + to_string( x - 1 ) + c_info_suffix );
+                           if( input_data.count( child_list_info ) )
+                              child_list_info = input_data[ child_list_info ];
+
+                           string child_list_sort( c_list_prefix + to_string( x - 1 ) + c_sort_suffix );
+                           if( input_data.count( child_list_sort ) )
+                              child_list_sort = input_data[ child_list_sort ];
+
+                           if( !populate_list_info( child_lists[ i->second ], list_selections,
+                            list_search_text, list_search_values, child_list_info, child_list_sort, data,
+                            ( cmd == c_cmd_pview ), &view, child_lists[ i->second ].new_pfield, 0, *p_session_info ) )
+                              had_send_or_recv_error = true;
                         }
                      }
 

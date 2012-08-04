@@ -440,6 +440,23 @@ class_cascade::~class_cascade( )
    delete p_impl;
 }
 
+struct class_after_store::impl
+{
+   impl( class_base& cb ) : tmp_being_cascaded( cb.is_after_store, true ) { }
+
+   restorable< bool > tmp_being_cascaded;
+};
+
+class_after_store::class_after_store( class_base& cb )
+{
+   p_impl = new impl( cb );
+}
+
+class_after_store::~class_after_store( )
+{
+   delete p_impl;
+}
+
 struct class_base::impl
 {
    bool has_changed_user_fields;
@@ -481,6 +498,7 @@ class_base::class_base( )
  is_fetching( false ),
  is_executing( false ),
  is_preparing( false ),
+ is_after_store( false ),
  is_being_cascaded( false ),
  is_dynamic_enabled( false ),
  in_forwards_iteration( false ),
