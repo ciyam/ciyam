@@ -1,0 +1,104 @@
+##
+## Usage:
+##  make [<target1> [<target2>] [...]]
+##
+##  where:
+##  <target>   is:                  to:
+##             all                  make all targets
+##             dtm                  creates make.dtm
+##             clean                clean all targets
+##             usage                display this output
+##
+##             base                 make libbase.a target
+##             xrep                 make xrep target
+##             xvars                make xvars target
+##
+
+# Tools
+CPP = g++
+BIND = ar
+LINK = $(CPP)
+
+# Compiler flags
+CPPFLAGS = -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include
+
+# Implicit rules (and override for simple builtins)
+%: %.o
+
+%: %.cpp
+
+%.o: %.cpp
+	@./compile.sh $@ $< $(file_opts_$@)
+
+%.compile:
+#	@echo echo [$@] $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >compile.sh
+	@echo echo \$$2 >compile.sh
+	@echo $(CPP) $(target_opts_$*) -c \$$3 $(CPPFLAGS) -o \$$1 \$$2 >>compile.sh;chmod a+x compile.sh
+
+# Notes: For file specific options use "file_opts_XXX.o = <opts>" (where XXX.cpp is the source file name)
+# and for target specific options use "target_opts_XXX.so = <opts>" (where XXX.so is the name of the target).
+
+BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
+
+LINK_NORMAL = @echo Linking $@...;$(LINK) -o $@
+LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -o $@
+
+LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -o $@
+
+THREAD_LIBS = -lpthread
+READLINE_LIBS = -lreadline
+#READLINE_LIBS = -lreadline -ltermcap
+
+# Targets
+TARGET_XREP = xrep
+TARGET_XVARS = xvars
+
+TARGET_XREP_CPPS = xrep.cpp utilities.cpp
+TARGET_XREP_OBJS = $(TARGET_XREP_CPPS:.cpp=.o)
+
+TARGET_XVARS_CPPS = xvars.cpp utilities.cpp sio.cpp
+TARGET_XVARS_OBJS = $(TARGET_XVARS_CPPS:.cpp=.o)
+
+ALL_TARGETS =\
+ $(TARGET_XREP)\
+ $(TARGET_XVARS)
+
+ALL_CPP_FILES =\
+ $(TARGET_XREP_CPPS)\
+ $(TARGET_XVARS_CPPS)
+
+ALL_OBJ_FILES =\
+ $(TARGET_XREP_OBJS)\
+ $(TARGET_XVARS_OBJS)
+
+ALL_DEP_FILES = $(ALL_CPP_FILES:.cpp=.d)
+
+# Targets
+usage: make_usage
+
+all:\
+ $(TARGET_XREP)\
+ $(TARGET_XVARS)
+
+dtm:
+	@echo `date`>make.dtm
+
+make_usage:
+	@grep ^## makefile
+
+$(TARGET_XREP):: $(TARGET_BASE) $(TARGET_XREP).compile
+
+$(TARGET_XREP):: $(TARGET_XREP_OBJS) $(TARGET_BASE)
+	$(LINK_NORMAL) $(TARGET_XREP_OBJS) -L. -lbase
+
+$(TARGET_XVARS):: $(TARGET_BASE) $(TARGET_XVARS).compile
+
+$(TARGET_XVARS):: $(TARGET_XVARS_OBJS) $(TARGET_BASE)
+	$(LINK_NORMAL) $(TARGET_XVARS_OBJS) -L. -lbase
+
+clean:
+	@rm -f compile.sh $(ALL_CMH_FILES) $(ALL_OBJ_FILES) $(ALL_DEP_FILES) $(ALL_TARGETS)
+
+# Dependency include
+-include $(ALL_DEP_FILES)
+
