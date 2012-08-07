@@ -931,6 +931,11 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_cvt_func=$specification_\0_cvt_func\
  arg_fistexttype=$specification_\0_fistexttype`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_from_other_mods`'`)
+`{`#modifier_from_other_mods.spec.xrep section=get_state\
+ arg_op=$specification_\0_op arg_modifier=$specification_\0_modifier\
+ arg_lmodifier=$specification_\0_lmodifier arg_rmodifier=$specification_\0_rmodifier`}\
+`,\
 `@eq`(`'\1`'`,`'modifier_key_value`'`)
 `{`#modifier_key_value.spec.xrep section=get_state\
  arg_modifier=$specification_\0_modifier arg_value=$specification_\0_value\
@@ -1350,6 +1355,12 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname\
  arg_not_iterating=$specification_\0_not_iterating arg_state=$specification_\0_state\
  arg_admin_never=$specification_\0_admin_never`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
+`{`#transient_field_action_create_from_fk.spec.xrep section=after_fetch module_name=$module_name\
+ arg_action=$specification_\0_action arg_actions=$specification_\0_actions arg_fkfield=$specification_\0_fkfield\
+ arg_key_sep=$specification_\0_key_sep arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_spclass=$specification_\0_spclass`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -2769,6 +2780,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'transient_field_action`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_ufield`)`|`!`@eq`(`'`'`,`$specification_\0_tfield`)`)
 `{`#transient_field_action.spec.xrep section=get_required_field_names\
  arg_actions=$specification_\0_actions arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
+`{`#transient_field_action_create_from_fk.spec.xrep section=get_required_field_names\
+ arg_actions=$specification_\0_actions arg_fkfield=$specification_\0_fkfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=get_required_field_names\

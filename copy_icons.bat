@@ -11,8 +11,8 @@ set WEBDIR=%4
 :skip
 if "%WEBDIR%" == "" goto error1
 
-if not exist %1_Enum_Icons.lst goto done
-xrep @copy_icons.sh.xrep copy=copy package=%1 model=%2 app_dir=%3 webdir=%WEBDIR% next=@%1_Enum_Icons.lst >~copy_icons.bat
+if not exist %1_enum_icons.lst goto done
+xrep @copy_icons.sh.xrep copy=copy package=%1 model=%2 app_dir=%3 webdir=%WEBDIR% next=@%1_enum_icons.lst >~copy_icons.bat
 call ~copy_icons.bat >nul
 del ~copy_icons.bat
 :done

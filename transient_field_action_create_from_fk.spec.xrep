@@ -1,0 +1,36 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_action_create_from_fk)]
+`{`$key_sep`=`'%`'`}`{`!`@eq`(`$arg_key_sep`,`'`'`)`$key_sep`=`$arg_key_sep`}\
+   if( get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
+   {
+      string actions( get_obj( ).`{`$arg_actions`}( ) );
+
+      if( !actions.empty( ) )
+         actions += ',';
+
+`{`@eq`(`$arg_spfield`,`'`'`)\
+      actions += string( c_procedure_id_`{`$arg_action`} )
+          + "$" + string( get_obj( ).class_id( ) ) + "." + string( c_field_id_`{`$arg_sfield`} )
+          + "=" + get_obj( ).`{`$arg_fkfield`}( ).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( );
+`,\
+      actions += string( c_procedure_id_`{`$arg_action`} )
+       + "$" + string( get_obj( ).`{`$arg_spfield`}( ).class_id( ) ) + "."
+       + FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_sfield`} ) + "="
+       + get_obj( ).`{`$arg_fkfield`}( ).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( );
+`}
+      get_obj( ).`{`$arg_actions`}( actions );
+   }
+   // [(finish transient_field_action_create_from_fk)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_action_create_from_fk)]
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_fkfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_fkfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_fkfield`} ) ) )
+         names.insert( "`{`$arg_fkfield`}" );
+   }
+   // [(finish transient_field_action_create_from_fk)]
+`}
