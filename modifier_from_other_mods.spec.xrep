@@ -1,0 +1,9 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+`{`$op`=`'`'`}\
+`{`@eq`(`$arg_op`,`'or`'`)`$op`=`'||`'`}\
+`{`@eq`(`$arg_op`,`'and`'`)`$op`=`'&&`'`}\
+   // [(start modifier_from_other_mods)]
+   if( ( state & c_modifier_`{`$arg_lmodifier`} ) `{`$op`} ( state & c_modifier_`{`$arg_rmodifier`} ) )
+      state |= c_modifier_`{`$arg_modifier`};
+   // [(finish modifier_from_other_mods)]
+`}

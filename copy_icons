@@ -7,8 +7,8 @@ else
  if [ "$WEBDIR" = "" ]; then
   echo Error: Missing environment variable 'WEBDIR'.
  else
-  if [ -f $1_Enum_Icons.lst ]; then
-   ./xrep @copy_icons.sh.xrep copy=copy package=$1 model=$2 app_dir=$3 webdir=$WEBDIR next=@$1_Enum_Icons.lst >~copy_icons.sh
+  if [ -f $1_enum_icons.lst ]; then
+   ./xrep @copy_icons.sh.xrep copy=copy package=$1 model=$2 app_dir=$3 webdir=$WEBDIR next=@$1_enum_icons.lst >~copy_icons.sh
    chmod a+x ~copy_icons.sh
    ./~copy_icons.sh
    rm ~copy_icons.sh

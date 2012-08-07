@@ -75,6 +75,7 @@ makefile.vars.xrep
 *.specs.sio
 *.package.sio
 for_*.spec.xrep
+*_enum_icons.lst
 *ciyam_class.cpp.xrep
 
 # Except specs with matching file names.
@@ -88,6 +89,7 @@ for_*.spec.xrep
 user*.jpg
 photo_*.jpg
 gen_photo_*.xrep
+Forum_*.gif
 
 # Ignore ciyam test storage and related.
 ciyam.dat

@@ -5,6 +5,8 @@
    // [(start modifier_key_value)]
 `{`@eq`(`$arg_value`,`'"@admin"`'`)\
    if( `{`@eq`(`$arg_not_eq`,`'true`'`)!`}is_admin_uid_key( get_obj( ).get_key( ) ) )
+`,`@eq`(`$arg_value`,`'"@uid"`'`)\
+   if( get_obj( ).get_key( ) `{`@eq`(`$arg_not_eq`,`'true`'`)!=`,==`} get_uid( ) )
 `,\
    if( get_obj( ).get_key( ) `{`@eq`(`$arg_not_eq`,`'true`'`)!=`,==`} `{`$arg_value`} )
 `}\
