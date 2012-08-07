@@ -39,3 +39,11 @@ been handled in make.bat which constructs gendeps by calling cl directly (so it 
 dependencies for every file being compiled) and then making "touch_incs" (to ensure an empty .inc file exists
 for each target if no generated .inc file is present so the nmake includes for them don't fail).
 
+Minimal make files for make system tools
+----------------------------------------
+
+As the tools xrep and xvars are required in order to construct the makefile a bootstrap problem arises in the
+situation when a new repository clone is created and ./config is run for the very first time. To resolve this
+issue a minimal "tools" make (e.g. makefile.tools for GCC and makefile.mvc.tools for MVC) needs to be kept in
+the repository that will be used to build these tools.
+
