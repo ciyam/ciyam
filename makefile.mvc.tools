@@ -9,7 +9,6 @@
 ##             clean                clean all targets
 ##             usage                display this output
 ##
-##             base                 make base.lib target
 ##             xrep                 make xrep.exe target
 ##             xvars                make xvars.exe target
 ##
@@ -45,19 +44,6 @@ DYNAMIC_LFLAGS=/DLL
 
 COMMON_LIBS=psapi.lib rpcrt4.lib advapi32.lib
 
-WINSOCK_LIBS=ws2_32.lib iphlpapi.lib
-OPENSSL_LIBS=libeay32.lib ssleay32.lib
-
-LIBFCGI_LIBS=libfcgi.lib
-
-LIBHARU_LIBS=libhpdf.lib
-
-LIBICONV_LIBS=iconv.lib
-
-MYSQL_LIBS=libmysql.lib
-
-ZLIB_LIBS=zlib1.lib
-
 # Tools and implicit rules...
 CPP=cl.exe
 
@@ -66,7 +52,7 @@ LINK=@echo Linking $*............... &link
 
 MANIFEST=manifest
 
-.SUFFIXES: .cpp .cms
+.SUFFIXES: .cpp
 
 # Remove implicit .cpp to .exe rule to ensure correct linkage.
 .cpp.exe:
@@ -109,64 +95,23 @@ CPP_DYNAMIC=$(CPP_DYNAMIC_DRTL_MT)
 ! error Unexpected CPP_DYNAMIC_OPT value $(CPP_DYNAMIC_OPT)
 !endif
 
-TARGET_BASE=base.lib
-TARGET_BASE_INCLUDE=base.inc
-TARGET_BASE_OBJECTS=base64.obj\
- console.obj\
- console_commands.obj\
- command_parser.obj\
- command_handler.obj\
- command_processor.obj\
- crypt_stream.obj\
- date_time.obj\
- dynamic_library.obj\
- file_buffer.obj\
- file_utils.obj\
- format.obj\
- fs_iterator.obj\
- hashcash.obj\
- mac.obj\
- md5.obj\
- mime.obj\
- numeric.obj\
- ods.obj\
- pdf.obj\
- pdf_gen.obj\
- pop3.obj\
- ptypes.obj\
- read_write_buffer.obj\
- read_write_buffered_stream.obj\
- regex.obj\
- sio.obj\
- sha1.obj\
- smtp.obj\
- sockets.obj\
- storable_file.obj\
- sql_db.obj\
- tcp_read_write_buffer.obj\
- text_file_buffer.obj\
- utilities.obj
-
 TARGET_XREP=xrep.exe
 TARGET_XREP_INCLUDE=xrep.inc
-TARGET_XREP_OBJECTS=xrep.obj
+TARGET_XREP_OBJECTS=xrep.obj utilities.obj
 
 TARGET_XVARS=xvars.exe
 TARGET_XVARS_INCLUDE=xvars.inc
-TARGET_XVARS_OBJECTS=xvars.obj
+TARGET_XVARS_OBJECTS=xvars.obj utilities.obj sio.obj
 
 ALL_TARGETS=\
- $(TARGET_BASE)\
  $(TARGET_XREP)\
  $(TARGET_XVARS)
 
 ALL_INCLUDES=\
- $(TARGET_BASE_INCLUDE)\
  $(TARGET_XREP_INCLUDE)\
  $(TARGET_XVARS_INCLUDE)
 
 ALL_OBJECTS=\
- $(TARGET_BASE_OBJECTS)\
  $(TARGET_XREP_OBJECTS)\
  $(TARGET_XVARS_OBJECTS)
 
@@ -174,7 +119,6 @@ usage: make_usage
 
 all: $(ALL_TARGETS)
 
-base: $(TARGET_BASE)
 xrep: $(TARGET_XREP)
 xvars: $(TARGET_XVARS)
 
@@ -185,26 +129,8 @@ make_usage:
  @usage.bat makefile.mvc
 
 touch_incs:
- @touch.bat base.inc
  @touch.bat xrep.inc
  @touch.bat xvars.inc
-
-!ifndef NO_INC_FILES
-! include $(TARGET_BASE_INCLUDE)
-!endif
-
-$(TARGET_BASE:.lib=.compile):
- @echo @call gendeps.bat %* >compile.bat
- @echo $(CPP_NORMAL) %* >>compile.bat
- @geninc $(TARGET_BASE_OBJECTS:.obj=) >$(TARGET_BASE_INCLUDE)
-
-$(TARGET_BASE):: $(TARGET_BASE:.lib=.compile)
- @
-
-$(TARGET_BASE):: $(TARGET_BASE_OBJECTS)
- $(BIND) @<<
- $(BIND_NORMAL) $(TARGET_BASE_OBJECTS)
-<<
 
 !ifndef NO_INC_FILES
 ! include $(TARGET_XREP_INCLUDE)
@@ -215,10 +141,10 @@ $(TARGET_XREP:.exe=.compile):
  @echo $(CPP_NORMAL) %* >>compile.bat
  @geninc $(TARGET_XREP_OBJECTS:.obj=) >$(TARGET_XREP_INCLUDE)
 
-$(TARGET_XREP):: $(TARGET_BASE) $(TARGET_XREP:.exe=.compile)
+$(TARGET_XREP):: $(TARGET_XREP:.exe=.compile)
  @
 
-$(TARGET_XREP):: $(TARGET_XREP_OBJECTS) $(TARGET_BASE)
+$(TARGET_XREP):: $(TARGET_XREP_OBJECTS)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS)
 <<
@@ -235,10 +161,10 @@ $(TARGET_XVARS:.exe=.compile):
  @echo $(CPP_NORMAL) %* >>compile.bat
  @geninc $(TARGET_XVARS_OBJECTS:.obj=) >$(TARGET_XVARS_INCLUDE)
 
-$(TARGET_XVARS):: $(TARGET_BASE) $(TARGET_XVARS:.exe=.compile)
+$(TARGET_XVARS):: $(TARGET_XVARS:.exe=.compile)
  @
 
-$(TARGET_XVARS):: $(TARGET_XVARS_OBJECTS) $(TARGET_BASE)
+$(TARGET_XVARS):: $(TARGET_XVARS_OBJECTS)
  $(LINK) @<<
  $(LINK_NORMAL) $(COMMON_LIBS)
 <<
