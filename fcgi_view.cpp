@@ -551,6 +551,9 @@ bool output_view_form( ostream& os, const string& act,
    bool is_owner_edit = has_perm_extra( c_view_type_extra_owner_edit, view_extras, sess_info );
    bool is_admin_owner_edit = has_perm_extra( c_view_type_extra_admin_owner_edit, view_extras, sess_info );
 
+   if( sess_info.user_id.empty( ) )
+      is_no_edit = true;
+
    if( is_printable )
    {
       is_no_edit = true;

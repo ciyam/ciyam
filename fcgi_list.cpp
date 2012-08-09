@@ -541,7 +541,9 @@ void output_list_form( ostream& os,
    if( extras.count( c_list_type_extra_ignore_parent_state ) )
       ignore_parent_state = true;
 
-   if( is_no_new || !allow_list_actions
+   if( is_no_new
+    || !allow_list_actions
+    || sess_info.user_id.empty( )
     || ( is_owner_new && !has_owner_parent )
     || ( is_admin_new && !sess_info.is_admin_user )
     || source.view.empty( ) || ( ( parent_state & c_state_uneditable )
@@ -1418,7 +1420,7 @@ void output_list_form( ostream& os,
    string new_record_fields;
    string new_record_values;
 
-   if( !is_printable && list_type != c_list_type_home )
+   if( !is_printable && list_type != c_list_type_home && !sess_info.user_id.empty( ) )
    {
       if( is_child_list )
          os << "<table><tr>";
@@ -2189,7 +2191,7 @@ void output_list_form( ostream& os,
             os << "<td class=\"error\">" << remove_key( error_message ) << "</td>";
       }
 
-      if( !is_child_list
+      if( !is_child_list && !sess_info.user_id.empty( )
        && list_type != c_list_type_home && !extras.count( c_list_type_extra_no_print )
        && ( sess_info.is_admin_user || !extras.count( c_list_type_extra_admin_print ) ) )
       {
@@ -2228,7 +2230,7 @@ void output_list_form( ostream& os,
    bool display_list_checks = false;
    bool display_row_numbers = false;
 
-   if( list_type != c_list_type_home )
+   if( list_type != c_list_type_home && !sess_info.user_id.empty( ) )
    {
       if( !is_printable )
          display_list_checks = allow_list_actions;
@@ -2344,7 +2346,7 @@ void output_list_form( ostream& os,
       if( source.uom_fields.count( source.value_ids[ i ] ) )
          os << " (" << source.uom_fields.find( source.value_ids[ i ] )->second << ")";
 
-      if( !is_printable && ( list_type != c_list_type_home ) )
+      if( !is_printable && list_type != c_list_type_home && !sess_info.user_id.empty( ) )
       {
          if( source.sort_fields.count( source.field_ids[ i ] ) )
          {
@@ -2722,7 +2724,7 @@ void output_list_form( ostream& os,
             {
                os << "   <td class=\"list\" width=\"25\" align=\"center\">";
 
-               if( !display_list_checks || ( list_type == c_list_type_home )
+               if( !display_list_checks || ( list_type == c_list_type_home ) || sess_info.user_id.empty( )
                 || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) )
                   os << "&nbsp;";
                else
