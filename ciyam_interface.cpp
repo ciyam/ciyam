@@ -844,9 +844,10 @@ void request_handler::process_request( )
       
       if( mod_info.allows_anonymous_access && ( username.empty( ) && !p_session_info ) )
       {
-         using_anonymous = true;
          is_authorised = true;
-         if( cmd.empty( ) ) 
+         using_anonymous = true;
+
+         if( cmd.empty( ) )
             cmd = c_cmd_home;
       }
 
@@ -855,7 +856,8 @@ void request_handler::process_request( )
          temp_session = true;
          session_id = c_new_session;
       }
-      else
+
+      if( cmd != c_cmd_status )
          unique_id = get_unique( g_id, input_data[ c_http_param_raddr ] );
 
       if( session_id.empty( ) || session_id == c_new_session )
@@ -1146,12 +1148,17 @@ void request_handler::process_request( )
                      }
                   }
 
-                  fetch_user_record( g_id, module_id, module_name, mod_info, *p_session_info,
-                   is_authorised || !base64_data.empty( ), !using_anonymous, username, password, unique_id );
+                  if( using_anonymous )
+                     p_session_info->user_module = module_name;
+                  else
+                  {
+                     fetch_user_record( g_id, module_id, module_name, mod_info, *p_session_info,
+                      is_authorised || !base64_data.empty( ), true, username, password, unique_id );
 
-                  clear_unique( input_data );
+                     clear_unique( input_data );
 
-                  pwd_hash = p_session_info->user_pwd_hash;
+                     pwd_hash = p_session_info->user_pwd_hash;
+                  }
 
                   if( !is_authorised )
                   {
@@ -1280,11 +1287,11 @@ void request_handler::process_request( )
                if( p_session_info->tz_abbr.empty( ) )
                   p_session_info->tz_abbr = get_storage_info( ).tz_abbr;
 
-               has_just_logged_in = true;
-               p_session_info->logged_in = true;
-
                if( !temp_session )
                {
+                  has_just_logged_in = true;
+                  p_session_info->logged_in = true;
+
                   string path( c_files_directory );
                   path += "/" + string( c_tmp_directory );
                   path += "/" + session_id;
@@ -1555,7 +1562,7 @@ void request_handler::process_request( )
          // the user information is checked again here.
          try
          {
-            if( !has_just_logged_in
+            if( !has_just_logged_in && p_session_info->logged_in
              && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
              || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
                fetch_user_record( g_id, module_id, module_name, mod_info,
@@ -2917,11 +2924,14 @@ void request_handler::process_request( )
 
          bool has_any_changing_records = false;
 
+         if( cmd.empty( ) )
+            cmd = c_cmd_home;
+
          // NOTE: If a browser refresh was issued after logging out then the initial command
          // will be "quit" so erase the command to ensure that a normal login will take place.
          if( created_session && cmd == c_cmd_quit )
          {
-            cmd.erase( );
+            cmd = c_cmd_home;
             server_command.erase( );
          }
 
@@ -2942,24 +2952,27 @@ void request_handler::process_request( )
                LOG_TRACE( "session terminated" );
 
             ostringstream osstr;
-            if( g_interface_html.find( c_form_content_comment ) == string::npos )
+            if( had_send_or_recv_error || !mod_info.allows_anonymous_access )
             {
-               if( !had_send_or_recv_error )
-                  osstr << "<p align=\"center\"><strong>"
-                   << GDS( c_display_you_have_been_logged_out ) << "</strong></p>\n";
+               if( g_interface_html.find( c_form_content_comment ) == string::npos )
+               {
+                  if( !had_send_or_recv_error )
+                     osstr << "<p align=\"center\"><strong>"
+                      << GDS( c_display_you_have_been_logged_out ) << "</strong></p>\n";
+                  else
+                     osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
+                      << ": " << GDS( c_display_your_session_has_been_terminated ) << "</p>\n";
+               }
                else
-                  osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
-                   << ": " << GDS( c_display_your_session_has_been_terminated ) << "</p>\n";
-            }
-            else
-            {
-               if( !had_send_or_recv_error )
-                  osstr << "<p align=\"center\"><strong>Session "
-                   << session_id << " has been terminated.</strong></p>\n";
-               else
-                  osstr
-                   << "<p class=\"error\" align=\"center\">"
-                   << "Error: Session " << session_id << " has been terminated by the server.</p>\n";
+               {
+                  if( !had_send_or_recv_error )
+                     osstr << "<p align=\"center\"><strong>Session "
+                      << session_id << " has been terminated.</strong></p>\n";
+                  else
+                     osstr
+                      << "<p class=\"error\" align=\"center\">"
+                      << "Error: Session " << session_id << " has been terminated by the server.</p>\n";
+               }
             }
 
             if( cookies_permitted )
@@ -2969,10 +2982,13 @@ void request_handler::process_request( )
 
             remove_session_temp_directory( session_id );
 
-            string login_html( !cookies_permitted || !get_storage_info( ).login_days
-             || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
+            if( had_send_or_recv_error || !mod_info.allows_anonymous_access )
+            {
+               string login_html( !cookies_permitted || !get_storage_info( ).login_days
+                || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-            output_login_logout( extra_content, login_html, osstr.str( ) );
+               output_login_logout( extra_content, login_html, osstr.str( ) );
+            }
          }
 
          if( finished_session )
@@ -2982,6 +2998,16 @@ void request_handler::process_request( )
             LOG_TRACE( "[logout: " + p_session_info->user_id
              + " at " + date_time::local( ).as_string( true, false )
              + " from " + p_session_info->ip_addr + "]" );
+
+            // FUTURE: If this module allows anonymous access and a logout has just occurred
+            // then currently a page refresh is being forced to occur in order to reload the
+            // "home" page anonymously. It would be cleaner if this refresh could be avoided
+            // but would require careful review of the session handling to work out how.
+            if( mod_info.allows_anonymous_access )
+            {
+               extra_content.clear( );
+               extra_content_func += "refresh( false );\n";
+            }
          }
          else
          {
@@ -3828,24 +3854,7 @@ void request_handler::process_request( )
             extra_content << "</div>\n";
             extra_content << "</div>\n";
 
-            if( cmd.empty( ) && !module_access_denied )
-            {
-               string extra;
-
-               if( !uselect.empty( ) )
-                  extra += "&" + string( c_param_uselect ) + "=" + uselect;
-
-               if( !cookies_permitted )
-                  extra += "&session=" + session_id;
-
-               if( use_url_checksum )
-                  extra += "&chksum=" + get_checksum( *p_session_info, session_id + uselect );
-
-               extra_content_func += "source = window.location.href.split( '?' );\n";
-               extra_content_func += "var cd = new Date( ); window.location.replace( source[ 0 ] + '?cmd=home" + extra
-                + "&uselextra=" + uselect + "&utcdtm=' + utc_dtm( cd ) + '&tzoffcur=' + escape( cd.getTimezoneOffset( ) ) );\n";
-            }
-            else if( performed_file_attach_or_detach )
+            if( performed_file_attach_or_detach )
                extra_content_func += "refresh( false );\n"; //KLUDGE: Refresh so current version is viewed (otherwise actions will fail).
 
             // NOTE: Erase any existing cookie value first.
