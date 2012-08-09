@@ -40,6 +40,46 @@ AC####  ==>  AC0000,AC0001,AC0002,...,AC9999
 ??####  ==>  AA0000,AA0001,AA0002,...,ZZ9999
 XYZ#??  ==>  XYZ0AA,XYZ0AB,XYZ0AC,...,XYZ9ZZ
 
+User (default)
+--------------
+
+Other Package Dependencies: Standard
+
+This package provides the User class which is required for an application to support "logging in". To be able
+to create the User instances an "admin" user is automatically created when an application is generated. To be
+sure a system is secured the password for "admin" must be changed (the default password is "admin").
+
+Package Options:
+
+@use_demo_data - Use this option to create one or more demo Users.
+
+use_access_level - Use this option to be able to assign users a specific "access" level.
+use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
+
+use_account - Use this option to allow users to create accounts** that are aliases for other users.
+use_account_invitation - Use this option to enable emailing of invitations to accounts for new users.
+
+use_ignore_users - Use this option to support the maintenance of a set of users to be ignored. Other packages
+(such as the Forum package) will utilise this list for the purposes of "hiding" records.
+
+use_personalisation - Use this option to add additional personal information (such as photo and signature).
+
+use_quick_link - Use this option to allow the user to maintain quick link*** records.
+use_quick_link_active - Use this option to allow quick link records to have an "active" status.
+
+use_reputation - Use this option to allow other packages to award or subtract reputation ratings.
+
+use_templates - Use this option to support the creation of users from a user template (this is most useful if
+the application has a need for different user "types" that have different permissions).
+
+** An "account" is effectively an alias that one user can give to another user. The purpose of creating these
+accounts is for a user to be able to provide restricted access to their personal information to another user.
+These accounts can be tied with the usage of other packages (such as the Photo package) which can be used for
+the construction of "social network" type applications.
+
+*** A "quick link" is a method for extending the standard menu for an application to include menu items which
+are either links to a specific record or to a specific record search.
+
 Group (default)
 ---------------
 
@@ -93,4 +133,51 @@ use_user_permissions - Use this option to add permissions for being able to acce
 use_user_tags - Use this option in order to be able to add/remove "tags" to/from individual Photos.
 
 user_image_directory - This is the name of the directory in which the Photos will be stored.
+
+Forum
+-----
+
+Other Package Dependencies: Standard User
+
+This package provides a Forum implementation that includes "boards" (with multiple levels of nested children)
+that contain "topics" which in turn contain "posts". The topics are ordered according to the most recent post
+with "pinned" topics always appearing first. If a topic is "locked" then posting (or post editing) below this
+topic is not permitted (except by "moderators" or the "admin" user).
+
+Package Options:
+
+@use_demo_data - Use this option to create demo boards, topics and posts.
+@use_home_list - Use this option to display the forum boards as a "home" list.
+
+check_for_interim_posts - Use this option to display interim posts when attempting to save a reply post.
+
+hot_topic_posts - This option if the number of posts a topic needs to contain to be considered as "hot".
+
+min_posts_to_lock_own - A user can lock their own threads after they have posted this many times.
+
+min_posts_to_rate - If using the user rating implementation then a user must post this many times before they
+can rate another user.
+
+months_before_topic_is_old - Newer topics appear with different icons to older ones.
+
+rating_multiplier - If using the user reputation implementation then this is used to calculate the number for
+reducing/increasing the rated users rating.
+
+use_post_publishing - Use this option to force all posts to be reviewed by a moderator before publication (if
+this option is used then the check_for_interim_posts option will be ignored).
+
+use_special_boards - Use this option to allow certain boards to be restricted to users that have been granted
+permission to access them.
+
+use_tags - Use this option to allow users to create tags which they can apply to specific posts (for mods and
+admin these can be used in order to split or merge threads).
+
+use_user_access_level* - Use this option to apply the user access level to boards, threads and posts.
+use_user_ignore_users* - Use this option to filter posts and threads out from users in the ignore set.
+use_user_reputation* - Use this option to allow adding/subtracting reputation ratings from users for posts.
+
+very_hot_topic_posts - As per the hot_topic_posts option.
+
+* It should be noted that these options will have no effect if the relevant options were not set for the User
+package before it was installed.
 

@@ -937,10 +937,10 @@ void Meta_Package::impl::impl_Install( )
             {
                if( get_obj( ).child_Package_Option( ).Primitive( ) == e_primitive_bool )
                   options.insert( make_pair(
-                   get_obj( ).child_Package_Option( ).Name( ), get_obj( ).child_Package_Option( ).Use_Option( ) ? "1" : "" ) );
+                   get_obj( ).child_Package_Option( ).Id( ), get_obj( ).child_Package_Option( ).Use_Option( ) ? "1" : "" ) );
                else
                   options.insert( make_pair(
-                   get_obj( ).child_Package_Option( ).Name( ), get_obj( ).child_Package_Option( ).Value( ) ) );
+                   get_obj( ).child_Package_Option( ).Id( ), get_obj( ).child_Package_Option( ).Value( ) ) );
             } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
          }
 
