@@ -6,6 +6,9 @@ else
  if [ $# -gt 1 ]; then
   export CIYAM_STORAGE=$2
  fi
+ if [ "$2" == "ciyam" ]; then
+  export CIYAM_TEST_STORAGE=1
+ fi
  rm -f $CIYAM_STORAGE.log $CIYAM_STORAGE.dat $CIYAM_STORAGE.idx $CIYAM_STORAGE.hdr >/dev/null
  ./ciyam_server -quiet &
  sleep 0.3
