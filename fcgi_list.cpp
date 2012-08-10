@@ -600,7 +600,7 @@ void output_list_form( ostream& os,
    os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\"";
 
    bool allow_quick_links = false;
-   if( using_session_cookie
+   if( using_session_cookie && !sess_info.user_id.empty( )
     && !mod_info.user_qlink_class_id.empty( ) && extras.count( c_list_type_extra_quick_link ) )
       allow_quick_links = true;
 
@@ -3002,9 +3002,10 @@ void output_list_form( ostream& os,
              && ( source.file_fields.count( source_value_id )
              || source.image_fields.count( source_value_id ) ) )
             {
-               string file_name( string( c_files_directory )
-                + "/" + get_module_id_for_attached_file( source ) + "/" + ( source.lici->second )->cid + "/" );
-               file_name += unescaped( cell_data );
+               string file_path( string( c_files_directory )
+                + "/" + get_module_id_for_attached_file( source ) + "/" + ( source.lici->second )->cid );
+
+               string file_name( file_path + "/" + unescaped( cell_data ) );
 
                string::size_type pos = file_name.find_last_of( "." );
 
@@ -3031,7 +3032,15 @@ void output_list_form( ostream& os,
                   if( filename_col >= 0 )
                      link_file_name = columns[ filename_col ];
 
-                  create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
+                  // NOTE: If access is anonymous then no temporary session directory exists so
+                  // file link aliasing is not supported for this case.
+                  if( sess_info.user_id.empty( ) )
+                  {
+                     tmp_link_path = file_path;
+                     link_file_name = file_name;
+                  }
+                  else
+                     create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
 
                   if( !is_href && !is_printable && !embed_images )
                   {

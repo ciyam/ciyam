@@ -14,6 +14,7 @@
  <print_list_opts>`{`$print_list_ops`}
  <image_width>`{`$image_width`}
  <image_height>`{`$image_height`}
+ <embed_images>`{`$embed_images`}
  <encrypt_data>`{`$encrypt_data`}
  <checkbox_bools>`{`$checkbox_bools`}
  <filesize_limit>`{`$filesize_limit`}

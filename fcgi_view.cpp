@@ -584,6 +584,10 @@ bool output_view_form( ostream& os, const string& act,
    if( source.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
       is_record_owner = true;
 
+   // NOTE: If session is anonymous then will never be considered as a record owner.
+   if( sess_info.user_id.empty( ) )
+      is_record_owner = false;
+
    string image_width( to_string( sess_info.image_width ) );
    string image_height( to_string( sess_info.image_height ) );
 
@@ -846,7 +850,7 @@ bool output_view_form( ostream& os, const string& act,
       bool has_started_right = false;
 
       // NOTE: If this view supports "quick linking" then create an "add quick link" action.
-      if( !is_in_edit && source.has_quick_link && using_session_cookie
+      if( !is_in_edit && source.has_quick_link && using_session_cookie && !sess_info.user_id.empty( )
        && ( mod_info.user_qlink_permission.empty( ) || has_permission( mod_info.user_qlink_permission, sess_info ) ) )
       {
          if( !is_quick_link_view && ( sess_info.quick_link_data.size( ) < sess_info.quick_link_limit ) )
@@ -2049,9 +2053,10 @@ bool output_view_form( ostream& os, const string& act,
             }
             else
             {
-               string file_name( string( c_files_directory )
-                + "/" + get_module_id_for_attached_file( source ) + "/" + ( source.vici->second )->cid + "/" );
-               file_name += unescaped( cell_data );
+               string file_path( string( c_files_directory )
+                + "/" + get_module_id_for_attached_file( source ) + "/" + ( source.vici->second )->cid );
+
+               string file_name( file_path + "/" + unescaped( cell_data ) );
 
                string::size_type pos = file_name.find_last_of( "." );
 
@@ -2070,7 +2075,15 @@ bool output_view_form( ostream& os, const string& act,
                   if( !source.filename_field.empty( ) && source.field_values.count( source.filename_field ) )
                      link_file_name = valid_file_name( source.field_values.find( source.filename_field )->second, &has_utf8_chars );
 
-                  create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
+                  // NOTE: If access is anonymous then no temporary session directory exists so
+                  // file link aliasing is not supported for this case.
+                  if( sess_info.user_id.empty( ) )
+                  {
+                     tmp_link_path = file_path;
+                     link_file_name = file_name;
+                  }
+                  else
+                     create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
 
                   bool has_image = false;
                   if( !is_in_edit && !is_printable )

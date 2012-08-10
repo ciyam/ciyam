@@ -428,6 +428,7 @@ struct storage_info
    int image_width;
    int image_height;
 
+   bool embed_images;
    bool encrypt_data;
    bool checkbox_bools;
 

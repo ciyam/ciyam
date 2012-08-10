@@ -3477,6 +3477,22 @@ string convert_html_to_text( const string& html )
    return extract_text_from_html( html );
 }
 
+string create_html_embedded_image( const string& source_file )
+{
+   string s, file_ext;
+   string::size_type pos = source_file.find( "." );
+
+   if( pos != string::npos )
+   {
+      file_ext = source_file.substr( pos + 1 );
+      string buffer( buffer_file( source_file ) );
+
+      s = "data:image/" + file_ext + ";base64," + base64::encode( buffer );
+   }
+
+   return s;
+}
+
 void meta_relationship_child_name( string& name,
  const string& child_name, const string& parent_name, const string& separator )
 {

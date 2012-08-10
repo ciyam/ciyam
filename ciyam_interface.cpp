@@ -667,6 +667,7 @@ void request_handler::process_request( )
 {
    bool okay = true;
    bool is_ssl = false;
+   bool embed_images = false;
    bool encrypt_data = false;
    bool temp_session = false;
    bool force_refresh = false;
@@ -706,6 +707,9 @@ void request_handler::process_request( )
       }
       else if( get_storage_info( ).encrypt_data )
          encrypt_data = true;
+
+      if( get_storage_info( ).embed_images )
+         embed_images = true;
 
       if( p_host )
          input_data.insert( make_pair( c_http_param_host, p_host ) );
@@ -3368,7 +3372,7 @@ void request_handler::process_request( )
                    cookies_permitted, true, false, list_selections, list_search_text,
                    list_search_values, 0, false, "", false, "", oident, *p_session_info,
                    specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
-                   encrypt_data, !hashval.empty( ), false, has_any_changing_records, back_count );
+                   embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
                }
             }
             else if( cmd == c_cmd_view || cmd == c_cmd_pview )
@@ -3416,7 +3420,7 @@ void request_handler::process_request( )
                   bool is_editable = output_view_form( extra_content,
                    act, was_invalid, user_field_info, exec, cont, data, error_message,
                    extra, field, view, vtab_num, session_id, uselect, cookies_permitted,
-                   encrypt_data, new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func,
+                   embed_images, new_field_and_values, *p_session_info, edit_field_list, edit_timeout_func,
                    extra_content_func, use_url_checksum, !qlink.empty( ), show_opts, cmd == c_cmd_pview,
                    back_count, pdf_view_file_name, is_owner, extra_html_content, has_any_changing_records );
 
@@ -3541,7 +3545,7 @@ void request_handler::process_request( )
                          session_id, uselect, "", ( cmd == c_cmd_pview ), cookies_permitted,
                          true, ( act == c_act_edit ), list_selections, list_search_text, list_search_values,
                          state, true, data, keep_checks, ident, "", *p_session_info, specials, use_url_checksum, "",
-                         findinfo + listsrch, selected_records, encrypt_data, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
+                         findinfo + listsrch, selected_records, embed_images, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
                      }
 
                      extra_content << "</td></tr></table>\n";
@@ -3643,7 +3647,7 @@ void request_handler::process_request( )
                    ( cmd == c_cmd_plist ), cookies_permitted, true, false, list_selections,
                    list_search_text, list_search_values, 0, false, "", keep_checks, "", oident,
                    *p_session_info, specials, use_url_checksum, qlink, findinfo + listsrch,
-                   selected_records, encrypt_data, !hashval.empty( ), false, has_any_changing_records, back_count, &pdf_list_file_name );
+                   selected_records, embed_images, !hashval.empty( ), false, has_any_changing_records, back_count, &pdf_list_file_name );
 
                   if( cmd != c_cmd_plist )
                      extra_content << "</td></tr></table>\n";
@@ -3943,14 +3947,17 @@ void request_handler::process_request( )
                 "source[ 0 ] + '?cmd=" + to_string( c_cmd_view ) + "&data=" + new_key + "&ident=" + extra + "' );\n";
             }
 
-            // NOTE: If editing then the timeout warning needs to result in a 'cont' action
-            // (rather than just a page refresh) to ensure data entered/modified is not lost.
-            if( !edit_timeout_func.empty( ) )
-               extra_content_func += "warn_refresh_func = '" + edit_timeout_func + "';\n";
-            extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
-            extra_content_func += "warn_refresh( );";
+            if( !temp_session )
+            {
+               // NOTE: If editing then the timeout warning needs to result in a 'cont' action
+               // (rather than just a page refresh) to ensure data entered/modified is not lost.
+               if( !edit_timeout_func.empty( ) )
+                  extra_content_func += "warn_refresh_func = '" + edit_timeout_func + "';\n";
+               extra_content_func += "warn_refresh_seconds = warn_refresh_default;\n";
+               extra_content_func += "warn_refresh( );\n";
+            }
 
-            extra_content_func += "\npwdSalt = '" + hpassword_salt + "';";
+            extra_content_func += "pwdSalt = '" + hpassword_salt + "';";
 
             if( p_session_info && p_session_info->logged_in )
                extra_content_func += "\nloggedIn = true;";
