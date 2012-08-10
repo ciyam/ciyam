@@ -424,7 +424,7 @@ function load( )
       var post_data = '';
       var key = sessionStorage.getItem( 'key' );
 
-      if( has_session && key != null && encryptPosts )
+      if( !is_login && has_session && key != null && encryptPosts )
       {
          var prefix = 'prefix=';
 
@@ -469,12 +469,7 @@ function load( )
 
          post_data = 'base64=' + Base64.encode( encrypted );
 
-         if( is_login )
-         {
-            post_data += '&cmd=login&username=' + localStorage.getItem( 'user' )
-            + '&persistent=' + persistent + '&' + module + '&session=' + session_id;
-         }
-         else if( non_cookie )
+         if( non_cookie )
             post_data += '&' + module + '&session=' + session_id;
          else
             post_data += '&' + module;
@@ -860,14 +855,14 @@ function hash_password( salt, pwd, skip_id )
    if( sessionStorage.getItem( 'unique' ) != null )
       uniqueId = sessionStorage.getItem( 'unique' );
 
-   if( skip_id != true && uniqueId != '' )
-      retval = hex_sha1( retval + uniqueId ).toLowerCase( );
-
    if( encryptPosts )
    {
       if( sessionStorage.getItem( 'key' ) == null )
-         sessionStorage.setItem( 'key', hex_sha1( serverId + pwd + salt ) );
+         sessionStorage.setItem( 'key', retval );
    }
+
+   if( skip_id != true && uniqueId != '' )
+      retval = hex_sha1( retval + uniqueId ).toLowerCase( );
 
    return retval;
 }

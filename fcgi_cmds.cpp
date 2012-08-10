@@ -486,7 +486,8 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
-   fetch_cmd += " -td=tmp/" + sess_info.session_id;
+   if( !sess_info.user_id.empty( ) )
+      fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;
@@ -632,7 +633,8 @@ bool fetch_list_info( const string& module,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
-   fetch_cmd += " -td=tmp/" + sess_info.session_id;
+   if( !sess_info.user_id.empty( ) )
+      fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
    if( !sess_info.tz_abbr.empty( ) )
       fetch_cmd += " -tz=" + sess_info.tz_abbr;

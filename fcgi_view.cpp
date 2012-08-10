@@ -684,7 +684,8 @@ bool output_view_form( ostream& os, const string& act,
          {
             is_editable = false;
 
-            if( !source.actions_value.empty( )
+            if( !sess_info.user_id.empty( )
+             && !source.actions_value.empty( )
              && ( !( source.state & c_state_unactionable )
              || view_extras.count( c_view_type_extra_ignore_unactionable ) ) )
             {

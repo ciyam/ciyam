@@ -846,9 +846,6 @@ void request_handler::process_request( )
       {
          is_authorised = true;
          using_anonymous = true;
-
-         if( cmd.empty( ) )
-            cmd = c_cmd_home;
       }
 
       if( cmd == c_cmd_status || using_anonymous )
@@ -909,7 +906,18 @@ void request_handler::process_request( )
             p_session_info->locked = true;
             p_session_info->ip_addr = input_data[ c_http_param_raddr ];
 
-            session_id = p_session_info->session_id = uuid( ).as_string( );
+            if( temp_session )
+            {
+               // NOTE: For temporary sessions force the session id to be the unique id for the
+               // IP address and derive both the hash values and checksum prefixes from this id.
+               session_id = p_session_info->session_id = unique_id;
+               p_session_info->hashval_prefix = sha1( g_id + unique_id ).get_digest_as_string( );
+               p_session_info->checksum_prefix = sha1( g_id + p_session_info->hashval_prefix ).get_digest_as_string( );
+
+               input_data[ c_param_session ] = session_id;
+            }
+            else
+               session_id = p_session_info->session_id = uuid( ).as_string( );
 
             if( !temp_session && ( is_authorised || persistent == c_true ) )
             {
@@ -1541,6 +1549,18 @@ void request_handler::process_request( )
          for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
             DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
+
+         // NOTE: When logging after having previously logged out the initial URL will still
+         // be the "quit" command so very that the session being logged out matches the same
+         // one that the quit was issued from (via "extra").
+         if( cmd == c_cmd_quit && extra != session_id )
+         {
+            cmd = c_cmd_home;
+            server_command.erase( );
+         }
+
+         if( cmd.empty( ) )
+            cmd = c_cmd_home;
 
          bool had_send_or_recv_error = false;
          bool record_not_found_error = false;
@@ -2924,17 +2944,6 @@ void request_handler::process_request( )
 
          bool has_any_changing_records = false;
 
-         if( cmd.empty( ) )
-            cmd = c_cmd_home;
-
-         // NOTE: If a browser refresh was issued after logging out then the initial command
-         // will be "quit" so erase the command to ensure that a normal login will take place.
-         if( created_session && cmd == c_cmd_quit )
-         {
-            cmd = c_cmd_home;
-            server_command.erase( );
-         }
-
          if( !finished_session && !server_command.empty( ) )
          {
             if( server_command != c_cmd_quit && p_session_info->p_socket->write_line( server_command ) <= 0 )
@@ -3137,12 +3146,14 @@ void request_handler::process_request( )
                   if( !uselect.empty( ) )
                      extra_content << "&" << c_param_uselect << "=" << uselect;
 
+                  extra_content << "&extra=" << session_id;
+
                   if( !cookies_permitted )
                      extra_content << "&session=" << session_id;
 
                   if( use_url_checksum )
                   {
-                     string checksum_values( c_cmd_pwd + uselect );
+                     string checksum_values( c_cmd_quit + uselect );
                      extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
                   }
 

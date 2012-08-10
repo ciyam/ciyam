@@ -59,21 +59,22 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
       e_field_id_none = 0,
       e_field_id_Actions = 1,
       e_field_id_Add_Packages = 2,
-      e_field_id_Commands_File = 3,
-      e_field_id_Created = 4,
-      e_field_id_Id = 5,
-      e_field_id_Name = 6,
-      e_field_id_Next_Class_Id = 7,
-      e_field_id_Next_List_Id = 8,
-      e_field_id_Next_Specification_Id = 9,
-      e_field_id_Next_View_Id = 10,
-      e_field_id_Permission = 11,
-      e_field_id_Source_File = 12,
-      e_field_id_Status = 13,
-      e_field_id_Use_Package_Demo_Data = 14,
-      e_field_id_Version = 15,
-      e_field_id_Workgroup = 16,
-      e_field_id_Year_Created = 17
+      e_field_id_Allow_Anonymous_Access = 3,
+      e_field_id_Commands_File = 4,
+      e_field_id_Created = 5,
+      e_field_id_Id = 6,
+      e_field_id_Name = 7,
+      e_field_id_Next_Class_Id = 8,
+      e_field_id_Next_List_Id = 9,
+      e_field_id_Next_Specification_Id = 10,
+      e_field_id_Next_View_Id = 11,
+      e_field_id_Permission = 12,
+      e_field_id_Source_File = 13,
+      e_field_id_Status = 14,
+      e_field_id_Use_Package_Demo_Data = 15,
+      e_field_id_Version = 16,
+      e_field_id_Workgroup = 17,
+      e_field_id_Year_Created = 18
    };
 
    Meta_Model( );
@@ -84,6 +85,9 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
 
    int Add_Packages( ) const;
    void Add_Packages( int Add_Packages );
+
+   bool Allow_Anonymous_Access( ) const;
+   void Allow_Anonymous_Access( bool Allow_Anonymous_Access );
 
    const std::string& Commands_File( ) const;
    void Commands_File( const std::string& Commands_File );

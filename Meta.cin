@@ -195,6 +195,7 @@ field_add -id=105112 Model Add_Packages int mand -def=2 -e=add_packages -transie
 field_add -id=105113 Model Created bool mand -def=0
 field_add -id=105114 Model Status string opt -transient
 field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=0
+field_add -id=105116 Model Allow_Anonymous_Access bool mand -def=0
 procedure_add -id=105410 Model Generate
 procedure_add -id=105420 Model Create_Module
 procedure_add -id=105430 Model Remove_Module
@@ -1771,7 +1772,7 @@ specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_li
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
  Name,Id;no_edit+non_new,Status;view_only,Version,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
-,Add_Packages;new_only,Use_Package_Demo_Data,Source_File,Commands_File,Actions"
+,Add_Packages;new_only,Use_Package_Demo_Data,Allow_Anonymous_Access,Source_File,Commands_File,Actions"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\

@@ -2764,7 +2764,7 @@ void output_list_form( ostream& os,
                ident = pident;
             }
 
-            if( !is_printable && allow_list_actions && !cell_data.empty( ) )
+            if( !is_printable && allow_list_actions && !cell_data.empty( ) && !sess_info.user_id.empty( ) )
                output_actions( os, source, cmd, parent_key, sess_info, ident,
                 key_and_version, source.lici->second->cid, source.lici->second->mclass, cell_data,
                 "", session_id, user_select_key, using_session_cookie, use_url_checksum, has_hashval );

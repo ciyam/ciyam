@@ -8231,6 +8231,23 @@
       </specifications>
      </field>
      <field/>
+      <id>105116
+      <name>Allow_Anonymous_Access
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601510
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>105111
       <name>Commands_File
       <type>string
@@ -29594,6 +29611,7 @@
      <field_info>301600:116101!@group:301500+116101
      <field_info>105112;new_only+enum=575
      <field_info>105115
+     <field_info>105116
      <field_info>105110
      <field_info>105111
      <field_info>105109

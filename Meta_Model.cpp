@@ -114,6 +114,7 @@ const char* const c_okay = "okay";
 
 const char* const c_field_id_Actions = "105109";
 const char* const c_field_id_Add_Packages = "105112";
+const char* const c_field_id_Allow_Anonymous_Access = "105116";
 const char* const c_field_id_Commands_File = "105111";
 const char* const c_field_id_Created = "105113";
 const char* const c_field_id_Id = "105104";
@@ -132,6 +133,7 @@ const char* const c_field_id_Year_Created = "105103";
 
 const char* const c_field_name_Actions = "Actions";
 const char* const c_field_name_Add_Packages = "Add_Packages";
+const char* const c_field_name_Allow_Anonymous_Access = "Allow_Anonymous_Access";
 const char* const c_field_name_Commands_File = "Commands_File";
 const char* const c_field_name_Created = "Created";
 const char* const c_field_name_Id = "Id";
@@ -150,6 +152,7 @@ const char* const c_field_name_Year_Created = "Year_Created";
 
 const char* const c_field_display_name_Actions = "field_model_actions";
 const char* const c_field_display_name_Add_Packages = "field_model_add_packages";
+const char* const c_field_display_name_Allow_Anonymous_Access = "field_model_allow_anonymous_access";
 const char* const c_field_display_name_Commands_File = "field_model_commands_file";
 const char* const c_field_display_name_Created = "field_model_created";
 const char* const c_field_display_name_Id = "field_model_id";
@@ -166,7 +169,7 @@ const char* const c_field_display_name_Version = "field_model_version";
 const char* const c_field_display_name_Workgroup = "field_model_workgroup";
 const char* const c_field_display_name_Year_Created = "field_model_year_created";
 
-const int c_num_fields = 17;
+const int c_num_fields = 18;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -185,6 +188,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "105113",
    "105114",
    "105115",
+   "105116",
    "300500",
    "301600"
 };
@@ -193,6 +197,7 @@ const char* const c_all_sorted_field_names[ ] =
 {
    "Actions",
    "Add_Packages",
+   "Allow_Anonymous_Access",
    "Commands_File",
    "Created",
    "Id",
@@ -288,6 +293,7 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 string gv_default_Actions = string( );
 int gv_default_Add_Packages = int( 2 );
+bool gv_default_Allow_Anonymous_Access = bool( 0 );
 string gv_default_Commands_File = string( );
 bool gv_default_Created = bool( 0 );
 string gv_default_Id = string( );
@@ -477,6 +483,8 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
          string_getter< string >( cmd_handler.p_Meta_Model->Actions( ), cmd_handler.retval );
       else if( field_name == c_field_id_Add_Packages || field_name == c_field_name_Add_Packages )
          string_getter< int >( cmd_handler.p_Meta_Model->Add_Packages( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+         string_getter< bool >( cmd_handler.p_Meta_Model->Allow_Anonymous_Access( ), cmd_handler.retval );
       else if( field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
          string_getter< string >( cmd_handler.p_Meta_Model->Commands_File( ), cmd_handler.retval );
       else if( field_name == c_field_id_Created || field_name == c_field_name_Created )
@@ -523,6 +531,9 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
       else if( field_name == c_field_id_Add_Packages || field_name == c_field_name_Add_Packages )
          func_string_setter< Meta_Model, int >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Add_Packages, field_value );
+      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+         func_string_setter< Meta_Model, bool >(
+          *cmd_handler.p_Meta_Model, &Meta_Model::Allow_Anonymous_Access, field_value );
       else if( field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Commands_File, field_value );
@@ -657,6 +668,9 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    int impl_Add_Packages( ) const { return lazy_fetch( p_obj ), v_Add_Packages; }
    void impl_Add_Packages( int Add_Packages ) { v_Add_Packages = Add_Packages; }
+
+   bool impl_Allow_Anonymous_Access( ) const { return lazy_fetch( p_obj ), v_Allow_Anonymous_Access; }
+   void impl_Allow_Anonymous_Access( bool Allow_Anonymous_Access ) { v_Allow_Anonymous_Access = Allow_Anonymous_Access; }
 
    const string& impl_Commands_File( ) const { return lazy_fetch( p_obj ), v_Commands_File; }
    void impl_Commands_File( const string& Commands_File ) { v_Commands_File = Commands_File; }
@@ -1018,6 +1032,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    string v_Actions;
    int v_Add_Packages;
+   bool v_Allow_Anonymous_Access;
    string v_Commands_File;
    bool v_Created;
    string v_Id;
@@ -1145,9 +1160,21 @@ void Meta_Model::impl::impl_Generate( )
       if( !outc )
          throw runtime_error( "unexpected error opening '" + classes_file_name + "' for output" );
 
+      string model_perm;
+      if( get_obj( ).Allow_Anonymous_Access( ) )
+         model_perm = "@anon";
+
+      if( !is_null( get_obj( ).Permission( ) ) )
+      {
+         if( !model_perm.empty( ) )
+            model_perm += ',';
+
+         model_perm += get_obj( ).Permission( ).Id( );
+      }
+
       outf << "\x60{\x60$model_id\x60=\x60'" << get_obj( ).Id( ) << "\x60'\x60}\n";
       outf << "\x60{\x60$model_name\x60=\x60'" << get_obj( ).Name( ) << "\x60'\x60}\n";
-      outf << "\x60{\x60$model_perm\x60=\x60'" << get_obj( ).Permission( ).Id( ) << "\x60'\x60}\n";
+      outf << "\x60{\x60$model_perm\x60=\x60'" << model_perm << "\x60'\x60}\n";
 
       string model_name( get_obj( ).Name( ) );
 
@@ -5637,62 +5664,66 @@ string Meta_Model::impl::get_field_value( int field ) const
       break;
 
       case 2:
-      retval = to_string( impl_Commands_File( ) );
+      retval = to_string( impl_Allow_Anonymous_Access( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Created( ) );
+      retval = to_string( impl_Commands_File( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Created( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Next_Class_Id( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Next_List_Id( ) );
+      retval = to_string( impl_Next_Class_Id( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Next_Specification_Id( ) );
+      retval = to_string( impl_Next_List_Id( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Next_View_Id( ) );
+      retval = to_string( impl_Next_Specification_Id( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Permission( ) );
+      retval = to_string( impl_Next_View_Id( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Source_File( ) );
+      retval = to_string( impl_Permission( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Status( ) );
+      retval = to_string( impl_Source_File( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Use_Package_Demo_Data( ) );
+      retval = to_string( impl_Status( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_Package_Demo_Data( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Workgroup( ) );
+      retval = to_string( impl_Version( ) );
       break;
 
       case 16:
+      retval = to_string( impl_Workgroup( ) );
+      break;
+
+      case 17:
       retval = to_string( impl_Year_Created( ) );
       break;
 
@@ -5716,62 +5747,66 @@ void Meta_Model::impl::set_field_value( int field, const string& value )
       break;
 
       case 2:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Commands_File, value );
+      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Allow_Anonymous_Access, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Created, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Commands_File, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Id, value );
+      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Created, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Name, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Id, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Class_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Name, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_List_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Class_Id, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Specification_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_List_Id, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_View_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Specification_Id, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Model::impl, Meta_Permission >( *this, &Meta_Model::impl::impl_Permission, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_View_Id, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Source_File, value );
+      func_string_setter< Meta_Model::impl, Meta_Permission >( *this, &Meta_Model::impl::impl_Permission, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Status, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Source_File, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Use_Package_Demo_Data, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Status, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
+      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Use_Package_Demo_Data, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Model::impl, Meta_Workgroup >( *this, &Meta_Model::impl::impl_Workgroup, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
       break;
 
       case 16:
+      func_string_setter< Meta_Model::impl, Meta_Workgroup >( *this, &Meta_Model::impl::impl_Workgroup, value );
+      break;
+
+      case 17:
       func_string_setter< Meta_Model::impl, int >( *this, &Meta_Model::impl::impl_Year_Created, value );
       break;
 
@@ -5855,6 +5890,7 @@ void Meta_Model::impl::clear( )
 {
    v_Actions = gv_default_Actions;
    v_Add_Packages = gv_default_Add_Packages;
+   v_Allow_Anonymous_Access = gv_default_Allow_Anonymous_Access;
    v_Commands_File = gv_default_Commands_File;
    v_Created = gv_default_Created;
    v_Id = gv_default_Id;
@@ -6388,6 +6424,16 @@ void Meta_Model::Add_Packages( int Add_Packages )
    p_impl->impl_Add_Packages( Add_Packages );
 }
 
+bool Meta_Model::Allow_Anonymous_Access( ) const
+{
+   return p_impl->impl_Allow_Anonymous_Access( );
+}
+
+void Meta_Model::Allow_Anonymous_Access( bool Allow_Anonymous_Access )
+{
+   p_impl->impl_Allow_Anonymous_Access( Allow_Anonymous_Access );
+}
+
 const string& Meta_Model::Commands_File( ) const
 {
    return p_impl->impl_Commands_File( );
@@ -6814,6 +6860,16 @@ const char* Meta_Model::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Allow_Anonymous_Access )
+   {
+      p_id = c_field_id_Allow_Anonymous_Access;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Commands_File )
    {
       p_id = c_field_id_Commands_File;
@@ -6995,6 +7051,16 @@ const char* Meta_Model::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Allow_Anonymous_Access )
+   {
+      p_name = c_field_name_Allow_Anonymous_Access;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Commands_File )
    {
       p_name = c_field_name_Commands_File;
@@ -7159,6 +7225,8 @@ string Meta_Model::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Actions );
    else if( id_or_name == c_field_id_Add_Packages || id_or_name == c_field_name_Add_Packages )
       display_name = get_module_string( c_field_display_name_Add_Packages );
+   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+      display_name = get_module_string( c_field_display_name_Allow_Anonymous_Access );
    else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
       display_name = get_module_string( c_field_display_name_Commands_File );
    else if( id_or_name == c_field_id_Created || id_or_name == c_field_name_Created )
@@ -7511,6 +7579,7 @@ void Meta_Model::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Allow_Anonymous_Access" );
    names.push_back( "C_Commands_File" );
    names.push_back( "C_Created" );
    names.push_back( "C_Id" );
@@ -7536,6 +7605,7 @@ void Meta_Model::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( to_string( Allow_Anonymous_Access( ) ) );
    values.push_back( sql_quote( to_string( Commands_File( ) ) ) );
    values.push_back( to_string( Created( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
@@ -7638,6 +7708,7 @@ void Meta_Model::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "105109", "Actions", "string", false ) );
    all_field_info.push_back( field_info( "105112", "Add_Packages", "int", false ) );
+   all_field_info.push_back( field_info( "105116", "Allow_Anonymous_Access", "bool", false ) );
    all_field_info.push_back( field_info( "105111", "Commands_File", "string", false ) );
    all_field_info.push_back( field_info( "105113", "Created", "bool", false ) );
    all_field_info.push_back( field_info( "105104", "Id", "string", false ) );
@@ -7691,62 +7762,66 @@ const char* Meta_Model::static_get_field_id( field_id id )
       break;
 
       case 3:
-      p_id = "105111";
+      p_id = "105116";
       break;
 
       case 4:
-      p_id = "105113";
+      p_id = "105111";
       break;
 
       case 5:
-      p_id = "105104";
+      p_id = "105113";
       break;
 
       case 6:
-      p_id = "105101";
+      p_id = "105104";
       break;
 
       case 7:
-      p_id = "105105";
+      p_id = "105101";
       break;
 
       case 8:
-      p_id = "105107";
+      p_id = "105105";
       break;
 
       case 9:
-      p_id = "105106";
+      p_id = "105107";
       break;
 
       case 10:
-      p_id = "105108";
+      p_id = "105106";
       break;
 
       case 11:
-      p_id = "301600";
+      p_id = "105108";
       break;
 
       case 12:
-      p_id = "105110";
+      p_id = "301600";
       break;
 
       case 13:
-      p_id = "105114";
+      p_id = "105110";
       break;
 
       case 14:
-      p_id = "105115";
+      p_id = "105114";
       break;
 
       case 15:
-      p_id = "105102";
+      p_id = "105115";
       break;
 
       case 16:
-      p_id = "300500";
+      p_id = "105102";
       break;
 
       case 17:
+      p_id = "300500";
+      break;
+
+      case 18:
       p_id = "105103";
       break;
    }
@@ -7772,62 +7847,66 @@ const char* Meta_Model::static_get_field_name( field_id id )
       break;
 
       case 3:
-      p_id = "Commands_File";
+      p_id = "Allow_Anonymous_Access";
       break;
 
       case 4:
-      p_id = "Created";
+      p_id = "Commands_File";
       break;
 
       case 5:
-      p_id = "Id";
+      p_id = "Created";
       break;
 
       case 6:
-      p_id = "Name";
+      p_id = "Id";
       break;
 
       case 7:
-      p_id = "Next_Class_Id";
+      p_id = "Name";
       break;
 
       case 8:
-      p_id = "Next_List_Id";
+      p_id = "Next_Class_Id";
       break;
 
       case 9:
-      p_id = "Next_Specification_Id";
+      p_id = "Next_List_Id";
       break;
 
       case 10:
-      p_id = "Next_View_Id";
+      p_id = "Next_Specification_Id";
       break;
 
       case 11:
-      p_id = "Permission";
+      p_id = "Next_View_Id";
       break;
 
       case 12:
-      p_id = "Source_File";
+      p_id = "Permission";
       break;
 
       case 13:
-      p_id = "Status";
+      p_id = "Source_File";
       break;
 
       case 14:
-      p_id = "Use_Package_Demo_Data";
+      p_id = "Status";
       break;
 
       case 15:
-      p_id = "Version";
+      p_id = "Use_Package_Demo_Data";
       break;
 
       case 16:
-      p_id = "Workgroup";
+      p_id = "Version";
       break;
 
       case 17:
+      p_id = "Workgroup";
+      break;
+
+      case 18:
       p_id = "Year_Created";
       break;
    }
@@ -7848,36 +7927,38 @@ int Meta_Model::static_get_field_num( const string& field )
       rc += 1;
    else if( field == c_field_id_Add_Packages || field == c_field_name_Add_Packages )
       rc += 2;
-   else if( field == c_field_id_Commands_File || field == c_field_name_Commands_File )
+   else if( field == c_field_id_Allow_Anonymous_Access || field == c_field_name_Allow_Anonymous_Access )
       rc += 3;
-   else if( field == c_field_id_Created || field == c_field_name_Created )
+   else if( field == c_field_id_Commands_File || field == c_field_name_Commands_File )
       rc += 4;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Created || field == c_field_name_Created )
       rc += 5;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 6;
-   else if( field == c_field_id_Next_Class_Id || field == c_field_name_Next_Class_Id )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 7;
-   else if( field == c_field_id_Next_List_Id || field == c_field_name_Next_List_Id )
+   else if( field == c_field_id_Next_Class_Id || field == c_field_name_Next_Class_Id )
       rc += 8;
-   else if( field == c_field_id_Next_Specification_Id || field == c_field_name_Next_Specification_Id )
+   else if( field == c_field_id_Next_List_Id || field == c_field_name_Next_List_Id )
       rc += 9;
-   else if( field == c_field_id_Next_View_Id || field == c_field_name_Next_View_Id )
+   else if( field == c_field_id_Next_Specification_Id || field == c_field_name_Next_Specification_Id )
       rc += 10;
-   else if( field == c_field_id_Permission || field == c_field_name_Permission )
+   else if( field == c_field_id_Next_View_Id || field == c_field_name_Next_View_Id )
       rc += 11;
-   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+   else if( field == c_field_id_Permission || field == c_field_name_Permission )
       rc += 12;
-   else if( field == c_field_id_Status || field == c_field_name_Status )
+   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
       rc += 13;
-   else if( field == c_field_id_Use_Package_Demo_Data || field == c_field_name_Use_Package_Demo_Data )
+   else if( field == c_field_id_Status || field == c_field_name_Status )
       rc += 14;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_Package_Demo_Data || field == c_field_name_Use_Package_Demo_Data )
       rc += 15;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 16;
-   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
       rc += 17;
+   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+      rc += 18;
 
    return rc - 1;
 }
@@ -7910,6 +7991,7 @@ string Meta_Model::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Allow_Anonymous_Access INTEGER NOT NULL,"
     "C_Commands_File VARCHAR(200) NOT NULL,"
     "C_Created INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
