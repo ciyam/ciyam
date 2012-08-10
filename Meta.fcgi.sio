@@ -4009,6 +4009,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_model_allow_anonymous_access
+     <field>105116
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_model_source_file
      <field>105110
      <ftype>string

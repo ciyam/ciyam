@@ -451,7 +451,12 @@ void Meta_Package_Type::impl::impl_Install( )
       info_filename = get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".info" );
    else
    {
-      package_file = get_obj( ).get_attached_file_path( get_obj( ).File( ) );
+      string path( get_session_variable( "@package_type_path" ) );
+
+      if( !path.empty( ) )
+         package_file = path + "/" + get_obj( ).File( );
+      else
+         package_file = get_obj( ).get_attached_file_path( get_obj( ).File( ) );
 
 #ifdef _WIN32
       string cmd( "unbundle -o " );
