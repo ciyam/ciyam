@@ -1081,6 +1081,8 @@ void CLASS_BASE_DECL_SPEC save_attachment(
 
 std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html );
 
+std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
+
 void CLASS_BASE_DECL_SPEC execute_command( numeric& n, const std::string& cmd_and_args, std::string& retval );
 void CLASS_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_and_args, std::string& retval );
 

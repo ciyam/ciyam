@@ -2496,6 +2496,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_use_embedded_images
+     <field>127131
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_encrypt_dynamic_content
      <field>127130
      <ftype>bool

@@ -486,7 +486,10 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
-   if( !sess_info.user_id.empty( ) )
+   // FUTURE: It would be better to have a command option to indicate that
+   // embedded images are being used rather than not passing the temporary
+   // directory.
+   if( !sess_info.user_id.empty( ) && !get_storage_info( ).embed_images )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
    if( !sess_info.tz_abbr.empty( ) )
@@ -633,7 +636,8 @@ bool fetch_list_info( const string& module,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
-   if( !sess_info.user_id.empty( ) )
+   // FUTURE: (see comment in fetch_item_info)
+   if( !sess_info.user_id.empty( ) && !get_storage_info( ).embed_images )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
    if( !sess_info.tz_abbr.empty( ) )

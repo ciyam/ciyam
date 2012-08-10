@@ -130,6 +130,7 @@ const char* const c_attribute_user_parent = "user_parent";
 const char* const c_attribute_user_active = "user_active";
 const char* const c_attribute_user_select = "user_select";
 const char* const c_attribute_user_slevel = "user_slevel";
+const char* const c_attribute_embed_images = "embed_images";
 const char* const c_attribute_encrypt_data = "encrypt_data";
 const char* const c_attribute_image_height = "image_height";
 const char* const c_attribute_storage_name = "storage_name";
@@ -244,6 +245,7 @@ storage_info::storage_info( )
  print_limit( c_default_print_limit ),
  image_width( c_default_image_width ),
  image_height( c_default_image_height ),
+ embed_images( c_default_embed_images ),
  encrypt_data( c_default_encrypt_data ),
  checkbox_bools( c_default_checkbox_bools ),
  filesize_limit( c_default_filesize_limit ),
@@ -263,6 +265,7 @@ void storage_info::clear( )
    image_width = c_default_image_width;
    image_height = c_default_image_height;
 
+   embed_images = c_default_embed_images;
    encrypt_data = c_default_encrypt_data;
 
    checkbox_bools = c_default_checkbox_bools;
@@ -423,11 +426,17 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       if( !image_height.empty( ) )
          info.image_height = atoi( image_height.c_str( ) );
 
+      string embed_images = reader.read_opt_attribute( c_attribute_embed_images );
+      if( !embed_images.empty( ) )
+         info.embed_images = ( embed_images == c_true );
+
       string encrypt_data = reader.read_opt_attribute( c_attribute_encrypt_data );
-      info.encrypt_data = ( encrypt_data == c_true );
+      if( !encrypt_data.empty( ) )
+         info.encrypt_data = ( encrypt_data == c_true );
 
       string checkbox_bools = reader.read_opt_attribute( c_attribute_checkbox_bools );
-      info.checkbox_bools = ( checkbox_bools == c_true );
+      if( !checkbox_bools.empty( ) )
+         info.checkbox_bools = ( checkbox_bools == c_true );
 
       string filesize_limit = reader.read_opt_attribute( c_attribute_filesize_limit );
       if( !filesize_limit.empty( ) )
