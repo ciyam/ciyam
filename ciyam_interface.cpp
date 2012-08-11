@@ -3145,23 +3145,26 @@ void request_handler::process_request( )
                      }
                   }
 
-                  extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_quit;
-
-                  if( !uselect.empty( ) )
-                     extra_content << "&" << c_param_uselect << "=" << uselect;
-
-                  extra_content << "&extra=" << session_id;
-
-                  if( !cookies_permitted )
-                     extra_content << "&session=" << session_id;
-
-                  if( use_url_checksum )
+                  if( !p_session_info->is_persistent || !mod_info.allows_anonymous_access )
                   {
-                     string checksum_values( c_cmd_quit + uselect );
-                     extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                  }
+                     extra_content << " | <a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_quit;
 
-                  extra_content << "\">" << GDS( c_display_logout ) << "</a>";
+                     if( !uselect.empty( ) )
+                        extra_content << "&" << c_param_uselect << "=" << uselect;
+
+                     extra_content << "&extra=" << session_id;
+
+                     if( !cookies_permitted )
+                        extra_content << "&session=" << session_id;
+
+                     if( use_url_checksum )
+                     {
+                        string checksum_values( c_cmd_quit + uselect );
+                        extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                     }
+
+                     extra_content << "\">" << GDS( c_display_logout ) << "</a>";
+                  }
 
                   if( file_exists( "help.htm" ) )
                      extra_content << " | <a href=\"help.htm\" target=\"_blank\">" << GDS( c_display_help ) << "</a>";
@@ -3980,8 +3983,7 @@ void request_handler::process_request( )
       LOG_TRACE( string( "error: " ) + x.what( ) );
 
       ostringstream osstr;
-      osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
-       << ": " << x.what( ) << ".</p>\n";
+      osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
 
       bool is_logged_in = false;
       if( !created_session && p_session_info && p_session_info->logged_in )
