@@ -23,17 +23,17 @@ copy .htaccess "%install_path%" >nul
 :skip_access
 if exist "%install_path%\images" goto skip_images
 mkdir "%install_path%\images"
-unbundle -q images -d "%install_path%\images"
+unbundle -qq images -d "%install_path%\images"
 
 :skip_images
 if exist "%install_path%\popups" goto skip_popups
 mkdir "%install_path%\popups"
-unbundle -q popups -d "%install_path%\popups"
+unbundle -qq popups -d "%install_path%\popups"
 
 :skip_popups
 if exist "%install_path%\scripts" goto skip_scripts
 mkdir "%install_path%\scripts"
-unbundle -q scripts -d "%install_path%\scripts"
+unbundle -qq scripts -d "%install_path%\scripts"
 
 :skip_scripts
 if exist "%install_path%\requirements.html" goto skip_requirements_html
