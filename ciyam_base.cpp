@@ -3642,7 +3642,7 @@ int exec_system( const string& cmd, bool async )
    if( async )
    {
 #ifdef _WIN32
-      s = "start " + s;
+      s = "start /min " + s;
 #else
       s += " &";
 #endif

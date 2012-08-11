@@ -1184,6 +1184,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string security_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_security_info ) );
          string search_text( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_search_text ) );
          string search_query( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_search_query ) );
+         string extra_vars( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_extra_vars ) );
          string key_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_key_info ) );
          string limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_limit ) );
          string set_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_set_values ) );
@@ -1329,6 +1330,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // worth worrying about trying to optimise this behaviour).
          size_t handle = create_object_instance( module, mclass, 0,
           !context.empty( ) || get_module_class_has_derivations( module, mclass ) );
+
+         // NOTE: The purpose of using "extra_vars" is to set instance variables without
+         // also requiring a "prepare" call (thus having no other possible side-effects).
+         if( !extra_vars.empty( ) )
+         {
+            vector< string > extras;
+            split( extra_vars, extras );
+
+            for( size_t i = 0; i < extras.size( ); i++ )
+            {
+               string next( extras[ i ] );
+               string::size_type pos = next.find( '=' );
+
+               if( pos == string::npos )
+                  throw runtime_error( "unexpected format for extras: " + extra_vars );
+
+               instance_set_variable( handle, context, next.substr( 0, pos ), next.substr( pos + 1 ) );
+            }
+         }
 
          for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
          {

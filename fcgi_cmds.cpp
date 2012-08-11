@@ -486,10 +486,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
-   // FUTURE: It would be better to have a command option to indicate that
-   // embedded images are being used rather than not passing the temporary
-   // directory.
-   if( !sess_info.user_id.empty( ) && !get_storage_info( ).embed_images )
+   if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
    if( !sess_info.tz_abbr.empty( ) )
@@ -517,6 +514,9 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
 
    if( !perms.empty( ) )
       fetch_cmd += " -p=" + perms;
+
+   if( get_storage_info( ).embed_images )
+      fetch_cmd += " -x=@embed=1";
 
    fetch_cmd += " \"" + item_key + "\" #1";
 
@@ -636,8 +636,7 @@ bool fetch_list_info( const string& module,
    if( !user_info.empty( ) )
       fetch_cmd += " -u=" + user_info;
 
-   // FUTURE: (see comment in fetch_item_info)
-   if( !sess_info.user_id.empty( ) && !get_storage_info( ).embed_images )
+   if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
    if( !sess_info.tz_abbr.empty( ) )
@@ -657,6 +656,9 @@ bool fetch_list_info( const string& module,
 
    if( !search_query.empty( ) )
       fetch_cmd += " \"-q=" + search_query + "\"";
+
+   if( get_storage_info( ).embed_images )
+      fetch_cmd += " -x=@embed=1";
 
    fetch_cmd += " \"" + key_info + "\"";
 
