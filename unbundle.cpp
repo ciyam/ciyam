@@ -805,7 +805,7 @@ int main( int argc, char* argv[ ] )
             }
             else
             {
-               if( !is_quieter )
+               if( !is_quiet && !is_quieter )
                   cout << "extracting \"" << next_file << "\"";
 
                ap_ofstream = auto_ptr< ofstream >( new ofstream( next_file.c_str( ), ios::out | ios::binary ) );
