@@ -1122,12 +1122,12 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `@eq`(`'\1`'`,`'default_to_uid`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_uid.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_field_addition`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
-`{`#field_from_field_addition.spec.xrep section=value_will_be_provided class_name=$class_name\
- arg_field=$specification_\0_field`}\
-`,\
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=value_will_be_provided class_name=$class_name arg_dfield=$specification_\0_dfield`}\
+`,\
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_op.spec.xrep section=value_will_be_provided class_name=$class_name\
+ arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'fk_link_first_child`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#fk_link_first_child.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
@@ -1309,6 +1309,11 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_dest_field=$specification_\0_dest_field arg_separator=$specification_\0_separator\
  arg_embed_links=$specification_\0_embed_links arg_external=$specification_\0_external`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_from_op`'`)
+`{`#transient_field_from_op.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
+ arg_ofield=$specification_\0_ofield arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check_default=$specification_\0_check_default`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`?`$transient_field_names`&`@in`(`$specification_\0_dfield`,`$transient_field_names`)
 `{`#field_from_other_field.spec.xrep section=after_fetch_or_to_store class_name=$class_name module_name=$module_name\
  arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
@@ -1374,10 +1379,6 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_cfield=$specification_\0_cfield arg_separator=$specification_\0_separator\
  arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse arg_non_empty=$specification_\0_non_empty`}\
-`,\
-`@eq`(`'\1`'`,`'transient_field_from_field_addition`'`)
-`{`#transient_field_from_field_addition.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
- arg_field=$specification_\0_field arg_sfield1=$specification_\0_sfield1 arg_sfield2=$specification_\0_sfield2`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_file`'`)
 `{`#transient_field_from_file.spec.xrep section=after_fetch class_name=$class_name\
@@ -1534,10 +1535,10 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_from_concatenation.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_dfield=$specification_\0_dfield arg_field_list=$specification_\0_field_list arg_separator=$specification_\0_separator`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_field_addition`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
-`{`#field_from_field_addition.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_field=$specification_\0_field arg_type=$specification_\0_type\
- arg_sfield1=$specification_\0_sfield1 arg_sfield2=$specification_\0_sfield2`}\
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_from_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
+ arg_ofield=$specification_\0_ofield arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check_default=$specification_\0_check_default`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`(`!`?`$transient_field_names`|`!`@in`(`$specification_\0_dfield`,`$transient_field_names`)`)
 `{`#field_from_other_field.spec.xrep section=after_fetch_or_to_store class_name=$class_name module_name=$module_name\
@@ -1677,11 +1678,6 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_tfield=$specification_\0_tfield arg_is_neg=$specification_\0_is_neg`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_field_addition`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
-`{`#field_from_field_addition.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_field=$specification_\0_field arg_type=$specification_\0_type\
- arg_sfield1=$specification_\0_sfield1 arg_sfield2=$specification_\0_sfield2`}\
-`,\
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
@@ -1695,6 +1691,11 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_children=$specification_\0_children arg_cclass=$specification_\0_cclass arg_separator=$specification_\0_separator\
  arg_ctransient=$specification_\0_ctransient arg_embed_links=$specification_\0_embed_links\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
+`,\
+`@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
+ arg_ofield=$specification_\0_ofield arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check_default=$specification_\0_check_default`}\
 `,\
 `@eq`(`'\1`'`,`'file_attachment`'`)`&`?`$specification_\0_sfield`&`!`@eq`(`$specification_\0_sfield`,`'`'`)
 `{`#file_attachment.spec.xrep section=for_store arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
@@ -2737,9 +2738,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `{`#field_from_acyclic_path.spec.xrep section=get_required_field_names\
  arg_pfield=$specification_\0_pfield arg_src_field=$specification_\0_src_field arg_dest_field=$specification_\0_dest_field`}\
 `,\
-`@eq`(`'\1`'`,`'field_from_field_addition`'`)
-`{`#field_from_field_addition.spec.xrep section=get_required_field_names\
- arg_field=$specification_\0_field arg_sfield1=$specification_\0_sfield1 arg_sfield2=$specification_\0_sfield2`}\
+`@eq`(`'\1`'`,`'field_from_op`'`)
+`{`#field_from_op.spec.xrep section=get_required_field_names\
+ arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_search_replace`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
 `{`#field_from_search_replace.spec.xrep section=get_required_field_names class_name=$class_name module_name=$module_name\
@@ -2793,9 +2795,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `{`#transient_field_concat.spec.xrep section=get_required_field_names\
  arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_from_field_addition`'`)
-`{`#transient_field_from_field_addition.spec.xrep section=get_required_field_names\
- arg_field=$specification_\0_field arg_sfield1=$specification_\0_sfield1 arg_sfield2=$specification_\0_sfield2`}\
+`@eq`(`'\1`'`,`'transient_field_from_op`'`)
+`{`#transient_field_from_op.spec.xrep section=get_required_field_names\
+ arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=get_required_field_names\

@@ -957,6 +957,7 @@ const int c_enum_test_field_type_numeric( 4 );
 const int c_enum_test_field_type_int( 5 );
 const int c_enum_test_field_type_bool( 6 );
 const int c_enum_test_field_type_Any_Text_Type( 20 );
+const int c_enum_test_field_type_Any_Scalar_Type( 30 );
 const int c_enum_test_field_type_Any_Conditional( 35 );
 const int c_enum_test_field_type_Any_Value_Or_Conditional( 38 );
 const int c_enum_test_field_type_Any_Type( 99 );
@@ -983,6 +984,8 @@ string get_enum_string_test_field_type( int val )
       string_name = "enum_test_field_type_bool";
    else if( to_string( val ) == to_string( "20" ) )
       string_name = "enum_test_field_type_Any_Text_Type";
+   else if( to_string( val ) == to_string( "30" ) )
+      string_name = "enum_test_field_type_Any_Scalar_Type";
    else if( to_string( val ) == to_string( "35" ) )
       string_name = "enum_test_field_type_Any_Conditional";
    else if( to_string( val ) == to_string( "38" ) )
@@ -2384,7 +2387,7 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          {
             if( Primitive == c_enum_field_type_datetime
              || Primitive == c_enum_field_type_date || Primitive == c_enum_field_type_time
-             || Primitive == c_enum_field_type_numeric || Primitive == c_enum_field_type_int )
+             || Primitive == c_enum_field_type_numeric || Primitive == c_enum_field_type_int || Primitive == c_enum_field_type_bool )
                in_error = false;
          }
 
@@ -2505,6 +2508,20 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          if( Test_Value.empty( )
           && ( Test_Primitive < c_enum_test_field_type_int || Test_Primitive > c_enum_test_field_type_bool ) )
             Error = GMS( "field_specification_type_test_field_type" ) + " must be a conditional type if no value provided"; // FUTURE: Should be in module_strings...
+      }
+      else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Scalar_Type )
+      {
+         bool in_error = true;
+         if( Parent_Class.empty( ) )
+         {
+            if( Primitive == c_enum_test_field_type_datetime
+             || Primitive == c_enum_test_field_type_date || Primitive == c_enum_test_field_type_time
+             || Primitive == c_enum_test_field_type_numeric || Primitive == c_enum_test_field_type_int || Primitive == c_enum_test_field_type_bool )
+               in_error = false;
+         }
+
+         if( in_error )
+            Error = GMS( "field_specification_type_test_field_type" ) + " must be a scalar type"; // FUTURE: Should be in module_strings...
       }
       else if( get_obj( ).Test_Field_type( ) < c_enum_test_field_type_Any_Text_Type ) // i.e. all primitives
       {
@@ -9442,6 +9459,7 @@ void Meta_Specification_Type::static_get_all_enum_pairs( vector< pair< string, s
    pairs.push_back( make_pair( "enum_test_field_type_5", get_enum_string_test_field_type( 5 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_6", get_enum_string_test_field_type( 6 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_20", get_enum_string_test_field_type( 20 ) ) );
+   pairs.push_back( make_pair( "enum_test_field_type_30", get_enum_string_test_field_type( 30 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_35", get_enum_string_test_field_type( 35 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_38", get_enum_string_test_field_type( 38 ) ) );
    pairs.push_back( make_pair( "enum_test_field_type_99", get_enum_string_test_field_type( 99 ) ) );
@@ -9540,6 +9558,7 @@ void Meta_Specification_Type::static_class_init( const char* p_module_name )
    g_test_field_type_enum.insert( 5 );
    g_test_field_type_enum.insert( 6 );
    g_test_field_type_enum.insert( 20 );
+   g_test_field_type_enum.insert( 30 );
    g_test_field_type_enum.insert( 35 );
    g_test_field_type_enum.insert( 38 );
    g_test_field_type_enum.insert( 99 );

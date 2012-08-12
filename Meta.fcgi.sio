@@ -1635,6 +1635,10 @@
      <name>enum_test_field_type_any_text_type
     </value>
     <value/>
+     <data>30
+     <name>enum_test_field_type_any_scalar_type
+    </value>
+    <value/>
      <data>35
      <name>enum_test_field_type_any_conditional
     </value>
