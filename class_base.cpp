@@ -2567,9 +2567,13 @@ string formatted_numeric( const numeric& n, const string& mask )
    return format_numeric( n, mask );
 }
 
-string numeric_name( const string& s )
+string numeric_name( const string& s, bool show_plus_if_no_sign )
 {
    string retval;
+   string no_sign_prefix;
+
+   if( show_plus_if_no_sign )
+      no_sign_prefix = "plus_";
 
    for( size_t i = 0; i < s.length( ); i++ )
    {
@@ -2580,7 +2584,7 @@ string numeric_name( const string& s )
          else if( s[ i ] == '+' )
             retval += "plus_";
          else
-            retval += string( "plus_" ) + s[ i ];
+            retval += no_sign_prefix + s[ i ];
       }
       else if( s[ i ] == ' ' )
          retval += "_";

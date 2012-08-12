@@ -1,0 +1,72 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_op)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish field_from_op)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`$op`=`$arg_op`}\
+`{`@eq`(`$op`,`'add`'`)`$op`=`'+`'`}\
+`{`@eq`(`$op`,`'sub`'`)`$op`=`'-`'`}\
+`{`@eq`(`$op`,`'mul`'`)`$op`=`'*`'`}\
+`{`@eq`(`$op`,`'div`'`)`$op`=`'/`'`}\
+`{`@eq`(`$op`,`'and`'`)`$op`=`'&&`'`}\
+`{`@eq`(`$op`,`'or`'`)`$op`=`'||`'`}\
+`{`@eq`(`$op`,`'xor`'`)`$op`=`'^`'`}\
+`{`@eq`(`$op`,`'mod`'`)`$op`=`'%`'`}\
+`{`@eq`(`$op`,`'bitand`'`)`$op`=`'&`'`}\
+`{`@eq`(`$op`,`'bitor`'`)`$op`=`'|`'`}\
+`{`@eq`(`$op`,`'bitnot`'`)`$op`=`'~`'`}\
+`{`@eq`(`$op`,`'bitsleft`'`)`$op`=`'<<`'`}\
+`{`@eq`(`$op`,`'bitsright`'`)`$op`=`'>>`'`}\
+`{`$type`=`$arg_type`}\
+`{`@eq`(`$type`,`'second`'`)`$type`=`'seconds`'`}\
+`{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\
+`{`@eq`(`$type`,`'hour`'`)`$type`=`'hours`'`}\
+`{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
+`{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
+`{`@eq`(`$type`,`'year`'`)`$type`=`'years`'`}\
+   // [(start field_from_op)]
+`{`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_check_default`,`'`'`)\
+   get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
+`{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
+`,\
+   if( `{`$arg_field`} == gv_default_`{`$arg_field`} )
+      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
+`{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
+`}`,\
+   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_check_default`,`'`'`) && `{`$arg_field`} == gv_default_`{`$arg_field`}`} )
+      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
+`{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
+`}\
+   // [(finish field_from_op)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_from_op)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+
+      dependents.insert( "`{`$arg_ofield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+         names.insert( "`{`$arg_ofield`}" );
+`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+`}\
+   }
+   // [(finish field_from_op)]
+`}

@@ -901,7 +901,7 @@ std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str
 std::string CLASS_BASE_DECL_SPEC formatted_int( int n, const std::string& mask );
 std::string CLASS_BASE_DECL_SPEC formatted_numeric( const numeric& n, const std::string& mask );
 
-std::string CLASS_BASE_DECL_SPEC numeric_name( const std::string& s );
+std::string CLASS_BASE_DECL_SPEC numeric_name( const std::string& s, bool show_plus_if_no_sign = false );
 
 std::string CLASS_BASE_DECL_SPEC value_label( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC value_leftpart( const std::string& s );

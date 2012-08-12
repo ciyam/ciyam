@@ -59,7 +59,7 @@
 `{`$enum_source_parent_type`=`'50=Any_Relationship 51=Self_Relationship 52=Non_Self_Relationship`'`}
 `{`$enum_source_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 35=Any_Conditional 99=Any_Type`'`}
 `{`$enum_string_domain`=`'0=none 2=label 3=filename 1=identifier`'`}
-`{`$enum_test_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 35=Any_Conditional 38=Any_Value_Or_Conditional 99=Any_Type`'`}
+`{`$enum_test_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 30=Any_Scalar_Type 35=Any_Conditional 38=Any_Value_Or_Conditional 99=Any_Type`'`}
 `{`$enum_time_precision`=`'0=default 1=minutes 2=seconds`'`}
 `{`$enum_uom`=`'0=none 1=sqm 2=km 3=m 4=cm 5=mm 6=kg 7=g 8=mg`'`}
 `{`$enum_view_access_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner`'`}

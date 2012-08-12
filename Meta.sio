@@ -34961,7 +34961,7 @@
     <id>630
     <name>test_field_type
     <type>int
-    <key_values>0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool,20=Any_Text_Type,35=Any_Conditional,38=Any_Value_Or_Conditional,99=Any_Type
+    <key_values>0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool,20=Any_Text_Type,30=Any_Scalar_Type,35=Any_Conditional,38=Any_Value_Or_Conditional,99=Any_Type
    </user_defined_enum>
    <user_defined_enum/>
     <id>512
