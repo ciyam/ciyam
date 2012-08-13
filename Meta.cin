@@ -1235,7 +1235,7 @@ specification_add -id=620050 {Field}_Is_Type_bool modifier_field_value "Field Is
 specification_add -id=600051 {Field}_Internal_protect state_protect "equal Field Internal true"
 specification_add -id=600052 {Field}_Is_Internal modifier_field_value "Field Is_Internal Internal true"
 specification_add -id=600053 {Field}_Primitive_from_other_field field_from_other_field "Field {Type}:Primitive Primitive"
-specification_add -id=600053a {Field}_Parent_Class_Name field_from_other_field "Field Parent_Class:Name Parent_Class_Name"
+specification_add -id=600053a {Field}_Parent_Class_Name transient_field_alias "Field Parent_Class_Name Parent_Class:Name"
 specification_add -id=600054 {Field}_Is_Foreign_Key_from_other_field field_from_other_field "Field Parent_Class Is_Foreign_Key false -check_null -memfunc=get_is_singular"
 specification_add -id=600055 {Field}_{Specification}_update_children update_children "Field Specification Name"
 specification_add -id=600056 {Field}_{Specification}_Source_Field_update_children update_children "Field Specification:Source_Field Name"
@@ -1298,7 +1298,7 @@ specification_add -id=600094 {Relationship}_Name field_from_changed_fk "Relation
 specification_add -id=600095 {Relationship}_{Field}_meta meta_relationship_field\
  "Relationship Field Model Workgroup {Class}-Child_Class,Id-Field_Id,Name,Mandatory,Transient,Parent_Class {Type} Extra Internal Field_Id:Id Field_Key"
 specification_add -id=600096 {Relationship}_Child_Name_meta meta_relationship_child_name "Relationship Child_Name Name Child_Class:Name Parent_Class:Name"
-specification_add -id=610096 {Relationship}_Child_Class_Name field_from_other_field "Relationship Child_Class:Name Child_Class_Name"
+specification_add -id=610096 {Relationship}_Child_Class_Name transient_field_alias "Relationship Child_Class_Name Child_Class:Name"
 specification_add -id=600097 {Relationship}_{Specification}_update_children update_children "Relationship Specification:Child_Relationship Name"
 specification_add -id=610097 {Relationship}_{Specification_Copy_Child_Links}_update_children update_children "Relationship Specification_Copy_Child_Links:Source_Child_Relationship Name"
 specification_add -id=600098 {Relationship}_{Type}_default_1 default_to_global "Relationship Extra 1 -test=Parent_Class:Type=1 -default_only"
@@ -1608,7 +1608,7 @@ specification_add -id=600282 {Specification_Copy_Child_Links}_Vars_from_search_r
 ,Source_Child_File_Field:Name={scffield} -options=Options,{} -transient"
 specification_add -id=600288 {Specification_Content_Page}_Hide_File_Fields modifier_field_value\
  "Specification_Copy_Child_Links Hide_File_Fields {Specification_Type} trigger_create_children_for_fk_children"
-specification_add -id=600289 {Package}_Type_Name field_from_other_field "Package {Package_Type}:Name Type_Name"
+specification_add -id=600289 {Package}_Type_Name transient_field_alias "Package Type_Name {Package_Type}:Name"
 specification_add -id=600290 {Permission}_Id_auto_inc parent_auto_int_inc "Permission Id {Workgroup} Next_Permission_Id"
 specification_add -id=600295 {Auto_Code}_auto_increment for_auto_code "Auto_Code Increment Next_Value Mask Next Exhausted"
 specification_add -id=600298 {Permission}_{Specification}_update_children update_children "Permission Specification Name"

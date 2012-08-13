@@ -1828,6 +1828,17 @@ void Meta_Specification_Copy_Child_Links::get_required_field_names(
 
    get_always_required_field_names( names, required_transients, dependents );
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Source_Child_Rel_Child_Class", dependents ) )
+   {
+      dependents.insert( "Source_Child_Relationship" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Child_Relationship ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Child_Relationship ) ) )
+         names.insert( "Source_Child_Relationship" );
+   }
+   // [(finish field_from_other_field)]
+
    // [(start field_from_search_replace)]
    if( needs_field_value( "Vars", dependents ) )
    {

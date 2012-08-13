@@ -1225,7 +1225,7 @@
        </specification>
        <specification/>
         <id>600053a
-        <item>src_field
+        <item>scfield
        </specification>
        <specification/>
         <id>600094
@@ -1345,7 +1345,7 @@
        </specification>
        <specification/>
         <id>610096
-        <item>src_field
+        <item>scfield
        </specification>
        <specification/>
         <id>620038
@@ -3173,7 +3173,7 @@
       <specifications/>
        <specification/>
         <id>600053a
-        <item>src_pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600054
@@ -3254,7 +3254,7 @@
       <specifications/>
        <specification/>
         <id>600053a
-        <item>dest_field
+        <item>field
        </specification>
        <specification/>
         <id>600207
@@ -9647,7 +9647,7 @@
       <specifications/>
        <specification/>
         <id>600289
-        <item>dest_field
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -9712,7 +9712,7 @@
       <specifications/>
        <specification/>
         <id>600289
-        <item>src_pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600850
@@ -10629,7 +10629,7 @@
       <specifications/>
        <specification/>
         <id>600289
-        <item>src_field
+        <item>scfield
        </specification>
        <specification/>
         <id>600850
@@ -11751,7 +11751,7 @@
        </specification>
        <specification/>
         <id>610096
-        <item>src_pfield
+        <item>sfield
        </specification>
       </specifications>
      </field>
@@ -11793,7 +11793,7 @@
        </specification>
        <specification/>
         <id>610096
-        <item>dest_field
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -28039,13 +28039,13 @@
    <specification/>
     <id>600053a
     <name>{Field}_Parent_Class_Name
-    <type>field_from_other_field
+    <type>transient_field_alias
     <data/>
      <class_id>107100
      <sclass_id>106100
-     <sfield_id>106101
-     <pfield_id>300730
-     <dfield_id>107113
+     <field_id>107113
+     <sfield_id>300730
+     <scfield_id>106101
     </data>
    </specification>
    <specification/>
@@ -30242,13 +30242,13 @@
    <specification/>
     <id>600289
     <name>{Package}_Type_Name
-    <type>field_from_other_field
+    <type>transient_field_alias
     <data/>
      <class_id>136100
      <sclass_id>135100
-     <sfield_id>135101
-     <pfield_id>302810
-     <dfield_id>136108
+     <field_id>136108
+     <sfield_id>302810
+     <scfield_id>135101
     </data>
    </specification>
    <specification/>
@@ -30583,13 +30583,13 @@
    <specification/>
     <id>610096
     <name>{Relationship}_Child_Class_Name
-    <type>field_from_other_field
+    <type>transient_field_alias
     <data/>
      <class_id>113100
      <sclass_id>106100
-     <sfield_id>106101
-     <pfield_id>301310
-     <dfield_id>113108
+     <field_id>113108
+     <sfield_id>301310
+     <scfield_id>106101
     </data>
    </specification>
    <specification/>

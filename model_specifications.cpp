@@ -4967,6 +4967,7 @@ struct field_from_other_field_specification : specification
    string null_value;
    string test_value;
 
+   bool for_store;
    bool check_null;
    bool create_only;
 };
@@ -4983,13 +4984,16 @@ void field_from_other_field_specification::add( model& m, const vector< string >
    bool has_null_value = false;
    string arg_null_value, test_info;
 
+   for_store = false;
    check_null = false;
    create_only = false;
    for( size_t arg = 3; arg < args.size( ); arg++ )
    {
       string next_arg( args[ arg ] );
 
-      if( next_arg == c_arg_check_null )
+      if( next_arg == c_arg_for_store )
+         for_store = true;
+      else if( next_arg == c_arg_check_null )
          check_null = true;
       else if( next_arg == c_arg_create_only )
          create_only = true;
@@ -5114,6 +5118,7 @@ void field_from_other_field_specification::read_data( sio_reader& reader )
    test_pfield_id = reader.read_opt_attribute( c_attribute_tpfield_id );
    test_value = reader.read_opt_attribute( c_attribute_test_value );
 
+   for_store = ( reader.read_opt_attribute( c_attribute_for_store ) == c_true );
    check_null = ( reader.read_opt_attribute( c_attribute_check_null ) == c_true );
    create_only = ( reader.read_opt_attribute( c_attribute_create_only ) == c_true );
 
@@ -5137,6 +5142,7 @@ void field_from_other_field_specification::write_data( sio_writer& writer ) cons
    writer.write_opt_attribute( c_attribute_tpfield_id, test_pfield_id );
    writer.write_opt_attribute( c_attribute_test_value, test_value );
 
+   writer.write_opt_attribute( c_attribute_for_store, for_store ? c_true : "" );
    writer.write_opt_attribute( c_attribute_check_null, check_null ? c_true : "" );
    writer.write_opt_attribute( c_attribute_create_only, create_only ? c_true : "" );
 
@@ -5161,8 +5167,11 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    string sfield_name = get_field_name_for_id( m, sclass_name, src_field_id );
    spec_data.data_pairs.push_back( make_pair( c_data_sfield, sfield_name ) );
 
-   string dfield_name = get_field_name_for_id( m, class_name, dest_field_id );
+   bool is_mandatory;
+   string dfield_name = get_field_name_for_id( m, class_name, dest_field_id, 0, false, false, &is_mandatory );
+
    spec_data.data_pairs.push_back( make_pair( c_data_dfield, dfield_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );
 
    string tclass_name( class_name );
    if( !tclass_id.empty( ) )
@@ -5179,6 +5188,7 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, test_field_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, test_value ) );
 
+   spec_data.data_pairs.push_back( make_pair( c_data_for_store, for_store ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_chk_null, check_null ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_create_only, create_only ? c_true : "" ) );
 

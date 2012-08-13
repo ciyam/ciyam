@@ -6232,6 +6232,28 @@ void Meta_List_Field::get_required_field_names(
    }
    // [(finish field_from_search_replace)]
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Parent_Class", dependents ) )
+   {
+      dependents.insert( "List" );
+
+      if( ( required_transients && is_field_transient( e_field_id_List ) )
+       || ( !required_transients && !is_field_transient( e_field_id_List ) ) )
+         names.insert( "List" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Source_Parent_Class", dependents ) )
+   {
+      dependents.insert( "Child_Rel_Source_Parent_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Child_Rel_Source_Parent_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Child_Rel_Source_Parent_Class ) ) )
+         names.insert( "Child_Rel_Source_Parent_Class" );
+   }
+   // [(finish field_from_other_field)]
+
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }
