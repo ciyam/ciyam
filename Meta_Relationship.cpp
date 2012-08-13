@@ -1347,9 +1347,11 @@ void Meta_Relationship::impl::after_fetch( )
    }
    // [(start meta_relationship_child_name)]
 
-   // [(start field_from_other_field)]
-   get_obj( ).Child_Class_Name( get_obj( ).Child_Class( ).Name( ) );
-   // [(finish field_from_other_field)]
+   // [(start transient_field_alias)]
+   if( get_obj( ).needs_field_value( "Child_Class_Name" )
+    || required_transients.count( "Child_Class_Name" ) )
+      get_obj( ).Child_Class_Name( get_obj( ).Child_Class( ).Name( ) );
+   // [(finish transient_field_alias)]
 
    // [<start after_fetch>]
 //nyi
@@ -2744,6 +2746,17 @@ void Meta_Relationship::get_required_field_names(
          names.insert( "Parent_Class" );
    }
    // [(finish meta_relationship_child_name)]
+
+   // [(start transient_field_alias)]
+   if( needs_field_value( "Child_Class_Name", dependents ) )
+   {
+      dependents.insert( "Child_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Child_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Child_Class ) ) )
+         names.insert( "Child_Class" );
+   }
+   // [(finish transient_field_alias)]
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]

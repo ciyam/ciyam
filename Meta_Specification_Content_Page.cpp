@@ -6830,6 +6830,17 @@ void Meta_Specification_Content_Page::get_required_field_names(
    }
    // [(finish field_from_search_replace)]
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Link_Class", dependents ) )
+   {
+      dependents.insert( "Link_Content_Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Link_Content_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Link_Content_Field ) ) )
+         names.insert( "Link_Content_Field" );
+   }
+   // [(finish field_from_other_field)]
+
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }

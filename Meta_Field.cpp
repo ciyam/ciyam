@@ -3159,9 +3159,11 @@ void Meta_Field::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
-   // [(start field_from_other_field)]
-   get_obj( ).Parent_Class_Name( get_obj( ).Parent_Class( ).Name( ) );
-   // [(finish field_from_other_field)]
+   // [(start transient_field_alias)]
+   if( get_obj( ).needs_field_value( "Parent_Class_Name" )
+    || required_transients.count( "Parent_Class_Name" ) )
+      get_obj( ).Parent_Class_Name( get_obj( ).Parent_Class( ).Name( ) );
+   // [(finish transient_field_alias)]
 
    // [(start transient_field_alias)]
    if( get_obj( ).needs_field_value( "Numeric_Decimals" )
@@ -6021,6 +6023,39 @@ void Meta_Field::get_required_field_names(
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
    get_always_required_field_names( names, required_transients, dependents );
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Primitive", dependents ) )
+   {
+      dependents.insert( "Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+         names.insert( "Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start transient_field_alias)]
+   if( needs_field_value( "Parent_Class_Name", dependents ) )
+   {
+      dependents.insert( "Parent_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Parent_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Parent_Class ) ) )
+         names.insert( "Parent_Class" );
+   }
+   // [(finish transient_field_alias)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Is_Foreign_Key", dependents ) )
+   {
+      dependents.insert( "Parent_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Parent_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Parent_Class ) ) )
+         names.insert( "Parent_Class" );
+   }
+   // [(finish field_from_other_field)]
 
    // [(start transient_field_alias)]
    if( needs_field_value( "Numeric_Decimals", dependents ) )

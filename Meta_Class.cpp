@@ -5510,6 +5510,72 @@ void Meta_Class::get_required_field_names(
 
    get_always_required_field_names( names, required_transients, dependents );
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "Source_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+         names.insert( "Source_Class" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Plural", dependents ) )
+   {
+      dependents.insert( "Source_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+         names.insert( "Source_Class" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Id", dependents ) )
+   {
+      dependents.insert( "Source_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+         names.insert( "Source_Class" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Type", dependents ) )
+   {
+      dependents.insert( "Source_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+         names.insert( "Source_Class" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Extra", dependents ) )
+   {
+      dependents.insert( "Source_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+         names.insert( "Source_Class" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Static_Instance_Key", dependents ) )
+   {
+      dependents.insert( "Source_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+         names.insert( "Source_Class" );
+   }
+   // [(finish field_from_other_field)]
+
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }

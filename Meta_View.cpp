@@ -3158,6 +3158,17 @@ void Meta_View::get_required_field_names(
 
    get_always_required_field_names( names, required_transients, dependents );
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Type_Key", dependents ) )
+   {
+      dependents.insert( "Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+         names.insert( "Type" );
+   }
+   // [(finish field_from_other_field)]
+
    // [(start field_from_search_replace)]
    if( needs_field_value( "Name", dependents ) )
    {

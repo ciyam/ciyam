@@ -22,15 +22,15 @@
 `{`@eq`(`$type`,`'year`'`)`$type`=`'years`'`}\
    // [(start transient_field_from_op)]
 `{`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_check_default`,`'`'`)\
+`{`@eq`(`$arg_check`,`'`'`)\
    get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `,\
-   if( `{`$arg_field`} == gv_default_`{`$arg_field`} )
+   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `}`,\
-   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_check_default`,`'`'`) && `{`$arg_field`} == gv_default_`{`$arg_field`}`} )
+   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`}`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `}\

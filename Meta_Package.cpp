@@ -1642,9 +1642,11 @@ void Meta_Package::impl::after_fetch( )
    if( cp_Package_Type )
       p_obj->setup_foreign_key( *cp_Package_Type, v_Package_Type );
 
-   // [(start field_from_other_field)]
-   get_obj( ).Type_Name( get_obj( ).Package_Type( ).Name( ) );
-   // [(finish field_from_other_field)]
+   // [(start transient_field_alias)]
+   if( get_obj( ).needs_field_value( "Type_Name" )
+    || required_transients.count( "Type_Name" ) )
+      get_obj( ).Type_Name( get_obj( ).Package_Type( ).Name( ) );
+   // [(finish transient_field_alias)]
 
    // [(start transient_field_from_file)]
    if( !get_obj( ).get_key( ).empty( )
@@ -2766,6 +2768,17 @@ void Meta_Package::get_required_field_names(
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
    get_always_required_field_names( names, required_transients, dependents );
+
+   // [(start transient_field_alias)]
+   if( needs_field_value( "Type_Name", dependents ) )
+   {
+      dependents.insert( "Package_Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Package_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Package_Type ) ) )
+         names.insert( "Package_Type" );
+   }
+   // [(finish transient_field_alias)]
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]

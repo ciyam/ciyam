@@ -5378,6 +5378,23 @@ void Meta_List::get_required_field_names(
 
    get_always_required_field_names( names, required_transients, dependents );
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Variation_Name", dependents ) )
+   {
+      dependents.insert( "Title" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Title ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Title ) ) )
+         names.insert( "Title" );
+
+      dependents.insert( "Is_Variation" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Is_Variation ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Is_Variation ) ) )
+         names.insert( "Is_Variation" );
+   }
+   // [(finish field_from_other_field)]
+
    // [(start field_from_search_replace)]
    if( needs_field_value( "Name", dependents ) )
    {
@@ -5415,6 +5432,39 @@ void Meta_List::get_required_field_names(
          names.insert( "Type" );
    }
    // [(finish field_from_search_replace)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Is_Child", dependents ) )
+   {
+      dependents.insert( "Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+         names.insert( "Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Is_Home", dependents ) )
+   {
+      dependents.insert( "Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+         names.insert( "Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Parent_Class", dependents ) )
+   {
+      dependents.insert( "Parent_Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Parent_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Parent_Field ) ) )
+         names.insert( "Parent_Field" );
+   }
+   // [(finish field_from_other_field)]
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]

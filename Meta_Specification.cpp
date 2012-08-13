@@ -10371,6 +10371,228 @@ void Meta_Specification::get_required_field_names(
 
    get_always_required_field_names( names, required_transients, dependents );
 
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Source_Parent_Class", dependents ) )
+   {
+      dependents.insert( "Source_Parent" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Parent ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Parent ) ) )
+         names.insert( "Source_Parent" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Test_Parent_Class", dependents ) )
+   {
+      dependents.insert( "Test_Parent" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Test_Parent ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Test_Parent ) ) )
+         names.insert( "Test_Parent" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Child_Rel_Field_Key", dependents ) )
+   {
+      dependents.insert( "Child_Relationship" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Child_Relationship ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Child_Relationship ) ) )
+         names.insert( "Child_Relationship" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Child_Rel_Child_Class", dependents ) )
+   {
+      dependents.insert( "Child_Relationship" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Child_Relationship ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Child_Relationship ) ) )
+         names.insert( "Child_Relationship" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Is_Required_For_UI_Gen", dependents ) )
+   {
+      dependents.insert( "Specification_Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Field", dependents ) )
+   {
+      dependents.insert( "Source_Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Field ) ) )
+         names.insert( "Source_Field" );
+
+      dependents.insert( "Specification_Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Field", dependents ) )
+   {
+      dependents.insert( "Source_Child" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Child ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Child ) ) )
+         names.insert( "Source_Child" );
+
+      dependents.insert( "Specification_Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_Literal", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_Literal", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+
+      dependents.insert( "Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Field ) ) )
+         names.insert( "Field" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_String", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_Numeric_String", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_Left_Part", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_Right_Part", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Value_Label", dependents ) )
+   {
+      dependents.insert( "Value" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Value ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Value ) ) )
+         names.insert( "Value" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Enum", dependents ) )
+   {
+      dependents.insert( "Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Field ) ) )
+         names.insert( "Field" );
+
+      dependents.insert( "Specification_Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Field_Class", dependents ) )
+   {
+      dependents.insert( "Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Field ) ) )
+         names.insert( "Field" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Test_Field_Class", dependents ) )
+   {
+      dependents.insert( "Test_Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Test_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Test_Field ) ) )
+         names.insert( "Test_Field" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Source_Child_Class", dependents ) )
+   {
+      dependents.insert( "Source_Child" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Child ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Child ) ) )
+         names.insert( "Source_Child" );
+   }
+   // [(finish field_from_other_field)]
+
    // [(start field_dependency)]
    if( needs_field_value( "All_Vars", dependents ) )
    {
@@ -11314,6 +11536,17 @@ void Meta_Specification::get_required_field_names(
          names.insert( "Specification_Type" );
    }
    // [(finish field_from_search_replace)]
+
+   // [(start field_from_other_field)]
+   if( needs_field_value( "Source_Field_Class", dependents ) )
+   {
+      dependents.insert( "Source_Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Source_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Source_Field ) ) )
+         names.insert( "Source_Field" );
+   }
+   // [(finish field_from_other_field)]
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
