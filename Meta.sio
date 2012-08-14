@@ -11033,6 +11033,14 @@
         <item>field
        </specification>
        <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
         <id>600207
         <item>field
        </specification>
@@ -14007,6 +14015,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
         <id>600207
         <item>field
        </specification>
@@ -14038,6 +14050,10 @@
       <specifications/>
        <specification/>
         <id>600133d
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
         <item>field
        </specification>
        <specification/>
@@ -32237,6 +32253,8 @@
      <field_info>301332:116101;116100={o2permission}
      <field_info>301450:111101;111100={procedure}
      <field_info>301498:112101;112100={procedure_arg}
+     <field_info>301451:111101;111100={oprocedure}
+     <field_info>301452:111101;111100={o2procedure}
      <field_info>301475:113101;113100={cname}
      <field_info>301475:113105;113100={child}
      <field_info>301475:113108;113100={cclass}

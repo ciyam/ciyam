@@ -1515,7 +1515,7 @@ specification_add -id=600204 {Specification}_Name_from_search_replace field_from
 ,Source_Child:Name={scfield},Source_Child_2:Name={sc2field},Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue}\
 ,{Permission}:Name={permission},Other_{Permission}:Name={opermission},Other_{Permission}_2:Name={o2permission}\
-,{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg}\
+,{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg},Other_{Procedure}:Name={oprocedure},Other_{Procedure}_2:Name={o2procedure}\
 ,Child_Relationship:Name={cname},Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass}\
 ,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},Value={value},Value_Label={value_label},Value_Numeric_String={value_numstr}\
 ,Field_Values={field_values},Fields={fields},Field_Pairs={field_pairs} -sep=_ -opt_prefix"
