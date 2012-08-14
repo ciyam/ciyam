@@ -6495,6 +6495,8 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).add_search_replacement( "Name", "{o2permission}", to_string( get_obj( ).Other_Permission_2( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{procedure_arg}", to_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{oprocedure}", to_string( get_obj( ).Other_Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{o2procedure}", to_string( get_obj( ).Other_Procedure_2( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{cname}", to_string( get_obj( ).Child_Relationship( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{child}", to_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{cclass}", to_string( get_obj( ).Child_Relationship( ).Child_Class_Name( ) ) );

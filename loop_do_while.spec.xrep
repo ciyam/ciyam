@@ -1,0 +1,8 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start loop_do_while)]
+   do
+   {
+      get_obj( ).`{`$arg_oprocedure`}( );
+   } while( get_obj( ).`{`$arg_field`}( ) );
+   // [(start loop_do_while)]
+`}

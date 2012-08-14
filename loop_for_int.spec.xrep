@@ -1,0 +1,6 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start loop_for_int)]
+   for( int i = 0, n = get_obj( ).`{`$arg_field`}( ); i < n; i++ )
+      get_obj( ).`{`$arg_oprocedure`}( );
+   // [(start loop_for_int)]
+`}

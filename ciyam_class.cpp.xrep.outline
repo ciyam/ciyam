@@ -825,6 +825,18 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#key_generator.spec.xrep section=procedure class_name=$class_name\
  arg_field=$specification_\\0_field arg_procedure_arg=$specification_\\0_procedure_arg`}\
 `,\
+`@eq`(`'\\1`'`,`'loop_do_while`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#loop_do_while.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_field=$specification_\\0_field arg_oprocedure=$specification_\\0_oprocedure`}\
+`,\
+`@eq`(`'\\1`'`,`'loop_for_int`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#loop_for_int.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_field=$specification_\\0_field arg_oprocedure=$specification_\\0_oprocedure`}\
+`,\
+`@eq`(`'\\1`'`,`'loop_while_do`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#loop_while_do.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
+ arg_field=$specification_\\0_field arg_oprocedure=$specification_\\0_oprocedure`}\
+`,\
 `@eq`(`'\\1`'`,`'meta_trait_val_proc`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#meta_trait_val_proc.spec.xrep section=procedure class_name=$class_name\
  arg_field=$specification_\\0_field arg_procedure=$specification_\\0_procedure\
