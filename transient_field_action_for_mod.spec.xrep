@@ -1,0 +1,59 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_action_for_mod)]
+`{`$check_admin`=`'`'`}`{`@eq`(`$arg_admin_always`,`'true`'`)`$check_admin`=`'true`'`}`{`@eq`(`$arg_admin_never`,`'true`'`)`$check_admin`=`'true`'`}\
+`{`@eq`(`$check_admin`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`} )
+   {
+`,\
+   if( `{`@eq`(`$arg_admin_never`,`'true`'`)!is_admin_uid( ) && `}\
+`{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_admin_always`,`'true`'`)( `}\
+get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`@eq`(`$arg_admin_always`,`'true`'`) )`}`} )
+   {
+`}`{`@eq`(`$arg_not_iterating`,`'`'`)\
+      string actions( get_obj( ).`{`$arg_actions`}( ) );
+
+      if( !actions.empty( ) )
+         actions += ',';
+`{`@eq`(`$arg_prompt`,`'true`'`)\
+      actions += '?';
+`}\
+`{`@eq`(`$arg_back_for_view`,`'true`'`)\
+      if( !get_obj( ).get_is_iterating( ) )
+         actions += '<';
+`}\
+      actions += c_procedure_id_`{`$arg_procedure`};
+
+      get_obj( ).`{`$arg_actions`}( actions );
+`,\
+      if( !get_obj( ).get_is_iterating( ) )
+      {
+         string actions( get_obj( ).`{`$arg_actions`}( ) );
+
+         if( !actions.empty( ) )
+            actions += ',';
+`{`@eq`(`$arg_prompt`,`'true`'`)\
+         actions += '?';
+`}\
+`{`@eq`(`$arg_back_for_view`,`'true`'`)\
+         actions += '<';
+`}\
+         actions += c_procedure_id_`{`$arg_procedure`};
+
+         get_obj( ).`{`$arg_actions`}( actions );
+      }
+`}\
+   }
+   // [(start transient_field_action_for_mod)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_action_for_mod)]
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+   }
+   // [(start transient_field_action_for_mod)]
+`}

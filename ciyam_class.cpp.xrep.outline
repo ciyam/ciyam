@@ -921,6 +921,12 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
  arg_period=$specification_\0_period arg_type=$specification_\0_type arg_annual=$specification_\0_annual`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_field_compare`'`)
+`{`#modifier_field_compare.spec.xrep section=get_state\
+ arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier\
+ arg_op=$specification_\0_op arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
+`,\
 `@eq`(`'\1`'`,`'modifier_field_null`'`)
 `{`#modifier_field_null.spec.xrep section=get_state\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier\
@@ -1370,6 +1376,14 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_action=$specification_\0_action arg_actions=$specification_\0_actions arg_fkfield=$specification_\0_fkfield\
  arg_key_sep=$specification_\0_key_sep arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_spclass=$specification_\0_spclass`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_action_for_mod`'`)
+`{`#transient_field_action_for_mod.spec.xrep section=after_fetch class_name=$class_name\
+ arg_actions=$specification_\0_actions arg_procedure=$specification_\0_procedure\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
+ arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
+ arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
+ arg_not_iterating=$specification_\0_not_iterating`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -2803,6 +2817,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `{`#transient_field_action_create_from_fk.spec.xrep section=get_required_field_names\
  arg_actions=$specification_\0_actions arg_fkfield=$specification_\0_fkfield`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_action_for_mod`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
+`{`#transient_field_action_for_mod.spec.xrep section=get_required_field_names\
+ arg_actions=$specification_\0_actions arg_tfield=$specification_\0_tfield`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=get_required_field_names\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
@@ -2850,13 +2868,20 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`#modifier_date_notification.spec.xrep section=get_always_required_field_names\
  arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier`}\
 `,\
+`@eq`(`'\1`'`,`'modifier_field_compare`'`)
+`{`#modifier_field_compare.spec.xrep section=get_always_required_field_names\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
+`,\
 `@eq`(`'\1`'`,`'modifier_field_null`'`)
 `{`#modifier_field_null.spec.xrep section=get_always_required_field_names\
- arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier`}\
+ arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_field_value`'`)
 `{`#modifier_field_value.spec.xrep section=get_always_required_field_names\
- arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier`}\
+ arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_modifier=$specification_\0_modifier\
+ arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_past_date_time`'`)
 `{`#modifier_past_date_time.spec.xrep section=get_always_required_field_names\
