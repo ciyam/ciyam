@@ -24,5 +24,13 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( 
    if( ( required_transients && is_field_transient( e_field_id_`{`$field`} ) )
     || ( !required_transients && !is_field_transient( e_field_id_`{`$field`} ) ) )
       names.insert( "`{`$field`}" );
+`{`$tfield`=`$arg_tpfield`}`{`@eq`(`$tfield`,`'`'`)`$field`=`$arg_tfield`}\
+`{`!`@eq`(`$tfield`,`'`'`)
+   dependents.insert( "`{`$tfield`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$tfield`} ) ) )
+      names.insert( "`{`$tfield`}" );
+`}\
    // [(finish modifier_field_value)]
 `}

@@ -1,0 +1,39 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+`{`$op`=`'`'`}`{`@eq`(`$arg_op`,`'eq`'`)`$op`=`'==`'`}\
+`{`@eq`(`$arg_op`,`'neq`'`)`$op`=`'!=`'`}`{`@eq`(`$arg_op`,`'lt`'`)`$op`=`'<`'`}\
+`{`@eq`(`$arg_op`,`'gt`'`)`$op`=`'>`'`}`{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
+`{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
+   // [(start modifier_field_compare)]
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) )
+    && !is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ) )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )
+`}\
+    && get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ) )
+      state |= c_modifier_`{`$arg_modifier`};
+   // [(finish modifier_field_compare)]
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start modifier_field_compare)]
+   dependents.insert( "`{`$arg_field`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );
+
+`{`$sfield`=`$arg_pfield`}`{`@eq`(`$sfield`,`'`'`)`$sfield`=`$arg_sfield`}\
+   dependents.insert( "`{`$sfield`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$sfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$sfield`} ) ) )
+      names.insert( "`{`$sfield`}" );
+`{`$tfield`=`$arg_tpfield`}`{`@eq`(`$tfield`,`'`'`)`$tfield`=`$arg_tfield`}\
+`{`!`@eq`(`$tfield`,`'`'`)
+   dependents.insert( "`{`$tfield`}" ); // (for `{`$arg_modifier`} modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_`{`$tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$tfield`} ) ) )
+      names.insert( "`{`$tfield`}" );
+`}\
+   // [(finish modifier_field_compare)]
+`}
