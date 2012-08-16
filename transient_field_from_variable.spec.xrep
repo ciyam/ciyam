@@ -1,0 +1,7 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_from_variable)]
+   if( !get_obj( ).get_variable( "`{`$arg_variable`}" ).empty( ) )
+      get_obj( ).`{`$arg_field`}( from_string< typeof(
+       get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}" ) ) );
+   // [(finish transient_field_from_variable)]
+`}

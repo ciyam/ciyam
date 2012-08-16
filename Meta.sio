@@ -5743,6 +5743,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600499
+      <item>class
+     </specification>
+     <specification/>
       <id>602850
       <item>class
      </specification>
@@ -7118,6 +7122,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600499
+        <item>field
+       </specification>
+       <specification/>
         <id>602850
         <item>field
        </specification>
@@ -7288,6 +7296,28 @@
         <id>600493
         <item>tfield
        </specification>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>124132
+      <name>View_Parent_Extra
+      <type>int
+      <mandatory>true
+      <enum_id>700
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500889a
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>602850
         <item>field
@@ -7474,6 +7504,10 @@
       <name>Hide_Switch_Type
      </modifier>
      <modifier/>
+      <id>500889a
+      <name>Hide_View_Parent_Extra
+     </modifier>
+     <modifier/>
       <id>500888a
       <name>Is_Not_Restrict_Search
      </modifier>
@@ -7657,6 +7691,10 @@
      </specification>
      <specification/>
       <id>600498
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>600499
       <item>pclass
      </specification>
     </specifications>
@@ -7856,6 +7894,23 @@
       <specifications/>
        <specification/>
         <id>600480
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>123120
+      <name>Allow_View_Parent_Extra
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600499
         <item>pfield
        </specification>
       </specifications>
@@ -28864,6 +28919,19 @@
     </data>
    </specification>
    <specification/>
+    <id>600499
+    <name>{List_Field}_Hide_View_Parent_Extra
+    <type>modifier_field_value
+    <data/>
+     <class_id>124100
+     <pclass_id>123100
+     <modifier_id>500889a
+     <field_id>302120
+     <pfield_id>123120
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600496a
     <name>{List_Field}_Is_Not_Restrict_Search
     <type>modifier_field_value
@@ -29186,6 +29254,7 @@
      <field_info>302185:107101!@fkey1:300700+107101;link
      <field_info>124106
      <field_info>124121;enum=694
+     <field_info>124132;enum=700
      <field_info>124124;enum=686
      <field_info>124117
      <field_info>124122
@@ -34860,6 +34929,12 @@
     <name>list_field_trigger_option
     <type>int
     <key_values>0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
+   </user_defined_enum>
+   <user_defined_enum/>
+    <id>700
+    <name>list_field_view_parent_extra
+    <type>int
+    <key_values>0=none,1=vext1,2=vext2,3=vext3,4=vext4,5=vext5,6=vext6,7=vext7,8=vext8,9=vext9,10=vext0
    </user_defined_enum>
    <user_defined_enum/>
     <id>682

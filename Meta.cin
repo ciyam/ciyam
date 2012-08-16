@@ -76,6 +76,7 @@ user_defined_enum_add -id=696 list_field_print_type int 0=standard,1=non\\_print
 user_defined_enum_add -id=697 list_field_notes_truncation int 1=none,0=standard,30=30,40=40,50=50,80=80,100=100
 user_defined_enum_add -id=698 list_field_link_type int 0=foreign,1=non\\_foreign
 user_defined_enum_add -id=699 list_field_label_class int 0=child,1=parent
+user_defined_enum_add -id=700 list_field_view_parent_extra int 0=none,1=vext1,2=vext2,3=vext3,4=vext4,5=vext5,6=vext6,7=vext7,8=vext8,9=vext9,10=vext0
 user_defined_enum_add -id=800 field_action_create_type int 0=standard,1=confirmation,2=edit\\_and\\_save
 user_defined_enum_add -id=801 field_action_create_access_restriction int 0=none,1=owner,2=admin,3=non\\_admin
 user_defined_enum_add -id=802 field_action_type int 0=create\\_record,1=procedure\\_call
@@ -581,6 +582,7 @@ field_add -id=123116 List_Field_Type Allow_Restriction_Field bool mand -def=0
 field_add -id=123117 List_Field_Type Needs_Restriction_Field bool mand -def=0
 field_add -id=123118 List_Field_Type Is_Restrict_Search bool mand -def=0
 field_add -id=123119 List_Field_Type Allow_Link_Permission bool mand -def=0
+field_add -id=123120 List_Field_Type Allow_View_Parent_Extra bool mand -def=0
 index_add -id=123201 List_Field_Type Name unique
 class_add -id=124100 List_Field List_Fields -x=ordered
 field_add -id=124101 List_Field Order string mand -x=order
@@ -611,6 +613,7 @@ field_add -id=124128 List_Field Exact_Match_Only bool mand -def=0
 field_add -id=124129 List_Field Label_Without_Prefix bool mand -def=0
 field_add -id=124130 List_Field Font_Size int mand -def=0 -e=font_size
 field_add -id=124131 List_Field Label_Class int mand -def=0 -e=list_field_label_class
+field_add -id=124132 List_Field View_Parent_Extra int mand -def=0 -e=list_field_view_parent_extra
 procedure_add -id=124410 List_Field Move_Up
 procedure_arg_add -id=124411 List_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=124412 List_Field Move_Up Restrict_Values string in
@@ -1135,6 +1138,7 @@ modifier_add -id=500887 List_Field Is_Not_View_Child Access_Parent_Modifier:rele
 modifier_add -id=500888 List_Field Is_Restrict_Search Use_Source_Parent:relegate
 modifier_add -id=500888a List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
 modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
+modifier_add -id=500889a List_Field Hide_View_Parent_Extra View_Parent_Extra:relegate
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
@@ -1721,6 +1725,7 @@ specification_add -id=600496 {List_Field}_Is_Restrict_Search modifier_field_valu
 specification_add -id=600496a {List_Field}_Is_Not_Restrict_Search modifier_field_value "List_Field Is_Not_Restrict_Search Type:Is_Restrict_Search false"
 specification_add -id=600497 {List_Field}_Source_Parent_Class_2 field_from_other_field "List_Field Child_Rel_Source_Parent_Class Source_Parent_Class -check_null"
 specification_add -id=600498 {List_Field}_Hide_Link_Permission_Field modifier_field_value "List_Field Hide_Link_Permission_Field Type:Allow_Link_Permission false"
+specification_add -id=600499 {List_Field}_Hide_View_Parent_Extra modifier_field_value "List_Field Hide_View_Parent_Extra Type:Allow_View_Parent_Extra false"
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
 specification_add -id=600510 {Application}_Generate_Details transient_field_from_file "Application Generate_Details Name .generate.log"
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"
@@ -1921,7 +1926,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Child_Rel_Source_Parent:Name!@fkey4:{Class}+Is_Foreign_Key=1+Name;link+force\
 ,Child_Rel_Source_Parent_Class:Name;hidden+fkey5,Child_Rel_Source_Child:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link\
 ,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,Switch_Type\
-,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,Search_Option_Limit\
+,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
 ,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name\
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure\
 ,Font_Size,Alignment,Notes_Truncation,Print_Type,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\

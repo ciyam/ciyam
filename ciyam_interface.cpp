@@ -1728,6 +1728,18 @@ void request_handler::process_request( )
             }
          }
 
+         // NOTE: These special extra variables are used to indicate a restrict check/uncheck
+         // has occurred for a view child list when fetching the parent view.
+         map< string, string > view_extra_vars;
+         for( int i = 0; i < 10; i++ )
+         {
+            string name( c_vext_prefix );
+            name += ( '0' + i );
+
+            if( input_data.count( name ) )
+               view_extra_vars.insert( make_pair( name, input_data[ name ] ) );
+         }
+
          // NOTE: If the user is able to select their group or "other" then assign it here.
          if( !mod_info.user_select_field.empty( )
           && ( mod_info.user_select_perm.empty( )
@@ -2252,7 +2264,7 @@ void request_handler::process_request( )
             string user_info( p_session_info->user_key + ":" + p_session_info->user_id );
 
             if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
-             view.field_list, set_field_values, *p_session_info, item_info ) )
+             view.field_list, set_field_values, *p_session_info, item_info, 0, 0, 0, 0, 0, &view_extra_vars ) )
                had_send_or_recv_error = true;
             else
             {

@@ -4569,6 +4569,61 @@ void Meta_Model::impl::impl_Generate( )
                          + " in Model::Generate" );
                      }
 
+                     string vext;
+                     switch( get_obj( ).child_List( ).child_List_Field( ).View_Parent_Extra( ) )
+                     {
+                        case 0: // i.e. none
+                        break;
+
+                        case 1:
+                        vext = "vext=1";
+                        break;
+
+                        case 2:
+                        vext = "vext=2";
+                        break;
+
+                        case 3:
+                        vext = "vext=3";
+                        break;
+
+                        case 4:
+                        vext = "vext=4";
+                        break;
+
+                        case 5:
+                        vext = "vext=5";
+                        break;
+
+                        case 6:
+                        vext = "vext=6";
+                        break;
+
+                        case 7:
+                        vext = "vext=7";
+                        break;
+
+                        case 8:
+                        vext = "vext=8";
+                        break;
+
+                        case 9:
+                        vext = "vext=9";
+                        break;
+                        
+                        case 10:
+                        vext = "vext=0";
+                        break;
+
+                     }
+
+                     if( !vext.empty( ) )
+                     {
+                        if( !field_extras.empty( ) )
+                           field_extras += "+";
+                        field_extras += vext;
+                     }
+
                      restrict_field_other.push_back( make_pair( p_field->Mandatory( ), field_extras ) );
 
                      string operations;

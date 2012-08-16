@@ -104,7 +104,8 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
       e_field_id_Type = 47,
       e_field_id_Use_Child_Rel_Source_Parent = 48,
       e_field_id_Use_In_Text_Search_Title = 49,
-      e_field_id_Use_Source_Parent = 50
+      e_field_id_Use_Source_Parent = 50,
+      e_field_id_View_Parent_Extra = 51
    };
 
    Meta_List_Field( );
@@ -193,6 +194,9 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
 
    bool Use_Source_Parent( ) const;
    void Use_Source_Parent( bool Use_Source_Parent );
+
+   int View_Parent_Extra( ) const;
+   void View_Parent_Extra( int View_Parent_Extra );
 
    Meta_Modifier& Access_Parent_Modifier( );
    const Meta_Modifier& Access_Parent_Modifier( ) const;
