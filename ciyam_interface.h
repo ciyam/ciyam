@@ -68,6 +68,7 @@ const char* const c_rest_suffix = "rest";
 const char* const c_show_prefix = "show";
 const char* const c_sort_suffix = "sort";
 const char* const c_srch_suffix = "srch";
+const char* const c_vext_prefix = "vext";
 
 const char* const c_act_del = "del";
 const char* const c_act_cont = "cont";

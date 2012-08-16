@@ -1133,6 +1133,56 @@
    </values>
   </enum>
   <enum/>
+   <id>700
+   <name>enum_list_field_view_parent_extra
+   <values/>
+    <value/>
+     <data>0
+     <name>enum_list_field_view_parent_extra_none
+    </value>
+    <value/>
+     <data>1
+     <name>enum_list_field_view_parent_extra_vext1
+    </value>
+    <value/>
+     <data>2
+     <name>enum_list_field_view_parent_extra_vext2
+    </value>
+    <value/>
+     <data>3
+     <name>enum_list_field_view_parent_extra_vext3
+    </value>
+    <value/>
+     <data>4
+     <name>enum_list_field_view_parent_extra_vext4
+    </value>
+    <value/>
+     <data>5
+     <name>enum_list_field_view_parent_extra_vext5
+    </value>
+    <value/>
+     <data>6
+     <name>enum_list_field_view_parent_extra_vext6
+    </value>
+    <value/>
+     <data>7
+     <name>enum_list_field_view_parent_extra_vext7
+    </value>
+    <value/>
+     <data>8
+     <name>enum_list_field_view_parent_extra_vext8
+    </value>
+    <value/>
+     <data>9
+     <name>enum_list_field_view_parent_extra_vext9
+    </value>
+    <value/>
+     <data>10
+     <name>enum_list_field_view_parent_extra_vext0
+    </value>
+   </values>
+  </enum>
+  <enum/>
    <id>682
    <name>enum_list_pdf_list_type
    <values/>
@@ -3512,7 +3562,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>100000:relegate,2000:relegate,4000:relegate,8000:relegate,80000000:relegate
+     <modifiers>100000:relegate,2000:relegate,4000:relegate,8000:relegate,100000000:relegate
     </field>
     <field/>
      <name>field_list_field_source_parent_class
@@ -3715,6 +3765,14 @@
      <modifiers>2000:relegate,8000000:relegate,4000:relegate
     </field>
     <field/>
+     <name>field_list_field_view_parent_extra
+     <field>124132
+     <ftype>int
+     <extra>enum=700
+     <mandatory>true
+     <modifiers>20000000:relegate
+    </field>
+    <field/>
      <name>field_list_field_search_option_limit
      <field>124124
      <ftype>int
@@ -3868,7 +3926,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>20000000:relegate
+     <modifiers>40000000:relegate
     </field>
     <field/>
      <name>field_list_field_link_type
@@ -3933,7 +3991,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>40000000:relegate
+     <modifiers>80000000:relegate
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name

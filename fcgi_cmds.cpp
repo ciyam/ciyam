@@ -476,7 +476,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
  const string& class_id, const string& item_key, const string& field_list,
  const string& set_field_values, const session_info& sess_info, pair< string, string >& item_info,
  const string* p_owner, const string* p_pdf_spec_name, const string* p_pdf_title,
- const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+ const string* p_pdf_link_filename, string* p_pdf_view_file_name, const map< string, string >* p_vext_items )
 {
    bool okay = true;
 
@@ -530,6 +530,17 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
       field_values += "@extra1="
        + escaped( escaped( sess_info.user_extra1, "," ), "\"" )
        + ",@extra2=" + escaped( escaped( sess_info.user_extra2, "," ), "\"" );
+   }
+
+   if( p_vext_items && !p_vext_items->empty( ) )
+   {
+      for( map< string, string >::const_iterator i = p_vext_items->begin( ); i != p_vext_items->end( ); ++i )
+      {
+         if( !field_values.empty( ) )
+            field_values += ",";
+
+         field_values += "@" + i->first + "=" + i->second;
+      }
    }
 
    if( !field_values.empty( ) )

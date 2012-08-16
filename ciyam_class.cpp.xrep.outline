@@ -1411,6 +1411,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check=$specification_\0_check`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_from_variable`'`)
+`{`#transient_field_from_variable.spec.xrep section=after_fetch class_name=$class_name\
+ arg_field=$specification_\0_field arg_variable=$specification_\0_variable`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_value=$specification_\0_value\

@@ -50,14 +50,15 @@ class META_LIST_FIELD_TYPE_DECL_SPEC Meta_List_Field_Type : public class_base
       e_field_id_Allow_Restriction_Value = 9,
       e_field_id_Allow_Search_Option_Limit = 10,
       e_field_id_Allow_Select_Specifics = 11,
-      e_field_id_Is_Restrict_Search = 12,
-      e_field_id_List_Field_Name = 13,
-      e_field_id_Name = 14,
-      e_field_id_Needs_Restriction_Field = 15,
-      e_field_id_Needs_Source = 16,
-      e_field_id_Needs_Switch_Type = 17,
-      e_field_id_Non_Simple_Field = 18,
-      e_field_id_Trivial_Field_Only = 19
+      e_field_id_Allow_View_Parent_Extra = 12,
+      e_field_id_Is_Restrict_Search = 13,
+      e_field_id_List_Field_Name = 14,
+      e_field_id_Name = 15,
+      e_field_id_Needs_Restriction_Field = 16,
+      e_field_id_Needs_Source = 17,
+      e_field_id_Needs_Switch_Type = 18,
+      e_field_id_Non_Simple_Field = 19,
+      e_field_id_Trivial_Field_Only = 20
    };
 
    Meta_List_Field_Type( );
@@ -95,6 +96,9 @@ class META_LIST_FIELD_TYPE_DECL_SPEC Meta_List_Field_Type : public class_base
 
    bool Allow_Select_Specifics( ) const;
    void Allow_Select_Specifics( bool Allow_Select_Specifics );
+
+   bool Allow_View_Parent_Extra( ) const;
+   void Allow_View_Parent_Extra( bool Allow_View_Parent_Extra );
 
    bool Is_Restrict_Search( ) const;
    void Is_Restrict_Search( bool Is_Restrict_Search );

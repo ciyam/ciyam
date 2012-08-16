@@ -209,6 +209,7 @@ const char* const c_field_id_Type = "302120";
 const char* const c_field_id_Use_Child_Rel_Source_Parent = "124123";
 const char* const c_field_id_Use_In_Text_Search_Title = "124116";
 const char* const c_field_id_Use_Source_Parent = "124104";
+const char* const c_field_id_View_Parent_Extra = "124132";
 
 const char* const c_field_name_Access_Parent_Modifier = "Access_Parent_Modifier";
 const char* const c_field_name_Access_Permission = "Access_Permission";
@@ -260,6 +261,7 @@ const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Use_Child_Rel_Source_Parent = "Use_Child_Rel_Source_Parent";
 const char* const c_field_name_Use_In_Text_Search_Title = "Use_In_Text_Search_Title";
 const char* const c_field_name_Use_Source_Parent = "Use_Source_Parent";
+const char* const c_field_name_View_Parent_Extra = "View_Parent_Extra";
 
 const char* const c_field_display_name_Access_Parent_Modifier = "field_list_field_access_parent_modifier";
 const char* const c_field_display_name_Access_Permission = "field_list_field_access_permission";
@@ -311,8 +313,9 @@ const char* const c_field_display_name_Type = "field_list_field_type";
 const char* const c_field_display_name_Use_Child_Rel_Source_Parent = "field_list_field_use_child_rel_source_parent";
 const char* const c_field_display_name_Use_In_Text_Search_Title = "field_list_field_use_in_text_search_title";
 const char* const c_field_display_name_Use_Source_Parent = "field_list_field_use_source_parent";
+const char* const c_field_display_name_View_Parent_Extra = "field_list_field_view_parent_extra";
 
-const int c_num_fields = 50;
+const int c_num_fields = 51;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -344,6 +347,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "124129",
    "124130",
    "124131",
+   "124132",
    "302100",
    "302110",
    "302115",
@@ -419,7 +423,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Type",
    "Use_Child_Rel_Source_Parent",
    "Use_In_Text_Search_Title",
-   "Use_Source_Parent"
+   "Use_Source_Parent",
+   "View_Parent_Extra"
 };
 
 inline bool compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -476,9 +481,10 @@ const uint64_t c_modifier_Hide_Restriction_Value = UINT64_C( 0x2000000 );
 const uint64_t c_modifier_Hide_Search_Option_Limit = UINT64_C( 0x4000000 );
 const uint64_t c_modifier_Hide_Select_Specifics = UINT64_C( 0x8000000 );
 const uint64_t c_modifier_Hide_Switch_Type = UINT64_C( 0x10000000 );
-const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x20000000 );
-const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x40000000 );
-const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x80000000 );
+const uint64_t c_modifier_Hide_View_Parent_Extra = UINT64_C( 0x20000000 );
+const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x40000000 );
+const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x80000000 );
+const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x100000000 );
 
 domain_string_max_size< 100 > g_Include_Key_Additions_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -548,6 +554,7 @@ string gv_default_Type = string( );
 bool gv_default_Use_Child_Rel_Source_Parent = bool( 0 );
 bool gv_default_Use_In_Text_Search_Title = bool( 0 );
 bool gv_default_Use_Source_Parent = bool( 0 );
+int gv_default_View_Parent_Extra = int( 0 );
 
 set< int > g_list_field_restrict_enum;
 set< int > g_list_field_alignment_enum;
@@ -561,6 +568,7 @@ set< int > g_list_field_print_type_enum;
 set< int > g_list_search_opt_limit_enum;
 set< int > g_list_field_switch_type_enum;
 set< int > g_list_field_trigger_option_enum;
+set< int > g_list_field_view_parent_extra_enum;
 
 const int c_enum_list_field_restrict_none( 0 );
 const int c_enum_list_field_restrict_owner_only( 1 );
@@ -907,6 +915,52 @@ string get_enum_string_list_field_trigger_option( int val )
    return get_module_string( lower( string_name ) );
 }
 
+const int c_enum_list_field_view_parent_extra_none( 0 );
+const int c_enum_list_field_view_parent_extra_vext1( 1 );
+const int c_enum_list_field_view_parent_extra_vext2( 2 );
+const int c_enum_list_field_view_parent_extra_vext3( 3 );
+const int c_enum_list_field_view_parent_extra_vext4( 4 );
+const int c_enum_list_field_view_parent_extra_vext5( 5 );
+const int c_enum_list_field_view_parent_extra_vext6( 6 );
+const int c_enum_list_field_view_parent_extra_vext7( 7 );
+const int c_enum_list_field_view_parent_extra_vext8( 8 );
+const int c_enum_list_field_view_parent_extra_vext9( 9 );
+const int c_enum_list_field_view_parent_extra_vext0( 10 );
+
+string get_enum_string_list_field_view_parent_extra( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for list_field_view_parent_extra" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_list_field_view_parent_extra_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_list_field_view_parent_extra_vext1";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_list_field_view_parent_extra_vext2";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_list_field_view_parent_extra_vext3";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_list_field_view_parent_extra_vext4";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_list_field_view_parent_extra_vext5";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_list_field_view_parent_extra_vext6";
+   else if( to_string( val ) == to_string( "7" ) )
+      string_name = "enum_list_field_view_parent_extra_vext7";
+   else if( to_string( val ) == to_string( "8" ) )
+      string_name = "enum_list_field_view_parent_extra_vext8";
+   else if( to_string( val ) == to_string( "9" ) )
+      string_name = "enum_list_field_view_parent_extra_vext9";
+   else if( to_string( val ) == to_string( "10" ) )
+      string_name = "enum_list_field_view_parent_extra_vext0";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_view_parent_extra" );
+
+   return get_module_string( lower( string_name ) );
+}
+
 // [<start anonymous>]
 // [<finish anonymous>]
 
@@ -1086,6 +1140,8 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Use_In_Text_Search_Title( ), cmd_handler.retval );
       else if( field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Use_Source_Parent( ), cmd_handler.retval );
+      else if( field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
+         string_getter< int >( cmd_handler.p_Meta_List_Field->View_Parent_Extra( ), cmd_handler.retval );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
@@ -1246,6 +1302,9 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
       else if( field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Use_Source_Parent, field_value );
+      else if( field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
+         func_string_setter< Meta_List_Field, int >(
+          *cmd_handler.p_Meta_List_Field, &Meta_List_Field::View_Parent_Extra, field_value );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
@@ -1427,6 +1486,9 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
    bool impl_Use_Source_Parent( ) const { return lazy_fetch( p_obj ), v_Use_Source_Parent; }
    void impl_Use_Source_Parent( bool Use_Source_Parent ) { v_Use_Source_Parent = Use_Source_Parent; }
+
+   int impl_View_Parent_Extra( ) const { return lazy_fetch( p_obj ), v_View_Parent_Extra; }
+   void impl_View_Parent_Extra( int View_Parent_Extra ) { v_View_Parent_Extra = View_Parent_Extra; }
 
    Meta_Modifier& impl_Access_Parent_Modifier( )
    {
@@ -2169,6 +2231,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    bool v_Use_Child_Rel_Source_Parent;
    bool v_Use_In_Text_Search_Title;
    bool v_Use_Source_Parent;
+   int v_View_Parent_Extra;
 
    string v_Access_Parent_Modifier;
    mutable class_pointer< Meta_Modifier > cp_Access_Parent_Modifier;
@@ -2645,6 +2708,10 @@ string Meta_List_Field::impl::get_field_value( int field ) const
       retval = to_string( impl_Use_Source_Parent( ) );
       break;
 
+      case 50:
+      retval = to_string( impl_View_Parent_Extra( ) );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range" );
    }
@@ -2856,6 +2923,10 @@ void Meta_List_Field::impl::set_field_value( int field, const string& value )
       func_string_setter< Meta_List_Field::impl, bool >( *this, &Meta_List_Field::impl::impl_Use_Source_Parent, value );
       break;
 
+      case 50:
+      func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_View_Parent_Extra, value );
+      break;
+
       default:
       throw runtime_error( "field #" + to_string( field ) + " is out of range" );
    }
@@ -2983,6 +3054,11 @@ uint64_t Meta_List_Field::impl::get_state( ) const
    // [(start modifier_field_value)]
    if( get_obj( ).Type( ).Allow_Link_Permission( ) == false )
       state |= c_modifier_Hide_Link_Permission_Field;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).Type( ).Allow_View_Parent_Extra( ) == false )
+      state |= c_modifier_Hide_View_Parent_Extra;
    // [(finish modifier_field_value)]
 
    // [<start get_state>]
@@ -3217,6 +3293,7 @@ void Meta_List_Field::impl::clear( )
    v_Use_Child_Rel_Source_Parent = gv_default_Use_Child_Rel_Source_Parent;
    v_Use_In_Text_Search_Title = gv_default_Use_In_Text_Search_Title;
    v_Use_Source_Parent = gv_default_Use_Source_Parent;
+   v_View_Parent_Extra = gv_default_View_Parent_Extra;
 
    v_Access_Parent_Modifier = string( );
    if( cp_Access_Parent_Modifier )
@@ -3440,6 +3517,11 @@ void Meta_List_Field::impl::validate( unsigned state, bool is_internal, validati
       p_validation_errors->insert( validation_error_value_type( c_field_name_Trigger_Option,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Trigger_Option ) ) ) ) );
+
+   if( !g_list_field_view_parent_extra_enum.count( v_View_Parent_Extra ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_View_Parent_Extra,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_View_Parent_Extra ) ) ) ) );
 
    // [(start check_cond_non_null)]
    if( get_obj( ).Use_Source_Parent( ) && is_null( get_obj( ).Source_Parent( ) ) )
@@ -4114,6 +4196,16 @@ bool Meta_List_Field::Use_Source_Parent( ) const
 void Meta_List_Field::Use_Source_Parent( bool Use_Source_Parent )
 {
    p_impl->impl_Use_Source_Parent( Use_Source_Parent );
+}
+
+int Meta_List_Field::View_Parent_Extra( ) const
+{
+   return p_impl->impl_View_Parent_Extra( );
+}
+
+void Meta_List_Field::View_Parent_Extra( int View_Parent_Extra )
+{
+   p_impl->impl_View_Parent_Extra( View_Parent_Extra );
 }
 
 Meta_Modifier& Meta_List_Field::Access_Parent_Modifier( )
@@ -5082,6 +5174,16 @@ const char* Meta_List_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_View_Parent_Extra )
+   {
+      p_id = c_field_id_View_Parent_Extra;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
 
    return p_id;
 }
@@ -5593,6 +5695,16 @@ const char* Meta_List_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_View_Parent_Extra )
+   {
+      p_name = c_field_name_View_Parent_Extra;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
 
    return p_name;
 }
@@ -5703,6 +5815,8 @@ string Meta_List_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Use_In_Text_Search_Title );
    else if( id_or_name == c_field_id_Use_Source_Parent || id_or_name == c_field_name_Use_Source_Parent )
       display_name = get_module_string( c_field_display_name_Use_Source_Parent );
+   else if( id_or_name == c_field_id_View_Parent_Extra || id_or_name == c_field_name_View_Parent_Extra )
+      display_name = get_module_string( c_field_display_name_View_Parent_Extra );
 
    return display_name;
 }
@@ -6058,6 +6172,7 @@ void Meta_List_Field::get_sql_column_names(
    names.push_back( "C_Use_Child_Rel_Source_Parent" );
    names.push_back( "C_Use_In_Text_Search_Title" );
    names.push_back( "C_Use_Source_Parent" );
+   names.push_back( "C_View_Parent_Extra" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
       *p_done = true;
@@ -6118,6 +6233,7 @@ void Meta_List_Field::get_sql_column_values(
    values.push_back( to_string( Use_Child_Rel_Source_Parent( ) ) );
    values.push_back( to_string( Use_In_Text_Search_Title( ) ) );
    values.push_back( to_string( Use_Source_Parent( ) ) );
+   values.push_back( to_string( View_Parent_Extra( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
       *p_done = true;
@@ -6465,6 +6581,14 @@ void Meta_List_Field::get_always_required_field_names(
       names.insert( "Type" );
    // [(finish modifier_field_value)]
 
+   // [(start modifier_field_value)]
+   dependents.insert( "Type" ); // (for Hide_View_Parent_Extra modifier)
+
+   if( ( required_transients && is_field_transient( e_field_id_Type ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      names.insert( "Type" );
+   // [(finish modifier_field_value)]
+
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]
 }
@@ -6565,6 +6689,7 @@ void Meta_List_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "124123", "Use_Child_Rel_Source_Parent", "bool", false ) );
    all_field_info.push_back( field_info( "124116", "Use_In_Text_Search_Title", "bool", false ) );
    all_field_info.push_back( field_info( "124104", "Use_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "124132", "View_Parent_Extra", "int", false ) );
 }
 
 void Meta_List_Field::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
@@ -6813,6 +6938,10 @@ const char* Meta_List_Field::static_get_field_id( field_id id )
       case 50:
       p_id = "124104";
       break;
+
+      case 51:
+      p_id = "124132";
+      break;
    }
 
    if( !p_id )
@@ -7026,6 +7155,10 @@ const char* Meta_List_Field::static_get_field_name( field_id id )
       case 50:
       p_id = "Use_Source_Parent";
       break;
+
+      case 51:
+      p_id = "View_Parent_Extra";
+      break;
    }
 
    if( !p_id )
@@ -7140,6 +7273,8 @@ int Meta_List_Field::static_get_field_num( const string& field )
       rc += 49;
    else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
       rc += 50;
+   else if( field == c_field_id_View_Parent_Extra || field == c_field_name_View_Parent_Extra )
+      rc += 51;
 
    return rc - 1;
 }
@@ -7217,6 +7352,7 @@ string Meta_List_Field::static_get_sql_columns( )
     "C_Use_Child_Rel_Source_Parent INTEGER NOT NULL,"
     "C_Use_In_Text_Search_Title INTEGER NOT NULL,"
     "C_Use_Source_Parent INTEGER NOT NULL,"
+    "C_View_Parent_Extra INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;
@@ -7303,6 +7439,18 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_trigger_option_8", get_enum_string_list_field_trigger_option( 8 ) ) );
    pairs.push_back( make_pair( "enum_list_field_trigger_option_9", get_enum_string_list_field_trigger_option( 9 ) ) );
    pairs.push_back( make_pair( "enum_list_field_trigger_option_10", get_enum_string_list_field_trigger_option( 10 ) ) );
+
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_0", get_enum_string_list_field_view_parent_extra( 0 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_1", get_enum_string_list_field_view_parent_extra( 1 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_2", get_enum_string_list_field_view_parent_extra( 2 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_3", get_enum_string_list_field_view_parent_extra( 3 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_4", get_enum_string_list_field_view_parent_extra( 4 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_5", get_enum_string_list_field_view_parent_extra( 5 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_6", get_enum_string_list_field_view_parent_extra( 6 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_7", get_enum_string_list_field_view_parent_extra( 7 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_8", get_enum_string_list_field_view_parent_extra( 8 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_9", get_enum_string_list_field_view_parent_extra( 9 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_view_parent_extra_10", get_enum_string_list_field_view_parent_extra( 10 ) ) );
 }
 
 void Meta_List_Field::static_get_sql_indexes( vector< string >& indexes )
@@ -7408,6 +7556,17 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_trigger_option_enum.insert( 8 );
    g_list_field_trigger_option_enum.insert( 9 );
    g_list_field_trigger_option_enum.insert( 10 );
+   g_list_field_view_parent_extra_enum.insert( 0 );
+   g_list_field_view_parent_extra_enum.insert( 1 );
+   g_list_field_view_parent_extra_enum.insert( 2 );
+   g_list_field_view_parent_extra_enum.insert( 3 );
+   g_list_field_view_parent_extra_enum.insert( 4 );
+   g_list_field_view_parent_extra_enum.insert( 5 );
+   g_list_field_view_parent_extra_enum.insert( 6 );
+   g_list_field_view_parent_extra_enum.insert( 7 );
+   g_list_field_view_parent_extra_enum.insert( 8 );
+   g_list_field_view_parent_extra_enum.insert( 9 );
+   g_list_field_view_parent_extra_enum.insert( 10 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

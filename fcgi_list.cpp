@@ -2116,6 +2116,9 @@ void output_list_form( ostream& os,
              || ( source.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
              || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
             {
+               map< string, string > restrict_extras;
+               parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
+
                if( !had_data )
                   had_data = true;
                else
@@ -2126,10 +2129,14 @@ void output_list_form( ostream& os,
                sel_id += ( '0' + i );
 
                bool is_checked = true;
+               bool is_uncheck = false;
 
                if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
                 || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
+               {
+                  is_uncheck = true;
                   is_checked = false;
+               }
 
                if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_true )
                   is_checked = true;
@@ -2169,6 +2176,24 @@ void output_list_form( ostream& os,
                   if( extras.count( c_list_type_extra_search ) )
                      append_hash_values_query_update( os, sel_id, has_text_search,
                       source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
+               }
+
+               if( restrict_extras.count( c_vext_prefix ) )
+               {
+                  if( is_checked )
+                  {
+                     if( is_uncheck )
+                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '', true ); ";
+                     else
+                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '0', true ); ";
+                  }
+                  else
+                  {
+                     if( !is_uncheck )
+                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '', true ); ";
+                     else
+                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '1', true ); ";
+                  }
                }
 
                os << "query_update( '"
