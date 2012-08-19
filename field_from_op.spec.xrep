@@ -4,7 +4,7 @@
       return true;
    // [(finish field_from_op)]
 `}
-`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$op`=`$arg_op`}\
 `{`@eq`(`$op`,`'add`'`)`$op`=`'+`'`}\
 `{`@eq`(`$op`,`'sub`'`)`$op`=`'-`'`}\
@@ -29,17 +29,36 @@
    // [(start field_from_op)]
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_check`,`'`'`)\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   get_obj( ).op_update( );
+`}\
    get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
-`,\
-   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`} )
-      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
-`{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   get_obj( ).op_apply( );
 `}`,\
-   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`}`} )
+   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`} )
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   {
+      get_obj( ).op_update( );
+`}\
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+      get_obj( ).op_apply( );
+   }
+`}`}`,\
+   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`}`} )
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   {
+      get_obj( ).op_update( );
 `}\
+      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
+`{`@eq`(`$arg_ofield`,`'`'`)`$arg_value`,get_obj( ).`{`$arg_ofield`}( )`} );
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+      get_obj( ).op_apply( );
+   }
+`}`}\
    // [(finish field_from_op)]
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
