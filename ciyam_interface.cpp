@@ -3380,7 +3380,11 @@ void request_handler::process_request( )
                if( !user_home_info.empty( ) )
                   extra_content << "<p align=\"center\">" << user_home_info << "</p>\n";
 
-               if( !mod_info.home_list_id.empty( ) )
+               bool can_output = true;
+               if( using_anonymous && !list.lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                  can_output = false;
+
+               if( can_output && !mod_info.home_list_id.empty( ) )
                {
                   output_list_form( extra_content,
                    list, session_id, uselect, "", false,
@@ -3496,6 +3500,9 @@ void request_handler::process_request( )
                            if( !( state & flag ) )
                               is_okay = false;
                         }
+
+                        if( using_anonymous && !child_lists[ i->second ].lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                           is_okay = false;
 
                         if( !is_okay )
                         {
@@ -3776,6 +3783,9 @@ void request_handler::process_request( )
                      else
                         has_perm = p_session_info->is_default_other( );
                   }
+
+                  if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                     has_perm = false;
 
                   // NOTE: If the list type has been identified as "no access" then it will not be displayed.
                   if( lmci->second->type == c_list_type_no_access )

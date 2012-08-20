@@ -39,17 +39,25 @@ class META_LIST_TYPE_DECL_SPEC Meta_List_Type : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Is_Child = 1,
-      e_field_id_Is_Home = 2,
-      e_field_id_List_Name = 3,
-      e_field_id_Name = 4
+      e_field_id_Dummy_1 = 1,
+      e_field_id_Is_Child = 2,
+      e_field_id_Is_Group_Or_User = 3,
+      e_field_id_Is_Home = 4,
+      e_field_id_List_Name = 5,
+      e_field_id_Name = 6
    };
 
    Meta_List_Type( );
    ~Meta_List_Type( );
 
+   bool Dummy_1( ) const;
+   void Dummy_1( bool Dummy_1 );
+
    bool Is_Child( ) const;
    void Is_Child( bool Is_Child );
+
+   bool Is_Group_Or_User( ) const;
+   void Is_Group_Or_User( bool Is_Group_Or_User );
 
    bool Is_Home( ) const;
    void Is_Home( bool Is_Home );
