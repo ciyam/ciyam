@@ -326,6 +326,7 @@ const char* const c_list_type_extra_sort_no_limit = "sort_no_limit";
 const char* const c_list_type_extra_print_no_trunc = "print_no_trunc";
 const char* const c_list_type_extra_text_highlight = "text_highlight";
 const char* const c_list_type_extra_admin_owner_new = "admin_owner_new";
+const char* const c_list_type_extra_allow_anonymous = "allow_anonymous";
 const char* const c_list_type_extra_text_highlight1 = "text_highlight1";
 const char* const c_list_type_extra_search_opt_limit = "search_opt_limit";
 const char* const c_list_type_extra_admin_owner_erase = "admin_owner_erase";

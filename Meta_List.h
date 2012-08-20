@@ -54,45 +54,47 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Access_Parent_Modifier = 1,
       e_field_id_Access_Permission = 2,
       e_field_id_Access_Restriction = 3,
-      e_field_id_Allow_Quick_Link = 4,
-      e_field_id_Allow_Text_Search = 5,
-      e_field_id_Class = 6,
-      e_field_id_Create_Only_If_Default_Other = 7,
-      e_field_id_Create_Permission = 8,
-      e_field_id_Create_Restriction = 9,
-      e_field_id_Destroy_Only_If_Default_Other = 10,
-      e_field_id_Destroy_Permission = 11,
-      e_field_id_Destroy_Restriction = 12,
-      e_field_id_Direction = 13,
-      e_field_id_Display_Only_If_Default_Other = 14,
-      e_field_id_Display_Row_Limit = 15,
-      e_field_id_Display_Security_Level = 16,
-      e_field_id_Id = 17,
-      e_field_id_Ignore_Implicit_Ordering = 18,
-      e_field_id_Ignore_Unactionable_Records = 19,
-      e_field_id_Ignore_Uneditable_Parent = 20,
-      e_field_id_Ignore_User_Id_Filter = 21,
-      e_field_id_Is_Child = 22,
-      e_field_id_Is_Home = 23,
-      e_field_id_Is_Variation = 24,
-      e_field_id_Limit_Scroll_And_New = 25,
-      e_field_id_Model = 26,
-      e_field_id_Multiline_Truncate_For_Print = 27,
-      e_field_id_Name = 28,
-      e_field_id_Number_Multiple_Pages = 29,
-      e_field_id_PDF_Font_Type = 30,
-      e_field_id_PDF_List_Type = 31,
-      e_field_id_Parent_Class = 32,
-      e_field_id_Parent_Field = 33,
-      e_field_id_Print_Restriction = 34,
-      e_field_id_Print_Without_Highlight = 35,
-      e_field_id_Search_Option_Limit = 36,
-      e_field_id_Sort_Rows_In_UI = 37,
-      e_field_id_Style = 38,
-      e_field_id_Text_Match_Highlight = 39,
-      e_field_id_Title = 40,
-      e_field_id_Type = 41,
-      e_field_id_Variation_Name = 42
+      e_field_id_Allow_Anonymous_Access = 4,
+      e_field_id_Allow_Quick_Link = 5,
+      e_field_id_Allow_Text_Search = 6,
+      e_field_id_Class = 7,
+      e_field_id_Create_Only_If_Default_Other = 8,
+      e_field_id_Create_Permission = 9,
+      e_field_id_Create_Restriction = 10,
+      e_field_id_Destroy_Only_If_Default_Other = 11,
+      e_field_id_Destroy_Permission = 12,
+      e_field_id_Destroy_Restriction = 13,
+      e_field_id_Direction = 14,
+      e_field_id_Display_Only_If_Default_Other = 15,
+      e_field_id_Display_Row_Limit = 16,
+      e_field_id_Display_Security_Level = 17,
+      e_field_id_Id = 18,
+      e_field_id_Ignore_Implicit_Ordering = 19,
+      e_field_id_Ignore_Unactionable_Records = 20,
+      e_field_id_Ignore_Uneditable_Parent = 21,
+      e_field_id_Ignore_User_Id_Filter = 22,
+      e_field_id_Is_Child = 23,
+      e_field_id_Is_Group_Or_User = 24,
+      e_field_id_Is_Home = 25,
+      e_field_id_Is_Variation = 26,
+      e_field_id_Limit_Scroll_And_New = 27,
+      e_field_id_Model = 28,
+      e_field_id_Multiline_Truncate_For_Print = 29,
+      e_field_id_Name = 30,
+      e_field_id_Number_Multiple_Pages = 31,
+      e_field_id_PDF_Font_Type = 32,
+      e_field_id_PDF_List_Type = 33,
+      e_field_id_Parent_Class = 34,
+      e_field_id_Parent_Field = 35,
+      e_field_id_Print_Restriction = 36,
+      e_field_id_Print_Without_Highlight = 37,
+      e_field_id_Search_Option_Limit = 38,
+      e_field_id_Sort_Rows_In_UI = 39,
+      e_field_id_Style = 40,
+      e_field_id_Text_Match_Highlight = 41,
+      e_field_id_Title = 42,
+      e_field_id_Type = 43,
+      e_field_id_Variation_Name = 44
    };
 
    Meta_List( );
@@ -100,6 +102,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    int Access_Restriction( ) const;
    void Access_Restriction( int Access_Restriction );
+
+   bool Allow_Anonymous_Access( ) const;
+   void Allow_Anonymous_Access( bool Allow_Anonymous_Access );
 
    bool Allow_Quick_Link( ) const;
    void Allow_Quick_Link( bool Allow_Quick_Link );
@@ -148,6 +153,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    bool Is_Child( ) const;
    void Is_Child( bool Is_Child );
+
+   bool Is_Group_Or_User( ) const;
+   void Is_Group_Or_User( bool Is_Group_Or_User );
 
    bool Is_Home( ) const;
    void Is_Home( bool Is_Home );

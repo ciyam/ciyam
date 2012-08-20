@@ -4405,6 +4405,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600426a
+      <item>class
+     </specification>
+     <specification/>
       <id>600427
       <item>class
      </specification>
@@ -4414,6 +4418,10 @@
      </specification>
      <specification/>
       <id>600429
+      <item>class
+     </specification>
+     <specification/>
+      <id>600429a
       <item>class
      </specification>
      <specification/>
@@ -4434,6 +4442,18 @@
      </specification>
      <specification/>
       <id>600434
+      <item>class
+     </specification>
+     <specification/>
+      <id>600434a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600434b
+      <item>class
+     </specification>
+     <specification/>
+      <id>600434c
       <item>class
      </specification>
      <specification/>
@@ -4505,6 +4525,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600434b
+        <item>field
+       </specification>
+       <specification/>
         <id>602800
         <item>field
        </specification>
@@ -4526,6 +4550,35 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600434c
+        <item>field
+       </specification>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>122145
+      <name>Allow_Anonymous_Access
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500826
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600429a
+        <item>field
+       </specification>
        <specification/>
         <id>602800
         <item>field
@@ -4932,6 +4985,27 @@
        <specification/>
         <id>600440
         <item>cfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>122146
+      <name>Is_Group_Or_User
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600426a
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600434a
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -5385,6 +5459,18 @@
         <item>src_pfield
        </specification>
        <specification/>
+        <id>600426a
+        <item>src_pfield
+       </specification>
+       <specification/>
+        <id>600429a
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>600429a
+        <item>tpfield
+       </specification>
+       <specification/>
         <id>602800
         <item>field
        </specification>
@@ -5471,6 +5557,10 @@
      </index>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>500826
+      <name>Anonymous_Disallowed
+     </modifier>
      <modifier/>
       <id>500820
       <name>Cannot_Text_Search
@@ -8088,8 +8178,38 @@
       <id>600426
       <item>sclass
      </specification>
+     <specification/>
+      <id>600426a
+      <item>sclass
+     </specification>
+     <specification/>
+      <id>600429a
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>600429a
+      <item>tclass
+     </specification>
     </specifications>
     <fields/>
+     <field/>
+      <id>121106
+      <name>Dummy_1
+      <type>bool
+      <mandatory>true
+      <transient>true
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600429a
+        <item>src_field
+       </specification>
+      </specifications>
+     </field>
      <field/>
       <id>121103
       <name>Is_Child
@@ -8104,6 +8224,27 @@
        <specification/>
         <id>600425
         <item>src_field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>121105
+      <name>Is_Group_Or_User
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600426a
+        <item>src_field
+       </specification>
+       <specification/>
+        <id>600429a
+        <item>tfield
        </specification>
       </specifications>
      </field>
@@ -29296,6 +29437,56 @@
     </data>
    </specification>
    <specification/>
+    <id>600429a
+    <name>{List}_Allow_Anonymous_Access_default
+    <type>default_to_field
+    <data/>
+     <class_id>122100
+     <field_id>122145
+     <pclass_id>121100
+     <pfield_id>301991
+     <sfield_id>121106
+     <tclass_id>121100
+     <tfield_id>121105
+     <tpfield_id>301991
+     <test_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600434a
+    <name>{List}_Anonymous_Disallowed_1
+    <type>modifier_field_value
+    <data/>
+     <class_id>122100
+     <modifier_id>500826
+     <field_id>122146
+     <field_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600434b
+    <name>{List}_Anonymous_Disallowed_2
+    <type>modifier_field_value
+    <data/>
+     <class_id>122100
+     <modifier_id>500826
+     <field_id>122103
+     <field_value>0
+     <not_equal>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600434c
+    <name>{List}_Anonymous_Disallowed_3
+    <type>modifier_field_null
+    <data/>
+     <class_id>122100
+     <modifier_id>500826
+     <field_id>301993
+     <is_negative>true
+    </data>
+   </specification>
+   <specification/>
     <id>600432
     <name>{List}_Cannot_Text_Search
     <type>modifier_field_value
@@ -29339,6 +29530,18 @@
      <sfield_id>121103
      <pfield_id>301991
      <dfield_id>122102
+    </data>
+   </specification>
+   <specification/>
+    <id>600426a
+    <name>{List}_Is_Group_Or_User_from_{Type}
+    <type>field_from_other_field
+    <data/>
+     <class_id>122100
+     <sclass_id>121100
+     <sfield_id>121105
+     <pfield_id>301991
+     <dfield_id>122146
     </data>
    </specification>
    <specification/>
@@ -29537,6 +29740,7 @@
      <field_info>301994:116101!@group:301500+116101
      <field_info>122105;enum=680
      <field_info>301995:116101!@group:301500+116101
+     <field_info>122145
      <field_info>@tab:Basic_UI_Options
      <field_info>122119
      <field_info>122117;enum=686

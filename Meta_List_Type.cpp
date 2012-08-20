@@ -61,34 +61,44 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Dummy_1 = "121106";
 const char* const c_field_id_Is_Child = "121103";
+const char* const c_field_id_Is_Group_Or_User = "121105";
 const char* const c_field_id_Is_Home = "121104";
 const char* const c_field_id_List_Name = "121102";
 const char* const c_field_id_Name = "121101";
 
+const char* const c_field_name_Dummy_1 = "Dummy_1";
 const char* const c_field_name_Is_Child = "Is_Child";
+const char* const c_field_name_Is_Group_Or_User = "Is_Group_Or_User";
 const char* const c_field_name_Is_Home = "Is_Home";
 const char* const c_field_name_List_Name = "List_Name";
 const char* const c_field_name_Name = "Name";
 
+const char* const c_field_display_name_Dummy_1 = "field_list_type_dummy_1";
 const char* const c_field_display_name_Is_Child = "field_list_type_is_child";
+const char* const c_field_display_name_Is_Group_Or_User = "field_list_type_is_group_or_user";
 const char* const c_field_display_name_Is_Home = "field_list_type_is_home";
 const char* const c_field_display_name_List_Name = "field_list_type_list_name";
 const char* const c_field_display_name_Name = "field_list_type_name";
 
-const int c_num_fields = 4;
+const int c_num_fields = 6;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
    "121101",
    "121102",
    "121103",
-   "121104"
+   "121104",
+   "121105",
+   "121106"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Dummy_1",
    "Is_Child",
+   "Is_Group_Or_User",
    "Is_Home",
    "List_Name",
    "Name"
@@ -102,9 +112,27 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 0;
+const int c_num_transient_fields = 1;
 
-bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
+const char* const c_transient_sorted_field_ids[ ] =
+{
+   "121106"
+};
+
+const char* const c_transient_sorted_field_names[ ] =
+{
+   "Dummy_1"
+};
+
+inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
+
+inline bool is_transient_field( const string& field )
+{
+   return binary_search( c_transient_sorted_field_ids,
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    || binary_search( c_transient_sorted_field_names,
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+}
 
 domain_string_max_size< 100 > g_List_Name_domain;
 domain_string_max_size< 30 > g_Name_domain;
@@ -121,7 +149,9 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+bool gv_default_Dummy_1 = bool( 1 );
 bool gv_default_Is_Child = bool( 0 );
+bool gv_default_Is_Group_Or_User = bool( 0 );
 bool gv_default_Is_Home = bool( 0 );
 string gv_default_List_Name = string( );
 string gv_default_Name = string( );
@@ -205,8 +235,12 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
+      else if( field_name == c_field_id_Dummy_1 || field_name == c_field_name_Dummy_1 )
+         string_getter< bool >( cmd_handler.p_Meta_List_Type->Dummy_1( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Child( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_Group_Or_User || field_name == c_field_name_Is_Group_Or_User )
+         string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Group_Or_User( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Home( ), cmd_handler.retval );
       else if( field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
@@ -223,9 +257,15 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+      else if( field_name == c_field_id_Dummy_1 || field_name == c_field_name_Dummy_1 )
+         func_string_setter< Meta_List_Type, bool >(
+          *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Dummy_1, field_value );
       else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Child, field_value );
+      else if( field_name == c_field_id_Is_Group_Or_User || field_name == c_field_name_Is_Group_Or_User )
+         func_string_setter< Meta_List_Type, bool >(
+          *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Group_Or_User, field_value );
       else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Home, field_value );
@@ -273,8 +313,14 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
       return *cp_obj;
    }
 
+   bool impl_Dummy_1( ) const { return lazy_fetch( p_obj ), v_Dummy_1; }
+   void impl_Dummy_1( bool Dummy_1 ) { v_Dummy_1 = Dummy_1; }
+
    bool impl_Is_Child( ) const { return lazy_fetch( p_obj ), v_Is_Child; }
    void impl_Is_Child( bool Is_Child ) { v_Is_Child = Is_Child; }
+
+   bool impl_Is_Group_Or_User( ) const { return lazy_fetch( p_obj ), v_Is_Group_Or_User; }
+   void impl_Is_Group_Or_User( bool Is_Group_Or_User ) { v_Is_Group_Or_User = Is_Group_Or_User; }
 
    bool impl_Is_Home( ) const { return lazy_fetch( p_obj ), v_Is_Home; }
    void impl_Is_Home( bool Is_Home ) { v_Is_Home = Is_Home; }
@@ -356,7 +402,9 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
 
    size_t total_child_relationships;
 
+   bool v_Dummy_1;
    bool v_Is_Child;
+   bool v_Is_Group_Or_User;
    bool v_Is_Home;
    string v_List_Name;
    string v_Name;
@@ -371,18 +419,26 @@ string Meta_List_Type::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Is_Child( ) );
+      retval = to_string( impl_Dummy_1( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Is_Home( ) );
+      retval = to_string( impl_Is_Child( ) );
       break;
 
       case 2:
-      retval = to_string( impl_List_Name( ) );
+      retval = to_string( impl_Is_Group_Or_User( ) );
       break;
 
       case 3:
+      retval = to_string( impl_Is_Home( ) );
+      break;
+
+      case 4:
+      retval = to_string( impl_List_Name( ) );
+      break;
+
+      case 5:
       retval = to_string( impl_Name( ) );
       break;
 
@@ -398,18 +454,26 @@ void Meta_List_Type::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Child, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Dummy_1, value );
       break;
 
       case 1:
-      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Home, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Child, value );
       break;
 
       case 2:
-      func_string_setter< Meta_List_Type::impl, string >( *this, &Meta_List_Type::impl::impl_List_Name, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Group_Or_User, value );
       break;
 
       case 3:
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Home, value );
+      break;
+
+      case 4:
+      func_string_setter< Meta_List_Type::impl, string >( *this, &Meta_List_Type::impl::impl_List_Name, value );
+      break;
+
+      case 5:
       func_string_setter< Meta_List_Type::impl, string >( *this, &Meta_List_Type::impl::impl_Name, value );
       break;
 
@@ -473,7 +537,9 @@ void Meta_List_Type::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_List_Type::impl::clear( )
 {
+   v_Dummy_1 = gv_default_Dummy_1;
    v_Is_Child = gv_default_Is_Child;
+   v_Is_Group_Or_User = gv_default_Is_Group_Or_User;
    v_Is_Home = gv_default_Is_Home;
    v_List_Name = gv_default_List_Name;
    v_Name = gv_default_Name;
@@ -659,6 +725,16 @@ Meta_List_Type::~Meta_List_Type( )
    delete p_impl;
 }
 
+bool Meta_List_Type::Dummy_1( ) const
+{
+   return p_impl->impl_Dummy_1( );
+}
+
+void Meta_List_Type::Dummy_1( bool Dummy_1 )
+{
+   p_impl->impl_Dummy_1( Dummy_1 );
+}
+
 bool Meta_List_Type::Is_Child( ) const
 {
    return p_impl->impl_Is_Child( );
@@ -667,6 +743,16 @@ bool Meta_List_Type::Is_Child( ) const
 void Meta_List_Type::Is_Child( bool Is_Child )
 {
    p_impl->impl_Is_Child( Is_Child );
+}
+
+bool Meta_List_Type::Is_Group_Or_User( ) const
+{
+   return p_impl->impl_Is_Group_Or_User( );
+}
+
+void Meta_List_Type::Is_Group_Or_User( bool Is_Group_Or_User )
+{
+   p_impl->impl_Is_Group_Or_User( Is_Group_Or_User );
 }
 
 bool Meta_List_Type::Is_Home( ) const
@@ -835,9 +921,29 @@ const char* Meta_List_Type::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Dummy_1 )
+   {
+      p_id = c_field_id_Dummy_1;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Is_Child )
    {
       p_id = c_field_id_Is_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Is_Group_Or_User )
+   {
+      p_id = c_field_id_Is_Group_Or_User;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -886,9 +992,29 @@ const char* Meta_List_Type::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Dummy_1 )
+   {
+      p_name = c_field_name_Dummy_1;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Is_Child )
    {
       p_name = c_field_name_Is_Child;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Is_Group_Or_User )
+   {
+      p_name = c_field_name_Is_Group_Or_User;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -936,8 +1062,12 @@ string Meta_List_Type::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Dummy_1 || id_or_name == c_field_name_Dummy_1 )
+      display_name = get_module_string( c_field_display_name_Dummy_1 );
    else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
       display_name = get_module_string( c_field_display_name_Is_Child );
+   else if( id_or_name == c_field_id_Is_Group_Or_User || id_or_name == c_field_name_Is_Group_Or_User )
+      display_name = get_module_string( c_field_display_name_Is_Group_Or_User );
    else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
       display_name = get_module_string( c_field_display_name_Is_Home );
    else if( id_or_name == c_field_id_List_Name || id_or_name == c_field_name_List_Name )
@@ -1124,6 +1254,7 @@ void Meta_List_Type::get_sql_column_names(
       return;
 
    names.push_back( "C_Is_Child" );
+   names.push_back( "C_Is_Group_Or_User" );
    names.push_back( "C_Is_Home" );
    names.push_back( "C_List_Name" );
    names.push_back( "C_Name" );
@@ -1139,6 +1270,7 @@ void Meta_List_Type::get_sql_column_values(
       return;
 
    values.push_back( to_string( Is_Child( ) ) );
+   values.push_back( to_string( Is_Group_Or_User( ) ) );
    values.push_back( to_string( Is_Home( ) ) );
    values.push_back( sql_quote( to_string( List_Name( ) ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
@@ -1216,7 +1348,9 @@ void Meta_List_Type::static_get_class_info( class_info_container& class_info )
 
 void Meta_List_Type::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "121106", "Dummy_1", "bool", false ) );
    all_field_info.push_back( field_info( "121103", "Is_Child", "bool", false ) );
+   all_field_info.push_back( field_info( "121105", "Is_Group_Or_User", "bool", false ) );
    all_field_info.push_back( field_info( "121104", "Is_Home", "bool", false ) );
    all_field_info.push_back( field_info( "121102", "List_Name", "string", false ) );
    all_field_info.push_back( field_info( "121101", "Name", "string", false ) );
@@ -1247,18 +1381,26 @@ const char* Meta_List_Type::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "121103";
+      p_id = "121106";
       break;
 
       case 2:
-      p_id = "121104";
+      p_id = "121103";
       break;
 
       case 3:
-      p_id = "121102";
+      p_id = "121105";
       break;
 
       case 4:
+      p_id = "121104";
+      break;
+
+      case 5:
+      p_id = "121102";
+      break;
+
+      case 6:
       p_id = "121101";
       break;
    }
@@ -1276,18 +1418,26 @@ const char* Meta_List_Type::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Is_Child";
+      p_id = "Dummy_1";
       break;
 
       case 2:
-      p_id = "Is_Home";
+      p_id = "Is_Child";
       break;
 
       case 3:
-      p_id = "List_Name";
+      p_id = "Is_Group_Or_User";
       break;
 
       case 4:
+      p_id = "Is_Home";
+      break;
+
+      case 5:
+      p_id = "List_Name";
+      break;
+
+      case 6:
       p_id = "Name";
       break;
    }
@@ -1304,14 +1454,18 @@ int Meta_List_Type::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
+   else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
       rc += 1;
-   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
+   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
       rc += 2;
-   else if( field == c_field_id_List_Name || field == c_field_name_List_Name )
+   else if( field == c_field_id_Is_Group_Or_User || field == c_field_name_Is_Group_Or_User )
       rc += 3;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
       rc += 4;
+   else if( field == c_field_id_List_Name || field == c_field_name_List_Name )
+      rc += 5;
+   else if( field == c_field_id_Name || field == c_field_name_Name )
+      rc += 6;
 
    return rc - 1;
 }
@@ -1333,6 +1487,7 @@ string Meta_List_Type::static_get_sql_columns( )
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Is_Child INTEGER NOT NULL,"
+    "C_Is_Group_Or_User INTEGER NOT NULL,"
     "C_Is_Home INTEGER NOT NULL,"
     "C_List_Name VARCHAR(200) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
