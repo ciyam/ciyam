@@ -3507,6 +3507,8 @@ int main( int argc, char* argv[ ] )
 
       add_date_variables( xi );
 
+      xi.set_variable( "uuid", uuid( ).as_string( ) );
+
       for( int i = 1; i < argc; i++ )
       {
          string arg( argv[ i ] );
@@ -3515,7 +3517,7 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "XREP v0.1o (c) 2005 CIYAM Pty. Ltd.\n";
+               cout << "XREP v0.1p (c) 2005 CIYAM Pty. Ltd.\n";
                cout << "Usage: xrep [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       Each <value> can also be expressed as @<filename> (useful for large values).\n";
