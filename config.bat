@@ -9,6 +9,7 @@ if not exist makefile.mvc copy makefile.mvc.tools makefile.mvc
 call make.bat xrep xvars
 
 :has_tools
+if not exist salt.h xrep @salt.h.xrep >salt.h
 xrep @config.h.xrep >config.h.new
 call update.bat config.h config.h.new
 

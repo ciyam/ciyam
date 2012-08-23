@@ -10,6 +10,9 @@ if [ ! -f xrep ]; then
  fi
  make xrep xvars
 fi
+if [ ! -f salt.h ]; then
+ ./xrep @salt.h.xrep >salt.h
+fi
 ./xrep @config.h.xrep >config.h.new
 ./update config.h config.h.new
 ./genmake

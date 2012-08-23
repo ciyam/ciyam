@@ -54,6 +54,7 @@ xvars
 !app.log
 
 # Ignore locally generated config.
+salt.h
 config.h
 config.info
 
