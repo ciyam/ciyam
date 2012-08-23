@@ -3105,10 +3105,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_encrypt )
       {
+         bool no_ssl( has_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_no_ssl ) );
          bool no_salt( has_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_no_salt ) );
          string password( get_parm_val( parameters, c_cmd_parm_ciyam_session_encrypt_password ) );
 
-         response = encrypt_password( password, no_salt );
+         response = encrypt_password( password, no_ssl, no_salt );
       }
       else if( command == c_cmd_ciyam_session_sendmail )
       {
