@@ -234,7 +234,6 @@ struct view_info
 
    std::string pdf_spec;
 
-   std::string file_field_id;
    std::string filename_field_id;
 
    std::string static_instance_key;
@@ -243,6 +242,7 @@ struct view_info
    std::map< uint64_t, std::string > modifiers;
 
    std::vector< fld_info > fields;
+   std::vector< std::string > file_ids;
 
    std::vector< std::pair< std::string, std::string > > tabs;
 };
@@ -659,14 +659,13 @@ struct values
 
 struct view_source : source
 {
-   view_source( ) : state( 0 ), has_quick_link( false ) { }
+   view_source( ) : state( 0 ), has_quick_link( false ), has_file_attachments( false ) { }
 
    std::string root_folder;
    std::string new_file_name;
 
    std::string actions_field;
    std::string owning_user_field;
-   std::string attached_file_field;
    std::string hpassword_salt_field;
    std::string create_user_key_field;
    std::string modify_user_key_field;
@@ -703,6 +702,8 @@ struct view_source : source
 
    bool has_quick_link;
    std::string quick_link_value_id;
+
+   bool has_file_attachments;
 
    std::string actions_value;
 

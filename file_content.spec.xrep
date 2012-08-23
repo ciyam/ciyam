@@ -2,7 +2,9 @@
    // [(start file_content)]
    // NOTE: Empty code block for scope purposes.
    {
-      string filename( get_obj( ).get_key( ) + ".html" );
+      string sep( "-" );
+      string ext( ".html" );
+      string filename( get_obj( ).get_key( ) + sep + c_field_id_`{`$arg_field`} + ext );
       string full_path( get_obj( ).get_attached_file_path( filename ) );
 
       if( !storage_locked_for_admin( ) )

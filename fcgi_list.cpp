@@ -2288,6 +2288,7 @@ void output_list_form( ostream& os,
    int display_offset = 0;
    int orientation_col = 0;
    int total_display_cols = 0;
+   map< string, string > display_names;
    vector< numeric > print_total_values;
    vector< size_t > print_total_col_nums;
    vector< size_t > print_summary_counts;
@@ -2365,6 +2366,8 @@ void output_list_form( ostream& os,
          os << "  <th class=\"" << class_tag << "\">" << mod_info.get_string( source.lici->second->id + "_name" );
       else
          os << "  <th class=\"" << class_tag << "\">" << data_or_nbsp( source.display_names[ display_offset ] );
+
+      display_names.insert( make_pair( source.field_ids[ i ], source.display_names[ display_offset ] ) );
 
       ++display_offset;
 
@@ -3053,9 +3056,19 @@ void output_list_form( ostream& os,
                   tmp_link_path += "/" + string( c_tmp_directory );
                   tmp_link_path += "/" + session_id;
 
-                  string link_file_name( uuid( ).as_string( ) );
+                  bool has_utf8_chars;
+                  string link_file_name( display_names[ source_field_id ] );
                   if( filename_col >= 0 )
-                     link_file_name = columns[ filename_col ];
+                  {
+                     link_file_name = valid_file_name( columns[ filename_col ], &has_utf8_chars );
+
+                     if( source.file_fields.size( ) + source.image_fields.size( ) > 1 )
+                        link_file_name += " " + source.display_names[ i ];
+                  }
+
+                  // NOTE: For the link file name in a list always append the row number just
+                  // in case duplicate names exist.
+                  link_file_name += '[' + to_string( i ) + ']';
 
                   // NOTE: If access is anonymous then no temporary session directory exists so
                   // file link aliasing is not supported for this case.

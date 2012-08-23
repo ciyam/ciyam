@@ -2784,27 +2784,28 @@ void request_handler::process_request( )
                      }
                   }
 
-                  // NOTE: If this class has a file attachment field then check whether a new file has been attached.
+                  // NOTE: If this class has file attachments then check whether a new file has been attached
+                  // or an existing one needs to be removed.
                   //
                   // FUTURE: Currently no version information is included - the version/revision could be included as
                   // part of the "info" file data by including it in the "name" attribute (as is done for the class).
-                  if( !had_send_or_recv_error && !view.attached_file_field.empty( ) )
+                  if( !had_send_or_recv_error && view.has_file_attachments )
                   {
                      string relative_prefix( string( c_files_directory )
                       + "/" + get_module_id_for_attached_file( view ) + "/" + ( vici->second )->cid + "/" );
 
                      string new_file_info( relative_prefix + "/" + session_id );
 
-                     string old_file( relative_prefix + "/" + view.field_values[ view.attached_file_field ] );
-
-                     if( file_exists( new_file_info.c_str( ) ) )
+                     if( act == c_act_remove || file_exists( new_file_info.c_str( ) ) )
                      {
-                        ifstream inpf( new_file_info.c_str( ) );
-
                         string new_file;
                         bool okay = false;
 
-                        getline( inpf, new_file );
+                        if( file_exists( new_file_info.c_str( ) ) )
+                        {
+                           ifstream inpf( new_file_info.c_str( ) );
+                           getline( inpf, new_file );
+                        }
 
                         vector< pair< string, string > > field_value_pairs;
 
@@ -2829,7 +2830,23 @@ void request_handler::process_request( )
                            if( pos != string::npos )
                               new_file_name = new_file.substr( pos + 1 );
 
-                           field_value_pairs.push_back( make_pair( view.attached_file_field, new_file_name ) );
+                           string file_field_id;
+                           if( new_file_name.empty( ) )
+                              file_field_id = app;
+                           else
+                           {
+                              pos = new_file_name.find_last_of( "-" );
+                              if( pos == string::npos )
+                                 throw runtime_error( "unexpected attached file name '" + new_file_name + "'" );
+
+                              file_field_id = new_file_name.substr( pos + 1 );
+
+                              pos = file_field_id.find( '.' );
+                              if( pos != string::npos )
+                                 file_field_id.erase( pos );
+                           }
+
+                           field_value_pairs.push_back( make_pair( file_field_id, new_file_name ) );
 
                            date_time dtm_modified( date_time::standard( ) );
 
@@ -2843,6 +2860,8 @@ void request_handler::process_request( )
                            if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )
                            {
                               performed_file_attach_or_detach = true;
+
+                              string old_file( relative_prefix + "/" + view.field_values[ file_field_id ] );
 
                               if( file_exists( old_file.c_str( ) ) )
                                  remove( old_file.c_str( ) );
@@ -2859,8 +2878,8 @@ void request_handler::process_request( )
                               remove( new_file.c_str( ) );
                         }
 
-                        inpf.close( );
-                        remove( new_file_info.c_str( ) );
+                        if( file_exists( new_file_info.c_str( ) ) )
+                           remove( new_file_info.c_str( ) );
                      }
                   }
                }

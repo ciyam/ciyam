@@ -2,12 +2,15 @@
    // [(start file_link_demo)]
    if( is_create )
    {
+      string sep( "-" );
       string ext( "`{`$arg_ext`}" );
       if( !ext.empty( ) && ext[ 0 ] != '.' )
          ext = '.' + ext;
 
+      string name( get_obj( ).get_key( ) + sep + c_field_id_`{`$arg_field`} + ext );
+
       string src( get_obj( ).get_key( ) + ext );
-      string dest( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ext ) );
+      string dest( get_obj( ).get_attached_file_path( name ) );
 
       if( exists_file( src ) )
       {
@@ -17,7 +20,7 @@
             create_directories_for_file_name( dest, true );
 
          link_file( src, dest );
-         get_obj( ).`{`$arg_field`}( get_obj( ).get_key( ) + ext );
+         get_obj( ).`{`$arg_field`}( name );
       }
    }
    // [(finish file_link_demo)]

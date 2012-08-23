@@ -788,7 +788,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
                   split( fld.extra, extras, '+' );
 
                if( extras.count( c_field_extra_file ) || extras.count( c_field_extra_image ) )
-                  view.file_field_id = fld.field;
+                  view.file_ids.push_back( fld.field );
 
                if( extras.count( c_field_extra_filename ) )
                   view.filename_field_id = fld.field;
