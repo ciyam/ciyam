@@ -51,8 +51,8 @@ If all has gone well then it is time to install the IDE application which is don
 ./install Meta meta index
 
 To use the application you'll need to make sure that the application server (ciyam_server) is running. To run
-it under Windows use "start ciyam_server" and under Linux "./ciyam_server &". Once the application server has
-started and is "listening" you are now nearly ready to create your first web application.
+it with Windows use "start /min ciyam_server" and under Linux "./ciyam_server &". Once the application server
+has started and is "listening" you are now nearly ready to create your first web application.
 
 ***************************** Extra steps if MySQL 'root' password is not blank *****************************
 
@@ -99,7 +99,7 @@ the name "Sample" should be used).
 The "Add Packages" drop list will default to the value "Standard User" which is fine (along with the defaults
 for the other fields) so now simply click "Save Details" to create the new Model. After saving the "Standard"
 package will automatically be installed while the "User" package will just appear greyed out (for those using
-Windows a extra "cmd" window will appear while the "Standard" package is being installed).
+Windows an extra "cmd" window will temporarily appear while the "Standard" package is being installed).
 
 To install the "User" package click on the greyed out "User" list item then from the "Package" view form next
 click on the "Install" button. You might notice from the "Package" view form that there are a number of child

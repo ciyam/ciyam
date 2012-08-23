@@ -676,7 +676,7 @@ uint64_t Meta_Package_Type::impl::get_state( ) const
 
    // [(start protect_equal)]
    if( check_equal( get_obj( ).Installed( ), true ) )
-      state |= ( c_state_uneditable | c_state_undeletable );
+      state |= ( c_state_uneditable );
    // [(finish protect_equal)]
 
    // [(start modifier_field_value)]

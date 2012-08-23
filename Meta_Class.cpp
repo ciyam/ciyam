@@ -3345,12 +3345,14 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(start file_link)]
    // NOTE: Empty code block for scope purposes.
    {
+      string sep( "-" );
       string ext( ".cpp" );
       string source( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ext );
 
       bool has_source_file( exists_file( source ) );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_Source_File + ext );
 
-      string dest( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ext ) );
+      string dest( get_obj( ).get_attached_file_path( name ) );
 
       if( exists_file( dest, false ) )
          remove_file( dest );
@@ -3362,7 +3364,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       else
       {
          link_file( source, dest );
-         get_obj( ).Source_File( get_obj( ).get_key( ) + ext );
+         get_obj( ).Source_File( name );
       }
    }
    // [(finish file_link)]
@@ -3370,12 +3372,14 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(start file_link)]
    // NOTE: Empty code block for scope purposes.
    {
+      string sep( "-" );
       string ext( ".h" );
       string source( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ext );
 
       bool has_source_file( exists_file( source ) );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_Header_File + ext );
 
-      string dest( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ext ) );
+      string dest( get_obj( ).get_attached_file_path( name ) );
 
       if( exists_file( dest, false ) )
          remove_file( dest );
@@ -3387,7 +3391,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       else
       {
          link_file( source, dest );
-         get_obj( ).Header_File( get_obj( ).get_key( ) + ext );
+         get_obj( ).Header_File( name );
       }
    }
    // [(finish file_link)]
@@ -3395,12 +3399,14 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(start file_link)]
    // NOTE: Empty code block for scope purposes.
    {
+      string sep( "-" );
       string ext( ".cms" );
       string source( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ext );
 
       bool has_source_file( exists_file( source ) );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_Commands_File + ext );
 
-      string dest( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ext ) );
+      string dest( get_obj( ).get_attached_file_path( name ) );
 
       if( exists_file( dest, false ) )
          remove_file( dest );
@@ -3412,7 +3418,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       else
       {
          link_file( source, dest );
-         get_obj( ).Commands_File( get_obj( ).get_key( ) + ext );
+         get_obj( ).Commands_File( name );
       }
    }
    // [(finish file_link)]

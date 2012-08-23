@@ -10753,6 +10753,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>603500
+        <item>field
+       </specification>
+       <specification/>
         <id>603550
         <item>field
        </specification>
@@ -30410,6 +30414,7 @@
     <data/>
      <protect_spec>protect_equal.spec.xrep
      <protect_value>true
+     <protect_scope>edit
     </data>
    </specification>
    <specification/>
@@ -30434,6 +30439,7 @@
      <ordering>forward
      <field_info>135101
      <field_info>135104
+     <field_info>135103
     </data>
    </specification>
    <specification/>

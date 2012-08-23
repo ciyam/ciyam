@@ -928,7 +928,7 @@ void setup_directories( )
       view_info_const_iterator vici;
       for( vici = mod_info.view_info.begin( ); vici != mod_info.view_info.end( ); ++vici )
       {
-         if( !( vici->second )->file_field_id.empty( ) )
+         if( !( vici->second )->file_ids.empty( ) )
          {
             string cid( ( vici->second )->cid );
             string bclass( ( vici->second )->bclass );

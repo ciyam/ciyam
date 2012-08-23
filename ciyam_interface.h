@@ -79,6 +79,7 @@ const char* const c_act_save = "save";
 const char* const c_act_view = "view";
 const char* const c_act_undo = "undo";
 const char* const c_act_qlink = "qlink";
+const char* const c_act_remove = "remove";
 
 const char* const c_cmd_pwd = "pwd";
 const char* const c_cmd_home = "home";

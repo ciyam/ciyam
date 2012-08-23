@@ -170,7 +170,6 @@ void setup_view_fields( view_source& view,
    view.pdf_spec_name = vinfo.pdf_spec;
 
    view.filename_field = vinfo.filename_field_id;
-   view.attached_file_field = vinfo.file_field_id;
 
    for( size_t i = 0; i < vinfo.tabs.size( ); i++ )
    {
@@ -356,6 +355,9 @@ void setup_view_fields( view_source& view,
             view.image_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_mailto ) )
             view.mailto_fields.insert( value_id );
+
+         if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_image ) )
+            view.has_file_attachments = true;
 
          if( fld.mandatory )
             view.mandatory_fields.insert( value_id );
@@ -603,12 +605,12 @@ bool output_view_form( ostream& os, const string& act,
 
    if( !is_printable )
    {
-      // NOTE: A form is used for the view even if not editing (for send always fields) provided
-      // that the view does not contain a file attachment (as this requires a form itself). Thus
-      // send always fields will not work if the view has a file attachment.
+      // NOTE: A form is used for the view even if not editing (for send always fields), provided
+      // that the view does not contain any file attachments (as these require a form). Therefore
+      // send always fields will not work if the view has file attachments.
       // FUTURE: If file upload forms are placed in a seperate "iframe" then this limitation can
       // be removed.
-      if( is_in_edit || source.attached_file_field.empty( ) )
+      if( is_in_edit || !source.has_file_attachments )
          os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\">\n";
 
       os << "<table class=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n";
@@ -995,8 +997,6 @@ bool output_view_form( ostream& os, const string& act,
       os << "<tbody>\n";
    }
 
-   bool has_attached_file_link = false;
-
    set< string > fk_refs;
 
    string extra_fields, extra_values;
@@ -1192,9 +1192,7 @@ bool output_view_form( ostream& os, const string& act,
       else if( view_edit_effect == c_modifier_effect_protect )
          is_special_field = true;
 
-      // NOTE: For printable versions skip the attached file field (if exists).
-      if( is_printable
-       && source_field_id == source.attached_file_field && !source.image_fields.count( source_value_id ) )
+      if( is_printable && source.file_fields.count( source_value_id ) )
          continue;
 
       string show_opt( c_show_prefix );
@@ -1294,8 +1292,7 @@ bool output_view_form( ostream& os, const string& act,
       if( !extra_data.count( c_field_extra_full_width )
        || ( !is_in_edit
        && ( source.file_fields.count( source_value_id )
-       || source.image_fields.count( source_value_id )
-       || source_field_id == source.attached_file_field ) ) )
+       || source.image_fields.count( source_value_id ) ) ) )
       {
          os << "   <" << td_type << " class=\"list\">";
          os << escape_markup( is_in_edit ? source.edit_display_names[ i ] : source.display_names[ i ] );
@@ -1331,7 +1328,6 @@ bool output_view_form( ostream& os, const string& act,
          os << "   <" << td_type << " class=\"list" << class_extra << "\"" << td_extra << ">";
 
       if( source_field_id == pfield
-       || source_field_id == source.attached_file_field
        || source_field_id == source.security_level_field
        || extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_flink )
        || source_field_id == source.create_user_key_field || source_field_id == source.modify_user_key_field
@@ -2006,7 +2002,7 @@ bool output_view_form( ostream& os, const string& act,
                }
             }
          }
-         else if( source.file_fields.count( source_value_id ) || source_field_id == source.attached_file_field )
+         else if( source.file_fields.count( source_value_id ) || source.image_fields.count( source_value_id ) )
          {
             if( source.new_file_name == "." )
                cell_data.erase( );
@@ -2024,7 +2020,7 @@ bool output_view_form( ostream& os, const string& act,
             if( is_admin_owner_edit && !( sess_info.is_admin_user || owner == sess_info.user_key ) )
                can_attach_or_remove_file = false;
 
-            if( source_field_id != source.attached_file_field )
+            if( !extra_data.count( c_field_extra_file ) && !extra_data.count( c_field_extra_image ) )
                can_attach_or_remove_file = false;
 
             if( source.protected_fields.count( source_value_id ) )
@@ -2043,9 +2039,11 @@ bool output_view_form( ostream& os, const string& act,
              || source.fk_field_values.find( source.create_user_key_field )->second != sess_info.user_key ) )
                can_attach_or_remove_file = false;
 
+            bool has_attached_file_link = false;
+
             if( cell_data.empty( ) )
             {
-               if( can_attach_or_remove_file && !has_attached_file_link )
+               if( can_attach_or_remove_file )
                   os << "<p>" << string_message( GDS( c_display_select_local_upload_file ),
                    make_pair( c_display_select_local_upload_file_parm_attach, GDS( c_display_attach ) ) ) << "</p>";
                else
@@ -2070,10 +2068,15 @@ bool output_view_form( ostream& os, const string& act,
                   tmp_link_path += "/" + string( c_tmp_directory );
                   tmp_link_path += "/" + session_id;
 
-                  bool has_utf8_chars = false;
-                  string link_file_name( uuid( ).as_string( ) );
+                  bool has_utf8_chars;
+                  string link_file_name( source.display_names[ i ] );
                   if( !source.filename_field.empty( ) && source.field_values.count( source.filename_field ) )
+                  {
                      link_file_name = valid_file_name( source.field_values.find( source.filename_field )->second, &has_utf8_chars );
+
+                     if( source.file_fields.size( ) + source.image_fields.size( ) > 1 )
+                        link_file_name += " " + source.display_names[ i ];
+                  }
 
                   // NOTE: If access is anonymous then no temporary session directory exists so
                   // file link aliasing is not supported for this case.
@@ -2135,21 +2138,55 @@ bool output_view_form( ostream& os, const string& act,
 
                      if( is_href )
                         os << "</a>";
+
+                     if( can_attach_or_remove_file )
+                        os << "<br/>";
                   }
                }
             }
 
             if( can_attach_or_remove_file )
             {
-               string upload_info( session_id );
-               upload_info += ":" + get_module_id_for_attached_file( source ) + "/" + ( source.vici->second )->cid;
-               upload_info += ";" + data + "?" + to_string( sinfo.filesize_limit );
+               if( has_attached_file_link )
+                  os << "\n<form name=\"remove\" id=\"remove\">\n";
+               else
+                  os << "\n<form name=\"upload\" id=\"upload\" method=\"POST\" enctype=\"multipart/form-data\" action=\"upload.fcgi\" target=\"hidden_frame\">";
 
-               os << "\n<form name=\"upload\" id=\"upload\" method=\"POST\" enctype=\"multipart/form-data\" action=\"upload.fcgi\" target=\"hidden_frame\">";
-               os << "\n<input type=\""
-                << ( has_attached_file_link ? "hidden" : "file" ) << "\" name=\"" << upload_info << "\"/>\n";
-               os << "<input type=\"submit\" class=\"button\" value=\""
-                << ( has_attached_file_link ? GDS( c_display_remove_attached_file ) : GDS( c_display_attach ) ) << "\"/>";
+               if( has_attached_file_link )
+               {
+                  os << "<input type=\"button\" class=\"button\" value=\""
+                   << GDS( c_display_remove_attached_file ) << "\" onclick=\"";
+
+                  string checksum_values;
+                  string new_checksum_value;
+
+                  if( use_url_checksum )
+                  {
+                     checksum_values = string( c_act_remove )
+                      + string( c_cmd_view ) + data + source.vici->second->id
+                      + user_select_key + to_string( sess_info.checksum_serial );
+
+                     new_checksum_value = get_checksum( sess_info, checksum_values );
+
+                     os << "query_update( '" + to_string( c_param_chksum ) + "', '" + new_checksum_value + "', true ); ";
+                  }
+
+                  if( vtab_num )
+                     os << "query_update( '"
+                      + to_string( c_param_vtab ) + "', '" + to_string( vtab_num ) + "', true ); ";
+
+                  os << "dyn_load( null, 'act=" + string( c_act_remove ) + "&app=" + source_field_id + "', false );\"/>";
+               }
+               else
+               {
+                  string upload_info( session_id );
+                  upload_info += ":" + get_module_id_for_attached_file( source ) + "/" + ( source.vici->second )->cid;
+                  upload_info += ";" + data + "-" + source_field_id + "?" + to_string( sinfo.filesize_limit );
+
+                  os << "\n<input type=\"" << "file\" name=\"" << upload_info << "\"/>\n";
+                  os << "<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_attach ) << "\"/>";
+               }
+
                os << "</form>";
             }
          }
@@ -2697,7 +2734,7 @@ bool output_view_form( ostream& os, const string& act,
    os << "</tbody>\n";
    os << "</table>\n";
 
-   if( is_in_edit || source.attached_file_field.empty( ) )
+   if( is_in_edit || !source.has_file_attachments )
       os << "</form>\n";
 
    if( extra_fields.empty( ) )

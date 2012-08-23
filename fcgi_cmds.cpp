@@ -2227,9 +2227,8 @@ void save_record( const string& module_id,
          parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
 
       // NOTE: Skip file fields and any protected and hidden fields (unless
-      // they are to be provided with an explicit "new value" or a "defcurrent").
-      if( field_id == view.attached_file_field
-       || extra_data.count( c_field_extra_file )
+      // they are to be provided with an explicit "new value" or "defcurrent").
+      if( extra_data.count( c_field_extra_file )
        || extra_data.count( c_field_extra_flink )
        || ( ( skip_field
        || view.hidden_fields.count( value_id )
