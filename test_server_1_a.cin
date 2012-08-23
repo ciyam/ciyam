@@ -1,5 +1,4 @@
 version
-license
 session_list -min
-encrypt -no_ssl for_testing_password
+encrypt -no_salt for_testing_password
 .quit

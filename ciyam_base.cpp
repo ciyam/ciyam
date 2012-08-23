@@ -3613,22 +3613,22 @@ int64_t get_smtp_max_attached_data( )
    return g_smtp_max_attached_data;
 }
 
-string encrypt_password( const string& password, bool no_ssl )
+string encrypt_password( const string& password, bool no_salt )
 {
    string salt;
-   if( !no_ssl )
+   if( !no_salt )
       salt = g_sid + c_salt_value;
 
-   return password_encrypt( password, salt, !no_ssl );
+   return password_encrypt( password, salt, !no_salt );
 }
 
-string decrypt_password( const string& password, bool no_ssl )
+string decrypt_password( const string& password, bool no_salt )
 {
    string salt;
-   if( !no_ssl )
+   if( !no_salt )
       salt = g_sid + c_salt_value;
 
-   return password_decrypt( password, salt, !no_ssl );
+   return password_decrypt( password, salt, !no_salt );
 }
 
 int exec_system( const string& cmd, bool async )
