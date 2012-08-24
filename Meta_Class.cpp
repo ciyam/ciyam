@@ -2646,7 +2646,7 @@ void Meta_Class::impl::impl_Generate( )
             string gen_script;
             while( true )
             {
-               pos = vars.find( "\r\n" );
+               pos = vars.find( '\n' );
                string next( vars.substr( 0, pos ) );
 
                string::size_type npos = next.find( '=' );
@@ -2671,7 +2671,7 @@ void Meta_Class::impl::impl_Generate( )
                if( pos == string::npos )
                   break;
 
-               vars.erase( 0, pos + 2 );
+               vars.erase( 0, pos + 1 );
             }
 
             if( is_gen_script_object )

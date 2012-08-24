@@ -514,11 +514,51 @@ function fade_in( n )
    }
 }
 
+function after_force( )
+{
+   if( document.getElementById( 'form_content_func' ) != null )
+      eval( document.getElementById( 'form_content_func' ).value );
+
+   if( document.getElementById( 'extra_content_func' ) != null )
+      eval( document.getElementById( 'extra_content_func' ).value );
+
+   if( encryptPosts )
+   {
+      if( !loggedIn )
+         sessionStorage.removeItem( 'key' );
+      else if( sessionStorage.getItem( 'key' ) != null )
+         sessionStorage.setItem( 'key', hex_sha1( sessionStorage.getItem( 'key' ) ) );
+   }
+
+   if( uniqueId != '' )
+      sessionStorage.setItem( 'unique', uniqueId );
+
+   if( jump_back && !had_act_error )
+      history.back( );
+   else
+   {
+      jump_back = false;
+
+      if( usePageFadeIn )
+         fade_in( 0 );
+
+      // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
+      setTimeout( "focus_on_first_text( )", 50 );
+   }
+}
+
 function force_update( )
 {
    // NOTE: Add and after a minimal timeout remove a dummy node to force a DOM update.
    var t = document.createTextNode( 'dummy' );
+
+   setTimeout( "after_force( )", 0 );
    document.appendChild( t );
+
+   // NOTE: For some reason certain browsers (particularly on mobile devices) will stop
+   // executing code when "appendChild" is called so the "after_force" function is used
+   // (with a timer) to ensure that the remainder of the page loading code is correctly
+   // performed for all browsers.
    setTimeout( function( ) { t.parentNode.removeChild( t ); }, 0 );
 }
 
@@ -552,7 +592,6 @@ function process( )
       }
 
       document.getElementById( 'content' ).innerHTML = str;
-      force_update( );
    }
    else
    {
@@ -583,38 +622,9 @@ function process( )
       }
 
       document.getElementById( 'content' ).innerHTML = utf8_decode( decrypted );
-      force_update( );
    }
 
-   if( document.getElementById( 'form_content_func' ) != null )
-      eval( document.getElementById( 'form_content_func' ).value );
-
-   if( document.getElementById( 'extra_content_func' ) != null )
-      eval( document.getElementById( 'extra_content_func' ).value );
-
-   if( encryptPosts )
-   {
-      if( !loggedIn )
-         sessionStorage.removeItem( 'key' );
-      else if( sessionStorage.getItem( 'key' ) != null )
-         sessionStorage.setItem( 'key', hex_sha1( sessionStorage.getItem( 'key' ) ) );
-   }
-
-   if( uniqueId != '' )
-      sessionStorage.setItem( 'unique', uniqueId );
-
-   if( jump_back && !had_act_error )
-      history.back( );
-   else
-   {
-      jump_back = false;
-
-      if( usePageFadeIn )
-         fade_in( 0 );
-
-      // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
-      setTimeout( "focus_on_first_text( )", 50 );
-   }
+   force_update( );
 }
 
 function dyn_load( f, extra, clearContext )

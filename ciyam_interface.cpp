@@ -1964,28 +1964,30 @@ void request_handler::process_request( )
                string old_password( input_data[ c_param_password ] );
 
                if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
-                  throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
-
-               // NOTE: Only use the encrypted original password if it was decrypted when logging in.
-               if( p_session_info->clear_password.length( ) )
-               {
-                  if( old_password == hash_password( g_id + p_session_info->clear_password + p_session_info->user_id ) )
-                     old_password = p_session_info->clear_password;
-               }
+                  error_message = string( c_response_error ) + GDS( c_display_password_must_not_be_the_same_as_your_user_id );
                else
-                  old_password = password_encrypt( old_password, get_server_id( ) );
-
-               new_password = password_encrypt( new_password, get_server_id( ) );
-
-               if( !perform_update( module_id, mod_info.user_class_id,
-                p_session_info->user_key, mod_info.user_pwd_field_id,
-                old_password, new_password, *p_session_info, error_message ) )
                {
-                  if( error_message.empty( ) )
-                     throw runtime_error( "Unexpected server error occurred." );
+                  // NOTE: Only use the encrypted original password if it was decrypted when logging in.
+                  if( p_session_info->clear_password.length( ) )
+                  {
+                     if( old_password == hash_password( g_id + p_session_info->clear_password + p_session_info->user_id ) )
+                        old_password = p_session_info->clear_password;
+                  }
+                  else
+                     old_password = password_encrypt( old_password, get_server_id( ) );
+
+                  new_password = password_encrypt( new_password, get_server_id( ) );
+
+                  if( !perform_update( module_id, mod_info.user_class_id,
+                   p_session_info->user_key, mod_info.user_pwd_field_id,
+                   old_password, new_password, *p_session_info, error_message ) )
+                  {
+                     if( error_message.empty( ) )
+                        throw runtime_error( "Unexpected server error occurred." );
+                  }
+                  else
+                     p_session_info->clear_password.erase( );
                }
-               else
-                  p_session_info->clear_password.erase( );
             }
             else if( !persistent.empty( ) )
             {
@@ -4057,6 +4059,8 @@ void request_handler::process_request( )
 
          output_login_logout( extra_content, login_html, osstr.str( ) );
       }
+      else
+         extra_content << osstr.str( );
 
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";

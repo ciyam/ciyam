@@ -1976,6 +1976,9 @@ bool output_view_form( ostream& os, const string& act,
                    || source.manual_link_ignores.count( source_value_id ) )
                      output_hrefs = false;
 
+                  if( !cell_data.empty( ) )
+                     unescape( cell_data, "rn\r\n" );
+
                   replace_links_and_output( cell_data, source.vici->second->id,
                    source.module, source.module_ref, os, true, output_hrefs, session_id,
                    sess_info, user_select_key, using_session_cookie, use_url_checksum );

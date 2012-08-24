@@ -3243,6 +3243,9 @@ void output_list_form( ostream& os,
             {
                was_output = true;
 
+               if( !cell_data.empty( ) )
+                  unescape( cell_data, "rn\r\n" );
+
                replace_links_and_output( cell_data, source.view,
                 source.module, source.module_ref, os, true, !is_printable,
                 session_id, sess_info, user_select_key, using_session_cookie, use_url_checksum );
