@@ -38,7 +38,7 @@
                   if( item++ > 0 )
                      osstr << "\\\\n\\\\n";
 
-                  osstr << search_replace( items.`{`$arg_field`}( ), "\\r\\n", "\\\\n" );
+                  osstr << search_replace( items.`{`$arg_field`}( ), "\\n", "\\\\n" );
 
                   if( item == limit )
                   {

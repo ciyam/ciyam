@@ -2403,6 +2403,9 @@ void save_record( const string& module_id,
       if( new_field_and_values.count( field_id ) )
          found_new_fields.insert( field_id );
 
+      // NOTE: Ensure that only "\n" is being used for "end of line".
+      replace( next, "\r\n", "\n" );
+
       // NOTE: Due to the comma escaping above this will result in the escaping for commas
       // (and for the escape character itself) to be doubled up. This is necessary because
       // of the unescaping that is being performed by the server's command parser.

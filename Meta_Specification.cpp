@@ -3386,7 +3386,7 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
          if( !child_strings.empty( ) )
          {
             if( !strings.empty( ) )
-               strings += "\r\n";
+               strings += '\n';
             strings += child_strings;
          }
 
@@ -3399,7 +3399,7 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
 
    while( !strings.empty( ) )
    {
-      pos = strings.find( "\r\n" );
+      pos = strings.find( '\n' );
       string next( strings.substr( 0, pos ) );
 
       if( !Parent_Prefix.empty( ) )
@@ -3414,13 +3414,13 @@ void Meta_Specification::impl::impl_Generate_All_Strings( string& All_Strings, c
       if( pos == string::npos )
          break;
 
-      strings.erase( 0, pos + 2 );
+      strings.erase( 0, pos + 1 );
    }
 
    for( map< string, string >::const_iterator i = all_strings.begin( ), end = all_strings.end( ); i != end; ++i )
    {
       if( !All_Strings.empty( ) )
-         All_Strings += "\r\n";
+         All_Strings += '\n';
       All_Strings += i->first + '=' + i->second;
    }
    // [<finish Generate_All_Strings_impl>]
@@ -3443,7 +3443,7 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
    if( !def_vars.empty( ) )
    {
       if( !vars.empty( ) )
-         vars += "\r\n";
+         vars += '\n';
       vars += def_vars;
    }
 
@@ -3457,7 +3457,7 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
          if( !child_vars.empty( ) )
          {
             if( !vars.empty( ) )
-               vars += "\r\n";
+               vars += '\n';
             vars += child_vars;
          }
 
@@ -3470,7 +3470,7 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
 
    while( !vars.empty( ) )
    {
-      pos = vars.find( "\r\n" );
+      pos = vars.find( '\n' );
       string next( vars.substr( 0, pos ) );
 
       if( !Parent_Prefix.empty( ) )
@@ -3485,13 +3485,13 @@ void Meta_Specification::impl::impl_Generate_All_Vars( string& All_Vars, const s
       if( pos == string::npos )
          break;
 
-      vars.erase( 0, pos + 2 );
+      vars.erase( 0, pos + 1 );
    }
 
    for( map< string, string >::const_iterator i = all_vars.begin( ), end = all_vars.end( ); i != end; ++i )
    {
       if( !All_Vars.empty( ) )
-         All_Vars += "\r\n";
+         All_Vars += '\n';
       All_Vars += i->first + "=" + i->second;
    }
    // [<finish Generate_All_Vars_impl>]

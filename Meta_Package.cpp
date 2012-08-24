@@ -838,7 +838,7 @@ void Meta_Package::impl::impl_Install( )
       }
 
       string deps( get_obj( ).Package_Type( ).Dependencies( ) );
-      deps = search_replace( deps, "\r\n", "," );
+      deps = search_replace( deps, "\n", "," );
 
       vector< string > dependency_keys;
 
@@ -1098,7 +1098,7 @@ void Meta_Package::impl::impl_Remove( )
             if( cp_other->Installed( ) && cp_other->get_key( ) != get_obj( ).get_key( ) )
             {
                string deps( cp_other->Package_Type( ).Dependencies( ) );
-               deps = search_replace( deps, "\r\n", "," );
+               deps = search_replace( deps, "\n", "," );
 
                if( !deps.empty( ) )
                {

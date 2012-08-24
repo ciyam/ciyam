@@ -1444,7 +1444,7 @@ void Meta_Model::impl::impl_Generate( )
                {
                   while( true )
                   {
-                     pos = strings.find( "\r\n" );
+                     pos = strings.find( '\n' );
                      string next( strings.substr( 0, pos ) );
 
                      string::size_type npos = next.find( '=' );
@@ -1458,7 +1458,7 @@ void Meta_Model::impl::impl_Generate( )
                      if( pos == string::npos )
                         break;
 
-                     strings.erase( 0, pos + 2 );
+                     strings.erase( 0, pos + 1 );
                   }
                }
 
@@ -1471,7 +1471,7 @@ void Meta_Model::impl::impl_Generate( )
 
                while( true )
                {
-                  pos = vars.find( "\r\n" );
+                  pos = vars.find( '\n' );
                   string next( vars.substr( 0, pos ) );
 
                   string::size_type npos = next.find( '=' );
@@ -1485,7 +1485,7 @@ void Meta_Model::impl::impl_Generate( )
                   if( pos == string::npos )
                      break;
 
-                  vars.erase( 0, pos + 2 );
+                  vars.erase( 0, pos + 1 );
                }
             }
 

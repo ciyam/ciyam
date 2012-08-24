@@ -535,7 +535,7 @@ void Meta_Package_Type::impl::impl_Install( )
       string next( lines[ i ] );
 
       if( !dependencies.empty( ) )
-         dependencies += "\r\n";
+         dependencies += '\n';
       dependencies += next;
 
       if( !storage_locked_for_admin( ) )
