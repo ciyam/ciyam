@@ -487,7 +487,6 @@ void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, c
          else
             get_obj( ).op_cancel( );
       }
-
       transaction_commit( );
    }
    catch( ... )
@@ -553,7 +552,6 @@ void Meta_Initial_Record::impl::impl_Move_Up( const string& Restrict_Fields, con
          else
             get_obj( ).op_cancel( );
       }
-
       transaction_commit( );
    }
    catch( ... )

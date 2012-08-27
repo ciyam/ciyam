@@ -882,10 +882,6 @@
       <item>pclass
      </specification>
      <specification/>
-      <id>600071
-      <item>parent_class
-     </specification>
-     <specification/>
       <id>600074
       <item>pclass
      </specification>
@@ -1802,10 +1798,6 @@
       <item>class
      </specification>
      <specification/>
-      <id>600020
-      <item>parent_class
-     </specification>
-     <specification/>
       <id>600022
       <item>pclass
      </specification>
@@ -2209,10 +2201,6 @@
        <specification/>
         <id>600017
         <item>pfield
-       </specification>
-       <specification/>
-        <id>600020
-        <item>parent_field
        </specification>
        <specification/>
         <id>600022
@@ -3937,10 +3925,6 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600071
-        <item>parent_field
-       </specification>
-       <specification/>
         <id>600074
         <item>pfield
        </specification>
@@ -4471,10 +4455,6 @@
      <specification/>
       <id>600446
       <item>pclass
-     </specification>
-     <specification/>
-      <id>600448
-      <item>parent_class
      </specification>
      <specification/>
       <id>600494
@@ -7457,10 +7437,6 @@
         <item>pfield
        </specification>
        <specification/>
-        <id>600448
-        <item>parent_field
-       </specification>
-       <specification/>
         <id>600494
         <item>src_pfield
        </specification>
@@ -8339,10 +8315,6 @@
      <specification/>
       <id>600095
       <item>mclass
-     </specification>
-     <specification/>
-      <id>600169
-      <item>parent_class
      </specification>
      <specification/>
       <id>600315
@@ -10753,10 +10725,6 @@
         <item>field
        </specification>
        <specification/>
-        <id>603500
-        <item>field
-       </specification>
-       <specification/>
         <id>603550
         <item>field
        </specification>
@@ -11122,10 +11090,6 @@
      <specification/>
       <id>620090
       <item>class
-     </specification>
-     <specification/>
-      <id>620093
-      <item>parent_class
      </specification>
      <specification/>
       <id>630035
@@ -11653,10 +11617,6 @@
        <specification/>
         <id>602200
         <item>field
-       </specification>
-       <specification/>
-        <id>620093
-        <item>parent_field
        </specification>
        <specification/>
         <id>630093
@@ -14381,10 +14341,6 @@
         <item>pfield
        </specification>
        <specification/>
-        <id>600169
-        <item>extra_field
-       </specification>
-       <specification/>
         <id>600170
         <item>cfield
        </specification>
@@ -16026,10 +15982,6 @@
        <specification/>
         <id>600159
         <item>field
-       </specification>
-       <specification/>
-        <id>600169
-        <item>parent_field
        </specification>
        <specification/>
         <id>600207
@@ -23283,10 +23235,6 @@
       <item>pclass
      </specification>
      <specification/>
-      <id>600370
-      <item>parent_class
-     </specification>
-     <specification/>
       <id>602610
       <item>class
      </specification>
@@ -25135,10 +25083,6 @@
        <specification/>
         <id>600355
         <item>pfield
-       </specification>
-       <specification/>
-        <id>600370
-        <item>parent_field
        </specification>
        <specification/>
         <id>602710
@@ -27973,9 +27917,7 @@
     <type>move_up_and_down
     <data/>
      <class_id>104100
-     <pclass_id>103100
      <field_id>104103
-     <pfield_id>300400
      <move_up_procedure_id>104410
      <move_up_fields_args_id>104411
      <move_up_values_args_id>104412
@@ -28580,9 +28522,7 @@
     <type>move_up_and_down
     <data/>
      <class_id>108100
-     <pclass_id>106100
      <field_id>108103
-     <pfield_id>300800
      <move_up_procedure_id>108410
      <move_up_fields_args_id>108411
      <move_up_values_args_id>108412
@@ -29357,9 +29297,7 @@
     <type>move_up_and_down
     <data/>
      <class_id>124100
-     <pclass_id>122100
      <field_id>124101
-     <pfield_id>302100
      <move_up_procedure_id>124410
      <move_up_fields_args_id>124411
      <move_up_values_args_id>124412
@@ -30439,7 +30377,6 @@
      <ordering>forward
      <field_info>135101
      <field_info>135104
-     <field_info>135103
     </data>
    </specification>
    <specification/>
@@ -30718,9 +30655,7 @@
     <type>move_up_and_down
     <data/>
      <class_id>112100
-     <pclass_id>111100
      <field_id>112105
-     <pfield_id>301200
      <move_up_procedure_id>112410
      <move_up_fields_args_id>112411
      <move_up_values_args_id>112412
@@ -33834,10 +33769,7 @@
     <type>move_up_and_down
     <data/>
      <class_id>115100
-     <pclass_id>105100
      <field_id>115105
-     <efield_id>301405
-     <pfield_id>301400
      <move_up_procedure_id>115410
      <move_up_fields_args_id>115411
      <move_up_values_args_id>115412
@@ -34621,9 +34553,7 @@
     <type>move_up_and_down
     <data/>
      <class_id>120100
-     <pclass_id>118100
      <field_id>120101
-     <pfield_id>301900
      <move_up_procedure_id>120410
      <move_up_fields_args_id>120411
      <move_up_values_args_id>120412

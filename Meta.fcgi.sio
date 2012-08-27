@@ -8878,15 +8878,6 @@
      <unique>false
      <indexed>false
     </column>
-    <column/>
-     <name>field_package_type_file
-     <field>135103
-     <ftype>string
-     <extra>file
-     <modifiers>100:relegate
-     <unique>false
-     <indexed>false
-    </column>
    </columns>
    <parents/>
    </parents>

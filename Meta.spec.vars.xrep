@@ -2438,13 +2438,6 @@
 `{`$specification_Package_Type_list_clmods01`=`'`'`}
 `{`$specification_Package_Type_list_cluniq01`=`'false`'`}
 `{`$specification_Package_Type_list_cindex01`=`'false`'`}
-`{`$specification_Package_Type_list_column02`=`'135103`'`}
-`{`$specification_Package_Type_list_clname02`=`'Package_Type_File`'`}
-`{`$specification_Package_Type_list_cltype02`=`'string`'`}
-`{`$specification_Package_Type_list_clxtra02`=`'file`'`}
-`{`$specification_Package_Type_list_clmods02`=`'100:relegate`'`}
-`{`$specification_Package_Type_list_cluniq02`=`'false`'`}
-`{`$specification_Package_Type_list_cindex02`=`'false`'`}
 `{`}
 `{`$specification_Package_Type_view_id`=`'603550`'`}
 `{`$specification_Package_Type_view_cid`=`'135100`'`}

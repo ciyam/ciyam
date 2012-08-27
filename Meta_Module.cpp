@@ -480,7 +480,6 @@ void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const str
          else
             get_obj( ).op_cancel( );
       }
-
       transaction_commit( );
    }
    catch( ... )
@@ -546,7 +545,6 @@ void Meta_Module::impl::impl_Move_Up( const string& Restrict_Fields, const strin
          else
             get_obj( ).op_cancel( );
       }
-
       transaction_commit( );
    }
    catch( ... )

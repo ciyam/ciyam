@@ -9507,12 +9507,11 @@ struct move_up_and_down_specification : specification
 
    string class_id;
    string field_id;
-   string extra_field_id;
-   string parent_class_id;
-   string parent_field_id;
+
    string move_up_procedure_id;
    string move_up_fields_arg_id;
    string move_up_values_arg_id;
+
    string move_down_procedure_id;
    string move_down_fields_arg_id;
    string move_down_values_arg_id;
@@ -9520,11 +9519,8 @@ struct move_up_and_down_specification : specification
 
 void move_up_and_down_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
 {
-   if( args.size( ) > 8 )
-      throw runtime_error( "unexpected number of args > 8 for 'move_up_and_down' specification" );
-
-   if( args.size( ) < 6 )
-      throw runtime_error( "unexpected number of args < 6 for 'move_up_and_down' specification" );
+   if( args.size( ) != 6 )
+      throw runtime_error( "unexpected number of args != 6 for 'move_up_and_down' specification" );
 
    string arg_class_name( args[ 0 ] );
    string arg_move_up_procedure_name( args[ 1 ] );
@@ -9532,15 +9528,6 @@ void move_up_and_down_specification::add( model& m, const vector< string >& args
    string arg_fields_arg_name( args[ 3 ] );
    string arg_values_arg_name( args[ 4 ] );
    string arg_field_name( args[ 5 ] );
-
-   string arg_extra_field_name;
-   string arg_parent_field_name;
-
-   if( args.size( ) > 6 )
-      arg_parent_field_name = args[ 6 ];
-
-   if( args.size( ) > 7 )
-      arg_extra_field_name = args[ 7 ];
 
    class_id = get_class_id_for_name( m, arg_class_name );
 
@@ -9582,38 +9569,8 @@ void move_up_and_down_specification::add( model& m, const vector< string >& args
       throw runtime_error( "procedure arg '"
        + arg_values_arg_name + "' not found in procedure '" + arg_move_down_procedure_name + "'" );
 
-   if( !arg_parent_field_name.empty( ) )
-   {
-      string parent_field_type;
-      parent_field_id = get_field_id_for_name( m, arg_class_name, arg_parent_field_name, &parent_field_type, true );
-
-      if( parent_field_id.empty( ) )
-         throw runtime_error( "unknown field '" + arg_parent_field_name + "' for class '" + arg_class_name + "'" );
-
-      string parent_class_name( get_class_name_from_field_type( m, arg_class_name, arg_parent_field_name, parent_field_type ) );
-
-      if( parent_class_name.empty( ) )
-         throw runtime_error( "unexpected non-parent field '" + arg_parent_field_name + "' was provided to move_up_and_down" );
-
-      parent_class_id = get_class_id_for_name( m, parent_class_name );
-   }
-
-   if( !arg_extra_field_name.empty( ) )
-   {
-      extra_field_id = get_field_id_for_name( m, arg_class_name, arg_extra_field_name, 0, true );
-      if( extra_field_id.empty( ) )
-         throw runtime_error( "unknown field '" + extra_field_id + "' for class '" + arg_class_name + "'" );
-   }
-
    details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
-   if( !parent_class_id.empty( ) )
-      details.push_back( specification_detail( parent_class_id, "parent_class", e_model_element_type_class ) );
-
    details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
-   if( !extra_field_id.empty( ) )
-      details.push_back( specification_detail( extra_field_id, "extra_field", e_model_element_type_field ) );
-   if( !parent_field_id.empty( ) )
-      details.push_back( specification_detail( parent_field_id, "parent_field", e_model_element_type_field ) );
 
    details.push_back( specification_detail( move_up_procedure_id, "up_procedure", e_model_element_type_procedure ) );
    details.push_back( specification_detail( move_up_fields_arg_id, "up_fields_arg", e_model_element_type_procedure_arg ) );
@@ -9627,11 +9584,7 @@ void move_up_and_down_specification::add( model& m, const vector< string >& args
 void move_up_and_down_specification::read_data( sio_reader& reader )
 {
    class_id = reader.read_attribute( c_attribute_class_id );
-   parent_class_id = reader.read_opt_attribute( c_attribute_pclass_id );
-
    field_id = reader.read_attribute( c_attribute_field_id );
-   extra_field_id = reader.read_opt_attribute( c_attribute_efield_id );
-   parent_field_id = reader.read_opt_attribute( c_attribute_pfield_id );
 
    move_up_procedure_id = reader.read_attribute( c_attribute_move_up_procedure_id );
    move_up_fields_arg_id = reader.read_attribute( c_attribute_move_up_fields_arg_id );
@@ -9645,11 +9598,7 @@ void move_up_and_down_specification::read_data( sio_reader& reader )
 void move_up_and_down_specification::write_data( sio_writer& writer ) const
 {
    writer.write_attribute( c_attribute_class_id, class_id );
-   writer.write_opt_attribute( c_attribute_pclass_id, parent_class_id );
-
    writer.write_attribute( c_attribute_field_id, field_id );
-   writer.write_opt_attribute( c_attribute_efield_id, extra_field_id );
-   writer.write_opt_attribute( c_attribute_pfield_id, parent_field_id );
 
    writer.write_attribute( c_attribute_move_up_procedure_id, move_up_procedure_id );
    writer.write_attribute( c_attribute_move_up_fields_arg_id, move_up_fields_arg_id );
@@ -9665,17 +9614,8 @@ void move_up_and_down_specification::add_specification_data( model& m, specifica
    string class_name = get_class_name_for_id( m, class_id );
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
 
-   string parent_class_name = get_class_name_for_id( m, parent_class_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_pclass, parent_class_name ) );
-
    string field_name = get_field_name_for_id( m, class_name, field_id );
    spec_data.data_pairs.push_back( make_pair( string( c_data_field ), field_name ) );
-
-   string extra_field_name = get_field_name_for_id( m, class_name, extra_field_id );
-   spec_data.data_pairs.push_back( make_pair( string( c_data_efield ), extra_field_name ) );
-
-   string parent_field_name = get_field_name_for_id( m, class_name, parent_field_id );
-   spec_data.data_pairs.push_back( make_pair( string( c_data_pfield ), parent_field_name ) );
 
    string move_up_procedure_name = get_procedure_name_for_id( m, class_name, move_up_procedure_id );
    spec_data.data_pairs.push_back( make_pair( string( c_data_up_proc ), move_up_procedure_name ) );
