@@ -546,7 +546,7 @@ void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const 
    transaction_start( );
    try
    {
-      if( !Restrict_Fields.empty( ) )
+      // NOTE: Empty code block for scope purposes.
       {
          get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
 
@@ -592,42 +592,6 @@ void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const 
          else
             get_obj( ).op_cancel( );
       }
-      else
-      {
-         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
-         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
-         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
-         get_obj( ).op_update( get_obj( ).get_key( ) );
-
-         Meta_Enum parent;
-         parent.perform_fetch( get_obj( ).Enum( ) );
-
-         string key_info( c_field_id_Order );
-         key_info += ' ' + get_obj( ).Order( );
-         // NOTE: Only the first record is required so set the row limit to 1.
-         if( parent.child_Enum_Item( ).iterate_forwards( key_info, false, 1 ) )
-         {
-            string old_val( get_obj( ).Order( ) );
-            string new_val( parent.child_Enum_Item( ).Order( ) );
-
-            get_obj( ).Order( gen_key( ) );
-            get_obj( ).op_apply( );
-
-            get_obj( ).op_update( );
-
-            parent.child_Enum_Item( ).op_update( );
-            parent.child_Enum_Item( ).Order( old_val );
-            parent.child_Enum_Item( ).op_apply( );
-
-            get_obj( ).Order( new_val );
-            get_obj( ).op_apply( );
-
-            parent.child_Enum_Item( ).iterate_stop( );
-         }
-         else
-            get_obj( ).op_cancel( );
-      }
-
       transaction_commit( );
    }
    catch( ... )
@@ -647,7 +611,7 @@ void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const st
    transaction_start( );
    try
    {
-      if( !Restrict_Fields.empty( ) )
+      // NOTE: Empty code block for scope purposes.
       {
          get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_Order );
 
@@ -693,42 +657,6 @@ void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const st
          else
             get_obj( ).op_cancel( );
       }
-      else
-      {
-         // NOTE: This code block exists to handle legacy transactions that can only pass empty strings
-         // to the restrict fields/values. Newer models should not specify parent/extra fields in their
-         // "move_up_and_down" specifications as they are not needed when using restrict fields/values.
-         get_obj( ).op_update( get_obj( ).get_key( ) );
-
-         Meta_Enum parent;
-         parent.perform_fetch( get_obj( ).Enum( ) );
-
-         string key_info( c_field_id_Order );
-         key_info += ' ' + get_obj( ).Order( );
-         // NOTE: Only the first record is required so set the row limit to 1.
-         if( parent.child_Enum_Item( ).iterate_backwards( key_info, false, 1 ) )
-         {
-            string old_val( get_obj( ).Order( ) );
-            string new_val( parent.child_Enum_Item( ).Order( ) );
-
-            get_obj( ).Order( gen_key( ) );
-            get_obj( ).op_apply( );
-
-            get_obj( ).op_update( );
-
-            parent.child_Enum_Item( ).op_update( );
-            parent.child_Enum_Item( ).Order( old_val );
-            parent.child_Enum_Item( ).op_apply( );
-
-            get_obj( ).Order( new_val );
-            get_obj( ).op_apply( );
-
-            parent.child_Enum_Item( ).iterate_stop( );
-         }
-         else
-            get_obj( ).op_cancel( );
-      }
-
       transaction_commit( );
    }
    catch( ... )
