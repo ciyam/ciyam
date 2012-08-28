@@ -799,7 +799,7 @@ bool fetch_parent_row_data( const string& module,
    string values, key_info, view_id_field;
    string pfield( parent_field );
 
-   string filters;
+   string filters( "*" );
 
    string perms;
    string* p_perms = 0;
@@ -1185,10 +1185,6 @@ bool fetch_parent_row_data( const string& module,
                continue;
             else if( key == c_parent_extra_permission )
             {
-               if( !filters.empty( ) )
-                  filters += ",";
-               filters += data;
-
                map< string, string >::const_iterator i;
                for( i = sess_info.user_perms.begin( ); i != sess_info.user_perms.end( ); ++i )
                {

@@ -19,23 +19,20 @@
    }
    // [(finish filter_field_value)]
 `}
-`{`@eq`(`'get_required_field_names`'`,`$section`)\
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
    // [(start filter_field_value)]
-   // NOTE: Empty code block for scope purposes.
-   {
-      dependents.insert( "`{`$arg_field`}" );
+   dependents.insert( "`{`$arg_field`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
-         names.insert( "`{`$arg_field`}" );
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+      names.insert( "`{`$arg_field`}" );
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 
-      dependents.insert( "`{`$arg_tfield`}" );
+   dependents.insert( "`{`$arg_tfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
-         names.insert( "`{`$arg_tfield`}" );
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
 `}\
-   }
    // [(finish filter_field_value)]
 `}

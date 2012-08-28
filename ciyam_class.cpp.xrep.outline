@@ -2789,22 +2789,6 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_dfield=$specification_\0_dfield arg_sfield=$specification_\0_sfield\
  arg_ofield=$specification_\0_ofield arg_field_list=$specification_\0_field_list`}\
 `,\
-`@eq`(`'\1`'`,`'filter_field_value`'`)
-`{`#filter_field_value.spec.xrep section=get_required_field_names arg_name=\0\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
-`,\
-`@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)
-`{`#filter_fk_in_uid_set.spec.xrep section=get_required_field_names arg_name=\0\
- arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield`}\
-`,\
-`@eq`(`'\1`'`,`'filter_perm_restricted`'`)
-`{`#filter_perm_restricted.spec.xrep section=get_required_field_names arg_name=\0\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
-`,\
-`@eq`(`'\1`'`,`'filter_security_level`'`)
-`{`#filter_security_level.spec.xrep section=get_required_field_names arg_name=\0\
- arg_id=$specification_\0_id arg_slevel=$specification_\0_slevel`}\
-`,\
 `@eq`(`'\1`'`,`'meta_relationship_child_name`'`)
 `{`#meta_relationship_child_name.spec.xrep section=get_required_field_names\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
@@ -2874,6 +2858,22 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `{`@eq`(`'\1`'`,`'check_user_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_tpfield`)
 `{`#check_user_ignore_uneditable.spec.xrep section=get_always_required_field_names class_name=$class_name\
  arg_tpfield=$specification_\0_tpfield`}\
+`,\
+`@eq`(`'\1`'`,`'filter_field_value`'`)
+`{`#filter_field_value.spec.xrep section=get_always_required_field_names arg_name=\0\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)
+`{`#filter_fk_in_uid_set.spec.xrep section=get_always_required_field_names arg_name=\0\
+ arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield`}\
+`,\
+`@eq`(`'\1`'`,`'filter_perm_restricted`'`)
+`{`#filter_perm_restricted.spec.xrep section=get_always_required_field_names arg_name=\0\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+`,\
+`@eq`(`'\1`'`,`'filter_security_level`'`)
+`{`#filter_security_level.spec.xrep section=get_always_required_field_names arg_name=\0\
+ arg_id=$specification_\0_id arg_slevel=$specification_\0_slevel`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_date_notification`'`)
 `{`#modifier_date_notification.spec.xrep section=get_always_required_field_names\
