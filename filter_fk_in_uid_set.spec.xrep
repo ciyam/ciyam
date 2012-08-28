@@ -21,15 +21,12 @@
    }
    // [(finish filter_fk_in_uid_set)]
 `}
-`{`@eq`(`'get_required_field_names`'`,`$section`)\
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
    // [(start filter_fk_in_uid_set)]
-   // NOTE: Empty code block for scope purposes.
-   {
-      dependents.insert( "`{`$arg_spfield`}" );
+   dependents.insert( "`{`$arg_spfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
-         names.insert( "`{`$arg_spfield`}" );
-   }
+   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
+    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
+      names.insert( "`{`$arg_spfield`}" );
    // [(finish filter_fk_in_uid_set)]
 `}
