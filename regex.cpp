@@ -736,6 +736,7 @@ string::size_type regex::impl::do_search( const string& text, size_t start, stri
 
          int remaining = 0;
          string last_literal;
+         bool last_set_inverted = false;
          vector< pair< char, char > > last_set;
 
          for( size_t j = start_from; j < parts.size( ); j++ )
@@ -798,7 +799,7 @@ string::size_type regex::impl::do_search( const string& text, size_t start, stri
                   if( match_set( text, i, p ) )
                   {
 #ifdef DEBUG
-                     cout << "matched set in part #" << ( j + 1 ) << endl;
+                     cout << "matched set in part #" << ( j + 1 ) << ( p.inverted ? " (inverted)" : "" ) << endl;
 #endif
                      if( !okay )
                         begins = i;
@@ -824,6 +825,7 @@ string::size_type regex::impl::do_search( const string& text, size_t start, stri
                      has_last_literal = false;
 
                      last_set = p.matches;
+                     last_set_inverted = p.inverted;
 
                      if( !p.min_matches )
                         remaining = p.max_matches - 1;
@@ -835,10 +837,15 @@ string::size_type regex::impl::do_search( const string& text, size_t start, stri
                }
             }
 
+            bool next_is_inverted = false;
+            if( j < parts.size( ) - 1 && parts[ j + 1 ].inverted )
+               next_is_inverted = true;
+
             // NOTE: The approach to repeat matching is to initially try to match
             // the next part of the expression and only if this fails (or this is
-            // the last part of the expression) attempt the repeat.
-            if( okay && ( !found || j == parts.size( ) - 1 ) )
+            // the last part of the expression or the next part is inverted) then
+            // attempt the repeat.
+            if( okay && ( !found || next_is_inverted || j == parts.size( ) - 1 ) )
             {
                if( has_last_literal && remaining != 0
                 && ( ( last_literal.empty( ) && i < text.size( ) )
@@ -865,11 +872,22 @@ string::size_type regex::impl::do_search( const string& text, size_t start, stri
                {
                   for( size_t x = 0; x < last_set.size( ); x++ )
                   {
+                     bool matched = false;
+
                      if( last_set[ x ].first == '\0'
                       || ( text[ i ] >= last_set[ x ].first && text[ i ] <= last_set[ x ].second ) )
                      {
+                        if( !last_set_inverted )
+                           matched = true;
+                     }
+                     else if( last_set_inverted )
+                        matched = true;
+
+                     if( matched )
+                     {
 #ifdef DEBUG
-                        cout << "matched last set: " << last_set[ x ].first << "-" << last_set[ x ].second << endl;
+                        cout << "matched last set: " << last_set[ x ].first
+                         << "-" << last_set[ x ].second << ( last_set_inverted ? "  (inverted)" : "" ) << endl;
 #endif
                         --j;
                         found = true;

@@ -395,6 +395,7 @@ void command_parser::impl::do_parse_syntax( node* p_node, const char*& p_input )
    cout << "do_parse_syntax: id = " << p_node->id << ", p_input = '" << p_input << "'" << endl;
 #endif
    bool had_begin = false;
+   bool had_escape = false;
    bool had_finish = false;
    bool had_invalid = false;
    bool add_right_link = false;
@@ -417,6 +418,22 @@ void command_parser::impl::do_parse_syntax( node* p_node, const char*& p_input )
             p_input_error = p_input;
 
          break;
+      }
+
+      if( !had_escape && *p_input == '\\' )
+      {
+         had_escape = true;
+
+         ++p_input;
+         continue;
+      }
+      else if( had_escape )
+      {
+         had_escape = false;
+         p_node->expression += *p_input;
+
+         ++p_input;
+         continue;
       }
 
       if( !had_begin && *p_input == c_opt_branch_begin && *( p_input + 1 ) != c_opt_branch_finish )

@@ -39,6 +39,7 @@ performing tests...
 <opt/a>[[<opt/b>|<opt/c>]<opt/d>]
 {<opt/a>|<opt/b>[<opt/c>]}<opt/d>
 {<opt/a>|<opt/b>[<opt/c>]}|<opt/d>
+<pat/<[A-Za-z][A-Za-z0-9]*[^>]*>/>
 <opt/a>{<opt/b>{[<opt/c>]}}|<opt/d>
 [<opt/a>{[<opt/b>]}|<opt/c>{[<opt/d>]}]
 <opt/a>[<opt/b>|{<opt/c><opt/d>[<opt/e>]}]
@@ -48,4 +49,4 @@ performing tests...
 [<opt/a>{[<opt/b>]}|<opt/c>{[<opt/d>]}]<opt/e>
 [<opt/a>{[<opt/b>]<opt/c>}|<opt/d>{[<opt/e>]}|<opt/f>]
 
-performed 800 test(s) and found 0 error(s)
+performed 802 test(s) and found 0 error(s)
