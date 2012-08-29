@@ -165,6 +165,8 @@ syntax_texts[ ] =
    { "{<opt/a>|<opt/b>[<opt/c>]}<opt/d>", true },
    { "<opt/a>{<opt/b>{[<opt/c>]}|<opt/d>", false },
    { "{<opt/a>|<opt/b>[<opt/c>]}|<opt/d>", true },
+   { "<pat/\\<[A-Za-z][A-Za-z0-9]*[^\\>]*\\>", false },
+   { "<pat/\\<[A-Za-z][A-Za-z0-9]*[^\\>]*\\>/>", true },
    { "<opt/a>{<opt/b>{[<opt/c>]}}|<opt/d>", true },
    { "<opt/a>{<opt/b>{[<opt/c>]}}|<opt/d>}", false },
    { "<opt/a>{<opt/b>{[<opt/c>]}}|<opt/d>}", false },
