@@ -221,7 +221,7 @@ class command_parser::impl
    void parse_syntax_expression( node* p_node );
 
    string::size_type search_for_pattern(
-    const string& pat, const string& input, string::size_type& length );
+    const string& pat, const string& input, string::size_type& length, vector< string >& refs );
 
    bool parse_command_expression( node* p_node, size_t& argnum );
    bool parse_space_separator_list_items( node* p_node, size_t& argnum, string& value );
@@ -1137,10 +1137,10 @@ void command_parser::impl::parse_syntax_expression( node* p_node )
 }
 
 string::size_type command_parser::impl::search_for_pattern(
- const string& pat, const string& input, string::size_type& length )
+ const string& pat, const string& input, string::size_type& length, vector< string >& refs )
 {
    regex expr( pat );
-   return expr.search( input, &length );
+   return expr.search( input, &length, &refs );
 }
 
 bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnum )
@@ -1205,8 +1205,10 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
       }
       else if( p_node->type == c_expr_type_pat )
       {
+         vector< string > refs;
          string::size_type start, length;
-         if( ( start = search_for_pattern( p_node->prefix, input, length ) ) != string::npos )
+
+         if( ( start = search_for_pattern( p_node->prefix, input, length, refs ) ) != string::npos )
          {
 #ifdef DEBUG
             cout << "pat matched prefix '" << match_prefix << "'" << endl;
@@ -1227,6 +1229,12 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
             value += input.substr( start, length );
 
             p_parameters->insert( parameter_value_type( parameter, value ) );
+
+            if( !refs.empty( ) )
+            {
+               for( size_t i = 0; i < refs.size( ); i++ )
+                  p_parameters->insert( parameter_value_type( parameter + "_" + to_string( i + 1 ), refs[ i ] ) );
+            }
          }
       }
       else if( p_node->type == c_expr_type_val || p_node->type == c_expr_type_oval )

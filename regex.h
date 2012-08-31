@@ -16,6 +16,7 @@
 #  define REGEX_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <vector>
 #     include <string>
 #     include <iosfwd>
 #  endif
@@ -31,7 +32,8 @@ class regex
    int get_min_size( ) const;
    int get_max_size( ) const;
 
-   std::string::size_type search( const std::string& text, std::string::size_type* p_length = 0 );
+   std::string::size_type search( const std::string& text,
+    std::string::size_type* p_length = 0, std::vector< std::string >* p_refs = 0 );
 
    void dump( std::ostream& os );
 

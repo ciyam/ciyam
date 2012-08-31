@@ -46,6 +46,7 @@
 #include "pop3.h"
 #include "mime.h"
 #include "smtp.h"
+#include "regex.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
@@ -3474,6 +3475,70 @@ void save_attachment( const string& encoding, const string& data, const string& 
    }
    else
       throw runtime_error( "unsupported attachment encoding '" + encoding + "'" );
+}
+
+string remove_html_scripts( const string& html )
+{
+   static regex html_tag_pair( "<([A-Za-z][A-Za-z0-9]*)([^>]*)>(.*)</\\1>" );
+
+   string old_html( html );
+   string new_html;
+
+   while( true )
+   {
+      string::size_type len;
+      vector< string > refs;
+
+      string::size_type pos = html_tag_pair.search( old_html, &len, &refs );
+
+      if( pos == string::npos )
+      {
+         new_html += old_html;
+         break;
+      }
+
+      if( refs.empty( ) )
+         throw runtime_error( "unexpected missing refs for html_tag_pair" );
+
+      string tag( lower( refs[ 0 ] ) );
+      string::size_type skip_len = refs[ 0 ].size( ) + 2;
+
+      bool extend_len = false;
+
+      if( tag == "script" )
+         extend_len = true;
+      else
+      {
+         string data;
+         if( refs.size( ) > 1 )
+            data += refs[ 1 ];
+         if( refs.size( ) > 2 )
+            data += refs[ 2 ];
+
+         // NOTE: If this tag doesn't contain other tags then no need to process its data.
+         if( data.find( '<' ) == string::npos )
+            extend_len = true;
+      }
+
+      if( extend_len )
+      {
+         skip_len += skip_len + 1; // i.e. closing tag is one extra
+
+         if( refs.size( ) > 1 )
+            skip_len += refs[ 1 ].size( );
+         if( refs.size( ) > 2 )
+            skip_len += refs[ 2 ].size( );
+      }
+
+      if( tag == "script" )
+         new_html += old_html.substr( 0, pos );
+      else
+         new_html += old_html.substr( 0, pos + skip_len );
+
+      old_html.erase( 0, pos + skip_len );
+   }
+
+   return new_html;
 }
 
 string convert_html_to_text( const string& html )
