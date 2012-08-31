@@ -1079,6 +1079,8 @@ void CLASS_BASE_DECL_SPEC parse_email_address( const std::string& address, std::
 void CLASS_BASE_DECL_SPEC save_attachment(
  const std::string& encoding, const std::string& data, const std::string& output_file );
 
+std::string CLASS_BASE_DECL_SPEC remove_html_scripts( const std::string& html );
+
 std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html );
 
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );

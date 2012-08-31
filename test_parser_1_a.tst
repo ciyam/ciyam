@@ -42,11 +42,12 @@ performing tests...
 <pat/<[A-Za-z][A-Za-z0-9]*[^>]*>/>
 <opt/a>{<opt/b>{[<opt/c>]}}|<opt/d>
 [<opt/a>{[<opt/b>]}|<opt/c>{[<opt/d>]}]
-<opt/a>[<opt/b>|{<opt/c><opt/d>[<opt/e>]}]
 {<opt/a>|<opt/b>[<opt/c>]}<opt/d>|<opt/e>
+<opt/a>[<opt/b>|{<opt/c><opt/d>[<opt/e>]}]
 {<opt/a>|<opt/b>[<opt/c>]}<opt/d>[<opt/e>]
 {<opt/a>|<opt/b>[<opt/c>]}[<opt/d>]|<opt/e>
+<pat/<([A-Za-z][A-Za-z0-9]*)[^>]*>.*<\/\\1>/>
 [<opt/a>{[<opt/b>]}|<opt/c>{[<opt/d>]}]<opt/e>
 [<opt/a>{[<opt/b>]<opt/c>}|<opt/d>{[<opt/e>]}|<opt/f>]
 
-performed 802 test(s) and found 0 error(s)
+performed 812 test(s) and found 0 error(s)
