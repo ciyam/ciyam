@@ -111,10 +111,93 @@ void add_special_set( part& p, char ch )
    }
 }
 
+size_t literal_size( const string& lit )
+{
+   size_t len = 0;
+
+   for( size_t i = 0; i < lit.length( ); i++ )
+   {
+      if( lit[ i ] != '\b' )
+         ++len;
+   }
+
+   return len;
+}
+
+string literal_prefix( const string& lit )
+{
+   string s;
+
+   for( size_t i = 0; i < lit.size( ); i++ )
+   {
+      char ch = lit[ i ];
+
+      if( ch == '\b' )
+      {
+         if( i == 0 )
+            continue;
+         else
+            break;
+      }
+
+      s += lit[ i ];
+   }
+
+   return s;
+}
+
+inline bool is_word_char( char ch )
+{
+   bool rc = false;
+
+   if( ch >= 'A' && ch <= 'Z' )
+      rc = true;
+   else if( ch >= 'a' && ch <= 'z' )
+      rc = true;
+   else if( ch >= '0' && ch <= '9' )
+      rc = true;
+   else if( ch == '_' )
+      rc = true;
+
+   return rc;
+}
+
+bool match_literal( const string& lit, const string& text, size_t pos )
+{
+   size_t len( text.length( ) );
+
+   for( size_t i = 0; i < lit.length( ); i++ )
+   {
+      char ch = lit[ i ];
+      char tc = text[ pos ];
+
+      if( ch == '\b' )
+      {
+         if( pos == 0 )
+            continue;
+
+         if( is_word_char( tc ) )
+            return false;
+      }
+      else if( ch != tc )
+         return false;
+
+      if( ++pos >= len )
+      {
+         if( i == lit.length( ) - 2 && lit[ lit.length( ) - 1 ] == '\b' )
+            return true;
+
+         return ( i == lit.length( ) - 1 );
+      }
+   }
+
+   return true;
+}
+
 #ifdef DEBUG
 void dump_state( const string& msg, char ch, char last_ch, bool ch_used, bool is_range,
- bool had_empty, bool had_range, bool is_in_set, bool was_in_set, bool had_escape, bool has_minimum,
- bool has_maximum, bool set_started, bool still_in_set )
+ bool is_matches, bool had_empty, bool had_range, bool is_in_set, bool was_in_set, bool had_escape,
+ bool has_minimum, bool has_maximum, bool set_started, bool is_set_matches )
 {
    if( !msg.empty( ) )
       cout << msg << endl;
@@ -128,11 +211,12 @@ void dump_state( const string& msg, char ch, char last_ch, bool ch_used, bool is
    cout << "had_range = " << had_range << endl;
    cout << "is_in_set = " << is_in_set << endl;
    cout << "was_in_set = " << was_in_set << endl;
+   cout << "is_matches = " << is_matches << endl;
    cout << "had_escape = " << had_escape << endl;
    cout << "has_minimum = " << has_minimum << endl;
    cout << "has_maximum = " << has_maximum << endl;
    cout << "set_started = " << set_started << endl;
-   cout << "still_in_set = " << still_in_set << endl;
+   cout << "is_set_matches = " << is_set_matches << endl;
 }
 #endif
 
@@ -140,9 +224,9 @@ void dump_state( const string& msg, char ch, char last_ch, bool ch_used, bool is
 
 struct regex::impl
 {
-   impl( const string& input );
+   impl( const string& expr );
 
-   string get_input( ) const { return input; }
+   string get_expr( ) const { return expr; }
 
    int get_min_size( ) const { return min_size; }
    int get_max_size( ) const { return max_size; }
@@ -156,7 +240,7 @@ struct regex::impl
 
    void dump( ostream& os );
 
-   string input;
+   string expr;
    string prefix;
 
    int min_size;
@@ -165,15 +249,17 @@ struct regex::impl
    bool match_at_start;
    bool match_at_finish;
 
+   bool prefix_at_boundary;
+
    vector< part > parts;
    vector< string > refs;
 
    map< int, string > node_refs;
 };
 
-regex::impl::impl( const string& input )
+regex::impl::impl( const string& expr )
  :
- input( input ),
+ expr( expr ),
  min_size( 0 ),
  max_size( 1 ),
  match_at_start( false ),
@@ -190,17 +276,18 @@ regex::impl::impl( const string& input )
    bool is_in_ref = false;
    bool is_in_set = false;
    bool was_in_set = false;
+   bool is_matches = false;
    bool had_escape = false;
    bool has_minimum = false;
    bool has_maximum = false;
    bool set_started = false;
-   bool still_in_set = false;
+   bool is_set_matches = false;
 
    size_t start = 0;
 
-   for( size_t i = 0; i < input.size( ); i++ )
+   for( size_t i = 0; i < expr.size( ); i++ )
    {
-      char ch = input[ i ];
+      char ch = expr[ i ];
 
       if( i == 0 && ch == '^' )
       {
@@ -211,8 +298,8 @@ regex::impl::impl( const string& input )
       }
 
       char next_ch = '\0';
-      if( i < input.size( ) - 1 )
-         next_ch = input[ i + 1 ];
+      if( i < expr.size( ) - 1 )
+         next_ch = expr[ i + 1 ];
 
       ch_used = false;
 
@@ -224,6 +311,10 @@ regex::impl::impl( const string& input )
          {
             case 'a':
             ch = '\a';
+            break;
+
+            case 'b':
+            ch = '\b';
             break;
 
             case 'e':
@@ -251,16 +342,16 @@ regex::impl::impl( const string& input )
             break;
          }
 
-         if( ch == 'x' && i < input.size( ) - 1 )
+         if( ch == 'x' && i < expr.size( ) - 1 )
          {
-            ch = hex_nibble( input[ i + 1 ] );
+            ch = hex_nibble( expr[ i + 1 ] );
             ch <<= 4;
-            ch += hex_nibble( input[ i + 2 ] );
+            ch += hex_nibble( expr[ i + 2 ] );
 
             i += 2;
 
-            if( i < input.size( ) - 1 )
-               next_ch = input[ i + 1 ];
+            if( i < expr.size( ) - 1 )
+               next_ch = expr[ i + 1 ];
             else
                next_ch = '\0';
          }
@@ -281,24 +372,20 @@ regex::impl::impl( const string& input )
 
             is_range = false;
          }
-         else if( was_in_set || still_in_set )
-         {
-            was_in_set = false;
-            still_in_set = false;
-         }
          else
          {
-            if( has_minimum || ( is_special_set( ch ) && !next_part.literal.empty( ) ) )
+            if( has_minimum || was_in_set || ( is_special_set( ch ) && !next_part.literal.empty( ) ) )
             {
 #ifdef DEBUG
                ostringstream osstr;
-               osstr << "[at 0: part #" << ( parts.size( ) + 1 ) << "]";
-               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+               osstr << "[at 1: part #" << ( parts.size( ) + 1 ) << "]";
+               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                parts.push_back( next_part );
                next_part.clear( );
 
+               was_in_set = false;
                has_minimum = false;
                has_maximum = false;
             }
@@ -313,7 +400,7 @@ regex::impl::impl( const string& input )
             {
                add_special_set( next_part, ch );
 
-               if( i != input.size( ) - 1 )
+               if( i != expr.size( ) - 1 )
                {
                   parts.push_back( next_part );
                   next_part.clear( );
@@ -325,12 +412,15 @@ regex::impl::impl( const string& input )
       }
       else if( ch == '\\' )
       {
+         if( is_matches || is_set_matches )
+            throw runtime_error( "invalid escaping for matches in: " + expr );
+
          had_escape = true;
          continue;
       }
       else
       {
-         if( i == input.size( ) - 1 && ch == '$' )
+         if( i == expr.size( ) - 1 && ch == '$' )
          {
             ch_used = true;
             match_at_finish = true;
@@ -340,16 +430,16 @@ regex::impl::impl( const string& input )
 
          if( ch == '(' )
          {
-            if( is_in_ref || next_part.start_ref )
-               throw runtime_error( "invalid nested ref in: " + input );
+            if( is_in_ref )
+               throw runtime_error( "invalid nested ref in: " + expr );
 
             if( i != start && !next_part.literal.empty( ) )
             {
 #ifdef DEBUG
                ostringstream osstr;
-               osstr << "[at 1: part #" << ( parts.size( ) + 1 ) << "]";
-               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+               osstr << "[at 2: part #" << ( parts.size( ) + 1 ) << "]";
+               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                parts.push_back( next_part );
                next_part.clear( );
@@ -360,7 +450,7 @@ regex::impl::impl( const string& input )
          else if( ch == ')' )
          {
             if( !is_in_ref )
-               throw runtime_error( "invalid finish ref in: " + input );
+               throw runtime_error( "invalid finish ref in: " + expr );
 
             ch_used = true;
             is_in_ref = false;
@@ -373,16 +463,16 @@ regex::impl::impl( const string& input )
          else if( ch == '[' )
          {
             if( is_in_set )
-               throw runtime_error( "invalid set start in: " + input );
+               throw runtime_error( "invalid set start in: " + expr );
 
             if( i != start && last_ch != '*' && last_ch != '+'
              && last_ch != '?' && last_ch != '(' && last_ch != ')' )
             {
 #ifdef DEBUG
                ostringstream osstr;
-               osstr << "[at 2: part #" << ( parts.size( ) + 1 ) << "]";
-               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+               osstr << "[at 3: part #" << ( parts.size( ) + 1 ) << "]";
+               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                parts.push_back( next_part );
                next_part.clear( );
@@ -405,7 +495,7 @@ regex::impl::impl( const string& input )
          else if( ch == ']' )
          {
             if( !is_in_set )
-               throw runtime_error( "invalid set finish in: " + input );
+               throw runtime_error( "invalid set finish in: " + expr );
 
             if( !had_range )
                next_part.matches.push_back( make_pair( last_ch, last_ch ) );
@@ -418,7 +508,7 @@ regex::impl::impl( const string& input )
             set_started = false;
 
             if( next_part.matches.empty( ) )
-               throw runtime_error( "invalid empty set in: " + input );
+               throw runtime_error( "invalid empty set in: " + expr );
          }
          else if( is_in_set )
          {
@@ -429,7 +519,7 @@ regex::impl::impl( const string& input )
             }
             else
             {
-               if( ch == '-' )
+               if( ch == '-' && next_ch != ']' )
                   is_range = true;
                else
                {
@@ -447,14 +537,19 @@ regex::impl::impl( const string& input )
          }
          else if( was_in_set )
          {
-            if( still_in_set )
+            if( is_set_matches )
             {
                if( ch < '0' || ch > '9' )
                {
-                  if( ch == '-' && !has_minimum )
+                  if( ch == ',' && !has_minimum )
                      has_minimum = true;
+                  else if( ch != '}' )
+                     throw runtime_error( "invalid set matches in: " + expr );
                   else
-                     still_in_set = false;
+                  {
+                     ch_used = true;
+                     is_set_matches = false;
+                  }
                }
                else
                {
@@ -467,29 +562,6 @@ regex::impl::impl( const string& input )
                      has_maximum = true;
                      next_part.max_matches = ( 10 * next_part.max_matches ) + ( ch - '0' );
                   }
-               }
-
-               if( !still_in_set )
-               {
-                  if( !has_maximum )
-                  {
-                     if( ch == '+' )
-                        next_part.max_matches = 0;
-                     else
-                        next_part.max_matches = next_part.min_matches;
-                  }
-
-                  was_in_set = false;
-                  has_minimum = false;
-                  has_maximum = false;
-#ifdef DEBUG
-                  ostringstream osstr;
-                  osstr << "[at 3: part #" << ( parts.size( ) + 1 ) << "]";
-                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
-#endif
-                  parts.push_back( next_part );
-                  next_part.clear( );
                }
             }
             else
@@ -504,9 +576,12 @@ regex::impl::impl( const string& input )
 
                ch_used = true;
 
-               if( ch == '#' && next_ch >= '0' && next_ch <= '9' )
+               if( ch == '{' )
                {
-                  still_in_set = true;
+                  if( next_ch < '0' || next_ch > '9' )
+                     throw runtime_error( "invalid set matches in: " + expr );
+
+                  is_set_matches = true;
                   next_part.min_matches = 0;
                   next_part.max_matches = 0;
                }
@@ -526,8 +601,8 @@ regex::impl::impl( const string& input )
 #ifdef DEBUG
                   ostringstream osstr;
                   osstr << "[at 4: part #" << ( parts.size( ) + 1 ) << "]";
-                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                   parts.push_back( next_part );
                   next_part.clear( );
@@ -543,14 +618,14 @@ regex::impl::impl( const string& input )
          {
             if( !next_part.finish_ref )
             {
-               if( next_part.literal.length( ) > 1 )
+               if( next_part.literal.length( ) > 1 && next_part.literal[ 0 ] != '\\' )
                {
                   next_part.literal.erase( next_part.literal.length( ) - 1 );
 #ifdef DEBUG
                   ostringstream osstr;
                   osstr << "[at 5: part #" << ( parts.size( ) + 1 ) << "]";
-                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                   parts.push_back( next_part );
                   next_part.clear( );
@@ -562,8 +637,8 @@ regex::impl::impl( const string& input )
 #ifdef DEBUG
                   ostringstream osstr;
                   osstr << "[at 6: part #" << ( parts.size( ) + 1 ) << "]";
-                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                   parts.push_back( next_part );
                   next_part.clear( );
@@ -577,8 +652,8 @@ regex::impl::impl( const string& input )
 #ifdef DEBUG
             ostringstream osstr;
             osstr << "[at 7: part #" << ( parts.size( ) + 1 ) << "]";
-            dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-             is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+            dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+             is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
             parts.push_back( next_part );
             next_part.clear( );
@@ -596,8 +671,8 @@ regex::impl::impl( const string& input )
 #ifdef DEBUG
                   ostringstream osstr;
                   osstr << "[at 8: part #" << ( parts.size( ) + 1 ) << "]";
-                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                   parts.push_back( next_part );
                   next_part.clear( );
@@ -610,8 +685,8 @@ regex::impl::impl( const string& input )
 #ifdef DEBUG
             ostringstream osstr;
             osstr << "[at 9: part #" << ( parts.size( ) + 1 ) << "]";
-            dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-             is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+            dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+             is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
             parts.push_back( next_part );
             next_part.clear( );
@@ -620,16 +695,19 @@ regex::impl::impl( const string& input )
 
             had_empty = false;
          }
-         else if( ch == '#' && next_ch >= '0' && next_ch <= '9' )
+         else if( ch == '{' )
          {
-            if( next_part.literal.length( ) > 1 )
+            if( next_ch < '0' || next_ch > '9' )
+               throw runtime_error( "invalid matches in: " + expr );
+
+            if( !next_part.finish_ref && next_part.literal.length( ) > 1 )
             {
                next_part.literal.erase( next_part.literal.length( ) - 1 );
 #ifdef DEBUG
                ostringstream osstr;
                osstr << "[at 10: part #" << ( parts.size( ) + 1 ) << "]";
-               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                parts.push_back( next_part );
                next_part.clear( );
@@ -637,8 +715,8 @@ regex::impl::impl( const string& input )
                next_part.literal = last_ch;
             }
   
-            is_range = true;
             had_empty = false;
+            is_matches = true;
             next_part.min_matches = 0;
             next_part.max_matches = 0;
          }
@@ -657,8 +735,8 @@ regex::impl::impl( const string& input )
 #ifdef DEBUG
                ostringstream osstr;
                osstr << "[at 11: part #" << ( parts.size( ) + 1 ) << "]";
-               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                parts.push_back( next_part );
                next_part.clear( );
@@ -678,7 +756,7 @@ regex::impl::impl( const string& input )
 
             ch_used = true;
          }
-         else if( is_range )
+         else if( is_matches )
          {
             if( ch >= '0' && ch <= '9' )
             {
@@ -692,38 +770,15 @@ regex::impl::impl( const string& input )
                   next_part.max_matches = ( 10 * next_part.max_matches ) + ( ch - '0' );
                }
             }
-
-            if( ch == '-' && !has_minimum )
+            else if( ch == ',' && !has_minimum )
                has_minimum = true;
-            else if( ch == '+' )
+            else if( ch == '}' )
             {
-               is_range = false;
-               next_part.max_matches = 0;
+               ch_used = true;
+               is_matches = false;
             }
-            else if( ch < '0' || ch > '9' )
-            {
-               is_range = false;
-               if( !has_maximum )
-                  next_part.max_matches = next_part.min_matches;
-
-               if( ch == '.' || has_minimum )
-               {
-#ifdef DEBUG
-                  ostringstream osstr;
-                  osstr << "[at 12: part #" << ( parts.size( ) + 1 ) << "]";
-                  dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                   is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
-#endif
-                  parts.push_back( next_part );
-                  next_part.clear( );
-
-                  has_minimum = false;
-                  has_maximum = false;
-               }
-
-               if( ch != '.' )
-                  next_part.literal += ch;
-            }
+            else
+               throw runtime_error( "invalid matches found in: " + expr );
          }
          else
          {
@@ -731,9 +786,9 @@ regex::impl::impl( const string& input )
             {
 #ifdef DEBUG
                ostringstream osstr;
-               osstr << "[at 13: part #" << ( parts.size( ) + 1 ) << "]";
-               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range,
-                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, still_in_set );
+               osstr << "[at 12: part #" << ( parts.size( ) + 1 ) << "]";
+               dump_state( osstr.str( ), ch, last_ch, ch_used, is_range, had_empty, had_range, is_matches,
+                is_in_set, was_in_set, had_escape, has_minimum, has_maximum, set_started, is_set_matches );
 #endif
                parts.push_back( next_part );
                next_part.clear( );
@@ -742,6 +797,7 @@ regex::impl::impl( const string& input )
                   had_empty = true;
                else
                   had_empty = false;
+
                has_minimum = false;
                has_maximum = false;
             }
@@ -754,14 +810,17 @@ regex::impl::impl( const string& input )
          }
       }
 
-      if( !is_range || ch != '-' )
+      if( !is_range )
          last_ch = ch;
    }
 
    if( is_in_set && !was_in_set )
-      throw runtime_error( "missing set finish in: " + input );
+      throw runtime_error( "missing set finish in: " + expr );
 
-   if( was_in_set || still_in_set || !next_part.literal.empty( ) )
+   if( is_set_matches )
+      throw runtime_error( "missing set matches finish in: " + expr );
+
+   if( was_in_set || !next_part.literal.empty( ) )
    {
       if( is_range && !has_maximum )
          next_part.max_matches = next_part.min_matches;
@@ -773,15 +832,15 @@ regex::impl::impl( const string& input )
    {
       next_part.clear( );
 
-      char ch = input[ input.length( ) - 1 ];
+      char ch = expr[ expr.length( ) - 1 ];
       if( ch != '.' )
-         next_part.literal = input[ input.length( ) - 1 ];
+         next_part.literal = expr[ expr.length( ) - 1 ];
 
       parts.push_back( next_part );
    }
 
 #ifdef DEBUG
-   cout << "input: " << input << "\n\n";
+   cout << "expr: " << expr << "\n\n";
 #endif
    for( size_t i = 0; i < parts.size( ); i++ )
    {
@@ -789,10 +848,23 @@ regex::impl::impl( const string& input )
       {
          if( parts[ i ].min_matches && !parts[ i ].literal.empty( ) )
          {
-            for( size_t j = 0; j < parts[ i ].min_matches; j++ )
-               prefix += parts[ i ].literal;
+            string lit_prefix( literal_prefix( parts[ i ].literal ) );
 
-            if( parts[ i ].finish_ref || parts[ i ].max_matches != parts[ i ].min_matches )
+            if( parts[ i ].literal[ 0 ] == '\b' )
+               prefix_at_boundary = true;
+            else
+               prefix_at_boundary = false;
+
+            size_t min_matches = parts[ i ].min_matches;
+            if( lit_prefix.size( ) != parts[ i ].literal.size( ) )
+               min_matches = 1;
+
+            for( size_t j = 0; j < min_matches; j++ )
+               prefix += lit_prefix;
+
+            if( parts[ i ].finish_ref
+             || lit_prefix.size( ) != parts[ i ].literal.size( )
+             || parts[ i ].max_matches != parts[ i ].min_matches )
                break;
          }
          else
@@ -806,7 +878,7 @@ regex::impl::impl( const string& input )
    {
       if( parts[ i ].type == e_part_type_lit )
       {
-         size_t size = parts[ i ].literal.size( );
+         size_t size = literal_size( parts[ i ].literal );
          if( size == 0 )
             ++size;
 
@@ -820,7 +892,7 @@ regex::impl::impl( const string& input )
 
       int size = 1;
       if( !parts[ i ].literal.empty( ) )
-         size = parts[ i ].literal.size( );
+         size = literal_size( parts[ i ].literal );
 
       if( max_size )
          max_size += ( size * parts[ i ].max_matches );
@@ -863,9 +935,11 @@ string::size_type regex::impl::search(
          for( size_t i = 0; i < test_part.min_matches; i++ )
             literal += test_part.literal;
 
-         if( text.length( ) < literal.length( ) )
+         if( match_at_start && !match_literal( literal, text, 0 ) )
             okay = false;
-         else if( text.substr( text.length( ) - literal.length( ) ) != literal )
+
+         if( match_at_finish
+          && !match_literal( literal, text, text.length( ) - literal_size( literal ) ) )
             okay = false;
 
          if( !okay )
@@ -932,6 +1006,16 @@ string::size_type regex::impl::do_search(
    string::size_type begins = string::npos;
    string::size_type finishes = string::npos;
 
+   refs.clear( );
+   node_refs.clear( );
+
+   // NOTE: Need to force all refs to be empty strings in case they are in optional parts.
+   for( size_t i = 0; i < parts.size( ); i++ )
+   {
+      if( parts[ i ].start_ref )
+         node_refs[ i ] = "";
+   }
+
    while( !parts.empty( ) )
    {
       size_t last_found = 0;
@@ -943,16 +1027,20 @@ string::size_type regex::impl::do_search(
 
       bool has_matched = false;
 
-      refs.clear( );
-      node_refs.clear( );
-
       if( !prefix.empty( ) )
       {
-         string::size_type pos = text.find( prefix, start );
+         size_t from( start );
+         if( prefix_at_boundary && start )
+            ++from;
+
+         string::size_type pos = text.find( prefix, from );
          if( pos == string::npos )
             return pos;
 
          start = pos;
+
+         if( prefix_at_boundary && start )
+            --start;
       }
 
       for( size_t i = start; i < text.size( ); i++ )
@@ -985,12 +1073,14 @@ string::size_type regex::impl::do_search(
                if( ( literal.empty( )
                 && i + p.min_matches <= text.size( )
                 && text.substr( i, p.min_matches ).find( '\n' ) == string::npos )
-                || ( ( i + literal.size( ) <= text.size( ) )
-                && text.substr( i, literal.size( ) ) == literal ) )
+                || match_literal( literal, text, i ) )
                {
 #ifdef DEBUG
                   cout << "matched literal in part #" << ( j + 1 ) << endl;
 #endif
+                  if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
+                     ++i;
+
                   if( !okay )
                      begins = i;
 
@@ -1008,6 +1098,7 @@ string::size_type regex::impl::do_search(
                      ref_starts = j;
                      ref_started = i;
                      ref_finished = string::npos;
+                     node_refs[ ref_starts ] = "";
                   }
 
                   start_from = j + 1;
@@ -1015,7 +1106,7 @@ string::size_type regex::impl::do_search(
                   if( literal.empty( ) )
                      i += p.min_matches;
                   else
-                     i += literal.size( );
+                     i += literal_size( literal );
 
                   if( p.finish_ref )
                   {
@@ -1071,6 +1162,7 @@ string::size_type regex::impl::do_search(
                         ref_starts = j;
                         ref_started = i;
                         ref_finished = string::npos;
+                        node_refs[ ref_starts ] = "";
                      }
 
                      start_from = j + 1;
@@ -1121,9 +1213,7 @@ string::size_type regex::impl::do_search(
                expand_refs( last_literal );
 
                if( has_last_literal && remaining != 0
-                && ( ( last_literal.empty( ) && i < text.size( ) )
-                || ( ( i + last_literal.size( ) <= text.size( ) )
-                && text.substr( i, last_literal.size( ) ) == last_literal ) ) )
+                && match_literal( last_literal, text, i ) )
                {
 #ifdef DEBUG
                   cout << "matched last literal: " << last_literal << endl;
@@ -1134,7 +1224,12 @@ string::size_type regex::impl::do_search(
                   if( last_literal.empty( ) )
                      ++i;
                   else
-                     i += last_literal.size( );
+                  {
+                     i += literal_size( last_literal );
+
+                     if( !last_literal.empty( ) && last_literal[ 0 ] == '\b' )
+                        ++i;
+                  }
 
                   if( last_ref_finish )
                      ref_finished = i;
@@ -1220,8 +1315,14 @@ string::size_type regex::impl::do_search(
          {
             if( parts[ j ].min_matches )
             {
-               okay = false;
-               break;
+               // NOTE: If the finish position is the last character and the last
+               // part is just a boundary match character then is still matching.
+               if( j != parts.size( ) - 1 || finishes != text.length( ) - 1
+                || parts[ j ].type != e_part_type_lit || parts[ j ].literal != "\b" )
+               {
+                  okay = false;
+                  break;
+               }
             }
          }
       }
@@ -1238,6 +1339,22 @@ string::size_type regex::impl::do_search(
 
    if( okay && match_at_finish && finishes != text.size( ) - 1 )
       okay = false;
+
+   // NOTE: If the last literal ends with a boundary match character
+   // and the last matched character is a non-word character then it
+   // will be necessary to remove the last character from the match.
+   if( okay && parts.size( ) )
+   {
+      size_t last_part = parts.size( ) - 1;
+      if( okay && parts[ last_part ].type == e_part_type_lit )
+      {
+         string last_literal = parts[ last_part ].literal;
+
+         if( !last_literal.empty( )
+          && last_literal[ last_literal.size( ) - 1 ] == '\b' && !is_word_char( text[ finishes ] ) )
+            --finishes;
+      }
+   }
 
    if( okay && p_length )
       *p_length = finishes - begins + 1;
@@ -1303,7 +1420,7 @@ void regex::impl::expand_refs( string& literal )
 
 void regex::impl::dump( ostream& os )
 {
-   os << "\ninput: " << input << '\n';
+   os << "\nexpr: " << expr << '\n';
 
    for( size_t i = 0; i < parts.size( ); i++ )
    {
@@ -1336,9 +1453,21 @@ void regex::impl::dump( ostream& os )
    os << endl;
 }
 
-regex::regex( const string& input )
+regex::regex( const string& expr )
 {
-   p_impl = new regex::impl( input );
+#ifdef DEBUG
+   try
+   {
+#endif
+      p_impl = new regex::impl( expr );
+#ifdef DEBUG
+   }
+   catch( exception& x )
+   {
+      cout << "error: " << x.what( ) << endl;
+      throw;
+   }
+#endif
 }
 
 regex::~regex( )
@@ -1346,9 +1475,9 @@ regex::~regex( )
    delete p_impl;
 }
 
-string regex::get_input( ) const
+string regex::get_expr( ) const
 {
-   return p_impl->input;
+   return p_impl->expr;
 }
 
 int regex::get_min_size( ) const
