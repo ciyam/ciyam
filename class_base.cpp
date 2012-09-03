@@ -3479,7 +3479,7 @@ void save_attachment( const string& encoding, const string& data, const string& 
 
 string remove_html_scripts( const string& html )
 {
-   static regex html_tag_pair( "<([A-Za-z][A-Za-z0-9]*)([^>]*)>(.*)</\\1>" );
+   static regex html_tag_pair( c_regex_html_paired_tags );
 
    string old_html( html );
    string new_html;

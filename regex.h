@@ -21,13 +21,25 @@
 #     include <iosfwd>
 #  endif
 
+const char* const c_regex_email_address = "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b";
+const char* const c_regex_html_paired_tags = "<([A-Za-z][A-Za-z0-9]*)([^>]*)>(.*)</\\1>";
+const char* const c_regex_floating_point_number = "\\b[-+]?[0-9]+\\.[0-9]+\\b";
+
+// NOTE: This regular expression implementation does not perform backtracking and so will never
+// match greedily (and does not support non-greedy match tokens such as +? *?). It does support
+// back references via parenthesis grouping but does not support group options such as ?: which
+// would normally indicate that a group does not create a back reference. Nested groups are not
+// supported and alternations (such as: one|two|three) are also not supported (the latter could
+// be added without too much difficulty). The design choices were made in order to do the least
+// number of comparisons while still supporting non-trivial expressions. To have more extensive
+// regular expressions it would be recommended to use a 3rd party library (such as PCRE).
 class regex
 {
    public:
-   regex( const std::string& input );
+   regex( const std::string& expr );
    ~regex( );
 
-   std::string get_input( ) const;
+   std::string get_expr( ) const;
 
    int get_min_size( ) const;
    int get_max_size( ) const;
