@@ -630,7 +630,11 @@ domain_string_max_size< 200 > g_Specification_Name_domain;
 domain_string_max_size< 100 > g_Specification_Object_domain;
 domain_string_max_size< 10 > g_View_Id_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Specification_Type* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -7295,6 +7299,22 @@ const char* Meta_Specification_Type::get_field_name(
    return p_name;
 }
 
+string& Meta_Specification_Type::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Specification_Type::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Specification_Type::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Specification_Type::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -9526,6 +9546,7 @@ void Meta_Specification_Type::static_class_init( const char* p_module_name )
    g_field_type_enum.insert( 51 );
    g_field_type_enum.insert( 52 );
    g_field_type_enum.insert( 99 );
+
    g_procedure_arg_primitive_enum.insert( 0 );
    g_procedure_arg_primitive_enum.insert( 1 );
    g_procedure_arg_primitive_enum.insert( 2 );
@@ -9534,12 +9555,15 @@ void Meta_Specification_Type::static_class_init( const char* p_module_name )
    g_procedure_arg_primitive_enum.insert( 5 );
    g_procedure_arg_primitive_enum.insert( 6 );
    g_procedure_arg_primitive_enum.insert( 99 );
+
    g_procedure_arg_type_enum.insert( 0 );
    g_procedure_arg_type_enum.insert( 1 );
    g_procedure_arg_type_enum.insert( 99 );
+
    g_source_parent_type_enum.insert( 50 );
    g_source_parent_type_enum.insert( 51 );
    g_source_parent_type_enum.insert( 52 );
+
    g_source_type_enum.insert( 0 );
    g_source_type_enum.insert( 1 );
    g_source_type_enum.insert( 2 );
@@ -9550,6 +9574,7 @@ void Meta_Specification_Type::static_class_init( const char* p_module_name )
    g_source_type_enum.insert( 20 );
    g_source_type_enum.insert( 35 );
    g_source_type_enum.insert( 99 );
+
    g_test_field_type_enum.insert( 0 );
    g_test_field_type_enum.insert( 1 );
    g_test_field_type_enum.insert( 2 );

@@ -40,7 +40,6 @@ class Meta_Modifier;
 class Meta_Permission;
 class Meta_Procedure;
 class Meta_Specification;
-class Meta_Specification_Copy_Child_Links;
 class Meta_Procedure_Arg;
 
 class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
@@ -57,7 +56,6 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
    friend class Meta_Modifier;
    friend class Meta_Permission;
    friend class Meta_Procedure;
-   friend class Meta_Specification_Copy_Child_Links;
    friend class Meta_Procedure_Arg;
 
    public:
@@ -103,43 +101,42 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
       e_field_id_Other_Procedure = 35,
       e_field_id_Other_Procedure_2 = 36,
       e_field_id_Parent_Specification = 37,
-      e_field_id_Parent_Specification_Copy_Child_Links = 38,
-      e_field_id_Permission = 39,
-      e_field_id_Procedure = 40,
-      e_field_id_Procedure_Arg = 41,
-      e_field_id_Procedure_Arg_2 = 42,
-      e_field_id_Procedure_Arg_3 = 43,
-      e_field_id_Protect_Child_Rel = 44,
-      e_field_id_Protect_Procedure = 45,
-      e_field_id_Protect_Source_Parent = 46,
-      e_field_id_Restrict_Values = 47,
-      e_field_id_Source_Child = 48,
-      e_field_id_Source_Child_2 = 49,
-      e_field_id_Source_Child_Class = 50,
-      e_field_id_Source_Class = 51,
-      e_field_id_Source_Field = 52,
-      e_field_id_Source_Field_Class = 53,
-      e_field_id_Source_Grandchild = 54,
-      e_field_id_Source_Parent = 55,
-      e_field_id_Source_Parent_Class = 56,
-      e_field_id_Specification_Type = 57,
-      e_field_id_Strings = 58,
-      e_field_id_Test_Child = 59,
-      e_field_id_Test_Field = 60,
-      e_field_id_Test_Field_Class = 61,
-      e_field_id_Test_Parent = 62,
-      e_field_id_Test_Parent_Class = 63,
-      e_field_id_Test_Value = 64,
-      e_field_id_Use_Source_Parent = 65,
-      e_field_id_Use_Test_Parent_Child = 66,
-      e_field_id_Value = 67,
-      e_field_id_Value_Label = 68,
-      e_field_id_Value_Left_Part = 69,
-      e_field_id_Value_Literal = 70,
-      e_field_id_Value_Numeric_String = 71,
-      e_field_id_Value_Right_Part = 72,
-      e_field_id_Value_String = 73,
-      e_field_id_Vars = 74
+      e_field_id_Permission = 38,
+      e_field_id_Procedure = 39,
+      e_field_id_Procedure_Arg = 40,
+      e_field_id_Procedure_Arg_2 = 41,
+      e_field_id_Procedure_Arg_3 = 42,
+      e_field_id_Protect_Child_Rel = 43,
+      e_field_id_Protect_Procedure = 44,
+      e_field_id_Protect_Source_Parent = 45,
+      e_field_id_Restrict_Values = 46,
+      e_field_id_Source_Child = 47,
+      e_field_id_Source_Child_2 = 48,
+      e_field_id_Source_Child_Class = 49,
+      e_field_id_Source_Class = 50,
+      e_field_id_Source_Field = 51,
+      e_field_id_Source_Field_Class = 52,
+      e_field_id_Source_Grandchild = 53,
+      e_field_id_Source_Parent = 54,
+      e_field_id_Source_Parent_Class = 55,
+      e_field_id_Specification_Type = 56,
+      e_field_id_Strings = 57,
+      e_field_id_Test_Child = 58,
+      e_field_id_Test_Field = 59,
+      e_field_id_Test_Field_Class = 60,
+      e_field_id_Test_Parent = 61,
+      e_field_id_Test_Parent_Class = 62,
+      e_field_id_Test_Value = 63,
+      e_field_id_Use_Source_Parent = 64,
+      e_field_id_Use_Test_Parent_Child = 65,
+      e_field_id_Value = 66,
+      e_field_id_Value_Label = 67,
+      e_field_id_Value_Left_Part = 68,
+      e_field_id_Value_Literal = 69,
+      e_field_id_Value_Numeric_String = 70,
+      e_field_id_Value_Right_Part = 71,
+      e_field_id_Value_String = 72,
+      e_field_id_Vars = 73
    };
 
    Meta_Specification( );
@@ -327,10 +324,6 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
    Meta_Specification& Parent_Specification( );
    const Meta_Specification& Parent_Specification( ) const;
    void Parent_Specification( const std::string& key );
-
-   Meta_Specification_Copy_Child_Links& Parent_Specification_Copy_Child_Links( );
-   const Meta_Specification_Copy_Child_Links& Parent_Specification_Copy_Child_Links( ) const;
-   void Parent_Specification_Copy_Child_Links( const std::string& key );
 
    Meta_Permission& Permission( );
    const Meta_Permission& Permission( ) const;
@@ -532,6 +525,11 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
+
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }
@@ -632,7 +630,6 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
    virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Procedure& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Specification& o, const std::string& value );
-   virtual void setup_foreign_key( Meta_Specification_Copy_Child_Links& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Procedure_Arg& o, const std::string& value );
 
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
@@ -670,9 +667,6 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
     const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Specification& o,
-    const std::string& foreign_key_field, const std::string& init_value );
-
-   virtual void setup_graph_parent( Meta_Specification_Copy_Child_Links& o,
     const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Procedure_Arg& o,

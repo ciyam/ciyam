@@ -36,10 +36,8 @@
 #include "Meta_Relationship.h"
 #include "Meta_List_Field.h"
 #include "Meta_Specification.h"
-#include "Meta_Specification_Content_Page.h"
 #include "Meta_Specification_Field_Action.h"
 #include "Meta_List.h"
-#include "Meta_Specification_Copy_Child_Links.h"
 #include "Meta_View_Field.h"
 #include "Meta_Index.h"
 #include "Meta_Initial_Record.h"
@@ -242,7 +240,11 @@ aggregate_domain< string,
  domain_string_label_format,
  domain_string_max_size< 30 > > g_Static_Instance_Key_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Class* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -862,72 +864,6 @@ struct Meta_Class::impl : public Meta_Class_command_handler
       return *cp_child_Specification_Field;
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Fragment( )
-   {
-      if( !cp_child_Specification_Content_Page_Fragment )
-      {
-         cp_child_Specification_Content_Page_Fragment.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Fragment, "302602" );
-      }
-      return *cp_child_Specification_Content_Page_Fragment;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Fragment( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Fragment )
-      {
-         cp_child_Specification_Content_Page_Fragment.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Fragment, "302602" );
-      }
-      return *cp_child_Specification_Content_Page_Fragment;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group( )
-   {
-      if( !cp_child_Specification_Content_Page_Group )
-      {
-         cp_child_Specification_Content_Page_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group, "302603" );
-      }
-      return *cp_child_Specification_Content_Page_Group;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Group )
-      {
-         cp_child_Specification_Content_Page_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group, "302603" );
-      }
-      return *cp_child_Specification_Content_Page_Group;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link( )
-   {
-      if( !cp_child_Specification_Content_Page_Link )
-      {
-         cp_child_Specification_Content_Page_Link.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link, "302604" );
-      }
-      return *cp_child_Specification_Content_Page_Link;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Link )
-      {
-         cp_child_Specification_Content_Page_Link.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link, "302604" );
-      }
-      return *cp_child_Specification_Content_Page_Link;
-   }
-
    Meta_Specification_Field_Action& impl_child_Specification_Field_Action_New_Record( )
    {
       if( !cp_child_Specification_Field_Action_New_Record )
@@ -970,50 +906,6 @@ struct Meta_Class::impl : public Meta_Class_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Other, "301421" );
       }
       return *cp_child_Specification_Other;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File( )
-   {
-      if( !cp_child_Specification_Content_Page_Page_File )
-      {
-         cp_child_Specification_Content_Page_Page_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File, "302601" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page_File )
-      {
-         cp_child_Specification_Content_Page_Page_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File, "302601" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_Link( )
-   {
-      if( !cp_child_Specification_Content_Page_Page_Link )
-      {
-         cp_child_Specification_Content_Page_Page_Link.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_Link, "302600" );
-      }
-      return *cp_child_Specification_Content_Page_Page_Link;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_Link( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page_Link )
-      {
-         cp_child_Specification_Content_Page_Page_Link.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_Link, "302600" );
-      }
-      return *cp_child_Specification_Content_Page_Page_Link;
    }
 
    Meta_Field& impl_child_Field_Parent( )
@@ -1146,28 +1038,6 @@ struct Meta_Class::impl : public Meta_Class_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Source_Child, "301489" );
       }
       return *cp_child_Specification_Source_Child;
-   }
-
-   Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Source_Child_Rel_Child( )
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child )
-      {
-         cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child, "302652" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child;
-   }
-
-   const Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Source_Child_Rel_Child( ) const
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child )
-      {
-         cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child, "302652" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child;
    }
 
    Meta_Specification& impl_child_Specification_Source( )
@@ -1344,28 +1214,6 @@ struct Meta_Class::impl : public Meta_Class_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Test_Parent, "301487" );
       }
       return *cp_child_Specification_Test_Parent;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Variable( )
-   {
-      if( !cp_child_Specification_Content_Page_Variable )
-      {
-         cp_child_Specification_Content_Page_Variable.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Variable, "302637" );
-      }
-      return *cp_child_Specification_Content_Page_Variable;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Variable( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Variable )
-      {
-         cp_child_Specification_Content_Page_Variable.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Variable, "302637" );
-      }
-      return *cp_child_Specification_Content_Page_Variable;
    }
 
    Meta_Field& impl_child_Field( )
@@ -1691,20 +1539,14 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    mutable class_pointer< Meta_Specification > cp_child_Specification_Child_Rel_Child;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Child_Rel_Source_Parent;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Field;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Fragment;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Group;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Link;
    mutable class_pointer< Meta_Specification_Field_Action > cp_child_Specification_Field_Action_New_Record;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page_File;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page_Link;
    mutable class_pointer< Meta_Field > cp_child_Field_Parent;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Parent;
    mutable class_pointer< Meta_List > cp_child_List_Parent;
    mutable class_pointer< Meta_Relationship > cp_child_Relationship_Parent;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Source_Child;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Source_Child;
-   mutable class_pointer< Meta_Specification_Copy_Child_Links > cp_child_Specification_Copy_Child_Links_Source_Child_Rel_Child;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Source;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Source_Field;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Source_Parent;
@@ -1713,7 +1555,6 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    mutable class_pointer< Meta_Class > cp_child_Class_Source;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test_Field;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test_Parent;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Variable;
    mutable class_pointer< Meta_Field > cp_child_Field;
    mutable class_pointer< Meta_Index > cp_child_Index;
    mutable class_pointer< Meta_Initial_Record > cp_child_Initial_Record;
@@ -1764,9 +1605,11 @@ void Meta_Class::impl::impl_Generate( )
 
    vector< pair< string, string > > default_values;
 
+   string order_field;
    vector< string > basic_fields;
    vector< string > parent_fields;
    vector< string > complex_fields;
+   vector< string > file_field_names;
    vector< string > transient_fields;
    vector< string > sql_numeric_fields;
    vector< string > text_search_fields;
@@ -1909,6 +1752,14 @@ void Meta_Class::impl::impl_Generate( )
                enum_field_values.push_back( make_pair( enum_name, enum_values ) );
             }
 
+            if( get_obj( ).child_Field( ).Extra( ) == 5 ) // i.e. "order"
+               order_field = get_obj( ).child_Field( ).Name( );
+
+            if( get_obj( ).child_Field( ).Extra( ) == 1 // i.e. "file"
+             || get_obj( ).child_Field( ).Extra( ) == 3 // i.e. "image"
+             || get_obj( ).child_Field( ).Extra( ) == 21 ) // i.e. "file_link"
+               file_field_names.push_back( get_obj( ).child_Field( ).Name( ) );
+
             // NOTE: The "int" and "bool" types are the only basic primitives.
             if( get_obj( ).child_Field( ).Primitive( ) == 5 || get_obj( ).child_Field( ).Primitive( ) == 6 )
                basic_fields.push_back( get_obj( ).child_Field( ).Name( ) );
@@ -1992,6 +1843,9 @@ void Meta_Class::impl::impl_Generate( )
    for( size_t i = 0; i < default_values.size( ); i++ )
       outf << "\x60{\x60$field_default_" << default_values[ i ].first << "\x60=\x60'" << default_values[ i ].second << "\x60'\x60}\n";
 
+   if( !order_field.empty( ) )
+      outf << "\n";
+
    if( !basic_fields.empty( ) )
    {
       outf << "\x60{\x60$basic_fields\x60=\x60'";
@@ -2024,6 +1878,18 @@ void Meta_Class::impl::impl_Generate( )
          if( i > 0 )
             outf << ' ';
          outf << complex_fields[ i ];
+      }
+      outf << "\x60'\x60}\n";
+   }
+
+   if( !file_field_names.empty( ) )
+   {
+      outf << "\x60{\x60$file_field_names\x60=\x60'";
+      for( size_t i = 0; i < file_field_names.size( ); i++ )
+      {
+         if( i > 0 )
+            outf << ' ';
+         outf << file_field_names[ i ];
       }
       outf << "\x60'\x60}\n";
    }
@@ -3938,36 +3804,6 @@ const Meta_Specification& Meta_Class::child_Specification_Field( ) const
    return p_impl->impl_child_Specification_Field( );
 }
 
-Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Fragment( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Fragment( );
-}
-
-const Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Fragment( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Fragment( );
-}
-
-Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Group( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Group( );
-}
-
-const Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Group( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Group( );
-}
-
-Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Link( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Link( );
-}
-
-const Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Link( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Link( );
-}
-
 Meta_Specification_Field_Action& Meta_Class::child_Specification_Field_Action_New_Record( )
 {
    return p_impl->impl_child_Specification_Field_Action_New_Record( );
@@ -3986,26 +3822,6 @@ Meta_Specification& Meta_Class::child_Specification_Other( )
 const Meta_Specification& Meta_Class::child_Specification_Other( ) const
 {
    return p_impl->impl_child_Specification_Other( );
-}
-
-Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Page_File( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File( );
-}
-
-const Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Page_File( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File( );
-}
-
-Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Page_Link( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_Link( );
-}
-
-const Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Page_Link( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_Link( );
 }
 
 Meta_Field& Meta_Class::child_Field_Parent( )
@@ -4066,16 +3882,6 @@ Meta_Specification& Meta_Class::child_Specification_Source_Child( )
 const Meta_Specification& Meta_Class::child_Specification_Source_Child( ) const
 {
    return p_impl->impl_child_Specification_Source_Child( );
-}
-
-Meta_Specification_Copy_Child_Links& Meta_Class::child_Specification_Copy_Child_Links_Source_Child_Rel_Child( )
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Source_Child_Rel_Child( );
-}
-
-const Meta_Specification_Copy_Child_Links& Meta_Class::child_Specification_Copy_Child_Links_Source_Child_Rel_Child( ) const
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Source_Child_Rel_Child( );
 }
 
 Meta_Specification& Meta_Class::child_Specification_Source( )
@@ -4156,16 +3962,6 @@ Meta_Specification& Meta_Class::child_Specification_Test_Parent( )
 const Meta_Specification& Meta_Class::child_Specification_Test_Parent( ) const
 {
    return p_impl->impl_child_Specification_Test_Parent( );
-}
-
-Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Variable( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Variable( );
-}
-
-const Meta_Specification_Content_Page& Meta_Class::child_Specification_Content_Page_Variable( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Variable( );
 }
 
 Meta_Field& Meta_Class::child_Field( )
@@ -4744,6 +4540,22 @@ const char* Meta_Class::get_field_name(
    return p_name;
 }
 
+string& Meta_Class::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Class::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Class::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Class::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -4836,11 +4648,6 @@ void Meta_Class::setup_graph_parent( Meta_Specification& o, const string& foreig
    static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
-void Meta_Class::setup_graph_parent( Meta_Specification_Content_Page& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Content_Page& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
 void Meta_Class::setup_graph_parent( Meta_Specification_Field_Action& o, const string& foreign_key_field )
 {
    static_cast< Meta_Specification_Field_Action& >( o ).set_graph_parent( this, foreign_key_field );
@@ -4854,11 +4661,6 @@ void Meta_Class::setup_graph_parent( Meta_Field& o, const string& foreign_key_fi
 void Meta_Class::setup_graph_parent( Meta_List& o, const string& foreign_key_field )
 {
    static_cast< Meta_List& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
-void Meta_Class::setup_graph_parent( Meta_Specification_Copy_Child_Links& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Copy_Child_Links& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
 void Meta_Class::setup_graph_parent( Meta_View_Field& o, const string& foreign_key_field )
@@ -4934,7 +4736,7 @@ void Meta_Class::set_total_child_relationships( size_t new_total_child_relations
 
 size_t Meta_Class::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 39;
+   size_t rc = 32;
 
    if( !is_internal )
    {
@@ -4967,7 +4769,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 39 )
+   if( child_num >= 32 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -5022,36 +4824,12 @@ class_base* Meta_Class::get_next_foreign_key_child(
          case 5:
          if( op == e_cascade_op_restrict )
          {
-            next_child_field = "302602";
-            p_class_base = &child_Specification_Content_Page_Fragment( );
-         }
-         break;
-
-         case 6:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302603";
-            p_class_base = &child_Specification_Content_Page_Group( );
-         }
-         break;
-
-         case 7:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302604";
-            p_class_base = &child_Specification_Content_Page_Link( );
-         }
-         break;
-
-         case 8:
-         if( op == e_cascade_op_restrict )
-         {
             next_child_field = "302300";
             p_class_base = &child_Specification_Field_Action_New_Record( );
          }
          break;
 
-         case 9:
+         case 6:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301421";
@@ -5059,23 +4837,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 10:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302601";
-            p_class_base = &child_Specification_Content_Page_Page_File( );
-         }
-         break;
-
-         case 11:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302600";
-            p_class_base = &child_Specification_Content_Page_Page_Link( );
-         }
-         break;
-
-         case 12:
+         case 7:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300730";
@@ -5083,7 +4845,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 13:
+         case 8:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302115";
@@ -5091,7 +4853,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 14:
+         case 9:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301997";
@@ -5099,7 +4861,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 15:
+         case 10:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301320";
@@ -5107,7 +4869,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 16:
+         case 11:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302175";
@@ -5115,7 +4877,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 17:
+         case 12:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301489";
@@ -5123,15 +4885,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 18:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302652";
-            p_class_base = &child_Specification_Copy_Child_Links_Source_Child_Rel_Child( );
-         }
-         break;
-
-         case 19:
+         case 13:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301494";
@@ -5139,7 +4893,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 20:
+         case 14:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301482";
@@ -5147,7 +4901,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 21:
+         case 15:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302170";
@@ -5155,7 +4909,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 22:
+         case 16:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301490";
@@ -5163,7 +4917,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 23:
+         case 17:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301970";
@@ -5171,7 +4925,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 24:
+         case 18:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300620";
@@ -5179,7 +4933,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 25:
+         case 19:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301493";
@@ -5187,7 +4941,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 26:
+         case 20:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301487";
@@ -5195,15 +4949,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 27:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302637";
-            p_class_base = &child_Specification_Content_Page_Variable( );
-         }
-         break;
-
-         case 28:
+         case 21:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300700";
@@ -5211,7 +4957,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 29:
+         case 22:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300800";
@@ -5219,7 +4965,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 30:
+         case 23:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302410";
@@ -5227,7 +4973,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 31:
+         case 24:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302110";
@@ -5235,7 +4981,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 32:
+         case 25:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301992";
@@ -5243,7 +4989,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 33:
+         case 26:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301010";
@@ -5251,7 +4997,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 34:
+         case 27:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300900";
@@ -5259,7 +5005,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 35:
+         case 28:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301100";
@@ -5267,7 +5013,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 36:
+         case 29:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301420";
@@ -5275,7 +5021,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 37:
+         case 30:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301905";
@@ -5283,7 +5029,7 @@ class_base* Meta_Class::get_next_foreign_key_child(
          }
          break;
 
-         case 38:
+         case 31:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301820";
@@ -5368,20 +5114,10 @@ class_base& Meta_Class::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Field_Child_Rel_Source_Parent( );
    else if( sub_context == "_301492" || sub_context == "child_Specification_Field" )
       p_class_base = &child_Specification_Field( );
-   else if( sub_context == "_302602" || sub_context == "child_Specification_Content_Page_Fragment" )
-      p_class_base = &child_Specification_Content_Page_Fragment( );
-   else if( sub_context == "_302603" || sub_context == "child_Specification_Content_Page_Group" )
-      p_class_base = &child_Specification_Content_Page_Group( );
-   else if( sub_context == "_302604" || sub_context == "child_Specification_Content_Page_Link" )
-      p_class_base = &child_Specification_Content_Page_Link( );
    else if( sub_context == "_302300" || sub_context == "child_Specification_Field_Action_New_Record" )
       p_class_base = &child_Specification_Field_Action_New_Record( );
    else if( sub_context == "_301421" || sub_context == "child_Specification_Other" )
       p_class_base = &child_Specification_Other( );
-   else if( sub_context == "_302601" || sub_context == "child_Specification_Content_Page_Page_File" )
-      p_class_base = &child_Specification_Content_Page_Page_File( );
-   else if( sub_context == "_302600" || sub_context == "child_Specification_Content_Page_Page_Link" )
-      p_class_base = &child_Specification_Content_Page_Page_Link( );
    else if( sub_context == "_300730" || sub_context == "child_Field_Parent" )
       p_class_base = &child_Field_Parent( );
    else if( sub_context == "_302115" || sub_context == "child_List_Field_Parent" )
@@ -5394,8 +5130,6 @@ class_base& Meta_Class::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Field_Source_Child( );
    else if( sub_context == "_301489" || sub_context == "child_Specification_Source_Child" )
       p_class_base = &child_Specification_Source_Child( );
-   else if( sub_context == "_302652" || sub_context == "child_Specification_Copy_Child_Links_Source_Child_Rel_Child" )
-      p_class_base = &child_Specification_Copy_Child_Links_Source_Child_Rel_Child( );
    else if( sub_context == "_301494" || sub_context == "child_Specification_Source" )
       p_class_base = &child_Specification_Source( );
    else if( sub_context == "_301482" || sub_context == "child_Specification_Source_Field" )
@@ -5412,8 +5146,6 @@ class_base& Meta_Class::get_or_create_graph_child( const string& context )
       p_class_base = &child_Specification_Test_Field( );
    else if( sub_context == "_301487" || sub_context == "child_Specification_Test_Parent" )
       p_class_base = &child_Specification_Test_Parent( );
-   else if( sub_context == "_302637" || sub_context == "child_Specification_Content_Page_Variable" )
-      p_class_base = &child_Specification_Content_Page_Variable( );
    else if( sub_context == "_300700" || sub_context == "child_Field" )
       p_class_base = &child_Field( );
    else if( sub_context == "_300800" || sub_context == "child_Index" )
@@ -6009,6 +5741,7 @@ void Meta_Class::static_class_init( const char* p_module_name )
 
    g_class_extra_enum.insert( 0 );
    g_class_extra_enum.insert( 1 );
+
    g_class_type_enum.insert( 0 );
    g_class_type_enum.insert( 1 );
    g_class_type_enum.insert( 4 );

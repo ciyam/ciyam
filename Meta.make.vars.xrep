@@ -25,8 +25,6 @@
  Meta_Procedure_Arg.cpp\
  Meta_Relationship.cpp\
  Meta_Specification.cpp\
- Meta_Specification_Content_Page.cpp\
- Meta_Specification_Copy_Child_Links.cpp\
  Meta_Specification_Field_Action.cpp\
  Meta_Specification_Type.cpp\
  Meta_Type.cpp\
@@ -62,8 +60,6 @@
  Meta_Procedure_Arg.cms\
  Meta_Relationship.cms\
  Meta_Specification.cms\
- Meta_Specification_Content_Page.cms\
- Meta_Specification_Copy_Child_Links.cms\
  Meta_Specification_Field_Action.cms\
  Meta_Specification_Type.cms\
  Meta_Type.cms\

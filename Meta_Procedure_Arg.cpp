@@ -33,7 +33,6 @@
 
 #include "Meta_Procedure_Arg.h"
 
-#include "Meta_Specification_Content_Page.h"
 #include "Meta_Specification.h"
 #include "Meta_Procedure.h"
 #include "Meta_Procedure_Arg.h"
@@ -157,7 +156,11 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Procedure_Arg* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -490,50 +493,6 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
       cba.set_key( key );
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Create_Copy_Output_Arg( )
-   {
-      if( !cp_child_Specification_Content_Page_Create_Copy_Output_Arg )
-      {
-         cp_child_Specification_Content_Page_Create_Copy_Output_Arg.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Create_Copy_Output_Arg, "302644" );
-      }
-      return *cp_child_Specification_Content_Page_Create_Copy_Output_Arg;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Create_Copy_Output_Arg( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Create_Copy_Output_Arg )
-      {
-         cp_child_Specification_Content_Page_Create_Copy_Output_Arg.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Create_Copy_Output_Arg, "302644" );
-      }
-      return *cp_child_Specification_Content_Page_Create_Copy_Output_Arg;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Generate_Output_Arg( )
-   {
-      if( !cp_child_Specification_Content_Page_Generate_Output_Arg )
-      {
-         cp_child_Specification_Content_Page_Generate_Output_Arg.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Generate_Output_Arg, "302626" );
-      }
-      return *cp_child_Specification_Content_Page_Generate_Output_Arg;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Generate_Output_Arg( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Generate_Output_Arg )
-      {
-         cp_child_Specification_Content_Page_Generate_Output_Arg.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Generate_Output_Arg, "302626" );
-      }
-      return *cp_child_Specification_Content_Page_Generate_Output_Arg;
-   }
-
    Meta_Specification& impl_child_Specification_Procedure_Arg_2( )
    {
       if( !cp_child_Specification_Procedure_Arg_2 )
@@ -687,8 +646,6 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
    string v_Source_Procedure_Arg;
    mutable class_pointer< Meta_Procedure_Arg > cp_Source_Procedure_Arg;
 
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Create_Copy_Output_Arg;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Generate_Output_Arg;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Procedure_Arg_2;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Procedure_Arg_3;
    mutable class_pointer< Meta_Procedure_Arg > cp_child_Procedure_Arg_Source;
@@ -747,6 +704,7 @@ void Meta_Procedure_Arg::impl::impl_Move_Down( const string& Restrict_Fields, co
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -812,6 +770,7 @@ void Meta_Procedure_Arg::impl::impl_Move_Up( const string& Restrict_Fields, cons
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -1316,26 +1275,6 @@ void Meta_Procedure_Arg::Source_Procedure_Arg( const string& key )
    p_impl->impl_Source_Procedure_Arg( key );
 }
 
-Meta_Specification_Content_Page& Meta_Procedure_Arg::child_Specification_Content_Page_Create_Copy_Output_Arg( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Create_Copy_Output_Arg( );
-}
-
-const Meta_Specification_Content_Page& Meta_Procedure_Arg::child_Specification_Content_Page_Create_Copy_Output_Arg( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Create_Copy_Output_Arg( );
-}
-
-Meta_Specification_Content_Page& Meta_Procedure_Arg::child_Specification_Content_Page_Generate_Output_Arg( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Generate_Output_Arg( );
-}
-
-const Meta_Specification_Content_Page& Meta_Procedure_Arg::child_Specification_Content_Page_Generate_Output_Arg( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Generate_Output_Arg( );
-}
-
 Meta_Specification& Meta_Procedure_Arg::child_Specification_Procedure_Arg_2( )
 {
    return p_impl->impl_child_Specification_Procedure_Arg_2( );
@@ -1667,6 +1606,22 @@ const char* Meta_Procedure_Arg::get_field_name(
    return p_name;
 }
 
+string& Meta_Procedure_Arg::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Procedure_Arg::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Procedure_Arg::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Procedure_Arg::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -1721,11 +1676,6 @@ void Meta_Procedure_Arg::setup_foreign_key( Meta_Procedure_Arg& o, const string&
    static_cast< Meta_Procedure_Arg& >( o ).set_key( value );
 }
 
-void Meta_Procedure_Arg::setup_graph_parent( Meta_Specification_Content_Page& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Content_Page& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
 void Meta_Procedure_Arg::setup_graph_parent( Meta_Specification& o, const string& foreign_key_field )
 {
    static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
@@ -1762,7 +1712,7 @@ void Meta_Procedure_Arg::set_total_child_relationships( size_t new_total_child_r
 
 size_t Meta_Procedure_Arg::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 6;
+   size_t rc = 4;
 
    if( !is_internal )
    {
@@ -1795,7 +1745,7 @@ class_base* Meta_Procedure_Arg::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 6 )
+   if( child_num >= 4 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1810,28 +1760,12 @@ class_base* Meta_Procedure_Arg::get_next_foreign_key_child(
          case 0:
          if( op == e_cascade_op_restrict )
          {
-            next_child_field = "302644";
-            p_class_base = &child_Specification_Content_Page_Create_Copy_Output_Arg( );
-         }
-         break;
-
-         case 1:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302626";
-            p_class_base = &child_Specification_Content_Page_Generate_Output_Arg( );
-         }
-         break;
-
-         case 2:
-         if( op == e_cascade_op_restrict )
-         {
             next_child_field = "301477";
             p_class_base = &child_Specification_Procedure_Arg_2( );
          }
          break;
 
-         case 3:
+         case 1:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301478";
@@ -1839,7 +1773,7 @@ class_base* Meta_Procedure_Arg::get_next_foreign_key_child(
          }
          break;
 
-         case 4:
+         case 2:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301210";
@@ -1847,7 +1781,7 @@ class_base* Meta_Procedure_Arg::get_next_foreign_key_child(
          }
          break;
 
-         case 5:
+         case 3:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301498";
@@ -1922,10 +1856,6 @@ class_base& Meta_Procedure_Arg::get_or_create_graph_child( const string& context
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302644" || sub_context == "child_Specification_Content_Page_Create_Copy_Output_Arg" )
-      p_class_base = &child_Specification_Content_Page_Create_Copy_Output_Arg( );
-   else if( sub_context == "_302626" || sub_context == "child_Specification_Content_Page_Generate_Output_Arg" )
-      p_class_base = &child_Specification_Content_Page_Generate_Output_Arg( );
    else if( sub_context == "_301477" || sub_context == "child_Specification_Procedure_Arg_2" )
       p_class_base = &child_Specification_Procedure_Arg_2( );
    else if( sub_context == "_301478" || sub_context == "child_Specification_Procedure_Arg_3" )
@@ -2317,6 +2247,7 @@ void Meta_Procedure_Arg::static_class_init( const char* p_module_name )
    g_primitive_enum.insert( 4 );
    g_primitive_enum.insert( 5 );
    g_primitive_enum.insert( 6 );
+
    g_arg_type_enum.insert( 0 );
    g_arg_type_enum.insert( 1 );
 

@@ -27,7 +27,6 @@
 #     define META_PROCEDURE_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-class Meta_Specification_Content_Page;
 class Meta_Specification;
 class Meta_List_Field;
 class Meta_Procedure_Arg;
@@ -36,7 +35,6 @@ class Meta_Procedure;
 
 class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
 {
-   friend class Meta_Specification_Content_Page;
    friend class Meta_Specification;
    friend class Meta_List_Field;
    friend class Meta_Procedure_Arg;
@@ -74,12 +72,6 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    Meta_Procedure& Source_Procedure( );
    const Meta_Procedure& Source_Procedure( ) const;
    void Source_Procedure( const std::string& key );
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Create_Copy( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Create_Copy( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Generate( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Generate( ) const;
 
    Meta_Specification& child_Specification_Other_Procedure_2( );
    const Meta_Specification& child_Specification_Other_Procedure_2( ) const;
@@ -169,6 +161,11 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    void get_foreign_key_info( foreign_key_info_container& foreign_key_info ) const { static_get_foreign_key_info( foreign_key_info ); }
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
+
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
@@ -262,7 +259,6 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Procedure& o, const std::string& value );
 
-   virtual void setup_graph_parent( Meta_Specification_Content_Page& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Procedure& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );

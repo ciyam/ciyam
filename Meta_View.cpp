@@ -261,7 +261,11 @@ aggregate_domain< string,
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 100 > g_Title_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_View* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -2817,6 +2821,22 @@ const char* Meta_View::get_field_name(
    return p_name;
 }
 
+string& Meta_View::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_View::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_View::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_View::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -3679,15 +3699,18 @@ void Meta_View::static_class_init( const char* p_module_name )
    g_view_access_restrict_enum.insert( 1 );
    g_view_access_restrict_enum.insert( 2 );
    g_view_access_restrict_enum.insert( 3 );
+
    g_view_change_restrict_enum.insert( 0 );
    g_view_change_restrict_enum.insert( 1 );
    g_view_change_restrict_enum.insert( 2 );
    g_view_change_restrict_enum.insert( 3 );
    g_view_change_restrict_enum.insert( 4 );
+
    g_pdf_font_type_enum.insert( 0 );
    g_pdf_font_type_enum.insert( 1 );
    g_pdf_font_type_enum.insert( 20 );
    g_pdf_font_type_enum.insert( 21 );
+
    g_view_pdf_view_type_enum.insert( 0 );
    g_view_pdf_view_type_enum.insert( 2 );
    g_view_pdf_view_type_enum.insert( 99 );

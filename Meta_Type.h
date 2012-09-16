@@ -201,6 +201,11 @@ class META_TYPE_DECL_SPEC Meta_Type : public class_base
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
+
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }

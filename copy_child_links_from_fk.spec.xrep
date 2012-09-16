@@ -11,7 +11,7 @@
    // [(start copy_child_links_from_fk)]
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).iterate_forwards( ) )
+    && get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).iterate_forwards( ) )
    {
 `{`@eq`(`$arg_combine_keys`,`'`'`)\
       int child_num = 0;
@@ -21,30 +21,23 @@
 `{`@eq`(`$arg_combine_keys`,`'`'`)\
          string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
 `,\
-         string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
+         string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
 `}
          get_obj( ).child_`{`$child_name`}( ).op_create( child_key );
 
          get_obj( ).child_`{`$child_name`}( ).`{`$parent_name`}( get_obj( ).get_key( ) );
 `{`@eq`(`$self_child`,`'true`'`)\
-         get_obj( ).child_`{`$child_name`}( ).`{`$arg_fkclass`}( get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
+         get_obj( ).child_`{`$child_name`}( ).`{`$arg_fkfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
 `}`{`!`@eq`(`$arg_fk_from_child`,`'`'`)\
-         get_obj( ).child_`{`$child_name`}( ).`{`$arg_fk_from_child`}( get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
+         get_obj( ).child_`{`$child_name`}( ).`{`$arg_fk_from_child`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
 `}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
-         get_obj( ).child_`{`$child_name`}( ).\\0( get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).\\1( ) );\
-`+\n`]`}
-`{`!`@eq`(`$arg_cffield`,`'`'`)
-         string file_name( get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).`{`$arg_fkcffield`}( ) );
-
-         if( !file_name.empty( ) )
-            get_obj( ).child_`{`$child_name`}( ).`{`$arg_cffield`}( copy_class_file(
-             get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).get_attached_file_path( file_name ),
-             get_obj( ).child_`{`$child_name`}( ).class_id( ), child_key, storage_locked_for_admin( ) ) );
-`}
+         copy_field_or_file_and_field( get_obj( ).child_`{`$child_name`}( ), child_key,
+          "\\0", get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ), "\\1", storage_locked_for_admin( ) );
+`]`}
          get_obj( ).child_`{`$child_name`}( ).op_apply( );
 
-      } while( get_obj( ).`{`$arg_fkclass`}( ).child_`{`$fk_child_name`}( ).iterate_next( ) );
+      } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).iterate_next( ) );
    }
    // [(finish copy_child_links_from_fk)]
 `}

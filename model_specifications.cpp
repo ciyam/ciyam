@@ -61,14 +61,10 @@ const char* const c_arg_test_not_equal = "-test_not_equal";
 const char* const c_arg_include_default = "-include_default";
 
 const char* const c_arg_add_prefix = "-add=";
-const char* const c_arg_dtm_prefix = "-dtm=";
-const char* const c_arg_uid_prefix = "-uid=";
 const char* const c_arg_sep_prefix = "-sep=";
 const char* const c_arg_enum_prefix = "-enum=";
-const char* const c_arg_file_prefix = "-file=";
 const char* const c_arg_func_prefix = "-func=";
 const char* const c_arg_test_prefix = "-test=";
-const char* const c_arg_task_prefix = "-task=";
 const char* const c_arg_type_prefix = "-type=";
 const char* const c_arg_check_prefix = "-check=";
 const char* const c_arg_order_prefix = "-order=";
@@ -76,7 +72,6 @@ const char* const c_arg_child_prefix = "-child=";
 const char* const c_arg_scope_prefix = "-scope=";
 const char* const c_arg_append_prefix = "-append=";
 const char* const c_arg_status_prefix = "-status=";
-const char* const c_arg_parent_prefix = "-parent=";
 const char* const c_arg_memfunc_prefix = "-memfunc=";
 const char* const c_arg_options_prefix = "-options=";
 const char* const c_arg_reverse_prefix = "-reverse=";
@@ -234,7 +229,6 @@ const char* const c_attribute_protect_scope = "protect_scope";
 const char* const c_attribute_procedure_id = "procedure_id";
 const char* const c_attribute_dtm_field_id = "dtm_field_id";
 const char* const c_attribute_dtm2_field_id = "dtm2_field_id";
-const char* const c_attribute_file_field_id = "file_field_id";
 const char* const c_attribute_test_field_id = "test_field_id";
 const char* const c_attribute_task_class_id = "task_class_id";
 const char* const c_attribute_default_value = "default_value";
@@ -308,7 +302,6 @@ const char* const c_attribute_class2_fk2_title = "class2_fk2_title";
 const char* const c_attribute_test_field_value = "test_field_value";
 const char* const c_attribute_task_pv_field_id = "task_pv_field_id";
 const char* const c_attribute_test2_field_value = "test2_field_value";
-const char* const c_attribute_parent_pv_field_id = "parent_pv_field_id";
 const char* const c_attribute_major_version_only = "major_version_only";
 const char* const c_attribute_prior_version_class_id = "prior_version_class_id";
 const char* const c_attribute_prior_version_ver_field_id = "prior_version_ver_field_id";
@@ -397,7 +390,7 @@ const char* const c_data_pfield2 = "pfield2";
 const char* const c_data_pnfield = "pnfield";
 const char* const c_data_prefix2 = "prefix2";
 const char* const c_data_prfield = "prfield";
-const char* const c_data_pvclass = "pvclass";
+const char* const c_data_pvchild = "pvchild";
 const char* const c_data_pwname2 = "pwname2";
 const char* const c_data_pwvalue = "pwvalue";
 const char* const c_data_reverse = "reverse";
@@ -507,11 +500,7 @@ const char* const c_data_task_class = "task_class";
 const char* const c_data_field_list = "field_list";
 const char* const c_data_major_only = "major_only";
 const char* const c_data_skip_nulls = "skip_nulls";
-const char* const c_data_test2_field = "test2_field";
-const char* const c_data_test2_value = "test2_value";
-const char* const c_data_task_pv_field = "task_pv_field";
 const char* const c_data_allow_internal = "allow_internal";
-const char* const c_data_task_pv_parent_field = "parent_pv_field";
 const char* const c_data_special_extra_source = "special_extra_source";
 const char* const c_data_primary_stats1_cclass = "primary_stats1_cclass";
 const char* const c_data_primary_stats2_cclass = "primary_stats2_cclass";
@@ -2153,6 +2142,7 @@ void clone_children_specification::add_specification_data( model& m, specificati
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_eq, "" ) );
+   spec_data.data_pairs.push_back( make_pair( "copy_files", "" ) );
 }
 
 string clone_children_specification::static_class_name( ) { return "clone_children"; }
@@ -2858,8 +2848,6 @@ struct copy_child_links_from_fk_specification : specification
    bool self_child;
    bool combine_keys;
 
-   string cfile_field_id;
-   string fkcfile_field_id;
    string cfk_from_field_id;
 };
 
@@ -2876,7 +2864,7 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
 
    self_child = false;
    combine_keys = false;
-   string arg_fk_child_field, arg_file_field_info;
+   string arg_fk_child_field;
    for( size_t arg = 5; arg < args.size( ); arg++ )
    {
       string next_arg( args[ arg ] );
@@ -2887,8 +2875,6 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
          combine_keys = true;
       else if( next_arg.find( c_arg_child_field_prefix ) == 0 )
          arg_fk_child_field = next_arg.substr( strlen( c_arg_child_field_prefix ) );
-      else if( arg_file_field_info.empty( ) )
-         arg_file_field_info = next_arg;
       else
          throw runtime_error( "unexpected extra argument '" + next_arg + "' for 'copy_child_links_from_fk' specification" );
    }
@@ -2960,24 +2946,6 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
          throw runtime_error( "unknown field '" + arg_fk_child_field + "' for class '" + arg_cclass_name + "'" );
    }
 
-   if( !arg_file_field_info.empty( ) )
-   {
-      string::size_type fkcpos = arg_file_field_info.find( '-' );
-      string cfield_name( arg_file_field_info.substr( 0, fkcpos ) );
-
-      string fkcfield_name( cfield_name );
-      if( fkcpos != string::npos )
-         fkcfield_name = arg_file_field_info.substr( fkcpos + 1 );
-
-      cfile_field_id = get_field_id_for_name( m, arg_cclass_name, cfield_name, 0, true );
-      if( cfile_field_id.empty( ) )
-         throw runtime_error( "unknown field '" + cfield_name + "' for class '" + arg_cclass_name + "'" );
-
-      fkcfile_field_id = get_field_id_for_name( m, arg_fkcclass_name, fkcfield_name, 0, true );
-      if( fkcfile_field_id.empty( ) )
-         throw runtime_error( "unknown field '" + fkcfield_name + "' for class '" + arg_fkcclass_name + "'" );
-   }
-
    details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
    if( cclass_id != class_id )
       details.push_back( specification_detail( cclass_id, "cclass", e_model_element_type_class ) );
@@ -2994,12 +2962,6 @@ void copy_child_links_from_fk_specification::add( model& m, const vector< string
 
    if( !fkcfield_id.empty( ) )
       details.push_back( specification_detail( fkcfield_id, "fkcfield", e_model_element_type_field ) );
-
-   if( !cfile_field_id.empty( ) )
-      details.push_back( specification_detail( cfile_field_id, "cffield", e_model_element_type_field ) );
-
-   if( !fkcfile_field_id.empty( ) )
-      details.push_back( specification_detail( fkcfile_field_id, "fkcffield", e_model_element_type_field ) );
 
    if( !arg_fk_child_field.empty( ) )
       details.push_back( specification_detail( cfk_from_field_id, "cfk_from_field", e_model_element_type_field ) );
@@ -3021,9 +2983,6 @@ void copy_child_links_from_fk_specification::read_data( sio_reader& reader )
 
    cfield_id = reader.read_opt_attribute( c_attribute_cfield_id );
    fkcfield_id = reader.read_opt_attribute( c_attribute_fkcfield_id );
-
-   cfile_field_id = reader.read_opt_attribute( c_attribute_cffield_id );
-   fkcfile_field_id = reader.read_opt_attribute( c_attribute_fkcffield_id );
    cfk_from_field_id = reader.read_opt_attribute( c_attribute_cfk_from_field_id );
 }
 
@@ -3042,9 +3001,6 @@ void copy_child_links_from_fk_specification::write_data( sio_writer& writer ) co
 
    writer.write_opt_attribute( c_attribute_cfield_id, cfield_id );
    writer.write_opt_attribute( c_attribute_fkcfield_id, fkcfield_id );
-
-   writer.write_opt_attribute( c_attribute_cffield_id, cfile_field_id );
-   writer.write_opt_attribute( c_attribute_fkcffield_id, fkcfile_field_id );
    writer.write_opt_attribute( c_attribute_cfk_from_field_id, cfk_from_field_id );
 }
 
@@ -3058,6 +3014,7 @@ void copy_child_links_from_fk_specification::add_specification_data( model& m, s
 
    string fkclass_name = get_class_name_for_id( m, fkclass_id );
    spec_data.data_pairs.push_back( make_pair( c_data_fkclass, fkclass_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fkfield, fkclass_name ) ); // KLUDGE: Assumes same name as class.
 
    string fkcclass_name = get_class_name_for_id( m, fkcclass_id );
    spec_data.data_pairs.push_back( make_pair( c_data_fkcclass, fkcclass_name ) );
@@ -3103,15 +3060,6 @@ void copy_child_links_from_fk_specification::add_specification_data( model& m, s
       fkcfield_name = m.determine_child_rel_suffix( fkcfield_name );
    }
    spec_data.data_pairs.push_back( make_pair( c_data_fkcfield, fkcfield_name ) );
-
-   string cffield_name, fkcffield_name;
-   if( !cfile_field_id.empty( ) )
-   {
-      cffield_name = get_field_name_for_id( m, cclass_name, cfile_field_id );
-      fkcffield_name = get_field_name_for_id( m, fkcclass_name, fkcfile_field_id );
-   }
-   spec_data.data_pairs.push_back( make_pair( c_data_cffield, cffield_name ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_fkcffield, fkcffield_name ) );
 
    string ckf_from_field_name;
    if( !cfk_from_field_id.empty( ) )
@@ -5613,7 +5561,7 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
 
    spec_data.data_pairs.push_back( make_pair( c_data_separator, separator ) );
 
-   spec_data.data_pairs.push_back( make_pair( c_data_ftransient, is_transient ? "1" : "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_ftransient, is_transient ? "1" : "0" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_opt_prefix, has_opt_prefix ? c_true : "" ) );
 
    string options_field_name;
@@ -9971,24 +9919,8 @@ struct prior_version_specification : specification
 
    bool major_version_only;
 
-   string dtm_field_id;
-   string dtm_2_field_id;
-
-   string uid_field_id;
-   string uid_2_field_id;
-
-   string file_field_id;
-
    string test_field_id;
    string test_field_value;
-
-   string test_2_field_id;
-   string test_2_field_value;
-
-   string task_class_id;
-   string task_pv_field_id;
-
-   string parent_pv_field_id;
 };
 
 void prior_version_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
@@ -10001,7 +9933,7 @@ void prior_version_specification::add( model& m, const vector< string >& args, v
    string arg_version_field_name( args[ 2 ] );
    string arg_field_names( args[ 3 ] );
 
-   string arg_dtm_info, arg_uid_info, arg_file_info, arg_test_info, arg_task_info, arg_parent_field_name;
+   string arg_test_info;
 
    major_version_only = false;
 
@@ -10009,18 +9941,8 @@ void prior_version_specification::add( model& m, const vector< string >& args, v
    {
       string next_arg( args[ arg ] );
 
-      if( next_arg.find( c_arg_dtm_prefix ) == 0 )
-         arg_dtm_info = next_arg.substr( strlen( c_arg_dtm_prefix ) );
-      else if( next_arg.find( c_arg_uid_prefix ) == 0 )
-         arg_uid_info = next_arg.substr( strlen( c_arg_uid_prefix ) );
-      else if( next_arg.find( c_arg_file_prefix ) == 0 )
-         arg_file_info = next_arg.substr( strlen( c_arg_file_prefix ) );
-      else if( next_arg.find( c_arg_test_prefix ) == 0 )
+      if( next_arg.find( c_arg_test_prefix ) == 0 )
          arg_test_info = next_arg.substr( strlen( c_arg_test_prefix ) );
-      else if( next_arg.find( c_arg_task_prefix ) == 0 )
-         arg_task_info = next_arg.substr( strlen( c_arg_task_prefix ) );
-      else if( next_arg.find( c_arg_parent_prefix ) == 0 )
-         arg_parent_field_name = next_arg.substr( strlen( c_arg_parent_prefix ) );
       else if( next_arg == string( c_arg_major ) )
          major_version_only = true;
       else
@@ -10078,76 +10000,9 @@ void prior_version_specification::add( model& m, const vector< string >& args, v
       field_info.push_back( next_field_id );
    }
 
-   if( !arg_dtm_info.empty( ) )
-   {
-      string dtm_2_field_name;
-      string::size_type pos = arg_dtm_info.find( ',' );
-
-      if( pos != string::npos )
-      {
-         dtm_2_field_name = arg_dtm_info.substr( pos + 1 );
-         arg_dtm_info.erase( pos );
-      }
-
-      dtm_field_id = get_field_id_for_name( m, arg_class_name, arg_dtm_info );
-
-      if( dtm_field_id.empty( ) )
-         throw runtime_error( "field '" + arg_dtm_info + "' not found for class '" + arg_class_name + "'" );
-
-      if( !dtm_2_field_name.empty( ) )
-      {
-         dtm_2_field_id = get_field_id_for_name( m, arg_class_name, dtm_2_field_name );
-
-         if( dtm_2_field_id.empty( ) )
-            throw runtime_error( "field '" + dtm_2_field_name + "' not found for class '" + arg_class_name + "'" );
-      }
-   }
-
-   if( !arg_uid_info.empty( ) )
-   {
-      string uid_2_field_name;
-      string::size_type pos = arg_uid_info.find( ',' );
-
-      if( pos != string::npos )
-      {
-         uid_2_field_name = arg_uid_info.substr( pos + 1 );
-         arg_uid_info.erase( pos );
-      }
-
-      uid_field_id = get_field_id_for_name( m, arg_class_name, arg_uid_info, 0, true );
-
-      if( uid_field_id.empty( ) )
-         throw runtime_error( "field '" + arg_uid_info + "' not found for class '" + arg_class_name + "'" );
-
-      if( !uid_2_field_name.empty( ) )
-      {
-         uid_2_field_id = get_field_id_for_name( m, arg_class_name, uid_2_field_name, 0, true );
-
-         if( uid_2_field_id.empty( ) )
-            throw runtime_error( "field '" + uid_2_field_name + "' not found for class '" + arg_class_name + "'" );
-      }
-   }
-
-   if( !arg_file_info.empty( ) )
-   {
-      file_field_id = get_field_id_for_name( m, arg_class_name, arg_file_info );
-
-      if( file_field_id.empty( ) )
-         throw runtime_error( "field '" + arg_file_info + "' not found for class '" + arg_class_name + "'" );
-   }
-
    if( !arg_test_info.empty( ) )
    {
-      string test_2_info;
-      string::size_type pos = arg_test_info.find( ',' );
-
-      if( pos != string::npos )
-      {
-         test_2_info = arg_test_info.substr( pos + 1 );
-         arg_test_info.erase( pos );
-      }
-
-      pos = arg_test_info.find( ':' );
+      string::size_type pos = arg_test_info.find( ':' );
       if( pos == string::npos )
          throw runtime_error( "unexpected missing ':' in test info '" + arg_test_info + "'" );
 
@@ -10157,52 +10012,10 @@ void prior_version_specification::add( model& m, const vector< string >& args, v
          throw runtime_error( "field '" + arg_test_info.substr( 0, pos ) + "' not found for class '" + arg_class_name + "'" );
 
       test_field_value = arg_test_info.substr( pos + 1 );
-
-      if( !test_2_info.empty( ) )
-      {
-         pos = test_2_info.find( ':' );
-
-         test_2_field_id = get_field_id_for_name( m, arg_prior_version_class_name, test_2_info.substr( 0, pos ) );
-
-         if( test_2_field_id.empty( ) )
-            throw runtime_error( "field '" + test_2_info.substr( 0, pos ) + "' not found for class '" + arg_prior_version_class_name + "'" );
-
-         if( pos != string::npos )
-            test_2_field_value = test_2_info.substr( pos + 1 );
-      }
-   }
-
-   if( !arg_task_info.empty( ) )
-   {
-      string::size_type pos = arg_task_info.find( ',' );
-      if( pos == string::npos )
-         throw runtime_error( "unexpected missing ',' in task info '" + arg_task_info + "'" );
-
-      task_class_id = get_class_id_for_name( m, arg_task_info.substr( 0, pos ) );
-
-      if( task_class_id.empty( ) )
-         throw runtime_error( "unknown class '" + arg_task_info.substr( 0, pos ) );
-
-      task_pv_field_id = get_field_id_for_name( m, arg_task_info.substr( 0, pos ), arg_task_info.substr( pos + 1 ), 0, true );
-
-      if( task_pv_field_id.empty( ) )
-         throw runtime_error( "field '" + arg_task_info.substr( pos + 1 )
-          + "' not found for class '" + arg_task_info.substr( 0, pos ) + "'" );
-   }
-
-   if( !arg_parent_field_name.empty( ) )
-   {
-      parent_pv_field_id = get_field_id_for_name( m, arg_prior_version_class_name, arg_parent_field_name, 0, true );
-
-      if( parent_pv_field_id.empty( ) )
-         throw runtime_error( "field '" + arg_parent_field_name + "' not found for class '" + arg_prior_version_class_name + "'" );
    }
 
    details.push_back( specification_detail( class_id, "class", e_model_element_type_class ) );
    details.push_back( specification_detail( prior_version_class_id, "prior_version_class", e_model_element_type_class ) );
-
-   if( !task_class_id.empty( ) )
-      details.push_back( specification_detail( task_class_id, "task_class", e_model_element_type_class ) );
 
    details.push_back( specification_detail( version_field_id, "version_field", e_model_element_type_field ) );
 
@@ -10213,32 +10026,8 @@ void prior_version_specification::add( model& m, const vector< string >& args, v
       details.push_back( specification_detail( field_ids[ i ], "field", e_model_element_type_field ) );
    }
 
-   if( !dtm_field_id.empty( ) )
-      details.push_back( specification_detail( dtm_field_id, "dtm_field", e_model_element_type_field ) );
-
-   if( !dtm_2_field_id.empty( ) )
-      details.push_back( specification_detail( dtm_2_field_id, "dtm2_field", e_model_element_type_field ) );
-
-   if( !uid_field_id.empty( ) )
-      details.push_back( specification_detail( uid_field_id, "uid_field", e_model_element_type_field ) );
-
-   if( !uid_2_field_id.empty( ) )
-      details.push_back( specification_detail( uid_2_field_id, "uid2_field", e_model_element_type_field ) );
-
-   if( !file_field_id.empty( ) )
-      details.push_back( specification_detail( file_field_id, "file_field", e_model_element_type_field ) );
-
    if( !test_field_id.empty( ) )
       details.push_back( specification_detail( test_field_id, "test_field", e_model_element_type_field ) );
-
-   if( !test_2_field_id.empty( ) )
-      details.push_back( specification_detail( test_2_field_id, "test2_field", e_model_element_type_field ) );
-
-   if( !task_pv_field_id.empty( ) )
-      details.push_back( specification_detail( task_pv_field_id, "task_pv_field", e_model_element_type_field ) );
-
-   if( !parent_pv_field_id.empty( ) )
-      details.push_back( specification_detail( parent_pv_field_id, "parent_pv_field", e_model_element_type_field ) );
 }
 
 void prior_version_specification::read_data( sio_reader& reader )
@@ -10253,18 +10042,8 @@ void prior_version_specification::read_data( sio_reader& reader )
 
    major_version_only = from_string< bool >( reader.read_attribute( c_attribute_major_version_only ) );
 
-   dtm_field_id = reader.read_opt_attribute( c_attribute_dtm_field_id );
-   dtm_2_field_id = reader.read_opt_attribute( c_attribute_dtm2_field_id );
-   uid_field_id = reader.read_opt_attribute( c_attribute_uid_field_id );
-   uid_2_field_id = reader.read_opt_attribute( c_attribute_uid2_field_id );
-   file_field_id = reader.read_opt_attribute( c_attribute_file_field_id );
    test_field_id = reader.read_opt_attribute( c_attribute_test_field_id );
    test_field_value = reader.read_opt_attribute( c_attribute_test_field_value );
-   test_2_field_id = reader.read_opt_attribute( c_attribute_test2_field_id );
-   test_2_field_value = reader.read_opt_attribute( c_attribute_test2_field_value );
-   task_class_id = reader.read_opt_attribute( c_attribute_task_class_id );
-   task_pv_field_id = reader.read_opt_attribute( c_attribute_task_pv_field_id );
-   parent_pv_field_id = reader.read_opt_attribute( c_attribute_parent_pv_field_id );
 }
 
 void prior_version_specification::write_data( sio_writer& writer ) const
@@ -10278,18 +10057,8 @@ void prior_version_specification::write_data( sio_writer& writer ) const
 
    writer.write_attribute( c_attribute_major_version_only, to_string( major_version_only ) );
 
-   writer.write_opt_attribute( c_attribute_dtm_field_id, dtm_field_id );
-   writer.write_opt_attribute( c_attribute_dtm2_field_id, dtm_2_field_id );
-   writer.write_opt_attribute( c_attribute_uid_field_id, uid_field_id );
-   writer.write_opt_attribute( c_attribute_uid2_field_id, uid_2_field_id );
-   writer.write_opt_attribute( c_attribute_file_field_id, file_field_id );
    writer.write_opt_attribute( c_attribute_test_field_id, test_field_id );
    writer.write_opt_attribute( c_attribute_test_field_value, test_field_value );
-   writer.write_opt_attribute( c_attribute_test2_field_id, test_2_field_id );
-   writer.write_opt_attribute( c_attribute_test2_field_value, test_2_field_value );
-   writer.write_opt_attribute( c_attribute_task_class_id, task_class_id );
-   writer.write_opt_attribute( c_attribute_task_pv_field_id, task_pv_field_id );
-   writer.write_opt_attribute( c_attribute_parent_pv_field_id, parent_pv_field_id );
 }
 
 void prior_version_specification::add_specification_data( model& m, specification_data& spec_data ) const
@@ -10298,7 +10067,7 @@ void prior_version_specification::add_specification_data( model& m, specificatio
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
 
    string prior_version_class_name = get_class_name_for_id( m, prior_version_class_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_pvclass, prior_version_class_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_pvchild, prior_version_class_name ) );
 
    string version_field_name = get_field_name_for_id( m, class_name, version_field_id );
    spec_data.data_pairs.push_back( make_pair( string( c_data_ver_field ), version_field_name ) );
@@ -10335,41 +10104,10 @@ void prior_version_specification::add_specification_data( model& m, specificatio
 
    spec_data.data_pairs.push_back( make_pair( c_data_major_only, to_string( major_version_only ) ) );
 
-   string dtm_field_name = get_field_name_for_id( m, class_name, dtm_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_dtm_field, dtm_field_name ) );
-
-   string dtm_2_field_name = get_field_name_for_id( m, class_name, dtm_2_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_dtm2_field, dtm_2_field_name ) );
-
-   string uid_field_name = get_field_name_for_id( m, class_name, uid_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_uid_field, uid_field_name ) );
-
-   string uid_2_field_name = get_field_name_for_id( m, class_name, uid_2_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_uid2_field, uid_2_field_name ) );
-
-   string file_field_name = get_field_name_for_id( m, class_name, file_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_file_field, file_field_name ) );
-
    string test_field_name = get_field_name_for_id( m, class_name, test_field_id );
    spec_data.data_pairs.push_back( make_pair( c_data_test_field, test_field_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_test_value, test_field_value ) );
-
-   string test_2_field_name = get_field_name_for_id( m, prior_version_class_name, test_2_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_test2_field, test_2_field_name ) );
-
-   spec_data.data_pairs.push_back( make_pair( c_data_test2_value, test_2_field_value ) );
-
-   string task_class_name = get_class_name_for_id( m, task_class_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_task_class, task_class_name ) );
-
-   string task_pv_field_name;
-   if( !task_class_name.empty( ) )
-      task_pv_field_name = get_field_name_for_id( m, task_class_name, task_pv_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_task_pv_field, task_pv_field_name ) );
-
-   string parent_pv_field_name = get_field_name_for_id( m, prior_version_class_name, parent_pv_field_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_task_pv_parent_field, parent_pv_field_name ) );
 }
 
 string prior_version_specification::static_class_name( ) { return "prior_version"; }

@@ -29,8 +29,6 @@
 
 class Meta_List_Field;
 class Meta_Specification;
-class Meta_Specification_Content_Page;
-class Meta_Specification_Copy_Child_Links;
 class Meta_Class;
 class Meta_Model;
 class Meta_Relationship;
@@ -39,8 +37,6 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 {
    friend class Meta_List_Field;
    friend class Meta_Specification;
-   friend class Meta_Specification_Content_Page;
-   friend class Meta_Specification_Copy_Child_Links;
    friend class Meta_Class;
    friend class Meta_Model;
 
@@ -52,19 +48,18 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
       e_field_id_none = 0,
       e_field_id_Cascade_Op = 1,
       e_field_id_Child_Class = 2,
-      e_field_id_Child_Class_File_Field_Name = 3,
-      e_field_id_Child_Class_Name = 4,
-      e_field_id_Child_Name = 5,
-      e_field_id_Extra = 6,
-      e_field_id_Field_Id = 7,
-      e_field_id_Field_Key = 8,
-      e_field_id_Internal = 9,
-      e_field_id_Mandatory = 10,
-      e_field_id_Model = 11,
-      e_field_id_Name = 12,
-      e_field_id_Parent_Class = 13,
-      e_field_id_Source_Relationship = 14,
-      e_field_id_Transient = 15
+      e_field_id_Child_Class_Name = 3,
+      e_field_id_Child_Name = 4,
+      e_field_id_Extra = 5,
+      e_field_id_Field_Id = 6,
+      e_field_id_Field_Key = 7,
+      e_field_id_Internal = 8,
+      e_field_id_Mandatory = 9,
+      e_field_id_Model = 10,
+      e_field_id_Name = 11,
+      e_field_id_Parent_Class = 12,
+      e_field_id_Source_Relationship = 13,
+      e_field_id_Transient = 14
    };
 
    Meta_Relationship( );
@@ -72,9 +67,6 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    int Cascade_Op( ) const;
    void Cascade_Op( int Cascade_Op );
-
-   const std::string& Child_Class_File_Field_Name( ) const;
-   void Child_Class_File_Field_Name( const std::string& Child_Class_File_Field_Name );
 
    const std::string& Child_Class_Name( ) const;
    void Child_Class_Name( const std::string& Child_Class_Name );
@@ -124,18 +116,6 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    Meta_Specification& child_Specification_Child( );
    const Meta_Specification& child_Specification_Child( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Child_Self( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Child_Self( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Page_Link_Child( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Page_Link_Child( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page_Page_Link_Child( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page_Page_Link_Child( ) const;
-
-   Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Source_Child( );
-   const Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Source_Child( ) const;
 
    Meta_Relationship& child_Relationship_Source( );
    const Meta_Relationship& child_Relationship_Source( ) const;
@@ -210,6 +190,11 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
    void get_foreign_key_info( foreign_key_info_container& foreign_key_info ) const { static_get_foreign_key_info( foreign_key_info ); }
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
+
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
@@ -306,8 +291,6 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Specification_Content_Page& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Specification_Copy_Child_Links& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Relationship& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Class& o,

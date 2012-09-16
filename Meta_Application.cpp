@@ -309,7 +309,11 @@ aggregate_domain< string,
  domain_string_max_size< 30 > > g_Name_domain;
 domain_string_max_size< 5 > g_Version_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Application* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -3771,6 +3775,22 @@ const char* Meta_Application::get_field_name(
    return p_name;
 }
 
+string& Meta_Application::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Application::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Application::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Application::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -4793,6 +4813,7 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_auto_days_enum.insert( 90 );
    g_app_auto_days_enum.insert( 180 );
    g_app_auto_days_enum.insert( 365 );
+
    g_app_print_row_limit_enum.insert( 1000 );
    g_app_print_row_limit_enum.insert( 2000 );
    g_app_print_row_limit_enum.insert( 3000 );
@@ -4800,6 +4821,7 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_print_row_limit_enum.insert( 5000 );
    g_app_print_row_limit_enum.insert( 10000 );
    g_app_print_row_limit_enum.insert( 20000 );
+
    g_app_list_row_limit_enum.insert( 10 );
    g_app_list_row_limit_enum.insert( 15 );
    g_app_list_row_limit_enum.insert( 20 );
@@ -4808,6 +4830,7 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_list_row_limit_enum.insert( 40 );
    g_app_list_row_limit_enum.insert( 50 );
    g_app_list_row_limit_enum.insert( 100 );
+
    g_app_text_rows_enum.insert( 5 );
    g_app_text_rows_enum.insert( 10 );
    g_app_text_rows_enum.insert( 15 );
@@ -4817,6 +4840,7 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_text_rows_enum.insert( 40 );
    g_app_text_rows_enum.insert( 50 );
    g_app_text_rows_enum.insert( 100 );
+
    g_app_text_limit_enum.insert( 1000 );
    g_app_text_limit_enum.insert( 1500 );
    g_app_text_limit_enum.insert( 2000 );
@@ -4830,6 +4854,7 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_text_limit_enum.insert( 40000 );
    g_app_text_limit_enum.insert( 50000 );
    g_app_text_limit_enum.insert( 60000 );
+
    g_app_text_trunc_limit_enum.insert( 10 );
    g_app_text_trunc_limit_enum.insert( 15 );
    g_app_text_trunc_limit_enum.insert( 20 );
@@ -4839,6 +4864,7 @@ void Meta_Application::static_class_init( const char* p_module_name )
    g_app_text_trunc_limit_enum.insert( 50 );
    g_app_text_trunc_limit_enum.insert( 75 );
    g_app_text_trunc_limit_enum.insert( 100 );
+
    g_app_generate_type_enum.insert( 0 );
    g_app_generate_type_enum.insert( 1 );
    g_app_generate_type_enum.insert( 2 );

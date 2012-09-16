@@ -74,8 +74,8 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Ignore_Uneditable_Parent = 21,
       e_field_id_Ignore_User_Id_Filter = 22,
       e_field_id_Is_Child = 23,
-      e_field_id_Is_Group_Or_User = 24,
-      e_field_id_Is_Home = 25,
+      e_field_id_Is_Home = 24,
+      e_field_id_Is_Not_Anonymous = 25,
       e_field_id_Is_Variation = 26,
       e_field_id_Limit_Scroll_And_New = 27,
       e_field_id_Model = 28,
@@ -154,11 +154,11 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    bool Is_Child( ) const;
    void Is_Child( bool Is_Child );
 
-   bool Is_Group_Or_User( ) const;
-   void Is_Group_Or_User( bool Is_Group_Or_User );
-
    bool Is_Home( ) const;
    void Is_Home( bool Is_Home );
+
+   bool Is_Not_Anonymous( ) const;
+   void Is_Not_Anonymous( bool Is_Not_Anonymous );
 
    bool Is_Variation( ) const;
    void Is_Variation( bool Is_Variation );
@@ -316,6 +316,11 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    void get_foreign_key_info( foreign_key_info_container& foreign_key_info ) const { static_get_foreign_key_info( foreign_key_info ); }
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
+
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_display_name( const std::string& id_or_name ) const;
 

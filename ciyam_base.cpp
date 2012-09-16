@@ -2013,7 +2013,7 @@ string construct_paging_sql( const vector< pair< string, string > >& paging_info
    return sql;
 }
 
-string formatted_value( const std::string& value, const std::string& field_type )
+string formatted_value( const string& value, const string& field_type )
 {
    string formatted_value( value );
 
@@ -3142,7 +3142,12 @@ void export_data( ostream& outs,
                    || excludes.find( class_id )->second.count( child_class_and_field + exclude_suffix ) ) )
                      continue;
 
-                  if( p_class_base->iterate_forwards( true, 0, e_sql_optimisation_unordered ) )
+                  string key_info( p_class_base->get_order_field_name( ) );
+                  if( !key_info.empty( ) )
+                     key_info += ' ';
+
+                  if( ( !key_info.empty( ) && p_class_base->iterate_forwards( key_info ) )
+                   || ( key_info.empty( ) && p_class_base->iterate_forwards( true, 0, e_sql_optimisation_unordered ) ) )
                   {
                      do
                      {
@@ -3462,6 +3467,21 @@ string get_domain( )
 {
    guard g( g_mutex );
    return g_domain;
+}
+
+string get_app_url( const string& suffix )
+{
+   guard g( g_mutex );
+
+   string url( get_prefix( ) );
+   url += "://";
+   url += get_domain( );
+   url += "/" + lower( storage_name( ) );
+
+   if( !suffix.empty( ) )
+      url += "/" + suffix;
+
+   return url;
 }
 
 string get_license( bool prepend_sid, bool append_max_user_limit )
@@ -6047,7 +6067,7 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
 string get_field_values( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  const string& tz_abbr, bool is_default, bool as_csv, vector< string >* p_raw_values,
- const map< int, string >* p_inserts, const std::map< std::string, std::string >* p_package_map )
+ const map< int, string >* p_inserts, const map< string, string >* p_package_map )
 {
    string field_values;
    string key_value( instance_key_info( handle, parent_context, true ) );

@@ -12,7 +12,7 @@ user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_gro
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
 user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active\
 ,3=image,7=mailto,21=file\\_link,8=actions,22=filename,10=password,11=defcurrent,17=permission\
-,24=orientation,25=epassword,26=hpassword,27=hpassword\\_salt,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level\
+,24=orientation,25=epassword,26=hpassword,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level,27=hpassword\\_salt\
 ,15=create\\_datetime,16=modify\\_datetime,28=is\\_effective\\_owner,19=replace\\_underbars,20=enforce\\_uppercase\
 ,-2=user\\_group,-3=user\\_other,-1=owning\\_user,-4=create\\_user\\_key,-5=modify\\_user\\_key
 user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg
@@ -67,7 +67,7 @@ user_defined_enum_add -id=687 list_display_row_limit int 0=default,1=1,2=2,3=3,4
 user_defined_enum_add -id=688 list_direction int 0=forward,1=reverse
 user_defined_enum_add -id=689 list_text_match_highlight int 0=none,1=highlight,2=highlight1
 user_defined_enum_add -id=690 list_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
-user_defined_enum_add -id=691 list_field_alignment int 0=default,1=left,2=right,3=center
+user_defined_enum_add -id=691 list_field_alignment int 0=default,1=left,2=right,3=center,4=justify
 user_defined_enum_add -id=692 list_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=693 list_field_label_source int 0=field,1=list,2=omit_label
 user_defined_enum_add -id=694 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
@@ -222,7 +222,7 @@ field_add -id=106121 Class Delay_Initial_Records bool mand -def=0
 procedure_add -id=106410 Class Generate
 class_add -id=107100 Field Fields
 field_add -id=107101 Field Name mid_identifier mand
-field_add -id=107102 Field Default str100 opt
+field_add -id=107102 Field Default str200 opt
 field_add -id=107103 Field Extra int mand -def=0 -e=field_extra
 field_add -id=107104 Field UOM int mand -def=0 -e=uom
 field_add -id=107105 Field Mandatory bool mand -def=1
@@ -283,7 +283,6 @@ field_add -id=113105 Relationship Child_Name str100 opt -transient
 field_add -id=113106 Relationship Field_Id identifier opt
 field_add -id=113107 Relationship Field_Key string opt
 field_add -id=113108 Relationship Child_Class_Name identifier opt -transient
-field_add -id=113109 Relationship Child_Class_File_Field_Name identifier opt -transient
 field_add -id=113110 Relationship Internal bool mand -def=0
 field_add -id=113111 Relationship Transient bool mand -def=0
 modifier_add -id=113310 Relationship Is_Transient Cascade_Op:relegate,Extra:relegate,@class:lowlight1
@@ -525,8 +524,8 @@ field_add -id=121101 List_Type Name str30 mand
 field_add -id=121102 List_Type List_Name str100 mand
 field_add -id=121103 List_Type Is_Child bool mand -def=0
 field_add -id=121104 List_Type Is_Home bool mand -def=0
-field_add -id=121105 List_Type Is_Group_Or_User bool mand -def=0
-field_add -id=121106 List_Type Dummy_1 bool mand -def=1 -transient
+field_add -id=121105 List_Type Is_Not_Anonymous bool mand -def=0
+field_add -id=121106 List_Type Dummy_0 bool mand -def=0 -transient
 index_add -id=121201 List_Type Name unique
 class_add -id=122100 List Lists
 field_add -id=122101 List Name str100 opt -transient
@@ -563,7 +562,7 @@ field_add -id=122142 List Destroy_Only_If_Default_Other bool mand -def=0
 field_add -id=122143 List Multiline_Truncate_For_Print bool mand -def=1
 field_add -id=122144 List Number_Multiple_Pages bool mand -def=1
 field_add -id=122145 List Allow_Anonymous_Access bool mand -def=0
-field_add -id=122146 List Is_Group_Or_User bool mand -def=0
+field_add -id=122146 List Is_Not_Anonymous bool mand -def=0
 procedure_add -id=122430 List Generate_PDF_List
 procedure_arg_add -id=122431 List Generate_PDF_List Variation_Num int in
 class_add -id=123100 List_Field_Type List_Field_Types
@@ -700,8 +699,6 @@ procedure_arg_add -id=130412 Initial_Record Move_Up Restrict_Values string in
 procedure_add -id=130420 Initial_Record Move_Down
 procedure_arg_add -id=130421 Initial_Record Move_Down Restrict_Fields string in
 procedure_arg_add -id=130422 Initial_Record Move_Down Restrict_Values string in
-class_add -id=131100 Specification_Content_Page Specification_Content_Pages Specification
-class_add -id=132100 Specification_Copy_Child_Links Specification_Copy_Child_Links Specification
 class_add -id=135100 Package_Type Package_Types
 field_add -id=135101 Package_Type Name identifier mand -def=New_Package_Type
 field_add -id=135102 Package_Type Multi bool mand -def=0
@@ -825,7 +822,6 @@ relationship_add -id=201496 -fid=301496 Specification Source_Child_2 Field opt r
 relationship_add -id=201498 -fid=301498 Specification {Procedure_Arg} Procedure_Arg opt restrict
 relationship_add -id=201499 -fid=301499 Specification {Permission} Permission opt restrict
 relationship_add -id=201500 -fid=301500 Permission {Workgroup} Workgroup mand destroy
-relationship_add -id=201550 -fid=302550 Specification Parent_{Specification_Copy_Child_Links} Specification_Copy_Child_Links opt destroy
 relationship_add -id=201600 -fid=301600 Model {Permission} Permission opt restrict
 relationship_add -id=201700 -fid=301700 Specification_Type Parent_{Specification_Type} Specification_Type opt destroy
 relationship_add -id=201710 -fid=301710 Specification_Type Child_{Specification_Type} Specification_Type opt restrict
@@ -886,55 +882,6 @@ relationship_add -id=202310 -fid=302310 Specification_Field_Action New_Record_FK
 relationship_add -id=202410 -fid=302410 Initial_Record {Class} Class mand destroy
 relationship_add -id=202510 -fid=302510 Initial_Record_Value {Initial_Record} Initial_Record mand destroy
 relationship_add -id=202520 -fid=302520 Initial_Record_Value {Field} Field mand destroy
-relationship_add -id=202600 -fid=302600 Specification_Content_Page Page_Link_Class Class mand restrict
-relationship_add -id=202601 -fid=302601 Specification_Content_Page Page_File_Class Class mand restrict
-relationship_add -id=202602 -fid=302602 Specification_Content_Page Fragment_Class Class mand restrict
-relationship_add -id=202603 -fid=302603 Specification_Content_Page Group_Class Class mand restrict
-relationship_add -id=202604 -fid=302604 Specification_Content_Page Link_Class Class mand restrict
-relationship_add -id=202605 -fid=302605 Specification_Content_Page Content_Type Field opt restrict
-relationship_add -id=202606 -fid=302606 Specification_Content_Page Page_File_Name_Gen_Field Field opt restrict
-relationship_add -id=202607 -fid=302607 Specification_Content_Page Clone_Permitted_Field Field opt restrict
-relationship_add -id=202608 -fid=302608 Specification_Content_Page File_Name_Gen_Field Field opt restrict
-relationship_add -id=202609 -fid=302609 Specification_Content_Page Group_Field Field opt restrict
-relationship_add -id=202610 -fid=302610 Specification_Content_Page Code_Field Field mand restrict
-relationship_add -id=202611 -fid=302611 Specification_Content_Page Title_Field Field mand restrict
-relationship_add -id=202612 -fid=302612 Specification_Content_Page File_Name_Field Field mand restrict
-relationship_add -id=202613 -fid=302613 Specification_Content_Page Sub_Title_Field Field mand restrict
-relationship_add -id=202614 -fid=302614 Specification_Content_Page Parent_Page_Field Field mand restrict
-relationship_add -id=202615 -fid=302615 Specification_Content_Page Text_Content_Field Field mand restrict
-relationship_add -id=202616 -fid=302616 Specification_Content_Page Meta_Content_Field Field mand restrict
-relationship_add -id=202617 -fid=302617 Specification_Content_Page Link_Content_Field Field mand restrict
-relationship_add -id=202618 -fid=302618 Specification_Content_Page Hyperlink_Title_Field Field mand restrict
-relationship_add -id=202619 -fid=302619 Specification_Content_Page Generate_Children_Field Field mand restrict
-relationship_add -id=202620 -fid=302620 Specification_Content_Page Child_Self_Relationship Relationship mand restrict
-relationship_add -id=202621 -fid=302621 Specification_Content_Page Link_Name_Field Field opt restrict
-relationship_add -id=202622 -fid=302622 Specification_Content_Page Link_Group_Field Field opt restrict
-relationship_add -id=202623 -fid=302623 Specification_Content_Page Owned_Links_Field Field opt restrict
-relationship_add -id=202625 -fid=302625 Specification_Content_Page Generate_Procedure Procedure mand restrict
-relationship_add -id=202626 -fid=302626 Specification_Content_Page Generate_Output_Arg Procedure_Arg mand restrict
-relationship_add -id=202627 -fid=302627 Specification_Content_Page Page_Page_Link_Child Relationship opt restrict
-relationship_add -id=202628 -fid=302628 Specification_Content_Page Create_Copy_Procedure Procedure opt restrict
-relationship_add -id=202629 -fid=302629 Specification_Content_Page Actions_Field Field opt restrict
-relationship_add -id=202630 -fid=302630 Specification_Content_Page Order_Field Field mand restrict
-relationship_add -id=202631 -fid=302631 Specification_Content_Page Page_Field Field mand restrict
-relationship_add -id=202632 -fid=302632 Specification_Content_Page Link_Page_Link_Child Relationship mand restrict
-relationship_add -id=202635 -fid=302635 Specification_Content_Page Page_File_Field Field mand restrict
-relationship_add -id=202636 -fid=302636 Specification_Content_Page Page_File_Name_Field Field mand restrict
-relationship_add -id=202637 -fid=302637 Specification_Content_Page Variable_Class Class opt restrict
-relationship_add -id=202638 -fid=302638 Specification_Content_Page Variable_Name Field opt restrict
-relationship_add -id=202639 -fid=302639 Specification_Content_Page Variable_Value Field opt restrict
-relationship_add -id=202640 -fid=302640 Specification_Content_Page Frag_Code_Field Field mand restrict
-relationship_add -id=202641 -fid=302641 Specification_Content_Page Frag_Group_Field Field mand restrict
-relationship_add -id=202642 -fid=302642 Specification_Content_Page Frag_Content_Field Field mand restrict
-relationship_add -id=202643 -fid=302643 Specification_Content_Page Next_Child_Num_Field Field opt restrict
-relationship_add -id=202644 -fid=302644 Specification_Content_Page Create_Copy_Output_Arg Procedure_Arg opt restrict
-relationship_add -id=202645 -fid=302645 Specification_Content_Page Group_Name_Field Field mand restrict
-relationship_add -id=202646 -fid=302646 Specification_Content_Page Group_Extra_Field Field mand restrict
-relationship_add -id=202647 -fid=302647 Specification_Content_Page Group_Base_Path_Field Field mand restrict
-relationship_add -id=202650 -fid=302650 Specification_Copy_Child_Links Child_File_Field Field opt restrict
-relationship_add -id=202651 -fid=302651 Specification_Copy_Child_Links Source_Child_Relationship Relationship mand restrict
-relationship_add -id=202652 -fid=302652 Specification_Copy_Child_Links Source_Child_Rel_Child_Class Class mand restrict
-relationship_add -id=202653 -fid=302653 Specification_Copy_Child_Links Source_Child_File_Field Field opt restrict
 relationship_add -id=202800 -fid=302800 Package {Model} Model mand destroy
 relationship_add -id=202810 -fid=302810 Package {Package_Type} Package_Type mand restrict
 relationship_add -id=202820 -fid=302820 Package_Option {Package} Package mand destroy
@@ -1046,8 +993,6 @@ modifier_add -id=500693 Specification Protect_Child_Relationship Child_Relations
 modifier_add -id=500694 Specification Protect_Procedure {Procedure}:protect
 modifier_add -id=500695 Specification_Field_Action Hide_Record_Create_Info\
  New_Record_Class:relegate,New_Record_FK_Field:relegate,New_Record_FK_Value:relegate,Clone_Key:relegate
-modifier_add -id=500696 Specification_Copy_Child_Links Hide_File_Fields\
- Child_File_Field:relegate,Source_Child_File_Field:relegate
 modifier_add -id=500700 View Is_Print_Version Change_Restriction:relegate\
 ,Change_{Permission}:relegate,Allow_Printable_Version:relegate
 modifier_add -id=500701 View Is_Not_Print_Version PDF_View_Type:relegate,PDF_Font_Type:relegate
@@ -1309,7 +1254,6 @@ specification_add -id=600095 {Relationship}_{Field}_meta meta_relationship_field
 specification_add -id=600096 {Relationship}_Child_Name_meta meta_relationship_child_name "Relationship Child_Name Name Child_Class:Name Parent_Class:Name"
 specification_add -id=610096 {Relationship}_Child_Class_Name transient_field_alias "Relationship Child_Class_Name Child_Class:Name"
 specification_add -id=600097 {Relationship}_{Specification}_update_children update_children "Relationship Specification:Child_Relationship Name"
-specification_add -id=610097 {Relationship}_{Specification_Copy_Child_Links}_update_children update_children "Relationship Specification_Copy_Child_Links:Source_Child_Relationship Name"
 specification_add -id=600098 {Relationship}_{Type}_default_1 default_to_global "Relationship Extra 1 -test=Parent_Class:Type=1 -default_only"
 specification_add -id=600099 {Relationship}_{Type}_default_2 default_to_global "Relationship Extra 2 -test=Parent_Class:Type=2 -default_only"
 specification_add -id=600100 {Relationship}_{Type}_default_3 default_to_global "Relationship Extra 3 -test=Parent_Class:Type=3 -default_only"
@@ -1547,7 +1491,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,Procedure_Arg_2:Name={procedure_arg2},Procedure_Arg_3:Name={procedure_arg3}\
 ,Other_{Procedure}:Name={oprocedure},Other_{Procedure}:Id={oprocedure_id}\
 ,Other_{Procedure}_2:Name={o2procedure},Other_{Procedure}_2:Id={o2procedure_id},Child_Relationship:Name={cname}\
-,Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass},Child_Relationship:Child_Class_File_Field_Name={cffield}\
+,Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass}\
 ,{Field}:Primitive={primitive},{Enum}:Name={enum},{Enum_Item}:Label={enum_item},{Enum_Item}:Value={enum_value}\
 ,Enum_Item_2:Label={enum2_item},Enum_Item_2:Value={enum2_value},Enum_Item_3:Label={enum3_item},Enum_Item_3:Value={enum3_value}\
 ,Enum_Item_4:Label={enum4_item},Enum_Item_4:Value={enum4_value},Enum_Item_5:Label={enum5_item},Enum_Item_5:Value={enum5_value}\
@@ -1589,34 +1533,6 @@ specification_add -id=600270 {Specification_Field_Action}_Needs_New_Record_Class
  "Specification_Field_Action New_Record_Class {Specification_Type}:Allow_Procedure -test=Type=0"
 specification_add -id=600271 {Specification_Field_Action}_Needs_New_Record_FK_Field_cond_check check_cond_non_null\
  "Specification_Field_Action New_Record_FK_Field {Specification_Type}:Allow_Procedure -test=Type=0"
-specification_add -id=600275 {Specification_Content_Page}_Vars_from_search_replace field_from_search_replace\
- "Specification_Content_Page Vars {Specification_Type}:Specification_Vars Code_Field:Name={pgcode}\
-,Group_Field:Name={pggroup},Title_Field:Name={pgtitle},File_Name_Field:Name={pgfname},File_Name_Gen_Field:Name={pgfnamegen}\
-,Sub_Title_Field:Name={pgstitle},Parent_Page_Field:Name={pgparent},Content_Type:Name={pgctype},Next_Child_Num_Field:Name={pgnext}\
-,Text_Content_Field:Name={pgtext},Meta_Content_Field:Name={pgmeta},Link_Content_Field:Name={pglink},Actions_Field:Name={pgactions}\
-,Hyperlink_Title_Field:Name={pghyper},Generate_Children_Field:Name={pgchildgen},Clone_Permitted_Field:Name={pgcanclone}\
-,Child_Self_Relationship:Child_Name={pgchild},Generate_Procedure:Name={pggen},Generate_Output_Arg:Name={pggenout}\
-,Create_Copy_Procedure:Name={pgcopy},Create_Copy_Procedure:Id={pgcopyid},Create_Copy_Output_Arg:Name={pgcopyout}\
-,Page_Link_Class:Name={plclass},Order_Field:Name={plorder},Page_Field:Name={plpage},Page_Page_Link_Child:Child_Name={pglchild}\
-,Link_Page_Link_Child:Child_Name={plchild},Page_File_Class:Name={pfclass},Page_File_Field:Name={pffile}\
-,Page_File_Name_Field:Name={pfname},Page_File_Name_Gen_Field:Name={pfnamegen},Fragment_Class:Name={frclass},Frag_Code_Field:Name={frcode}\
-,Variable_Class:Name={vclass},Variable_Name:Name={vname},Variable_Value:Name={vvalue}\
-,Link_Class:Name={lclass},Link_Name_Field:Name={lname},Link_Group_Field:Name={lgroup},Owned_Links_Field:Name={pgolinks}\
-,Frag_Group_Field:Name={frgroup},Frag_Content_Field:Name={frmeta},Group_Class:Name={gclass},Group_Name_Field:Name={gname}\
-,Group_Extra_Field:Name={gextra},Group_Base_Path_Field:Name={gbase} -options=Options,{} -transient"
-specification_add -id=600276 {Specification_Content_Page}_Link_Class field_from_other_field "Specification_Content_Page Link_Content_Field:Parent_Class Link_Class"
-specification_add -id=600277 {Specification_Content_Page}_check_Parent_Page_Field check_parent_fk_match "Specification_Content_Page {Class} Parent_Page_Field"
-specification_add -id=600280 {Specification_Copy_Child_Links}_Source_Child_Rel_Child_Class field_from_other_field\
- "Specification_Copy_Child_Links Source_Child_Relationship:Child_Class Source_Child_Rel_Child_Class"
-specification_add -id=600281 {Specification_Copy_Child_Links}_Name_from_search_replace field_from_search_replace\
- "Specification_Copy_Child_Links Name {Specification_Type}:Specification_Name\
- Source_Child_Relationship:Child_Name={schild},Source_Child_Rel_Child_Class:Name={screlclass} -sep=_ -opt_prefix"
-specification_add -id=600282 {Specification_Copy_Child_Links}_Vars_from_search_replace field_from_search_replace\
- "Specification_Copy_Child_Links Vars {Specification_Type}:Specification_Vars Child_File_Field:Name={cffield}\
-,Source_Child_Relationship:Child_Name={schild},Source_Child_Rel_Child_Class:Name={screlclass}\
-,Source_Child_File_Field:Name={scffield} -options=Options,{} -transient"
-specification_add -id=600288 {Specification_Content_Page}_Hide_File_Fields modifier_field_value\
- "Specification_Copy_Child_Links Hide_File_Fields {Specification_Type} trigger_create_children_for_fk_children"
 specification_add -id=600289 {Package}_Type_Name transient_field_alias "Package Type_Name {Package_Type}:Name"
 specification_add -id=600290 {Permission}_Id_auto_inc parent_auto_int_inc "Permission Id {Workgroup} Next_Permission_Id"
 specification_add -id=600295 {Auto_Code}_auto_increment for_auto_code "Auto_Code Increment Next_Value Mask Next Exhausted"
@@ -1666,7 +1582,7 @@ specification_add -id=600431 {List}_Is_Not_Child modifier_field_value "List Is_N
 specification_add -id=600432 {List}_Cannot_Text_Search modifier_field_value "List Cannot_Text_Search Allow_Text_Search false"
 specification_add -id=600433 {List}_Is_Not_Search_Style modifier_field_value "List Is_Not_Search_Style Style search -not_equal -enum=list_style"
 specification_add -id=600434 {List}_Is_Home modifier_field_value "List Is_Home Is_Home true"
-specification_add -id=600434a {List}_Anonymous_Disallowed_1 modifier_field_value "List Anonymous_Disallowed Is_Group_Or_User true"
+specification_add -id=600434a {List}_Anonymous_Disallowed_1 modifier_field_value "List Anonymous_Disallowed Is_Not_Anonymous true"
 specification_add -id=600434b {List}_Anonymous_Disallowed_2 modifier_field_value "List Anonymous_Disallowed Access_Restriction 0 -not_equal"
 specification_add -id=600434c {List}_Anonymous_Disallowed_3 modifier_field_null "List Anonymous_Disallowed Access_{Permission} -negative"
 specification_add -id=600435 {List}_Is_Not_Unlimited modifier_field_value "List Is_Not_Unlimited Display_Row_Limit 999 -not_equal"
@@ -1674,12 +1590,12 @@ specification_add -id=600436 {List}_Will_Sort_Rows_In_UI modifier_field_value "L
 specification_add -id=600440 {List}_Parent_Field_check check_cond_non_null "List Parent_Field Is_Child"
 specification_add -id=600425 {List}_Is_Child_from_{Type} field_from_other_field "List Type:Is_Child Is_Child"
 specification_add -id=600426 {List}_Is_Home_from_{Type} field_from_other_field "List Type:Is_Home Is_Home"
-specification_add -id=600426a {List}_Is_Group_Or_User_from_{Type} field_from_other_field "List Type:Is_Group_Or_User Is_Group_Or_User"
+specification_add -id=600426a {List}_Is_Not_Anonymous_from_{Type} field_from_other_field "List Type:Is_Not_Anonymous Is_Not_Anonymous"
 specification_add -id=600427 {List}_PDF_List_Is_None modifier_field_value "List PDF_List_Is_None PDF_List_Type 0"
 specification_add -id=600428 {List}_PDF_List_Is_Custom modifier_field_value "List PDF_List_Is_Custom PDF_List_Type 99"
 specification_add -id=600429 {List}_Parent_Class_From_Parent_Field field_from_other_field "List Parent_Field:Parent_Class Parent_Class"
 specification_add -id=600429a {List}_Allow_Anonymous_Access_default default_to_field\
- "List Allow_Anonymous_Access Type:Dummy_1 -test=Type:Is_Group_Or_User=false"
+ "List Allow_Anonymous_Access Type:Dummy_0 -test=Type:Is_Not_Anonymous=true"
 specification_add -id=600445 {List_Field}_Type_default fk_default "List_Field Type field"
 specification_add -id=600446 {List_Field}_{Class}_default default_to_field "List_Field {Class} {List}:{Class}"
 specification_add -id=600447 {List_Field}_Order_default default_from_key "List_Field Order -check_null"
@@ -1974,48 +1890,6 @@ specification_add -id=603300 {Initial_Record_Value}_view view "? standard Initia
  {Initial_Record}:Key;no_edit+link,{Field}:Name;no_edit+link,Value"
 specification_add -id=603310 {Initial_Record_Value}_child_list0 list "@603310_* child:no_new,no_erase,sort_no_limit Initial_Record_Value\
  {Field}:Name;non_fk_link,Value {Initial_Record}"
-specification_add -id=603400 {Specification_Content_Page}_view view "? standard Specification_Content_Page\
- {Model}:Name;no_edit+link+fkey1,Name;no_edit,Id;no_edit\
-,Comments,All_Vars;no_edit+show,All_Strings;no_edit,{Specification_Type}:Name;no_edit+link\
-,@tab:Page_Details,{Class}:Name!@fkey1:{Model}+Name;link+fkey2,Group_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link\
-,Code_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,Title_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,File_Name_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,File_Name_Gen_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Content_Type:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,Sub_Title_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Parent_Page_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link,Actions_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Text_Content_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,Meta_Content_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Link_Content_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;force+link,Link_Class;hidden+fkey8\
-,Next_Child_Num_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Owned_Links_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,Page_Page_Link_Child:Child_Name!@fkey2:Parent_Class+@sort;link\
-,Hyperlink_Title_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,Generate_Children_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Clone_Permitted_Field:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link,Child_Self_Relationship:Child_Name!@fkey2:Parent_Class+@sort;link\
-,Generate_Procedure:Name!@fkey2:{Class}+Name;link+fkey3,Generate_Output_Arg:Name!@fkey3:{Procedure}+Name;link\
-,Create_Copy_Procedure:Name!@fkey2:{Class}+Name;link+fkey0,Create_Copy_Output_Arg:Name!@fkey0:{Procedure}+Name;link\
-,@tab:Other_Details,Page_Link_Class:Name!@fkey1:{Model}+Name;link+fkey4\
-,Link_Name_Field:Name!@fkey8:{Class}+Is_Foreign_Key=0+Name;link,Link_Group_Field:Name!@fkey8:{Class}+Is_Foreign_Key=1+Name;link\
-,Order_Field:Name!@fkey4:{Class}+Is_Foreign_Key=0+Name;link\
-,Page_Field:Name!@fkey4:{Class}+Is_Foreign_Key=1+Name;link,Link_Page_Link_Child:Child_Name!@fkey8:Parent_Class+@sort;link\
-,Page_File_Class:Name!@fkey1:{Model}+Name;link+fkey5,Page_File_Field:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link\
-,Page_File_Name_Field:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link,Page_File_Name_Gen_Field:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link\
-,Variable_Class:Name!@fkey1:{Model}+Name;link+fkey9,Variable_Name:Name!@fkey9:{Class}+Is_Foreign_Key=0+Name;link\
-,Variable_Value:Name!@fkey9:{Class}+Is_Foreign_Key=0+Name;link\
-,Fragment_Class:Name!@fkey1:{Model}+Name;link+fkey6,Frag_Code_Field:Name!@fkey6:{Class}+Is_Foreign_Key=0+Name;link\
-,Frag_Group_Field:Name!@fkey6:{Class}+Is_Foreign_Key=1+Name;link,Frag_Content_Field:Name!@fkey6:{Class}+Is_Foreign_Key=0+Name;link\
-,Group_Class:Name!@fkey1:{Model}+Name;link+fkey7,Group_Name_Field:Name!@fkey7:{Class}+Is_Foreign_Key=0+Name;link\
-,Group_Extra_Field:Name!@fkey7:{Class}+Is_Foreign_Key=0+Name;link,Group_Base_Path_Field:Name!@fkey7:{Class}+Is_Foreign_Key=0+Name;link"
-specification_add -id=603410 {Specification_Copy_Child_Links}_view view "? standard Specification_Copy_Child_Links\
- {Model}:Name;no_edit+link+fkey1,Name;no_edit,Id;no_edit,Comments,{Specification_Type}:Name;no_edit+link\
-,{Class}:Name!@fkey1:{Model}+Name;link+fkey2\
-,Child_Relationship:Child_Name!@fkey2:Parent_Class+@sort;force+link,Child_Rel_Child_Class;hidden+fkey3\
-,Child_File_Field:Name!@fkey3:{Class}+Is_Foreign_Key=0+Name;link\
-,Source_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;force+link,Source_Parent_Class;hidden+fkey4\
-,Source_Child_Relationship:Child_Name!@fkey4:Parent_Class+@sort;force+link,Source_Child_Rel_Child_Class;hidden+fkey5\
-,Source_Child_File_Field:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link,All_Vars;no_edit,All_Strings;no_edit"
-;;
-;; NOTE: This child list is named so it appears under the derived class - perhaps it wouldn't be necessary
-;; if child lists of the base class were automatically included in the derived class (although the support
-;; for such lists is still necessary so the derived class could have it's own specific child lists).
-specification_add -id=603420 {Specification_Copy_Child_Links}_child_list0 list "@603420_Child_* child:no_new,no_limit\
- Specification Name -act=+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues Parent_{Specification_Copy_Child_Links}"
 specification_add -id=603500 {Package_Type}_list list "* admin Package_Type Name,Version"
 specification_add -id=603550 {Package_Type}_view view "? admin Package_Type Name;new_edit,Plural;no_edit,Version;no_edit,File,Multi;no_edit,Dependencies;no_edit,Actions"
 model_save

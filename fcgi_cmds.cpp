@@ -2226,6 +2226,7 @@ void save_record( const string& module_id,
       // they are to be provided with an explicit "new value" or "defcurrent").
       if( extra_data.count( c_field_extra_file )
        || extra_data.count( c_field_extra_flink )
+       || extra_data.count( c_field_extra_image )
        || ( ( skip_field
        || view.hidden_fields.count( value_id )
        || view.protected_fields.count( value_id ) )

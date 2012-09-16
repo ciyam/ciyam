@@ -385,7 +385,11 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 100 > > g_Tab_Name_domain;
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_View_Field* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -1900,6 +1904,7 @@ void Meta_View_Field::impl::impl_Move_Down( const string& Restrict_Fields, const
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -1965,6 +1970,7 @@ void Meta_View_Field::impl::impl_Move_Up( const string& Restrict_Fields, const s
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -4390,6 +4396,22 @@ const char* Meta_View_Field::get_field_name(
    return p_name;
 }
 
+string& Meta_View_Field::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_View_Field::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_View_Field::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_View_Field::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -5755,22 +5777,27 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
    g_view_field_restrict_enum.insert( 2 );
    g_view_field_restrict_enum.insert( 3 );
    g_view_field_restrict_enum.insert( 4 );
+
    g_view_field_access_scope_enum.insert( 0 );
    g_view_field_access_scope_enum.insert( 1 );
    g_view_field_access_scope_enum.insert( 2 );
    g_view_field_access_scope_enum.insert( 3 );
    g_view_field_access_scope_enum.insert( 4 );
    g_view_field_access_scope_enum.insert( 5 );
+
    g_view_field_change_scope_enum.insert( 0 );
    g_view_field_change_scope_enum.insert( 1 );
    g_view_field_change_scope_enum.insert( 2 );
    g_view_field_change_scope_enum.insert( 3 );
+
    g_view_field_child_list_extra_option_enum.insert( 0 );
    g_view_field_child_list_extra_option_enum.insert( 1 );
    g_view_field_child_list_extra_option_enum.insert( 2 );
+
    g_view_field_date_precision_option_enum.insert( 0 );
    g_view_field_date_precision_option_enum.insert( 1 );
    g_view_field_date_precision_option_enum.insert( 2 );
+
    g_view_field_enum_at_enum.insert( 0 );
    g_view_field_enum_at_enum.insert( 1 );
    g_view_field_enum_at_enum.insert( 2 );
@@ -5792,10 +5819,12 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
    g_view_field_enum_at_enum.insert( 18 );
    g_view_field_enum_at_enum.insert( 19 );
    g_view_field_enum_at_enum.insert( 20 );
+
    g_view_field_fk_trigger_behaviour_enum.insert( 0 );
    g_view_field_fk_trigger_behaviour_enum.insert( 1 );
    g_view_field_fk_trigger_behaviour_enum.insert( 2 );
    g_view_field_fk_trigger_behaviour_enum.insert( 3 );
+
    g_view_field_fk_trigger_option_enum.insert( 0 );
    g_view_field_fk_trigger_option_enum.insert( 1 );
    g_view_field_fk_trigger_option_enum.insert( 2 );
@@ -5807,31 +5836,38 @@ void Meta_View_Field::static_class_init( const char* p_module_name )
    g_view_field_fk_trigger_option_enum.insert( 8 );
    g_view_field_fk_trigger_option_enum.insert( 9 );
    g_view_field_fk_trigger_option_enum.insert( 10 );
+
    g_font_size_enum.insert( 0 );
    g_font_size_enum.insert( 1 );
    g_font_size_enum.insert( 2 );
    g_font_size_enum.insert( 6 );
    g_font_size_enum.insert( 7 );
+
    g_view_field_link_restrict_enum.insert( 0 );
    g_view_field_link_restrict_enum.insert( 1 );
    g_view_field_link_restrict_enum.insert( 2 );
    g_view_field_link_restrict_enum.insert( 3 );
    g_view_field_link_restrict_enum.insert( 4 );
+
    g_view_field_mandatory_option_enum.insert( 0 );
    g_view_field_mandatory_option_enum.insert( 1 );
    g_view_field_mandatory_option_enum.insert( 2 );
+
    g_view_field_new_source_enum.insert( 0 );
    g_view_field_new_source_enum.insert( 1 );
    g_view_field_new_source_enum.insert( 2 );
    g_view_field_new_source_enum.insert( 3 );
    g_view_field_new_source_enum.insert( 4 );
+
    g_view_field_trigger_behaviour_enum.insert( 0 );
    g_view_field_trigger_behaviour_enum.insert( 1 );
    g_view_field_trigger_behaviour_enum.insert( 2 );
    g_view_field_trigger_behaviour_enum.insert( 3 );
+
    g_view_field_trigger_for_state_enum.insert( 0 );
    g_view_field_trigger_for_state_enum.insert( 1 );
    g_view_field_trigger_for_state_enum.insert( 2 );
+
    g_view_field_trigger_option_enum.insert( 0 );
    g_view_field_trigger_option_enum.insert( 1 );
    g_view_field_trigger_option_enum.insert( 2 );

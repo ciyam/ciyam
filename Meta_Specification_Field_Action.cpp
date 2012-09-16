@@ -43,7 +43,6 @@
 #include "Meta_Procedure_Arg.h"
 #include "Meta_Relationship.h"
 #include "Meta_Specification.h"
-#include "Meta_Specification_Copy_Child_Links.h"
 #include "Meta_Specification_Type.h"
 #include "Meta_View_Field.h"
 #include "Meta_Class.h"
@@ -132,7 +131,6 @@ const char* const c_field_id_Other_Permission_2 = "301332";
 const char* const c_field_id_Other_Procedure = "301451";
 const char* const c_field_id_Other_Procedure_2 = "301452";
 const char* const c_field_id_Parent_Specification = "301405";
-const char* const c_field_id_Parent_Specification_Copy_Child_Links = "302550";
 const char* const c_field_id_Permission = "301499";
 const char* const c_field_id_Procedure = "301450";
 const char* const c_field_id_Procedure_Arg = "301498";
@@ -215,7 +213,6 @@ const char* const c_field_name_Other_Permission_2 = "Other_Permission_2";
 const char* const c_field_name_Other_Procedure = "Other_Procedure";
 const char* const c_field_name_Other_Procedure_2 = "Other_Procedure_2";
 const char* const c_field_name_Parent_Specification = "Parent_Specification";
-const char* const c_field_name_Parent_Specification_Copy_Child_Links = "Parent_Specification_Copy_Child_Links";
 const char* const c_field_name_Permission = "Permission";
 const char* const c_field_name_Procedure = "Procedure";
 const char* const c_field_name_Procedure_Arg = "Procedure_Arg";
@@ -298,7 +295,6 @@ const char* const c_field_display_name_Other_Permission_2 = "field_specification
 const char* const c_field_display_name_Other_Procedure = "field_specification_other_procedure";
 const char* const c_field_display_name_Other_Procedure_2 = "field_specification_other_procedure_2";
 const char* const c_field_display_name_Parent_Specification = "field_specification_parent_specification";
-const char* const c_field_display_name_Parent_Specification_Copy_Child_Links = "field_specification_parent_specification_copy_child_links";
 const char* const c_field_display_name_Permission = "field_specification_permission";
 const char* const c_field_display_name_Procedure = "field_specification_procedure";
 const char* const c_field_display_name_Procedure_Arg = "field_specification_procedure_arg";
@@ -429,7 +425,11 @@ const uint64_t c_modifier_Hide_Record_Create_Info = UINT64_C( 0x4000000000000 );
 domain_string_max_size< 100 > g_Clone_Key_domain;
 domain_string_max_size< 100 > g_New_Record_FK_Value_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Specification_Field_Action* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -1699,6 +1699,24 @@ const char* Meta_Specification_Field_Action::get_field_name(
    return p_name;
 }
 
+string& Meta_Specification_Field_Action::get_order_field_name( ) const
+{
+   return parent_class_type::get_order_field_name( );
+}
+
+bool Meta_Specification_Field_Action::is_file_field_name( const string& name ) const
+{
+   return parent_class_type::is_file_field_name( name ) || g_file_field_names.count( name );
+}
+
+void Meta_Specification_Field_Action::get_file_field_names( vector< string >& file_field_names ) const
+{
+   parent_class_type::get_file_field_names( file_field_names );
+
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Specification_Field_Action::get_field_display_name( const string& id_or_name ) const
 {
    string display_name( parent_class_type::get_field_display_name( id_or_name ) );
@@ -1965,6 +1983,35 @@ void Meta_Specification_Field_Action::get_required_field_names(
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
    get_always_required_field_names( names, required_transients, dependents );
+
+   // [(start field_from_search_replace)]
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "New_Record_Class" );
+
+      if( ( required_transients && is_field_transient( e_field_id_New_Record_Class ) )
+       || ( !required_transients && !is_field_transient( e_field_id_New_Record_Class ) ) )
+         names.insert( "New_Record_Class" );
+   }
+
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "New_Record_FK_Field" );
+
+      if( ( required_transients && is_field_transient( e_field_id_New_Record_FK_Field ) )
+       || ( !required_transients && !is_field_transient( e_field_id_New_Record_FK_Field ) ) )
+         names.insert( "New_Record_FK_Field" );
+   }
+
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "Specification_Type" );
+
+      if( ( required_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_search_replace)]
 
    // [<start get_required_field_names>]
 //nyi
@@ -2285,7 +2332,6 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Other_Procedure VARCHAR(64) NOT NULL,"
     "C_Other_Procedure_2 VARCHAR(64) NOT NULL,"
     "C_Parent_Specification VARCHAR(64) NOT NULL,"
-    "C_Parent_Specification_Copy_Child_Links VARCHAR(64) NOT NULL,"
     "C_Permission VARCHAR(64) NOT NULL,"
     "C_Procedure VARCHAR(64) NOT NULL,"
     "C_Procedure_Arg VARCHAR(64) NOT NULL,"
@@ -2394,14 +2440,15 @@ void Meta_Specification_Field_Action::static_class_init( const char* p_module_na
       throw runtime_error( "unexpected null module name pointer for init" );
 
    Meta_Specification::static_insert_derivation( "Meta_Specification_Field_Action" );
-
    g_field_action_create_access_restriction_enum.insert( 0 );
    g_field_action_create_access_restriction_enum.insert( 1 );
    g_field_action_create_access_restriction_enum.insert( 2 );
    g_field_action_create_access_restriction_enum.insert( 3 );
+
    g_field_action_create_type_enum.insert( 0 );
    g_field_action_create_type_enum.insert( 1 );
    g_field_action_create_type_enum.insert( 2 );
+
    g_field_action_type_enum.insert( 0 );
    g_field_action_type_enum.insert( 1 );
 

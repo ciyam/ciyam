@@ -1288,38 +1288,6 @@
         <item>field
        </specification>
        <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600281
-        <item>field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
         <id>600320
         <item>field
        </specification>
@@ -2430,14 +2398,6 @@
       <item>sclass
      </specification>
      <specification/>
-      <id>600276
-      <item>sclass
-     </specification>
-     <specification/>
-      <id>600277
-      <item>pclass
-     </specification>
-     <specification/>
       <id>600396
       <item>pclass
      </specification>
@@ -2522,7 +2482,7 @@
      <field/>
       <id>107102
       <name>Default
-      <type>1020
+      <type>1025
       <mandatory>false
       <indexes/>
       </indexes>
@@ -2924,142 +2884,6 @@
         <item>field
        </specification>
        <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
         <id>600385
         <item>field
        </specification>
@@ -3193,10 +3017,6 @@
        </specification>
        <specification/>
         <id>600194
-        <item>src_field
-       </specification>
-       <specification/>
-        <id>600276
         <item>src_field
        </specification>
        <specification/>
@@ -3437,10 +3257,6 @@
        <specification/>
         <id>600095
         <item>field
-       </specification>
-       <specification/>
-        <id>600277
-        <item>cfield
        </specification>
        <specification/>
         <id>601710
@@ -4969,27 +4785,6 @@
       </specifications>
      </field>
      <field/>
-      <id>122146
-      <name>Is_Group_Or_User
-      <type>bool
-      <mandatory>true
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600426a
-        <item>dest_field
-       </specification>
-       <specification/>
-        <id>600434a
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
       <id>122121
       <name>Is_Home
       <type>bool
@@ -5006,6 +4801,27 @@
        </specification>
        <specification/>
         <id>600434
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>122146
+      <name>Is_Not_Anonymous
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600426a
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600434a
         <item>field
        </specification>
       </specifications>
@@ -8170,11 +7986,11 @@
     <fields/>
      <field/>
       <id>121106
-      <name>Dummy_1
+      <name>Dummy_0
       <type>bool
       <mandatory>true
       <transient>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
@@ -8204,8 +8020,25 @@
       </specifications>
      </field>
      <field/>
+      <id>121104
+      <name>Is_Home
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600426
+        <item>src_field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>121105
-      <name>Is_Group_Or_User
+      <name>Is_Not_Anonymous
       <type>bool
       <mandatory>true
       <default_value>0
@@ -8221,23 +8054,6 @@
        <specification/>
         <id>600429a
         <item>tfield
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>121104
-      <name>Is_Home
-      <type>bool
-      <mandatory>true
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600426
-        <item>src_field
        </specification>
       </specifications>
      </field>
@@ -11136,10 +10952,6 @@
         <item>field
        </specification>
        <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
         <id>602100
         <item>field
        </specification>
@@ -11218,14 +11030,6 @@
        </specification>
        <specification/>
         <id>600208
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
         <item>field
        </specification>
        <specification/>
@@ -11455,14 +11259,6 @@
        </specification>
        <specification/>
         <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
         <item>field
        </specification>
        <specification/>
@@ -11774,10 +11570,6 @@
       <item>sclass
      </specification>
      <specification/>
-      <id>600280
-      <item>sclass
-     </specification>
-     <specification/>
       <id>600484
       <item>pclass
      </specification>
@@ -11799,10 +11591,6 @@
      </specification>
      <specification/>
       <id>610096
-      <item>class
-     </specification>
-     <specification/>
-      <id>610097
       <item>class
      </specification>
      <specification/>
@@ -11894,10 +11682,6 @@
         <item>src_field
        </specification>
        <specification/>
-        <id>600280
-        <item>src_field
-       </specification>
-       <specification/>
         <id>600484
         <item>sfield
        </specification>
@@ -11920,23 +11704,6 @@
        <specification/>
         <id>610096
         <item>sfield
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>113109
-      <name>Child_Class_File_Field_Name
-      <type>1050
-      <mandatory>false
-      <transient>true
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600207
-        <item>field
        </specification>
       </specifications>
      </field>
@@ -11990,26 +11757,6 @@
        </specification>
        <specification/>
         <id>600208
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600281
-        <item>field
-       </specification>
-       <specification/>
-        <id>600282
         <item>field
        </specification>
        <specification/>
@@ -12207,10 +11954,6 @@
        <specification/>
         <id>602321
         <item>field
-       </specification>
-       <specification/>
-        <id>610097
-        <item>tfield
        </specification>
       </specifications>
      </field>
@@ -12976,10 +12719,6 @@
       <item>pclass
      </specification>
      <specification/>
-      <id>603420
-      <item>class
-     </specification>
-     <specification/>
       <id>610058
       <item>cclass
      </specification>
@@ -13162,14 +12901,6 @@
         <id>603100
         <item>field
        </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -13200,14 +12931,6 @@
         <id>603100
         <item>field
        </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -13229,10 +12952,6 @@
        <specification/>
         <id>600179
         <item>dest_field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
        </specification>
       </specifications>
      </field>
@@ -13325,19 +13044,11 @@
         <item>field
        </specification>
        <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
         <id>600208
         <item>field
        </specification>
        <specification/>
         <id>602500
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
         <item>field
        </specification>
       </specifications>
@@ -13384,14 +13095,6 @@
        </specification>
        <specification/>
         <id>603100
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
         <item>field
        </specification>
       </specifications>
@@ -13688,14 +13391,6 @@
         <item>field
        </specification>
        <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
-       <specification/>
         <id>610194
         <item>field
        </specification>
@@ -13778,10 +13473,6 @@
         <item>dest_field
        </specification>
        <specification/>
-        <id>600281
-        <item>dest_field
-       </specification>
-       <specification/>
         <id>602500
         <item>field
        </specification>
@@ -13799,18 +13490,6 @@
        </specification>
        <specification/>
         <id>603100
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
-       <specification/>
-        <id>603420
         <item>field
        </specification>
       </specifications>
@@ -13831,14 +13510,6 @@
       <specifications/>
        <specification/>
         <id>600207
-        <item>options
-       </specification>
-       <specification/>
-        <id>600275
-        <item>options
-       </specification>
-       <specification/>
-        <id>600282
         <item>options
        </specification>
        <specification/>
@@ -13904,10 +13575,6 @@
        </specification>
        <specification/>
         <id>602550
-        <item>field
-       </specification>
-       <specification/>
-        <id>603420
         <item>field
        </specification>
       </specifications>
@@ -14228,20 +13895,6 @@
         <id>602500
         <item>field
        </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302550
-      <name>Parent_{Specification_Copy_Child_Links}
-      <type>@class
-      <mandatory>false
-      <class_id>132100
-      <relationship_id>201550
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
       </specifications>
      </field>
      <field/>
@@ -14935,10 +14588,6 @@
         <id>603100
         <item>field
        </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -14979,10 +14628,6 @@
        </specification>
        <specification/>
         <id>603100
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
         <item>field
        </specification>
       </specifications>
@@ -15613,14 +15258,6 @@
         <id>600207
         <item>dest_field
        </specification>
-       <specification/>
-        <id>600275
-        <item>dest_field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>dest_field
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -15733,14 +15370,6 @@
        </specification>
        <specification/>
         <id>603100
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
         <item>field
        </specification>
       </specifications>
@@ -16001,14 +15630,6 @@
        </specification>
        <specification/>
         <id>603100
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
         <item>field
        </specification>
        <specification/>
@@ -16602,22 +16223,6 @@
         <item>pfield
        </specification>
        <specification/>
-        <id>600275
-        <item>src_field
-       </specification>
-       <specification/>
-        <id>600281
-        <item>src_field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>src_field
-       </specification>
-       <specification/>
-        <id>600288
-        <item>field
-       </specification>
-       <specification/>
         <id>602500
         <item>field
        </specification>
@@ -16639,14 +16244,6 @@
        </specification>
        <specification/>
         <id>603100
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
         <item>field
        </specification>
        <specification/>
@@ -17239,1206 +16836,6 @@
        </arg>
       </args>
      </procedure>
-    </procedures>
-   </class>
-   <class/>
-    <id>131100
-    <name>Specification_Content_Page
-    <plural>Specification_Content_Pages
-    <version>
-    <base_class_id>115100
-    <specifications/>
-     <specification/>
-      <id>600275
-      <item>class
-     </specification>
-     <specification/>
-      <id>600276
-      <item>class
-     </specification>
-     <specification/>
-      <id>600277
-      <item>class
-     </specification>
-     <specification/>
-      <id>603400
-      <item>class
-     </specification>
-    </specifications>
-    <fields/>
-     <field/>
-      <id>302629
-      <name>Actions_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202629
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302620
-      <name>Child_Self_Relationship
-      <type>@class
-      <mandatory>true
-      <class_id>113100
-      <relationship_id>202620
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302607
-      <name>Clone_Permitted_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202607
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302610
-      <name>Code_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202610
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302605
-      <name>Content_Type
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202605
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302644
-      <name>Create_Copy_Output_Arg
-      <type>@class
-      <mandatory>false
-      <class_id>112100
-      <relationship_id>202644
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302628
-      <name>Create_Copy_Procedure
-      <type>@class
-      <mandatory>false
-      <class_id>111100
-      <relationship_id>202628
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302612
-      <name>File_Name_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202612
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302608
-      <name>File_Name_Gen_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202608
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302640
-      <name>Frag_Code_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202640
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302642
-      <name>Frag_Content_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202642
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302641
-      <name>Frag_Group_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202641
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302602
-      <name>Fragment_Class
-      <type>@class
-      <mandatory>true
-      <class_id>106100
-      <relationship_id>202602
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302619
-      <name>Generate_Children_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202619
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302626
-      <name>Generate_Output_Arg
-      <type>@class
-      <mandatory>true
-      <class_id>112100
-      <relationship_id>202626
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302625
-      <name>Generate_Procedure
-      <type>@class
-      <mandatory>true
-      <class_id>111100
-      <relationship_id>202625
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302647
-      <name>Group_Base_Path_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202647
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302603
-      <name>Group_Class
-      <type>@class
-      <mandatory>true
-      <class_id>106100
-      <relationship_id>202603
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302646
-      <name>Group_Extra_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202646
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302609
-      <name>Group_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202609
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302645
-      <name>Group_Name_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202645
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302618
-      <name>Hyperlink_Title_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202618
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302604
-      <name>Link_Class
-      <type>@class
-      <mandatory>true
-      <class_id>106100
-      <relationship_id>202604
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600276
-        <item>dest_field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302617
-      <name>Link_Content_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202617
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600276
-        <item>src_pfield
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302622
-      <name>Link_Group_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202622
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302621
-      <name>Link_Name_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202621
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302632
-      <name>Link_Page_Link_Child
-      <type>@class
-      <mandatory>true
-      <class_id>113100
-      <relationship_id>202632
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302616
-      <name>Meta_Content_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202616
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302643
-      <name>Next_Child_Num_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202643
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302630
-      <name>Order_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202630
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302623
-      <name>Owned_Links_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202623
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302631
-      <name>Page_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202631
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302601
-      <name>Page_File_Class
-      <type>@class
-      <mandatory>true
-      <class_id>106100
-      <relationship_id>202601
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302635
-      <name>Page_File_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202635
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302636
-      <name>Page_File_Name_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202636
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302606
-      <name>Page_File_Name_Gen_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202606
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302600
-      <name>Page_Link_Class
-      <type>@class
-      <mandatory>true
-      <class_id>106100
-      <relationship_id>202600
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302627
-      <name>Page_Page_Link_Child
-      <type>@class
-      <mandatory>false
-      <class_id>113100
-      <relationship_id>202627
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302614
-      <name>Parent_Page_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202614
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>600277
-        <item>pfield
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302613
-      <name>Sub_Title_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202613
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302615
-      <name>Text_Content_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202615
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302611
-      <name>Title_Field
-      <type>@class
-      <mandatory>true
-      <class_id>107100
-      <relationship_id>202611
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302637
-      <name>Variable_Class
-      <type>@class
-      <mandatory>false
-      <class_id>106100
-      <relationship_id>202637
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302638
-      <name>Variable_Name
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202638
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302639
-      <name>Variable_Value
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202639
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600275
-        <item>field
-       </specification>
-       <specification/>
-        <id>603400
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-    </fields>
-    <indexes/>
-    </indexes>
-    <modifiers/>
-    </modifiers>
-    <procedures/>
-    </procedures>
-   </class>
-   <class/>
-    <id>132100
-    <name>Specification_Copy_Child_Links
-    <plural>Specification_Copy_Child_Links
-    <version>
-    <base_class_id>115100
-    <specifications/>
-     <specification/>
-      <id>600280
-      <item>class
-     </specification>
-     <specification/>
-      <id>600281
-      <item>class
-     </specification>
-     <specification/>
-      <id>600282
-      <item>class
-     </specification>
-     <specification/>
-      <id>600288
-      <item>class
-     </specification>
-     <specification/>
-      <id>603410
-      <item>class
-     </specification>
-     <specification/>
-      <id>610097
-      <item>cclass
-     </specification>
-    </specifications>
-    <fields/>
-     <field/>
-      <id>302650
-      <name>Child_File_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202650
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500696
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302653
-      <name>Source_Child_File_Field
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>202653
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500696
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302652
-      <name>Source_Child_Rel_Child_Class
-      <type>@class
-      <mandatory>true
-      <class_id>106100
-      <relationship_id>202652
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600280
-        <item>dest_field
-       </specification>
-       <specification/>
-        <id>600281
-        <item>field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>302651
-      <name>Source_Child_Relationship
-      <type>@class
-      <mandatory>true
-      <class_id>113100
-      <relationship_id>202651
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600280
-        <item>src_pfield
-       </specification>
-       <specification/>
-        <id>600281
-        <item>field
-       </specification>
-       <specification/>
-        <id>600282
-        <item>field
-       </specification>
-       <specification/>
-        <id>603410
-        <item>field
-       </specification>
-       <specification/>
-        <id>610097
-        <item>cfield
-       </specification>
-      </specifications>
-     </field>
-    </fields>
-    <indexes/>
-    </indexes>
-    <modifiers/>
-     <modifier/>
-      <id>500696
-      <name>Hide_File_Fields
-     </modifier>
-    </modifiers>
-    <procedures/>
     </procedures>
    </class>
    <class/>
@@ -19097,18 +17494,6 @@
      <specification/>
       <id>600271
       <item>pclass
-     </specification>
-     <specification/>
-      <id>600275
-      <item>sclass
-     </specification>
-     <specification/>
-      <id>600281
-      <item>sclass
-     </specification>
-     <specification/>
-      <id>600282
-      <item>sclass
      </specification>
      <specification/>
       <id>602400
@@ -21181,10 +19566,6 @@
         <item>src_cfield
        </specification>
        <specification/>
-        <id>600281
-        <item>src_cfield
-       </specification>
-       <specification/>
         <id>602400
         <item>field
        </specification>
@@ -21248,14 +19629,6 @@
       <specifications/>
        <specification/>
         <id>600207
-        <item>src_cfield
-       </specification>
-       <specification/>
-        <id>600275
-        <item>src_cfield
-       </specification>
-       <specification/>
-        <id>600282
         <item>src_cfield
        </specification>
        <specification/>
@@ -25670,15 +24043,6 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202629
-    <name>Actions_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>201930
     <name>Change_{Permission}_{View_Field}
     <parent_id>116100
@@ -25702,15 +24066,6 @@
     <parent_id>106100
     <child_id>113100
     <cascade_op>destroy
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202650
-    <name>Child_File_Field_{Specification_Copy_Child_Links}
-    <parent_id>107100
-    <child_id>132100
-    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -25787,15 +24142,6 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202620
-    <name>Child_Self_Relationship_{Specification_Content_Page}
-    <parent_id>113100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>201710
     <name>Child_{Specification_Type}
     <parent_id>114100
@@ -25809,51 +24155,6 @@
     <name>Child_{Specification_Type}_{Specification}
     <parent_id>114100
     <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202607
-    <name>Clone_Permitted_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202610
-    <name>Code_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202605
-    <name>Content_Type_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202644
-    <name>Create_Copy_Output_Arg_{Specification_Content_Page}
-    <parent_id>112100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202628
-    <name>Create_Copy_Procedure_{Specification_Content_Page}
-    <parent_id>111100
-    <child_id>131100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -25967,186 +24268,6 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202612
-    <name>File_Name_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202608
-    <name>File_Name_Gen_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202640
-    <name>Frag_Code_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202642
-    <name>Frag_Content_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202641
-    <name>Frag_Group_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202602
-    <name>Fragment_Class_{Specification_Content_Page}
-    <parent_id>106100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202619
-    <name>Generate_Children_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202626
-    <name>Generate_Output_Arg_{Specification_Content_Page}
-    <parent_id>112100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202625
-    <name>Generate_Procedure_{Specification_Content_Page}
-    <parent_id>111100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202647
-    <name>Group_Base_Path_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202603
-    <name>Group_Class_{Specification_Content_Page}
-    <parent_id>106100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202646
-    <name>Group_Extra_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202609
-    <name>Group_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202645
-    <name>Group_Name_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202618
-    <name>Hyperlink_Title_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202604
-    <name>Link_Class_{Specification_Content_Page}
-    <parent_id>106100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202617
-    <name>Link_Content_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202622
-    <name>Link_Group_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202621
-    <name>Link_Name_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202632
-    <name>Link_Page_Link_Child_{Specification_Content_Page}
-    <parent_id>113100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>202135
     <name>Link_{Permission}_{List_Field}
     <parent_id>116100
@@ -26160,15 +24281,6 @@
     <name>Link_{Permission}_{View_Field}
     <parent_id>116100
     <child_id>120100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202616
-    <name>Meta_Content_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -26192,28 +24304,10 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202643
-    <name>Next_Child_Num_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>201720
     <name>Next_Child_{Specification_Type}
     <parent_id>114100
     <child_id>114100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202630
-    <name>Order_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -26309,78 +24403,6 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202623
-    <name>Owned_Links_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202631
-    <name>Page_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202601
-    <name>Page_File_Class_{Specification_Content_Page}
-    <parent_id>106100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202635
-    <name>Page_File_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202636
-    <name>Page_File_Name_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202606
-    <name>Page_File_Name_Gen_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202600
-    <name>Page_Link_Class_{Specification_Content_Page}
-    <parent_id>106100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202627
-    <name>Page_Page_Link_Child_{Specification_Content_Page}
-    <parent_id>113100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>200730
     <name>Parent_Class_{Field}
     <parent_id>106100
@@ -26422,24 +24444,6 @@
     <parent_id>107100
     <child_id>122100
     <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202614
-    <name>Parent_Page_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201550
-    <name>Parent_{Specification_Copy_Child_Links}_{Specification}
-    <parent_id>132100
-    <child_id>115100
-    <cascade_op>destroy
     <specifications/>
     </specifications>
    </relationship>
@@ -26538,33 +24542,6 @@
     <name>Source_Child_Class_{Specification}
     <parent_id>106100
     <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202653
-    <name>Source_Child_File_Field_{Specification_Copy_Child_Links}
-    <parent_id>107100
-    <child_id>132100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202652
-    <name>Source_Child_Rel_Child_Class_{Specification_Copy_Child_Links}
-    <parent_id>106100
-    <child_id>132100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202651
-    <name>Source_Child_Relationship_{Specification_Copy_Child_Links}
-    <parent_id>113100
-    <child_id>132100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -26813,15 +24790,6 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202613
-    <name>Sub_Title_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>201488
     <name>Test_Child_{Specification}
     <parent_id>107100
@@ -26867,24 +24835,6 @@
     </specifications>
    </relationship>
    <relationship/>
-    <id>202615
-    <name>Text_Content_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202611
-    <name>Title_Field_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
     <id>202120
     <name>Type_{List_Field}
     <parent_id>123100
@@ -26916,33 +24866,6 @@
     <name>Type_{View}
     <parent_id>117100
     <child_id>118100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202637
-    <name>Variable_Class_{Specification_Content_Page}
-    <parent_id>106100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202638
-    <name>Variable_Name_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>202639
-    <name>Variable_Value_{Specification_Content_Page}
-    <parent_id>107100
-    <child_id>131100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -29391,7 +27314,7 @@
      <tclass_id>121100
      <tfield_id>121105
      <tpfield_id>301991
-     <test_value>false
+     <test_value>true
     </data>
    </specification>
    <specification/>
@@ -29475,18 +27398,6 @@
     </data>
    </specification>
    <specification/>
-    <id>600426a
-    <name>{List}_Is_Group_Or_User_from_{Type}
-    <type>field_from_other_field
-    <data/>
-     <class_id>122100
-     <sclass_id>121100
-     <sfield_id>121105
-     <pfield_id>301991
-     <dfield_id>122146
-    </data>
-   </specification>
-   <specification/>
     <id>600434
     <name>{List}_Is_Home
     <type>modifier_field_value
@@ -29507,6 +27418,18 @@
      <sfield_id>121104
      <pfield_id>301991
      <dfield_id>122121
+    </data>
+   </specification>
+   <specification/>
+    <id>600426a
+    <name>{List}_Is_Not_Anonymous_from_{Type}
+    <type>field_from_other_field
+    <data/>
+     <class_id>122100
+     <sclass_id>121100
+     <sfield_id>121105
+     <pfield_id>301991
+     <dfield_id>122146
     </data>
    </specification>
    <specification/>
@@ -30973,17 +28896,6 @@
     </data>
    </specification>
    <specification/>
-    <id>610097
-    <name>{Relationship}_{Specification_Copy_Child_Links}_update_children
-    <type>update_children
-    <data/>
-     <class_id>113100
-     <cclass_id>132100
-     <cfield_id>302651
-     <tfield_id>113101
-    </data>
-   </specification>
-   <specification/>
     <id>600097
     <name>{Relationship}_{Specification}_update_children
     <type>update_children
@@ -31037,261 +28949,6 @@
      <tpfield_id>301320
      <test_value>3
      <default_only>true
-    </data>
-   </specification>
-   <specification/>
-    <id>600288
-    <name>{Specification_Content_Page}_Hide_File_Fields
-    <type>modifier_field_value
-    <data/>
-     <class_id>132100
-     <modifier_id>500696
-     <field_id>301410
-     <field_value>trigger_create_children_for_fk_children
-    </data>
-   </specification>
-   <specification/>
-    <id>600276
-    <name>{Specification_Content_Page}_Link_Class
-    <type>field_from_other_field
-    <data/>
-     <class_id>131100
-     <sclass_id>107100
-     <sfield_id>300730
-     <pfield_id>302617
-     <dfield_id>302604
-    </data>
-   </specification>
-   <specification/>
-    <id>600275
-    <name>{Specification_Content_Page}_Vars_from_search_replace
-    <type>field_from_search_replace
-    <data/>
-     <class_id>131100
-     <sclass_id>114100
-     <dfield_id>115114
-     <sfield_id>301410
-     <cfield_id>114158
-     <field_info>302610:107101;107100={pgcode}
-     <field_info>302609:107101;107100={pggroup}
-     <field_info>302611:107101;107100={pgtitle}
-     <field_info>302612:107101;107100={pgfname}
-     <field_info>302608:107101;107100={pgfnamegen}
-     <field_info>302613:107101;107100={pgstitle}
-     <field_info>302614:107101;107100={pgparent}
-     <field_info>302605:107101;107100={pgctype}
-     <field_info>302643:107101;107100={pgnext}
-     <field_info>302615:107101;107100={pgtext}
-     <field_info>302616:107101;107100={pgmeta}
-     <field_info>302617:107101;107100={pglink}
-     <field_info>302629:107101;107100={pgactions}
-     <field_info>302618:107101;107100={pghyper}
-     <field_info>302619:107101;107100={pgchildgen}
-     <field_info>302607:107101;107100={pgcanclone}
-     <field_info>302620:113105;113100={pgchild}
-     <field_info>302625:111101;111100={pggen}
-     <field_info>302626:112101;112100={pggenout}
-     <field_info>302628:111101;111100={pgcopy}
-     <field_info>302628:111103;111100={pgcopyid}
-     <field_info>302644:112101;112100={pgcopyout}
-     <field_info>302600:106101;106100={plclass}
-     <field_info>302630:107101;107100={plorder}
-     <field_info>302631:107101;107100={plpage}
-     <field_info>302627:113105;113100={pglchild}
-     <field_info>302632:113105;113100={plchild}
-     <field_info>302601:106101;106100={pfclass}
-     <field_info>302635:107101;107100={pffile}
-     <field_info>302636:107101;107100={pfname}
-     <field_info>302606:107101;107100={pfnamegen}
-     <field_info>302602:106101;106100={frclass}
-     <field_info>302640:107101;107100={frcode}
-     <field_info>302637:106101;106100={vclass}
-     <field_info>302638:107101;107100={vname}
-     <field_info>302639:107101;107100={vvalue}
-     <field_info>302604:106101;106100={lclass}
-     <field_info>302621:107101;107100={lname}
-     <field_info>302622:107101;107100={lgroup}
-     <field_info>302623:107101;107100={pgolinks}
-     <field_info>302641:107101;107100={frgroup}
-     <field_info>302642:107101;107100={frmeta}
-     <field_info>302603:106101;106100={gclass}
-     <field_info>302645:107101;107100={gname}
-     <field_info>302646:107101;107100={gextra}
-     <field_info>302647:107101;107100={gbase}
-     <is_transient>true
-     <ofield_id>115104
-     <options_left>{
-     <options_right>}
-    </data>
-   </specification>
-   <specification/>
-    <id>600277
-    <name>{Specification_Content_Page}_check_Parent_Page_Field
-    <type>check_parent_fk_match
-    <data/>
-     <class_id>131100
-     <field_id>301420
-     <pclass_id>107100
-     <pfield_id>302614
-     <cfield_id>300700
-    </data>
-   </specification>
-   <specification/>
-    <id>603400
-    <name>{Specification_Content_Page}_view
-    <type>view
-    <data/>
-     <name>?
-     <type>standard
-     <class_id>131100
-     <bclass_info>Specification
-     <field_info>301400:105101;no_edit+link+fkey1+filename+max_size=30
-     <field_info>115101;no_edit
-     <field_info>115117;no_edit
-     <field_info>115112
-     <field_info>115123;no_edit+show
-     <field_info>115124;no_edit
-     <field_info>301410:114101;no_edit+link+max_size=100
-     <field_info>@tab:Page_Details
-     <field_info>301420:106101!@fkey1:300600+106101;link+fkey2
-     <field_info>302609:107101!@fkey2:300700+107108=1+107101;link
-     <field_info>302610:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302611:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302612:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302608:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302605:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302613:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302614:107101!@fkey2:300700+107108=1+107101;link
-     <field_info>302629:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302615:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302616:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302617:107101!@fkey2:300700+107108=1+107101;force+link
-     <field_info>302604;hidden+fkey8
-     <field_info>302643:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302623:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302627:113105!@fkey2:301320+@sort;link
-     <field_info>302618:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302619:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302607:107101!@fkey2:300700+107108=0+107101;link
-     <field_info>302620:113105!@fkey2:301320+@sort;link
-     <field_info>302625:111101!@fkey2:301100+111101;link+fkey3
-     <field_info>302626:112101!@fkey3:301200+112101;link
-     <field_info>302628:111101!@fkey2:301100+111101;link+fkey0
-     <field_info>302644:112101!@fkey0:301200+112101;link
-     <field_info>@tab:Other_Details
-     <field_info>302600:106101!@fkey1:300600+106101;link+fkey4
-     <field_info>302621:107101!@fkey8:300700+107108=0+107101;link
-     <field_info>302622:107101!@fkey8:300700+107108=1+107101;link
-     <field_info>302630:107101!@fkey4:300700+107108=0+107101;link
-     <field_info>302631:107101!@fkey4:300700+107108=1+107101;link
-     <field_info>302632:113105!@fkey8:301320+@sort;link
-     <field_info>302601:106101!@fkey1:300600+106101;link+fkey5
-     <field_info>302635:107101!@fkey5:300700+107108=0+107101;link
-     <field_info>302636:107101!@fkey5:300700+107108=0+107101;link
-     <field_info>302606:107101!@fkey5:300700+107108=0+107101;link
-     <field_info>302637:106101!@fkey1:300600+106101;link+fkey9
-     <field_info>302638:107101!@fkey9:300700+107108=0+107101;link
-     <field_info>302639:107101!@fkey9:300700+107108=0+107101;link
-     <field_info>302602:106101!@fkey1:300600+106101;link+fkey6
-     <field_info>302640:107101!@fkey6:300700+107108=0+107101;link
-     <field_info>302641:107101!@fkey6:300700+107108=1+107101;link
-     <field_info>302642:107101!@fkey6:300700+107108=0+107101;link
-     <field_info>302603:106101!@fkey1:300600+106101;link+fkey7
-     <field_info>302645:107101!@fkey7:300700+107108=0+107101;link
-     <field_info>302646:107101!@fkey7:300700+107108=0+107101;link
-     <field_info>302647:107101!@fkey7:300700+107108=0+107101;link
-    </data>
-   </specification>
-   <specification/>
-    <id>600281
-    <name>{Specification_Copy_Child_Links}_Name_from_search_replace
-    <type>field_from_search_replace
-    <data/>
-     <class_id>132100
-     <sclass_id>114100
-     <dfield_id>115101
-     <sfield_id>301410
-     <cfield_id>114102
-     <field_info>302651:113105;113100={schild}
-     <field_info>302652:106101;106100={screlclass}
-     <separator>_
-     <has_opt_prefix>true
-    </data>
-   </specification>
-   <specification/>
-    <id>600280
-    <name>{Specification_Copy_Child_Links}_Source_Child_Rel_Child_Class
-    <type>field_from_other_field
-    <data/>
-     <class_id>132100
-     <sclass_id>113100
-     <sfield_id>301310
-     <pfield_id>302651
-     <dfield_id>302652
-    </data>
-   </specification>
-   <specification/>
-    <id>600282
-    <name>{Specification_Copy_Child_Links}_Vars_from_search_replace
-    <type>field_from_search_replace
-    <data/>
-     <class_id>132100
-     <sclass_id>114100
-     <dfield_id>115114
-     <sfield_id>301410
-     <cfield_id>114158
-     <field_info>302650:107101;107100={cffield}
-     <field_info>302651:113105;113100={schild}
-     <field_info>302652:106101;106100={screlclass}
-     <field_info>302653:107101;107100={scffield}
-     <is_transient>true
-     <ofield_id>115104
-     <options_left>{
-     <options_right>}
-    </data>
-   </specification>
-   <specification/>
-    <id>603420
-    <name>{Specification_Copy_Child_Links}_child_list0
-    <type>list
-    <data/>
-     <name>@603420_Child_*
-     <type>child
-     <extra>no_new,no_limit
-     <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
-     <class_id>115100
-     <ordering>forward
-     <pclass_id>132100
-     <pfield_id>302550
-     <field_info>115105;hidden
-     <field_info>115101
-    </data>
-   </specification>
-   <specification/>
-    <id>603410
-    <name>{Specification_Copy_Child_Links}_view
-    <type>view
-    <data/>
-     <name>?
-     <type>standard
-     <class_id>132100
-     <bclass_info>Specification
-     <field_info>301400:105101;no_edit+link+fkey1+filename+max_size=30
-     <field_info>115101;no_edit
-     <field_info>115117;no_edit
-     <field_info>115112
-     <field_info>301410:114101;no_edit+link+max_size=100
-     <field_info>301420:106101!@fkey1:300600+106101;link+fkey2
-     <field_info>301475:113105!@fkey2:301320+@sort;force+link
-     <field_info>301491;hidden+fkey3
-     <field_info>302650:107101!@fkey3:300700+107108=0+107101;link
-     <field_info>301480:107101!@fkey2:300700+107108=1+107101;force+link
-     <field_info>301490;hidden+fkey4
-     <field_info>302651:113105!@fkey4:301320+@sort;force+link
-     <field_info>302652;hidden+fkey5
-     <field_info>302653:107101!@fkey5:300700+107108=0+107101;link
-     <field_info>115123;no_edit
-     <field_info>115124;no_edit
     </data>
    </specification>
    <specification/>
@@ -33614,7 +31271,6 @@
      <field_info>301475:113101;113100={cname}
      <field_info>301475:113105;113100={child}
      <field_info>301475:113108;113100={cclass}
-     <field_info>301475:113109;113100={cffield}
      <field_info>301430:107107;107100={primitive}
      <field_info>301460:103101;103100={enum}
      <field_info>301470:104101;104100={enum_item}
@@ -34972,7 +32628,7 @@
     <id>530
     <name>field_extra
     <type>int
-    <key_values>0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active,3=image,7=mailto,21=file\_link,8=actions,22=filename,10=password,11=defcurrent,17=permission,24=orientation,25=epassword,26=hpassword,27=hpassword\_salt,13=manual\_link,12=user\_perms,14=current\_year,18=security\_level,15=create\_datetime,16=modify\_datetime,28=is\_effective\_owner,19=replace\_underbars,20=enforce\_uppercase,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
+    <key_values>0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active,3=image,7=mailto,21=file\_link,8=actions,22=filename,10=password,11=defcurrent,17=permission,24=orientation,25=epassword,26=hpassword,13=manual\_link,12=user\_perms,14=current\_year,18=security\_level,27=hpassword\_salt,15=create\_datetime,16=modify\_datetime,28=is\_effective\_owner,19=replace\_underbars,20=enforce\_uppercase,-2=user\_group,-3=user\_other,-1=owning\_user,-4=create\_user\_key,-5=modify\_user\_key
    </user_defined_enum>
    <user_defined_enum/>
     <id>600
@@ -35014,7 +32670,7 @@
     <id>691
     <name>list_field_alignment
     <type>int
-    <key_values>0=default,1=left,2=right,3=center
+    <key_values>0=default,1=left,2=right,3=center,4=justify
    </user_defined_enum>
    <user_defined_enum/>
     <id>699

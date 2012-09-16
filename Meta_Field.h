@@ -27,8 +27,6 @@
 #     define META_FIELD_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
-class Meta_Specification_Content_Page;
-class Meta_Specification_Copy_Child_Links;
 class Meta_List_Field;
 class Meta_Index;
 class Meta_Specification_Field_Action;
@@ -46,8 +44,6 @@ class numeric;
 
 class META_FIELD_DECL_SPEC Meta_Field : public class_base
 {
-   friend class Meta_Specification_Content_Page;
-   friend class Meta_Specification_Copy_Child_Links;
    friend class Meta_List_Field;
    friend class Meta_Index;
    friend class Meta_Specification_Field_Action;
@@ -152,12 +148,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    const Meta_Type& Type( ) const;
    void Type( const std::string& key );
 
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Actions( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Actions( ) const;
-
-   Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Child_File( );
-   const Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Child_File( ) const;
-
    Meta_List_Field& child_List_Field_Child_Rel_Source_Child( );
    const Meta_List_Field& child_List_Field_Child_Rel_Source_Child( ) const;
 
@@ -166,15 +156,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_List_Field& child_List_Field_Child_Rel_Source_Parent( );
    const Meta_List_Field& child_List_Field_Child_Rel_Source_Parent( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Clone_Permitted( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Clone_Permitted( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Code( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Code( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Content_Type( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Content_Type( ) const;
 
    Meta_Index& child_Index_Field_1( );
    const Meta_Index& child_Index_Field_1( ) const;
@@ -191,59 +172,8 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Index& child_Index_Field_5( );
    const Meta_Index& child_Index_Field_5( ) const;
 
-   Meta_Specification_Content_Page& child_Specification_Content_Page_File_Name( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_File_Name( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_File_Name_Gen( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_File_Name_Gen( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Frag_Code( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Frag_Code( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Frag_Content( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Frag_Content( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Frag_Group( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Frag_Group( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Generate_Children( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Generate_Children( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Group_Base_Path( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Group_Base_Path( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Group_Extra( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Group_Extra( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Group( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Group( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Group_Name( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Group_Name( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Hyperlink_Title( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Hyperlink_Title( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Content( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Content( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Group( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Group( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Name( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Link_Name( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Meta_Content( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Meta_Content( ) const;
-
    Meta_Specification_Field_Action& child_Specification_Field_Action_New_Record_FK( );
    const Meta_Specification_Field_Action& child_Specification_Field_Action_New_Record_FK( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Next_Child_Num( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Next_Child_Num( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Order( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Order( ) const;
 
    Meta_Specification& child_Specification_Other_Field_2( );
    const Meta_Specification& child_Specification_Other_Field_2( ) const;
@@ -251,26 +181,8 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Specification& child_Specification_Other( );
    const Meta_Specification& child_Specification_Other( ) const;
 
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Owned_Links( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Owned_Links( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File_Name( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File_Name( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File_Name_Gen( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File_Name_Gen( ) const;
-
    Meta_List& child_List_Parent( );
    const Meta_List& child_List_Parent( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Parent_Page( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Parent_Page( ) const;
 
    Meta_Class& child_Class_Quick_Link( );
    const Meta_Class& child_Class_Quick_Link( ) const;
@@ -280,9 +192,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_Specification& child_Specification_Source_Child_2( );
    const Meta_Specification& child_Specification_Source_Child_2( ) const;
-
-   Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Source_Child_File( );
-   const Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Source_Child_File( ) const;
 
    Meta_List_Field& child_List_Field_Source_Child( );
    const Meta_List_Field& child_List_Field_Source_Child( ) const;
@@ -323,9 +232,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Field& child_Field_Source( );
    const Meta_Field& child_Field_Source( ) const;
 
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Sub_Title( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Sub_Title( ) const;
-
    Meta_Specification& child_Specification_Test_Child( );
    const Meta_Specification& child_Specification_Test_Child( ) const;
 
@@ -334,18 +240,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_Specification& child_Specification_Test_Parent( );
    const Meta_Specification& child_Specification_Test_Parent( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Text_Content( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Text_Content( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Title( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Title( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Variable_Name( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Variable_Name( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Variable_Value( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Variable_Value( ) const;
 
    Meta_Initial_Record_Value& child_Initial_Record_Value( );
    const Meta_Initial_Record_Value& child_Initial_Record_Value( ) const;
@@ -428,6 +322,11 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    void get_foreign_key_info( foreign_key_info_container& foreign_key_info ) const { static_get_foreign_key_info( foreign_key_info ); }
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
+
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
@@ -523,8 +422,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Type& o, const std::string& value );
 
-   virtual void setup_graph_parent( Meta_Specification_Content_Page& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Specification_Copy_Child_Links& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Index& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification_Field_Action& o, const std::string& foreign_key_field );

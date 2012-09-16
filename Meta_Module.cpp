@@ -125,7 +125,11 @@ bool is_transient_field( const string& ) { static bool false_value( false ); ret
 const char* const c_procedure_id_Move_Down = "126420";
 const char* const c_procedure_id_Move_Up = "126410";
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Module* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -480,6 +484,7 @@ void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const str
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -545,6 +550,7 @@ void Meta_Module::impl::impl_Move_Up( const string& Restrict_Fields, const strin
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -1099,6 +1105,22 @@ const char* Meta_Module::get_field_name(
    }
 
    return p_name;
+}
+
+string& Meta_Module::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Module::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Module::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
 }
 
 string Meta_Module::get_field_display_name( const string& id_or_name ) const
