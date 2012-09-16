@@ -87,6 +87,8 @@ for_*.spec.xrep
 !for_auto_code_user.spec.xrep
 
 # Ignore specific installed package files.
+blog*.jpg
+blog*.png
 user*.jpg
 photo_*.jpg
 gen_photo_*.xrep

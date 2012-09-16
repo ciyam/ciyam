@@ -3402,7 +3402,8 @@ void request_handler::process_request( )
                   extra_content << "<p align=\"center\">" << user_home_info << "</p>\n";
 
                bool can_output = true;
-               if( using_anonymous && !list.lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
+               if( using_anonymous && ( mod_info.home_list_id.empty( )
+                || !list.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
                   can_output = false;
 
                if( can_output && !mod_info.home_list_id.empty( ) )

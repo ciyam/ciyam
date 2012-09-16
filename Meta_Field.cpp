@@ -33,8 +33,6 @@
 
 #include "Meta_Field.h"
 
-#include "Meta_Specification_Content_Page.h"
-#include "Meta_Specification_Copy_Child_Links.h"
 #include "Meta_List_Field.h"
 #include "Meta_Index.h"
 #include "Meta_Specification_Field_Action.h"
@@ -272,7 +270,7 @@ const uint64_t c_modifier_Is_Internal = UINT64_C( 0x200 );
 const uint64_t c_modifier_Is_Transient = UINT64_C( 0x400 );
 const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x800 );
 
-domain_string_max_size< 100 > g_Default_domain;
+domain_string_max_size< 200 > g_Default_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Id_domain;
@@ -283,7 +281,11 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Parent_Class_Name_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Field* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -338,11 +340,11 @@ const int c_enum_field_extra_permission( 17 );
 const int c_enum_field_extra_orientation( 24 );
 const int c_enum_field_extra_epassword( 25 );
 const int c_enum_field_extra_hpassword( 26 );
-const int c_enum_field_extra_hpassword_salt( 27 );
 const int c_enum_field_extra_manual_link( 13 );
 const int c_enum_field_extra_user_perms( 12 );
 const int c_enum_field_extra_current_year( 14 );
 const int c_enum_field_extra_security_level( 18 );
+const int c_enum_field_extra_hpassword_salt( 27 );
 const int c_enum_field_extra_create_datetime( 15 );
 const int c_enum_field_extra_modify_datetime( 16 );
 const int c_enum_field_extra_is_effective_owner( 28 );
@@ -398,8 +400,6 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_epassword";
    else if( to_string( val ) == to_string( "26" ) )
       string_name = "enum_field_extra_hpassword";
-   else if( to_string( val ) == to_string( "27" ) )
-      string_name = "enum_field_extra_hpassword_salt";
    else if( to_string( val ) == to_string( "13" ) )
       string_name = "enum_field_extra_manual_link";
    else if( to_string( val ) == to_string( "12" ) )
@@ -408,6 +408,8 @@ string get_enum_string_field_extra( int val )
       string_name = "enum_field_extra_current_year";
    else if( to_string( val ) == to_string( "18" ) )
       string_name = "enum_field_extra_security_level";
+   else if( to_string( val ) == to_string( "27" ) )
+      string_name = "enum_field_extra_hpassword_salt";
    else if( to_string( val ) == to_string( "15" ) )
       string_name = "enum_field_extra_create_datetime";
    else if( to_string( val ) == to_string( "16" ) )
@@ -946,50 +948,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
       cba.set_key( key );
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Actions( )
-   {
-      if( !cp_child_Specification_Content_Page_Actions )
-      {
-         cp_child_Specification_Content_Page_Actions.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Actions, "302629" );
-      }
-      return *cp_child_Specification_Content_Page_Actions;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Actions( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Actions )
-      {
-         cp_child_Specification_Content_Page_Actions.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Actions, "302629" );
-      }
-      return *cp_child_Specification_Content_Page_Actions;
-   }
-
-   Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Child_File( )
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Child_File )
-      {
-         cp_child_Specification_Copy_Child_Links_Child_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Child_File, "302650" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Child_File;
-   }
-
-   const Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Child_File( ) const
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Child_File )
-      {
-         cp_child_Specification_Copy_Child_Links_Child_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Child_File, "302650" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Child_File;
-   }
-
    Meta_List_Field& impl_child_List_Field_Child_Rel_Source_Child( )
    {
       if( !cp_child_List_Field_Child_Rel_Source_Child )
@@ -1054,72 +1012,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
          p_obj->setup_graph_parent( *cp_child_List_Field_Child_Rel_Source_Parent, "302196" );
       }
       return *cp_child_List_Field_Child_Rel_Source_Parent;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Clone_Permitted( )
-   {
-      if( !cp_child_Specification_Content_Page_Clone_Permitted )
-      {
-         cp_child_Specification_Content_Page_Clone_Permitted.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Clone_Permitted, "302607" );
-      }
-      return *cp_child_Specification_Content_Page_Clone_Permitted;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Clone_Permitted( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Clone_Permitted )
-      {
-         cp_child_Specification_Content_Page_Clone_Permitted.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Clone_Permitted, "302607" );
-      }
-      return *cp_child_Specification_Content_Page_Clone_Permitted;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Code( )
-   {
-      if( !cp_child_Specification_Content_Page_Code )
-      {
-         cp_child_Specification_Content_Page_Code.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Code, "302610" );
-      }
-      return *cp_child_Specification_Content_Page_Code;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Code( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Code )
-      {
-         cp_child_Specification_Content_Page_Code.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Code, "302610" );
-      }
-      return *cp_child_Specification_Content_Page_Code;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Content_Type( )
-   {
-      if( !cp_child_Specification_Content_Page_Content_Type )
-      {
-         cp_child_Specification_Content_Page_Content_Type.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Content_Type, "302605" );
-      }
-      return *cp_child_Specification_Content_Page_Content_Type;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Content_Type( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Content_Type )
-      {
-         cp_child_Specification_Content_Page_Content_Type.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Content_Type, "302605" );
-      }
-      return *cp_child_Specification_Content_Page_Content_Type;
    }
 
    Meta_Index& impl_child_Index_Field_1( )
@@ -1232,336 +1124,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
       return *cp_child_Index_Field_5;
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_File_Name( )
-   {
-      if( !cp_child_Specification_Content_Page_File_Name )
-      {
-         cp_child_Specification_Content_Page_File_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_File_Name, "302612" );
-      }
-      return *cp_child_Specification_Content_Page_File_Name;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_File_Name( ) const
-   {
-      if( !cp_child_Specification_Content_Page_File_Name )
-      {
-         cp_child_Specification_Content_Page_File_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_File_Name, "302612" );
-      }
-      return *cp_child_Specification_Content_Page_File_Name;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_File_Name_Gen( )
-   {
-      if( !cp_child_Specification_Content_Page_File_Name_Gen )
-      {
-         cp_child_Specification_Content_Page_File_Name_Gen.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_File_Name_Gen, "302608" );
-      }
-      return *cp_child_Specification_Content_Page_File_Name_Gen;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_File_Name_Gen( ) const
-   {
-      if( !cp_child_Specification_Content_Page_File_Name_Gen )
-      {
-         cp_child_Specification_Content_Page_File_Name_Gen.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_File_Name_Gen, "302608" );
-      }
-      return *cp_child_Specification_Content_Page_File_Name_Gen;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Frag_Code( )
-   {
-      if( !cp_child_Specification_Content_Page_Frag_Code )
-      {
-         cp_child_Specification_Content_Page_Frag_Code.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Frag_Code, "302640" );
-      }
-      return *cp_child_Specification_Content_Page_Frag_Code;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Frag_Code( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Frag_Code )
-      {
-         cp_child_Specification_Content_Page_Frag_Code.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Frag_Code, "302640" );
-      }
-      return *cp_child_Specification_Content_Page_Frag_Code;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Frag_Content( )
-   {
-      if( !cp_child_Specification_Content_Page_Frag_Content )
-      {
-         cp_child_Specification_Content_Page_Frag_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Frag_Content, "302642" );
-      }
-      return *cp_child_Specification_Content_Page_Frag_Content;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Frag_Content( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Frag_Content )
-      {
-         cp_child_Specification_Content_Page_Frag_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Frag_Content, "302642" );
-      }
-      return *cp_child_Specification_Content_Page_Frag_Content;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Frag_Group( )
-   {
-      if( !cp_child_Specification_Content_Page_Frag_Group )
-      {
-         cp_child_Specification_Content_Page_Frag_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Frag_Group, "302641" );
-      }
-      return *cp_child_Specification_Content_Page_Frag_Group;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Frag_Group( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Frag_Group )
-      {
-         cp_child_Specification_Content_Page_Frag_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Frag_Group, "302641" );
-      }
-      return *cp_child_Specification_Content_Page_Frag_Group;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Generate_Children( )
-   {
-      if( !cp_child_Specification_Content_Page_Generate_Children )
-      {
-         cp_child_Specification_Content_Page_Generate_Children.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Generate_Children, "302619" );
-      }
-      return *cp_child_Specification_Content_Page_Generate_Children;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Generate_Children( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Generate_Children )
-      {
-         cp_child_Specification_Content_Page_Generate_Children.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Generate_Children, "302619" );
-      }
-      return *cp_child_Specification_Content_Page_Generate_Children;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group_Base_Path( )
-   {
-      if( !cp_child_Specification_Content_Page_Group_Base_Path )
-      {
-         cp_child_Specification_Content_Page_Group_Base_Path.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group_Base_Path, "302647" );
-      }
-      return *cp_child_Specification_Content_Page_Group_Base_Path;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group_Base_Path( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Group_Base_Path )
-      {
-         cp_child_Specification_Content_Page_Group_Base_Path.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group_Base_Path, "302647" );
-      }
-      return *cp_child_Specification_Content_Page_Group_Base_Path;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group_Extra( )
-   {
-      if( !cp_child_Specification_Content_Page_Group_Extra )
-      {
-         cp_child_Specification_Content_Page_Group_Extra.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group_Extra, "302646" );
-      }
-      return *cp_child_Specification_Content_Page_Group_Extra;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group_Extra( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Group_Extra )
-      {
-         cp_child_Specification_Content_Page_Group_Extra.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group_Extra, "302646" );
-      }
-      return *cp_child_Specification_Content_Page_Group_Extra;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group( )
-   {
-      if( !cp_child_Specification_Content_Page_Group )
-      {
-         cp_child_Specification_Content_Page_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group, "302609" );
-      }
-      return *cp_child_Specification_Content_Page_Group;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Group )
-      {
-         cp_child_Specification_Content_Page_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group, "302609" );
-      }
-      return *cp_child_Specification_Content_Page_Group;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group_Name( )
-   {
-      if( !cp_child_Specification_Content_Page_Group_Name )
-      {
-         cp_child_Specification_Content_Page_Group_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group_Name, "302645" );
-      }
-      return *cp_child_Specification_Content_Page_Group_Name;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Group_Name( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Group_Name )
-      {
-         cp_child_Specification_Content_Page_Group_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Group_Name, "302645" );
-      }
-      return *cp_child_Specification_Content_Page_Group_Name;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Hyperlink_Title( )
-   {
-      if( !cp_child_Specification_Content_Page_Hyperlink_Title )
-      {
-         cp_child_Specification_Content_Page_Hyperlink_Title.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Hyperlink_Title, "302618" );
-      }
-      return *cp_child_Specification_Content_Page_Hyperlink_Title;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Hyperlink_Title( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Hyperlink_Title )
-      {
-         cp_child_Specification_Content_Page_Hyperlink_Title.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Hyperlink_Title, "302618" );
-      }
-      return *cp_child_Specification_Content_Page_Hyperlink_Title;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Content( )
-   {
-      if( !cp_child_Specification_Content_Page_Link_Content )
-      {
-         cp_child_Specification_Content_Page_Link_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Content, "302617" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Content;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Content( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Link_Content )
-      {
-         cp_child_Specification_Content_Page_Link_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Content, "302617" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Content;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Group( )
-   {
-      if( !cp_child_Specification_Content_Page_Link_Group )
-      {
-         cp_child_Specification_Content_Page_Link_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Group, "302622" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Group;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Group( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Link_Group )
-      {
-         cp_child_Specification_Content_Page_Link_Group.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Group, "302622" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Group;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Name( )
-   {
-      if( !cp_child_Specification_Content_Page_Link_Name )
-      {
-         cp_child_Specification_Content_Page_Link_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Name, "302621" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Name;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Name( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Link_Name )
-      {
-         cp_child_Specification_Content_Page_Link_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Name, "302621" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Name;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Meta_Content( )
-   {
-      if( !cp_child_Specification_Content_Page_Meta_Content )
-      {
-         cp_child_Specification_Content_Page_Meta_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Meta_Content, "302616" );
-      }
-      return *cp_child_Specification_Content_Page_Meta_Content;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Meta_Content( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Meta_Content )
-      {
-         cp_child_Specification_Content_Page_Meta_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Meta_Content, "302616" );
-      }
-      return *cp_child_Specification_Content_Page_Meta_Content;
-   }
-
    Meta_Specification_Field_Action& impl_child_Specification_Field_Action_New_Record_FK( )
    {
       if( !cp_child_Specification_Field_Action_New_Record_FK )
@@ -1582,50 +1144,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Field_Action_New_Record_FK, "302310" );
       }
       return *cp_child_Specification_Field_Action_New_Record_FK;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Next_Child_Num( )
-   {
-      if( !cp_child_Specification_Content_Page_Next_Child_Num )
-      {
-         cp_child_Specification_Content_Page_Next_Child_Num.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Next_Child_Num, "302643" );
-      }
-      return *cp_child_Specification_Content_Page_Next_Child_Num;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Next_Child_Num( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Next_Child_Num )
-      {
-         cp_child_Specification_Content_Page_Next_Child_Num.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Next_Child_Num, "302643" );
-      }
-      return *cp_child_Specification_Content_Page_Next_Child_Num;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Order( )
-   {
-      if( !cp_child_Specification_Content_Page_Order )
-      {
-         cp_child_Specification_Content_Page_Order.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Order, "302630" );
-      }
-      return *cp_child_Specification_Content_Page_Order;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Order( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Order )
-      {
-         cp_child_Specification_Content_Page_Order.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Order, "302630" );
-      }
-      return *cp_child_Specification_Content_Page_Order;
    }
 
    Meta_Specification& impl_child_Specification_Other_Field_2( )
@@ -1672,116 +1190,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
       return *cp_child_Specification_Other;
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Owned_Links( )
-   {
-      if( !cp_child_Specification_Content_Page_Owned_Links )
-      {
-         cp_child_Specification_Content_Page_Owned_Links.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Owned_Links, "302623" );
-      }
-      return *cp_child_Specification_Content_Page_Owned_Links;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Owned_Links( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Owned_Links )
-      {
-         cp_child_Specification_Content_Page_Owned_Links.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Owned_Links, "302623" );
-      }
-      return *cp_child_Specification_Content_Page_Owned_Links;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page( )
-   {
-      if( !cp_child_Specification_Content_Page_Page )
-      {
-         cp_child_Specification_Content_Page_Page.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page, "302631" );
-      }
-      return *cp_child_Specification_Content_Page_Page;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page )
-      {
-         cp_child_Specification_Content_Page_Page.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page, "302631" );
-      }
-      return *cp_child_Specification_Content_Page_Page;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File( )
-   {
-      if( !cp_child_Specification_Content_Page_Page_File )
-      {
-         cp_child_Specification_Content_Page_Page_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File, "302635" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page_File )
-      {
-         cp_child_Specification_Content_Page_Page_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File, "302635" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File_Name( )
-   {
-      if( !cp_child_Specification_Content_Page_Page_File_Name )
-      {
-         cp_child_Specification_Content_Page_Page_File_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File_Name, "302636" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File_Name;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File_Name( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page_File_Name )
-      {
-         cp_child_Specification_Content_Page_Page_File_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File_Name, "302636" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File_Name;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File_Name_Gen( )
-   {
-      if( !cp_child_Specification_Content_Page_Page_File_Name_Gen )
-      {
-         cp_child_Specification_Content_Page_Page_File_Name_Gen.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File_Name_Gen, "302606" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File_Name_Gen;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_File_Name_Gen( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page_File_Name_Gen )
-      {
-         cp_child_Specification_Content_Page_Page_File_Name_Gen.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_File_Name_Gen, "302606" );
-      }
-      return *cp_child_Specification_Content_Page_Page_File_Name_Gen;
-   }
-
    Meta_List& impl_child_List_Parent( )
    {
       if( !cp_child_List_Parent )
@@ -1802,28 +1210,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
          p_obj->setup_graph_parent( *cp_child_List_Parent, "301996" );
       }
       return *cp_child_List_Parent;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Parent_Page( )
-   {
-      if( !cp_child_Specification_Content_Page_Parent_Page )
-      {
-         cp_child_Specification_Content_Page_Parent_Page.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Parent_Page, "302614" );
-      }
-      return *cp_child_Specification_Content_Page_Parent_Page;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Parent_Page( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Parent_Page )
-      {
-         cp_child_Specification_Content_Page_Parent_Page.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Parent_Page, "302614" );
-      }
-      return *cp_child_Specification_Content_Page_Parent_Page;
    }
 
    Meta_Class& impl_child_Class_Quick_Link( )
@@ -1890,28 +1276,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Source_Child_2, "301496" );
       }
       return *cp_child_Specification_Source_Child_2;
-   }
-
-   Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Source_Child_File( )
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Source_Child_File )
-      {
-         cp_child_Specification_Copy_Child_Links_Source_Child_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Source_Child_File, "302653" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Source_Child_File;
-   }
-
-   const Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Source_Child_File( ) const
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Source_Child_File )
-      {
-         cp_child_Specification_Copy_Child_Links_Source_Child_File.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Source_Child_File, "302653" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Source_Child_File;
    }
 
    Meta_List_Field& impl_child_List_Field_Source_Child( )
@@ -2200,28 +1564,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
       return *cp_child_Field_Source;
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Sub_Title( )
-   {
-      if( !cp_child_Specification_Content_Page_Sub_Title )
-      {
-         cp_child_Specification_Content_Page_Sub_Title.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Sub_Title, "302613" );
-      }
-      return *cp_child_Specification_Content_Page_Sub_Title;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Sub_Title( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Sub_Title )
-      {
-         cp_child_Specification_Content_Page_Sub_Title.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Sub_Title, "302613" );
-      }
-      return *cp_child_Specification_Content_Page_Sub_Title;
-   }
-
    Meta_Specification& impl_child_Specification_Test_Child( )
    {
       if( !cp_child_Specification_Test_Child )
@@ -2286,94 +1628,6 @@ struct Meta_Field::impl : public Meta_Field_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Test_Parent, "301486" );
       }
       return *cp_child_Specification_Test_Parent;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Text_Content( )
-   {
-      if( !cp_child_Specification_Content_Page_Text_Content )
-      {
-         cp_child_Specification_Content_Page_Text_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Text_Content, "302615" );
-      }
-      return *cp_child_Specification_Content_Page_Text_Content;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Text_Content( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Text_Content )
-      {
-         cp_child_Specification_Content_Page_Text_Content.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Text_Content, "302615" );
-      }
-      return *cp_child_Specification_Content_Page_Text_Content;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Title( )
-   {
-      if( !cp_child_Specification_Content_Page_Title )
-      {
-         cp_child_Specification_Content_Page_Title.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Title, "302611" );
-      }
-      return *cp_child_Specification_Content_Page_Title;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Title( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Title )
-      {
-         cp_child_Specification_Content_Page_Title.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Title, "302611" );
-      }
-      return *cp_child_Specification_Content_Page_Title;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Variable_Name( )
-   {
-      if( !cp_child_Specification_Content_Page_Variable_Name )
-      {
-         cp_child_Specification_Content_Page_Variable_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Variable_Name, "302638" );
-      }
-      return *cp_child_Specification_Content_Page_Variable_Name;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Variable_Name( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Variable_Name )
-      {
-         cp_child_Specification_Content_Page_Variable_Name.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Variable_Name, "302638" );
-      }
-      return *cp_child_Specification_Content_Page_Variable_Name;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Variable_Value( )
-   {
-      if( !cp_child_Specification_Content_Page_Variable_Value )
-      {
-         cp_child_Specification_Content_Page_Variable_Value.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Variable_Value, "302639" );
-      }
-      return *cp_child_Specification_Content_Page_Variable_Value;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Variable_Value( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Variable_Value )
-      {
-         cp_child_Specification_Content_Page_Variable_Value.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Variable_Value, "302639" );
-      }
-      return *cp_child_Specification_Content_Page_Variable_Value;
    }
 
    Meta_Initial_Record_Value& impl_child_Initial_Record_Value( )
@@ -2523,50 +1777,21 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    string v_Type;
    mutable class_pointer< Meta_Type > cp_Type;
 
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Actions;
-   mutable class_pointer< Meta_Specification_Copy_Child_Links > cp_child_Specification_Copy_Child_Links_Child_File;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Child_Rel_Source_Child;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Child_Rel_Source;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Child_Rel_Source_Parent;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Clone_Permitted;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Code;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Content_Type;
    mutable class_pointer< Meta_Index > cp_child_Index_Field_1;
    mutable class_pointer< Meta_Index > cp_child_Index_Field_2;
    mutable class_pointer< Meta_Index > cp_child_Index_Field_3;
    mutable class_pointer< Meta_Index > cp_child_Index_Field_4;
    mutable class_pointer< Meta_Index > cp_child_Index_Field_5;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_File_Name;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_File_Name_Gen;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Frag_Code;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Frag_Content;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Frag_Group;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Generate_Children;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Group_Base_Path;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Group_Extra;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Group;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Group_Name;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Hyperlink_Title;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Link_Content;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Link_Group;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Link_Name;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Meta_Content;
    mutable class_pointer< Meta_Specification_Field_Action > cp_child_Specification_Field_Action_New_Record_FK;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Next_Child_Num;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Order;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other_Field_2;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Owned_Links;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page_File;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page_File_Name;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page_File_Name_Gen;
    mutable class_pointer< Meta_List > cp_child_List_Parent;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Parent_Page;
    mutable class_pointer< Meta_Class > cp_child_Class_Quick_Link;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Restriction;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Source_Child_2;
-   mutable class_pointer< Meta_Specification_Copy_Child_Links > cp_child_Specification_Copy_Child_Links_Source_Child_File;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Source_Child;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Source_Child;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Source_Child;
@@ -2580,14 +1805,9 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    mutable class_pointer< Meta_Specification > cp_child_Specification_Source_Parent;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Source_Parent;
    mutable class_pointer< Meta_Field > cp_child_Field_Source;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Sub_Title;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test_Child;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test_Parent;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Text_Content;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Title;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Variable_Name;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Variable_Value;
    mutable class_pointer< Meta_Initial_Record_Value > cp_child_Initial_Record_Value;
    mutable class_pointer< Meta_Modifier_Affect > cp_child_Modifier_Affect;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
@@ -3754,26 +2974,6 @@ void Meta_Field::Type( const string& key )
    p_impl->impl_Type( key );
 }
 
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Actions( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Actions( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Actions( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Actions( );
-}
-
-Meta_Specification_Copy_Child_Links& Meta_Field::child_Specification_Copy_Child_Links_Child_File( )
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Child_File( );
-}
-
-const Meta_Specification_Copy_Child_Links& Meta_Field::child_Specification_Copy_Child_Links_Child_File( ) const
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Child_File( );
-}
-
 Meta_List_Field& Meta_Field::child_List_Field_Child_Rel_Source_Child( )
 {
    return p_impl->impl_child_List_Field_Child_Rel_Source_Child( );
@@ -3802,36 +3002,6 @@ Meta_List_Field& Meta_Field::child_List_Field_Child_Rel_Source_Parent( )
 const Meta_List_Field& Meta_Field::child_List_Field_Child_Rel_Source_Parent( ) const
 {
    return p_impl->impl_child_List_Field_Child_Rel_Source_Parent( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Clone_Permitted( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Clone_Permitted( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Clone_Permitted( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Clone_Permitted( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Code( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Code( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Code( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Code( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Content_Type( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Content_Type( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Content_Type( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Content_Type( );
 }
 
 Meta_Index& Meta_Field::child_Index_Field_1( )
@@ -3884,156 +3054,6 @@ const Meta_Index& Meta_Field::child_Index_Field_5( ) const
    return p_impl->impl_child_Index_Field_5( );
 }
 
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_File_Name( )
-{
-   return p_impl->impl_child_Specification_Content_Page_File_Name( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_File_Name( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_File_Name( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_File_Name_Gen( )
-{
-   return p_impl->impl_child_Specification_Content_Page_File_Name_Gen( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_File_Name_Gen( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_File_Name_Gen( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Frag_Code( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Frag_Code( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Frag_Code( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Frag_Code( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Frag_Content( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Frag_Content( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Frag_Content( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Frag_Content( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Frag_Group( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Frag_Group( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Frag_Group( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Frag_Group( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Generate_Children( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Generate_Children( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Generate_Children( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Generate_Children( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group_Base_Path( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Group_Base_Path( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group_Base_Path( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Group_Base_Path( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group_Extra( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Group_Extra( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group_Extra( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Group_Extra( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Group( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Group( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group_Name( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Group_Name( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Group_Name( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Group_Name( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Hyperlink_Title( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Hyperlink_Title( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Hyperlink_Title( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Hyperlink_Title( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Link_Content( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Content( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Link_Content( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Content( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Link_Group( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Group( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Link_Group( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Group( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Link_Name( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Name( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Link_Name( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Name( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Meta_Content( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Meta_Content( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Meta_Content( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Meta_Content( );
-}
-
 Meta_Specification_Field_Action& Meta_Field::child_Specification_Field_Action_New_Record_FK( )
 {
    return p_impl->impl_child_Specification_Field_Action_New_Record_FK( );
@@ -4042,26 +3062,6 @@ Meta_Specification_Field_Action& Meta_Field::child_Specification_Field_Action_Ne
 const Meta_Specification_Field_Action& Meta_Field::child_Specification_Field_Action_New_Record_FK( ) const
 {
    return p_impl->impl_child_Specification_Field_Action_New_Record_FK( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Next_Child_Num( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Next_Child_Num( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Next_Child_Num( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Next_Child_Num( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Order( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Order( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Order( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Order( );
 }
 
 Meta_Specification& Meta_Field::child_Specification_Other_Field_2( )
@@ -4084,56 +3084,6 @@ const Meta_Specification& Meta_Field::child_Specification_Other( ) const
    return p_impl->impl_child_Specification_Other( );
 }
 
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Owned_Links( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Owned_Links( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Owned_Links( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Owned_Links( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page_File( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page_File( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page_File_Name( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File_Name( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page_File_Name( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File_Name( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page_File_Name_Gen( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File_Name_Gen( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Page_File_Name_Gen( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_File_Name_Gen( );
-}
-
 Meta_List& Meta_Field::child_List_Parent( )
 {
    return p_impl->impl_child_List_Parent( );
@@ -4142,16 +3092,6 @@ Meta_List& Meta_Field::child_List_Parent( )
 const Meta_List& Meta_Field::child_List_Parent( ) const
 {
    return p_impl->impl_child_List_Parent( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Parent_Page( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Parent_Page( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Parent_Page( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Parent_Page( );
 }
 
 Meta_Class& Meta_Field::child_Class_Quick_Link( )
@@ -4182,16 +3122,6 @@ Meta_Specification& Meta_Field::child_Specification_Source_Child_2( )
 const Meta_Specification& Meta_Field::child_Specification_Source_Child_2( ) const
 {
    return p_impl->impl_child_Specification_Source_Child_2( );
-}
-
-Meta_Specification_Copy_Child_Links& Meta_Field::child_Specification_Copy_Child_Links_Source_Child_File( )
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Source_Child_File( );
-}
-
-const Meta_Specification_Copy_Child_Links& Meta_Field::child_Specification_Copy_Child_Links_Source_Child_File( ) const
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Source_Child_File( );
 }
 
 Meta_List_Field& Meta_Field::child_List_Field_Source_Child( )
@@ -4324,16 +3254,6 @@ const Meta_Field& Meta_Field::child_Field_Source( ) const
    return p_impl->impl_child_Field_Source( );
 }
 
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Sub_Title( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Sub_Title( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Sub_Title( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Sub_Title( );
-}
-
 Meta_Specification& Meta_Field::child_Specification_Test_Child( )
 {
    return p_impl->impl_child_Specification_Test_Child( );
@@ -4362,46 +3282,6 @@ Meta_Specification& Meta_Field::child_Specification_Test_Parent( )
 const Meta_Specification& Meta_Field::child_Specification_Test_Parent( ) const
 {
    return p_impl->impl_child_Specification_Test_Parent( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Text_Content( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Text_Content( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Text_Content( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Text_Content( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Title( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Title( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Title( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Title( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Variable_Name( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Variable_Name( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Variable_Name( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Variable_Name( );
-}
-
-Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Variable_Value( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Variable_Value( );
-}
-
-const Meta_Specification_Content_Page& Meta_Field::child_Specification_Content_Page_Variable_Value( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Variable_Value( );
 }
 
 Meta_Initial_Record_Value& Meta_Field::child_Initial_Record_Value( )
@@ -4960,6 +3840,22 @@ const char* Meta_Field::get_field_name(
    return p_name;
 }
 
+string& Meta_Field::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Field::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Field::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Field::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -5046,16 +3942,6 @@ void Meta_Field::setup_foreign_key( Meta_Field& o, const string& value )
 void Meta_Field::setup_foreign_key( Meta_Type& o, const string& value )
 {
    static_cast< Meta_Type& >( o ).set_key( value );
-}
-
-void Meta_Field::setup_graph_parent( Meta_Specification_Content_Page& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Content_Page& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
-void Meta_Field::setup_graph_parent( Meta_Specification_Copy_Child_Links& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Copy_Child_Links& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
 void Meta_Field::setup_graph_parent( Meta_List_Field& o, const string& foreign_key_field )
@@ -5148,7 +4034,7 @@ void Meta_Field::set_total_child_relationships( size_t new_total_child_relations
 
 size_t Meta_Field::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 68;
+   size_t rc = 34;
 
    if( !is_internal )
    {
@@ -5181,7 +4067,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 68 )
+   if( child_num >= 34 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -5194,22 +4080,6 @@ class_base* Meta_Field::get_next_foreign_key_child(
       switch( child_num )
       {
          case 0:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302629";
-            p_class_base = &child_Specification_Content_Page_Actions( );
-         }
-         break;
-
-         case 1:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302650";
-            p_class_base = &child_Specification_Copy_Child_Links_Child_File( );
-         }
-         break;
-
-         case 2:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302198";
@@ -5217,7 +4087,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 3:
+         case 1:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302195";
@@ -5225,7 +4095,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 4:
+         case 2:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302196";
@@ -5233,31 +4103,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 5:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302607";
-            p_class_base = &child_Specification_Content_Page_Clone_Permitted( );
-         }
-         break;
-
-         case 6:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302610";
-            p_class_base = &child_Specification_Content_Page_Code( );
-         }
-         break;
-
-         case 7:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302605";
-            p_class_base = &child_Specification_Content_Page_Content_Type( );
-         }
-         break;
-
-         case 8:
+         case 3:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300811";
@@ -5265,7 +4111,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 9:
+         case 4:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300812";
@@ -5273,7 +4119,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 10:
+         case 5:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300813";
@@ -5281,7 +4127,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 11:
+         case 6:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300814";
@@ -5289,7 +4135,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 12:
+         case 7:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300815";
@@ -5297,127 +4143,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 13:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302612";
-            p_class_base = &child_Specification_Content_Page_File_Name( );
-         }
-         break;
-
-         case 14:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302608";
-            p_class_base = &child_Specification_Content_Page_File_Name_Gen( );
-         }
-         break;
-
-         case 15:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302640";
-            p_class_base = &child_Specification_Content_Page_Frag_Code( );
-         }
-         break;
-
-         case 16:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302642";
-            p_class_base = &child_Specification_Content_Page_Frag_Content( );
-         }
-         break;
-
-         case 17:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302641";
-            p_class_base = &child_Specification_Content_Page_Frag_Group( );
-         }
-         break;
-
-         case 18:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302619";
-            p_class_base = &child_Specification_Content_Page_Generate_Children( );
-         }
-         break;
-
-         case 19:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302647";
-            p_class_base = &child_Specification_Content_Page_Group_Base_Path( );
-         }
-         break;
-
-         case 20:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302646";
-            p_class_base = &child_Specification_Content_Page_Group_Extra( );
-         }
-         break;
-
-         case 21:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302609";
-            p_class_base = &child_Specification_Content_Page_Group( );
-         }
-         break;
-
-         case 22:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302645";
-            p_class_base = &child_Specification_Content_Page_Group_Name( );
-         }
-         break;
-
-         case 23:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302618";
-            p_class_base = &child_Specification_Content_Page_Hyperlink_Title( );
-         }
-         break;
-
-         case 24:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302617";
-            p_class_base = &child_Specification_Content_Page_Link_Content( );
-         }
-         break;
-
-         case 25:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302622";
-            p_class_base = &child_Specification_Content_Page_Link_Group( );
-         }
-         break;
-
-         case 26:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302621";
-            p_class_base = &child_Specification_Content_Page_Link_Name( );
-         }
-         break;
-
-         case 27:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302616";
-            p_class_base = &child_Specification_Content_Page_Meta_Content( );
-         }
-         break;
-
-         case 28:
+         case 8:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "302310";
@@ -5425,23 +4151,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 29:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302643";
-            p_class_base = &child_Specification_Content_Page_Next_Child_Num( );
-         }
-         break;
-
-         case 30:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302630";
-            p_class_base = &child_Specification_Content_Page_Order( );
-         }
-         break;
-
-         case 31:
+         case 9:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301436";
@@ -5449,7 +4159,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 32:
+         case 10:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301435";
@@ -5457,47 +4167,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 33:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302623";
-            p_class_base = &child_Specification_Content_Page_Owned_Links( );
-         }
-         break;
-
-         case 34:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302631";
-            p_class_base = &child_Specification_Content_Page_Page( );
-         }
-         break;
-
-         case 35:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302635";
-            p_class_base = &child_Specification_Content_Page_Page_File( );
-         }
-         break;
-
-         case 36:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302636";
-            p_class_base = &child_Specification_Content_Page_Page_File_Name( );
-         }
-         break;
-
-         case 37:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302606";
-            p_class_base = &child_Specification_Content_Page_Page_File_Name_Gen( );
-         }
-         break;
-
-         case 38:
+         case 11:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301996";
@@ -5505,15 +4175,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 39:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302614";
-            p_class_base = &child_Specification_Content_Page_Parent_Page( );
-         }
-         break;
-
-         case 40:
+         case 12:
          if( op == e_cascade_op_unlink )
          {
             next_child_field = "300630";
@@ -5521,7 +4183,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 41:
+         case 13:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302185";
@@ -5529,7 +4191,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 42:
+         case 14:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301496";
@@ -5537,15 +4199,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 43:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302653";
-            p_class_base = &child_Specification_Copy_Child_Links_Source_Child_File( );
-         }
-         break;
-
-         case 44:
+         case 15:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302160";
@@ -5553,7 +4207,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 45:
+         case 16:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301495";
@@ -5561,7 +4215,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 46:
+         case 17:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301960";
@@ -5569,7 +4223,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 47:
+         case 18:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301965";
@@ -5577,7 +4231,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 48:
+         case 19:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302140";
@@ -5585,7 +4239,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 49:
+         case 20:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301481";
@@ -5593,7 +4247,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 50:
+         case 21:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301940";
@@ -5601,7 +4255,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 51:
+         case 22:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302165";
@@ -5609,7 +4263,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 52:
+         case 23:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301476";
@@ -5617,7 +4271,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 53:
+         case 24:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302150";
@@ -5625,7 +4279,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 54:
+         case 25:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301480";
@@ -5633,7 +4287,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 55:
+         case 26:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301950";
@@ -5641,7 +4295,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 56:
+         case 27:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300740";
@@ -5649,15 +4303,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 57:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302613";
-            p_class_base = &child_Specification_Content_Page_Sub_Title( );
-         }
-         break;
-
-         case 58:
+         case 28:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301488";
@@ -5665,7 +4311,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 59:
+         case 29:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301485";
@@ -5673,7 +4319,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 60:
+         case 30:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301486";
@@ -5681,39 +4327,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 61:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302615";
-            p_class_base = &child_Specification_Content_Page_Text_Content( );
-         }
-         break;
-
-         case 62:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302611";
-            p_class_base = &child_Specification_Content_Page_Title( );
-         }
-         break;
-
-         case 63:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302638";
-            p_class_base = &child_Specification_Content_Page_Variable_Name( );
-         }
-         break;
-
-         case 64:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302639";
-            p_class_base = &child_Specification_Content_Page_Variable_Value( );
-         }
-         break;
-
-         case 65:
+         case 31:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302520";
@@ -5721,7 +4335,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 66:
+         case 32:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301020";
@@ -5729,7 +4343,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 67:
+         case 33:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301430";
@@ -5804,22 +4418,12 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-   else if( sub_context == "_302629" || sub_context == "child_Specification_Content_Page_Actions" )
-      p_class_base = &child_Specification_Content_Page_Actions( );
-   else if( sub_context == "_302650" || sub_context == "child_Specification_Copy_Child_Links_Child_File" )
-      p_class_base = &child_Specification_Copy_Child_Links_Child_File( );
    else if( sub_context == "_302198" || sub_context == "child_List_Field_Child_Rel_Source_Child" )
       p_class_base = &child_List_Field_Child_Rel_Source_Child( );
    else if( sub_context == "_302195" || sub_context == "child_List_Field_Child_Rel_Source" )
       p_class_base = &child_List_Field_Child_Rel_Source( );
    else if( sub_context == "_302196" || sub_context == "child_List_Field_Child_Rel_Source_Parent" )
       p_class_base = &child_List_Field_Child_Rel_Source_Parent( );
-   else if( sub_context == "_302607" || sub_context == "child_Specification_Content_Page_Clone_Permitted" )
-      p_class_base = &child_Specification_Content_Page_Clone_Permitted( );
-   else if( sub_context == "_302610" || sub_context == "child_Specification_Content_Page_Code" )
-      p_class_base = &child_Specification_Content_Page_Code( );
-   else if( sub_context == "_302605" || sub_context == "child_Specification_Content_Page_Content_Type" )
-      p_class_base = &child_Specification_Content_Page_Content_Type( );
    else if( sub_context == "_300811" || sub_context == "child_Index_Field_1" )
       p_class_base = &child_Index_Field_1( );
    else if( sub_context == "_300812" || sub_context == "child_Index_Field_2" )
@@ -5830,68 +4434,20 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
       p_class_base = &child_Index_Field_4( );
    else if( sub_context == "_300815" || sub_context == "child_Index_Field_5" )
       p_class_base = &child_Index_Field_5( );
-   else if( sub_context == "_302612" || sub_context == "child_Specification_Content_Page_File_Name" )
-      p_class_base = &child_Specification_Content_Page_File_Name( );
-   else if( sub_context == "_302608" || sub_context == "child_Specification_Content_Page_File_Name_Gen" )
-      p_class_base = &child_Specification_Content_Page_File_Name_Gen( );
-   else if( sub_context == "_302640" || sub_context == "child_Specification_Content_Page_Frag_Code" )
-      p_class_base = &child_Specification_Content_Page_Frag_Code( );
-   else if( sub_context == "_302642" || sub_context == "child_Specification_Content_Page_Frag_Content" )
-      p_class_base = &child_Specification_Content_Page_Frag_Content( );
-   else if( sub_context == "_302641" || sub_context == "child_Specification_Content_Page_Frag_Group" )
-      p_class_base = &child_Specification_Content_Page_Frag_Group( );
-   else if( sub_context == "_302619" || sub_context == "child_Specification_Content_Page_Generate_Children" )
-      p_class_base = &child_Specification_Content_Page_Generate_Children( );
-   else if( sub_context == "_302647" || sub_context == "child_Specification_Content_Page_Group_Base_Path" )
-      p_class_base = &child_Specification_Content_Page_Group_Base_Path( );
-   else if( sub_context == "_302646" || sub_context == "child_Specification_Content_Page_Group_Extra" )
-      p_class_base = &child_Specification_Content_Page_Group_Extra( );
-   else if( sub_context == "_302609" || sub_context == "child_Specification_Content_Page_Group" )
-      p_class_base = &child_Specification_Content_Page_Group( );
-   else if( sub_context == "_302645" || sub_context == "child_Specification_Content_Page_Group_Name" )
-      p_class_base = &child_Specification_Content_Page_Group_Name( );
-   else if( sub_context == "_302618" || sub_context == "child_Specification_Content_Page_Hyperlink_Title" )
-      p_class_base = &child_Specification_Content_Page_Hyperlink_Title( );
-   else if( sub_context == "_302617" || sub_context == "child_Specification_Content_Page_Link_Content" )
-      p_class_base = &child_Specification_Content_Page_Link_Content( );
-   else if( sub_context == "_302622" || sub_context == "child_Specification_Content_Page_Link_Group" )
-      p_class_base = &child_Specification_Content_Page_Link_Group( );
-   else if( sub_context == "_302621" || sub_context == "child_Specification_Content_Page_Link_Name" )
-      p_class_base = &child_Specification_Content_Page_Link_Name( );
-   else if( sub_context == "_302616" || sub_context == "child_Specification_Content_Page_Meta_Content" )
-      p_class_base = &child_Specification_Content_Page_Meta_Content( );
    else if( sub_context == "_302310" || sub_context == "child_Specification_Field_Action_New_Record_FK" )
       p_class_base = &child_Specification_Field_Action_New_Record_FK( );
-   else if( sub_context == "_302643" || sub_context == "child_Specification_Content_Page_Next_Child_Num" )
-      p_class_base = &child_Specification_Content_Page_Next_Child_Num( );
-   else if( sub_context == "_302630" || sub_context == "child_Specification_Content_Page_Order" )
-      p_class_base = &child_Specification_Content_Page_Order( );
    else if( sub_context == "_301436" || sub_context == "child_Specification_Other_Field_2" )
       p_class_base = &child_Specification_Other_Field_2( );
    else if( sub_context == "_301435" || sub_context == "child_Specification_Other" )
       p_class_base = &child_Specification_Other( );
-   else if( sub_context == "_302623" || sub_context == "child_Specification_Content_Page_Owned_Links" )
-      p_class_base = &child_Specification_Content_Page_Owned_Links( );
-   else if( sub_context == "_302631" || sub_context == "child_Specification_Content_Page_Page" )
-      p_class_base = &child_Specification_Content_Page_Page( );
-   else if( sub_context == "_302635" || sub_context == "child_Specification_Content_Page_Page_File" )
-      p_class_base = &child_Specification_Content_Page_Page_File( );
-   else if( sub_context == "_302636" || sub_context == "child_Specification_Content_Page_Page_File_Name" )
-      p_class_base = &child_Specification_Content_Page_Page_File_Name( );
-   else if( sub_context == "_302606" || sub_context == "child_Specification_Content_Page_Page_File_Name_Gen" )
-      p_class_base = &child_Specification_Content_Page_Page_File_Name_Gen( );
    else if( sub_context == "_301996" || sub_context == "child_List_Parent" )
       p_class_base = &child_List_Parent( );
-   else if( sub_context == "_302614" || sub_context == "child_Specification_Content_Page_Parent_Page" )
-      p_class_base = &child_Specification_Content_Page_Parent_Page( );
    else if( sub_context == "_300630" || sub_context == "child_Class_Quick_Link" )
       p_class_base = &child_Class_Quick_Link( );
    else if( sub_context == "_302185" || sub_context == "child_List_Field_Restriction" )
       p_class_base = &child_List_Field_Restriction( );
    else if( sub_context == "_301496" || sub_context == "child_Specification_Source_Child_2" )
       p_class_base = &child_Specification_Source_Child_2( );
-   else if( sub_context == "_302653" || sub_context == "child_Specification_Copy_Child_Links_Source_Child_File" )
-      p_class_base = &child_Specification_Copy_Child_Links_Source_Child_File( );
    else if( sub_context == "_302160" || sub_context == "child_List_Field_Source_Child" )
       p_class_base = &child_List_Field_Source_Child( );
    else if( sub_context == "_301495" || sub_context == "child_Specification_Source_Child" )
@@ -5918,22 +4474,12 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
       p_class_base = &child_View_Field_Source_Parent( );
    else if( sub_context == "_300740" || sub_context == "child_Field_Source" )
       p_class_base = &child_Field_Source( );
-   else if( sub_context == "_302613" || sub_context == "child_Specification_Content_Page_Sub_Title" )
-      p_class_base = &child_Specification_Content_Page_Sub_Title( );
    else if( sub_context == "_301488" || sub_context == "child_Specification_Test_Child" )
       p_class_base = &child_Specification_Test_Child( );
    else if( sub_context == "_301485" || sub_context == "child_Specification_Test" )
       p_class_base = &child_Specification_Test( );
    else if( sub_context == "_301486" || sub_context == "child_Specification_Test_Parent" )
       p_class_base = &child_Specification_Test_Parent( );
-   else if( sub_context == "_302615" || sub_context == "child_Specification_Content_Page_Text_Content" )
-      p_class_base = &child_Specification_Content_Page_Text_Content( );
-   else if( sub_context == "_302611" || sub_context == "child_Specification_Content_Page_Title" )
-      p_class_base = &child_Specification_Content_Page_Title( );
-   else if( sub_context == "_302638" || sub_context == "child_Specification_Content_Page_Variable_Name" )
-      p_class_base = &child_Specification_Content_Page_Variable_Name( );
-   else if( sub_context == "_302639" || sub_context == "child_Specification_Content_Page_Variable_Value" )
-      p_class_base = &child_Specification_Content_Page_Variable_Value( );
    else if( sub_context == "_302520" || sub_context == "child_Initial_Record_Value" )
       p_class_base = &child_Initial_Record_Value( );
    else if( sub_context == "_301020" || sub_context == "child_Modifier_Affect" )
@@ -6527,11 +5073,11 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_field_extra_24", get_enum_string_field_extra( 24 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_25", get_enum_string_field_extra( 25 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_26", get_enum_string_field_extra( 26 ) ) );
-   pairs.push_back( make_pair( "enum_field_extra_27", get_enum_string_field_extra( 27 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_13", get_enum_string_field_extra( 13 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_12", get_enum_string_field_extra( 12 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_14", get_enum_string_field_extra( 14 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_18", get_enum_string_field_extra( 18 ) ) );
+   pairs.push_back( make_pair( "enum_field_extra_27", get_enum_string_field_extra( 27 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_15", get_enum_string_field_extra( 15 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_16", get_enum_string_field_extra( 16 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_28", get_enum_string_field_extra( 28 ) ) );
@@ -6623,11 +5169,11 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( 24 );
    g_field_extra_enum.insert( 25 );
    g_field_extra_enum.insert( 26 );
-   g_field_extra_enum.insert( 27 );
    g_field_extra_enum.insert( 13 );
    g_field_extra_enum.insert( 12 );
    g_field_extra_enum.insert( 14 );
    g_field_extra_enum.insert( 18 );
+   g_field_extra_enum.insert( 27 );
    g_field_extra_enum.insert( 15 );
    g_field_extra_enum.insert( 16 );
    g_field_extra_enum.insert( 28 );
@@ -6638,6 +5184,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_field_extra_enum.insert( -1 );
    g_field_extra_enum.insert( -4 );
    g_field_extra_enum.insert( -5 );
+
    g_primitive_enum.insert( 0 );
    g_primitive_enum.insert( 1 );
    g_primitive_enum.insert( 2 );
@@ -6645,6 +5192,7 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_primitive_enum.insert( 4 );
    g_primitive_enum.insert( 5 );
    g_primitive_enum.insert( 6 );
+
    g_uom_enum.insert( 0 );
    g_uom_enum.insert( 1 );
    g_uom_enum.insert( 2 );

@@ -492,7 +492,11 @@ domain_string_max_size< 100 > g_Procedure_Args_domain;
 domain_string_max_size< 100 > g_Restriction_Value_domain;
 domain_string_max_size< 100 > g_Select_Key_Exclusions_domain;
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_List_Field* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -602,6 +606,7 @@ const int c_enum_list_field_alignment_default( 0 );
 const int c_enum_list_field_alignment_left( 1 );
 const int c_enum_list_field_alignment_right( 2 );
 const int c_enum_list_field_alignment_center( 3 );
+const int c_enum_list_field_alignment_justify( 4 );
 
 string get_enum_string_list_field_alignment( int val )
 {
@@ -617,6 +622,8 @@ string get_enum_string_list_field_alignment( int val )
       string_name = "enum_list_field_alignment_right";
    else if( to_string( val ) == to_string( "3" ) )
       string_name = "enum_list_field_alignment_center";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_list_field_alignment_justify";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_alignment" );
 
@@ -2352,6 +2359,7 @@ void Meta_List_Field::impl::impl_Move_Down( const string& Restrict_Fields, const
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -2417,6 +2425,7 @@ void Meta_List_Field::impl::impl_Move_Up( const string& Restrict_Fields, const s
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -5637,6 +5646,22 @@ const char* Meta_List_Field::get_field_name(
    return p_name;
 }
 
+string& Meta_List_Field::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_List_Field::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_List_Field::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_List_Field::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -7303,6 +7328,7 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_alignment_1", get_enum_string_list_field_alignment( 1 ) ) );
    pairs.push_back( make_pair( "enum_list_field_alignment_2", get_enum_string_list_field_alignment( 2 ) ) );
    pairs.push_back( make_pair( "enum_list_field_alignment_3", get_enum_string_list_field_alignment( 3 ) ) );
+   pairs.push_back( make_pair( "enum_list_field_alignment_4", get_enum_string_list_field_alignment( 4 ) ) );
 
    pairs.push_back( make_pair( "enum_font_size_0", get_enum_string_font_size( 0 ) ) );
    pairs.push_back( make_pair( "enum_font_size_1", get_enum_string_font_size( 1 ) ) );
@@ -7426,27 +7452,35 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_restrict_enum.insert( 2 );
    g_list_field_restrict_enum.insert( 3 );
    g_list_field_restrict_enum.insert( 4 );
+
    g_list_field_alignment_enum.insert( 0 );
    g_list_field_alignment_enum.insert( 1 );
    g_list_field_alignment_enum.insert( 2 );
    g_list_field_alignment_enum.insert( 3 );
+   g_list_field_alignment_enum.insert( 4 );
+
    g_font_size_enum.insert( 0 );
    g_font_size_enum.insert( 1 );
    g_font_size_enum.insert( 2 );
    g_font_size_enum.insert( 6 );
    g_font_size_enum.insert( 7 );
+
    g_list_field_label_class_enum.insert( 0 );
    g_list_field_label_class_enum.insert( 1 );
+
    g_list_field_label_source_enum.insert( 0 );
    g_list_field_label_source_enum.insert( 1 );
    g_list_field_label_source_enum.insert( 2 );
+
    g_list_field_link_restrict_enum.insert( 0 );
    g_list_field_link_restrict_enum.insert( 1 );
    g_list_field_link_restrict_enum.insert( 2 );
    g_list_field_link_restrict_enum.insert( 3 );
    g_list_field_link_restrict_enum.insert( 4 );
+
    g_list_field_link_type_enum.insert( 0 );
    g_list_field_link_type_enum.insert( 1 );
+
    g_list_field_notes_truncation_enum.insert( 1 );
    g_list_field_notes_truncation_enum.insert( 0 );
    g_list_field_notes_truncation_enum.insert( 30 );
@@ -7454,6 +7488,7 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_notes_truncation_enum.insert( 50 );
    g_list_field_notes_truncation_enum.insert( 80 );
    g_list_field_notes_truncation_enum.insert( 100 );
+
    g_list_field_print_type_enum.insert( 0 );
    g_list_field_print_type_enum.insert( 1 );
    g_list_field_print_type_enum.insert( 2 );
@@ -7461,6 +7496,7 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_print_type_enum.insert( 4 );
    g_list_field_print_type_enum.insert( 5 );
    g_list_field_print_type_enum.insert( 6 );
+
    g_list_search_opt_limit_enum.insert( 0 );
    g_list_search_opt_limit_enum.insert( 1 );
    g_list_search_opt_limit_enum.insert( 2 );
@@ -7469,10 +7505,12 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_search_opt_limit_enum.insert( 5 );
    g_list_search_opt_limit_enum.insert( 6 );
    g_list_search_opt_limit_enum.insert( 7 );
+
    g_list_field_switch_type_enum.insert( 0 );
    g_list_field_switch_type_enum.insert( 1 );
    g_list_field_switch_type_enum.insert( 2 );
    g_list_field_switch_type_enum.insert( 3 );
+
    g_list_field_trigger_option_enum.insert( 0 );
    g_list_field_trigger_option_enum.insert( 1 );
    g_list_field_trigger_option_enum.insert( 2 );
@@ -7484,6 +7522,7 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_trigger_option_enum.insert( 8 );
    g_list_field_trigger_option_enum.insert( 9 );
    g_list_field_trigger_option_enum.insert( 10 );
+
    g_list_field_view_parent_extra_enum.insert( 0 );
    g_list_field_view_parent_extra_enum.insert( 1 );
    g_list_field_view_parent_extra_enum.insert( 2 );

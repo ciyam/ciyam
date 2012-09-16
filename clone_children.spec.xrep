@@ -26,21 +26,8 @@
 
             get_obj( ).child_`{`$arg_cclass`}( ).op_create( child_key );
             get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
-`{`!`@eq`(`$arg_ffield`,`'`'`)
-            string file_name( cp_source->child_`{`$arg_cclass`}( ).`{`$arg_ffield`}( ) );
-            if( !file_name.empty( ) )
-            {
-               string old_file( cp_source->child_`{`$arg_cclass`}( ).get_attached_file_path( file_name ) );
-               string new_file( get_obj( ).child_`{`$arg_cclass`}( ).get_attached_file_path( "" ) );
-
-               new_file += "/" + get_obj( ).child_`{`$arg_cclass`}( ).get_key( ) + get_ext( file_name );
-
-               if( !storage_locked_for_admin( ) && exists_file( old_file ) )
-                  copy_file( old_file, new_file );
-
-               get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_ffield`}(
-                get_obj( ).child_`{`$arg_cclass`}( ).get_key( ) + get_ext( file_name ) );
-            }
+`{`@eq`(`$arg_copy_files`,`'true`'`)
+            copy_class_files_for_clone( get_obj( ), get_obj( ).child_`{`$arg_cclass`}( ) );
 `}
             get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
 

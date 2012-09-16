@@ -36,8 +36,6 @@
 128100 Specification_Field_Action
 129100 Initial_Record
 130100 Initial_Record_Value
-131100 Specification_Content_Page
-132100 Specification_Copy_Child_Links
 135100 Package_Type
 136100 Package
 137100 Package_Option

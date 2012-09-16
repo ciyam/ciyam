@@ -132,7 +132,11 @@ aggregate_domain< string,
  domain_string_max_size< 30 > > g_Label_domain;
 domain_string_max_size< 30 > g_Value_domain;
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Enum_Item* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -592,6 +596,7 @@ void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const 
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -657,6 +662,7 @@ void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const st
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -1382,6 +1388,22 @@ const char* Meta_Enum_Item::get_field_name(
    }
 
    return p_name;
+}
+
+string& Meta_Enum_Item::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Enum_Item::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Enum_Item::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
 }
 
 string Meta_Enum_Item::get_field_display_name( const string& id_or_name ) const

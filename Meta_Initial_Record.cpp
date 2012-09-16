@@ -129,7 +129,11 @@ aggregate_domain< string,
  domain_string_label_format,
  domain_string_max_size< 30 > > g_Key_domain;
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Initial_Record* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -487,6 +491,7 @@ void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, c
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -552,6 +557,7 @@ void Meta_Initial_Record::impl::impl_Move_Up( const string& Restrict_Fields, con
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -837,7 +843,8 @@ void Meta_Initial_Record::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Initial_Record_Value( ).Initial_Record( get_obj( ).get_key( ) );
          get_obj( ).child_Initial_Record_Value( ).Field( get_obj( ).Class( ).child_Field( ).get_key( ) );
 
-         get_obj( ).child_Initial_Record_Value( ).Value( get_obj( ).Class( ).child_Field( ).Default( ) );
+         copy_field_or_file_and_field( get_obj( ).child_Initial_Record_Value( ), child_key,
+          "Value", get_obj( ).Class( ).child_Field( ), "Default", storage_locked_for_admin( ) );
 
          get_obj( ).child_Initial_Record_Value( ).op_apply( );
 
@@ -1188,6 +1195,22 @@ const char* Meta_Initial_Record::get_field_name(
    }
 
    return p_name;
+}
+
+string& Meta_Initial_Record::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Initial_Record::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Initial_Record::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
 }
 
 string Meta_Initial_Record::get_field_display_name( const string& id_or_name ) const

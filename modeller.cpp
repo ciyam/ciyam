@@ -1016,6 +1016,8 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             string next_fixed_key_val( all_class_data[ i ].fixed_key_val );
             string next_base_class_name( all_class_data[ i ].base_class_name );
 
+            string order_field;
+
             string class_file_name( g_model.get_name( ) );
             class_file_name += '_';
             class_file_name += next_class_name;
@@ -1203,6 +1205,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                   string field_name( all_field_data[ i ].name );
                   string field_type( all_field_data[ i ].type );
 
+                  if( all_field_data[ i ].extra.find( "order" ) != string::npos )
+                     order_field = field_name;
+
                   string enum_name( all_field_data[ i ].enum_name );
 
                   if( all_field_data[ i ].is_transient )
@@ -1340,6 +1345,9 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                      outf << "`{`$field_default_" << all_field_data[ i ].name << "`=`'" << default_value << "`'`}\n";
                   }
                }
+
+               if( !order_field.empty( ) )
+                  outf << "`{`$order_field`=`'" << order_field << "`'`}\n";
 
                if( !basic_fields.empty( ) )
                   outf << "`{`$basic_fields`=`'" << string_list( basic_fields ) << "`'`}\n";

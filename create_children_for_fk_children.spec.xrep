@@ -15,7 +15,8 @@
          get_obj( ).child_`{`$arg_cfield`}( ).`{`$arg_fkfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ) );
 
 `{`?`$arg_field_list`[`$arg_field_list`,\
-         get_obj( ).child_`{`$arg_cfield`}( ).\\$( get_obj( ).\\$( ) );
+         copy_field_or_file_and_field( get_obj( ).child_`{`$arg_cfield`}( ),
+          child_key, "\\$", get_obj( ), "\\$", storage_locked_for_admin( ) );
 `]`}
          get_obj( ).child_`{`$arg_cfield`}( ).op_apply( );
 

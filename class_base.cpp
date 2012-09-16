@@ -1089,7 +1089,7 @@ string get_app_file( const string& module_name )
    return app_file;
 }
 
-string class_base::get_attached_file_path( const string& file_name )
+string class_base::get_attached_file_path( const string& file_name ) const
 {
    string path( get_session_variable( "@attached_file_path" ) );
 
@@ -2329,7 +2329,10 @@ string copy_class_file( const string& src_path,
 {
    string dest_path( src_path );
 
-   string::size_type pos = dest_path.rfind( '.' );
+   string::size_type pos = dest_path.rfind( '-' );
+
+   if( pos == string::npos )
+      pos = dest_path.rfind( '.' );
 
    if( pos == string::npos )
       throw runtime_error( "unexpected dest path format '" + dest_path + "'" );
@@ -2357,6 +2360,25 @@ string copy_class_file( const string& src_path,
       dest_path = dest_file_name + ext;
 
    return dest_path;
+}
+
+void copy_class_files_for_clone( const class_base& src, class_base& dest )
+{
+   if( src.class_id( ) != dest.class_id( ) )
+      throw runtime_error( "cannot copy class files for clone from a '"
+       + string( src.class_name( ) ) + "' to a '" + string( dest.class_name( ) ) + "'" );
+
+   vector< string > file_field_names;
+   src.get_file_field_names( file_field_names );
+
+   for( size_t i = 0; i < file_field_names.size( ); i++ )
+   {
+      string next_file( src.get_field_value( src.get_field_num( file_field_names[ i ] ) ) );
+
+      if( !next_file.empty( ) )
+         dest.set_field_value( dest.get_field_num( file_field_names[ i ] ),
+          copy_class_file( src.get_attached_file_path( next_file ), dest.class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+   }
 }
 
 string get_attached_file_path( const string& module_id, const string& class_id )

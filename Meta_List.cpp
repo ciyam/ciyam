@@ -155,8 +155,8 @@ const char* const c_field_id_Ignore_Unactionable_Records = "122120";
 const char* const c_field_id_Ignore_Uneditable_Parent = "122138";
 const char* const c_field_id_Ignore_User_Id_Filter = "122124";
 const char* const c_field_id_Is_Child = "122102";
-const char* const c_field_id_Is_Group_Or_User = "122146";
 const char* const c_field_id_Is_Home = "122121";
+const char* const c_field_id_Is_Not_Anonymous = "122146";
 const char* const c_field_id_Is_Variation = "122110";
 const char* const c_field_id_Limit_Scroll_And_New = "122116";
 const char* const c_field_id_Model = "301990";
@@ -200,8 +200,8 @@ const char* const c_field_name_Ignore_Unactionable_Records = "Ignore_Unactionabl
 const char* const c_field_name_Ignore_Uneditable_Parent = "Ignore_Uneditable_Parent";
 const char* const c_field_name_Ignore_User_Id_Filter = "Ignore_User_Id_Filter";
 const char* const c_field_name_Is_Child = "Is_Child";
-const char* const c_field_name_Is_Group_Or_User = "Is_Group_Or_User";
 const char* const c_field_name_Is_Home = "Is_Home";
+const char* const c_field_name_Is_Not_Anonymous = "Is_Not_Anonymous";
 const char* const c_field_name_Is_Variation = "Is_Variation";
 const char* const c_field_name_Limit_Scroll_And_New = "Limit_Scroll_And_New";
 const char* const c_field_name_Model = "Model";
@@ -245,8 +245,8 @@ const char* const c_field_display_name_Ignore_Unactionable_Records = "field_list
 const char* const c_field_display_name_Ignore_Uneditable_Parent = "field_list_ignore_uneditable_parent";
 const char* const c_field_display_name_Ignore_User_Id_Filter = "field_list_ignore_user_id_filter";
 const char* const c_field_display_name_Is_Child = "field_list_is_child";
-const char* const c_field_display_name_Is_Group_Or_User = "field_list_is_group_or_user";
 const char* const c_field_display_name_Is_Home = "field_list_is_home";
+const char* const c_field_display_name_Is_Not_Anonymous = "field_list_is_not_anonymous";
 const char* const c_field_display_name_Is_Variation = "field_list_is_variation";
 const char* const c_field_display_name_Limit_Scroll_And_New = "field_list_limit_scroll_and_new";
 const char* const c_field_display_name_Model = "field_list_model";
@@ -342,8 +342,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Ignore_Uneditable_Parent",
    "Ignore_User_Id_Filter",
    "Is_Child",
-   "Is_Group_Or_User",
    "Is_Home",
+   "Is_Not_Anonymous",
    "Is_Variation",
    "Limit_Scroll_And_New",
    "Model",
@@ -415,7 +415,11 @@ domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 100 > g_Title_domain;
 domain_string_max_size< 100 > g_Variation_Name_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_List* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -450,8 +454,8 @@ bool gv_default_Ignore_Unactionable_Records = bool( 0 );
 bool gv_default_Ignore_Uneditable_Parent = bool( 0 );
 bool gv_default_Ignore_User_Id_Filter = bool( 0 );
 bool gv_default_Is_Child = bool( 0 );
-bool gv_default_Is_Group_Or_User = bool( 0 );
 bool gv_default_Is_Home = bool( 0 );
+bool gv_default_Is_Not_Anonymous = bool( 0 );
 bool gv_default_Is_Variation = bool( 0 );
 bool gv_default_Limit_Scroll_And_New = bool( 0 );
 string gv_default_Model = string( );
@@ -883,10 +887,10 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_User_Id_Filter( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Group_Or_User || field_name == c_field_name_Is_Group_Or_User )
-         string_getter< bool >( cmd_handler.p_Meta_List->Is_Group_Or_User( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Home( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+         string_getter< bool >( cmd_handler.p_Meta_List->Is_Not_Anonymous( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Variation( ), cmd_handler.retval );
       else if( field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
@@ -1004,12 +1008,12 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
       else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Child, field_value );
-      else if( field_name == c_field_id_Is_Group_Or_User || field_name == c_field_name_Is_Group_Or_User )
-         func_string_setter< Meta_List, bool >(
-          *cmd_handler.p_Meta_List, &Meta_List::Is_Group_Or_User, field_value );
       else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Home, field_value );
+      else if( field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+         func_string_setter< Meta_List, bool >(
+          *cmd_handler.p_Meta_List, &Meta_List::Is_Not_Anonymous, field_value );
       else if( field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Variation, field_value );
@@ -1184,11 +1188,11 @@ struct Meta_List::impl : public Meta_List_command_handler
    bool impl_Is_Child( ) const { return lazy_fetch( p_obj ), v_Is_Child; }
    void impl_Is_Child( bool Is_Child ) { v_Is_Child = Is_Child; }
 
-   bool impl_Is_Group_Or_User( ) const { return lazy_fetch( p_obj ), v_Is_Group_Or_User; }
-   void impl_Is_Group_Or_User( bool Is_Group_Or_User ) { v_Is_Group_Or_User = Is_Group_Or_User; }
-
    bool impl_Is_Home( ) const { return lazy_fetch( p_obj ), v_Is_Home; }
    void impl_Is_Home( bool Is_Home ) { v_Is_Home = Is_Home; }
+
+   bool impl_Is_Not_Anonymous( ) const { return lazy_fetch( p_obj ), v_Is_Not_Anonymous; }
+   void impl_Is_Not_Anonymous( bool Is_Not_Anonymous ) { v_Is_Not_Anonymous = Is_Not_Anonymous; }
 
    bool impl_Is_Variation( ) const { return lazy_fetch( p_obj ), v_Is_Variation; }
    void impl_Is_Variation( bool Is_Variation ) { v_Is_Variation = Is_Variation; }
@@ -1596,8 +1600,8 @@ struct Meta_List::impl : public Meta_List_command_handler
    bool v_Ignore_Uneditable_Parent;
    bool v_Ignore_User_Id_Filter;
    bool v_Is_Child;
-   bool v_Is_Group_Or_User;
    bool v_Is_Home;
+   bool v_Is_Not_Anonymous;
    bool v_Is_Variation;
    bool v_Limit_Scroll_And_New;
    bool v_Multiline_Truncate_For_Print;
@@ -2594,11 +2598,11 @@ string Meta_List::impl::get_field_value( int field ) const
       break;
 
       case 23:
-      retval = to_string( impl_Is_Group_Or_User( ) );
+      retval = to_string( impl_Is_Home( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Is_Home( ) );
+      retval = to_string( impl_Is_Not_Anonymous( ) );
       break;
 
       case 25:
@@ -2781,11 +2785,11 @@ void Meta_List::impl::set_field_value( int field, const string& value )
       break;
 
       case 23:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Group_Or_User, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Home, value );
       break;
 
       case 24:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Home, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Not_Anonymous, value );
       break;
 
       case 25:
@@ -2909,7 +2913,7 @@ uint64_t Meta_List::impl::get_state( ) const
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   if( get_obj( ).Is_Group_Or_User( ) == true )
+   if( get_obj( ).Is_Not_Anonymous( ) == true )
       state |= c_modifier_Anonymous_Disallowed;
    // [(finish modifier_field_value)]
 
@@ -3064,8 +3068,8 @@ void Meta_List::impl::clear( )
    v_Ignore_Uneditable_Parent = gv_default_Ignore_Uneditable_Parent;
    v_Ignore_User_Id_Filter = gv_default_Ignore_User_Id_Filter;
    v_Is_Child = gv_default_Is_Child;
-   v_Is_Group_Or_User = gv_default_Is_Group_Or_User;
    v_Is_Home = gv_default_Is_Home;
+   v_Is_Not_Anonymous = gv_default_Is_Not_Anonymous;
    v_Is_Variation = gv_default_Is_Variation;
    v_Limit_Scroll_And_New = gv_default_Limit_Scroll_And_New;
    v_Multiline_Truncate_For_Print = gv_default_Multiline_Truncate_For_Print;
@@ -3395,7 +3399,7 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
-   get_obj( ).Is_Group_Or_User( get_obj( ).Type( ).Is_Group_Or_User( ) );
+   get_obj( ).Is_Not_Anonymous( get_obj( ).Type( ).Is_Not_Anonymous( ) );
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
@@ -3403,8 +3407,8 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)]
 
    // [(start default_to_field)]
-   if( is_create && get_obj( ).Type( ).Is_Group_Or_User( ) == false )
-      get_obj( ).Allow_Anonymous_Access( get_obj( ).Type( ).Dummy_1( ) );
+   if( is_create && get_obj( ).Type( ).Is_Not_Anonymous( ) == true )
+      get_obj( ).Allow_Anonymous_Access( get_obj( ).Type( ).Dummy_0( ) );
    // [(finish default_to_field)]
 
    // [<start to_store>]
@@ -3705,16 +3709,6 @@ void Meta_List::Is_Child( bool Is_Child )
    p_impl->impl_Is_Child( Is_Child );
 }
 
-bool Meta_List::Is_Group_Or_User( ) const
-{
-   return p_impl->impl_Is_Group_Or_User( );
-}
-
-void Meta_List::Is_Group_Or_User( bool Is_Group_Or_User )
-{
-   p_impl->impl_Is_Group_Or_User( Is_Group_Or_User );
-}
-
 bool Meta_List::Is_Home( ) const
 {
    return p_impl->impl_Is_Home( );
@@ -3723,6 +3717,16 @@ bool Meta_List::Is_Home( ) const
 void Meta_List::Is_Home( bool Is_Home )
 {
    p_impl->impl_Is_Home( Is_Home );
+}
+
+bool Meta_List::Is_Not_Anonymous( ) const
+{
+   return p_impl->impl_Is_Not_Anonymous( );
+}
+
+void Meta_List::Is_Not_Anonymous( bool Is_Not_Anonymous )
+{
+   p_impl->impl_Is_Not_Anonymous( Is_Not_Anonymous );
 }
 
 bool Meta_List::Is_Variation( ) const
@@ -4381,9 +4385,9 @@ const char* Meta_List::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( name == c_field_name_Is_Group_Or_User )
+   else if( name == c_field_name_Is_Home )
    {
-      p_id = c_field_id_Is_Group_Or_User;
+      p_id = c_field_id_Is_Home;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -4391,9 +4395,9 @@ const char* Meta_List::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( name == c_field_name_Is_Home )
+   else if( name == c_field_name_Is_Not_Anonymous )
    {
-      p_id = c_field_id_Is_Home;
+      p_id = c_field_id_Is_Not_Anonymous;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -4832,9 +4836,9 @@ const char* Meta_List::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Is_Group_Or_User )
+   else if( id == c_field_id_Is_Home )
    {
-      p_name = c_field_name_Is_Group_Or_User;
+      p_name = c_field_name_Is_Home;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -4842,9 +4846,9 @@ const char* Meta_List::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Is_Home )
+   else if( id == c_field_id_Is_Not_Anonymous )
    {
-      p_name = c_field_name_Is_Home;
+      p_name = c_field_name_Is_Not_Anonymous;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -5046,6 +5050,22 @@ const char* Meta_List::get_field_name(
    return p_name;
 }
 
+string& Meta_List::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_List::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_List::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_List::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -5098,10 +5118,10 @@ string Meta_List::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Ignore_User_Id_Filter );
    else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
       display_name = get_module_string( c_field_display_name_Is_Child );
-   else if( id_or_name == c_field_id_Is_Group_Or_User || id_or_name == c_field_name_Is_Group_Or_User )
-      display_name = get_module_string( c_field_display_name_Is_Group_Or_User );
    else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
       display_name = get_module_string( c_field_display_name_Is_Home );
+   else if( id_or_name == c_field_id_Is_Not_Anonymous || id_or_name == c_field_name_Is_Not_Anonymous )
+      display_name = get_module_string( c_field_display_name_Is_Not_Anonymous );
    else if( id_or_name == c_field_id_Is_Variation || id_or_name == c_field_name_Is_Variation )
       display_name = get_module_string( c_field_display_name_Is_Variation );
    else if( id_or_name == c_field_id_Limit_Scroll_And_New || id_or_name == c_field_name_Limit_Scroll_And_New )
@@ -5432,8 +5452,8 @@ void Meta_List::get_sql_column_names(
    names.push_back( "C_Ignore_Uneditable_Parent" );
    names.push_back( "C_Ignore_User_Id_Filter" );
    names.push_back( "C_Is_Child" );
-   names.push_back( "C_Is_Group_Or_User" );
    names.push_back( "C_Is_Home" );
+   names.push_back( "C_Is_Not_Anonymous" );
    names.push_back( "C_Is_Variation" );
    names.push_back( "C_Limit_Scroll_And_New" );
    names.push_back( "C_Model" );
@@ -5486,8 +5506,8 @@ void Meta_List::get_sql_column_values(
    values.push_back( to_string( Ignore_Uneditable_Parent( ) ) );
    values.push_back( to_string( Ignore_User_Id_Filter( ) ) );
    values.push_back( to_string( Is_Child( ) ) );
-   values.push_back( to_string( Is_Group_Or_User( ) ) );
    values.push_back( to_string( Is_Home( ) ) );
+   values.push_back( to_string( Is_Not_Anonymous( ) ) );
    values.push_back( to_string( Is_Variation( ) ) );
    values.push_back( to_string( Limit_Scroll_And_New( ) ) );
    values.push_back( sql_quote( to_string( Model( ) ) ) );
@@ -5597,7 +5617,7 @@ void Meta_List::get_required_field_names(
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
-   if( needs_field_value( "Is_Group_Or_User", dependents ) )
+   if( needs_field_value( "Is_Not_Anonymous", dependents ) )
    {
       dependents.insert( "Type" );
 
@@ -5686,11 +5706,11 @@ void Meta_List::get_always_required_field_names(
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   dependents.insert( "Is_Group_Or_User" ); // (for Anonymous_Disallowed modifier)
+   dependents.insert( "Is_Not_Anonymous" ); // (for Anonymous_Disallowed modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Group_Or_User ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Group_Or_User ) ) )
-      names.insert( "Is_Group_Or_User" );
+   if( ( required_transients && is_field_transient( e_field_id_Is_Not_Anonymous ) )
+    || ( !required_transients && !is_field_transient( e_field_id_Is_Not_Anonymous ) ) )
+      names.insert( "Is_Not_Anonymous" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
@@ -5798,8 +5818,8 @@ void Meta_List::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "122138", "Ignore_Uneditable_Parent", "bool", false ) );
    all_field_info.push_back( field_info( "122124", "Ignore_User_Id_Filter", "bool", false ) );
    all_field_info.push_back( field_info( "122102", "Is_Child", "bool", false ) );
-   all_field_info.push_back( field_info( "122146", "Is_Group_Or_User", "bool", false ) );
    all_field_info.push_back( field_info( "122121", "Is_Home", "bool", false ) );
+   all_field_info.push_back( field_info( "122146", "Is_Not_Anonymous", "bool", false ) );
    all_field_info.push_back( field_info( "122110", "Is_Variation", "bool", false ) );
    all_field_info.push_back( field_info( "122116", "Limit_Scroll_And_New", "bool", false ) );
    all_field_info.push_back( field_info( "301990", "Model", "Meta_Model", true ) );
@@ -5948,11 +5968,11 @@ const char* Meta_List::static_get_field_id( field_id id )
       break;
 
       case 24:
-      p_id = "122146";
+      p_id = "122121";
       break;
 
       case 25:
-      p_id = "122121";
+      p_id = "122146";
       break;
 
       case 26:
@@ -6137,11 +6157,11 @@ const char* Meta_List::static_get_field_name( field_id id )
       break;
 
       case 24:
-      p_id = "Is_Group_Or_User";
+      p_id = "Is_Home";
       break;
 
       case 25:
-      p_id = "Is_Home";
+      p_id = "Is_Not_Anonymous";
       break;
 
       case 26:
@@ -6279,9 +6299,9 @@ int Meta_List::static_get_field_num( const string& field )
       rc += 22;
    else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
       rc += 23;
-   else if( field == c_field_id_Is_Group_Or_User || field == c_field_name_Is_Group_Or_User )
-      rc += 24;
    else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
+      rc += 24;
+   else if( field == c_field_id_Is_Not_Anonymous || field == c_field_name_Is_Not_Anonymous )
       rc += 25;
    else if( field == c_field_id_Is_Variation || field == c_field_name_Is_Variation )
       rc += 26;
@@ -6371,8 +6391,8 @@ string Meta_List::static_get_sql_columns( )
     "C_Ignore_Uneditable_Parent INTEGER NOT NULL,"
     "C_Ignore_User_Id_Filter INTEGER NOT NULL,"
     "C_Is_Child INTEGER NOT NULL,"
-    "C_Is_Group_Or_User INTEGER NOT NULL,"
     "C_Is_Home INTEGER NOT NULL,"
+    "C_Is_Not_Anonymous INTEGER NOT NULL,"
     "C_Is_Variation INTEGER NOT NULL,"
     "C_Limit_Scroll_And_New INTEGER NOT NULL,"
     "C_Model VARCHAR(64) NOT NULL,"
@@ -6511,8 +6531,10 @@ void Meta_List::static_class_init( const char* p_module_name )
    g_list_restrict_enum.insert( 2 );
    g_list_restrict_enum.insert( 3 );
    g_list_restrict_enum.insert( 4 );
+
    g_list_direction_enum.insert( 0 );
    g_list_direction_enum.insert( 1 );
+
    g_list_display_row_limit_enum.insert( 0 );
    g_list_display_row_limit_enum.insert( 1 );
    g_list_display_row_limit_enum.insert( 2 );
@@ -6536,16 +6558,20 @@ void Meta_List::static_class_init( const char* p_module_name )
    g_list_display_row_limit_enum.insert( 200 );
    g_list_display_row_limit_enum.insert( 500 );
    g_list_display_row_limit_enum.insert( 999 );
+
    g_pdf_font_type_enum.insert( 0 );
    g_pdf_font_type_enum.insert( 1 );
    g_pdf_font_type_enum.insert( 20 );
    g_pdf_font_type_enum.insert( 21 );
+
    g_list_pdf_list_type_enum.insert( 0 );
    g_list_pdf_list_type_enum.insert( 1 );
    g_list_pdf_list_type_enum.insert( 99 );
+
    g_list_print_restrict_enum.insert( 0 );
    g_list_print_restrict_enum.insert( 1 );
    g_list_print_restrict_enum.insert( 2 );
+
    g_list_search_opt_limit_enum.insert( 0 );
    g_list_search_opt_limit_enum.insert( 1 );
    g_list_search_opt_limit_enum.insert( 2 );
@@ -6554,8 +6580,10 @@ void Meta_List::static_class_init( const char* p_module_name )
    g_list_search_opt_limit_enum.insert( 5 );
    g_list_search_opt_limit_enum.insert( 6 );
    g_list_search_opt_limit_enum.insert( 7 );
+
    g_list_style_enum.insert( 0 );
    g_list_style_enum.insert( 1 );
+
    g_list_text_match_highlight_enum.insert( 0 );
    g_list_text_match_highlight_enum.insert( 1 );
    g_list_text_match_highlight_enum.insert( 2 );

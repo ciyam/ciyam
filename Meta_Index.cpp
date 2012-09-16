@@ -177,7 +177,11 @@ const char* const c_procedure_id_Move_Up = "108410";
 
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x100 );
 
+string g_order_field_name( "Order" );
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Index* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -781,6 +785,7 @@ void Meta_Index::impl::impl_Move_Down( const string& Restrict_Fields, const stri
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -846,6 +851,7 @@ void Meta_Index::impl::impl_Move_Up( const string& Restrict_Fields, const string
          else
             get_obj( ).op_cancel( );
       }
+
       transaction_commit( );
    }
    catch( ... )
@@ -1917,6 +1923,22 @@ const char* Meta_Index::get_field_name(
    return p_name;
 }
 
+string& Meta_Index::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Index::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Index::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Index::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -2252,8 +2274,6 @@ void Meta_Index::get_always_required_field_names(
    // [(finish protect_equal)]
 
    // [<start get_always_required_field_names>]
-
-
    // [<finish get_always_required_field_names>]
 }
 

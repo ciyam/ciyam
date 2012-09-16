@@ -35,8 +35,6 @@
 
 #include "Meta_List_Field.h"
 #include "Meta_Specification.h"
-#include "Meta_Specification_Content_Page.h"
-#include "Meta_Specification_Copy_Child_Links.h"
 #include "Meta_Class.h"
 #include "Meta_Model.h"
 #include "Meta_Relationship.h"
@@ -104,7 +102,6 @@ const char* const c_okay = "okay";
 
 const char* const c_field_id_Cascade_Op = "113103";
 const char* const c_field_id_Child_Class = "301310";
-const char* const c_field_id_Child_Class_File_Field_Name = "113109";
 const char* const c_field_id_Child_Class_Name = "113108";
 const char* const c_field_id_Child_Name = "113105";
 const char* const c_field_id_Extra = "113104";
@@ -120,7 +117,6 @@ const char* const c_field_id_Transient = "113111";
 
 const char* const c_field_name_Cascade_Op = "Cascade_Op";
 const char* const c_field_name_Child_Class = "Child_Class";
-const char* const c_field_name_Child_Class_File_Field_Name = "Child_Class_File_Field_Name";
 const char* const c_field_name_Child_Class_Name = "Child_Class_Name";
 const char* const c_field_name_Child_Name = "Child_Name";
 const char* const c_field_name_Extra = "Extra";
@@ -136,7 +132,6 @@ const char* const c_field_name_Transient = "Transient";
 
 const char* const c_field_display_name_Cascade_Op = "field_relationship_cascade_op";
 const char* const c_field_display_name_Child_Class = "field_relationship_child_class";
-const char* const c_field_display_name_Child_Class_File_Field_Name = "field_relationship_child_class_file_field_name";
 const char* const c_field_display_name_Child_Class_Name = "field_relationship_child_class_name";
 const char* const c_field_display_name_Child_Name = "field_relationship_child_name";
 const char* const c_field_display_name_Extra = "field_relationship_extra";
@@ -150,7 +145,7 @@ const char* const c_field_display_name_Parent_Class = "field_relationship_parent
 const char* const c_field_display_name_Source_Relationship = "field_relationship_source_relationship";
 const char* const c_field_display_name_Transient = "field_relationship_transient";
 
-const int c_num_fields = 15;
+const int c_num_fields = 14;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -162,7 +157,6 @@ const char* const c_all_sorted_field_ids[ ] =
    "113106",
    "113107",
    "113108",
-   "113109",
    "113110",
    "113111",
    "301300",
@@ -175,7 +169,6 @@ const char* const c_all_sorted_field_names[ ] =
 {
    "Cascade_Op",
    "Child_Class",
-   "Child_Class_File_Field_Name",
    "Child_Class_Name",
    "Child_Name",
    "Extra",
@@ -198,18 +191,16 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 3;
+const int c_num_transient_fields = 2;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "113105",
-   "113108",
-   "113109"
+   "113108"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
-   "Child_Class_File_Field_Name",
    "Child_Class_Name",
    "Child_Name"
 };
@@ -229,9 +220,6 @@ const uint64_t c_modifier_Is_Transient = UINT64_C( 0x200 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
- domain_string_max_size< 30 > > g_Child_Class_File_Field_Name_domain;
-aggregate_domain< string,
- domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Child_Class_Name_domain;
 domain_string_max_size< 100 > g_Child_Name_domain;
 aggregate_domain< string,
@@ -241,7 +229,11 @@ aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Relationship* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -255,7 +247,6 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 int gv_default_Cascade_Op = int( 0 );
 string gv_default_Child_Class = string( );
-string gv_default_Child_Class_File_Field_Name = string( );
 string gv_default_Child_Class_Name = string( );
 string gv_default_Child_Name = string( );
 int gv_default_Extra = int( 0 );
@@ -411,8 +402,6 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
          string_getter< int >( cmd_handler.p_Meta_Relationship->Cascade_Op( ), cmd_handler.retval );
       else if( field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
          string_getter< Meta_Class >( cmd_handler.p_Meta_Relationship->Child_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Class_File_Field_Name || field_name == c_field_name_Child_Class_File_Field_Name )
-         string_getter< string >( cmd_handler.p_Meta_Relationship->Child_Class_File_Field_Name( ), cmd_handler.retval );
       else if( field_name == c_field_id_Child_Class_Name || field_name == c_field_name_Child_Class_Name )
          string_getter< string >( cmd_handler.p_Meta_Relationship->Child_Class_Name( ), cmd_handler.retval );
       else if( field_name == c_field_id_Child_Name || field_name == c_field_name_Child_Name )
@@ -453,9 +442,6 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
       else if( field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
          func_string_setter< Meta_Relationship, Meta_Class >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Child_Class, field_value );
-      else if( field_name == c_field_id_Child_Class_File_Field_Name || field_name == c_field_name_Child_Class_File_Field_Name )
-         func_string_setter< Meta_Relationship, string >(
-          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Child_Class_File_Field_Name, field_value );
       else if( field_name == c_field_id_Child_Class_Name || field_name == c_field_name_Child_Class_Name )
          func_string_setter< Meta_Relationship, string >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Child_Class_Name, field_value );
@@ -540,9 +526,6 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    int impl_Cascade_Op( ) const { return lazy_fetch( p_obj ), v_Cascade_Op; }
    void impl_Cascade_Op( int Cascade_Op ) { v_Cascade_Op = Cascade_Op; }
-
-   const string& impl_Child_Class_File_Field_Name( ) const { return lazy_fetch( p_obj ), v_Child_Class_File_Field_Name; }
-   void impl_Child_Class_File_Field_Name( const string& Child_Class_File_Field_Name ) { v_Child_Class_File_Field_Name = Child_Class_File_Field_Name; }
 
    const string& impl_Child_Class_Name( ) const { return lazy_fetch( p_obj ), v_Child_Class_Name; }
    void impl_Child_Class_Name( const string& Child_Class_Name ) { v_Child_Class_Name = Child_Class_Name; }
@@ -735,94 +718,6 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
       return *cp_child_Specification_Child;
    }
 
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Child_Self( )
-   {
-      if( !cp_child_Specification_Content_Page_Child_Self )
-      {
-         cp_child_Specification_Content_Page_Child_Self.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Child_Self, "302620" );
-      }
-      return *cp_child_Specification_Content_Page_Child_Self;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Child_Self( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Child_Self )
-      {
-         cp_child_Specification_Content_Page_Child_Self.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Child_Self, "302620" );
-      }
-      return *cp_child_Specification_Content_Page_Child_Self;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Page_Link_Child( )
-   {
-      if( !cp_child_Specification_Content_Page_Link_Page_Link_Child )
-      {
-         cp_child_Specification_Content_Page_Link_Page_Link_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Page_Link_Child, "302632" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Page_Link_Child;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Link_Page_Link_Child( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Link_Page_Link_Child )
-      {
-         cp_child_Specification_Content_Page_Link_Page_Link_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Link_Page_Link_Child, "302632" );
-      }
-      return *cp_child_Specification_Content_Page_Link_Page_Link_Child;
-   }
-
-   Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_Page_Link_Child( )
-   {
-      if( !cp_child_Specification_Content_Page_Page_Page_Link_Child )
-      {
-         cp_child_Specification_Content_Page_Page_Page_Link_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_Page_Link_Child, "302627" );
-      }
-      return *cp_child_Specification_Content_Page_Page_Page_Link_Child;
-   }
-
-   const Meta_Specification_Content_Page& impl_child_Specification_Content_Page_Page_Page_Link_Child( ) const
-   {
-      if( !cp_child_Specification_Content_Page_Page_Page_Link_Child )
-      {
-         cp_child_Specification_Content_Page_Page_Page_Link_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Content_Page_Page_Page_Link_Child, "302627" );
-      }
-      return *cp_child_Specification_Content_Page_Page_Page_Link_Child;
-   }
-
-   Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Source_Child( )
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Source_Child )
-      {
-         cp_child_Specification_Copy_Child_Links_Source_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Source_Child, "302651" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Source_Child;
-   }
-
-   const Meta_Specification_Copy_Child_Links& impl_child_Specification_Copy_Child_Links_Source_Child( ) const
-   {
-      if( !cp_child_Specification_Copy_Child_Links_Source_Child )
-      {
-         cp_child_Specification_Copy_Child_Links_Source_Child.init( );
-
-         p_obj->setup_graph_parent( *cp_child_Specification_Copy_Child_Links_Source_Child, "302651" );
-      }
-      return *cp_child_Specification_Copy_Child_Links_Source_Child;
-   }
-
    Meta_Relationship& impl_child_Relationship_Source( )
    {
       if( !cp_child_Relationship_Source )
@@ -895,7 +790,6 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    size_t total_child_relationships;
 
    int v_Cascade_Op;
-   string v_Child_Class_File_Field_Name;
    string v_Child_Class_Name;
    string v_Child_Name;
    int v_Extra;
@@ -920,10 +814,6 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Child;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Child;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Child_Self;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Link_Page_Link_Child;
-   mutable class_pointer< Meta_Specification_Content_Page > cp_child_Specification_Content_Page_Page_Page_Link_Child;
-   mutable class_pointer< Meta_Specification_Copy_Child_Links > cp_child_Specification_Copy_Child_Links_Source_Child;
    mutable class_pointer< Meta_Relationship > cp_child_Relationship_Source;
 };
 
@@ -942,54 +832,50 @@ string Meta_Relationship::impl::get_field_value( int field ) const
       break;
 
       case 2:
-      retval = to_string( impl_Child_Class_File_Field_Name( ) );
-      break;
-
-      case 3:
       retval = to_string( impl_Child_Class_Name( ) );
       break;
 
-      case 4:
+      case 3:
       retval = to_string( impl_Child_Name( ) );
       break;
 
-      case 5:
+      case 4:
       retval = to_string( impl_Extra( ) );
       break;
 
-      case 6:
+      case 5:
       retval = to_string( impl_Field_Id( ) );
       break;
 
-      case 7:
+      case 6:
       retval = to_string( impl_Field_Key( ) );
       break;
 
-      case 8:
+      case 7:
       retval = to_string( impl_Internal( ) );
       break;
 
-      case 9:
+      case 8:
       retval = to_string( impl_Mandatory( ) );
       break;
 
-      case 10:
+      case 9:
       retval = to_string( impl_Model( ) );
       break;
 
-      case 11:
+      case 10:
       retval = to_string( impl_Name( ) );
       break;
 
-      case 12:
+      case 11:
       retval = to_string( impl_Parent_Class( ) );
       break;
 
-      case 13:
+      case 12:
       retval = to_string( impl_Source_Relationship( ) );
       break;
 
-      case 14:
+      case 13:
       retval = to_string( impl_Transient( ) );
       break;
 
@@ -1013,54 +899,50 @@ void Meta_Relationship::impl::set_field_value( int field, const string& value )
       break;
 
       case 2:
-      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Class_File_Field_Name, value );
-      break;
-
-      case 3:
       func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Class_Name, value );
       break;
 
-      case 4:
+      case 3:
       func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Name, value );
       break;
 
-      case 5:
+      case 4:
       func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Extra, value );
       break;
 
-      case 6:
+      case 5:
       func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Field_Id, value );
       break;
 
-      case 7:
+      case 6:
       func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Field_Key, value );
       break;
 
-      case 8:
+      case 7:
       func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Internal, value );
       break;
 
-      case 9:
+      case 8:
       func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Mandatory, value );
       break;
 
-      case 10:
+      case 9:
       func_string_setter< Meta_Relationship::impl, Meta_Model >( *this, &Meta_Relationship::impl::impl_Model, value );
       break;
 
-      case 11:
+      case 10:
       func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Name, value );
       break;
 
-      case 12:
+      case 11:
       func_string_setter< Meta_Relationship::impl, Meta_Class >( *this, &Meta_Relationship::impl::impl_Parent_Class, value );
       break;
 
-      case 13:
+      case 12:
       func_string_setter< Meta_Relationship::impl, Meta_Relationship >( *this, &Meta_Relationship::impl::impl_Source_Relationship, value );
       break;
 
-      case 14:
+      case 13:
       func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Transient, value );
       break;
 
@@ -1167,7 +1049,6 @@ void Meta_Relationship::impl::add_extra_paging_info( vector< pair< string, strin
 void Meta_Relationship::impl::clear( )
 {
    v_Cascade_Op = gv_default_Cascade_Op;
-   v_Child_Class_File_Field_Name = gv_default_Child_Class_File_Field_Name;
    v_Child_Class_Name = gv_default_Child_Class_Name;
    v_Child_Name = gv_default_Child_Name;
    v_Extra = gv_default_Extra;
@@ -1229,13 +1110,6 @@ void Meta_Relationship::impl::validate( unsigned state, bool is_internal, valida
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Parent_Class ) ) ) ) );
 
    string error_message;
-   if( !is_null( v_Child_Class_File_Field_Name )
-    && ( v_Child_Class_File_Field_Name != gv_default_Child_Class_File_Field_Name
-    || !value_will_be_provided( c_field_name_Child_Class_File_Field_Name ) )
-    && !g_Child_Class_File_Field_Name_domain.is_valid( v_Child_Class_File_Field_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_File_Field_Name,
-       get_module_string( c_field_display_name_Child_Class_File_Field_Name ) + " " + error_message ) );
-
    if( !is_null( v_Child_Class_Name )
     && ( v_Child_Class_Name != gv_default_Child_Class_Name
     || !value_will_be_provided( c_field_name_Child_Class_Name ) )
@@ -1286,12 +1160,6 @@ void Meta_Relationship::impl::validate_set_fields( set< string >& fields_set, va
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
-
-   if( !is_null( v_Child_Class_File_Field_Name )
-    && ( fields_set.count( c_field_id_Child_Class_File_Field_Name ) || fields_set.count( c_field_name_Child_Class_File_Field_Name ) )
-    && !g_Child_Class_File_Field_Name_domain.is_valid( v_Child_Class_File_Field_Name, error_message = "" ) )
-      p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_File_Field_Name,
-       get_module_string( c_field_display_name_Child_Class_File_Field_Name ) + " " + error_message ) );
 
    if( !is_null( v_Child_Class_Name )
     && ( fields_set.count( c_field_id_Child_Class_Name ) || fields_set.count( c_field_name_Child_Class_Name ) )
@@ -1354,24 +1222,6 @@ void Meta_Relationship::impl::after_fetch( )
    // [(finish transient_field_alias)]
 
    // [<start after_fetch>]
-//nyi
-   if( get_obj( ).needs_field_value( "Child_Class_File_Field_Name" )
-    || required_transients.count( "Child_Class_File_Field_Name" ) )
-   {
-      if( !is_null( get_obj( ).Child_Class( ) )
-       && get_obj( ).Child_Class( ).child_Field( ).iterate_forwards( ) )
-      {
-         do
-         {
-            if( get_obj( ).Child_Class( ).child_Field( ).Extra( ) == 1 ) // i.e. "file"
-            {
-               get_obj( ).Child_Class_File_Field_Name( get_obj( ).Child_Class( ).child_Field( ).Name( ) );
-               get_obj( ).Child_Class( ).child_Field( ).iterate_stop( );
-               break;
-            }
-         } while( get_obj( ).Child_Class( ).child_Field( ).iterate_next( ) );
-      }
-   }
    // [<finish after_fetch>]
 }
 
@@ -1488,19 +1338,6 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Specification_Child( ).op_update( );
          get_obj( ).child_Specification_Child( ).op_apply( );
       } while( get_obj( ).child_Specification_Child( ).iterate_next( ) );
-   }
-   // [(finish update_children)]
-
-   // [(start update_children)]
-   if( !is_create
-    && get_obj( ).has_field_changed( c_field_id_Name )
-    && get_obj( ).child_Specification_Copy_Child_Links_Source_Child( ).iterate_forwards( ) )
-   {
-      do
-      {
-         get_obj( ).child_Specification_Copy_Child_Links_Source_Child( ).op_update( );
-         get_obj( ).child_Specification_Copy_Child_Links_Source_Child( ).op_apply( );
-      } while( get_obj( ).child_Specification_Copy_Child_Links_Source_Child( ).iterate_next( ) );
    }
    // [(finish update_children)]
 
@@ -1658,16 +1495,6 @@ int Meta_Relationship::Cascade_Op( ) const
 void Meta_Relationship::Cascade_Op( int Cascade_Op )
 {
    p_impl->impl_Cascade_Op( Cascade_Op );
-}
-
-const string& Meta_Relationship::Child_Class_File_Field_Name( ) const
-{
-   return p_impl->impl_Child_Class_File_Field_Name( );
-}
-
-void Meta_Relationship::Child_Class_File_Field_Name( const string& Child_Class_File_Field_Name )
-{
-   p_impl->impl_Child_Class_File_Field_Name( Child_Class_File_Field_Name );
 }
 
 const string& Meta_Relationship::Child_Class_Name( ) const
@@ -1840,46 +1667,6 @@ const Meta_Specification& Meta_Relationship::child_Specification_Child( ) const
    return p_impl->impl_child_Specification_Child( );
 }
 
-Meta_Specification_Content_Page& Meta_Relationship::child_Specification_Content_Page_Child_Self( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Child_Self( );
-}
-
-const Meta_Specification_Content_Page& Meta_Relationship::child_Specification_Content_Page_Child_Self( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Child_Self( );
-}
-
-Meta_Specification_Content_Page& Meta_Relationship::child_Specification_Content_Page_Link_Page_Link_Child( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Page_Link_Child( );
-}
-
-const Meta_Specification_Content_Page& Meta_Relationship::child_Specification_Content_Page_Link_Page_Link_Child( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Link_Page_Link_Child( );
-}
-
-Meta_Specification_Content_Page& Meta_Relationship::child_Specification_Content_Page_Page_Page_Link_Child( )
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_Page_Link_Child( );
-}
-
-const Meta_Specification_Content_Page& Meta_Relationship::child_Specification_Content_Page_Page_Page_Link_Child( ) const
-{
-   return p_impl->impl_child_Specification_Content_Page_Page_Page_Link_Child( );
-}
-
-Meta_Specification_Copy_Child_Links& Meta_Relationship::child_Specification_Copy_Child_Links_Source_Child( )
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Source_Child( );
-}
-
-const Meta_Specification_Copy_Child_Links& Meta_Relationship::child_Specification_Copy_Child_Links_Source_Child( ) const
-{
-   return p_impl->impl_child_Specification_Copy_Child_Links_Source_Child( );
-}
-
 Meta_Relationship& Meta_Relationship::child_Relationship_Source( )
 {
    return p_impl->impl_child_Relationship_Source( );
@@ -2036,16 +1823,6 @@ const char* Meta_Relationship::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
-   else if( name == c_field_name_Child_Class_File_Field_Name )
-   {
-      p_id = c_field_id_Child_Class_File_Field_Name;
-
-      if( p_type_name )
-         *p_type_name = "string";
-
-      if( p_sql_numeric )
-         *p_sql_numeric = false;
-   }
    else if( name == c_field_name_Child_Class_Name )
    {
       p_id = c_field_id_Child_Class_Name;
@@ -2197,16 +1974,6 @@ const char* Meta_Relationship::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
-   else if( id == c_field_id_Child_Class_File_Field_Name )
-   {
-      p_name = c_field_name_Child_Class_File_Field_Name;
-
-      if( p_type_name )
-         *p_type_name = "string";
-
-      if( p_sql_numeric )
-         *p_sql_numeric = false;
-   }
    else if( id == c_field_id_Child_Class_Name )
    {
       p_name = c_field_name_Child_Class_Name;
@@ -2331,6 +2098,22 @@ const char* Meta_Relationship::get_field_name(
    return p_name;
 }
 
+string& Meta_Relationship::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Relationship::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Relationship::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Relationship::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -2341,8 +2124,6 @@ string Meta_Relationship::get_field_display_name( const string& id_or_name ) con
       display_name = get_module_string( c_field_display_name_Cascade_Op );
    else if( id_or_name == c_field_id_Child_Class || id_or_name == c_field_name_Child_Class )
       display_name = get_module_string( c_field_display_name_Child_Class );
-   else if( id_or_name == c_field_id_Child_Class_File_Field_Name || id_or_name == c_field_name_Child_Class_File_Field_Name )
-      display_name = get_module_string( c_field_display_name_Child_Class_File_Field_Name );
    else if( id_or_name == c_field_id_Child_Class_Name || id_or_name == c_field_name_Child_Class_Name )
       display_name = get_module_string( c_field_display_name_Child_Class_Name );
    else if( id_or_name == c_field_id_Child_Name || id_or_name == c_field_name_Child_Name )
@@ -2416,16 +2197,6 @@ void Meta_Relationship::setup_graph_parent( Meta_Specification& o, const string&
    static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
-void Meta_Relationship::setup_graph_parent( Meta_Specification_Content_Page& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Content_Page& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
-void Meta_Relationship::setup_graph_parent( Meta_Specification_Copy_Child_Links& o, const string& foreign_key_field )
-{
-   static_cast< Meta_Specification_Copy_Child_Links& >( o ).set_graph_parent( this, foreign_key_field );
-}
-
 void Meta_Relationship::setup_graph_parent( Meta_Relationship& o, const string& foreign_key_field )
 {
    static_cast< Meta_Relationship& >( o ).set_graph_parent( this, foreign_key_field );
@@ -2464,7 +2235,7 @@ void Meta_Relationship::set_total_child_relationships( size_t new_total_child_re
 
 size_t Meta_Relationship::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 7;
+   size_t rc = 3;
 
    if( !is_internal )
    {
@@ -2497,7 +2268,7 @@ class_base* Meta_Relationship::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 7 )
+   if( child_num >= 3 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -2526,38 +2297,6 @@ class_base* Meta_Relationship::get_next_foreign_key_child(
          break;
 
          case 2:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302620";
-            p_class_base = &child_Specification_Content_Page_Child_Self( );
-         }
-         break;
-
-         case 3:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302632";
-            p_class_base = &child_Specification_Content_Page_Link_Page_Link_Child( );
-         }
-         break;
-
-         case 4:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302627";
-            p_class_base = &child_Specification_Content_Page_Page_Page_Link_Child( );
-         }
-         break;
-
-         case 5:
-         if( op == e_cascade_op_restrict )
-         {
-            next_child_field = "302651";
-            p_class_base = &child_Specification_Copy_Child_Links_Source_Child( );
-         }
-         break;
-
-         case 6:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301330";
@@ -2636,14 +2375,6 @@ class_base& Meta_Relationship::get_or_create_graph_child( const string& context 
       p_class_base = &child_List_Field_Child( );
    else if( sub_context == "_301475" || sub_context == "child_Specification_Child" )
       p_class_base = &child_Specification_Child( );
-   else if( sub_context == "_302620" || sub_context == "child_Specification_Content_Page_Child_Self" )
-      p_class_base = &child_Specification_Content_Page_Child_Self( );
-   else if( sub_context == "_302632" || sub_context == "child_Specification_Content_Page_Link_Page_Link_Child" )
-      p_class_base = &child_Specification_Content_Page_Link_Page_Link_Child( );
-   else if( sub_context == "_302627" || sub_context == "child_Specification_Content_Page_Page_Page_Link_Child" )
-      p_class_base = &child_Specification_Content_Page_Page_Page_Link_Child( );
-   else if( sub_context == "_302651" || sub_context == "child_Specification_Copy_Child_Links_Source_Child" )
-      p_class_base = &child_Specification_Copy_Child_Links_Source_Child( );
    else if( sub_context == "_301330" || sub_context == "child_Relationship_Source" )
       p_class_base = &child_Relationship_Source( );
    else if( sub_context == c_field_id_Child_Class || sub_context == c_field_name_Child_Class )
@@ -2845,7 +2576,6 @@ void Meta_Relationship::static_get_field_info( field_info_container& all_field_i
 {
    all_field_info.push_back( field_info( "113103", "Cascade_Op", "int", false ) );
    all_field_info.push_back( field_info( "301310", "Child_Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "113109", "Child_Class_File_Field_Name", "string", false ) );
    all_field_info.push_back( field_info( "113108", "Child_Class_Name", "string", false ) );
    all_field_info.push_back( field_info( "113105", "Child_Name", "string", false ) );
    all_field_info.push_back( field_info( "113104", "Extra", "int", false ) );
@@ -2898,54 +2628,50 @@ const char* Meta_Relationship::static_get_field_id( field_id id )
       break;
 
       case 3:
-      p_id = "113109";
-      break;
-
-      case 4:
       p_id = "113108";
       break;
 
-      case 5:
+      case 4:
       p_id = "113105";
       break;
 
-      case 6:
+      case 5:
       p_id = "113104";
       break;
 
-      case 7:
+      case 6:
       p_id = "113106";
       break;
 
-      case 8:
+      case 7:
       p_id = "113107";
       break;
 
-      case 9:
+      case 8:
       p_id = "113110";
       break;
 
-      case 10:
+      case 9:
       p_id = "113102";
       break;
 
-      case 11:
+      case 10:
       p_id = "301300";
       break;
 
-      case 12:
+      case 11:
       p_id = "113101";
       break;
 
-      case 13:
+      case 12:
       p_id = "301320";
       break;
 
-      case 14:
+      case 13:
       p_id = "301330";
       break;
 
-      case 15:
+      case 14:
       p_id = "113111";
       break;
    }
@@ -2971,54 +2697,50 @@ const char* Meta_Relationship::static_get_field_name( field_id id )
       break;
 
       case 3:
-      p_id = "Child_Class_File_Field_Name";
-      break;
-
-      case 4:
       p_id = "Child_Class_Name";
       break;
 
-      case 5:
+      case 4:
       p_id = "Child_Name";
       break;
 
-      case 6:
+      case 5:
       p_id = "Extra";
       break;
 
-      case 7:
+      case 6:
       p_id = "Field_Id";
       break;
 
-      case 8:
+      case 7:
       p_id = "Field_Key";
       break;
 
-      case 9:
+      case 8:
       p_id = "Internal";
       break;
 
-      case 10:
+      case 9:
       p_id = "Mandatory";
       break;
 
-      case 11:
+      case 10:
       p_id = "Model";
       break;
 
-      case 12:
+      case 11:
       p_id = "Name";
       break;
 
-      case 13:
+      case 12:
       p_id = "Parent_Class";
       break;
 
-      case 14:
+      case 13:
       p_id = "Source_Relationship";
       break;
 
-      case 15:
+      case 14:
       p_id = "Transient";
       break;
    }
@@ -3039,32 +2761,30 @@ int Meta_Relationship::static_get_field_num( const string& field )
       rc += 1;
    else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
       rc += 2;
-   else if( field == c_field_id_Child_Class_File_Field_Name || field == c_field_name_Child_Class_File_Field_Name )
-      rc += 3;
    else if( field == c_field_id_Child_Class_Name || field == c_field_name_Child_Class_Name )
-      rc += 4;
+      rc += 3;
    else if( field == c_field_id_Child_Name || field == c_field_name_Child_Name )
-      rc += 5;
+      rc += 4;
    else if( field == c_field_id_Extra || field == c_field_name_Extra )
-      rc += 6;
+      rc += 5;
    else if( field == c_field_id_Field_Id || field == c_field_name_Field_Id )
-      rc += 7;
+      rc += 6;
    else if( field == c_field_id_Field_Key || field == c_field_name_Field_Key )
-      rc += 8;
+      rc += 7;
    else if( field == c_field_id_Internal || field == c_field_name_Internal )
-      rc += 9;
+      rc += 8;
    else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
-      rc += 10;
+      rc += 9;
    else if( field == c_field_id_Model || field == c_field_name_Model )
-      rc += 11;
+      rc += 10;
    else if( field == c_field_id_Name || field == c_field_name_Name )
-      rc += 12;
+      rc += 11;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
-      rc += 13;
+      rc += 12;
    else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
-      rc += 14;
+      rc += 13;
    else if( field == c_field_id_Transient || field == c_field_name_Transient )
-      rc += 15;
+      rc += 14;
 
    return rc - 1;
 }
@@ -3166,6 +2886,7 @@ void Meta_Relationship::static_class_init( const char* p_module_name )
    g_cascade_op_enum.insert( 1 );
    g_cascade_op_enum.insert( 2 );
    g_cascade_op_enum.insert( -1 );
+
    g_relationship_extra_enum.insert( 0 );
    g_relationship_extra_enum.insert( 2 );
    g_relationship_extra_enum.insert( 3 );

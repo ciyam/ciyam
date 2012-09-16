@@ -176,7 +176,11 @@ bool is_transient_field( const string& ) { static bool false_value( false ); ret
 const uint64_t c_modifier_Is_Class = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x200 );
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Modifier_Affect* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -1523,6 +1527,22 @@ const char* Meta_Modifier_Affect::get_field_name(
    return p_name;
 }
 
+string& Meta_Modifier_Affect::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Modifier_Affect::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Modifier_Affect::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Modifier_Affect::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -2150,8 +2170,10 @@ void Meta_Modifier_Affect::static_class_init( const char* p_module_name )
    g_modifier_affect_extra_enum.insert( 0 );
    g_modifier_affect_extra_enum.insert( 1 );
    g_modifier_affect_extra_enum.insert( 2 );
+
    g_modifier_affect_scope_enum.insert( 0 );
    g_modifier_affect_scope_enum.insert( 1 );
+
    g_modifier_affect_type_enum.insert( 0 );
    g_modifier_affect_type_enum.insert( 1 );
    g_modifier_affect_type_enum.insert( 2 );

@@ -279,7 +279,11 @@ aggregate_domain< string,
 domain_string_max_size< 5 > g_Version_domain;
 domain_int_range< 2005, 2020 > g_Year_Created_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Model* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -3794,6 +3798,12 @@ void Meta_Model::impl::impl_Generate( )
                            extras += "center";
                            break;
 
+                           case 4:
+                           if( !extras.empty( ) )
+                              extras += '+';
+                           extras += "justify";
+                           break;
+
                            default:
                            throw runtime_error( "unexpected Alignment value #"
                             + to_string( get_obj( ).child_List( ).child_List_Field( ).Alignment( ) )
@@ -7279,6 +7289,22 @@ const char* Meta_Model::get_field_name(
    }
 
    return p_name;
+}
+
+string& Meta_Model::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Model::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Model::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
 }
 
 string Meta_Model::get_field_display_name( const string& id_or_name ) const

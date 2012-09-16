@@ -226,7 +226,11 @@ domain_string_max_size< 100 > g_Name_domain;
 domain_int_range< 0, 16 > g_Numeric_Decimals_domain;
 domain_int_range< 0, 16 > g_Numeric_Digits_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Type* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -2456,6 +2460,22 @@ const char* Meta_Type::get_field_name(
    return p_name;
 }
 
+string& Meta_Type::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Type::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Type::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
+}
+
 string Meta_Type::get_field_display_name( const string& id_or_name ) const
 {
    string display_name;
@@ -3330,15 +3350,19 @@ void Meta_Type::static_class_init( const char* p_module_name )
    g_date_precision_enum.insert( 0 );
    g_date_precision_enum.insert( 1 );
    g_date_precision_enum.insert( 2 );
+
    g_fraction_limit_enum.insert( 0 );
    g_fraction_limit_enum.insert( 2 );
    g_fraction_limit_enum.insert( 4 );
+
    g_int_type_enum.insert( 0 );
    g_int_type_enum.insert( 3 );
    g_int_type_enum.insert( 1 );
    g_int_type_enum.insert( 2 );
+
    g_numeric_type_enum.insert( 0 );
    g_numeric_type_enum.insert( 1 );
+
    g_primitive_enum.insert( 0 );
    g_primitive_enum.insert( 1 );
    g_primitive_enum.insert( 2 );
@@ -3346,17 +3370,21 @@ void Meta_Type::static_class_init( const char* p_module_name )
    g_primitive_enum.insert( 4 );
    g_primitive_enum.insert( 5 );
    g_primitive_enum.insert( 6 );
+
    g_round_type_enum.insert( 1 );
    g_round_type_enum.insert( 2 );
    g_round_type_enum.insert( 3 );
    g_round_type_enum.insert( 4 );
+
    g_string_domain_enum.insert( 0 );
    g_string_domain_enum.insert( 2 );
    g_string_domain_enum.insert( 3 );
    g_string_domain_enum.insert( 1 );
+
    g_time_precision_enum.insert( 0 );
    g_time_precision_enum.insert( 1 );
    g_time_precision_enum.insert( 2 );
+
    g_zero_padding_enum.insert( 0 );
    g_zero_padding_enum.insert( 1 );
    g_zero_padding_enum.insert( 2 );

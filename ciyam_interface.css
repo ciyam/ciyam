@@ -344,6 +344,7 @@ th.tab
 th { text-align:left; }
 th.right { text-align:right; }
 th.center { text-align:center; }
+th.justify { text-align:justify; }
 
 tr.list
 {
@@ -434,9 +435,34 @@ a.button
    font-weight:bold;
 }
 
+img.left_indent
+{
+   float: left;
+   padding-left: 20pt;
+   padding-right: 10pt;
+   clear: left;
+}
+
+img.right_indent
+{
+   float: right;
+   padding-left: 10pt;
+   padding-right: 20pt;
+   clear: right;
+}
+
+img.center
+{
+   display: block;
+   margin-left: auto;
+   margin-right: auto;
+   clear: both;
+}
+
 td { text-align:left; }
 td.right { text-align:right; }
 td.center { text-align:center; }
+td.justify { text-align:justify; }
 
 td.small
 {
@@ -457,6 +483,11 @@ td.larger
 {
    font-size:20px;
 }
+
+.left { text-align:left; }
+.right { text-align:right; }
+.center { text-align:center; }
+.justify { text-align:justify; }
 
 .small
 {
@@ -481,6 +512,12 @@ td.larger
 .disabled
 {
    color: gray;
+}
+
+.indented
+{
+   padding-left: 20pt;
+   padding-right: 20pt;
 }
 
 .selected_panel

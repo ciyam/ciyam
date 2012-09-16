@@ -651,6 +651,7 @@ bool output_view_form( ostream& os, const string& act,
                   string new_checksum_value( get_checksum( sess_info, checksum_values ) );
 
                   os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+                  os << "query_update( '" << c_param_ochksum << "', query_value( '" << c_param_chksum << "' ), true ); ";
                   os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true );";
                }
 
@@ -783,6 +784,9 @@ bool output_view_form( ostream& os, const string& act,
 
          os << " + '&exec=" << exec << "&flags=" << source.state << "', false );";
 
+         if( use_url_checksum )
+            os << " query_update( '" << c_param_chksum << "', query_value( '" << c_param_ochksum << "' ), true ); ";
+
          if( go_back_after_save )
             os << " if( !had_act_error ) jump_back = true;";
 
@@ -807,14 +811,12 @@ bool output_view_form( ostream& os, const string& act,
             checksum_values += string( c_cmd_view ) + data + source.vici->second->id + user_select_key;
 
             new_checksum_value = get_checksum( sess_info, checksum_values );
-
-            os << "var old_checksum = query_value( '" << c_param_chksum << "' ); ";
             os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
          }
 
          os << "dyn_load( null, 'act=" << c_act_undo << "', false );";
          if( use_url_checksum )
-            os << " query_update( '" << c_param_chksum << "', old_checksum, true );";
+            os << " query_update( '" << c_param_chksum << "', query_value( '" << c_param_ochksum << "' ), true ); ";
 
          os << "\" style=\"cursor:pointer\">";
 
@@ -983,8 +985,9 @@ bool output_view_form( ostream& os, const string& act,
       os << "<thead>\n";
    else
    {
-      // NOTE: For a printable version do not bother with the field name/value column headings.
-      if( !is_printable )
+      // NOTE: If session is anonymous or is a printable version
+      // then do not output the field name/value column headings.
+      if( !is_printable && !sess_info.user_id.empty( ) )
       {
          os << "<thead>\n";
          os << "<tr>\n";
@@ -1329,13 +1332,13 @@ bool output_view_form( ostream& os, const string& act,
 
       if( source_field_id == pfield
        || source_field_id == source.security_level_field
-       || extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_flink )
        || source_field_id == source.create_user_key_field || source_field_id == source.modify_user_key_field
        || source_field_id == source.create_datetime_field || source_field_id == source.modify_datetime_field )
          is_special_field = true;
 
-      if( source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id )
-       || source.html_fields.count( source_value_id ) || source.enum_fields.count( source_value_id )
+      if( source.enum_fields.count( source_value_id ) || source.html_fields.count( source_value_id )
+       || source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id )
+       || source.file_fields.count( source_value_id ) || source.image_fields.count( source_value_id )
        || source.bool_fields.count( source_value_id ) || source.protected_fields.count( source_value_id ) )
          is_special_field = true;
 
@@ -1619,6 +1622,11 @@ bool output_view_form( ostream& os, const string& act,
             {
                cls = "text";
                extra = "size=\"20\" ";
+            }
+            else
+            {
+               if( extra_data.count( c_field_extra_max_size ) )
+                  max_length = atoi( extra_data[ c_field_extra_max_size ].c_str( ) );
             }
 
             extra_keys = "className = '" + cls + "'; ";

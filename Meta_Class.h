@@ -30,10 +30,8 @@
 class Meta_Relationship;
 class Meta_List_Field;
 class Meta_Specification;
-class Meta_Specification_Content_Page;
 class Meta_Specification_Field_Action;
 class Meta_List;
-class Meta_Specification_Copy_Child_Links;
 class Meta_View_Field;
 class Meta_Index;
 class Meta_Initial_Record;
@@ -50,10 +48,8 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    friend class Meta_Relationship;
    friend class Meta_List_Field;
    friend class Meta_Specification;
-   friend class Meta_Specification_Content_Page;
    friend class Meta_Specification_Field_Action;
    friend class Meta_List;
-   friend class Meta_Specification_Copy_Child_Links;
    friend class Meta_View_Field;
    friend class Meta_Index;
    friend class Meta_Initial_Record;
@@ -158,26 +154,11 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    Meta_Specification& child_Specification_Field( );
    const Meta_Specification& child_Specification_Field( ) const;
 
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Fragment( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Fragment( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Group( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Group( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Link( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Link( ) const;
-
    Meta_Specification_Field_Action& child_Specification_Field_Action_New_Record( );
    const Meta_Specification_Field_Action& child_Specification_Field_Action_New_Record( ) const;
 
    Meta_Specification& child_Specification_Other( );
    const Meta_Specification& child_Specification_Other( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page_File( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Page_Link( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Page_Link( ) const;
 
    Meta_Field& child_Field_Parent( );
    const Meta_Field& child_Field_Parent( ) const;
@@ -196,9 +177,6 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    Meta_Specification& child_Specification_Source_Child( );
    const Meta_Specification& child_Specification_Source_Child( ) const;
-
-   Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Source_Child_Rel_Child( );
-   const Meta_Specification_Copy_Child_Links& child_Specification_Copy_Child_Links_Source_Child_Rel_Child( ) const;
 
    Meta_Specification& child_Specification_Source( );
    const Meta_Specification& child_Specification_Source( ) const;
@@ -223,9 +201,6 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    Meta_Specification& child_Specification_Test_Parent( );
    const Meta_Specification& child_Specification_Test_Parent( ) const;
-
-   Meta_Specification_Content_Page& child_Specification_Content_Page_Variable( );
-   const Meta_Specification_Content_Page& child_Specification_Content_Page_Variable( ) const;
 
    Meta_Field& child_Field( );
    const Meta_Field& child_Field( ) const;
@@ -333,6 +308,11 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
+   std::string& get_order_field_name( ) const;
+
+   bool is_file_field_name( const std::string& name ) const;
+   void get_file_field_names( std::vector< std::string >& file_field_names ) const;
+
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }
@@ -429,11 +409,9 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    virtual void setup_graph_parent( Meta_Relationship& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Specification_Content_Page& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification_Field_Action& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List& o, const std::string& foreign_key_field );
-   virtual void setup_graph_parent( Meta_Specification_Copy_Child_Links& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Index& o, const std::string& foreign_key_field );

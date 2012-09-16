@@ -23,7 +23,8 @@
       get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_field`}( `{`$arg_value`} );
 `}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
-      get_obj( ).child_`{`$arg_cclass`}( ).\\0( get_obj( ).\\1( ) );
+      copy_field_or_file_and_field( get_obj( ).child_`{`$arg_cclass`}( ),
+       get_obj( ).child_`{`$arg_cclass`}( ).get_key( ), "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
 `]`}
       get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
    }

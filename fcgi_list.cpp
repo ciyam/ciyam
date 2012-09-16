@@ -427,6 +427,8 @@ void setup_list_fields( list_source& list,
             list.force_left_fields.insert( value_id );
          else if( extra_data.count( c_list_field_extra_center ) )
             list.force_center_fields.insert( value_id );
+         else if( extra_data.count( c_list_field_extra_justify ) )
+            list.force_justify_fields.insert( value_id );
          else if( extra_data.count( c_list_field_extra_right )
           || ( ( fld.ftype == c_field_type_int || fld.ftype == c_field_type_numeric )
           && !extra_data.count( c_field_extra_enum ) ) )
@@ -2359,6 +2361,8 @@ void output_list_form( ostream& os,
          class_tag += " right";
       else if( source.force_center_fields.count( source.value_ids[ i ] ) )
          class_tag += " center";
+      else if( source.force_justify_fields.count( source.value_ids[ i ] ) )
+         class_tag += " justify";
 
       if( source.omit_label_fields.count( source.value_ids[ i ] ) )
          os << "  <th class=\"" << class_tag << "\">&nbsp;";
@@ -2660,6 +2664,8 @@ void output_list_form( ostream& os,
                            class_tag += " right";
                         else if( source.force_center_fields.count( print_total_col_value_ids[ next_total ] ) )
                            class_tag += " center";
+                        else if( source.force_justify_fields.count( print_total_col_value_ids[ next_total ] ) )
+                           class_tag += " justify";
 
                         numeric total = print_summary_sub_totals[ ( source.print_total_fields.size( ) * k ) + next_total ];
 
@@ -2855,6 +2861,8 @@ void output_list_form( ostream& os,
                class_tag += " right";
             else if( source.force_center_fields.count( source_value_id ) )
                class_tag += " center";
+            else if( source.force_justify_fields.count( source_value_id ) )
+               class_tag += " justify";
 
             if( source.large_fields.count( source_value_id ) )
                class_tag += " large";
@@ -3349,6 +3357,8 @@ void output_list_form( ostream& os,
                class_tag += " right";
             else if( source.force_center_fields.count( print_total_col_value_ids[ next_total ] ) )
                class_tag += " center";
+            else if( source.force_justify_fields.count( print_total_col_value_ids[ next_total ] ) )
+               class_tag += " justify";
 
             numeric total = print_total_values[ next_total ];
 

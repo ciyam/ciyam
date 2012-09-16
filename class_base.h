@@ -297,7 +297,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    std::string get_parent_key( ) const;
 
-   std::string get_attached_file_path( const std::string& file_name );
+   std::string get_attached_file_path( const std::string& file_name ) const;
 
    bool get_is_singular( ) const { return is_singular; }
 
@@ -372,6 +372,11 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual void get_foreign_key_info( foreign_key_info_container& foreign_key_info ) const = 0;
 
    virtual int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const = 0;
+
+   virtual std::string& get_order_field_name( ) const = 0;
+
+   virtual bool is_file_field_name( const std::string& name ) const = 0;
+   virtual void get_file_field_names( std::vector< std::string >& file_field_names ) const = 0;
 
    virtual std::string get_field_display_name( const std::string& id_or_name ) const = 0;
 
@@ -862,6 +867,20 @@ void CLASS_BASE_DECL_SPEC link_file( const std::string& source, const std::strin
 
 std::string CLASS_BASE_DECL_SPEC copy_class_file( const std::string& src_path,
  const std::string& dest_class_id, const std::string& dest_file_name, bool return_name_only = false, bool return_full_path = false );
+
+inline void copy_field_or_file_and_field( class_base& dest, const std::string& dest_key,
+ const std::string& dest_field_name, const class_base& src, const std::string& src_field_name, bool return_name_only )
+{
+   if( dest.is_file_field_name( dest_field_name ) )
+      dest.set_field_value(
+       dest.get_field_num( dest_field_name ), copy_class_file( src.get_field_value(
+       src.get_field_num( src_field_name ) ), dest.class_id( ), dest_key, return_name_only ) );
+   else
+      dest.set_field_value( dest.get_field_num( dest_field_name ),
+       src.get_field_value( src.get_field_num( src_field_name ) ) );
+}
+
+void CLASS_BASE_DECL_SPEC copy_class_files_for_clone( const class_base& src, class_base& dest );
 
 std::string CLASS_BASE_DECL_SPEC get_app_dir( );
 std::string CLASS_BASE_DECL_SPEC get_app_file( const std::string& module_name );

@@ -122,7 +122,11 @@ aggregate_domain< string,
  domain_string_max_size< 30 > > g_Id_domain;
 domain_string_max_size< 30 > g_Name_domain;
 
+string g_order_field_name;
+
 set< string > g_derivations;
+
+set< string > g_file_field_names;
 
 typedef map< string, Meta_Permission* > external_aliases_container;
 typedef external_aliases_container::const_iterator external_aliases_const_iterator;
@@ -1407,6 +1411,22 @@ const char* Meta_Permission::get_field_name(
    }
 
    return p_name;
+}
+
+string& Meta_Permission::get_order_field_name( ) const
+{
+   return g_order_field_name;
+}
+
+bool Meta_Permission::is_file_field_name( const string& name ) const
+{
+   return g_file_field_names.count( name );
+}
+
+void Meta_Permission::get_file_field_names( vector< string >& file_field_names ) const
+{
+   for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
+      file_field_names.push_back( *ci );
 }
 
 string Meta_Permission::get_field_display_name( const string& id_or_name ) const

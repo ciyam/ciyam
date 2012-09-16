@@ -768,6 +768,7 @@ struct list_source : source
    std::set< std::string > force_left_fields;
    std::set< std::string > force_right_fields;
    std::set< std::string > force_center_fields;
+   std::set< std::string > force_justify_fields;
 
    std::map< std::string, uint64_t > pstate_fields;
 
