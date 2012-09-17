@@ -2202,6 +2202,8 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_List_Field* p_obj;
    class_pointer< Meta_List_Field > cp_obj;
 
@@ -3564,7 +3566,7 @@ void Meta_List_Field::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Access_Parent_Modifier )
       p_obj->setup_foreign_key( *cp_Access_Parent_Modifier, v_Access_Parent_Modifier );
@@ -3666,7 +3668,7 @@ void Meta_List_Field::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3692,7 +3694,9 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class )
       get_obj( ).Class( get_obj( ).List( ).Class( ) );
    // [(finish default_to_field)]
 
@@ -3757,12 +3761,20 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_changed_fk)]
 
    // [(start default_to_global)]
-   if( is_create && get_obj( ).get_key( ).empty( ) && is_null( get_obj( ).Source_Field( ) ) && get_obj( ).Use_Source_Parent( ) == 0 )
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( )
+    && is_null( get_obj( ).Source_Field( ) )
+    && get_obj( ).Use_Source_Parent( ) == 0 )
       get_obj( ).Link_Restriction( 0 );
    // [(finish default_to_global)]
 
    // [(start default_to_global)]
-   if( is_create && get_obj( ).get_key( ).empty( ) && is_null( get_obj( ).Source_Parent( ) ) && get_obj( ).Use_Source_Parent( ) == 1 )
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( )
+    && is_null( get_obj( ).Source_Parent( ) )
+    && get_obj( ).Use_Source_Parent( ) == 1 )
       get_obj( ).Link_Restriction( 2 );
    // [(finish default_to_global)]
 
@@ -3837,6 +3849,26 @@ bool Meta_List_Field::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_List_Field::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

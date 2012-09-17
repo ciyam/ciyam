@@ -880,7 +880,10 @@ inline void copy_field_or_file_and_field( class_base& dest, const std::string& d
        src.get_field_value( src.get_field_num( src_field_name ) ) );
 }
 
-void CLASS_BASE_DECL_SPEC copy_class_files_for_clone( const class_base& src, class_base& dest );
+void CLASS_BASE_DECL_SPEC copy_class_files( const class_base& src, class_base& dest );
+
+void CLASS_BASE_DECL_SPEC copy_class_files_for_clone(
+ const std::vector< std::pair< std::string, std::string > >& file_field_name_and_values, class_base& dest );
 
 std::string CLASS_BASE_DECL_SPEC get_app_dir( );
 std::string CLASS_BASE_DECL_SPEC get_app_file( const std::string& module_name );

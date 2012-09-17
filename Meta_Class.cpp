@@ -1501,6 +1501,8 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_Class* p_obj;
    class_pointer< Meta_Class > cp_obj;
 
@@ -3045,7 +3047,7 @@ void Meta_Class::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
@@ -3067,7 +3069,7 @@ void Meta_Class::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3199,12 +3201,16 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_auto_int_inc)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Next_Field_Id( ) == gv_default_Next_Field_Id ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Next_Field_Id( ) == gv_default_Next_Field_Id )
       get_obj( ).Next_Field_Id( get_obj( ).Id( ) + "F100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Next_Procedure_Id( ) == gv_default_Next_Procedure_Id ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Next_Procedure_Id( ) == gv_default_Next_Procedure_Id )
       get_obj( ).Next_Procedure_Id( get_obj( ).Id( ) + "P100" );
    // [(finish default_to_field)]
 
@@ -3556,6 +3562,26 @@ bool Meta_Class::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_Class::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

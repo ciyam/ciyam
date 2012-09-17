@@ -743,11 +743,14 @@ bool storage_handler::obtain_lock( size_t& handle,
             {
                // NOTE: Allow "update" locks to be obtained for an already "update" locked instance provided
                // that the instances are separate but owned by the same session and that the existing locked
-               // instance is in the "after_store" trigger.
+               // instance is in the "after_store" trigger. Allow "review" locks for separate instances that
+               // are owned by the same session (even if class locked).
                if( p_session != next_lock.p_session
                 || ( p_class_base == next_lock.p_class_base )
-                || type != next_lock.type || type != op_lock::e_lock_type_update
-                || !next_lock.p_class_base || !next_lock.p_class_base->get_is_after_store( ) )
+                || ( type != next_lock.type && type != op_lock::e_lock_type_review )
+                || ( !next_lock.p_class_base && type != op_lock::e_lock_type_review )
+                || ( type != op_lock::e_lock_type_review && type != op_lock::e_lock_type_update )
+                || ( type != op_lock::e_lock_type_review && !next_lock.p_class_base->get_is_after_store( ) ) )
                {
                   lock_conflict = true;
                   if( !attempts )
@@ -8710,7 +8713,22 @@ bool perform_instance_iterate( class_base& instance,
             // NOTE: If there are fields that are required in order to determine
             // state correctly then these fields are appended to the field list.
             set< string > required_fields;
-            instance.get_required_field_names( required_fields );
+            set< string > field_dependents;
+            instance.get_required_field_names( required_fields, false, &field_dependents );
+
+            // NOTE: It is possible that due to "interdependent" required fields
+            // some required fields may not have been added in the first or even
+            // later calls to "get_required_field_names" so continue calling the
+            // function until no further field names have been added.
+            size_t required_fields_added = required_fields.size( );
+            while( required_fields_added )
+            {
+               instance.get_required_field_names( required_fields, false, &field_dependents );
+               if( required_fields.size( ) == required_fields_added )
+                  break;
+
+               required_fields_added = required_fields.size( );
+            }
 
             for( set< string >::iterator i = required_fields.begin( ); i != required_fields.end( ); ++i )
             {

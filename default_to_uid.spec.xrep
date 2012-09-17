@@ -6,7 +6,8 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start default_to_uid)]
-   if( is_create && !is_system_uid( ) && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+   if( is_create && !is_system_uid( )
+    && get_obj( ).get_clone_key( ).empty( ) && is_null( get_obj( ).`{`$arg_field`}( ) ) )
       get_obj( ).`{`$arg_field`}( get_uid( ) );
    // [(finish default_to_uid)]
 `}

@@ -698,6 +698,8 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_Package_Option* p_obj;
    class_pointer< Meta_Package_Option > cp_obj;
 
@@ -1140,7 +1142,7 @@ void Meta_Package_Option::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
@@ -1202,7 +1204,7 @@ void Meta_Package_Option::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1223,7 +1225,9 @@ void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Model( ) == gv_default_Model ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Model( ) == gv_default_Model )
       get_obj( ).Model( get_obj( ).Package( ).Model( ) );
    // [(finish default_to_field)]
 
@@ -1289,6 +1293,26 @@ bool Meta_Package_Option::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_Package_Option::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

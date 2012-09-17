@@ -259,9 +259,6 @@
 `@eq`(`'\1`'`,`'for_auto_code_user`'`)\
 `{`#for_auto_code_user.spec.xrep section=includes module_name=$module_name arg_auto_class=$specification_\0_auto_class`}
 `,\
-`@eq`(`'\1`'`,`'for_cms_gen`'`)\
-`{`#for_cms_gen.spec.xrep section=includes module_name=$module_name arg_frclass=$specification_\0_frclass`}
-`,\
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)\
 `{`#meta_relationship_field.spec.xrep section=includes module_name=$module_name\
  arg_fclass=$specification_\0_fclass arg_gclass=$specification_\0_gclass`}
@@ -429,20 +426,8 @@ string get_enum_string_\0( \1 val )
 }
 `+\n`]`}
 `{`?`$all_anonymous_specifications`[`$all_anonymous_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'for_cms_gen`'`)\
-`{`#for_cms_gen.spec.xrep section=anonymous module_name=$module_name full_class_name=$full_class_name\
- arg_frclass=$specification_\0_frclass arg_frcode=$specification_\0_frcode arg_frgroup=$specification_\0_frgroup\
- arg_frmeta=$specification_\0_frmeta arg_gbase=$specification_\0_gbase arg_gclass=$specification_\0_gclass\
- arg_gextra=$specification_\0_gextra arg_gname=$specification_\0_gname arg_pfclass=$specification_\0_pfclass\
- arg_pffile=$specification_\0_pffile arg_pfname=$specification_\0_pfname arg_pgchild=$specification_\0_pgchild\
- arg_pgchildgen=$specification_\0_pgchildgen arg_pgclass=$specification_\0_pgclass arg_pgcode=$specification_\0_pgcode\
- arg_pgfname=$specification_\0_pgfname arg_pgfnamegen=$specification_\0_pgfnamegen\
- arg_pggen=$specification_\0_pggen arg_pggenout=$specification_\0_pggenout\
- arg_pghyper=$specification_\0_pghyper arg_pglink=$specification_\0_pglink arg_pgmeta=$specification_\0_pgmeta\
- arg_pgparent=$specification_\0_pgparent arg_pgstitle=$specification_\0_pgstitle arg_pgtext=$specification_\0_pgtext\
- arg_pgtitle=$specification_\0_pgtitle arg_plchild=$specification_\0_plchild arg_plclass=$specification_\0_plclass\
- arg_plorder=$specification_\0_plorder arg_plpage=$specification_\0_plpage arg_vclass=$specification_\0_vclass\
- arg_vname=$specification_\0_vname arg_vvalue=$specification_\0_vvalue`}
+`{`@eq`(`'\1`'`,`'dummy`'`)\
+`{`#dummy.spec.xrep section=anonymous module_name=$module_name class_name=$class_name`}
 ### anonymous
 `}`]`}
 // [<start anonymous>]
@@ -748,6 +733,8 @@ struct \$::impl : public \$_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
 `{`(`?`$use_transform`)
    void transform( read_stream& rs, int32_t version );
 `}
@@ -796,32 +783,10 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `,\
 `@eq`(`'\\1`'`,`'for_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
- arg_field=$specification_\\0_field arg_value=$specification_\\0_value arg_spfield=$specification_\\0_spfield\
- arg_scfield=$specification_\\0_scfield arg_output_arg=$specification_\\0_output_arg arg_tfield=$specification_\\0_tfield`}\
-`,\
-`@eq`(`'\\1`'`,`'for_cms_gen`'`)`&`@eq`(`'\$`'`,`$specification_\\0_pgcopy`)
-`{`#for_cms_gen.spec.xrep section=copy_procedure module_name=$module_name class_name=$class_name\
- arg_pgparent=$specification_\\0_pgparent arg_pgchild=$specification_\\0_pgchild arg_pgfname=$specification_\\0_pgfname\
- arg_pgcode=$specification_\\0_pgcode arg_pgtitle=$specification_\\0_pgtitle arg_pghyper=$specification_\\0_pghyper\
- arg_pgnext=$specification_\\0_pgnext arg_pgcopyout=$specification_\\0_pgcopyout`}\
-`,\
-`@eq`(`'\\1`'`,`'for_cms_gen`'`)`&`@eq`(`'\$`'`,`$specification_\\0_pggen`)
-`{`#for_cms_gen.spec.xrep section=gen_procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
- arg_frclass=$specification_\\0_frclass arg_frcode=$specification_\\0_frcode arg_frgroup=$specification_\\0_frgroup\
- arg_frmeta=$specification_\\0_frmeta arg_gbase=$specification_\\0_gbase arg_gclass=$specification_\\0_gclass\
- arg_gextra=$specification_\\0_gextra arg_gname=$specification_\\0_gname arg_pfclass=$specification_\\0_pfclass\
- arg_pffile=$specification_\\0_pffile arg_pfname=$specification_\\0_pfname arg_pfnamegen=$specification_\\0_pfnamegen\
- arg_pgchild=$specification_\\0_pgchild arg_pgchildgen=$specification_\\0_pgchildgen arg_pgclass=$specification_\\0_pgclass\
- arg_pgcode=$specification_\\0_pgcode arg_pgcanclone=$specification_\\0_pgcanclone\
- arg_pgfname=$specification_\\0_pgfname arg_pgfnamegen=$specification_\\0_pgfnamegen\
- arg_pggen=$specification_\\0_pggen arg_pggenout=$specification_\\0_pggenout\
- arg_pggroup=$specification_\\0_pggroup arg_pgolinks=$specification_\\0_pgolinks arg_pglchild=$specification_\\0_pglchild\
- arg_pghyper=$specification_\\0_pghyper arg_pglink=$specification_\\0_pglink arg_pgmeta=$specification_\\0_pgmeta\
- arg_pgparent=$specification_\\0_pgparent arg_pgstitle=$specification_\\0_pgstitle arg_pgtext=$specification_\\0_pgtext\
- arg_pgtitle=$specification_\\0_pgtitle arg_plchild=$specification_\\0_plchild arg_plclass=$specification_\\0_plclass\
- arg_plorder=$specification_\\0_plorder arg_plpage=$specification_\\0_plpage arg_lclass=$specification_\\0_lclass\
- arg_lname=$specification_\\0_lname arg_lgroup=$specification_\\0_lgroup arg_vclass=$specification_\\0_vclass\
- arg_vname=$specification_\\0_vname arg_vvalue=$specification_\\0_vvalue arg_pgctype=$specification_\\0_pgctype`}\
+ arg_field=$specification_\\0_field arg_value=$specification_\\0_value\
+ arg_sfield=$specification_\\0_sfield arg_svalue=$specification_\\0_svalue arg_spfield=$specification_\\0_spfield\
+ arg_scfield=$specification_\\0_scfield arg_output_arg=$specification_\\0_output_arg arg_tfield=$specification_\\0_tfield\
+ arg_procedure=$specification_\\0_procedure arg_use_proc_name=$specification_\\0_use_proc_name`}\
 `,\
 `@eq`(`'\\1`'`,`'for_destroy`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_destroy.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name`}\
@@ -1152,6 +1117,9 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=value_will_be_provided class_name=$class_name arg_dfield=$specification_\0_dfield`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_dtm.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)\
 `&`@eq`(`$specification_\0_for_store`,`'true`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#field_from_op.spec.xrep section=value_will_be_provided class_name=$class_name\
@@ -1316,7 +1284,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 `{`[`$parent_fields`,
    if( cp_\$ )
       p_obj->setup_foreign_key( *cp_\$, v_\$ );\
@@ -1348,10 +1316,6 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_keyrep=$specification_\0_keyrep arg_separator=$specification_\0_separator arg_opt_prefix=$specification_\0_opt_prefix\
  arg_ofield=$specification_\0_ofield arg_oleftb=$specification_\0_oleftb arg_orightb=$specification_\0_orightb\
  arg_inc_labels=$specification_\0_inc_labels`}\
-`,\
-`@eq`(`'\1`'`,`'for_cms_gen`'`)
-`{`#for_cms_gen.spec.xrep section=after_fetch full_class_name=$full_class_name\
- arg_pgcopy=$specification_\0_pgcopy arg_pgcanclone=$specification_\0_pgcanclone arg_pgctype=$specification_\0_pgctype`}\
 `,\
 `@eq`(`'\1`'`,`'meta_relationship_child_name`'`)
 `{`#meta_relationship_child_name.spec.xrep section=after_fetch full_class_name=$full_class_name\
@@ -1407,6 +1371,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_cfield=$specification_\0_cfield arg_separator=$specification_\0_separator\
  arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse arg_non_empty=$specification_\0_non_empty`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_dtm`'`)
+`{`#transient_field_from_dtm.spec.xrep section=after_fetch class_name=$class_name\
+ arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_file`'`)
 `{`#transient_field_from_file.spec.xrep section=after_fetch class_name=$class_name\
@@ -1471,7 +1439,7 @@ void `{`$full_class_name`}::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 `{`?`$all_finalise_fetch_specifications`[`$all_finalise_fetch_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'true`'`)
 `{`#field_from_procedure_call.spec.xrep section=finalise_fetch class_name=$class_name module_name=$module_name\
@@ -1575,6 +1543,10 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_ctransient=$specification_\0_ctransient arg_embed_links=$specification_\0_embed_links\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_concatenation`'`)
 `{`#field_from_concatenation.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_dfield=$specification_\0_dfield arg_field_list=$specification_\0_field_list arg_separator=$specification_\0_separator`}\
@@ -1607,6 +1579,11 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `{`#field_to_rounded.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_decimals=$specification_\0_decimals arg_method=$specification_\0_method`}\
 `,\
+`@eq`(`'\1`'`,`'field_value`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_value.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
+ arg_value=$specification_\0_value arg_not_null=$specification_\0_not_null arg_not_create=$specification_\0_not_create`}\
+`,\
 `@eq`(`'\1`'`,`'field_values_from_graph_parent`'`)
 `{`#field_values_from_graph_parent.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_pclass=$specification_\0_pclass arg_psfield=$specification_\0_psfield arg_field_info=$specification_\0_field_info`}\
@@ -1623,11 +1600,6 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_order_field=$specification_\0_order_field arg_status_field=$specification_\0_status_field\
  arg_status_value=$specification_\0_status_value arg_new_only=$specification_\0_new_only\
  arg_reverse=$specification_\0_reverse arg_not_create=$specification_\0_not_create`}\
-`,\
-`@eq`(`'\1`'`,`'for_cms_gen`'`)
-`{`#for_cms_gen.spec.xrep section=to_store class_name=$class_name\
- arg_pgctype=$specification_\0_pgctype arg_pgfname=$specification_\0_pgfname arg_pgparent=$specification_\0_pgparent\
- arg_pgactions=$specification_\0_pgactions arg_pgcopy=$specification_\0_pgcopy arg_pgcopyid=$specification_\0_pgcopyid`}\
 `,\
 `@eq`(`'\1`'`,`'meta_spec_field_type`'`)
 `{`#meta_spec_field_type.spec.xrep section=to_store class_name=$class_name\
@@ -1737,6 +1709,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_ctransient=$specification_\0_ctransient arg_embed_links=$specification_\0_embed_links\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_op`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#field_from_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
@@ -1749,6 +1725,11 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue`}\
+`,\
+`@eq`(`'\1`'`,`'field_value`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_value.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield\
+ arg_value=$specification_\0_value arg_not_null=$specification_\0_not_null arg_not_create=$specification_\0_not_create`}\
 `,\
 `@eq`(`'\1`'`,`'file_attachment`'`)`&`?`$specification_\0_sfield`&`!`@eq`(`$specification_\0_sfield`,`'`'`)
 `{`#file_attachment.spec.xrep section=for_store arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
@@ -1778,13 +1759,6 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#for_auto_code_user.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_auto_class=$specification_\0_auto_class\
  arg_inc_proc=$specification_\0_inc_proc arg_inc_clones=$specification_\0_inc_clones arg_key=$specification_\0_key`}\
-`,\
-`@eq`(`'\1`'`,`'for_cms_gen`'`)
-`{`#for_cms_gen.spec.xrep section=for_store class_name=$class_name module_name=$module_name full_class_name=$full_class_name\
- arg_pgctype=$specification_\0_pgctype arg_pgfname=$specification_\0_pgfname arg_pgparent=$specification_\0_pgparent\
- arg_pgmeta=$specification_\0_pgmeta arg_pglink=$specification_\0_pglink arg_pggroup=$specification_\0_pggroup\
- arg_pglchild=$specification_\0_pglchild arg_plpage=$specification_\0_plpage arg_lclass=$specification_\0_lclass\
- arg_lgroup=$specification_\0_lgroup arg_lname=$specification_\0_lname`}\
 `,\
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)
 `{`#meta_relationship_field.spec.xrep section=for_store module_name=$module_name\
@@ -1959,13 +1933,6 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
 `{`#file_link.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field`}\
 `,\
-`@eq`(`'\1`'`,`'for_cms_gen`'`)
-`{`#for_cms_gen.spec.xrep section=for_destroy class_name=$class_name module_name=$module_name full_class_name=$full_class_name\
- arg_gbase=$specification_\0_gbase arg_gclass=$specification_\0_gclass\
- arg_pgfnamegen=$specification_\0_pgfnamegen arg_pfclass=$specification_\0_pfclass\
- arg_pfnamegen=$specification_\0_pfnamegen arg_pgparent=$specification_\0_pgparent\
- arg_pgctype=$specification_\0_pgctype arg_pglink=$specification_\0_pglink arg_pgolinks=$specification_\0_pgolinks`}\
-`,\
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)
 `{`#meta_relationship_field.spec.xrep section=for_destroy module_name=$module_name arg_fclass=$specification_\0_fclass`}\
 `,\
@@ -1989,10 +1956,6 @@ void `{`$full_class_name`}::impl::after_destroy( bool is_internal )
 `&`?`$specification_\0_cclass`&`@eq`(`$class_name`,`$specification_\0_cclass`)
 `{`#field_from_child_concat.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\
  arg_pfield=$specification_\0_pfield`}\
-`,\
-`@eq`(`'\1`'`,`'for_cms_gen`'`)
-`{`#for_cms_gen.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\
- arg_pglink=$specification_\0_pglink arg_pgolinks=$specification_\0_pgolinks`}\
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_or_after_destroy class_name=$class_name module_name=$module_name\
@@ -2047,6 +2010,26 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void `{`$full_class_name`}::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 `{`(`?`$use_transform`)
