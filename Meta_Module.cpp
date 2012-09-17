@@ -415,6 +415,8 @@ struct Meta_Module::impl : public Meta_Module_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_Module* p_obj;
    class_pointer< Meta_Module > cp_obj;
 
@@ -738,7 +740,7 @@ void Meta_Module::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Application )
       p_obj->setup_foreign_key( *cp_Application, v_Application );
@@ -754,7 +756,7 @@ void Meta_Module::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -838,6 +840,26 @@ bool Meta_Module::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_Module::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

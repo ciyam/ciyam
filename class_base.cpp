@@ -2362,10 +2362,10 @@ string copy_class_file( const string& src_path,
    return dest_path;
 }
 
-void copy_class_files_for_clone( const class_base& src, class_base& dest )
+void copy_class_files( const class_base& src, class_base& dest )
 {
    if( src.class_id( ) != dest.class_id( ) )
-      throw runtime_error( "cannot copy class files for clone from a '"
+      throw runtime_error( "cannot copy class files from a '"
        + string( src.class_name( ) ) + "' to a '" + string( dest.class_name( ) ) + "'" );
 
    vector< string > file_field_names;
@@ -2378,6 +2378,19 @@ void copy_class_files_for_clone( const class_base& src, class_base& dest )
       if( !next_file.empty( ) )
          dest.set_field_value( dest.get_field_num( file_field_names[ i ] ),
           copy_class_file( src.get_attached_file_path( next_file ), dest.class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+   }
+}
+
+void copy_class_files_for_clone(
+ const vector< pair< string, string > >& file_field_name_and_values, class_base& dest )
+{
+   for( size_t i = 0; i < file_field_name_and_values.size( ); i++ )
+   {
+      string next_file( file_field_name_and_values[ i ].second );
+
+      if( !next_file.empty( ) )
+         dest.set_field_value( dest.get_field_num( file_field_name_and_values[ i ].first ),
+          copy_class_file( dest.get_attached_file_path( next_file ), dest.class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
    }
 }
 

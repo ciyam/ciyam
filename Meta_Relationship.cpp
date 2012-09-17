@@ -781,6 +781,8 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_Relationship* p_obj;
    class_pointer< Meta_Relationship > cp_obj;
 
@@ -1190,7 +1192,7 @@ void Meta_Relationship::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Child_Class )
       p_obj->setup_foreign_key( *cp_Child_Class, v_Child_Class );
@@ -1229,7 +1231,7 @@ void Meta_Relationship::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1255,17 +1257,26 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_changed_fk)]
 
    // [(start default_to_global)]
-   if( is_create && get_obj( ).get_key( ).empty( ) && get_obj( ).Parent_Class( ).Type( ) == 1 )
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Parent_Class( ).Type( ) == 1 )
       get_obj( ).Extra( 1 );
    // [(finish default_to_global)]
 
    // [(start default_to_global)]
-   if( is_create && get_obj( ).get_key( ).empty( ) && get_obj( ).Parent_Class( ).Type( ) == 2 )
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Parent_Class( ).Type( ) == 2 )
       get_obj( ).Extra( 2 );
    // [(finish default_to_global)]
 
    // [(start default_to_global)]
-   if( is_create && get_obj( ).get_key( ).empty( ) && get_obj( ).Parent_Class( ).Type( ) == 3 )
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Parent_Class( ).Type( ) == 3 )
       get_obj( ).Extra( 3 );
    // [(finish default_to_global)]
 
@@ -1469,6 +1480,26 @@ bool Meta_Relationship::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_Relationship::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

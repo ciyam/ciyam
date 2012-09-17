@@ -1026,6 +1026,8 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_Model* p_obj;
    class_pointer< Meta_Model > cp_obj;
 
@@ -6157,7 +6159,7 @@ void Meta_Model::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Permission )
       p_obj->setup_foreign_key( *cp_Permission, v_Permission );
@@ -6199,7 +6201,7 @@ void Meta_Model::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -6298,22 +6300,30 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
    // [(finish file_link)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Next_Class_Id( ) == gv_default_Next_Class_Id ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Next_Class_Id( ) == gv_default_Next_Class_Id )
       get_obj( ).Next_Class_Id( get_obj( ).Id( ) + "C100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Next_Specification_Id( ) == gv_default_Next_Specification_Id ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Next_Specification_Id( ) == gv_default_Next_Specification_Id )
       get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S1000" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Next_List_Id( ) == gv_default_Next_List_Id ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Next_List_Id( ) == gv_default_Next_List_Id )
       get_obj( ).Next_List_Id( get_obj( ).Id( ) + "L100" );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Next_View_Id( ) == gv_default_Next_View_Id ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Next_View_Id( ) == gv_default_Next_View_Id )
       get_obj( ).Next_View_Id( get_obj( ).Id( ) + "V100" );
    // [(finish default_to_field)]
 
@@ -6462,6 +6472,26 @@ bool Meta_Model::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_Model::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

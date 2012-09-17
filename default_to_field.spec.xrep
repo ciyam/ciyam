@@ -9,9 +9,12 @@
 `{`!`@eq`(`$arg_cvt_func`,`'`'`)`$tmp1`=`$arg_cvt_func`}\
 `{`!`@eq`(`$arg_cvt_func`,`'`'`)`$tmp1`^`'( `'`}`{`!`@eq`(`$arg_cvt_func`,`'`'`)`$tmp2`=`' )`'`}\
 `{`!`@eq`(`$arg_append`,`'`'`)`$tmp3`=`' + `{`$arg_append`}`'`}
-   if( is_create`{`@eq`(`$arg_fistexttype`,`'1`'`)`{`@eq`(`$arg_inc_clones`,`'`'`) &&`,
-    && ( !get_obj( ).get_clone_key( ).empty( ) ||`} ( get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )`}\
-`{`@eq`(`$arg_inc_clones`,`'true`'`) )`}`{`!`@eq`(`$arg_not_dflt`,`'`'`) && !get_obj( ).get_key( ).empty( )`}\
+   if( is_create`{`!`@eq`(`$arg_not_dflt`,`'`'`)
+    && !get_obj( ).get_key( ).empty( )`}`{`@eq`(`$arg_inc_clones`,`'`'`)
+    && get_obj( ).get_clone_key( ).empty( )
+    &&`,
+    && ( !get_obj( ).get_clone_key( ).empty( ) ||`} get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`}\
+`{`@eq`(`$arg_inc_clones`,`'true`'`) )`{`!`@eq`(`$arg_tfield`,`'`'`)\n   `}`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
  && !to_string( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ).empty( )\

@@ -3039,6 +3039,8 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_Specification* p_obj;
    class_pointer< Meta_Specification > cp_obj;
 
@@ -5459,7 +5461,7 @@ void Meta_Specification::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Child_Rel_Child_Class )
       p_obj->setup_foreign_key( *cp_Child_Rel_Child_Class, v_Child_Rel_Child_Class );
@@ -5747,7 +5749,7 @@ void Meta_Specification::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [(start field_from_procedure_call)]
    if( !get_obj( ).get_key( ).empty( )
@@ -5810,77 +5812,107 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_type)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Model( ) == gv_default_Model ) && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Model( ) == gv_default_Model && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
       get_obj( ).Model( get_obj( ).Parent_Specification( ).Model( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Specification_Type( ) == gv_default_Specification_Type ) && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Specification_Type( ) == gv_default_Specification_Type && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
       get_obj( ).Specification_Type( get_obj( ).Parent_Specification( ).Child_Specification_Type( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent_For_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Source_Parent_Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_For_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Child_Rel_Child_Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Field_For_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Field_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Field_Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Source_Field_For_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Field_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Source_Field_Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Class( ) == gv_default_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Other_Class_For_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Other_Class_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Other_Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Source_Parent( ) == gv_default_Source_Parent ) && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent( ) == true )
       get_obj( ).Source_Parent( get_obj( ).Parent_Specification( ).Source_Parent( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Source_Parent( ) == gv_default_Source_Parent ) && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_As_Source_Parent( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_As_Source_Parent( ) == true )
       get_obj( ).Source_Parent( get_obj( ).Parent_Specification( ).Child_Rel_Field_Key( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Source_Class( ) == gv_default_Source_Class ) && get_obj( ).Specification_Type( ).Use_Parent_Source_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Source_Class( ) == gv_default_Source_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Class( ) == true )
       get_obj( ).Source_Class( get_obj( ).Parent_Specification( ).Source_Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Actions( ) == gv_default_Actions ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Actions( ) == gv_default_Actions )
       get_obj( ).Actions( get_obj( ).Specification_Type( ).Specification_Actions( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Child_Specification_Type( ) == gv_default_Child_Specification_Type ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Child_Specification_Type( ) == gv_default_Child_Specification_Type )
       get_obj( ).Child_Specification_Type( get_obj( ).Specification_Type( ).Child_Specification_Type( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Model( ) == gv_default_Model ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Model( ) == gv_default_Model )
       get_obj( ).Model( get_obj( ).Class( ).Model( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Source_Class( ) == gv_default_Source_Class ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Source_Class( ) == gv_default_Source_Class )
       get_obj( ).Source_Class( get_obj( ).Class( ) );
    // [(finish default_to_field)]
 
@@ -5914,12 +5946,16 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Source_Parent_Class( ) == gv_default_Source_Parent_Class ) && get_obj( ).Specification_Type( ).Use_Class_As_Source_Parent_Class( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Source_Parent_Class( ) == gv_default_Source_Parent_Class && get_obj( ).Specification_Type( ).Use_Class_As_Source_Parent_Class( ) == true )
       get_obj( ).Source_Parent_Class( get_obj( ).Class( ) );
    // [(finish default_to_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Name( ) == gv_default_Name ) )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Name( ) == gv_default_Name )
       get_obj( ).Name( get_obj( ).Specification_Type( ).Specification_Name( ) );
    // [(finish default_to_field)]
 
@@ -5966,7 +6002,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)]
 
    // [(start default_to_field)]
-   if( is_create && ( get_obj( ).Procedure( ) == gv_default_Procedure ) && get_obj( ).Specification_Type( ).Use_Parent_Procedure( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Procedure( ) == gv_default_Procedure && get_obj( ).Specification_Type( ).Use_Parent_Procedure( ) == true )
       get_obj( ).Procedure( get_obj( ).Parent_Specification( ).Procedure( ) );
    // [(finish default_to_field)]
 
@@ -6719,6 +6757,26 @@ bool Meta_Specification::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_Specification::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

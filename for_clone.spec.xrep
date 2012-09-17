@@ -3,8 +3,11 @@
    transaction_start( );
    try
    {
+`{`@eq`(`$arg_sfield`,`'`'`)\
       get_obj( ).begin_review( );
-
+`,\
+      get_obj( ).op_update( );
+`}`{`!`@eq`(`$arg_spfield`,`'`'`)
       get_obj( ).`{`$arg_spfield`}( ).op_update( );
       int next_copy_num = get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( );
 
@@ -13,25 +16,41 @@
 
       get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( next_copy_num + 1 );
       get_obj( ).`{`$arg_spfield`}( ).op_apply( );
-
+`,
+      string key_info( get_obj( ).get_key( ) + "_C " + get_obj( ).get_key( ) );
+`}
       class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 
       cp_source->op_create( key_info );
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
-      cp_source->`{`$arg_tfield`}( "" );\
-`}
-      cp_source->`{`$arg_field`}( "`{`$arg_value`}" );
+      cp_source->`{`$arg_tfield`}( "" );
+`}\
+      cp_source->`{`$arg_field`}( `{`$arg_value`} );
       cp_source->op_apply( );
 
+`{`@eq`(`$arg_sfield`,`'`'`)\
       get_obj( ).finish_review( );
+`,\
+      get_obj( ).`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
+      get_obj( ).op_apply( );
+`}\
       transaction_commit( );
 
       // FUTURE: The return message itself should be a module string.
+`{`@eq`(`$arg_use_proc_name`,`'`'`)\
       `{`$arg_output_arg`} = "Created New " + get_obj( ).get_display_name( );
+`,\
+      `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
+       + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`}\
    }
    catch( ... )
    {
+`{`@eq`(`$arg_sfield`,`'`'`)\
       get_obj( ).finish_review( );
+`,\
+      get_obj( ).op_cancel( );
+`}\
       transaction_rollback( );
       throw;
    }

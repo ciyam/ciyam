@@ -1574,6 +1574,8 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    bool is_filtered( ) const;
 
+   void get_required_transients( set< string >& names ) const;
+
    Meta_List* p_obj;
    class_pointer< Meta_List > cp_obj;
 
@@ -3304,7 +3306,7 @@ void Meta_List::impl::after_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    if( cp_Access_Parent_Modifier )
       p_obj->setup_foreign_key( *cp_Access_Parent_Modifier, v_Access_Parent_Modifier );
@@ -3358,7 +3360,7 @@ void Meta_List::impl::finalise_fetch( )
 {
    set< string > required_transients;
 
-   p_obj->get_required_field_names( required_transients, true );
+   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3407,7 +3409,9 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)]
 
    // [(start default_to_field)]
-   if( is_create && get_obj( ).Type( ).Is_Not_Anonymous( ) == true )
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Allow_Anonymous_Access( ) == gv_default_Allow_Anonymous_Access && get_obj( ).Type( ).Is_Not_Anonymous( ) == true )
       get_obj( ).Allow_Anonymous_Access( get_obj( ).Type( ).Dummy_0( ) );
    // [(finish default_to_field)]
 
@@ -3511,6 +3515,26 @@ bool Meta_List::impl::is_filtered( ) const
    // [<finish is_filtered>]
 
    return false;
+}
+
+void Meta_List::impl::get_required_transients( set< string >& names ) const
+{
+   set< string > dependents;
+   p_obj->get_required_field_names( names, true, &dependents );
+
+   // NOTE: It is possible that due to "interdependent" required fields
+   // some required fields may not have been added in the first or even
+   // later calls to "get_required_field_names" so continue calling the
+   // function until no further field names have been added.
+   size_t num_required = names.size( );
+   while( num_required )
+   {
+      p_obj->get_required_field_names( names, true, &dependents );
+      if( names.size( ) == num_required )
+         break;
+
+      num_required = names.size( );
+   }
 }
 
 #undef MODULE_TRACE

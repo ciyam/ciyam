@@ -9,6 +9,10 @@
       if( cp_source->child_`{`$arg_cclass`}( ).iterate_forwards( ) )
       {
          int child_num = 0;
+`{`@eq`(`$arg_copy_files`,`'true`'`)
+         vector< string > file_field_names;
+         get_obj( ).child_`{`$arg_cclass`}( ).get_file_field_names( file_field_names );
+`}\
          do
          {
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
@@ -23,11 +27,20 @@
             string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
             child_key += ' ';
             child_key += cp_source->child_`{`$arg_cclass`}( ).get_key( );
-
+`{`@eq`(`$arg_copy_files`,`'true`'`)
+            vector< pair< string, string > > file_field_name_and_values;
+            for( size_t i = 0; i < file_field_names.size( ); i++ )
+            {
+               file_field_name_and_values.push_back(
+                make_pair( file_field_names[ i ],
+                cp_source->child_`{`$arg_cclass`}( ).get_field_value(
+                cp_source->child_`{`$arg_cclass`}( ).get_field_num( file_field_names[ i ] ) ) ) );
+            }
+`}
             get_obj( ).child_`{`$arg_cclass`}( ).op_create( child_key );
             get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
 `{`@eq`(`$arg_copy_files`,`'true`'`)
-            copy_class_files_for_clone( get_obj( ), get_obj( ).child_`{`$arg_cclass`}( ) );
+            copy_class_files_for_clone( file_field_name_and_values, get_obj( ).child_`{`$arg_cclass`}( ) );
 `}
             get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
 
