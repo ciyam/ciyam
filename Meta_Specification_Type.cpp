@@ -2226,10 +2226,12 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Specification_Type* p_obj;
    class_pointer< Meta_Specification_Type > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -3822,9 +3824,8 @@ void Meta_Specification_Type::impl::validate_set_fields( set< string >& fields_s
 
 void Meta_Specification_Type::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Child_Specification_Type )
       p_obj->setup_foreign_key( *cp_Child_Specification_Type, v_Child_Specification_Type );
@@ -3841,9 +3842,6 @@ void Meta_Specification_Type::impl::after_fetch( )
 
 void Meta_Specification_Type::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3924,23 +3922,25 @@ bool Meta_Specification_Type::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Specification_Type::impl::get_required_transients( set< string >& names ) const
+void Meta_Specification_Type::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -8022,23 +8022,23 @@ void Meta_Specification_Type::get_sql_column_values(
 }
 
 void Meta_Specification_Type::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }
 
 void Meta_Specification_Type::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

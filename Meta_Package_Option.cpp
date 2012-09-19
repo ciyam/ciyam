@@ -698,10 +698,12 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Package_Option* p_obj;
    class_pointer< Meta_Package_Option > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -1140,9 +1142,8 @@ void Meta_Package_Option::impl::validate_set_fields( set< string >& fields_set, 
 
 void Meta_Package_Option::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
@@ -1202,9 +1203,6 @@ void Meta_Package_Option::impl::after_fetch( )
 
 void Meta_Package_Option::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1295,23 +1293,25 @@ bool Meta_Package_Option::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Package_Option::impl::get_required_transients( set< string >& names ) const
+void Meta_Package_Option::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -2320,12 +2320,12 @@ void Meta_Package_Option::get_sql_column_values(
 }
 
 void Meta_Package_Option::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [<start get_required_field_names>]
 //nyi
@@ -2333,8 +2333,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Use_Option" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Use_Option ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Use_Option ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Use_Option ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Use_Option ) ) )
          names.insert( "Use_Option" );
    }
 
@@ -2342,8 +2342,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Other_Package" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Other_Package ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Other_Package ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Other_Package ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Other_Package ) ) )
          names.insert( "Other_Package" );
    }
 
@@ -2351,8 +2351,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Primitive" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
          names.insert( "Primitive" );
    }
 
@@ -2360,8 +2360,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "String" );
 
-      if( ( required_transients && is_field_transient( e_field_id_String ) )
-       || ( !required_transients && !is_field_transient( e_field_id_String ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_String ) )
+       || ( !use_transients && !is_field_transient( e_field_id_String ) ) )
          names.insert( "String" );
    }
 
@@ -2369,8 +2369,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Datetime" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Datetime ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Datetime ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Datetime ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Datetime ) ) )
          names.insert( "Datetime" );
    }
 
@@ -2378,8 +2378,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Date" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Date ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Date ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Date ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Date ) ) )
          names.insert( "Date" );
    }
 
@@ -2387,8 +2387,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Time" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Time ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Time ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Time ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Time ) ) )
          names.insert( "Time" );
    }
 
@@ -2396,8 +2396,8 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Numeric" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Numeric ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Numeric ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Numeric ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Numeric ) ) )
          names.insert( "Numeric" );
    }
 
@@ -2405,97 +2405,97 @@ void Meta_Package_Option::get_required_field_names(
    {
       dependents.insert( "Integer" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Integer ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Integer ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Integer ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Integer ) ) )
          names.insert( "Integer" );
    }
    // [<finish get_required_field_names>]
 }
 
 void Meta_Package_Option::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [(start protect_equal)]
    dependents.insert( "Installed" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Installed ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Installed ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Installed ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
    // [(finish protect_equal)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Is_Other_Package" ); // (for Is_Other_Package_Option modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Other_Package ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Is_Other_Package ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
       names.insert( "Is_Other_Package" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Is_Other_Package" ); // (for Is_Not_Other_Package_Option modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Other_Package ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Is_Other_Package ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
       names.insert( "Is_Other_Package" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_String modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_Datetime modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_Date modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_Time modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_Numeric modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_Int modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Primitive" ); // (for Is_Bool modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Primitive ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Primitive ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
    // [(finish modifier_field_value)]
 

@@ -17,22 +17,22 @@
    // [(start modifier_field_compare)]
    dependents.insert( "`{`$arg_field`}" ); // (for `{`$arg_modifier`} modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );
 
 `{`$sfield`=`$arg_pfield`}`{`@eq`(`$sfield`,`'`'`)`$sfield`=`$arg_sfield`}\
    dependents.insert( "`{`$sfield`}" ); // (for `{`$arg_modifier`} modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$sfield`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$sfield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$sfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$sfield`} ) ) )
       names.insert( "`{`$sfield`}" );
 `{`$tfield`=`$arg_tpfield`}`{`@eq`(`$tfield`,`'`'`)`$tfield`=`$arg_tfield`}\
 `{`!`@eq`(`$tfield`,`'`'`)
    dependents.insert( "`{`$tfield`}" ); // (for `{`$arg_modifier`} modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$tfield`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$tfield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$tfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$tfield`} ) ) )
       names.insert( "`{`$tfield`}" );
 `}\
    // [(finish modifier_field_compare)]

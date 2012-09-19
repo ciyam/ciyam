@@ -8851,10 +8851,15 @@ bool perform_instance_iterate( class_base& instance,
          // NOTE: Unless a single row limit was specified (which is an alternate way of performing an
          // instance fetch) then iteration is flagged so that "after_fetch" triggers can detect this.
          if( row_limit != 1 )
+         {
+            instance_accessor.set_iteration_starting( true );
             instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
+         }
 
          found = fetch_instance_from_db( instance,
           instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
+
+         instance_accessor.set_iteration_starting( false );
 
          ++gtp_session->sql_count;
 

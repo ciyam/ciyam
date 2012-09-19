@@ -1501,10 +1501,12 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Class* p_obj;
    class_pointer< Meta_Class > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -3045,9 +3047,8 @@ void Meta_Class::impl::validate_set_fields( set< string >& fields_set, validatio
 
 void Meta_Class::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
@@ -3067,9 +3068,6 @@ void Meta_Class::impl::after_fetch( )
 
 void Meta_Class::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3564,23 +3562,25 @@ bool Meta_Class::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Class::impl::get_required_transients( set< string >& names ) const
+void Meta_Class::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -5267,20 +5267,20 @@ void Meta_Class::get_sql_column_values(
 }
 
 void Meta_Class::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [(start field_from_other_field)]
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "Source_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
    // [(finish field_from_other_field)]
@@ -5290,8 +5290,8 @@ void Meta_Class::get_required_field_names(
    {
       dependents.insert( "Source_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
    // [(finish field_from_other_field)]
@@ -5301,8 +5301,8 @@ void Meta_Class::get_required_field_names(
    {
       dependents.insert( "Source_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
    // [(finish field_from_other_field)]
@@ -5312,8 +5312,8 @@ void Meta_Class::get_required_field_names(
    {
       dependents.insert( "Source_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
    // [(finish field_from_other_field)]
@@ -5323,8 +5323,8 @@ void Meta_Class::get_required_field_names(
    {
       dependents.insert( "Source_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
    // [(finish field_from_other_field)]
@@ -5334,8 +5334,8 @@ void Meta_Class::get_required_field_names(
    {
       dependents.insert( "Source_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Source_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Source_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Source_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
    // [(finish field_from_other_field)]
@@ -5345,33 +5345,33 @@ void Meta_Class::get_required_field_names(
 }
 
 void Meta_Class::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [(start modifier_field_null)]
    dependents.insert( "Source_Model" ); // (for Is_Alias modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Source_Model ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Source_Model ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Source_Model ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Source_Model ) ) )
       names.insert( "Source_Model" );
    // [(finish modifier_field_null)]
 
    // [(start modifier_field_null)]
    dependents.insert( "Source_Model" ); // (for Is_Not_Alias modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Source_Model ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Source_Model ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Source_Model ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Source_Model ) ) )
       names.insert( "Source_Model" );
    // [(finish modifier_field_null)]
 
    // [(start protect_not_equal)]
    dependents.insert( "Source_Model" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Source_Model ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Source_Model ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Source_Model ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Source_Model ) ) )
       names.insert( "Source_Model" );
    // [(finish protect_not_equal)]
 

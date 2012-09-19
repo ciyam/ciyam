@@ -330,10 +330,10 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    void get_sql_column_values( std::vector< std::string >& values, bool* p_done, const std::string* p_class_name ) const;
 
    void get_required_field_names( std::set< std::string >& names,
-    bool required_transients, std::set< std::string >* p_dependents = 0 ) const;
+    bool use_transients, std::set< std::string >* p_dependents = 0 ) const;
 
    void get_always_required_field_names( std::set< std::string >& names,
-    bool required_transients, std::set< std::string >& dependents ) const;
+    bool use_transients, std::set< std::string >& dependents ) const;
 
    void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
 

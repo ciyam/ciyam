@@ -138,14 +138,14 @@
    // [(start move_up_and_down)]
    dependents.insert( "`{`$arg_field`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );
 `{`!`@eq`(`$arg_update_parent`,`'`'`)
    dependents.insert( "`{`$arg_update_parent`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_update_parent`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_update_parent`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_update_parent`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_update_parent`} ) ) )
       names.insert( "`{`$arg_update_parent`}" );
 `}\
    // [(finish move_up_and_down)]

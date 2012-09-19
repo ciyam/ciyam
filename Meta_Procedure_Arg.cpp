@@ -626,10 +626,12 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Procedure_Arg* p_obj;
    class_pointer< Meta_Procedure_Arg > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -1030,9 +1032,8 @@ void Meta_Procedure_Arg::impl::validate_set_fields( set< string >& fields_set, v
 
 void Meta_Procedure_Arg::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Procedure )
       p_obj->setup_foreign_key( *cp_Procedure, v_Procedure );
@@ -1046,9 +1047,6 @@ void Meta_Procedure_Arg::impl::after_fetch( )
 
 void Meta_Procedure_Arg::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1181,23 +1179,25 @@ bool Meta_Procedure_Arg::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Procedure_Arg::impl::get_required_transients( set< string >& names ) const
+void Meta_Procedure_Arg::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -1937,45 +1937,45 @@ void Meta_Procedure_Arg::get_sql_column_values(
 }
 
 void Meta_Procedure_Arg::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }
 
 void Meta_Procedure_Arg::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [(start modifier_field_value)]
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Internal ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Internal ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Internal ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
    // [(finish modifier_field_value)]
 
    // [(start protect_equal)]
    dependents.insert( "Internal" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Internal ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Internal ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Internal ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
    // [(finish protect_equal)]
 
    // [(start move_up_and_down)]
    dependents.insert( "Order" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Order ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Order ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Order ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
    // [(finish move_up_and_down)]
 

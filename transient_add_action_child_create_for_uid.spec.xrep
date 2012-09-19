@@ -29,8 +29,8 @@
    {
       dependents.insert( "`{`$arg_sfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
    }
    // [(finish transient_add_action_child_create_for_uid)]

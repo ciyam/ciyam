@@ -28,8 +28,8 @@
    {
       dependents.insert( "`{`$arg_fkfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_fkfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_fkfield`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_fkfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_fkfield`} ) ) )
          names.insert( "`{`$arg_fkfield`}" );
    }
    // [(finish transient_field_action_create_from_fk)]

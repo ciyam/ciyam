@@ -16,8 +16,8 @@
    {
       dependents.insert( "`{`$arg_sfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
    }
 
@@ -25,8 +25,8 @@
    {
       dependents.insert( "`{`$arg_pfield1`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield1`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield1`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield1`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield1`} ) ) )
          names.insert( "`{`$arg_pfield1`}" );
    }
 
@@ -34,8 +34,8 @@
    {
       dependents.insert( "`{`$arg_pfield2`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield2`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield2`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield2`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield2`} ) ) )
          names.insert( "`{`$arg_pfield2`}" );
    }
    // [(finish meta_relationship_child_name)]

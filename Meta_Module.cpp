@@ -415,10 +415,12 @@ struct Meta_Module::impl : public Meta_Module_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Module* p_obj;
    class_pointer< Meta_Module > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -738,9 +740,8 @@ void Meta_Module::impl::validate_set_fields( set< string >& fields_set, validati
 
 void Meta_Module::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Application )
       p_obj->setup_foreign_key( *cp_Application, v_Application );
@@ -754,9 +755,6 @@ void Meta_Module::impl::after_fetch( )
 
 void Meta_Module::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -842,23 +840,25 @@ bool Meta_Module::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Module::impl::get_required_transients( set< string >& names ) const
+void Meta_Module::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -1362,29 +1362,29 @@ void Meta_Module::get_sql_column_values(
 }
 
 void Meta_Module::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }
 
 void Meta_Module::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [(start move_up_and_down)]
    dependents.insert( "Order" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Order ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Order ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Order ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
    // [(finish move_up_and_down)]
 

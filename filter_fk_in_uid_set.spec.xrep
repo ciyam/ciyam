@@ -25,8 +25,8 @@
    // [(start filter_fk_in_uid_set)]
    dependents.insert( "`{`$arg_spfield`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
       names.insert( "`{`$arg_spfield`}" );
    // [(finish filter_fk_in_uid_set)]
 `}

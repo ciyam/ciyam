@@ -1,359 +1,364 @@
 html
 {
-   height:100%;
-   min-height:100%;
+   height: 100%;
+   min-height: 100%;
 }
 
 body
 {
-   font-family:verdana,helvetica;
-   font-size:12px;
-   padding:0px;
-   margin:0px;
-   height:100%;
-   min-height:100%;
-   background:#ddd;
+   font-family: verdana,helvetica;
+   font-size: 12px;
+   padding: 0px;
+   margin: 0px;
+   height: 100%;
+   min-height: 100%;
+   background: #ddd;
 }
 
 input,textarea,select
 {
-   font-family:verdana,helvetica;
-   font-size:12px;
+   font-family: verdana,helvetica;
+   font-size: 12px;
 }
 
 a
 {
-   text-decoration:underline;
-   color:#222;
+   text-decoration: underline;
+   color: #222;
 }
 
 #content
 {
-   width:100%;
-   border:0px solid red;
-   margin:0px auto;
-   text-align:center;
-   min-height:100%;
-   height:auto !important;
-   height:100%;
+   width: 100%;
+   border: 0px solid red;
+   margin: 0px auto;
+   text-align: center;
+   min-height: 100%;
+   height: auto !important;
+   height: 100%;
 }
 
 #normal_content
 {
-   background-image:url(background.png);
-   background-repeat:repeat-y;
-   background-position:center;
-   position:absolute;
+   background-image: url(background.png);
+   background-repeat: repeat-y;
+   background-position: center;
+   position: absolute;
 
-   width:100%;
-   border:0px solid #000;
+   width: 100%;
+   border: 0px solid #000;
    height: auto !important;
-   height:100%;
-   min-height:100%;
+   height: 100%;
+   min-height: 100%;
 
-   top:0px;
-   left:0px;
+   top: 0px;
+   left: 0px;
 }
 
 #login_content
 {
-   position:absolute;
-   width:100%;
-   left:0px;
-   top:0px;
-   border:0px solid #000;
-   margin:0px auto;
-   text-align:center;
-   background:none;
-   background-color:#b9beba;
-   height:100%;
-   right:0px;
+   position: absolute;
+   width: 100%;
+   left: 0px;
+   top: 0px;
+   border: 0px solid #000;
+   margin: 0px auto;
+   text-align: center;
+   background: none;
+   background-color: #b9beba;
+   height: 100%;
+   right: 0px;
 }
 
 #login_content #nav
 {
-   padding-right:15px;
-   text-align:center;
+   padding-right: 15px;
+   text-align: center;
 }
 
 #login_content #remainder
 {
-   background:none;
-   border:0px solid red;
+   background: none;
+   border: 0px solid red;
 }
 
 /* NAVBAR */
 #navband
 {
-   width:973px;
-   height:35px;
-   background-color:#018611;
-   border-top:1px solid #666;
-   border-bottom:1px solid #666;
-   left:0px;
-   position:relative;
-   top:0px;
-   margin:0px auto;
-   background:url(navbar.png) center repeat-x;
+   width: 973px;
+   height: 35px;
+   background-color: #018611;
+   border-top: 1px solid #666;
+   border-bottom: 1px solid #666;
+   left: 0px;
+   position: relative;
+   top: 0px;
+   margin: 0px auto;
+   background: url(navbar.png) center repeat-x;
 }
 
 #nav
 {
-   width:98%;
-   margin:0px auto;
-   border:0px solid #000;
-   text-align:left;
-   font-size:12px;
-   color:#fff;
-   height:35px;
+   width: 98%;
+   margin: 0px auto;
+   border: 0px solid #000;
+   text-align: left;
+   font-size: 12px;
+   color: #fff;
+   height: 35px;
 }
 
 #uselects
 {
-   margin-top:5px;
-   float:left;
-   border:0px solid #000;
+   margin-top: 5px;
+   float: left;
+   border: 0px solid #000;
 }
 
 #uselects a
 {
-   color:#fff;
+   color: #fff;
 }
 
 #uselects select
 {
-   font-size:12px;
+   font-size: 12px;
 }
 
 #nav #username
 {
-   margin-top:10px;
-   float:right;
-   border:0px solid #000;
+   margin-top: 10px;
+   float: right;
+   border: 0px solid #000;
 }
 
 #nav #username a
 {
-   color:#fff;
+   color: #fff;
 }
 /* END NAVBAR */
 
 #header
 {
-   background-color:#b9beba;
-   border:0px solid red;
-   width:974px;
-   margin:0px auto;
+   background-color: #b9beba;
+   border: 0px solid red;
+   width: 974px;
+   margin: 0px auto;
    background: url(background_header.png) top repeat-y;
 }
 
 #remainder
 {
-   width:990px;
-   _height: 82%; /* Kludge for display using IE 6 */
-   border:0px solid red;
-   margin:0px auto;
+   width: 990px;
+   _height: 82%; /* KLUDGE: for display using IE 6 */
+   border: 0px solid red;
+   margin: 0px auto;
 }
 
 #print_remainder #main
 {
-   width:100%;
+   width: 100%;
 }
 
 #print_remainder
 {
-   width:80%;
+   width: 80%;
 }
 
 #sidebar
 {
    width:210px;
-   _height: 100%; /* Kludge for display using IE 6 */
-   border:0px solid #000;
-   text-align:left;
+   _height: 100%; /* KLUDGE: for display using IE 6 */
+   border: 0px solid #000;
+   text-align: left;
 }
 
 #sidebar ul
 {
-   margin:0px;
-   padding:0px;
-   margin-left:0px;
-   margin-top:15px;
-   border:0px solid #000;
-   width:185px !important;
-   width:196px;
+   margin: 0px;
+   padding: 0px;
+   margin-left: 0px;
+   margin-top: 15px;
+   border: 0px solid #000;
+   width: 185px !important;
+   width: 196px;
 }
 
 #sidebar li
 {
-   list-style-type:none;
-   padding:7px;
-   margin-left:10px;
+   list-style-type: none;
+   padding: 7px;
+   margin-left: 10px;
 }
 
 #sidebar li a
 {
-   color:#000;
-   text-decoration:none;
-   font-size:12px;
+   color: #000;
+   text-decoration: none;
+   font-size: 12px;
 }
 
 .sidebar_selected
 {
-   color:#803305;
-   background-color:#fff;
-   border-top:1px solid #aaa;
-   border-bottom:1px solid #aaa;
-   border-left:1px solid #aaa;
-   font-size:12px;
+   color: #803305;
+   background-color: #fff;
+   border-top: 1px solid #aaa;
+   border-bottom: 1px solid #aaa;
+   border-left: 1px solid #aaa;
+   font-size: 12px;
 }
 
 .clear
 {
-   clear:both;
+   clear: both;
 }
 
 #main
 {
-   text-align:left;
-   border:0px solid #000;
-   width:735px;
-   float:right;
-   margin-top:15px;
-   margin-right:20px;
-   padding-bottom:40px;
+   text-align: left;
+   border: 0px solid #000;
+   width: 735px;
+   float: right;
+   margin-top: 15px;
+   margin-right: 20px;
+   padding-bottom: 40px;
 }
 
 #main h2
 {
-   border-bottom:1px solid #bbb;
-   color:#ff6600;
-   line-height:35px;
-   margin:0px;
-   padding:0px;
-   margin-bottom:15px;
+   border-bottom: 1px solid #bbb;
+   color: #ff6600;
+   line-height: 35px;
+   margin: 0px;
+   padding: 0px;
+   margin-bottom: 15px;
 }
 
 .editdetails
 {
-   font-size:12px;
-   position:relative;
-   float:right;
-   top:-12px;
+   font-size: 12px;
+   position: relative;
+   float: right;
+   top: -12px;
 }
 
 .editdetails a
 {
-   color:#803305;
+   color: #803305;
 }
 
 .list
 {
-   border:1px solid #ccc;
+   border: 1px solid #ccc;
 }
 
 .list tr th
 {
-   background-color:#ddd;
-   padding:6px;
-   margin:0px;
-   border:0px;
-   background:url(header_row.gif) top repeat-x;
-   color:#555;
+   background-color: #ddd;
+   padding: 6px;
+   margin: 0px;
+   border: 0px;
+   background: url(header_row.gif) top repeat-x;
+   color: #555;
 }
 
 .list tr.footer
 {
-   background-color:#ddd;
-   padding:6px;
-   margin:0px;
-   border:0px;
-   text-align:left;
-   background:url(footer_row.gif) bottom repeat-x;
-   color:#555;
+   background-color: #ddd;
+   padding: 6px;
+   margin: 0px;
+   border: 0px;
+   text-align: left;
+   background: url(footer_row.gif) bottom repeat-x;
+   color: #555;
 }
 
 .list td
 {
-   padding:6px;
-   margin:0px;
+   padding: 6px;
+   margin: 0px;
    color: #222;
-   border:0px;
-   border-top:1px solid #ddd;
-   background-color:#fff;
-   text-align:left;
+   border: 0px;
+   border-top: 1px solid #ddd;
+   background-color: #fff;
+   text-align: left;
 }
    
 .list td.center
 {
-   text-align:center;
+   text-align: center;
 }
 
 .vtab
 {
-   padding:0px;
-   margin:0px;
-   position:relative;
-   top:5px;
-   float:right;
+   padding: 0px;
+   margin: 0px;
+   position: relative;
+   top: 5px;
+   float: right;
 }
 
 .nonchildtabs
 {
-   float:right;
-   top:9px;
-   position:relative;
-   border:0px solid #000;
+   float: right;
+   top: 9px;
+   position: relative;
+   border: 0px solid #000;
 }
 
 .nonchildtabs .tab
 {
-   border:1px solid #bbb;
-   border-bottom:1px solid #bbb;
+   border: 1px solid #bbb;
+   border-bottom: 1px solid #bbb;
 }
 
 .selected_tab,.tab
 {
-   background-color:#fff;
-   padding:7px;
-   padding-right:10px;
-   border:1px solid #bbb;
-   border-bottom:1px solid #bbb;
+   background-color: #fff;
+   padding: 7px;
+   padding-right: 10px;
+   border: 1px solid #bbb;
+   border-bottom: 1px solid #bbb;
 }
 
 .selected_tab
 {
-   font-weight:bold;
+   font-weight: bold;
 }
 
 .tab a
 {
-   text-decoration:none;
+   text-decoration: none;
 }
 
 th.tab
 {
-   background-color:#ddd;
-   color:#444;
-   font-weight:bold;
-   border:1px solid #bbb;
-   border-bottom:0px;
-   background:url(header_row.gif) top repeat-x;
+   background-color: #ddd;
+   color: #444;
+   font-weight: bold;
+   border: 1px solid #bbb;
+   border-bottom: 0px;
+   background: url(header_row.gif) top repeat-x;
 }
 
-th { text-align:left; }
-th.right { text-align:right; }
-th.center { text-align:center; }
-th.justify { text-align:justify; }
+th { text-align: left; }
+th.right { text-align: right; }
+th.center { text-align: center; }
+th.justify { text-align: justify; }
 
 tr.list
 {
-   background:#9cf;
+   background: #9cf;
 }
 
 p.error
 {
    color: red;
+   font-weight: bold;
+}
+
+p.caption
+{
    font-weight: bold;
 }
 
@@ -364,42 +369,42 @@ tbody textarea
 
 select.small
 {
-   font-size:10px;
+   font-size: 10px;
 }
 
 select.smaller
 {
-   font-size:6px;
+   font-size: 6px;
 }
 
 select.large
 {
-   font-size:16px;
+   font-size: 16px;
 }
 
 select.larger
 {
-   font-size:20px;
+   font-size: 20px;
 }
 
 input.small
 {
-   font-size:10px;
+   font-size: 10px;
 }
 
 input.smaller
 {
-   font-size:6px;
+   font-size: 6px;
 }
 
 input.large
 {
-   font-size:16px;
+   font-size: 16px;
 }
 
 input.larger
 {
-   font-size:20px;
+   font-size: 20px;
 }
 
 input.textinput
@@ -420,22 +425,22 @@ input.texterror
 
 td.error
 {
-   color:red;
-   font-weight:bold;
+   color: red;
+   font-weight: bold;
 }
 
 a.button
 {
-   background-color:#ccc;
-   border:1px solid #999;
-   padding:3px 20px;
-   text-decoration:none;
-   margin:0px;
-   color:#555;
-   font-weight:bold;
+   background-color: #ccc;
+   border: 1px solid #999;
+   padding: 3px 20px;
+   text-decoration: none;
+   margin: 0px;
+   color: #555;
+   font-weight: bold;
 }
 
-img.left_indent
+.left_indent
 {
    float: left;
    padding-left: 20pt;
@@ -443,7 +448,7 @@ img.left_indent
    clear: left;
 }
 
-img.right_indent
+.right_indent
 {
    float: right;
    padding-left: 10pt;
@@ -451,62 +456,65 @@ img.right_indent
    clear: right;
 }
 
-img.center
+.center_indent
 {
    display: block;
+   text-align: center;
    margin-left: auto;
    margin-right: auto;
+   padding-left: 20pt;
+   padding-right: 20pt;
    clear: both;
 }
 
-td { text-align:left; }
-td.right { text-align:right; }
-td.center { text-align:center; }
-td.justify { text-align:justify; }
+td { text-align: left; }
+td.right { text-align: right; }
+td.center { text-align: center; }
+td.justify { text-align: justify; }
 
 td.small
 {
-   font-size:10px;
+   font-size: 10px;
 }
 
 td.smaller
 {
-   font-size:6px;
+   font-size: 6px;
 }
 
 td.large
 {
-   font-size:16px;
+   font-size: 16px;
 }
 
 td.larger
 {
-   font-size:20px;
+   font-size: 20px;
 }
 
-.left { text-align:left; }
-.right { text-align:right; }
-.center { text-align:center; }
-.justify { text-align:justify; }
+.left { text-align: left; }
+.right { text-align: right; }
+.center { text-align: center; }
+.justify { text-align: justify; }
 
 .small
 {
-   font-size:10px;
+   font-size: 10px;
 }
 
 .smaller
 {
-   font-size:6px;
+   font-size: 6px;
 }
 
 .large
 {
-   font-size:16px;
+   font-size: 16px;
 }
 
 .larger
 {
-   font-size:20px;
+   font-size: 20px;
 }
 
 .disabled
@@ -522,83 +530,83 @@ td.larger
 
 .selected_panel
 {
-   background-color:#ddd;
-   padding-top:2px;
-   padding-left:10px;
-   padding-right:10px;
-   border:1px solid #bbb;
+   background-color: #ddd;
+   padding-top: 2px;
+   padding-left: 10px;
+   padding-right: 10px;
+   border: 1px solid #bbb;
 }
 
 .list_highlight
 {
-   background-color:#ccc;
+   background-color: #ccc;
 }
 
 .full_width
 {
-   width:100%;
-   border:1px solid #ccc;
+   width: 100%;
+   border: 1px solid #ccc;
 }
 
 #list_search td.list
 {
-   padding:3px 7px;
+   padding: 3px 7px;
 }
 
 td.list
 {
-   padding:0px 7px;
-   height:28px;
+   padding: 0px 7px;
+   height: 28px;
 }
 
 /*LOGIN*/
 #loginbox
 {
-   padding:0px;
-   width:327px;
-   height:160px;
-   margin-top:100px;
-   margin-left:auto;
-   margin-right:auto;
-   background:url(login_box.gif)  no-repeat;
-   border:0px solid #000;
-   padding-top:60px;
+   padding: 0px;
+   width: 327px;
+   height: 160px;
+   margin-top: 100px;
+   margin-left: auto;
+   margin-right: auto;
+   background: url(login_box.gif)  no-repeat;
+   border: 0px solid #000;
+   padding-top: 60px;
 }
    
 #loginform
 {
-   width:250px;
-   border:0px solid #000;
-   text-align:right;
+   width: 250px;
+   border: 0px solid #000;
+   text-align: right;
 }
    
 #loginform label
 {
-   display:block;
-   height:2em;
-   padding:5px;
-   color:#fff;
-   margin-right:10px;
+   display: block;
+   height: 2em;
+   padding: 5px;
+   color: #fff;
+   margin-right: 10px;
 }
 
 #loginform .loginfields
 {
-   margin-right:0px;
-   float:right;
-   clear:right;
-   width:130px;
-   margin-left:10px;
+   margin-right: 0px;
+   float: right;
+   clear: right;
+   width: 130px;
+   margin-left: 10px;
 }
    
 #logout_text
 {
-   margin-top:100px;
+   margin-top: 100px;
 }
 
 #submit
 {
-   margin-top:5px;
-   text-align:center;
+   margin-top: 5px;
+   text-align: center;
 }
 
 /*END LOGIN*/
@@ -607,18 +615,18 @@ td.list
 
 #minilogin
 {
-   height:100%;
-   float:right;
+   height: 100%;
+   float: right;
 }
 
 #miniloginform
 {
-   height:100%;
+   height: 100%;
 }
 
 #minilogintable
 {
-   height:100%;
+   height: 100%;
 }
 
 #miniusername
@@ -648,10 +656,10 @@ td.list
    left: 0px;
    bottom: 0px;
    width: 100%;
-   font-size:10px;
-   border:0px solid #000;
+   font-size: 10px;
+   border: 0px solid #000;
    position: absolute;
-   _position: relative; /* Kludge for display using IE 6 */
+   _position: relative; /* KLUDGE: for display using IE 6 */
 }
 
 #debug
@@ -661,9 +669,9 @@ td.list
    width: 100%;
    font-size: 12px;
    text-align: left;
-   border:0px solid #000;
+   border: 0px solid #000;
    position: absolute;
-   _position: relative; /* Kludge for display using IE 6 */
+   _position: relative; /* KLUDGE: for display using IE 6 */
 }
 
 /* SCREEN  */
@@ -1172,7 +1180,7 @@ td.list
 {
    body
    {
-      background-color:#fff;
+      background-color: #fff;
    }
 
    p.footer
@@ -1224,56 +1232,56 @@ td.list
       
    .list .highlight
    {
-      color:#000;
+      color: #000;
    }
       
    #sidebar
    {
-      display:none;
+      display: none;
    }
       
    #remainder
    {
-      width:80%;
-      border:0px solid #000;
-      margin:0px auto;
-      overflow:hidden;
+      width: 80%;
+      border: 0px solid #000;
+      margin: 0px auto;
+      overflow: hidden;
    }
       
    #main h2
    {
-      border-bottom:1px solid #bbb;
-      color:#000;
-      line-height:35px;
+      border-bottom: 1px solid #bbb;
+      color: #000;
+      line-height: 35px;
    }
       
    #nav
    {
-      width:100%;
-      margin:0px auto;
-      border:0px solid #000;
-      text-align:left;
+      width: 100%;
+      margin: 0px auto;
+      border: 0px solid #000;
+      text-align: left;
 
-      color:#fff;
-      height:35px;
+      color: #fff;
+      height: 35px;
    }
       
    #main
    {
-      float:none;
+      float: none;
    }
 }
 
 #print_remainder
 {
-   width:80%;
-   border:0px solid #000;
-   margin:0px auto;
-   overflow:hidden;
+   width: 80%;
+   border: 0px solid #000;
+   margin: 0px auto;
+   overflow: hidden;
 }
 
 #print_remainder #main
 {
-   float:none;
+   float: none;
 }
 /* END PRINT */
