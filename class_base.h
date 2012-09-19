@@ -284,6 +284,8 @@ class CLASS_BASE_DECL_SPEC class_base
    bool get_is_preparing( ) const { return is_preparing; }
    bool get_is_iterating( ) const { return in_forwards_iteration || in_backwards_iteration; }
 
+   bool get_is_starting_iteration( ) const { return iteration_starting; }
+
    bool get_is_in_forwards_iteration( ) const { return in_forwards_iteration; }
    bool get_is_in_backwards_iteration( ) const { return in_backwards_iteration; }
 
@@ -399,10 +401,10 @@ class CLASS_BASE_DECL_SPEC class_base
     std::vector< std::string >& values, bool* p_done = 0, const std::string* p_class_name = 0 ) const = 0;
 
    virtual void get_required_field_names( std::set< std::string >& names,
-    bool required_transients = false, std::set< std::string >* p_dependents = 0 ) const = 0;
+    bool use_transients = false, std::set< std::string >* p_dependents = 0 ) const = 0;
 
    virtual void get_always_required_field_names( std::set< std::string >& names,
-    bool required_transients, std::set< std::string >& dependents ) const = 0;
+    bool use_transients, std::set< std::string >& dependents ) const = 0;
 
    virtual void get_transient_replacement_field_names(
     const std::string& name, std::vector< std::string >& names ) const = 0;
@@ -475,6 +477,7 @@ class CLASS_BASE_DECL_SPEC class_base
    bool is_being_cascaded;
    bool is_dynamic_enabled;
 
+   bool iteration_starting;
    bool in_forwards_iteration;
    bool in_backwards_iteration;
 
@@ -538,6 +541,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    void set_op( op_type new_op, bool is_new_key );
 
+   void set_iteration_starting( bool starting ) { iteration_starting = starting; }
    void set_is_in_iteration( bool is_in_iter, bool is_forwards = true );
 
    void set_is_dynamic_enabled( bool enabled ) { is_dynamic_enabled = enabled; }
@@ -666,6 +670,7 @@ struct class_base_accessor
 
    void set_is_executing( bool is_executing ) { cb.is_executing = is_executing; }
 
+   void set_iteration_starting( bool starting ) { cb.set_iteration_starting( starting ); }
    void set_is_in_iteration( bool is_in_iter, bool is_forwards = true ) { cb.set_is_in_iteration( is_in_iter, is_forwards ); }
 
    void set_key( const std::string& new_key, bool skip_fk_handling = false ) { cb.set_key( new_key, skip_fk_handling ); }

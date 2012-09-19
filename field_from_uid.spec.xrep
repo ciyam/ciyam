@@ -1,0 +1,12 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_uid)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish field_from_uid)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_from_uid)]
+   if( !get_uid( ).empty( ) && !is_system_uid( ) )
+      get_obj( ).`{`$arg_field`}( get_uid( ) );
+   // [(finish field_from_uid)]
+`}

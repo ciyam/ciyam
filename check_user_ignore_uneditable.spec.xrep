@@ -46,8 +46,8 @@
    // [(start check_user_ignore_uneditable)]
    dependents.insert( "`{`$arg_tpfield`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tpfield`} ) )
-     || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tpfield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tpfield`} ) )
+     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tpfield`} ) ) )
       names.insert( "`{`$arg_tpfield`}" );
    // [(start check_user_ignore_uneditable)]
 `}

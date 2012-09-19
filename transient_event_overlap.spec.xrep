@@ -70,25 +70,25 @@
 `}`{`!`@eq`(`$arg_group`,`'`'`)\
       dependents.insert( "`{`$arg_group`}" );
 `}
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_when`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_when`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_when`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_when`} ) ) )
          names.insert( "`{`$arg_when`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_duration`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_duration`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_duration`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_duration`} ) ) )
          names.insert( "`{`$arg_duration`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_finish`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_finish`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_finish`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_finish`} ) ) )
          names.insert( "`{`$arg_finish`}" );
 `{`!`@eq`(`$arg_user`,`'`'`)
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_user`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_user`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_user`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_user`} ) ) )
          names.insert( "`{`$arg_user`}" );\
 `}
 `{`!`@eq`(`$arg_group`,`'`'`)
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_group`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_group`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_group`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_group`} ) ) )
          names.insert( "`{`$arg_group`}" );\
 `}
    }

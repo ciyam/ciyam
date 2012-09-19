@@ -650,10 +650,12 @@ struct Meta_Package::impl : public Meta_Package_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Package* p_obj;
    class_pointer< Meta_Package > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -1638,9 +1640,8 @@ void Meta_Package::impl::validate_set_fields( set< string >& fields_set, validat
 
 void Meta_Package::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
@@ -1667,9 +1668,6 @@ void Meta_Package::impl::after_fetch( )
 
 void Meta_Package::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1955,23 +1953,25 @@ bool Meta_Package::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Package::impl::get_required_transients( set< string >& names ) const
+void Meta_Package::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -2804,20 +2804,20 @@ void Meta_Package::get_sql_column_values(
 }
 
 void Meta_Package::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [(start transient_field_alias)]
    if( needs_field_value( "Type_Name", dependents ) )
    {
       dependents.insert( "Package_Type" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Package_Type ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Package_Type ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Package_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Package_Type ) ) )
          names.insert( "Package_Type" );
    }
    // [(finish transient_field_alias)]
@@ -2827,33 +2827,33 @@ void Meta_Package::get_required_field_names(
 }
 
 void Meta_Package::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [(start protect_equal)]
    dependents.insert( "Installed" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Installed ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Installed ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Installed ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
    // [(finish protect_equal)]
 
    // [(start protect_equal)]
    dependents.insert( "Actions" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Actions ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Actions ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Actions ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Actions ) ) )
       names.insert( "Actions" );
    // [(finish protect_equal)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Installed" ); // (for Is_Not_Installed modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Installed ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Installed ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Installed ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
    // [(finish modifier_field_value)]
 
@@ -2861,8 +2861,8 @@ void Meta_Package::get_always_required_field_names(
 //nyi
    dependents.insert( "Usage_Count" ); // (for Is_In_Use modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Usage_Count ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Usage_Count ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Usage_Count ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Usage_Count ) ) )
       names.insert( "Usage_Count" );
    // [<finish get_always_required_field_names>]
 }

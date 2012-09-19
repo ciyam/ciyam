@@ -24,14 +24,14 @@
 `{`@eq`(`$arg_pfield`,`'`'`)\
    dependents.insert( "`{`$arg_field`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );\
 `,\
    dependents.insert( "`{`$arg_pfield`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
       names.insert( "`{`$arg_pfield`}" );\
 `}
    // [(finish unactionable_field_value)]

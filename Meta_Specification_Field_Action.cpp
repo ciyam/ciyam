@@ -815,10 +815,12 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Specification_Field_Action* p_obj;
    class_pointer< Meta_Specification_Field_Action > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -1162,9 +1164,8 @@ void Meta_Specification_Field_Action::impl::validate_set_fields( set< string >& 
 
 void Meta_Specification_Field_Action::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_New_Record_Class )
       p_obj->setup_foreign_key( *cp_New_Record_Class, v_New_Record_Class );
@@ -1178,9 +1179,6 @@ void Meta_Specification_Field_Action::impl::after_fetch( )
 
 void Meta_Specification_Field_Action::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -1277,23 +1275,25 @@ bool Meta_Specification_Field_Action::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Specification_Field_Action::impl::get_required_transients( set< string >& names ) const
+void Meta_Specification_Field_Action::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -1995,24 +1995,24 @@ void Meta_Specification_Field_Action::get_sql_column_values(
 }
 
 void Meta_Specification_Field_Action::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
 
    parent_class_type::get_required_field_names( names,
-    required_transients, p_dependents ? p_dependents : &local_dependents );
+    use_transients, p_dependents ? p_dependents : &local_dependents );
 
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [(start field_from_search_replace)]
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "New_Record_Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_New_Record_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_New_Record_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_New_Record_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_New_Record_Class ) ) )
          names.insert( "New_Record_Class" );
    }
 
@@ -2020,8 +2020,8 @@ void Meta_Specification_Field_Action::get_required_field_names(
    {
       dependents.insert( "New_Record_FK_Field" );
 
-      if( ( required_transients && is_field_transient( e_field_id_New_Record_FK_Field ) )
-       || ( !required_transients && !is_field_transient( e_field_id_New_Record_FK_Field ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_New_Record_FK_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_New_Record_FK_Field ) ) )
          names.insert( "New_Record_FK_Field" );
    }
 
@@ -2029,8 +2029,8 @@ void Meta_Specification_Field_Action::get_required_field_names(
    {
       dependents.insert( "Specification_Type" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Specification_Type ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
          names.insert( "Specification_Type" );
    }
    // [(finish field_from_search_replace)]
@@ -2038,48 +2038,47 @@ void Meta_Specification_Field_Action::get_required_field_names(
    // [<start get_required_field_names>]
 //nyi
    if( needs_field_value( "Vars" )
-    && ( required_transients && is_transient_field( "Type" ) )
-    || ( !required_transients && !is_transient_field( "Type" ) ) )
+    && ( use_transients && is_transient_field( "Type" ) )
+    || ( !use_transients && !is_transient_field( "Type" ) ) )
       names.insert( "Type" ); // (for Generate_All_Vars procedure)
 
    if( needs_field_value( "Vars" )
-    && ( required_transients && is_transient_field( "Clone_Key" ) )
-    || ( !required_transients && !is_transient_field( "Clone_Key" ) ) )
+    && ( use_transients && is_transient_field( "Clone_Key" ) )
+    || ( !use_transients && !is_transient_field( "Clone_Key" ) ) )
       names.insert( "Clone_Key" ); // (for Generate_All_Vars procedure)
 
    if( needs_field_value( "Vars" )
-    && ( required_transients && is_transient_field( "Access_Restriction" ) )
-    || ( !required_transients && !is_transient_field( "Access_Restriction" ) ) )
+    && ( use_transients && is_transient_field( "Access_Restriction" ) )
+    || ( !use_transients && !is_transient_field( "Access_Restriction" ) ) )
       names.insert( "Access_Restriction" ); // (for Generate_All_Vars procedure)
 
    if( needs_field_value( "Vars" )
-    && ( required_transients && is_transient_field( "Procedure" ) )
-    || ( !required_transients && !is_transient_field( "Procedure" ) ) )
+    && ( use_transients && is_transient_field( "Procedure" ) )
+    || ( !use_transients && !is_transient_field( "Procedure" ) ) )
       names.insert( "Procedure" ); // (for Generate_All_Vars procedure)
 
    if( needs_field_value( "Vars" )
-    && ( required_transients && is_transient_field( "New_Record_Class" ) )
-    || ( !required_transients && !is_transient_field( "New_Record_Class" ) ) )
+    && ( use_transients && is_transient_field( "New_Record_Class" ) )
+    || ( !use_transients && !is_transient_field( "New_Record_Class" ) ) )
       names.insert( "New_Record_Class" ); // (for Generate_All_Vars procedure)
 
    if( needs_field_value( "Vars" )
-    && ( required_transients && is_transient_field( "New_Record_FK_Field" ) )
-    || ( !required_transients && !is_transient_field( "New_Record_FK_Field" ) ) )
+    && ( use_transients && is_transient_field( "New_Record_FK_Field" ) )
+    || ( !use_transients && !is_transient_field( "New_Record_FK_Field" ) ) )
       names.insert( "New_Record_FK_Field" ); // (for Generate_All_Vars procedure)
    // [<finish get_required_field_names>]
 }
 
 void Meta_Specification_Field_Action::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
-
-   parent_class_type::get_always_required_field_names( names, required_transients, dependents );
+   parent_class_type::get_always_required_field_names( names, use_transients, dependents );
 
    // [(start modifier_field_value)]
    dependents.insert( "Type" ); // (for Hide_Record_Create_Info modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Type ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
    // [(finish modifier_field_value)]
 
@@ -2089,7 +2088,6 @@ void Meta_Specification_Field_Action::get_always_required_field_names(
 
 void Meta_Specification_Field_Action::get_transient_replacement_field_names( const string& name, vector< string >& names ) const
 {
-
    parent_class_type::get_transient_replacement_field_names( name, names );
 
    // [<start get_transient_replacement_field_names>]

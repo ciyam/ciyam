@@ -53,8 +53,8 @@
    // [(start update_parent_cascade)]
    dependents.insert( "`{`$arg_pfield`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
       names.insert( "`{`$arg_pfield`}" );
    // [(finish update_parent_cascade)]
 `}

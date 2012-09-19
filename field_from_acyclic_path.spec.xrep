@@ -43,8 +43,8 @@
    {
       dependents.insert( "`{`$arg_pfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
          names.insert( "`{`$arg_pfield`}" );
    }
 
@@ -52,8 +52,8 @@
    {
       dependents.insert( "`{`$arg_src_field`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_src_field`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_src_field`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_src_field`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_src_field`} ) ) )
          names.insert( "`{`$arg_src_field`}" );
    }
    // [(finish field_from_acyclic_path)]

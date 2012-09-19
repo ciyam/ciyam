@@ -1574,10 +1574,12 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_List* p_obj;
    class_pointer< Meta_List > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -3304,9 +3306,8 @@ void Meta_List::impl::validate_set_fields( set< string >& fields_set, validation
 
 void Meta_List::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Access_Parent_Modifier )
       p_obj->setup_foreign_key( *cp_Access_Parent_Modifier, v_Access_Parent_Modifier );
@@ -3358,9 +3359,6 @@ void Meta_List::impl::after_fetch( )
 
 void Meta_List::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -3517,23 +3515,25 @@ bool Meta_List::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_List::impl::get_required_transients( set< string >& names ) const
+void Meta_List::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -5556,26 +5556,26 @@ void Meta_List::get_sql_column_values(
 }
 
 void Meta_List::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [(start field_from_other_field)]
    if( needs_field_value( "Variation_Name", dependents ) )
    {
       dependents.insert( "Title" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Title ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Title ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Title ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Title ) ) )
          names.insert( "Title" );
 
       dependents.insert( "Is_Variation" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Is_Variation ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Is_Variation ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Is_Variation ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Is_Variation ) ) )
          names.insert( "Is_Variation" );
    }
    // [(finish field_from_other_field)]
@@ -5585,8 +5585,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Class" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Class ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Class ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Class ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Class ) ) )
          names.insert( "Class" );
    }
 
@@ -5594,8 +5594,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Parent_Field" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Parent_Field ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Parent_Field ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Parent_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Parent_Field ) ) )
          names.insert( "Parent_Field" );
    }
 
@@ -5603,8 +5603,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Variation_Name" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Variation_Name ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Variation_Name ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Variation_Name ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Variation_Name ) ) )
          names.insert( "Variation_Name" );
    }
 
@@ -5612,8 +5612,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Type" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Type ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
    // [(finish field_from_search_replace)]
@@ -5623,8 +5623,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Type" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Type ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
    // [(finish field_from_other_field)]
@@ -5634,8 +5634,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Type" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Type ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
    // [(finish field_from_other_field)]
@@ -5645,8 +5645,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Type" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Type ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Type ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
    // [(finish field_from_other_field)]
@@ -5656,8 +5656,8 @@ void Meta_List::get_required_field_names(
    {
       dependents.insert( "Parent_Field" );
 
-      if( ( required_transients && is_field_transient( e_field_id_Parent_Field ) )
-       || ( !required_transients && !is_field_transient( e_field_id_Parent_Field ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_Parent_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Parent_Field ) ) )
          names.insert( "Parent_Field" );
    }
    // [(finish field_from_other_field)]
@@ -5667,105 +5667,105 @@ void Meta_List::get_required_field_names(
 }
 
 void Meta_List::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [(start modifier_field_value)]
    dependents.insert( "PDF_List_Type" ); // (for PDF_List_Is_None modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_PDF_List_Type ) )
-    || ( !required_transients && !is_field_transient( e_field_id_PDF_List_Type ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_PDF_List_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_PDF_List_Type ) ) )
       names.insert( "PDF_List_Type" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "PDF_List_Type" ); // (for PDF_List_Is_Custom modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_PDF_List_Type ) )
-    || ( !required_transients && !is_field_transient( e_field_id_PDF_List_Type ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_PDF_List_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_PDF_List_Type ) ) )
       names.insert( "PDF_List_Type" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Is_Child" ); // (for Is_Child modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Child ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Child ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Is_Child ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Is_Child ) ) )
       names.insert( "Is_Child" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Is_Child" ); // (for Is_Not_Child modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Child ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Child ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Is_Child ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Is_Child ) ) )
       names.insert( "Is_Child" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Allow_Text_Search" ); // (for Cannot_Text_Search modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Allow_Text_Search ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Allow_Text_Search ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Allow_Text_Search ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Allow_Text_Search ) ) )
       names.insert( "Allow_Text_Search" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Style" ); // (for Is_Not_Search_Style modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Style ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Style ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Style ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Style ) ) )
       names.insert( "Style" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Is_Home" ); // (for Is_Home modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Home ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Home ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Is_Home ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Is_Home ) ) )
       names.insert( "Is_Home" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Is_Not_Anonymous" ); // (for Anonymous_Disallowed modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Is_Not_Anonymous ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Is_Not_Anonymous ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Is_Not_Anonymous ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Is_Not_Anonymous ) ) )
       names.insert( "Is_Not_Anonymous" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Access_Restriction" ); // (for Anonymous_Disallowed modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Access_Restriction ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Access_Restriction ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Access_Restriction ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Access_Restriction ) ) )
       names.insert( "Access_Restriction" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_null)]
    dependents.insert( "Access_Permission" ); // (for Anonymous_Disallowed modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Access_Permission ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Access_Permission ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Access_Permission ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Access_Permission ) ) )
       names.insert( "Access_Permission" );
    // [(finish modifier_field_null)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Display_Row_Limit" ); // (for Is_Not_Unlimited modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Display_Row_Limit ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Display_Row_Limit ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Display_Row_Limit ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Display_Row_Limit ) ) )
       names.insert( "Display_Row_Limit" );
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Sort_Rows_In_UI" ); // (for Will_Sort_Rows_In_UI modifier)
 
-   if( ( required_transients && is_field_transient( e_field_id_Sort_Rows_In_UI ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Sort_Rows_In_UI ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Sort_Rows_In_UI ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Sort_Rows_In_UI ) ) )
       names.insert( "Sort_Rows_In_UI" );
    // [(finish modifier_field_value)]
 

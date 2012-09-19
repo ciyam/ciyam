@@ -3442,11 +3442,11 @@ void request_handler::process_request( )
                       << GDS( c_display_error ) << ": " << GDS( c_display_record_not_found ) << ".</p>\n";
                   }
                }
-               else if( ( !view.perm.empty( ) && !p_session_info->user_perms.count( view.perm ) )
-               || ( !p_session_info->is_admin_user
-               && ( view.type == c_view_type_admin || view.type == c_view_type_admin_print ) )
-               || ( !view.permission_field.empty( ) && !has_permission( view_permission_value, *p_session_info ) )
-               || ( !view.security_level_field.empty( ) && view_security_level_value.length( ) < user_slevel.length( ) ) )
+               else if( !p_session_info->is_admin_user // NOTE: "admin" is always permitted access
+                && ( ( !view.perm.empty( ) && !p_session_info->user_perms.count( view.perm ) )
+                || ( view.type == c_view_type_admin || view.type == c_view_type_admin_print )
+                || ( !view.permission_field.empty( ) && !has_permission( view_permission_value, *p_session_info ) )
+                || ( !view.security_level_field.empty( ) && view_security_level_value.length( ) < user_slevel.length( ) ) ) )
                   extra_content << "<p align=\"center\" class=\"error\">"
                    << GDS( c_display_error ) << ": " << GDS( c_display_permission_denied ) << ".</p>\n";
                else
@@ -3595,7 +3595,7 @@ void request_handler::process_request( )
                      extra_content << "</td></tr></table>\n";
                   }
 
-                  // FUTURE: The height should be grown dynamically by Javascript rather than hard-coded here.
+                  // FUTURE: The height should be grown dynamically via Javascript rather than hard-coded here.
                   if( !extra_html_content.empty( ) )
                      extra_content << "</br><iframe src=\""
                       << extra_html_content << "\" width=\"100%\" height=\"730px\"></iframe>";
@@ -3606,8 +3606,9 @@ void request_handler::process_request( )
             }
             else if( cmd == c_cmd_list || cmd == c_cmd_plist )
             {
-               if( ( !p_session_info->is_admin_user && list.type == c_list_type_admin )
-                || ( !list.perm.empty( ) && !p_session_info->user_perms.count( list.perm ) ) )
+               if( !p_session_info->is_admin_user // NOTE: "admin" is always permitted access
+                && ( ( list.type == c_list_type_admin )
+                || ( !list.perm.empty( ) && !p_session_info->user_perms.count( list.perm ) ) ) )
                   extra_content << "<p align=\"center\" class=\"error\">"
                    << GDS( c_display_error ) << ": " << GDS( c_display_permission_denied ) << ".</p>\n";
                else

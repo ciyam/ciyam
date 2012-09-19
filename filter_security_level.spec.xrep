@@ -11,8 +11,8 @@
    // [(start filter_security_level)]
    dependents.insert( "`{`$arg_slevel`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_slevel`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_slevel`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_slevel`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_slevel`} ) ) )
       names.insert( "`{`$arg_slevel`}" );
    // [(finish filter_security_level)]
 `}

@@ -12,8 +12,8 @@
    // [(start filter_perm_restricted)]
    dependents.insert( "`{`$arg_field`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
-    || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );
    // [(finish filter_perm_restricted)]
 `}

@@ -1026,10 +1026,12 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    bool is_filtered( ) const;
 
-   void get_required_transients( set< string >& names ) const;
+   void get_required_transients( ) const;
 
    Meta_Model* p_obj;
    class_pointer< Meta_Model > cp_obj;
+
+   mutable set< string > required_transients;
 
    // [<start members>]
    // [<finish members>]
@@ -3362,6 +3364,10 @@ void Meta_Model::impl::impl_Generate( )
 
                if( is_admin_list )
                   list_type = "admin";
+               else if( is_owner_list )
+                  throw runtime_error( "'owner' access is only applicable to 'view_child' lists" );
+               else if( is_admin_owner_list )
+                  throw runtime_error( "'admin_owner' access is only applicable to 'view_child' lists" );
             }
             else if( type_key == "home" )
             {
@@ -3389,6 +3395,8 @@ void Meta_Model::impl::impl_Generate( )
                // NOTE: Special allows a list to be generated but inaccessible if is "user" and "admin_only".
                if( is_admin_list )
                   list_type = "no_access";
+               else if( is_admin_owner_list )
+                  throw runtime_error( "'admin_owner' access is only applicable to 'view_child' lists" );
 
                if( get_obj( ).child_List( ).Class( ).child_Relationship_Child( ).iterate_forwards( ) )
                {
@@ -3428,6 +3436,10 @@ void Meta_Model::impl::impl_Generate( )
                // NOTE: Special allows a list to be generated but inaccessible if is "group" and "admin_only".
                if( is_admin_list )
                   list_type = "no_access";
+               else if( is_owner_list )
+                  throw runtime_error( "'owner' access is only applicable to 'view_child' lists" );
+               else if( is_admin_owner_list )
+                  throw runtime_error( "'admin_owner' access is only applicable to 'view_child' lists" );
 
                if( get_obj( ).child_List( ).Class( ).child_Relationship_Child( ).iterate_forwards( ) )
                {
@@ -3481,7 +3493,13 @@ void Meta_Model::impl::impl_Generate( )
                specification_name += "_var" + to_string( variation );
 
             if( !is_null( get_obj( ).child_List( ).Access_Permission( ) ) )
-               list_type += "=" + get_obj( ).child_List( ).Access_Permission( ).Id( );
+            {
+               string s;
+               if( list_type == "admin" || ( list_type == "view_child" && is_admin_list ) )
+                  s = "!";
+
+               list_type += "=" + s + get_obj( ).child_List( ).Access_Permission( ).Id( );
+            }
 
             outf << "\x60{\x60}\n";
 
@@ -6157,9 +6175,8 @@ void Meta_Model::impl::validate_set_fields( set< string >& fields_set, validatio
 
 void Meta_Model::impl::after_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
+   if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
+      get_required_transients( );
 
    if( cp_Permission )
       p_obj->setup_foreign_key( *cp_Permission, v_Permission );
@@ -6199,9 +6216,6 @@ void Meta_Model::impl::after_fetch( )
 
 void Meta_Model::impl::finalise_fetch( )
 {
-   set< string > required_transients;
-
-   get_required_transients( required_transients );
 
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
@@ -6474,23 +6488,25 @@ bool Meta_Model::impl::is_filtered( ) const
    return false;
 }
 
-void Meta_Model::impl::get_required_transients( set< string >& names ) const
+void Meta_Model::impl::get_required_transients( ) const
 {
+   required_transients.clear( );
+
    set< string > dependents;
-   p_obj->get_required_field_names( names, true, &dependents );
+   p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
    // function until no further field names have been added.
-   size_t num_required = names.size( );
+   size_t num_required = required_transients.size( );
    while( num_required )
    {
-      p_obj->get_required_field_names( names, true, &dependents );
-      if( names.size( ) == num_required )
+      p_obj->get_required_field_names( required_transients, true, &dependents );
+      if( required_transients.size( ) == num_required )
          break;
 
-      num_required = names.size( );
+      num_required = required_transients.size( );
    }
 }
 
@@ -7748,36 +7764,36 @@ void Meta_Model::get_sql_column_values(
 }
 
 void Meta_Model::get_required_field_names(
- set< string >& names, bool required_transients, set< string >* p_dependents ) const
+ set< string >& names, bool use_transients, set< string >* p_dependents ) const
 {
    set< string > local_dependents;
    set< string >& dependents( p_dependents ? *p_dependents : local_dependents );
 
-   get_always_required_field_names( names, required_transients, dependents );
+   get_always_required_field_names( names, use_transients, dependents );
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
 }
 
 void Meta_Model::get_always_required_field_names(
- set< string >& names, bool required_transients, set< string >& dependents ) const
+ set< string >& names, bool use_transients, set< string >& dependents ) const
 {
    ( void )names;
    ( void )dependents;
-   ( void )required_transients;
+   ( void )use_transients;
 
    // [<start get_always_required_field_names>]
 //nyi
    dependents.insert( "Created" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Created ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Created ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Created ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Created ) ) )
       names.insert( "Created" );
 
    dependents.insert( "Status" );
 
-   if( ( required_transients && is_field_transient( e_field_id_Status ) )
-    || ( !required_transients && !is_field_transient( e_field_id_Status ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_Status ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Status ) ) )
       names.insert( "Status" );
    // [<finish get_always_required_field_names>]
 }

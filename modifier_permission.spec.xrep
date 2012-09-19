@@ -35,8 +35,8 @@
    // [(start modifier_permission)]
    dependents.insert( "`{`$arg_ufield`}" );
 
-   if( ( required_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
-     || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
+     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
       names.insert( "`{`$arg_ufield`}" );
    // [(start modifier_permission)]
 `}

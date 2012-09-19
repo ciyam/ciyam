@@ -502,6 +502,7 @@ class_base::class_base( )
  is_after_store( false ),
  is_being_cascaded( false ),
  is_dynamic_enabled( false ),
+ iteration_starting( false ),
  in_forwards_iteration( false ),
  in_backwards_iteration( false ),
  p_owning_instance( 0 ),
@@ -971,6 +972,7 @@ void class_base::iterate_stop( )
 {
    cleanup_dynamic_instance( );
 
+   iteration_starting = false;
    in_forwards_iteration = false;
    in_backwards_iteration = false;
 
@@ -1479,6 +1481,7 @@ void class_base::construct_dynamic_instance( )
 
       p_dynamic_instance->is_being_cascaded = is_being_cascaded;
 
+      p_dynamic_instance->iteration_starting = iteration_starting;
       p_dynamic_instance->in_forwards_iteration = in_forwards_iteration;
       p_dynamic_instance->in_backwards_iteration = in_backwards_iteration;
 

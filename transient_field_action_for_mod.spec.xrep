@@ -51,8 +51,8 @@ get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`}
    {
       dependents.insert( "`{`$arg_tfield`}" );
 
-      if( ( required_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
-       || ( !required_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
          names.insert( "`{`$arg_tfield`}" );
    }
    // [(start transient_field_action_for_mod)]
