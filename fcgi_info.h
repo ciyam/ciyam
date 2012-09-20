@@ -338,8 +338,6 @@ struct module_info
 
    std::string home_info;
 
-   std::string home_list_id;
-
    std::string user_class_id;
    std::string user_class_name;
 

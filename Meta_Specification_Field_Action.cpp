@@ -789,6 +789,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const;
    void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
 
    void clear( );
@@ -1047,6 +1048,14 @@ void Meta_Specification_Field_Action::impl::get_foreign_key_values( foreign_key_
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_New_Record_Class, v_New_Record_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_New_Record_FK_Field, v_New_Record_FK_Field ) );
+}
+
+void Meta_Specification_Field_Action::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   ( void )fixed_info;
+
+   // [<start add_extra_fixed_info>]
+   // [<finish add_extra_fixed_info>]
 }
 
 void Meta_Specification_Field_Action::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
@@ -1871,6 +1880,12 @@ class_base* Meta_Specification_Field_Action::get_next_foreign_key_child(
    p_class_base = Meta_Specification::get_next_foreign_key_child( child_num, next_child_field, op );
 
    return p_class_base;
+}
+
+void Meta_Specification_Field_Action::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   parent_class_type::add_extra_fixed_info( fixed_info );
+   p_impl->add_extra_fixed_info( fixed_info );
 }
 
 void Meta_Specification_Field_Action::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const

@@ -300,6 +300,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const;
    void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
 
    void clear( );
@@ -512,6 +513,14 @@ const string& Meta_Auto_Code::impl::get_foreign_key_value( const string& field )
 void Meta_Auto_Code::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    ( void )foreign_key_values;
+}
+
+void Meta_Auto_Code::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   ( void )fixed_info;
+
+   // [<start add_extra_fixed_info>]
+   // [<finish add_extra_fixed_info>]
 }
 
 void Meta_Auto_Code::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
@@ -1103,6 +1112,11 @@ class_base* Meta_Auto_Code::get_next_foreign_key_child(
    ( void )op;
 
    return p_class_base;
+}
+
+void Meta_Auto_Code::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   p_impl->add_extra_fixed_info( fixed_info );
 }
 
 void Meta_Auto_Code::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const

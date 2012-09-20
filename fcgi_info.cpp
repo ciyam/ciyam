@@ -849,9 +849,6 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             list.name = reader.read_attribute( c_attribute_name );
             list.type = reader.read_attribute( c_attribute_type );
 
-            if( list.type == c_list_type_home )
-               info.home_list_id = list.id;
-
             string::size_type pos = list.type.find( '=' );
             if( pos != string::npos )
             {

@@ -600,6 +600,7 @@ struct Meta_Procedure_Arg::impl : public Meta_Procedure_Arg_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const;
    void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
 
    void clear( );
@@ -932,6 +933,14 @@ void Meta_Procedure_Arg::impl::get_foreign_key_values( foreign_key_data_containe
 {
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Procedure, v_Procedure ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Procedure_Arg, v_Source_Procedure_Arg ) );
+}
+
+void Meta_Procedure_Arg::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   ( void )fixed_info;
+
+   // [<start add_extra_fixed_info>]
+   // [<finish add_extra_fixed_info>]
 }
 
 void Meta_Procedure_Arg::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
@@ -1814,6 +1823,11 @@ class_base* Meta_Procedure_Arg::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Procedure_Arg::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   p_impl->add_extra_fixed_info( fixed_info );
 }
 
 void Meta_Procedure_Arg::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const

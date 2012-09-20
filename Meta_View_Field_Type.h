@@ -230,6 +230,7 @@ class META_VIEW_FIELD_TYPE_DECL_SPEC Meta_View_Field_Type : public class_base
    class_base* get_next_foreign_key_child( size_t child_num,
     std::string& next_child_field, cascade_op op, bool is_internal = false );
 
+   void add_extra_fixed_info( std::vector< std::pair< std::string, std::string > >& fixed_info ) const;
    void add_extra_paging_info( std::vector< std::pair< std::string, std::string > >& paging_info ) const;
 };
 

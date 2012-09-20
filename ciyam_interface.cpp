@@ -390,6 +390,9 @@ string get_display_name( const string& str )
          display_name.erase( 0, pos + 1 );
    }
 
+   if( display_name == "!" )
+      display_name.erase( );
+
    return display_name;
 }
 
@@ -1775,6 +1778,8 @@ void request_handler::process_request( )
          list_source list;
          list_source olist;
 
+         map< string, list_source > home_lists;
+
          string oident( ident );
 
          set< string > specials;
@@ -1807,11 +1812,26 @@ void request_handler::process_request( )
          }
          else if( cmd == c_cmd_home || cmd == c_cmd_list || cmd == c_cmd_plist )
          {
-            if( cmd != c_cmd_home || !mod_info.home_list_id.empty( ) )
+            if( cmd == c_cmd_home )
             {
-               if( cmd == c_cmd_home )
-                  ident = mod_info.home_list_id;
+               for( lici = mod_info.list_info.begin( ); lici != mod_info.list_info.end( ); ++lici )
+               {
+                  list_source next_list;
 
+                  if( lici->second->type == c_list_type_home )
+                  {
+                     next_list.module_id = module_id;
+                     next_list.module_ref = module_ref;
+
+                     next_list.lici = lici;
+                     setup_list_fields( next_list, "", module_name, *p_session_info, false );
+
+                     home_lists.insert( make_pair( mod_info.get_string( next_list.name ), next_list ) );
+                  }
+               }
+            }
+            else
+            {
                lici = mod_info.list_info.find( ident );
 
                if( lici == mod_info.list_info.end( ) )
@@ -2084,33 +2104,14 @@ void request_handler::process_request( )
                }
             }
 
-            if( !mod_info.home_list_id.empty( ) )
+            for( map< string, list_source >::iterator i = home_lists.begin( ); i != home_lists.end( ); ++i )
             {
-               issued_command = true;
-               list.id = c_list_prefix;
-
-               string list_page_info( listinfo );
-
-               if( listextra == c_list_extra_find )
+               if( !populate_list_info( i->second, list_selections,
+                list_search_text, list_search_values, "", "", "", false, 0, "", 0, *p_session_info ) )
                {
-                  vector< string > pairs;
-
-                  if( !findinfo.empty( ) )
-                     split( findinfo, pairs );
-
-                  for( size_t i = 0; i < pairs.size( ); i++ )
-                  {
-                     string::size_type pos = pairs[ i ].find( '=' );
-                     if( pos == string::npos )
-                        throw runtime_error( "unexpected pair format '" + pairs[ i ] + "'" );
-
-                     list_search_values.insert( make_pair( pairs[ i ].substr( 0, pos ), pairs[ i ].substr( pos + 1 ) ) );
-                  }
-               }
-
-               if( !populate_list_info( list, list_selections, list_search_text,
-                list_search_values, list_page_info, listsort, "", false, 0, "", 0, *p_session_info ) )
                   had_send_or_recv_error = true;
+                  break;
+               }
             }
 
             string dummy_command( string( c_dummy_server_command ) + " -u="
@@ -3401,19 +3402,29 @@ void request_handler::process_request( )
                if( !user_home_info.empty( ) )
                   extra_content << "<p align=\"center\">" << user_home_info << "</p>\n";
 
-               bool can_output = true;
-               if( using_anonymous && ( mod_info.home_list_id.empty( )
-                || !list.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
-                  can_output = false;
-
-               if( can_output && !mod_info.home_list_id.empty( ) )
+               for( map< string, list_source >::iterator i = home_lists.begin( ); i != home_lists.end( ); ++i )
                {
-                  output_list_form( extra_content,
-                   list, session_id, uselect, "", false,
-                   cookies_permitted, true, false, list_selections, list_search_text,
-                   list_search_values, 0, false, "", false, "", oident, *p_session_info,
-                   specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
-                   embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
+                  bool can_output = true;
+
+                  if( using_anonymous
+                   && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                     can_output = false;
+
+                  if( can_output )
+                  {
+                     if( !i->second.name.empty( ) )
+                     {
+                        extra_content << "<h3>"
+                         << get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info ) << "</h3>\n";
+                     }
+
+                     output_list_form( extra_content,
+                      i->second, session_id, uselect, "", false,
+                      cookies_permitted, true, false, list_selections, list_search_text,
+                      list_search_values, 0, false, "", false, "", i->second.lici->second->id, *p_session_info,
+                      specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
+                      embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
+                  }
                }
             }
             else if( cmd == c_cmd_view || cmd == c_cmd_pview )
