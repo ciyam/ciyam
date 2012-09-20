@@ -8746,6 +8746,7 @@ bool perform_instance_iterate( class_base& instance,
              make_pair( instance.get_graph_parent_fk_field( ), instance.get_graph_parent( )->get_key( ) ) );
          }
 
+         instance_accessor.add_extra_fixed_info( fixed_info );
          instance_accessor.add_extra_paging_info( paging_info );
 
          // NOTE: If the key info contains any transient field names (for ordering)

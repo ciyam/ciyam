@@ -132,6 +132,7 @@
 `{`$all_finalise_fetch_specifications`=`'`'`}
 `{`$all_static_class_init_specifications`=`'`'`}
 `{`$all_static_class_term_specifications`=`'`'`}
+`{`$all_add_extra_fixed_info_specifications`=`'`'`}
 `{`$all_add_extra_paging_info_specifications`=`'`'`}
 `{`$all_value_will_be_provided_specifications`=`'`'`}
 `{`$all_get_required_field_names_specifications`=`'`'`}
@@ -192,6 +193,7 @@
 `{`(`!`?`$specification_\0_sections`)`$all_finalise_fetch_specifications`=`$all_finalise_fetch_specifications`+`'\0,\1`'`}\
 `{`(`!`?`$specification_\0_sections`)`$all_static_class_init_specifications`=`$all_static_class_init_specifications`+`'\0,\1`'`}\
 `{`(`!`?`$specification_\0_sections`)`$all_static_class_term_specifications`=`$all_static_class_term_specifications`+`'\0,\1`'`}\
+`{`(`!`?`$specification_\0_sections`)`$all_add_extra_fixed_info_specifications`=`$all_add_extra_fixed_info_specifications`+`'\0,\1`'`}\
 `{`(`!`?`$specification_\0_sections`)`$all_add_extra_paging_info_specifications`=`$all_add_extra_paging_info_specifications`+`'\0,\1`'`}\
 `{`(`!`?`$specification_\0_sections`)`$all_value_will_be_provided_specifications`=`$all_value_will_be_provided_specifications`+`'\0,\1`'`}\
 `{`(`!`?`$specification_\0_sections`)`$all_get_required_field_names_specifications`=`$all_get_required_field_names_specifications`+`'\0,\1`'`}\
@@ -707,6 +709,7 @@ struct \$::impl : public \$_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const;
    void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
 
    void clear( );
@@ -1077,6 +1080,20 @@ void `{`$full_class_name`}::impl::get_foreign_key_values( foreign_key_data_conta
 `{`[`$parent_fields`,\
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_\0, v_\0 ) );\
 `+\n`]`}
+}
+
+void `{`$full_class_name`}::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   ( void )fixed_info;
+`{`?`$all_add_extra_fixed_info_specifications`[`$all_add_extra_fixed_info_specifications`%,`,\
+`{`@eq`(`'\1`'`,`'dummy`'`)
+`{`#dummy.spec.xrep section=add_extra_fixed_info module_name=$module_name`}\
+### add_extra_fixed_info
+`}`]`}
+
+   // [<start add_extra_fixed_info>]
+`{`(`?`$user_source`)`#$user_source section=add_extra_fixed_info`}
+   // [<finish add_extra_fixed_info>]
 }
 
 void `{`$full_class_name`}::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
@@ -2638,6 +2655,14 @@ class_base* `{`$full_class_name`}::get_next_foreign_key_child(
 `}`}
 
    return p_class_base;
+}
+
+void `{`$full_class_name`}::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+`{`(`?`$parent_class`)\
+   parent_class_type::add_extra_fixed_info( fixed_info );\
+`}
+   p_impl->add_extra_fixed_info( fixed_info );
 }
 
 void `{`$full_class_name`}::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const

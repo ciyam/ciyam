@@ -671,6 +671,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const;
    void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
 
    void clear( );
@@ -1072,6 +1073,14 @@ void Meta_Index::impl::get_foreign_key_values( foreign_key_data_container& forei
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Field_4, v_Field_4 ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Field_5, v_Field_5 ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Index, v_Source_Index ) );
+}
+
+void Meta_Index::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   ( void )fixed_info;
+
+   // [<start add_extra_fixed_info>]
+   // [<finish add_extra_fixed_info>]
 }
 
 void Meta_Index::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
@@ -2120,6 +2129,11 @@ class_base* Meta_Index::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Index::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   p_impl->add_extra_fixed_info( fixed_info );
 }
 
 void Meta_Index::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const

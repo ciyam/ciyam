@@ -2200,6 +2200,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   void add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const;
    void add_extra_paging_info( vector< pair< string, string > >& paging_info ) const;
 
    void clear( );
@@ -3551,6 +3552,14 @@ void Meta_Specification_Type::impl::get_foreign_key_values( foreign_key_data_con
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Child_Specification_Type, v_Child_Specification_Type ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Next_Child_Specification_Type, v_Next_Child_Specification_Type ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Specification_Type, v_Parent_Specification_Type ) );
+}
+
+void Meta_Specification_Type::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   ( void )fixed_info;
+
+   // [<start add_extra_fixed_info>]
+   // [<finish add_extra_fixed_info>]
 }
 
 void Meta_Specification_Type::impl::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
@@ -7699,6 +7708,11 @@ class_base* Meta_Specification_Type::get_next_foreign_key_child(
    }
 
    return p_class_base;
+}
+
+void Meta_Specification_Type::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
+{
+   p_impl->add_extra_fixed_info( fixed_info );
 }
 
 void Meta_Specification_Type::add_extra_paging_info( vector< pair< string, string > >& paging_info ) const
