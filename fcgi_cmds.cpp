@@ -2394,6 +2394,9 @@ void save_record( const string& module_id,
          }
       }
 
+      if( view.html_fields.count( value_id ) )
+         force_html_tags_to_lower_case( next );
+
       if( field_id == field )
          found_field = true;
 

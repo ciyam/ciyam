@@ -3380,6 +3380,11 @@ void Meta_Model::impl::impl_Generate( )
 
                list_extra += "fixed,no_new,no_erase";
             }
+            else if( type_key == "admin" )
+            {
+               list_type = "admin";
+               specification_name += "admin_list";
+            }
             else if( type_key == "user" || type_key == "non_user" )
             {
                if( type_key == "user" )

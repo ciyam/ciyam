@@ -526,6 +526,7 @@ field_add -id=121103 List_Type Is_Child bool mand -def=0
 field_add -id=121104 List_Type Is_Home bool mand -def=0
 field_add -id=121105 List_Type Is_Not_Anonymous bool mand -def=0
 field_add -id=121106 List_Type Dummy_0 bool mand -def=0 -transient
+field_add -id=121107 List_Type Is_Admin bool mand -def=0
 index_add -id=121201 List_Type Name unique
 class_add -id=122100 List Lists
 field_add -id=122101 List Name str100 opt -transient
@@ -563,6 +564,7 @@ field_add -id=122143 List Multiline_Truncate_For_Print bool mand -def=1
 field_add -id=122144 List Number_Multiple_Pages bool mand -def=1
 field_add -id=122145 List Allow_Anonymous_Access bool mand -def=0
 field_add -id=122146 List Is_Not_Anonymous bool mand -def=0
+field_add -id=122147 List Is_Admin bool mand -def=0
 procedure_add -id=122430 List Generate_PDF_List
 procedure_arg_add -id=122431 List Generate_PDF_List Variation_Num int in
 class_add -id=123100 List_Field_Type List_Field_Types
@@ -1042,6 +1044,8 @@ modifier_add -id=500830 List Is_Home Style:relegate,Limit_Scroll_And_New:relegat
 ,Destroy_Restriction:relegate,Destroy_{Permission}:relegate
 modifier_add -id=500831 List PDF_List_Is_None PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
 modifier_add -id=500832 List PDF_List_Is_Custom PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
+modifier_add -id=500833 List Is_Admin Access_Restriction:relegate,Access_{Permission}:relegate\
+,Create_Restriction:relegate,Create_{Permission}:relegate,Destroy_Restriction:relegate,Destroy_{Permission}:relegate,Allow_Quick_Link:relegate
 modifier_add -id=500850 List_Field Hide_Non_FK_Field Source_Field:relegate
 modifier_add -id=500855 List_Field Hide_Child_Rel_Non_FK_Field Child_Rel_Source_Field:relegate
 modifier_add -id=500860 List_Field Hide_FK_Fields Source_Parent:relegate\
@@ -1577,6 +1581,15 @@ specification_add -id=600415 {List}_Variation_Name field_from_other_field "List 
 specification_add -id=600418 {List}_Id_auto_inc parent_auto_int_inc "List Id {Model} Next_List_Id"
 specification_add -id=600420 {List}_Name_from_search_replace field_from_search_replace "List Name Type:List_Name\
  {Class}:Name={class},Parent_Field:Name={pfield},Variation_Name={vname} -sep=_ -transient"
+specification_add -id=600425 {List}_Is_Child_from_{Type} field_from_other_field "List Type:Is_Child Is_Child"
+specification_add -id=600426 {List}_Is_Home_from_{Type} field_from_other_field "List Type:Is_Home Is_Home"
+specification_add -id=600426a {List}_Is_Not_Anonymous_from_{Type} field_from_other_field "List Type:Is_Not_Anonymous Is_Not_Anonymous"
+specification_add -id=600426b {List}_Is_Admin_from_{Type} field_from_other_field "List Type:Is_Admin Is_Admin"
+specification_add -id=600427 {List}_PDF_List_Is_None modifier_field_value "List PDF_List_Is_None PDF_List_Type 0"
+specification_add -id=600428 {List}_PDF_List_Is_Custom modifier_field_value "List PDF_List_Is_Custom PDF_List_Type 99"
+specification_add -id=600429 {List}_Parent_Class_From_Parent_Field field_from_other_field "List Parent_Field:Parent_Class Parent_Class"
+specification_add -id=600429a {List}_Allow_Anonymous_Access_default default_to_field\
+ "List Allow_Anonymous_Access Type:Dummy_0 -test=Type:Is_Not_Anonymous=true"
 specification_add -id=600430 {List}_Is_Child modifier_field_value "List Is_Child Is_Child true"
 specification_add -id=600431 {List}_Is_Not_Child modifier_field_value "List Is_Not_Child Is_Child false"
 specification_add -id=600432 {List}_Cannot_Text_Search modifier_field_value "List Cannot_Text_Search Allow_Text_Search false"
@@ -1587,15 +1600,8 @@ specification_add -id=600434b {List}_Anonymous_Disallowed_2 modifier_field_value
 specification_add -id=600434c {List}_Anonymous_Disallowed_3 modifier_field_null "List Anonymous_Disallowed Access_{Permission} -negative"
 specification_add -id=600435 {List}_Is_Not_Unlimited modifier_field_value "List Is_Not_Unlimited Display_Row_Limit 999 -not_equal"
 specification_add -id=600436 {List}_Will_Sort_Rows_In_UI modifier_field_value "List Will_Sort_Rows_In_UI Sort_Rows_In_UI true"
+specification_add -id=600437 {List}_Is_Admin modifier_field_value "List Is_Admin Is_Admin true"
 specification_add -id=600440 {List}_Parent_Field_check check_cond_non_null "List Parent_Field Is_Child"
-specification_add -id=600425 {List}_Is_Child_from_{Type} field_from_other_field "List Type:Is_Child Is_Child"
-specification_add -id=600426 {List}_Is_Home_from_{Type} field_from_other_field "List Type:Is_Home Is_Home"
-specification_add -id=600426a {List}_Is_Not_Anonymous_from_{Type} field_from_other_field "List Type:Is_Not_Anonymous Is_Not_Anonymous"
-specification_add -id=600427 {List}_PDF_List_Is_None modifier_field_value "List PDF_List_Is_None PDF_List_Type 0"
-specification_add -id=600428 {List}_PDF_List_Is_Custom modifier_field_value "List PDF_List_Is_Custom PDF_List_Type 99"
-specification_add -id=600429 {List}_Parent_Class_From_Parent_Field field_from_other_field "List Parent_Field:Parent_Class Parent_Class"
-specification_add -id=600429a {List}_Allow_Anonymous_Access_default default_to_field\
- "List Allow_Anonymous_Access Type:Dummy_0 -test=Type:Is_Not_Anonymous=true"
 specification_add -id=600445 {List_Field}_Type_default fk_default "List_Field Type field"
 specification_add -id=600446 {List_Field}_{Class}_default default_to_field "List_Field {Class} {List}:{Class}"
 specification_add -id=600447 {List_Field}_Order_default default_from_key "List_Field Order -check_null"

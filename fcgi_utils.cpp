@@ -41,6 +41,7 @@
 #include "fcgi_utils.h"
 
 #include "sha1.h"
+#include "regex.h"
 #include "config.h"
 #include "threads.h"
 #include "date_time.h"
@@ -783,6 +784,43 @@ string replace_crlfs_and_spaces( const string& input, const char* p_rep, const c
    }
 
    return str;
+}
+
+void force_html_tags_to_lower_case( string& html )
+{
+   static regex html_tag( c_regex_html_tag );
+
+   string old_html( html );
+   string new_html;
+
+   while( true )
+   {
+      string::size_type len;
+      vector< string > refs;
+
+      string::size_type pos = html_tag.search( old_html, &len, &refs );
+
+      if( pos == string::npos )
+      {
+         new_html += old_html;
+         break;
+      }
+
+      if( refs.empty( ) )
+         throw runtime_error( "unexpected missing refs for html_tag" );
+
+      if( pos != 0 )
+         new_html += old_html.substr( 0, pos );
+
+      size_t rlen = refs[ 0 ].size( );
+      new_html += lower( old_html.substr( pos, rlen + 1 ) );
+
+      new_html += old_html.substr( pos + rlen + 1, len - rlen - 1 );
+
+      old_html.erase( 0, len + pos );
+   }
+
+   html = new_html;
 }
 
 void create_tmp_file_link( string& tmp_link_path,

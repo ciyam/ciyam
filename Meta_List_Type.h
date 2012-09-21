@@ -40,11 +40,12 @@ class META_LIST_TYPE_DECL_SPEC Meta_List_Type : public class_base
    {
       e_field_id_none = 0,
       e_field_id_Dummy_0 = 1,
-      e_field_id_Is_Child = 2,
-      e_field_id_Is_Home = 3,
-      e_field_id_Is_Not_Anonymous = 4,
-      e_field_id_List_Name = 5,
-      e_field_id_Name = 6
+      e_field_id_Is_Admin = 2,
+      e_field_id_Is_Child = 3,
+      e_field_id_Is_Home = 4,
+      e_field_id_Is_Not_Anonymous = 5,
+      e_field_id_List_Name = 6,
+      e_field_id_Name = 7
    };
 
    Meta_List_Type( );
@@ -52,6 +53,9 @@ class META_LIST_TYPE_DECL_SPEC Meta_List_Type : public class_base
 
    bool Dummy_0( ) const;
    void Dummy_0( bool Dummy_0 );
+
+   bool Is_Admin( ) const;
+   void Is_Admin( bool Is_Admin );
 
    bool Is_Child( ) const;
    void Is_Child( bool Is_Child );

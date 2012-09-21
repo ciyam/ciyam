@@ -3195,7 +3195,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>1000:relegate
+     <modifiers>2000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -3224,7 +3224,7 @@
      <ftype>int
      <extra>force+enum=685
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>tab_security_options
@@ -3248,7 +3248,7 @@
      <ftype>int
      <extra>enum=680
      <mandatory>true
-     <modifiers>
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_list_access_permission
@@ -3256,7 +3256,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>
+     <modifiers>400:relegate
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -3268,7 +3268,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>1000:relegate
+     <modifiers>2000:relegate
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
@@ -3280,7 +3280,7 @@
      <ftype>int
      <extra>enum=680
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate,400:relegate
     </field>
     <field/>
      <name>field_list_create_permission
@@ -3288,7 +3288,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>800:relegate
+     <modifiers>1000:relegate,400:relegate
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -3300,7 +3300,7 @@
      <ftype>int
      <extra>enum=680
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate,400:relegate
     </field>
     <field/>
      <name>field_list_destroy_permission
@@ -3308,7 +3308,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>800:relegate
+     <modifiers>1000:relegate,400:relegate
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -3336,7 +3336,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>2000:relegate
+     <modifiers>4000:relegate,400:relegate
     </field>
     <field/>
      <name>field_list_search_option_limit
@@ -3344,7 +3344,7 @@
      <ftype>int
      <extra>enum=686
      <mandatory>true
-     <modifiers>2000:relegate
+     <modifiers>4000:relegate
     </field>
     <field/>
      <name>field_list_direction
@@ -3368,7 +3368,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>4000:relegate
+     <modifiers>8000:relegate
     </field>
     <field/>
      <name>field_list_limit_scroll_and_new
@@ -3376,7 +3376,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_is_variation
@@ -3384,7 +3384,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>400:relegate,800:relegate
+     <modifiers>800:relegate,1000:relegate
     </field>
     <field/>
      <name>field_list_allow_text_search
@@ -3392,7 +3392,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_text_match_highlight
@@ -3408,7 +3408,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_multiline_truncate_for_print
@@ -3416,7 +3416,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_pdf_list_type
@@ -3424,7 +3424,7 @@
      <ftype>int
      <extra>force+enum=682
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_pdf_font_type
@@ -3432,7 +3432,7 @@
      <ftype>int
      <extra>enum=654
      <mandatory>true
-     <modifiers>800:relegate,10000:relegate,8000:relegate
+     <modifiers>1000:relegate,20000:relegate,10000:relegate
     </field>
     <field/>
      <name>field_list_number_multiple_pages
@@ -3440,7 +3440,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate,10000:relegate,8000:relegate
+     <modifiers>1000:relegate,20000:relegate,10000:relegate
     </field>
     <field/>
      <name>tab_advanced_ui_options
@@ -3456,7 +3456,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_ignore_implicit_ordering
@@ -3464,7 +3464,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>20000:relegate,800:relegate
+     <modifiers>40000:relegate,1000:relegate
     </field>
     <field/>
      <name>field_list_ignore_uneditable_parent
@@ -3472,7 +3472,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>1000:relegate,800:relegate
+     <modifiers>2000:relegate,1000:relegate
     </field>
     <field/>
      <name>field_list_ignore_unactionable_records
@@ -3480,7 +3480,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_display_security_level
@@ -3488,7 +3488,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_create_only_if_default_other
@@ -3496,7 +3496,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_display_only_if_default_other
@@ -3504,7 +3504,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_list_destroy_only_if_default_other
@@ -3512,7 +3512,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
     </field>
    </fields>
   </view>
@@ -7728,7 +7728,7 @@
      <field>122103
      <ftype>int
      <extra>enum=680
-     <modifiers>
+     <modifiers>400:relegate
      <unique>false
      <indexed>false
     </column>

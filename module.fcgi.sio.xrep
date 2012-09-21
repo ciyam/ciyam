@@ -269,6 +269,78 @@ _`{`@lower`(`$specification_\$_print_prfnm\\$`)`}`}`{`(`?`$specification_\$_prin
 `]`}`]`}\
    </restricts>
   </list>`}`]`}\
+`{`(`?`$specification_\$_admin_list_name`)
+  <list/>
+   <id>`{`$specification_\$_admin_list_id`}
+   <cid>`{`$specification_\$_admin_list_cid`}
+   <name>`{`$specification_\$_admin_list_id`}_name
+   <type>`{`$specification_\$_admin_list_type`}
+   <extra>`{`$specification_\$_admin_list_extra`}
+   <actions>`{`$specification_\$_admin_list_acts`}`{`(`?`$specification_\$_admin_list_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_admin_list_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_admin_list_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_admin_list_binfo`}
+   <order>`{`$specification_\$_admin_list_order`}`{`(`?`$specification_\$_admin_list_pclass`)
+   <pclass>`{`$specification_\$_admin_list_pclass`}`}`{`(`?`$specification_\$_admin_list_pfield`)
+   <pfield>`{`$specification_\$_admin_list_pfield`}`}`{`(`?`$specification_\$_admin_list_pfldnm`)
+   <pfldnm>`{`$specification_\$_admin_list_pfldnm`}`}`{`(`?`$specification_\$_admin_list_nclass`)
+   <nclass>`{`$specification_\$_admin_list_nclass`}`}`{`(`?`$specification_\$_admin_list_nfield`)
+   <nfield>`{`$specification_\$_admin_list_nfield`}`}`{`(`?`$specification_\$_admin_list_nextra`)
+   <nextra>`{`$specification_\$_admin_list_nextra`}`}`{`(`?`$specification_\$_admin_list_dfenum`)
+   <dfenum>`{`$specification_\$_admin_list_dfenum`}`}`{`(`?`$specification_\$_admin_list_dfield`)
+   <dfield>`{`$specification_\$_admin_list_dfield`}`}`{`(`?`$specification_\$_admin_list_dvalue`)
+   <dvalue>`{`$specification_\$_admin_list_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_admin_list_filters`)
+   <filters>`{`$specification_\$_admin_list_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_admin_list_column\=3$`[`$specification_\$_admin_list_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_admin_list_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_admin_list_cltype\=3$`}
+     <extra>`{`$specification_\$_admin_list_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_admin_list_clmods\=3$`}`{`(`?`$specification_\$_admin_list_pclass\=3$`)
+     <pclass>`{`$specification_\$_admin_list_pclass\=3$`}`}`{`(`?`$specification_\$_admin_list_pfield\=3$`)
+     <pfield>`{`$specification_\$_admin_list_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_admin_list_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_admin_list_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_admin_list_cluniq\=3$`}
+     <indexed>`{`$specification_\$_admin_list_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_admin_list_parent\=3$`[`$specification_\$_admin_list_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_admin_list_prntnm\=3$`)\
+     <name>`{`$specification_\$_admin_list_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_admin_list_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_admin_list_jfield\=3$`}
+     <extra>`{`$specification_\$_admin_list_dextra\=3$`}
+     <pclass>`{`$specification_\$_admin_list_pclass\=3$`}
+     <pfield>`{`$specification_\$_admin_list_pfield\=3$`}
+     <pextra>`{`$specification_\$_admin_list_pextra\=3$`}
+     <mandatory>`{`$specification_\$_admin_list_mandatory\=3$`}
+     <operations>`{`$specification_\$_admin_list_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_admin_list_rfield\=3$`[`$specification_\$_admin_list_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_admin_list_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_admin_list_rfield\=3$`}
+     <ftype>`{`$specification_\$_admin_list_rftype\=3$`}
+     <extra>`{`$specification_\$_admin_list_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_admin_list_rfmand\=3$`}
+     <operations>`{`$specification_\$_admin_list_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}\
 `{`[`$pnums`,`{`(`?`$specification_\$_child_list\\$_name`)
   <list/>
    <id>`{`$specification_\$_child_list\\$_id`}

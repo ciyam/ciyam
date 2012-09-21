@@ -116,6 +116,8 @@ std::string replace_spaces( const std::string& input, const char* p_rep, size_t 
 
 std::string replace_crlfs_and_spaces( const std::string& input, const char* p_rep, const char* p_srep );
 
+void force_html_tags_to_lower_case( std::string& html );
+
 void create_tmp_file_link( std::string& tmp_link_path,
  const std::string& file_name, const std::string& file_ext, const std::string& dest_file_name );
 
