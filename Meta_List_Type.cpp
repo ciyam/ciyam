@@ -62,6 +62,7 @@ const int32_t c_version = 1;
 const char* const c_okay = "okay";
 
 const char* const c_field_id_Dummy_0 = "121106";
+const char* const c_field_id_Is_Admin = "121107";
 const char* const c_field_id_Is_Child = "121103";
 const char* const c_field_id_Is_Home = "121104";
 const char* const c_field_id_Is_Not_Anonymous = "121105";
@@ -69,6 +70,7 @@ const char* const c_field_id_List_Name = "121102";
 const char* const c_field_id_Name = "121101";
 
 const char* const c_field_name_Dummy_0 = "Dummy_0";
+const char* const c_field_name_Is_Admin = "Is_Admin";
 const char* const c_field_name_Is_Child = "Is_Child";
 const char* const c_field_name_Is_Home = "Is_Home";
 const char* const c_field_name_Is_Not_Anonymous = "Is_Not_Anonymous";
@@ -76,13 +78,14 @@ const char* const c_field_name_List_Name = "List_Name";
 const char* const c_field_name_Name = "Name";
 
 const char* const c_field_display_name_Dummy_0 = "field_list_type_dummy_0";
+const char* const c_field_display_name_Is_Admin = "field_list_type_is_admin";
 const char* const c_field_display_name_Is_Child = "field_list_type_is_child";
 const char* const c_field_display_name_Is_Home = "field_list_type_is_home";
 const char* const c_field_display_name_Is_Not_Anonymous = "field_list_type_is_not_anonymous";
 const char* const c_field_display_name_List_Name = "field_list_type_list_name";
 const char* const c_field_display_name_Name = "field_list_type_name";
 
-const int c_num_fields = 6;
+const int c_num_fields = 7;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -91,12 +94,14 @@ const char* const c_all_sorted_field_ids[ ] =
    "121103",
    "121104",
    "121105",
-   "121106"
+   "121106",
+   "121107"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
    "Dummy_0",
+   "Is_Admin",
    "Is_Child",
    "Is_Home",
    "Is_Not_Anonymous",
@@ -154,6 +159,7 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 bool gv_default_Dummy_0 = bool( 0 );
+bool gv_default_Is_Admin = bool( 0 );
 bool gv_default_Is_Child = bool( 0 );
 bool gv_default_Is_Home = bool( 0 );
 bool gv_default_Is_Not_Anonymous = bool( 0 );
@@ -241,6 +247,8 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
          throw runtime_error( "field name must not be empty for getter call" );
       else if( field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Dummy_0( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+         string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Admin( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Child( ), cmd_handler.retval );
       else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
@@ -264,6 +272,9 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
       else if( field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Dummy_0, field_value );
+      else if( field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+         func_string_setter< Meta_List_Type, bool >(
+          *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Admin, field_value );
       else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Child, field_value );
@@ -319,6 +330,9 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
 
    bool impl_Dummy_0( ) const { return lazy_fetch( p_obj ), v_Dummy_0; }
    void impl_Dummy_0( bool Dummy_0 ) { v_Dummy_0 = Dummy_0; }
+
+   bool impl_Is_Admin( ) const { return lazy_fetch( p_obj ), v_Is_Admin; }
+   void impl_Is_Admin( bool Is_Admin ) { v_Is_Admin = Is_Admin; }
 
    bool impl_Is_Child( ) const { return lazy_fetch( p_obj ), v_Is_Child; }
    void impl_Is_Child( bool Is_Child ) { v_Is_Child = Is_Child; }
@@ -412,6 +426,7 @@ struct Meta_List_Type::impl : public Meta_List_Type_command_handler
    size_t total_child_relationships;
 
    bool v_Dummy_0;
+   bool v_Is_Admin;
    bool v_Is_Child;
    bool v_Is_Home;
    bool v_Is_Not_Anonymous;
@@ -432,22 +447,26 @@ string Meta_List_Type::impl::get_field_value( int field ) const
       break;
 
       case 1:
-      retval = to_string( impl_Is_Child( ) );
+      retval = to_string( impl_Is_Admin( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Is_Home( ) );
+      retval = to_string( impl_Is_Child( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Is_Not_Anonymous( ) );
+      retval = to_string( impl_Is_Home( ) );
       break;
 
       case 4:
-      retval = to_string( impl_List_Name( ) );
+      retval = to_string( impl_Is_Not_Anonymous( ) );
       break;
 
       case 5:
+      retval = to_string( impl_List_Name( ) );
+      break;
+
+      case 6:
       retval = to_string( impl_Name( ) );
       break;
 
@@ -467,22 +486,26 @@ void Meta_List_Type::impl::set_field_value( int field, const string& value )
       break;
 
       case 1:
-      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Child, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Admin, value );
       break;
 
       case 2:
-      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Home, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Child, value );
       break;
 
       case 3:
-      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Not_Anonymous, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Home, value );
       break;
 
       case 4:
-      func_string_setter< Meta_List_Type::impl, string >( *this, &Meta_List_Type::impl::impl_List_Name, value );
+      func_string_setter< Meta_List_Type::impl, bool >( *this, &Meta_List_Type::impl::impl_Is_Not_Anonymous, value );
       break;
 
       case 5:
+      func_string_setter< Meta_List_Type::impl, string >( *this, &Meta_List_Type::impl::impl_List_Name, value );
+      break;
+
+      case 6:
       func_string_setter< Meta_List_Type::impl, string >( *this, &Meta_List_Type::impl::impl_Name, value );
       break;
 
@@ -555,6 +578,7 @@ void Meta_List_Type::impl::add_extra_paging_info( vector< pair< string, string >
 void Meta_List_Type::impl::clear( )
 {
    v_Dummy_0 = gv_default_Dummy_0;
+   v_Is_Admin = gv_default_Is_Admin;
    v_Is_Child = gv_default_Is_Child;
    v_Is_Home = gv_default_Is_Home;
    v_Is_Not_Anonymous = gv_default_Is_Not_Anonymous;
@@ -770,6 +794,16 @@ void Meta_List_Type::Dummy_0( bool Dummy_0 )
    p_impl->impl_Dummy_0( Dummy_0 );
 }
 
+bool Meta_List_Type::Is_Admin( ) const
+{
+   return p_impl->impl_Is_Admin( );
+}
+
+void Meta_List_Type::Is_Admin( bool Is_Admin )
+{
+   p_impl->impl_Is_Admin( Is_Admin );
+}
+
 bool Meta_List_Type::Is_Child( ) const
 {
    return p_impl->impl_Is_Child( );
@@ -966,6 +1000,16 @@ const char* Meta_List_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Is_Admin )
+   {
+      p_id = c_field_id_Is_Admin;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Is_Child )
    {
       p_id = c_field_id_Is_Child;
@@ -1036,6 +1080,16 @@ const char* Meta_List_Type::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Is_Admin )
+   {
+      p_name = c_field_name_Is_Admin;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
    }
    else if( id == c_field_id_Is_Child )
    {
@@ -1115,6 +1169,8 @@ string Meta_List_Type::get_field_display_name( const string& id_or_name ) const
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
    else if( id_or_name == c_field_id_Dummy_0 || id_or_name == c_field_name_Dummy_0 )
       display_name = get_module_string( c_field_display_name_Dummy_0 );
+   else if( id_or_name == c_field_id_Is_Admin || id_or_name == c_field_name_Is_Admin )
+      display_name = get_module_string( c_field_display_name_Is_Admin );
    else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
       display_name = get_module_string( c_field_display_name_Is_Child );
    else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
@@ -1309,6 +1365,7 @@ void Meta_List_Type::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Is_Admin" );
    names.push_back( "C_Is_Child" );
    names.push_back( "C_Is_Home" );
    names.push_back( "C_Is_Not_Anonymous" );
@@ -1325,6 +1382,7 @@ void Meta_List_Type::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( to_string( Is_Admin( ) ) );
    values.push_back( to_string( Is_Child( ) ) );
    values.push_back( to_string( Is_Home( ) ) );
    values.push_back( to_string( Is_Not_Anonymous( ) ) );
@@ -1405,6 +1463,7 @@ void Meta_List_Type::static_get_class_info( class_info_container& class_info )
 void Meta_List_Type::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "121106", "Dummy_0", "bool", false ) );
+   all_field_info.push_back( field_info( "121107", "Is_Admin", "bool", false ) );
    all_field_info.push_back( field_info( "121103", "Is_Child", "bool", false ) );
    all_field_info.push_back( field_info( "121104", "Is_Home", "bool", false ) );
    all_field_info.push_back( field_info( "121105", "Is_Not_Anonymous", "bool", false ) );
@@ -1441,22 +1500,26 @@ const char* Meta_List_Type::static_get_field_id( field_id id )
       break;
 
       case 2:
-      p_id = "121103";
+      p_id = "121107";
       break;
 
       case 3:
-      p_id = "121104";
+      p_id = "121103";
       break;
 
       case 4:
-      p_id = "121105";
+      p_id = "121104";
       break;
 
       case 5:
-      p_id = "121102";
+      p_id = "121105";
       break;
 
       case 6:
+      p_id = "121102";
+      break;
+
+      case 7:
       p_id = "121101";
       break;
    }
@@ -1478,22 +1541,26 @@ const char* Meta_List_Type::static_get_field_name( field_id id )
       break;
 
       case 2:
-      p_id = "Is_Child";
+      p_id = "Is_Admin";
       break;
 
       case 3:
-      p_id = "Is_Home";
+      p_id = "Is_Child";
       break;
 
       case 4:
-      p_id = "Is_Not_Anonymous";
+      p_id = "Is_Home";
       break;
 
       case 5:
-      p_id = "List_Name";
+      p_id = "Is_Not_Anonymous";
       break;
 
       case 6:
+      p_id = "List_Name";
+      break;
+
+      case 7:
       p_id = "Name";
       break;
    }
@@ -1512,16 +1579,18 @@ int Meta_List_Type::static_get_field_num( const string& field )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
    else if( field == c_field_id_Dummy_0 || field == c_field_name_Dummy_0 )
       rc += 1;
-   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
+   else if( field == c_field_id_Is_Admin || field == c_field_name_Is_Admin )
       rc += 2;
-   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
+   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
       rc += 3;
-   else if( field == c_field_id_Is_Not_Anonymous || field == c_field_name_Is_Not_Anonymous )
+   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
       rc += 4;
-   else if( field == c_field_id_List_Name || field == c_field_name_List_Name )
+   else if( field == c_field_id_Is_Not_Anonymous || field == c_field_name_Is_Not_Anonymous )
       rc += 5;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_List_Name || field == c_field_name_List_Name )
       rc += 6;
+   else if( field == c_field_id_Name || field == c_field_name_Name )
+      rc += 7;
 
    return rc - 1;
 }
@@ -1542,6 +1611,7 @@ string Meta_List_Type::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Is_Admin INTEGER NOT NULL,"
     "C_Is_Child INTEGER NOT NULL,"
     "C_Is_Home INTEGER NOT NULL,"
     "C_Is_Not_Anonymous INTEGER NOT NULL,"

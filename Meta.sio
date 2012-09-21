@@ -4209,6 +4209,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600426b
+      <item>class
+     </specification>
+     <specification/>
       <id>600427
       <item>class
      </specification>
@@ -4265,6 +4269,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600437
+      <item>class
+     </specification>
+     <specification/>
       <id>600440
       <item>class
      </specification>
@@ -4318,6 +4326,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500833
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4344,6 +4356,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500833
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4392,6 +4408,10 @@
       <modifiers/>
        <modifier/>
         <id>500815
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500833
         <affect>relegate
        </modifier>
       </modifiers>
@@ -4462,6 +4482,10 @@
         <id>500830
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500833
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4482,6 +4506,10 @@
       <modifiers/>
        <modifier/>
         <id>500830
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500833
         <affect>relegate
        </modifier>
       </modifiers>
@@ -4527,6 +4555,10 @@
         <id>500830
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500833
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4547,6 +4579,10 @@
       <modifiers/>
        <modifier/>
         <id>500830
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500833
         <affect>relegate
        </modifier>
       </modifiers>
@@ -4751,6 +4787,27 @@
       <specifications/>
        <specification/>
         <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>122147
+      <name>Is_Admin
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600426b
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600437
         <item>field
        </specification>
       </specifications>
@@ -5259,6 +5316,10 @@
         <item>src_pfield
        </specification>
        <specification/>
+        <id>600426b
+        <item>src_pfield
+       </specification>
+       <specification/>
         <id>600429a
         <item>pfield
        </specification>
@@ -5360,6 +5421,10 @@
      <modifier/>
       <id>500820
       <name>Cannot_Text_Search
+     </modifier>
+     <modifier/>
+      <id>500833
+      <name>Is_Admin
      </modifier>
      <modifier/>
       <id>500800
@@ -7975,6 +8040,10 @@
       <item>sclass
      </specification>
      <specification/>
+      <id>600426b
+      <item>sclass
+     </specification>
+     <specification/>
       <id>600429a
       <item>pclass
      </specification>
@@ -7998,6 +8067,23 @@
       <specifications/>
        <specification/>
         <id>600429a
+        <item>src_field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>121107
+      <name>Is_Admin
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600426b
         <item>src_field
        </specification>
       </specifications>
@@ -27372,6 +27458,29 @@
      <field_id>122111
      <pfield_id>301990
      <cfield_id>105107
+    </data>
+   </specification>
+   <specification/>
+    <id>600437
+    <name>{List}_Is_Admin
+    <type>modifier_field_value
+    <data/>
+     <class_id>122100
+     <modifier_id>500833
+     <field_id>122147
+     <field_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600426b
+    <name>{List}_Is_Admin_from_{Type}
+    <type>field_from_other_field
+    <data/>
+     <class_id>122100
+     <sclass_id>121100
+     <sfield_id>121107
+     <pfield_id>301991
+     <dfield_id>122147
     </data>
    </specification>
    <specification/>
