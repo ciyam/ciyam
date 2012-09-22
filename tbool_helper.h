@@ -36,7 +36,7 @@ class tbool : public nullable_bool
 
 inline bool is_null( const tbool& tb ) { return tb.is_null( ); }
 
-inline size_t size_determiner( const tbool* ) { return sizeof( bool ) + sizeof( bool ); }
+inline size_t size_determiner( const tbool* ) { return sizeof( char ); }
 
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option push -w-8027
@@ -44,8 +44,11 @@ inline size_t size_determiner( const tbool* ) { return sizeof( bool ) + sizeof( 
 inline std::string to_string( const tbool& tb )
 {
    std::string s;
-   if( !tb.is_null( ) )
+   if( tb.is_null( ) )
+      s = "-1";
+   else
       s = to_string( *tb );
+
    return s;
 }
 #  ifdef NEW_BORLAND_VERSION
@@ -55,8 +58,9 @@ inline std::string to_string( const tbool& tb )
 template< > inline tbool from_string< tbool >( const std::string& s )
 {
    tbool tb;
-   if( !s.empty( ) )
+   if( s != "-1" )
       tb = from_string< bool >( s );
+
    return tb;
 }
 
@@ -89,24 +93,26 @@ inline bool operator <( const tbool& lhs, const tbool& rhs )
 
 inline read_stream& operator >>( read_stream& rs, tbool& tb )
 {
-   bool is_null, b;
+   char b;
 
-   rs >> is_null >> b;
+   rs >> b;
 
-   if( is_null )
+   if( b < 0 )
       tb.set_null( );
    else
-      tb = b;
+      tb = ( bool )b;
 
    return rs;
 }
 
 inline write_stream& operator <<( write_stream& ws, const tbool& tb )
 {
-   if( tb.is_null( ) )
-      ws << true << bool( );
-   else
-      ws << false << *tb;
+   char b = -1;
+
+   if( !tb.is_null( ) )
+      b = ( char )*tb;
+
+   ws << b;
 
    return ws;
 }

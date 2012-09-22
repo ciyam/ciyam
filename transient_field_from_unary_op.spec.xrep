@@ -1,0 +1,45 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`$op`=`$arg_op`}\
+`{`@eq`(`$op`,`'not`'`)`$op`=`'!`'`}\
+`{`@eq`(`$op`,`'bitnot`'`)`$op`=`'~`'`}\
+   // [(start field_from_unary_op)]
+`{`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   get_obj( ).op_update( );
+`}\
+   get_obj( ).`{`$arg_field`}( `{`$op`}get_obj( ).`{`$arg_sfield`}( ) );
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   get_obj( ).op_apply( );
+`}`,\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   {
+      get_obj( ).op_update( );
+`}\
+      get_obj( ).`{`$arg_field`}( `{`$op`}get_obj( ).`{`$arg_sfield`}( ) );
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+      get_obj( ).op_apply( );
+   }
+`}`}\
+   // [(finish field_from_unary_op)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_from_unary_op)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+      dependents.insert( "`{`$arg_tfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+`}\
+   }
+   // [(finish field_from_unary_op)]
+`}
