@@ -1,9 +1,3 @@
-`{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start field_from_op)]
-   if( field_name == "`{`$arg_field`}" )
-      return true;
-   // [(finish field_from_op)]
-`}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$op`=`$arg_op`}\
 `{`@eq`(`$op`,`'add`'`)`$op`=`'+`'`}\
@@ -16,7 +10,6 @@
 `{`@eq`(`$op`,`'mod`'`)`$op`=`'%`'`}\
 `{`@eq`(`$op`,`'bitand`'`)`$op`=`'&`'`}\
 `{`@eq`(`$op`,`'bitor`'`)`$op`=`'|`'`}\
-`{`@eq`(`$op`,`'bitnot`'`)`$op`=`'~`'`}\
 `{`@eq`(`$op`,`'bitsleft`'`)`$op`=`'<<`'`}\
 `{`@eq`(`$op`,`'bitsright`'`)`$op`=`'>>`'`}\
 `{`$type`=`$arg_type`}\

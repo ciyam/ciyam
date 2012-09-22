@@ -1,0 +1,26 @@
+`{`@eq`(`'for_store`'`,`$section`)\
+`{`$op`=`'==`'`}`{`@eq`(`$arg_not_equal`,`'true`'`)`$op`=`'!=`'`}\
+`{`$key_suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$key_suffix`=`$arg_key_suffix`}\
+   // [(start field_bool_matched_clone)]
+   // NOTE: Empty code block for scope purposes.
+   {
+      class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
+
+      perform_fetch_rc rc;
+      cp_source->perform_fetch( get_obj( ).get_key( ) + "`{`$key_suffix`}", &rc );
+      if( rc == e_perform_fetch_rc_okay )
+      {
+         if( get_obj( ).`{`$arg_tfield`}( ) `{`$op`} cp_source->`{`$arg_tfield`}( ) )
+            get_obj( ).`{`$arg_field`}( true );
+         else
+            get_obj( ).`{`$arg_field`}( false );
+      }
+      else
+`{`@eq`(`$arg_sfield`,`'`'`)\
+         get_obj( ).`{`$arg_field`}( gv_default_`{`$arg_field`} );
+`,\
+         get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) );
+`}\
+   }
+   // [(finish field_bool_matched_clone)]
+`}
