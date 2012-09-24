@@ -22,6 +22,9 @@ get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`}
          actions += '<';
 `}\
       actions += c_procedure_id_`{`$arg_procedure`};
+`{`@eq`(`$arg_clone_record`,`'true`'`)\
+      actions += "$" + string( get_obj( ).class_id( ) ) + "%" + get_obj( ).get_key( );
+`}\
 
       get_obj( ).`{`$arg_actions`}( actions );
 `,\
@@ -38,6 +41,9 @@ get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`}
          actions += '<';
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
+`{`@eq`(`$arg_clone_record`,`'true`'`)\
+         actions += "$" + string( get_obj( ).class_id( ) ) + "%" + get_obj( ).get_key( );
+`}\
 
          get_obj( ).`{`$arg_actions`}( actions );
       }

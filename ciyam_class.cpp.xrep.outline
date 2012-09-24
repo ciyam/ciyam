@@ -807,6 +807,11 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_field=$specification_\\0_field arg_sfield=$specification_\\0_sfield arg_key_suffix=$specification_\\0_key_suffix\
  arg_procedure=$specification_\\0_procedure arg_output_arg=$specification_\\0_output_arg`}\
 `,\
+`@eq`(`'\\1`'`,`'for_move_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
+`{`#for_move_children.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
+ arg_children=$specification_\\0_children arg_cpfield=$specification_\\0_cpfield arg_key_suffix=$specification_\\0_key_suffix\
+ arg_move_from=$specification_\\0_move_from`}\
+`,\
 `@eq`(`'\\1`'`,`'field_from_op`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_from_op.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
  arg_field=$specification_\\0_field arg_sfield=$specification_\\0_sfield arg_tfield=$specification_\\0_tfield\
@@ -1157,7 +1162,7 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_other_field.spec.xrep section=value_will_be_provided class_name=$class_name\
- arg_field=$specification_\0_field`}\
+ arg_dfield=$specification_\0_dfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
@@ -1389,7 +1394,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
- arg_not_iterating=$specification_\0_not_iterating`}\
+ arg_not_iterating=$specification_\0_not_iterating arg_clone_record=$specification_\0_clone_record`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -1397,6 +1402,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_scfield=$specification_\0_scfield arg_not_dflt=$specification_\0_not_dflt\
  arg_def_value=$specification_\0_def_value arg_iter_only=$specification_\0_iter_only\
  arg_check_mod=$specification_\0_check_mod`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_class`'`)
+`{`#transient_field_from_class.spec.xrep section=after_fetch class_name=$class_name\
+ arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_concat`'`)
 `{`#transient_field_concat.spec.xrep section=after_fetch class_name=$class_name\
@@ -1537,7 +1546,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_field=$specification_\0_field arg_label_str=$specification_\0_label_str`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
-`{`#default_to_uid.spec.xrep section=to_or_for_store class_name=$class_name arg_field=$specification_\0_field`}\
+`{`#default_to_uid.spec.xrep section=to_or_for_store class_name=$class_name\
+ arg_field=$specification_\0_field arg_force_for_clone=$specification_\0_force_for_clone`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_global`'`)
 `{`#default_to_global.spec.xrep section=to_store\
@@ -1615,12 +1625,17 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_field=$specification_\0_field`}\
+ arg_field=$specification_\0_field arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_unary_op`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#field_from_unary_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_op=$specification_\0_op arg_update=$specification_\0_update`}\
+`,\
+`@eq`(`'\1`'`,`'field_quote_cloned_html`'`)
+`{`#field_quote_cloned_html.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
+ arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_to_rounded`'`)
 `{`#field_to_rounded.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -1735,12 +1750,13 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_fistexttype=$specification_\0_fistexttype arg_inc_clones=$specification_\0_inc_clones`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
-`{`#default_to_uid.spec.xrep section=to_or_for_store class_name=$class_name arg_field=$specification_\0_field`}\
+`{`#default_to_uid.spec.xrep section=to_or_for_store class_name=$class_name\
+ arg_field=$specification_\0_field arg_force_for_clone=$specification_\0_force_for_clone`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_matched_clone`'`)
 `{`#field_bool_matched_clone.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
- arg_key_suffix=$specification_\0_key_suffix arg_not_equal=$specification_\0_not_equal`}\
+ arg_key_suffix=$specification_\0_key_suffix arg_not_equal=$specification_\0_not_equal arg_true_only=$specification_\0_true_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_clear`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -1780,7 +1796,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
- arg_field=$specification_\0_field`}\
+ arg_field=$specification_\0_field arg_create_only=$specification_\0_create_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_unary_op`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#field_from_unary_op.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\

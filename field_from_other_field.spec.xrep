@@ -1,6 +1,6 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
    // [(start field_from_other_field)]
-   if( field_name == "`{`$arg_field`}" )
+   if( field_name == "`{`$arg_dfield`}" )
       return true;
    // [(finish field_from_other_field)]
 `}
