@@ -1,7 +1,8 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_from_dtm)]
-   if( required_transients.count( "`{`$arg_field`}" )
-    || get_obj( ).needs_field_value( "`{`$arg_field`}" ) )
+   if( !get_dtm( ).empty( )
+    && ( required_transients.count( "`{`$arg_field`}" )
+    || get_obj( ).needs_field_value( "`{`$arg_field`}" ) ) )
       get_obj( ).`{`$arg_field`}( ( date_time )get_dtm( ) );
    // [(finish transient_field_from_dtm)]
 `}

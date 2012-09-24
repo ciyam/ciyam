@@ -7,7 +7,12 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start default_to_uid)]
    if( is_create && !is_system_uid( )
-    && get_obj( ).get_clone_key( ).empty( ) && is_null( get_obj( ).`{`$arg_field`}( ) ) )
+`{`@eq`(`$arg_force_for_clone`,`'true`'`)\
+    && !get_obj( ).get_clone_key( ).empty( )
+    || ( get_obj( ).get_clone_key( ).empty( ) && ( get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} ) ) )
+`,\
+    && get_obj( ).get_clone_key( ).empty( ) && ( get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} ) )
+`}\
       get_obj( ).`{`$arg_field`}( get_uid( ) );
    // [(finish default_to_uid)]
 `}

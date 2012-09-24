@@ -12,13 +12,13 @@
       {
          if( get_obj( ).`{`$arg_tfield`}( ) `{`$op`} cp_source->`{`$arg_tfield`}( ) )
             get_obj( ).`{`$arg_field`}( true );
+`{`@eq`(`$arg_true_only`,`'`'`)\
          else
             get_obj( ).`{`$arg_field`}( false );
+`}\
       }
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
       else
-`{`@eq`(`$arg_sfield`,`'`'`)\
-         get_obj( ).`{`$arg_field`}( gv_default_`{`$arg_field`} );
-`,\
          get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) );
 `}\
    }

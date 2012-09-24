@@ -1,0 +1,17 @@
+`{`@eq`(`'to_store`'`,`$section`)\
+   // [(start field_quote_cloned_html)]
+   if( get_obj( ).get_key( ).empty( ) && !get_obj( ).get_clone_key( ).empty( ) )
+   {
+      string content( "<p>&nbsp;</p>\\n<div style=\\"margin-left: 8px; margin-right: 8px; border: 1px solid grey;\\">" );
+
+      // NOTE: The "empty span" is used to ensure its contents are excluded from "any text" searches.
+      content += "<span>{" + get_obj( ).get_clone_key( ) + "@"
+       + utc_to_local( get_obj( ).`{`$arg_tfield`}( ), get_tz_abbr( ) ).as_string( ) + ":minutes;";
+
+      content += "@ - " + get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) + "}</span><br/><br/>";
+      content += get_obj( ).`{`$arg_field`}( ) + "</div>\\n<p>&nbsp;</p>";
+
+      get_obj( ).`{`$arg_field`}( content );
+   }
+   // [(finish field_quote_cloned_html)]
+`}

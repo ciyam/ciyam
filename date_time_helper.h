@@ -40,6 +40,11 @@ inline std::string to_string( const julian& j )
 
    return oss.str( );
 }
+
+inline std::string to_string( const date_time& dt )
+{
+   return dt.as_string( false, false );
+}
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option pop
 #  endif
