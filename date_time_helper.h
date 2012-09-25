@@ -43,7 +43,12 @@ inline std::string to_string( const julian& j )
 
 inline std::string to_string( const date_time& dt )
 {
-   return dt.as_string( false, false );
+   return dt.as_string( true );
+}
+
+inline std::string to_rep_string( const date_time& dt )
+{
+   return dt.as_string( false );
 }
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option pop

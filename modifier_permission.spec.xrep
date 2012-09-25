@@ -21,7 +21,7 @@
 `,\
 `{`@eq`(`$arg_admin_always`,`'`'`)\
    if( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
-   && get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
+    && get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
 `,\
    if( !is_admin_uid( )
     || ( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}

@@ -843,6 +843,8 @@ inline bool operator !=( const class_base& cb, const std::string& s ) { return s
 
 void CLASS_BASE_DECL_SPEC from_string( class_base& cb, const std::string& s );
 
+template< typename T > inline std::string to_rep_string( const T& t ) { return to_string( t ); }
+
 std::string CLASS_BASE_DECL_SPEC int_to_comparable_string( int i, bool prefix_with_sign = true, int max_digits = 0 );
 
 std::string CLASS_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num );
