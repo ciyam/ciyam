@@ -2066,7 +2066,7 @@ bool `{`$full_class_name`}::impl::is_filtered( ) const
 `,\
 `@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)\
 `{`#filter_fk_in_uid_set.spec.xrep section=is_filtered arg_name=\0\
- arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield\
+ arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield arg_spfield=$specification_\0_spfield\
  arg_scfield=$specification_\0_scfield arg_vname=$specification_\0_vname`}
 `,\
 `@eq`(`'\1`'`,`'filter_perm_restricted`'`)\
@@ -2977,7 +2977,8 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `,\
 `@eq`(`'\1`'`,`'filter_fk_in_uid_set`'`)
 `{`#filter_fk_in_uid_set.spec.xrep section=get_always_required_field_names arg_name=\0\
- arg_id=$specification_\0_id arg_spfield=$specification_\0_spfield`}\
+ arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield\
+ arg_vname=$specification_\0_vname arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'filter_perm_restricted`'`)
 `{`#filter_perm_restricted.spec.xrep section=get_always_required_field_names arg_name=\0\

@@ -115,6 +115,14 @@ inline std::string to_string( const tdatetime& tdt )
       s = to_string( *tdt );
    return s;
 }
+
+inline std::string to_rep_string( const tdatetime& tdt )
+{
+   std::string s;
+   if( !tdt.is_null( ) )
+      s = to_rep_string( *tdt );
+   return s;
+}
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option pop
 #  endif
