@@ -482,6 +482,7 @@ struct Meta_Enum::impl : public Meta_Enum_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -758,13 +759,14 @@ void Meta_Enum::impl::after_fetch( )
    if( cp_Workgroup )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Enum::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -775,6 +777,12 @@ void Meta_Enum::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Enum::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Enum::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -782,6 +790,9 @@ void Meta_Enum::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1100,6 +1111,11 @@ void Meta_Enum::finalise_fetch( )
 void Meta_Enum::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Enum::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Enum::to_store( bool is_create, bool is_internal )

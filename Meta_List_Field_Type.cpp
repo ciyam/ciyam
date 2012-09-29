@@ -564,6 +564,7 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -954,13 +955,14 @@ void Meta_List_Field_Type::impl::after_fetch( )
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_List_Field_Type::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -971,6 +973,12 @@ void Meta_List_Field_Type::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_List_Field_Type::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_List_Field_Type::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -978,6 +986,9 @@ void Meta_List_Field_Type::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1365,6 +1376,11 @@ void Meta_List_Field_Type::finalise_fetch( )
 void Meta_List_Field_Type::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_List_Field_Type::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_List_Field_Type::to_store( bool is_create, bool is_internal )

@@ -510,6 +510,7 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );

@@ -1156,6 +1156,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -2414,6 +2415,8 @@ void Meta_Application::impl::after_fetch( )
    if( cp_Workgroup )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
+   do_post_init( );
+
    // [(start transient_field_from_file)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Generate_Details" )
@@ -2427,7 +2430,6 @@ void Meta_Application::impl::after_fetch( )
 
 void Meta_Application::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -2438,6 +2440,12 @@ void Meta_Application::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Application::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Application::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -2445,6 +2453,9 @@ void Meta_Application::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [<start to_store>]
 //nyi
@@ -3102,6 +3113,11 @@ void Meta_Application::finalise_fetch( )
 void Meta_Application::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Application::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Application::to_store( bool is_create, bool is_internal )

@@ -168,6 +168,7 @@ class `{`@upper`(`$full_class_name`)`}_DECL_SPEC `{`$full_class_name`} : public 
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );

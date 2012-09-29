@@ -403,6 +403,7 @@ struct Meta_Module::impl : public Meta_Module_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -758,13 +759,14 @@ void Meta_Module::impl::after_fetch( )
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Module::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -775,6 +777,12 @@ void Meta_Module::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Module::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Module::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -782,6 +790,9 @@ void Meta_Module::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start default_from_key)]
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
@@ -1014,6 +1025,11 @@ void Meta_Module::finalise_fetch( )
 void Meta_Module::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Module::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Module::to_store( bool is_create, bool is_internal )

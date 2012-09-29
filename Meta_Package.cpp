@@ -638,6 +638,7 @@ struct Meta_Package::impl : public Meta_Package_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1658,6 +1659,8 @@ void Meta_Package::impl::after_fetch( )
    if( cp_Package_Type )
       p_obj->setup_foreign_key( *cp_Package_Type, v_Package_Type );
 
+   do_post_init( );
+
    // [(start transient_field_alias)]
    if( get_obj( ).needs_field_value( "Type_Name" )
     || required_transients.count( "Type_Name" ) )
@@ -1677,7 +1680,6 @@ void Meta_Package::impl::after_fetch( )
 
 void Meta_Package::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -1688,6 +1690,12 @@ void Meta_Package::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Package::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Package::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -1695,6 +1703,9 @@ void Meta_Package::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start field_from_changed_fk)]
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Package_Type( ).has_changed( ) )
@@ -2242,6 +2253,11 @@ void Meta_Package::finalise_fetch( )
 void Meta_Package::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Package::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Package::to_store( bool is_create, bool is_internal )

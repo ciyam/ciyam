@@ -409,6 +409,7 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -790,13 +791,14 @@ void Meta_Initial_Record::impl::after_fetch( )
    if( cp_Class )
       p_obj->setup_foreign_key( *cp_Class, v_Class );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Initial_Record::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -807,6 +809,12 @@ void Meta_Initial_Record::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Initial_Record::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Initial_Record::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -814,6 +822,9 @@ void Meta_Initial_Record::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start default_from_key)]
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
@@ -1084,6 +1095,11 @@ void Meta_Initial_Record::finalise_fetch( )
 void Meta_Initial_Record::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Initial_Record::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Initial_Record::to_store( bool is_create, bool is_internal )

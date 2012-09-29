@@ -4,7 +4,7 @@
       return true;
    // [(finish field_from_other_field)]
 `}
-`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$create_only_or_not_null_or_test`=`'`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
@@ -15,9 +15,15 @@
 `{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$not_null_and_other`=`'true`'`}\
    // [(start field_from_other_field)]
 `{`@eq`(`$create_only_or_not_null_or_test`,`'`'`)\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   get_obj( ).op_update( );
+`}\
    get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )\
-`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );
+`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)
+   get_obj( ).op_apply( );\
+`}\
 `,\
    if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
@@ -27,14 +33,27 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
 `,\
 get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}\
 `}`} )
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   {
+      get_obj( ).op_update( );
+`}\
       get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )\
-`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );
-`{`!`@eq`(`$arg_nvalue`,`'`'`)\
+`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)
+      get_obj( ).op_apply( );
+   }\
+`}`{`!`@eq`(`$arg_nvalue`,`'`'`)
    else
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+   {
+      get_obj( ).op_update( );
+`}\
       get_obj( ).`{`$arg_dfield`}( `{`$arg_nvalue`} );
-`}\
-`}\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+      get_obj( ).op_apply( );
+   }\
+`}`}`}
    // [(finish field_from_other_field)]
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\

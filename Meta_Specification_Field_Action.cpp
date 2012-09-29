@@ -803,6 +803,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1182,13 +1183,14 @@ void Meta_Specification_Field_Action::impl::after_fetch( )
    if( cp_New_Record_FK_Field )
       p_obj->setup_foreign_key( *cp_New_Record_FK_Field, v_New_Record_FK_Field );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Specification_Field_Action::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -1199,6 +1201,12 @@ void Meta_Specification_Field_Action::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Specification_Field_Action::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -1207,6 +1215,9 @@ void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_in
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
+
    // [(start field_from_search_replace)]
    if( get_obj( ).get_is_editing( ) )
    {
@@ -1214,8 +1225,8 @@ void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_in
 
       get_obj( ).Name( str );
 
-      get_obj( ).add_search_replacement( "Name", "{newclass}", to_string( get_obj( ).New_Record_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{newfield}", to_string( get_obj( ).New_Record_FK_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{newclass}", to_rep_string( get_obj( ).New_Record_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{newfield}", to_rep_string( get_obj( ).New_Record_FK_Field( ).Name( ) ) );
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
 
@@ -1510,6 +1521,12 @@ void Meta_Specification_Field_Action::at_create( )
 {
    parent_class_type::at_create( );
    p_impl->at_create( );
+}
+
+void Meta_Specification_Field_Action::do_post_init( )
+{
+   parent_class_type::do_post_init( );
+   p_impl->do_post_init( );
 }
 
 void Meta_Specification_Field_Action::to_store( bool is_create, bool is_internal )

@@ -509,6 +509,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -919,13 +920,14 @@ void Meta_Enum_Item::impl::after_fetch( )
    if( cp_Enum )
       p_obj->setup_foreign_key( *cp_Enum, v_Enum );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Enum_Item::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -936,6 +938,12 @@ void Meta_Enum_Item::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Enum_Item::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -943,6 +951,9 @@ void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start default_from_key)]
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
@@ -1257,6 +1268,11 @@ void Meta_Enum_Item::finalise_fetch( )
 void Meta_Enum_Item::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Enum_Item::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Enum_Item::to_store( bool is_create, bool is_internal )

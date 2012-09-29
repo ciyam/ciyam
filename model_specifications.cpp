@@ -5143,6 +5143,9 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_func, function ) );
    spec_data.data_pairs.push_back( make_pair( c_data_mfunc, mem_func ) );
    spec_data.data_pairs.push_back( make_pair( c_data_nvalue, null_value ) );
+
+   spec_data.data_pairs.push_back( make_pair( "update", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
 }
 
 string field_from_other_field_specification::static_class_name( ) { return "field_from_other_field"; }

@@ -769,6 +769,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1216,6 +1217,8 @@ void Meta_Relationship::impl::after_fetch( )
    if( cp_Source_Relationship )
       p_obj->setup_foreign_key( *cp_Source_Relationship, v_Source_Relationship );
 
+   do_post_init( );
+
    // [(start meta_relationship_child_name)]
    if( get_obj( ).needs_field_value( "Child_Name" )
     || required_transients.count( "Child_Name" ) )
@@ -1239,7 +1242,6 @@ void Meta_Relationship::impl::after_fetch( )
 
 void Meta_Relationship::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -1250,6 +1252,12 @@ void Meta_Relationship::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Relationship::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -1257,6 +1265,9 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start field_from_changed_fk)]
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Parent_Class( ).has_changed( ) )
@@ -1794,6 +1805,11 @@ void Meta_Relationship::finalise_fetch( )
 void Meta_Relationship::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Relationship::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Relationship::to_store( bool is_create, bool is_internal )

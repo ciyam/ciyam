@@ -1014,6 +1014,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1633,7 +1634,7 @@ void Meta_Model::impl::impl_Generate( )
                extras += "can_copy";
             }
 
-            if( get_obj( ).child_View( ).Auto_Back_After_Create( ) )
+            if( get_obj( ).child_View( ).Auto_Back_After_Save( ) )
             {
                if( !extras.empty( ) )
                   extras += ",";
@@ -6198,6 +6199,8 @@ void Meta_Model::impl::after_fetch( )
    if( cp_Workgroup )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
+   do_post_init( );
+
    // [<start after_fetch>]
 //nyi
 #ifndef _WIN32
@@ -6230,7 +6233,6 @@ void Meta_Model::impl::after_fetch( )
 
 void Meta_Model::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -6241,6 +6243,12 @@ void Meta_Model::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Model::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Model::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -6248,6 +6256,9 @@ void Meta_Model::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -6927,6 +6938,11 @@ void Meta_Model::finalise_fetch( )
 void Meta_Model::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Model::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Model::to_store( bool is_create, bool is_internal )

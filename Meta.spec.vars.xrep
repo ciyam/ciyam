@@ -2321,7 +2321,7 @@
 `{`$specification_Package_Option_view_cid`=`'137100`'`}
 `{`$specification_Package_Option_view_name`=`'Package_Option`'`}
 `{`$specification_Package_Option_view_type`=`'standard`'`}
-`{`$specification_Package_Option_view_extra`=`'`'`}
+`{`$specification_Package_Option_view_extra`=`'auto_back`'`}
 `{`$specification_Package_Option_view_mods`=`'`'`}
 `{`$specification_Package_Option_view_binfo`=`'`'`}
 `{`$specification_Package_Option_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011`'`}
@@ -5014,7 +5014,7 @@
 `{`$specification_View_view_ftype013`=`'bool`'`}
 `{`$specification_View_view_extra013`=`'`'`}
 `{`$specification_View_view_fmods013`=`'`'`}
-`{`$specification_View_view_fname013`=`'field_view_auto_back_after_create`'`}
+`{`$specification_View_view_fname013`=`'field_view_auto_back_after_save`'`}
 `{`$specification_View_view_fmand013`=`'true`'`}
 `{`$specification_View_view_field014`=`'118109`'`}
 `{`$specification_View_view_ftype014`=`'bool`'`}
