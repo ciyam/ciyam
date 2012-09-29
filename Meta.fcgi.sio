@@ -4346,7 +4346,7 @@
    <cid>137100
    <name>601560_name
    <type>standard
-   <extra>
+   <extra>auto_back
    <modifiers>
    <class>Package_Option
    <bclass>
@@ -6769,7 +6769,7 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_view_auto_back_after_create
+     <name>field_view_auto_back_after_save
      <field>118115
      <ftype>bool
      <extra>

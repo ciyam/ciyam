@@ -1577,6 +1577,7 @@ struct Meta_List::impl : public Meta_List_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -3375,6 +3376,8 @@ void Meta_List::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
+   do_post_init( );
+
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Name" )
@@ -3384,9 +3387,9 @@ void Meta_List::impl::after_fetch( )
 
       get_obj( ).Name( str );
 
-      get_obj( ).add_search_replacement( "Name", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{pfield}", to_string( get_obj( ).Parent_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{vname}", to_string( get_obj( ).Variation_Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{pfield}", to_rep_string( get_obj( ).Parent_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{vname}", to_rep_string( get_obj( ).Variation_Name( ) ) );
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
    }
@@ -3398,7 +3401,6 @@ void Meta_List::impl::after_fetch( )
 
 void Meta_List::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -3414,6 +3416,12 @@ void Meta_List::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_List::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_List::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -3422,11 +3430,15 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
+
    // [(start field_from_other_field)]
    if( get_obj( ).Is_Variation( ) == true )
       get_obj( ).Variation_Name( get_obj( ).Title( ) );
    else
       get_obj( ).Variation_Name( "" );
+
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
@@ -4183,6 +4195,11 @@ void Meta_List::finalise_fetch( )
 void Meta_List::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_List::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_List::to_store( bool is_create, bool is_internal )

@@ -753,6 +753,7 @@ void class_base::prepare( bool for_create )
    // determined correctly.
    perform_after_fetch( false, true );
 
+   set_iteration_starting( false ); // NOTE: as per above
    to_store( is_create || for_create, false );
 }
 

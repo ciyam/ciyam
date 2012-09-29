@@ -1,0 +1,63 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
+   // [(start field_swap_fk)]
+`{`$i`=`'`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create
+    && !get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
+   {
+`}\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+`{`$i`}   get_obj( ).op_update( );
+
+`}\
+`{`$i`}   string other_key( get_obj( ).`{`$arg_fk_1`}( ).get_key( ) );
+`{`$i`}   get_obj( ).`{`$arg_fk_1`}( get_obj( ).`{`$arg_fk_2`}( ) );
+`{`$i`}   get_obj( ).`{`$arg_fk_2`}( other_key );
+`{`!`@eq`(`$arg_ofield`,`'`'`)
+`{`$i`}   get_obj( ).`{`$arg_ofield`}( get_obj( ).`{`$arg_o2field`}( ) );
+`}`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)
+`{`$i`}   get_obj( ).op_apply( );
+`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
+   }
+`}\
+   // [(finish field_swap_fk)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)
+   // [(start field_swap_fk)]
+   dependents.insert( "`{`$arg_fk_1`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_fk_1`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_fk_1`} ) ) )
+      names.insert( "`{`$arg_fk_1`}" );
+
+   dependents.insert( "`{`$arg_fk_2`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_fk_2`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_fk_2`} ) ) )
+      names.insert( "`{`$arg_fk_2`}" );
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+
+   dependents.insert( "`{`$arg_ofield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ofield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ofield`} ) ) )
+      names.insert( "`{`$arg_ofield`}" );
+`}`{`!`@eq`(`$arg_o2field`,`'`'`)\
+
+   dependents.insert( "`{`$arg_o2field`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_o2field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_o2field`} ) ) )
+      names.insert( "`{`$arg_o2field`}" );
+`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+   dependents.insert( "`{`$arg_tfield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+      names.insert( "`{`$arg_tfield`}" );
+`}\
+   // [(finish field_swap_fk)]
+`}

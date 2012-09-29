@@ -3027,6 +3027,7 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -5605,6 +5606,8 @@ void Meta_Specification::impl::after_fetch( )
    if( cp_Test_Parent_Class )
       p_obj->setup_foreign_key( *cp_Test_Parent_Class, v_Test_Parent_Class );
 
+   do_post_init( );
+
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Vars" )
@@ -5614,83 +5617,83 @@ void Meta_Specification::impl::after_fetch( )
 
       get_obj( ).Vars( str );
 
-      get_obj( ).add_search_replacement( "Vars", "{id}", to_string( get_obj( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{model}", to_string( get_obj( ).Model( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{model_id}", to_string( get_obj( ).Model( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{class_id}", to_string( get_obj( ).Class( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{oclass}", to_string( get_obj( ).Other_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{oclass_id}", to_string( get_obj( ).Other_Class( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{field}", to_string( get_obj( ).Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{fclass}", to_string( get_obj( ).Field_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{field_id}", to_string( get_obj( ).Field( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{fmandatory}", to_string( get_obj( ).Field( ).Mandatory( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{ftransient}", to_string( get_obj( ).Field( ).Transient( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{fdecimals}", to_string( get_obj( ).Field( ).Numeric_Decimals( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{fistexttype}", to_string( get_obj( ).Field( ).Is_Text_Type( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{fpclass}", to_string( get_obj( ).Field( ).Parent_Class_Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{ofield}", to_string( get_obj( ).Other_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{ofield_id}", to_string( get_obj( ).Other_Field( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2field}", to_string( get_obj( ).Other_Field_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2field_id}", to_string( get_obj( ).Other_Field_2( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{modifier}", to_string( get_obj( ).Modifier( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{omodifier}", to_string( get_obj( ).Other_Modifier( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2modifier}", to_string( get_obj( ).Other_Modifier_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{spclass}", to_string( get_obj( ).Source_Parent_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{spfield}", to_string( get_obj( ).Source_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{spfield_id}", to_string( get_obj( ).Source_Parent( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{scclass}", to_string( get_obj( ).Source_Child_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{scfield}", to_string( get_obj( ).Source_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{scfield_id}", to_string( get_obj( ).Source_Child( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{sc2field}", to_string( get_obj( ).Source_Child_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{sc2field_id}", to_string( get_obj( ).Source_Child_2( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{sfield}", to_string( get_obj( ).Source_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{sfield_id}", to_string( get_obj( ).Source_Field( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{sgcfield}", to_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{tpfield}", to_string( get_obj( ).Test_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{tcfield}", to_string( get_obj( ).Test_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{tfield}", to_string( get_obj( ).Test_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{tfield_id}", to_string( get_obj( ).Test_Field( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{tfclass}", to_string( get_obj( ).Test_Field_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{tvalue}", to_string( get_obj( ).Test_Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{permission}", to_string( get_obj( ).Permission( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{permission_id}", to_string( get_obj( ).Permission( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{opermission}", to_string( get_obj( ).Other_Permission( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{opermission_id}", to_string( get_obj( ).Other_Permission( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2permission}", to_string( get_obj( ).Other_Permission_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2permission_id}", to_string( get_obj( ).Other_Permission_2( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{procedure_id}", to_string( get_obj( ).Procedure( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{procedure_arg}", to_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{procedure_arg2}", to_string( get_obj( ).Procedure_Arg_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{procedure_arg3}", to_string( get_obj( ).Procedure_Arg_3( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{oprocedure}", to_string( get_obj( ).Other_Procedure( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{oprocedure_id}", to_string( get_obj( ).Other_Procedure( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2procedure}", to_string( get_obj( ).Other_Procedure_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{o2procedure_id}", to_string( get_obj( ).Other_Procedure_2( ).Id( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{cname}", to_string( get_obj( ).Child_Relationship( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{child}", to_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{cclass}", to_string( get_obj( ).Child_Relationship( ).Child_Class_Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{primitive}", to_string( get_obj( ).Field( ).Primitive( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum}", to_string( get_obj( ).Enum( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum_item}", to_string( get_obj( ).Enum_Item( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum_value}", to_string( get_obj( ).Enum_Item( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum2_item}", to_string( get_obj( ).Enum_Item_2( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum2_value}", to_string( get_obj( ).Enum_Item_2( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum3_item}", to_string( get_obj( ).Enum_Item_3( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum3_value}", to_string( get_obj( ).Enum_Item_3( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum4_item}", to_string( get_obj( ).Enum_Item_4( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum4_value}", to_string( get_obj( ).Enum_Item_4( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum5_item}", to_string( get_obj( ).Enum_Item_5( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{enum5_value}", to_string( get_obj( ).Enum_Item_5( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{value}", to_string( get_obj( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{value_literal}", to_string( get_obj( ).Value_Literal( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{value_string}", to_string( get_obj( ).Value_String( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{value_leftpart}", to_string( get_obj( ).Value_Left_Part( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{value_rightpart}", to_string( get_obj( ).Value_Right_Part( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{field_values}", to_string( get_obj( ).Field_Values( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{fields}", to_string( get_obj( ).Fields( ) ) );
-      get_obj( ).add_search_replacement( "Vars", "{field_pairs}", to_string( get_obj( ).Field_Pairs( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{id}", to_rep_string( get_obj( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{model}", to_rep_string( get_obj( ).Model( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{model_id}", to_rep_string( get_obj( ).Model( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{class_id}", to_rep_string( get_obj( ).Class( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{oclass}", to_rep_string( get_obj( ).Other_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{oclass_id}", to_rep_string( get_obj( ).Other_Class( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{field}", to_rep_string( get_obj( ).Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fclass}", to_rep_string( get_obj( ).Field_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{field_id}", to_rep_string( get_obj( ).Field( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fmandatory}", to_rep_string( get_obj( ).Field( ).Mandatory( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{ftransient}", to_rep_string( get_obj( ).Field( ).Transient( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fdecimals}", to_rep_string( get_obj( ).Field( ).Numeric_Decimals( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fistexttype}", to_rep_string( get_obj( ).Field( ).Is_Text_Type( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fpclass}", to_rep_string( get_obj( ).Field( ).Parent_Class_Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{ofield}", to_rep_string( get_obj( ).Other_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{ofield_id}", to_rep_string( get_obj( ).Other_Field( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2field}", to_rep_string( get_obj( ).Other_Field_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2field_id}", to_rep_string( get_obj( ).Other_Field_2( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{modifier}", to_rep_string( get_obj( ).Modifier( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{omodifier}", to_rep_string( get_obj( ).Other_Modifier( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2modifier}", to_rep_string( get_obj( ).Other_Modifier_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{spclass}", to_rep_string( get_obj( ).Source_Parent_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{spfield}", to_rep_string( get_obj( ).Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{spfield_id}", to_rep_string( get_obj( ).Source_Parent( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{scclass}", to_rep_string( get_obj( ).Source_Child_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{scfield}", to_rep_string( get_obj( ).Source_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{scfield_id}", to_rep_string( get_obj( ).Source_Child( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sc2field}", to_rep_string( get_obj( ).Source_Child_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sc2field_id}", to_rep_string( get_obj( ).Source_Child_2( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sfield_id}", to_rep_string( get_obj( ).Source_Field( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sgcfield}", to_rep_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tpfield}", to_rep_string( get_obj( ).Test_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tcfield}", to_rep_string( get_obj( ).Test_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tfield}", to_rep_string( get_obj( ).Test_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tfield_id}", to_rep_string( get_obj( ).Test_Field( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tfclass}", to_rep_string( get_obj( ).Test_Field_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tvalue}", to_rep_string( get_obj( ).Test_Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{permission}", to_rep_string( get_obj( ).Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{permission_id}", to_rep_string( get_obj( ).Permission( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{opermission}", to_rep_string( get_obj( ).Other_Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{opermission_id}", to_rep_string( get_obj( ).Other_Permission( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2permission}", to_rep_string( get_obj( ).Other_Permission_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2permission_id}", to_rep_string( get_obj( ).Other_Permission_2( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{procedure}", to_rep_string( get_obj( ).Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{procedure_id}", to_rep_string( get_obj( ).Procedure( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{procedure_arg}", to_rep_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{procedure_arg2}", to_rep_string( get_obj( ).Procedure_Arg_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{procedure_arg3}", to_rep_string( get_obj( ).Procedure_Arg_3( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{oprocedure}", to_rep_string( get_obj( ).Other_Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{oprocedure_id}", to_rep_string( get_obj( ).Other_Procedure( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2procedure}", to_rep_string( get_obj( ).Other_Procedure_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{o2procedure_id}", to_rep_string( get_obj( ).Other_Procedure_2( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{cname}", to_rep_string( get_obj( ).Child_Relationship( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{child}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{cclass}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Class_Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{primitive}", to_rep_string( get_obj( ).Field( ).Primitive( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum}", to_rep_string( get_obj( ).Enum( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum_item}", to_rep_string( get_obj( ).Enum_Item( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum_value}", to_rep_string( get_obj( ).Enum_Item( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum2_item}", to_rep_string( get_obj( ).Enum_Item_2( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum2_value}", to_rep_string( get_obj( ).Enum_Item_2( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum3_item}", to_rep_string( get_obj( ).Enum_Item_3( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum3_value}", to_rep_string( get_obj( ).Enum_Item_3( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum4_item}", to_rep_string( get_obj( ).Enum_Item_4( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum4_value}", to_rep_string( get_obj( ).Enum_Item_4( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum5_item}", to_rep_string( get_obj( ).Enum_Item_5( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{enum5_value}", to_rep_string( get_obj( ).Enum_Item_5( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{value}", to_rep_string( get_obj( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{value_literal}", to_rep_string( get_obj( ).Value_Literal( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{value_string}", to_rep_string( get_obj( ).Value_String( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{value_leftpart}", to_rep_string( get_obj( ).Value_Left_Part( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{value_rightpart}", to_rep_string( get_obj( ).Value_Right_Part( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{field_values}", to_rep_string( get_obj( ).Field_Values( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fields}", to_rep_string( get_obj( ).Fields( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{field_pairs}", to_rep_string( get_obj( ).Field_Pairs( ) ) );
 
       vector< string > options_set;
       split_string( get_obj( ).Options( ), options_set, ' ' );
@@ -5727,27 +5730,27 @@ void Meta_Specification::impl::after_fetch( )
 
       get_obj( ).Strings( str );
 
-      get_obj( ).add_search_replacement( "Strings", "{model}", to_string( get_obj( ).Model( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{field}", to_string( get_obj( ).Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{fclass}", to_string( get_obj( ).Field_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{modifier}", to_string( get_obj( ).Modifier( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{spfield}", to_string( get_obj( ).Source_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{scfield}", to_string( get_obj( ).Source_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{sc2field}", to_string( get_obj( ).Source_Child_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{sfield}", to_string( get_obj( ).Source_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{tpfield}", to_string( get_obj( ).Test_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{tcfield}", to_string( get_obj( ).Test_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{tfield}", to_string( get_obj( ).Test_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{tfclass}", to_string( get_obj( ).Test_Field_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{tvalue}", to_string( get_obj( ).Test_Value( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{child}", to_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{enum}", to_string( get_obj( ).Enum( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{enum_item}", to_string( get_obj( ).Enum_Item( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{enum_value}", to_string( get_obj( ).Enum_Item( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{value}", to_string( get_obj( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Strings", "{value_rightpart}", to_string( get_obj( ).Value_Right_Part( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{model}", to_rep_string( get_obj( ).Model( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{field}", to_rep_string( get_obj( ).Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{fclass}", to_rep_string( get_obj( ).Field_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{modifier}", to_rep_string( get_obj( ).Modifier( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{spfield}", to_rep_string( get_obj( ).Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{scfield}", to_rep_string( get_obj( ).Source_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{sc2field}", to_rep_string( get_obj( ).Source_Child_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{tpfield}", to_rep_string( get_obj( ).Test_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{tcfield}", to_rep_string( get_obj( ).Test_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{tfield}", to_rep_string( get_obj( ).Test_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{tfclass}", to_rep_string( get_obj( ).Test_Field_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{tvalue}", to_rep_string( get_obj( ).Test_Value( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{procedure}", to_rep_string( get_obj( ).Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{child}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{enum}", to_rep_string( get_obj( ).Enum( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{enum_item}", to_rep_string( get_obj( ).Enum_Item( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{enum_value}", to_rep_string( get_obj( ).Enum_Item( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{value}", to_rep_string( get_obj( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Strings", "{value_rightpart}", to_rep_string( get_obj( ).Value_Right_Part( ) ) );
    }
    // [(finish field_from_search_replace)]
 
@@ -5757,7 +5760,6 @@ void Meta_Specification::impl::after_fetch( )
 
 void Meta_Specification::impl::finalise_fetch( )
 {
-
    // [(start field_from_procedure_call)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "All_Vars" )
@@ -5790,6 +5792,12 @@ void Meta_Specification::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Specification::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -5797,6 +5805,9 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start meta_spec_field_type)]
    if( is_create && get_obj( ).Specification_Type( ).get_key( ) == "user_info"
@@ -6369,42 +6380,42 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
       get_obj( ).Name( str );
 
-      get_obj( ).add_search_replacement( "Name", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{field}", to_string( get_obj( ).Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{ofield}", to_string( get_obj( ).Other_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{o2field}", to_string( get_obj( ).Other_Field_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{modifier}", to_string( get_obj( ).Modifier( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{omodifier}", to_string( get_obj( ).Other_Modifier( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{o2modifier}", to_string( get_obj( ).Other_Modifier_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sclass}", to_string( get_obj( ).Source_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{spfield}", to_string( get_obj( ).Source_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{spclass}", to_string( get_obj( ).Source_Parent_Class( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{scfield}", to_string( get_obj( ).Source_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sc2field}", to_string( get_obj( ).Source_Child_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sfield}", to_string( get_obj( ).Source_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sgcfield}", to_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{tpfield}", to_string( get_obj( ).Test_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{tcfield}", to_string( get_obj( ).Test_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{tfield}", to_string( get_obj( ).Test_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{tvalue}", to_string( get_obj( ).Test_Value( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{permission}", to_string( get_obj( ).Permission( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{opermission}", to_string( get_obj( ).Other_Permission( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{o2permission}", to_string( get_obj( ).Other_Permission_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{procedure_arg}", to_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{oprocedure}", to_string( get_obj( ).Other_Procedure( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{o2procedure}", to_string( get_obj( ).Other_Procedure_2( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{cname}", to_string( get_obj( ).Child_Relationship( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{child}", to_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{cclass}", to_string( get_obj( ).Child_Relationship( ).Child_Class_Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{enum}", to_string( get_obj( ).Enum( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{enum_item}", to_string( get_obj( ).Enum_Item( ).Label( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{value}", to_string( get_obj( ).Value( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{value_label}", to_string( get_obj( ).Value_Label( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{value_numstr}", to_string( get_obj( ).Value_Numeric_String( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{field_values}", to_string( get_obj( ).Field_Values( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{fields}", to_string( get_obj( ).Fields( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{field_pairs}", to_string( get_obj( ).Field_Pairs( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{field}", to_rep_string( get_obj( ).Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{ofield}", to_rep_string( get_obj( ).Other_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{o2field}", to_rep_string( get_obj( ).Other_Field_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{modifier}", to_rep_string( get_obj( ).Modifier( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{omodifier}", to_rep_string( get_obj( ).Other_Modifier( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{o2modifier}", to_rep_string( get_obj( ).Other_Modifier_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sclass}", to_rep_string( get_obj( ).Source_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{spfield}", to_rep_string( get_obj( ).Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{spclass}", to_rep_string( get_obj( ).Source_Parent_Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{scfield}", to_rep_string( get_obj( ).Source_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sc2field}", to_rep_string( get_obj( ).Source_Child_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sgcfield}", to_rep_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{tpfield}", to_rep_string( get_obj( ).Test_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{tcfield}", to_rep_string( get_obj( ).Test_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{tfield}", to_rep_string( get_obj( ).Test_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{tvalue}", to_rep_string( get_obj( ).Test_Value( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{permission}", to_rep_string( get_obj( ).Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{opermission}", to_rep_string( get_obj( ).Other_Permission( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{o2permission}", to_rep_string( get_obj( ).Other_Permission_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{procedure}", to_rep_string( get_obj( ).Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{procedure_arg}", to_rep_string( get_obj( ).Procedure_Arg( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{oprocedure}", to_rep_string( get_obj( ).Other_Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{o2procedure}", to_rep_string( get_obj( ).Other_Procedure_2( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{cname}", to_rep_string( get_obj( ).Child_Relationship( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{child}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{cclass}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Class_Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{enum}", to_rep_string( get_obj( ).Enum( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{enum_item}", to_rep_string( get_obj( ).Enum_Item( ).Label( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{value}", to_rep_string( get_obj( ).Value( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{value_label}", to_rep_string( get_obj( ).Value_Label( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{value_numstr}", to_rep_string( get_obj( ).Value_Numeric_String( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{field_values}", to_rep_string( get_obj( ).Field_Values( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{fields}", to_rep_string( get_obj( ).Fields( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{field_pairs}", to_rep_string( get_obj( ).Field_Pairs( ) ) );
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
 
@@ -7961,6 +7972,11 @@ void Meta_Specification::finalise_fetch( )
 void Meta_Specification::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Specification::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Specification::to_store( bool is_create, bool is_internal )

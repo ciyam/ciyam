@@ -5303,7 +5303,7 @@ bool is_system_uid( )
    bool rc = false;
    string uid( get_uid( ) );
 
-   if( uid.empty( ) || uid == "sys" || uid == "auto" || uid == "init" )
+   if( uid == "sys" || uid == "auto" || uid == "init" )
       rc = true;
 
    return rc;
@@ -8860,7 +8860,11 @@ bool perform_instance_iterate( class_base& instance,
          found = fetch_instance_from_db( instance,
           instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
 
-         instance_accessor.set_iteration_starting( false );
+         // NOTE: It is expected that the "after_fetch" trigger will be being skipped due to a later
+         // "prepare" call which will call the trigger and then clear this flag (otherwise dependent
+         // fields might be missed when the trigger is actually called).
+         if( !skip_after_fetch )
+            instance_accessor.set_iteration_starting( false );
 
          ++gtp_session->sql_count;
 

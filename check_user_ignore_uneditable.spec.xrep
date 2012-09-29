@@ -7,7 +7,7 @@
    // NOTE: Empty code block for scope purposes.
    {
       bool allow_ignore = true;
-      if( !is_system_uid( ) )
+      if( !get_uid( ).empty( ) && !is_system_uid( ) )
       {
 `{`!`@eq`(`$arg_vname`,`'`'`)\
          string var( get_obj( ).get_variable( "`{`$arg_vname`}" ) );

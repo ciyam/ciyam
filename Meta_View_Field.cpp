@@ -1767,6 +1767,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -2835,6 +2836,8 @@ void Meta_View_Field::impl::after_fetch( )
    if( cp_View )
       p_obj->setup_foreign_key( *cp_View, v_View );
 
+   do_post_init( );
+
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Name" )
@@ -2844,11 +2847,11 @@ void Meta_View_Field::impl::after_fetch( )
 
       get_obj( ).Name( str );
 
-      get_obj( ).add_search_replacement( "Name", "{tab}", to_string( get_obj( ).Tab_Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sfield}", to_string( get_obj( ).Source_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sparent}", to_string( get_obj( ).Source_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{schild}", to_string( get_obj( ).Source_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sechild}", to_string( get_obj( ).Source_Edit_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{tab}", to_rep_string( get_obj( ).Tab_Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sparent}", to_rep_string( get_obj( ).Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{schild}", to_rep_string( get_obj( ).Source_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sechild}", to_rep_string( get_obj( ).Source_Edit_Child( ).Name( ) ) );
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
 
@@ -2862,7 +2865,6 @@ void Meta_View_Field::impl::after_fetch( )
 
 void Meta_View_Field::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -2878,6 +2880,12 @@ void Meta_View_Field::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_View_Field::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -2885,6 +2893,9 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -3585,6 +3596,11 @@ void Meta_View_Field::finalise_fetch( )
 void Meta_View_Field::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_View_Field::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_View_Field::to_store( bool is_create, bool is_internal )

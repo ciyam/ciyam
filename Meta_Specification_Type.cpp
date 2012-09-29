@@ -2214,6 +2214,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -3845,13 +3846,14 @@ void Meta_Specification_Type::impl::after_fetch( )
    if( cp_Parent_Specification_Type )
       p_obj->setup_foreign_key( *cp_Parent_Specification_Type, v_Parent_Specification_Type );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Specification_Type::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -3862,6 +3864,12 @@ void Meta_Specification_Type::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Specification_Type::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -3869,6 +3877,9 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -5166,6 +5177,11 @@ void Meta_Specification_Type::finalise_fetch( )
 void Meta_Specification_Type::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Specification_Type::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Specification_Type::to_store( bool is_create, bool is_internal )

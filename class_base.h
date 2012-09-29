@@ -516,6 +516,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void perform_after_fetch( bool is_minimal = false, bool is_for_prepare = false );
 
    virtual void at_create( ) = 0;
+   virtual void do_post_init( ) = 0;
 
    virtual void to_store( bool is_create, bool is_internal ) = 0;
    void perform_to_store( bool is_create, bool is_internal );
@@ -850,6 +851,9 @@ std::string CLASS_BASE_DECL_SPEC int_to_comparable_string( int i, bool prefix_wi
 std::string CLASS_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num );
 
 template< typename T > inline int to_integer( const T& t ) { return t; }
+
+inline bool check_equal( const bool b, const int i ) { return b == ( bool )i; }
+inline bool check_not_equal( const bool b, const int i ) { return !( b == ( bool )i ); }
 
 template< typename T, typename V > inline bool check_equal( const T& t, const V& v ) { return t == v; }
 template< typename T, typename V > inline bool check_not_equal( const T& t, const V& v ) { return !( t == v ); }

@@ -21787,7 +21787,7 @@
      </field>
      <field/>
       <id>118115
-      <name>Auto_Back_After_Create
+      <name>Auto_Back_After_Save
       <type>bool
       <mandatory>true
       <default_value>0
@@ -28321,6 +28321,7 @@
     <data/>
      <name>?
      <type>standard
+     <extra>auto_back
      <class_id>137100
      <field_info>302820:136101;no_edit+link+max_size=30
      <field_info>137115;no_edit

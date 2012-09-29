@@ -777,7 +777,7 @@ bool output_view_form( ostream& os, const string& act,
 
          bool go_back_after_save = false;
          if( view_extras.count( c_view_type_extra_auto_back ) )
-            go_back_after_save = is_new_record;
+            go_back_after_save = true;
 
          if( go_back_after_save )
             os << " + '&back=1'";

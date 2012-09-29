@@ -556,6 +556,7 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -850,13 +851,14 @@ void Meta_Procedure::impl::after_fetch( )
    if( cp_Source_Procedure )
       p_obj->setup_foreign_key( *cp_Source_Procedure, v_Source_Procedure );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Procedure::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -867,6 +869,12 @@ void Meta_Procedure::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Procedure::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Procedure::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -874,6 +882,9 @@ void Meta_Procedure::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start field_empty_action)]
    if( !get_obj( ).get_key( ).empty( ) )
@@ -1267,6 +1278,11 @@ void Meta_Procedure::finalise_fetch( )
 void Meta_Procedure::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Procedure::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Procedure::to_store( bool is_create, bool is_internal )

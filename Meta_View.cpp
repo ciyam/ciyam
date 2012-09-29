@@ -113,7 +113,7 @@ const char* const c_field_id_Access_Permission = "301825";
 const char* const c_field_id_Access_Restriction = "118102";
 const char* const c_field_id_Allow_Copy_Action = "118113";
 const char* const c_field_id_Allow_Printable_Version = "118109";
-const char* const c_field_id_Auto_Back_After_Create = "118115";
+const char* const c_field_id_Auto_Back_After_Save = "118115";
 const char* const c_field_id_Change_Permission = "301830";
 const char* const c_field_id_Change_Restriction = "118103";
 const char* const c_field_id_Class = "301820";
@@ -133,7 +133,7 @@ const char* const c_field_name_Access_Permission = "Access_Permission";
 const char* const c_field_name_Access_Restriction = "Access_Restriction";
 const char* const c_field_name_Allow_Copy_Action = "Allow_Copy_Action";
 const char* const c_field_name_Allow_Printable_Version = "Allow_Printable_Version";
-const char* const c_field_name_Auto_Back_After_Create = "Auto_Back_After_Create";
+const char* const c_field_name_Auto_Back_After_Save = "Auto_Back_After_Save";
 const char* const c_field_name_Change_Permission = "Change_Permission";
 const char* const c_field_name_Change_Restriction = "Change_Restriction";
 const char* const c_field_name_Class = "Class";
@@ -153,7 +153,7 @@ const char* const c_field_display_name_Access_Permission = "field_view_access_pe
 const char* const c_field_display_name_Access_Restriction = "field_view_access_restriction";
 const char* const c_field_display_name_Allow_Copy_Action = "field_view_allow_copy_action";
 const char* const c_field_display_name_Allow_Printable_Version = "field_view_allow_printable_version";
-const char* const c_field_display_name_Auto_Back_After_Create = "field_view_auto_back_after_create";
+const char* const c_field_display_name_Auto_Back_After_Save = "field_view_auto_back_after_save";
 const char* const c_field_display_name_Change_Permission = "field_view_change_permission";
 const char* const c_field_display_name_Change_Restriction = "field_view_change_restriction";
 const char* const c_field_display_name_Class = "field_view_class";
@@ -200,7 +200,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Access_Restriction",
    "Allow_Copy_Action",
    "Allow_Printable_Version",
-   "Auto_Back_After_Create",
+   "Auto_Back_After_Save",
    "Change_Permission",
    "Change_Restriction",
    "Class",
@@ -281,7 +281,7 @@ string gv_default_Access_Permission = string( );
 int gv_default_Access_Restriction = int( 0 );
 bool gv_default_Allow_Copy_Action = bool( 0 );
 bool gv_default_Allow_Printable_Version = bool( 0 );
-bool gv_default_Auto_Back_After_Create = bool( 0 );
+bool gv_default_Auto_Back_After_Save = bool( 0 );
 string gv_default_Change_Permission = string( );
 int gv_default_Change_Restriction = int( 0 );
 string gv_default_Class = string( );
@@ -489,8 +489,8 @@ void Meta_View_command_functor::operator ( )( const string& command, const param
          string_getter< bool >( cmd_handler.p_Meta_View->Allow_Copy_Action( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Printable_Version || field_name == c_field_name_Allow_Printable_Version )
          string_getter< bool >( cmd_handler.p_Meta_View->Allow_Printable_Version( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Auto_Back_After_Create || field_name == c_field_name_Auto_Back_After_Create )
-         string_getter< bool >( cmd_handler.p_Meta_View->Auto_Back_After_Create( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Auto_Back_After_Save || field_name == c_field_name_Auto_Back_After_Save )
+         string_getter< bool >( cmd_handler.p_Meta_View->Auto_Back_After_Save( ), cmd_handler.retval );
       else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
          string_getter< Meta_Permission >( cmd_handler.p_Meta_View->Change_Permission( ), cmd_handler.retval );
       else if( field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
@@ -541,9 +541,9 @@ void Meta_View_command_functor::operator ( )( const string& command, const param
       else if( field_name == c_field_id_Allow_Printable_Version || field_name == c_field_name_Allow_Printable_Version )
          func_string_setter< Meta_View, bool >(
           *cmd_handler.p_Meta_View, &Meta_View::Allow_Printable_Version, field_value );
-      else if( field_name == c_field_id_Auto_Back_After_Create || field_name == c_field_name_Auto_Back_After_Create )
+      else if( field_name == c_field_id_Auto_Back_After_Save || field_name == c_field_name_Auto_Back_After_Save )
          func_string_setter< Meta_View, bool >(
-          *cmd_handler.p_Meta_View, &Meta_View::Auto_Back_After_Create, field_value );
+          *cmd_handler.p_Meta_View, &Meta_View::Auto_Back_After_Save, field_value );
       else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
          func_string_setter< Meta_View, Meta_Permission >(
           *cmd_handler.p_Meta_View, &Meta_View::Change_Permission, field_value );
@@ -649,8 +649,8 @@ struct Meta_View::impl : public Meta_View_command_handler
    bool impl_Allow_Printable_Version( ) const { return lazy_fetch( p_obj ), v_Allow_Printable_Version; }
    void impl_Allow_Printable_Version( bool Allow_Printable_Version ) { v_Allow_Printable_Version = Allow_Printable_Version; }
 
-   bool impl_Auto_Back_After_Create( ) const { return lazy_fetch( p_obj ), v_Auto_Back_After_Create; }
-   void impl_Auto_Back_After_Create( bool Auto_Back_After_Create ) { v_Auto_Back_After_Create = Auto_Back_After_Create; }
+   bool impl_Auto_Back_After_Save( ) const { return lazy_fetch( p_obj ), v_Auto_Back_After_Save; }
+   void impl_Auto_Back_After_Save( bool Auto_Back_After_Save ) { v_Auto_Back_After_Save = Auto_Back_After_Save; }
 
    int impl_Change_Restriction( ) const { return lazy_fetch( p_obj ), v_Change_Restriction; }
    void impl_Change_Restriction( int Change_Restriction ) { v_Change_Restriction = Change_Restriction; }
@@ -885,6 +885,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -913,7 +914,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    int v_Access_Restriction;
    bool v_Allow_Copy_Action;
    bool v_Allow_Printable_Version;
-   bool v_Auto_Back_After_Create;
+   bool v_Auto_Back_After_Save;
    int v_Change_Restriction;
    string v_Id;
    bool v_Ignore_Unactionable_Records;
@@ -1451,7 +1452,7 @@ string Meta_View::impl::get_field_value( int field ) const
       break;
 
       case 4:
-      retval = to_string( impl_Auto_Back_After_Create( ) );
+      retval = to_string( impl_Auto_Back_After_Save( ) );
       break;
 
       case 5:
@@ -1538,7 +1539,7 @@ void Meta_View::impl::set_field_value( int field, const string& value )
       break;
 
       case 4:
-      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Auto_Back_After_Create, value );
+      func_string_setter< Meta_View::impl, bool >( *this, &Meta_View::impl::impl_Auto_Back_After_Save, value );
       break;
 
       case 5:
@@ -1727,7 +1728,7 @@ void Meta_View::impl::clear( )
    v_Access_Restriction = gv_default_Access_Restriction;
    v_Allow_Copy_Action = gv_default_Allow_Copy_Action;
    v_Allow_Printable_Version = gv_default_Allow_Printable_Version;
-   v_Auto_Back_After_Create = gv_default_Auto_Back_After_Create;
+   v_Auto_Back_After_Save = gv_default_Auto_Back_After_Save;
    v_Change_Restriction = gv_default_Change_Restriction;
    v_Id = gv_default_Id;
    v_Ignore_Unactionable_Records = gv_default_Ignore_Unactionable_Records;
@@ -1907,6 +1908,8 @@ void Meta_View::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
+   do_post_init( );
+
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Name" )
@@ -1916,7 +1919,7 @@ void Meta_View::impl::after_fetch( )
 
       get_obj( ).Name( str );
 
-      get_obj( ).add_search_replacement( "Name", "{class}", to_string( get_obj( ).Class( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
    }
@@ -1928,7 +1931,6 @@ void Meta_View::impl::after_fetch( )
 
 void Meta_View::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -1944,6 +1946,12 @@ void Meta_View::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_View::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_View::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -1951,6 +1959,9 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -2133,14 +2144,14 @@ void Meta_View::Allow_Printable_Version( bool Allow_Printable_Version )
    p_impl->impl_Allow_Printable_Version( Allow_Printable_Version );
 }
 
-bool Meta_View::Auto_Back_After_Create( ) const
+bool Meta_View::Auto_Back_After_Save( ) const
 {
-   return p_impl->impl_Auto_Back_After_Create( );
+   return p_impl->impl_Auto_Back_After_Save( );
 }
 
-void Meta_View::Auto_Back_After_Create( bool Auto_Back_After_Create )
+void Meta_View::Auto_Back_After_Save( bool Auto_Back_After_Save )
 {
-   p_impl->impl_Auto_Back_After_Create( Auto_Back_After_Create );
+   p_impl->impl_Auto_Back_After_Save( Auto_Back_After_Save );
 }
 
 int Meta_View::Change_Restriction( ) const
@@ -2412,6 +2423,11 @@ void Meta_View::at_create( )
    p_impl->at_create( );
 }
 
+void Meta_View::do_post_init( )
+{
+   p_impl->do_post_init( );
+}
+
 void Meta_View::to_store( bool is_create, bool is_internal )
 {
    p_impl->to_store( is_create, is_internal );
@@ -2499,9 +2515,9 @@ const char* Meta_View::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( name == c_field_name_Auto_Back_After_Create )
+   else if( name == c_field_name_Auto_Back_After_Save )
    {
-      p_id = c_field_id_Auto_Back_After_Create;
+      p_id = c_field_id_Auto_Back_After_Save;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -2700,9 +2716,9 @@ const char* Meta_View::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
-   else if( id == c_field_id_Auto_Back_After_Create )
+   else if( id == c_field_id_Auto_Back_After_Save )
    {
-      p_name = c_field_name_Auto_Back_After_Create;
+      p_name = c_field_name_Auto_Back_After_Save;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -2884,8 +2900,8 @@ string Meta_View::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Allow_Copy_Action );
    else if( id_or_name == c_field_id_Allow_Printable_Version || id_or_name == c_field_name_Allow_Printable_Version )
       display_name = get_module_string( c_field_display_name_Allow_Printable_Version );
-   else if( id_or_name == c_field_id_Auto_Back_After_Create || id_or_name == c_field_name_Auto_Back_After_Create )
-      display_name = get_module_string( c_field_display_name_Auto_Back_After_Create );
+   else if( id_or_name == c_field_id_Auto_Back_After_Save || id_or_name == c_field_name_Auto_Back_After_Save )
+      display_name = get_module_string( c_field_display_name_Auto_Back_After_Save );
    else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
       display_name = get_module_string( c_field_display_name_Change_Permission );
    else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
@@ -3160,7 +3176,7 @@ void Meta_View::get_sql_column_names(
    names.push_back( "C_Access_Restriction" );
    names.push_back( "C_Allow_Copy_Action" );
    names.push_back( "C_Allow_Printable_Version" );
-   names.push_back( "C_Auto_Back_After_Create" );
+   names.push_back( "C_Auto_Back_After_Save" );
    names.push_back( "C_Change_Permission" );
    names.push_back( "C_Change_Restriction" );
    names.push_back( "C_Class" );
@@ -3189,7 +3205,7 @@ void Meta_View::get_sql_column_values(
    values.push_back( to_string( Access_Restriction( ) ) );
    values.push_back( to_string( Allow_Copy_Action( ) ) );
    values.push_back( to_string( Allow_Printable_Version( ) ) );
-   values.push_back( to_string( Auto_Back_After_Create( ) ) );
+   values.push_back( to_string( Auto_Back_After_Save( ) ) );
    values.push_back( sql_quote( to_string( Change_Permission( ) ) ) );
    values.push_back( to_string( Change_Restriction( ) ) );
    values.push_back( sql_quote( to_string( Class( ) ) ) );
@@ -3352,7 +3368,7 @@ void Meta_View::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "118102", "Access_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "118113", "Allow_Copy_Action", "bool", false ) );
    all_field_info.push_back( field_info( "118109", "Allow_Printable_Version", "bool", false ) );
-   all_field_info.push_back( field_info( "118115", "Auto_Back_After_Create", "bool", false ) );
+   all_field_info.push_back( field_info( "118115", "Auto_Back_After_Save", "bool", false ) );
    all_field_info.push_back( field_info( "301830", "Change_Permission", "Meta_Permission", false ) );
    all_field_info.push_back( field_info( "118103", "Change_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "301820", "Class", "Meta_Class", true ) );
@@ -3505,7 +3521,7 @@ const char* Meta_View::static_get_field_name( field_id id )
       break;
 
       case 5:
-      p_id = "Auto_Back_After_Create";
+      p_id = "Auto_Back_After_Save";
       break;
 
       case 6:
@@ -3585,7 +3601,7 @@ int Meta_View::static_get_field_num( const string& field )
       rc += 3;
    else if( field == c_field_id_Allow_Printable_Version || field == c_field_name_Allow_Printable_Version )
       rc += 4;
-   else if( field == c_field_id_Auto_Back_After_Create || field == c_field_name_Auto_Back_After_Create )
+   else if( field == c_field_id_Auto_Back_After_Save || field == c_field_name_Auto_Back_After_Save )
       rc += 5;
    else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
       rc += 6;
@@ -3646,7 +3662,7 @@ string Meta_View::static_get_sql_columns( )
     "C_Access_Restriction INTEGER NOT NULL,"
     "C_Allow_Copy_Action INTEGER NOT NULL,"
     "C_Allow_Printable_Version INTEGER NOT NULL,"
-    "C_Auto_Back_After_Create INTEGER NOT NULL,"
+    "C_Auto_Back_After_Save INTEGER NOT NULL,"
     "C_Change_Permission VARCHAR(64) NOT NULL,"
     "C_Change_Restriction INTEGER NOT NULL,"
     "C_Class VARCHAR(64) NOT NULL,"

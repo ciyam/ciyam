@@ -314,6 +314,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -650,13 +651,14 @@ void Meta_Auto_Code::impl::after_fetch( )
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
 
+   do_post_init( );
+
    // [<start after_fetch>]
    // [<finish after_fetch>]
 }
 
 void Meta_Auto_Code::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -667,6 +669,12 @@ void Meta_Auto_Code::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Auto_Code::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Auto_Code::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -674,6 +682,9 @@ void Meta_Auto_Code::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -886,6 +897,11 @@ void Meta_Auto_Code::finalise_fetch( )
 void Meta_Auto_Code::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Auto_Code::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Auto_Code::to_store( bool is_create, bool is_internal )

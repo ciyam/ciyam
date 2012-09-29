@@ -51,7 +51,7 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
       e_field_id_Access_Restriction = 2,
       e_field_id_Allow_Copy_Action = 3,
       e_field_id_Allow_Printable_Version = 4,
-      e_field_id_Auto_Back_After_Create = 5,
+      e_field_id_Auto_Back_After_Save = 5,
       e_field_id_Change_Permission = 6,
       e_field_id_Change_Restriction = 7,
       e_field_id_Class = 8,
@@ -80,8 +80,8 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
    bool Allow_Printable_Version( ) const;
    void Allow_Printable_Version( bool Allow_Printable_Version );
 
-   bool Auto_Back_After_Create( ) const;
-   void Auto_Back_After_Create( bool Auto_Back_After_Create );
+   bool Auto_Back_After_Save( ) const;
+   void Auto_Back_After_Save( bool Auto_Back_After_Save );
 
    int Change_Restriction( ) const;
    void Change_Restriction( int Change_Restriction );
@@ -163,6 +163,7 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );

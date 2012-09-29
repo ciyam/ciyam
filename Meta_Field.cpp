@@ -1727,6 +1727,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -2391,6 +2392,8 @@ void Meta_Field::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
+   do_post_init( );
+
    // [(start transient_field_alias)]
    if( get_obj( ).needs_field_value( "Parent_Class_Name" )
     || required_transients.count( "Parent_Class_Name" ) )
@@ -2409,7 +2412,6 @@ void Meta_Field::impl::after_fetch( )
 
 void Meta_Field::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -2420,6 +2422,12 @@ void Meta_Field::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_Field::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_Field::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -2427,6 +2435,9 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start field_from_other_field)]
    get_obj( ).Primitive( get_obj( ).Type( ).Primitive( ) );
@@ -2437,6 +2448,7 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Is_Foreign_Key( get_obj( ).Parent_Class( ).get_is_singular( ) );
    else
       get_obj( ).Is_Foreign_Key( false );
+
    // [(finish field_from_other_field)]
 
    // [(start modifier_set_field)]
@@ -3427,6 +3439,11 @@ void Meta_Field::finalise_fetch( )
 void Meta_Field::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_Field::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_Field::to_store( bool is_create, bool is_internal )

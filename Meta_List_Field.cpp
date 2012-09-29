@@ -2190,6 +2190,7 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
    void finalise_fetch( );
 
    void at_create( );
+   void do_post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -3644,6 +3645,8 @@ void Meta_List_Field::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
+   do_post_init( );
+
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Name" )
@@ -3653,16 +3656,16 @@ void Meta_List_Field::impl::after_fetch( )
 
       get_obj( ).Name( str );
 
-      get_obj( ).add_search_replacement( "Name", "{sfield}", to_string( get_obj( ).Source_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sparent}", to_string( get_obj( ).Source_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{schild}", to_string( get_obj( ).Source_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{sgchild}", to_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{child}", to_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{crsfield}", to_string( get_obj( ).Child_Rel_Source_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{crsparent}", to_string( get_obj( ).Child_Rel_Source_Parent( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{crschild}", to_string( get_obj( ).Child_Rel_Source_Child( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{rfield}", to_string( get_obj( ).Restriction_Field( ).Name( ) ) );
-      get_obj( ).add_search_replacement( "Name", "{procedure}", to_string( get_obj( ).Procedure( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sparent}", to_rep_string( get_obj( ).Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{schild}", to_rep_string( get_obj( ).Source_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{sgchild}", to_rep_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{child}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{crsfield}", to_rep_string( get_obj( ).Child_Rel_Source_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{crsparent}", to_rep_string( get_obj( ).Child_Rel_Source_Parent( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{crschild}", to_rep_string( get_obj( ).Child_Rel_Source_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{rfield}", to_rep_string( get_obj( ).Restriction_Field( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Name", "{procedure}", to_rep_string( get_obj( ).Procedure( ).Name( ) ) );
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
 
@@ -3676,7 +3679,6 @@ void Meta_List_Field::impl::after_fetch( )
 
 void Meta_List_Field::impl::finalise_fetch( )
 {
-
    // [<start finalise_fetch>]
    // [<finish finalise_fetch>]
 }
@@ -3692,6 +3694,12 @@ void Meta_List_Field::impl::at_create( )
    // [<finish at_create>]
 }
 
+void Meta_List_Field::impl::do_post_init( )
+{
+   // [<start do_post_init>]
+   // [<finish do_post_init>]
+}
+
 void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
@@ -3699,6 +3707,9 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
 
    uint64_t state = p_obj->get_state( );
    ( void )state;
+
+   if( !get_obj( ).get_is_preparing( ) )
+      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -4603,6 +4614,11 @@ void Meta_List_Field::finalise_fetch( )
 void Meta_List_Field::at_create( )
 {
    p_impl->at_create( );
+}
+
+void Meta_List_Field::do_post_init( )
+{
+   p_impl->do_post_init( );
 }
 
 void Meta_List_Field::to_store( bool is_create, bool is_internal )
