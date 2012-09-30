@@ -194,6 +194,7 @@ const char* const c_field_extra_small = "small";
 const char* const c_field_extra_hidden = "hidden";
 const char* const c_field_extra_larger = "larger";
 const char* const c_field_extra_mailto = "mailto";
+const char* const c_field_extra_no_anon = "no_anon";
 const char* const c_field_extra_smaller = "smaller";
 const char* const c_field_extra_filename = "filename";
 const char* const c_field_extra_int_type = "int_type";

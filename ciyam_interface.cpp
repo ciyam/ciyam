@@ -3818,6 +3818,12 @@ void request_handler::process_request( )
                         has_perm = p_session_info->is_default_other( );
                   }
 
+                  // NOTE: For the "admin" user only display lists specifically targeted for "admin"
+                  // (to reduce unnecessary clutter as "admin" is not intended for "standard" usage).
+                  if( p_session_info->is_admin_user && lmci->second->type != c_list_type_admin
+                   && lmci->second->type != c_list_type_child_admin && lmci->second->type != c_list_type_child_admin_owner )
+                     has_perm = false;
+
                   if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
                      has_perm = false;
 
@@ -3825,14 +3831,10 @@ void request_handler::process_request( )
                   if( lmci->second->type == c_list_type_no_access )
                      has_perm = false;
 
-                  // NOTE: If the user does not have permission or if the list is 
-                  // a "group" type but the user doesn't belong to a group or if the list is an "admin"
-                  // one but the user is not an admin user then omit it. Also omit "user" lists if the
-                  // user is "admin" (it is probably not a good idea for the "admin" user to belong to a 
-                  // group but if so then the "admin" user will be able to access its "group" specific lists).                        
-                  if( has_perm && lmci->second->type != c_list_type_home
-                   && ( is_admin_user || lmci->second->type != c_list_type_admin )
-                   && ( !is_admin_user || lmci->second->type != c_list_type_user )
+                  // NOTE: If the user does not have permission or if the list is a
+                  // "group" type but the user doesn't belong to a group then omit it.
+                  if( has_perm && lmci->second->type != c_list_type_home && ( is_admin_user
+                   || ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) )
                    && ( !user_group.empty( ) || lmci->second->type != c_list_type_group ) )
                   {
                      string display_name( get_display_name( lmci->first ) );

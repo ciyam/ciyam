@@ -1419,7 +1419,7 @@
 `{`$specification_List_Field_view_extra`=`'`'`}
 `{`$specification_List_Field_view_mods`=`'`'`}
 `{`$specification_List_Field_view_binfo`=`'`'`}
-`{`$specification_List_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033 034 035 036 037 038 039 040 041 042 043 044 045 046 047 048 049`'`}
+`{`$specification_List_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033 034 035 036 037 038 039 040 041 042 043 044 045 046 047 048 049 050`'`}
 `{`$specification_List_Field_view_field000`=`'302100`'`}
 `{`$specification_List_Field_view_ftype000`=`'@class`'`}
 `{`$specification_List_Field_view_extra000`=`'no_edit+link+max_size=100`'`}
@@ -1842,6 +1842,12 @@
 `{`$specification_List_Field_view_prfnm049`=`'Name`'`}
 `{`$specification_List_Field_view_prxtr049`=`'@fkey6:300900+109101`'`}
 `{`$specification_List_Field_view_pridx049`=`'false`'`}
+`{`$specification_List_Field_view_field050`=`'124133`'`}
+`{`$specification_List_Field_view_ftype050`=`'bool`'`}
+`{`$specification_List_Field_view_extra050`=`'`'`}
+`{`$specification_List_Field_view_fmods050`=`'`'`}
+`{`$specification_List_Field_view_fname050`=`'field_list_field_allow_anonymous_access`'`}
+`{`$specification_List_Field_view_fmand050`=`'true`'`}
 `{`}
 `{`$specification_List_Field_child_list0_id`=`'602860`'`}
 `{`$specification_List_Field_child_list0_cid`=`'124100`'`}
@@ -5088,7 +5094,7 @@
 `{`$specification_View_Field_view_extra`=`'`'`}
 `{`$specification_View_Field_view_mods`=`'`'`}
 `{`$specification_View_Field_view_binfo`=`'`'`}
-`{`$specification_View_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033 034 035 036 037`'`}
+`{`$specification_View_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033 034 035 036 037 038`'`}
 `{`$specification_View_Field_view_field000`=`'301900`'`}
 `{`$specification_View_Field_view_ftype000`=`'@class`'`}
 `{`$specification_View_Field_view_extra000`=`'no_edit+link+max_size=100`'`}
@@ -5384,6 +5390,12 @@
 `{`$specification_View_Field_view_fmods037`=`'800:relegate,1000:relegate`'`}
 `{`$specification_View_Field_view_fname037`=`'field_view_field_tab_name`'`}
 `{`$specification_View_Field_view_fmand037`=`'false`'`}
+`{`$specification_View_Field_view_field038`=`'120129`'`}
+`{`$specification_View_Field_view_ftype038`=`'bool`'`}
+`{`$specification_View_Field_view_extra038`=`'`'`}
+`{`$specification_View_Field_view_fmods038`=`'`'`}
+`{`$specification_View_Field_view_fname038`=`'field_view_field_allow_anonymous_access`'`}
+`{`$specification_View_Field_view_fmand038`=`'true`'`}
 `{`}
 `{`$specification_View_Field_child_list0_id`=`'602720`'`}
 `{`$specification_View_Field_child_list0_cid`=`'120100`'`}

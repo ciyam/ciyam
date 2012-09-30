@@ -480,10 +480,12 @@ const char* const c_data_combine_keys = "combine_keys";
 const char* const c_data_grand_parent = "grand_parent";
 const char* const c_data_status_field = "status_field";
 const char* const c_data_status_value = "status_value";
+const char* const c_data_tfistexttype = "tfistexttype";
 const char* const c_data_fk_from_child = "fk_from_child";
 const char* const c_data_primary_class = "primary_class";
 const char* const c_data_special_value = "special_value";
 const char* const c_data_special_field = "special_field";
+const char* const c_data_tcfistexttype = "tcfistexttype";
 const char* const c_data_special_cfield = "special_cfield";
 const char* const c_data_exhausted_field = "exhausted_field";
 const char* const c_data_secondary_class = "secondary_class";
@@ -5130,11 +5132,15 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
       test_pfield_name = get_field_name_for_id( m, class_name, test_pfield_id );
    spec_data.data_pairs.push_back( make_pair( c_data_tpfield, test_pfield_name ) );
 
-   string test_field_name;
+   string test_field_name, test_field_type;
    if( !test_field_id.empty( ) )
-      test_field_name = get_field_name_for_id( m, tclass_name, test_field_id );
+      test_field_name = get_field_name_for_id( m, tclass_name, test_field_id, &test_field_type );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, test_field_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, test_value ) );
+
+   bool is_text_type( !is_non_string_type( test_field_type ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, is_text_type ? "1" : "0" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tcfistexttype, is_text_type ? "1" : "0" ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_for_store, for_store ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_chk_null, check_null ? c_true : "" ) );
