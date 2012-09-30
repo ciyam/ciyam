@@ -94,6 +94,9 @@ void output_view_tabs( ostream& os, const view_source& source,
        && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
          continue;
 
+      if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
+         continue;
+
       if( i + 1 == vtab_num )
          os << "<th class=\"tab\" align=\"center\">" << mod_info.get_string( source.tab_names[ i ] ) << "</th>\n";
       else
@@ -350,14 +353,27 @@ void setup_view_fields( view_source& view,
          else if( extra_data.count( c_field_extra_href ) )
             view.href_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_flink ) )
-            view.file_fields.insert( value_id );
+         {
+            if( !sess_info.user_id.empty( ) || get_storage_info( ).embed_images )
+               view.file_fields.insert( value_id );
+            else
+               view.hidden_fields.insert( value_id );
+         }
          else if( extra_data.count( c_field_extra_image ) )
-            view.image_fields.insert( value_id );
+         {
+            if( !sess_info.user_id.empty( ) || get_storage_info( ).embed_images )
+               view.image_fields.insert( value_id );
+            else
+               view.hidden_fields.insert( value_id );
+         }
          else if( extra_data.count( c_field_extra_mailto ) )
             view.mailto_fields.insert( value_id );
 
          if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_image ) )
-            view.has_file_attachments = true;
+         {
+            if( !sess_info.user_id.empty( ) )
+               view.has_file_attachments = true;
+         }
 
          if( fld.mandatory )
             view.mandatory_fields.insert( value_id );
@@ -1066,6 +1082,9 @@ bool output_view_form( ostream& os, const string& act,
          continue;
       }
 
+      if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
+         continue;
+
       if( !is_new_record && !is_record_owner && source.owner_fields.count( source_value_id ) )
          continue;
 
@@ -1125,6 +1144,9 @@ bool output_view_form( ostream& os, const string& act,
 
          if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
           && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
+            continue;
+
+         if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
             continue;
       }
 

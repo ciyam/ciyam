@@ -18,16 +18,16 @@
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( ) `{`$admin_op`}
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
-    ( get_obj( ).`{`$arg_altfield`}( ) ||
+    ( get_obj( ).`{`$arg_altfield`}( )
 `}\
-    get_perms( ).count( "`{`$arg_permission_id`}" ) )`{`!`@eq`(`$arg_altfield`,`'`'`) )`} // i.e. `{`$arg_permission`}
+    `{`!`@eq`(`$arg_altfield`,`'`'`)|| `}get_perms( ).count( "`{`$arg_permission_id`}" ) )`{`!`@eq`(`$arg_altfield`,`'`'`) )`} // i.e. `{`$arg_permission`}
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )
     && ( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( ) `{`$admin_op`}
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
-    ( get_obj( ).`{`$arg_altfield`}( ) ||
+    ( get_obj( ).`{`$arg_altfield`}( )
 `}\
-    get_perms( ).count( "`{`$arg_permission_id`}" ) ) )`{`!`@eq`(`$arg_altfield`,`'`'`) )`} // i.e. `{`$arg_permission`}
+    `{`!`@eq`(`$arg_altfield`,`'`'`)|| `}get_perms( ).count( "`{`$arg_permission_id`}" ) ) )`{`!`@eq`(`$arg_altfield`,`'`'`) )`} // i.e. `{`$arg_permission`}
 `}`}`,\
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
@@ -39,9 +39,9 @@
 `,\
    if( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( ) `{`$admin_op`} (
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
-    get_obj( ).`{`$arg_altfield`}( ) ||
+    get_obj( ).`{`$arg_altfield`}( )
 `}\
-    get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
+    `{`!`@eq`(`$arg_altfield`,`'`'`)|| `}get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     || `{`!`@eq`(`$arg_state`,`'`'`)\
 ( !( get_state( ) & c_state_un`{`$arg_state`} ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
 `,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\
@@ -56,9 +56,9 @@
 `,\
     && ( `{`@eq`(`$arg_admin_never`,`'true`'`)!`}is_admin_uid( ) `{`$admin_op`} (
 `{`!`@eq`(`$arg_altfield`,`'`'`)\
-    get_obj( ).`{`$arg_altfield`}( ) ||
+    get_obj( ).`{`$arg_altfield`}( )
 `}\
-    get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
+    `{`!`@eq`(`$arg_altfield`,`'`'`)|| `}get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     || `{`!`@eq`(`$arg_state`,`'`'`)\
 ( !( get_state( ) & c_state_un`{`$arg_state`} ) && `}`{`@eq`(`$arg_check_not_in_set`,`'`'`)get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( )\
 `,is_uid_not_self_and_not_in_set( get_obj( ).get_key( ), `{`!`@eq`(`$arg_vname`,`'`'`)get_obj( ).get_variable( "`{`$arg_vname`}" )\

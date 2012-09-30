@@ -131,6 +131,7 @@ const char* const c_okay = "okay";
 const char* const c_field_id_Access_Permission = "301920";
 const char* const c_field_id_Access_Restriction = "120105";
 const char* const c_field_id_Access_Scope = "120119";
+const char* const c_field_id_Allow_Anonymous_Access = "120129";
 const char* const c_field_id_Change_Permission = "301930";
 const char* const c_field_id_Change_Restriction = "120106";
 const char* const c_field_id_Change_Scope = "120120";
@@ -171,6 +172,7 @@ const char* const c_field_id_View = "301900";
 const char* const c_field_name_Access_Permission = "Access_Permission";
 const char* const c_field_name_Access_Restriction = "Access_Restriction";
 const char* const c_field_name_Access_Scope = "Access_Scope";
+const char* const c_field_name_Allow_Anonymous_Access = "Allow_Anonymous_Access";
 const char* const c_field_name_Change_Permission = "Change_Permission";
 const char* const c_field_name_Change_Restriction = "Change_Restriction";
 const char* const c_field_name_Change_Scope = "Change_Scope";
@@ -211,6 +213,7 @@ const char* const c_field_name_View = "View";
 const char* const c_field_display_name_Access_Permission = "field_view_field_access_permission";
 const char* const c_field_display_name_Access_Restriction = "field_view_field_access_restriction";
 const char* const c_field_display_name_Access_Scope = "field_view_field_access_scope";
+const char* const c_field_display_name_Allow_Anonymous_Access = "field_view_field_allow_anonymous_access";
 const char* const c_field_display_name_Change_Permission = "field_view_field_change_permission";
 const char* const c_field_display_name_Change_Restriction = "field_view_field_change_restriction";
 const char* const c_field_display_name_Change_Scope = "field_view_field_change_scope";
@@ -248,7 +251,7 @@ const char* const c_field_display_name_Use_Full_Width = "field_view_field_use_fu
 const char* const c_field_display_name_Use_Source_Parent = "field_view_field_use_source_parent";
 const char* const c_field_display_name_View = "field_view_field_view";
 
-const int c_num_fields = 39;
+const int c_num_fields = 40;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -279,6 +282,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "120126",
    "120127",
    "120128",
+   "120129",
    "301900",
    "301905",
    "301910",
@@ -298,6 +302,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Access_Permission",
    "Access_Restriction",
    "Access_Scope",
+   "Allow_Anonymous_Access",
    "Change_Permission",
    "Change_Restriction",
    "Change_Scope",
@@ -404,6 +409,7 @@ external_aliases_lookup_container g_external_aliases_lookup;
 string gv_default_Access_Permission = string( );
 int gv_default_Access_Restriction = int( 0 );
 int gv_default_Access_Scope = int( 0 );
+bool gv_default_Allow_Anonymous_Access = bool( 1 );
 string gv_default_Change_Permission = string( );
 int gv_default_Change_Restriction = int( 0 );
 int gv_default_Change_Scope = int( 0 );
@@ -1016,6 +1022,8 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
          string_getter< int >( cmd_handler.p_Meta_View_Field->Access_Restriction( ), cmd_handler.retval );
       else if( field_name == c_field_id_Access_Scope || field_name == c_field_name_Access_Scope )
          string_getter< int >( cmd_handler.p_Meta_View_Field->Access_Scope( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+         string_getter< bool >( cmd_handler.p_Meta_View_Field->Allow_Anonymous_Access( ), cmd_handler.retval );
       else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
          string_getter< Meta_Permission >( cmd_handler.p_Meta_View_Field->Change_Permission( ), cmd_handler.retval );
       else if( field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
@@ -1107,6 +1115,9 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
       else if( field_name == c_field_id_Access_Scope || field_name == c_field_name_Access_Scope )
          func_string_setter< Meta_View_Field, int >(
           *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Access_Scope, field_value );
+      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+         func_string_setter< Meta_View_Field, bool >(
+          *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Allow_Anonymous_Access, field_value );
       else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
          func_string_setter< Meta_View_Field, Meta_Permission >(
           *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Change_Permission, field_value );
@@ -1298,6 +1309,9 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    int impl_Access_Scope( ) const { return lazy_fetch( p_obj ), v_Access_Scope; }
    void impl_Access_Scope( int Access_Scope ) { v_Access_Scope = Access_Scope; }
+
+   bool impl_Allow_Anonymous_Access( ) const { return lazy_fetch( p_obj ), v_Allow_Anonymous_Access; }
+   void impl_Allow_Anonymous_Access( bool Allow_Anonymous_Access ) { v_Allow_Anonymous_Access = Allow_Anonymous_Access; }
 
    int impl_Change_Restriction( ) const { return lazy_fetch( p_obj ), v_Change_Restriction; }
    void impl_Change_Restriction( int Change_Restriction ) { v_Change_Restriction = Change_Restriction; }
@@ -1795,6 +1809,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    int v_Access_Restriction;
    int v_Access_Scope;
+   bool v_Allow_Anonymous_Access;
    int v_Change_Restriction;
    int v_Change_Scope;
    int v_Child_List_Extra_Option;
@@ -2009,146 +2024,150 @@ string Meta_View_Field::impl::get_field_value( int field ) const
       break;
 
       case 3:
-      retval = to_string( impl_Change_Permission( ) );
+      retval = to_string( impl_Allow_Anonymous_Access( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Change_Restriction( ) );
+      retval = to_string( impl_Change_Permission( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Change_Scope( ) );
+      retval = to_string( impl_Change_Restriction( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Child_List_Extra_Option( ) );
+      retval = to_string( impl_Change_Scope( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Class( ) );
+      retval = to_string( impl_Child_List_Extra_Option( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Date_Precision_Option( ) );
+      retval = to_string( impl_Class( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Enum_Finishes_At( ) );
+      retval = to_string( impl_Date_Precision_Option( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Enum_Starts_At( ) );
+      retval = to_string( impl_Enum_Finishes_At( ) );
       break;
 
       case 11:
-      retval = to_string( impl_FK_Trigger_Behaviour( ) );
+      retval = to_string( impl_Enum_Starts_At( ) );
       break;
 
       case 12:
-      retval = to_string( impl_FK_Trigger_Option( ) );
+      retval = to_string( impl_FK_Trigger_Behaviour( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Font_Size( ) );
+      retval = to_string( impl_FK_Trigger_Option( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Ignore_Manual_Links( ) );
+      retval = to_string( impl_Font_Size( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Label_Without_Prefix( ) );
+      retval = to_string( impl_Ignore_Manual_Links( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Link_Permission( ) );
+      retval = to_string( impl_Label_Without_Prefix( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Link_Restriction( ) );
+      retval = to_string( impl_Link_Permission( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Mandatory_Option( ) );
+      retval = to_string( impl_Link_Restriction( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Mandatory_Option( ) );
       break;
 
       case 20:
-      retval = to_string( impl_New_Source( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 21:
-      retval = to_string( impl_New_Value( ) );
+      retval = to_string( impl_New_Source( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Order( ) );
+      retval = to_string( impl_New_Value( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Restriction_Spec( ) );
+      retval = to_string( impl_Order( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Show_Hide_Start_Point( ) );
+      retval = to_string( impl_Restriction_Spec( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Sort_Manually( ) );
+      retval = to_string( impl_Show_Hide_Start_Point( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Source_Child( ) );
+      retval = to_string( impl_Sort_Manually( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Source_Edit_Child( ) );
+      retval = to_string( impl_Source_Child( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Source_Edit_Child( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Source_Parent( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Source_Parent_Class( ) );
+      retval = to_string( impl_Source_Parent( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Tab_Name( ) );
+      retval = to_string( impl_Source_Parent_Class( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Trigger_Behaviour( ) );
+      retval = to_string( impl_Tab_Name( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Trigger_For_State( ) );
+      retval = to_string( impl_Trigger_Behaviour( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Trigger_Option( ) );
+      retval = to_string( impl_Trigger_For_State( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Trigger_Option( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Use_Full_Width( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Use_Source_Parent( ) );
+      retval = to_string( impl_Use_Full_Width( ) );
       break;
 
       case 38:
+      retval = to_string( impl_Use_Source_Parent( ) );
+      break;
+
+      case 39:
       retval = to_string( impl_View( ) );
       break;
 
@@ -2176,146 +2195,150 @@ void Meta_View_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 3:
-      func_string_setter< Meta_View_Field::impl, Meta_Permission >( *this, &Meta_View_Field::impl::impl_Change_Permission, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Allow_Anonymous_Access, value );
       break;
 
       case 4:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Change_Restriction, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Permission >( *this, &Meta_View_Field::impl::impl_Change_Permission, value );
       break;
 
       case 5:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Change_Scope, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Change_Restriction, value );
       break;
 
       case 6:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Child_List_Extra_Option, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Change_Scope, value );
       break;
 
       case 7:
-      func_string_setter< Meta_View_Field::impl, Meta_Class >( *this, &Meta_View_Field::impl::impl_Class, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Child_List_Extra_Option, value );
       break;
 
       case 8:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Date_Precision_Option, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Class >( *this, &Meta_View_Field::impl::impl_Class, value );
       break;
 
       case 9:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Enum_Finishes_At, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Date_Precision_Option, value );
       break;
 
       case 10:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Enum_Starts_At, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Enum_Finishes_At, value );
       break;
 
       case 11:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_FK_Trigger_Behaviour, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Enum_Starts_At, value );
       break;
 
       case 12:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_FK_Trigger_Option, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_FK_Trigger_Behaviour, value );
       break;
 
       case 13:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Font_Size, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_FK_Trigger_Option, value );
       break;
 
       case 14:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Ignore_Manual_Links, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Font_Size, value );
       break;
 
       case 15:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Label_Without_Prefix, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Ignore_Manual_Links, value );
       break;
 
       case 16:
-      func_string_setter< Meta_View_Field::impl, Meta_Permission >( *this, &Meta_View_Field::impl::impl_Link_Permission, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Label_Without_Prefix, value );
       break;
 
       case 17:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Link_Restriction, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Permission >( *this, &Meta_View_Field::impl::impl_Link_Permission, value );
       break;
 
       case 18:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Mandatory_Option, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Link_Restriction, value );
       break;
 
       case 19:
-      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Name, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Mandatory_Option, value );
       break;
 
       case 20:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_New_Source, value );
+      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Name, value );
       break;
 
       case 21:
-      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_New_Value, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_New_Source, value );
       break;
 
       case 22:
-      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Order, value );
+      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_New_Value, value );
       break;
 
       case 23:
-      func_string_setter< Meta_View_Field::impl, Meta_Specification >( *this, &Meta_View_Field::impl::impl_Restriction_Spec, value );
+      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Order, value );
       break;
 
       case 24:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Show_Hide_Start_Point, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Specification >( *this, &Meta_View_Field::impl::impl_Restriction_Spec, value );
       break;
 
       case 25:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Sort_Manually, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Show_Hide_Start_Point, value );
       break;
 
       case 26:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Child, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Sort_Manually, value );
       break;
 
       case 27:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Edit_Child, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Child, value );
       break;
 
       case 28:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Edit_Child, value );
       break;
 
       case 29:
-      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Parent, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Field, value );
       break;
 
       case 30:
-      func_string_setter< Meta_View_Field::impl, Meta_Class >( *this, &Meta_View_Field::impl::impl_Source_Parent_Class, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Field >( *this, &Meta_View_Field::impl::impl_Source_Parent, value );
       break;
 
       case 31:
-      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Tab_Name, value );
+      func_string_setter< Meta_View_Field::impl, Meta_Class >( *this, &Meta_View_Field::impl::impl_Source_Parent_Class, value );
       break;
 
       case 32:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Behaviour, value );
+      func_string_setter< Meta_View_Field::impl, string >( *this, &Meta_View_Field::impl::impl_Tab_Name, value );
       break;
 
       case 33:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_For_State, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Behaviour, value );
       break;
 
       case 34:
-      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Option, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_For_State, value );
       break;
 
       case 35:
-      func_string_setter< Meta_View_Field::impl, Meta_View_Field_Type >( *this, &Meta_View_Field::impl::impl_Type, value );
+      func_string_setter< Meta_View_Field::impl, int >( *this, &Meta_View_Field::impl::impl_Trigger_Option, value );
       break;
 
       case 36:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Width, value );
+      func_string_setter< Meta_View_Field::impl, Meta_View_Field_Type >( *this, &Meta_View_Field::impl::impl_Type, value );
       break;
 
       case 37:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Source_Parent, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Width, value );
       break;
 
       case 38:
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Source_Parent, value );
+      break;
+
+      case 39:
       func_string_setter< Meta_View_Field::impl, Meta_View >( *this, &Meta_View_Field::impl::impl_View, value );
       break;
 
@@ -2522,6 +2545,7 @@ void Meta_View_Field::impl::clear( )
 {
    v_Access_Restriction = gv_default_Access_Restriction;
    v_Access_Scope = gv_default_Access_Scope;
+   v_Allow_Anonymous_Access = gv_default_Allow_Anonymous_Access;
    v_Change_Restriction = gv_default_Change_Restriction;
    v_Change_Scope = gv_default_Change_Scope;
    v_Child_List_Extra_Option = gv_default_Child_List_Extra_Option;
@@ -3077,6 +3101,16 @@ int Meta_View_Field::Access_Scope( ) const
 void Meta_View_Field::Access_Scope( int Access_Scope )
 {
    p_impl->impl_Access_Scope( Access_Scope );
+}
+
+bool Meta_View_Field::Allow_Anonymous_Access( ) const
+{
+   return p_impl->impl_Allow_Anonymous_Access( );
+}
+
+void Meta_View_Field::Allow_Anonymous_Access( bool Allow_Anonymous_Access )
+{
+   p_impl->impl_Allow_Anonymous_Access( Allow_Anonymous_Access );
 }
 
 int Meta_View_Field::Change_Restriction( ) const
@@ -3680,6 +3714,16 @@ const char* Meta_View_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Allow_Anonymous_Access )
+   {
+      p_id = c_field_id_Allow_Anonymous_Access;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Change_Permission )
    {
       p_id = c_field_id_Change_Permission;
@@ -4081,6 +4125,16 @@ const char* Meta_View_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Allow_Anonymous_Access )
+   {
+      p_name = c_field_name_Allow_Anonymous_Access;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Change_Permission )
    {
       p_name = c_field_name_Change_Permission;
@@ -4473,6 +4527,8 @@ string Meta_View_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Access_Restriction );
    else if( id_or_name == c_field_id_Access_Scope || id_or_name == c_field_name_Access_Scope )
       display_name = get_module_string( c_field_display_name_Access_Scope );
+   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+      display_name = get_module_string( c_field_display_name_Allow_Anonymous_Access );
    else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
       display_name = get_module_string( c_field_display_name_Change_Permission );
    else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
@@ -4803,6 +4859,7 @@ void Meta_View_Field::get_sql_column_names(
    names.push_back( "C_Access_Permission" );
    names.push_back( "C_Access_Restriction" );
    names.push_back( "C_Access_Scope" );
+   names.push_back( "C_Allow_Anonymous_Access" );
    names.push_back( "C_Change_Permission" );
    names.push_back( "C_Change_Restriction" );
    names.push_back( "C_Change_Scope" );
@@ -4852,6 +4909,7 @@ void Meta_View_Field::get_sql_column_values(
    values.push_back( sql_quote( to_string( Access_Permission( ) ) ) );
    values.push_back( to_string( Access_Restriction( ) ) );
    values.push_back( to_string( Access_Scope( ) ) );
+   values.push_back( to_string( Allow_Anonymous_Access( ) ) );
    values.push_back( sql_quote( to_string( Change_Permission( ) ) ) );
    values.push_back( to_string( Change_Restriction( ) ) );
    values.push_back( to_string( Change_Scope( ) ) );
@@ -5108,6 +5166,7 @@ void Meta_View_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "301920", "Access_Permission", "Meta_Permission", false ) );
    all_field_info.push_back( field_info( "120105", "Access_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "120119", "Access_Scope", "int", false ) );
+   all_field_info.push_back( field_info( "120129", "Allow_Anonymous_Access", "bool", false ) );
    all_field_info.push_back( field_info( "301930", "Change_Permission", "Meta_Permission", false ) );
    all_field_info.push_back( field_info( "120106", "Change_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "120120", "Change_Scope", "int", false ) );
@@ -5196,146 +5255,150 @@ const char* Meta_View_Field::static_get_field_id( field_id id )
       break;
 
       case 4:
-      p_id = "301930";
+      p_id = "120129";
       break;
 
       case 5:
-      p_id = "120106";
+      p_id = "301930";
       break;
 
       case 6:
-      p_id = "120120";
+      p_id = "120106";
       break;
 
       case 7:
-      p_id = "120127";
+      p_id = "120120";
       break;
 
       case 8:
-      p_id = "301905";
+      p_id = "120127";
       break;
 
       case 9:
-      p_id = "120118";
+      p_id = "301905";
       break;
 
       case 10:
-      p_id = "120124";
+      p_id = "120118";
       break;
 
       case 11:
-      p_id = "120123";
+      p_id = "120124";
       break;
 
       case 12:
-      p_id = "120112";
+      p_id = "120123";
       break;
 
       case 13:
-      p_id = "120111";
+      p_id = "120112";
       break;
 
       case 14:
-      p_id = "120125";
+      p_id = "120111";
       break;
 
       case 15:
-      p_id = "120126";
+      p_id = "120125";
       break;
 
       case 16:
-      p_id = "120128";
+      p_id = "120126";
       break;
 
       case 17:
-      p_id = "301915";
+      p_id = "120128";
       break;
 
       case 18:
-      p_id = "120108";
+      p_id = "301915";
       break;
 
       case 19:
-      p_id = "120114";
+      p_id = "120108";
       break;
 
       case 20:
-      p_id = "120102";
+      p_id = "120114";
       break;
 
       case 21:
-      p_id = "120109";
+      p_id = "120102";
       break;
 
       case 22:
-      p_id = "120117";
+      p_id = "120109";
       break;
 
       case 23:
-      p_id = "120101";
+      p_id = "120117";
       break;
 
       case 24:
-      p_id = "301980";
+      p_id = "120101";
       break;
 
       case 25:
-      p_id = "120116";
+      p_id = "301980";
       break;
 
       case 26:
-      p_id = "120115";
+      p_id = "120116";
       break;
 
       case 27:
-      p_id = "301960";
+      p_id = "120115";
       break;
 
       case 28:
-      p_id = "301965";
+      p_id = "301960";
       break;
 
       case 29:
-      p_id = "301940";
+      p_id = "301965";
       break;
 
       case 30:
-      p_id = "301950";
+      p_id = "301940";
       break;
 
       case 31:
-      p_id = "301970";
+      p_id = "301950";
       break;
 
       case 32:
-      p_id = "120103";
+      p_id = "301970";
       break;
 
       case 33:
-      p_id = "120110";
+      p_id = "120103";
       break;
 
       case 34:
-      p_id = "120122";
+      p_id = "120110";
       break;
 
       case 35:
-      p_id = "120113";
+      p_id = "120122";
       break;
 
       case 36:
-      p_id = "301910";
+      p_id = "120113";
       break;
 
       case 37:
-      p_id = "120121";
+      p_id = "301910";
       break;
 
       case 38:
-      p_id = "120107";
+      p_id = "120121";
       break;
 
       case 39:
+      p_id = "120107";
+      break;
+
+      case 40:
       p_id = "301900";
       break;
    }
@@ -5365,146 +5428,150 @@ const char* Meta_View_Field::static_get_field_name( field_id id )
       break;
 
       case 4:
-      p_id = "Change_Permission";
+      p_id = "Allow_Anonymous_Access";
       break;
 
       case 5:
-      p_id = "Change_Restriction";
+      p_id = "Change_Permission";
       break;
 
       case 6:
-      p_id = "Change_Scope";
+      p_id = "Change_Restriction";
       break;
 
       case 7:
-      p_id = "Child_List_Extra_Option";
+      p_id = "Change_Scope";
       break;
 
       case 8:
-      p_id = "Class";
+      p_id = "Child_List_Extra_Option";
       break;
 
       case 9:
-      p_id = "Date_Precision_Option";
+      p_id = "Class";
       break;
 
       case 10:
-      p_id = "Enum_Finishes_At";
+      p_id = "Date_Precision_Option";
       break;
 
       case 11:
-      p_id = "Enum_Starts_At";
+      p_id = "Enum_Finishes_At";
       break;
 
       case 12:
-      p_id = "FK_Trigger_Behaviour";
+      p_id = "Enum_Starts_At";
       break;
 
       case 13:
-      p_id = "FK_Trigger_Option";
+      p_id = "FK_Trigger_Behaviour";
       break;
 
       case 14:
-      p_id = "Font_Size";
+      p_id = "FK_Trigger_Option";
       break;
 
       case 15:
-      p_id = "Ignore_Manual_Links";
+      p_id = "Font_Size";
       break;
 
       case 16:
-      p_id = "Label_Without_Prefix";
+      p_id = "Ignore_Manual_Links";
       break;
 
       case 17:
-      p_id = "Link_Permission";
+      p_id = "Label_Without_Prefix";
       break;
 
       case 18:
-      p_id = "Link_Restriction";
+      p_id = "Link_Permission";
       break;
 
       case 19:
-      p_id = "Mandatory_Option";
+      p_id = "Link_Restriction";
       break;
 
       case 20:
-      p_id = "Name";
+      p_id = "Mandatory_Option";
       break;
 
       case 21:
-      p_id = "New_Source";
+      p_id = "Name";
       break;
 
       case 22:
-      p_id = "New_Value";
+      p_id = "New_Source";
       break;
 
       case 23:
-      p_id = "Order";
+      p_id = "New_Value";
       break;
 
       case 24:
-      p_id = "Restriction_Spec";
+      p_id = "Order";
       break;
 
       case 25:
-      p_id = "Show_Hide_Start_Point";
+      p_id = "Restriction_Spec";
       break;
 
       case 26:
-      p_id = "Sort_Manually";
+      p_id = "Show_Hide_Start_Point";
       break;
 
       case 27:
-      p_id = "Source_Child";
+      p_id = "Sort_Manually";
       break;
 
       case 28:
-      p_id = "Source_Edit_Child";
+      p_id = "Source_Child";
       break;
 
       case 29:
-      p_id = "Source_Field";
+      p_id = "Source_Edit_Child";
       break;
 
       case 30:
-      p_id = "Source_Parent";
+      p_id = "Source_Field";
       break;
 
       case 31:
-      p_id = "Source_Parent_Class";
+      p_id = "Source_Parent";
       break;
 
       case 32:
-      p_id = "Tab_Name";
+      p_id = "Source_Parent_Class";
       break;
 
       case 33:
-      p_id = "Trigger_Behaviour";
+      p_id = "Tab_Name";
       break;
 
       case 34:
-      p_id = "Trigger_For_State";
+      p_id = "Trigger_Behaviour";
       break;
 
       case 35:
-      p_id = "Trigger_Option";
+      p_id = "Trigger_For_State";
       break;
 
       case 36:
-      p_id = "Type";
+      p_id = "Trigger_Option";
       break;
 
       case 37:
-      p_id = "Use_Full_Width";
+      p_id = "Type";
       break;
 
       case 38:
-      p_id = "Use_Source_Parent";
+      p_id = "Use_Full_Width";
       break;
 
       case 39:
+      p_id = "Use_Source_Parent";
+      break;
+
+      case 40:
       p_id = "View";
       break;
    }
@@ -5527,78 +5594,80 @@ int Meta_View_Field::static_get_field_num( const string& field )
       rc += 2;
    else if( field == c_field_id_Access_Scope || field == c_field_name_Access_Scope )
       rc += 3;
-   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+   else if( field == c_field_id_Allow_Anonymous_Access || field == c_field_name_Allow_Anonymous_Access )
       rc += 4;
-   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
       rc += 5;
-   else if( field == c_field_id_Change_Scope || field == c_field_name_Change_Scope )
+   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
       rc += 6;
-   else if( field == c_field_id_Child_List_Extra_Option || field == c_field_name_Child_List_Extra_Option )
+   else if( field == c_field_id_Change_Scope || field == c_field_name_Change_Scope )
       rc += 7;
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( field == c_field_id_Child_List_Extra_Option || field == c_field_name_Child_List_Extra_Option )
       rc += 8;
-   else if( field == c_field_id_Date_Precision_Option || field == c_field_name_Date_Precision_Option )
+   else if( field == c_field_id_Class || field == c_field_name_Class )
       rc += 9;
-   else if( field == c_field_id_Enum_Finishes_At || field == c_field_name_Enum_Finishes_At )
+   else if( field == c_field_id_Date_Precision_Option || field == c_field_name_Date_Precision_Option )
       rc += 10;
-   else if( field == c_field_id_Enum_Starts_At || field == c_field_name_Enum_Starts_At )
+   else if( field == c_field_id_Enum_Finishes_At || field == c_field_name_Enum_Finishes_At )
       rc += 11;
-   else if( field == c_field_id_FK_Trigger_Behaviour || field == c_field_name_FK_Trigger_Behaviour )
+   else if( field == c_field_id_Enum_Starts_At || field == c_field_name_Enum_Starts_At )
       rc += 12;
-   else if( field == c_field_id_FK_Trigger_Option || field == c_field_name_FK_Trigger_Option )
+   else if( field == c_field_id_FK_Trigger_Behaviour || field == c_field_name_FK_Trigger_Behaviour )
       rc += 13;
-   else if( field == c_field_id_Font_Size || field == c_field_name_Font_Size )
+   else if( field == c_field_id_FK_Trigger_Option || field == c_field_name_FK_Trigger_Option )
       rc += 14;
-   else if( field == c_field_id_Ignore_Manual_Links || field == c_field_name_Ignore_Manual_Links )
+   else if( field == c_field_id_Font_Size || field == c_field_name_Font_Size )
       rc += 15;
-   else if( field == c_field_id_Label_Without_Prefix || field == c_field_name_Label_Without_Prefix )
+   else if( field == c_field_id_Ignore_Manual_Links || field == c_field_name_Ignore_Manual_Links )
       rc += 16;
-   else if( field == c_field_id_Link_Permission || field == c_field_name_Link_Permission )
+   else if( field == c_field_id_Label_Without_Prefix || field == c_field_name_Label_Without_Prefix )
       rc += 17;
-   else if( field == c_field_id_Link_Restriction || field == c_field_name_Link_Restriction )
+   else if( field == c_field_id_Link_Permission || field == c_field_name_Link_Permission )
       rc += 18;
-   else if( field == c_field_id_Mandatory_Option || field == c_field_name_Mandatory_Option )
+   else if( field == c_field_id_Link_Restriction || field == c_field_name_Link_Restriction )
       rc += 19;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Mandatory_Option || field == c_field_name_Mandatory_Option )
       rc += 20;
-   else if( field == c_field_id_New_Source || field == c_field_name_New_Source )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 21;
-   else if( field == c_field_id_New_Value || field == c_field_name_New_Value )
+   else if( field == c_field_id_New_Source || field == c_field_name_New_Source )
       rc += 22;
-   else if( field == c_field_id_Order || field == c_field_name_Order )
+   else if( field == c_field_id_New_Value || field == c_field_name_New_Value )
       rc += 23;
-   else if( field == c_field_id_Restriction_Spec || field == c_field_name_Restriction_Spec )
+   else if( field == c_field_id_Order || field == c_field_name_Order )
       rc += 24;
-   else if( field == c_field_id_Show_Hide_Start_Point || field == c_field_name_Show_Hide_Start_Point )
+   else if( field == c_field_id_Restriction_Spec || field == c_field_name_Restriction_Spec )
       rc += 25;
-   else if( field == c_field_id_Sort_Manually || field == c_field_name_Sort_Manually )
+   else if( field == c_field_id_Show_Hide_Start_Point || field == c_field_name_Show_Hide_Start_Point )
       rc += 26;
-   else if( field == c_field_id_Source_Child || field == c_field_name_Source_Child )
+   else if( field == c_field_id_Sort_Manually || field == c_field_name_Sort_Manually )
       rc += 27;
-   else if( field == c_field_id_Source_Edit_Child || field == c_field_name_Source_Edit_Child )
+   else if( field == c_field_id_Source_Child || field == c_field_name_Source_Child )
       rc += 28;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Source_Edit_Child || field == c_field_name_Source_Edit_Child )
       rc += 29;
-   else if( field == c_field_id_Source_Parent || field == c_field_name_Source_Parent )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 30;
-   else if( field == c_field_id_Source_Parent_Class || field == c_field_name_Source_Parent_Class )
+   else if( field == c_field_id_Source_Parent || field == c_field_name_Source_Parent )
       rc += 31;
-   else if( field == c_field_id_Tab_Name || field == c_field_name_Tab_Name )
+   else if( field == c_field_id_Source_Parent_Class || field == c_field_name_Source_Parent_Class )
       rc += 32;
-   else if( field == c_field_id_Trigger_Behaviour || field == c_field_name_Trigger_Behaviour )
+   else if( field == c_field_id_Tab_Name || field == c_field_name_Tab_Name )
       rc += 33;
-   else if( field == c_field_id_Trigger_For_State || field == c_field_name_Trigger_For_State )
+   else if( field == c_field_id_Trigger_Behaviour || field == c_field_name_Trigger_Behaviour )
       rc += 34;
-   else if( field == c_field_id_Trigger_Option || field == c_field_name_Trigger_Option )
+   else if( field == c_field_id_Trigger_For_State || field == c_field_name_Trigger_For_State )
       rc += 35;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Trigger_Option || field == c_field_name_Trigger_Option )
       rc += 36;
-   else if( field == c_field_id_Use_Full_Width || field == c_field_name_Use_Full_Width )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 37;
-   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
+   else if( field == c_field_id_Use_Full_Width || field == c_field_name_Use_Full_Width )
       rc += 38;
-   else if( field == c_field_id_View || field == c_field_name_View )
+   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
       rc += 39;
+   else if( field == c_field_id_View || field == c_field_name_View )
+      rc += 40;
 
    return rc - 1;
 }
@@ -5630,6 +5699,7 @@ string Meta_View_Field::static_get_sql_columns( )
     "C_Access_Permission VARCHAR(64) NOT NULL,"
     "C_Access_Restriction INTEGER NOT NULL,"
     "C_Access_Scope INTEGER NOT NULL,"
+    "C_Allow_Anonymous_Access INTEGER NOT NULL,"
     "C_Change_Permission VARCHAR(64) NOT NULL,"
     "C_Change_Restriction INTEGER NOT NULL,"
     "C_Change_Scope INTEGER NOT NULL,"

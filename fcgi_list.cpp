@@ -236,9 +236,19 @@ void setup_list_fields( list_source& list,
          else if( extra_data.count( c_field_extra_href ) )
             list.href_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_flink ) )
-            list.file_fields.insert( value_id );
+         {
+            if( !sess_info.user_id.empty( ) || get_storage_info( ).embed_images )
+               list.file_fields.insert( value_id );
+            else
+               list.hidden_fields.insert( value_id );
+         }
          else if( extra_data.count( c_field_extra_image ) )
-            list.image_fields.insert( value_id );
+         {
+            if( !sess_info.user_id.empty( ) || get_storage_info( ).embed_images )
+               list.image_fields.insert( value_id );
+            else
+               list.hidden_fields.insert( value_id );
+         }
          else if( extra_data.count( c_field_extra_mailto ) )
             list.mailto_fields.insert( value_id );
 
@@ -258,6 +268,9 @@ void setup_list_fields( list_source& list,
             list.pmask_fields.insert( make_pair( value_id, extra_data[ c_field_extra_pmask ] ) );
 
          is_hidden = has_perm_extra( c_field_extra_hidden, extra_data, sess_info );
+
+         if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
+            is_hidden = true;
 
          if( extra_data.count( c_field_extra_admin_only )
           && ( !sess_info.is_admin_user && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) ) )

@@ -4009,6 +4009,14 @@
      <pfname>field_modifier_name
      <pextra>@fkey6:300900+109101
     </field>
+    <field/>
+     <name>field_list_field_allow_anonymous_access
+     <field>124133
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
    </fields>
   </view>
   <view/>
@@ -7185,6 +7193,14 @@
      <extra>max_size=100
      <mandatory>false
      <modifiers>800:relegate,1000:relegate
+    </field>
+    <field/>
+     <name>field_view_field_allow_anonymous_access
+     <field>120129
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
     </field>
    </fields>
   </view>

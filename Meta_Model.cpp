@@ -2820,6 +2820,13 @@ void Meta_Model::impl::impl_Generate( )
                         extras += "non_prefixed";
                      }
 
+                     if( !get_obj( ).child_View( ).child_View_Field( ).Allow_Anonymous_Access( ) )
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "no_anon";
+                     }
+
                      if( get_obj( ).child_View( ).child_View_Field( ).Show_Hide_Start_Point( ) )
                      {
                         if( !extras.empty( ) )
@@ -3651,6 +3658,14 @@ void Meta_Model::impl::impl_Generate( )
                   }
                   else if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ) ) )
                      extras += "hidden=!" + get_obj( ).child_List( ).child_List_Field( ).Access_Permission( ).Id( );
+
+
+                  if( !get_obj( ).child_List( ).child_List_Field( ).Allow_Anonymous_Access( ) )
+                  {
+                     if( !extras.empty( ) )
+                        extras += '+';
+                     extras += "no_anon";
+                  }
 
                   if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "field" )
                   {

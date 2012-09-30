@@ -826,7 +826,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_sfield=$specification_\\0_sfield arg_pfield=$specification_\\0_pfield arg_dfield=$specification_\\0_dfield\
  arg_tfield=$specification_\\0_tfield arg_tpfield=$specification_\\0_tpfield arg_tvalue=$specification_\\0_tvalue\
  arg_chk_null=$specification_\\0_chk_null arg_func=$specification_\\0_func arg_create_only=$specification_\\0_create_only\
- arg_mfunc=$specification_\\0_mfunc arg_nvalue=$specification_\\0_nvalue arg_update=$specification_\\0_update`}\
+ arg_mfunc=$specification_\\0_mfunc arg_nvalue=$specification_\\0_nvalue arg_update=$specification_\\0_update\
+ arg_tfistexttype=$specification_\\0_tfistexttype arg_tcfistexttype=$specification_\\0_tcfistexttype`}\
 `,\
 `@eq`(`'\\1`'`,`'field_from_unary_op`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_from_unary_op.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
@@ -1667,7 +1668,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
- arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update`}\
+ arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
+ arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'`'`)
 `{`#field_from_procedure_call.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -1860,7 +1862,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_sfield=$specification_\0_sfield arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_tfield=$specification_\0_tfield arg_tpfield=$specification_\0_tpfield arg_tvalue=$specification_\0_tvalue\
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
- arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update`}\
+ arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
+ arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\

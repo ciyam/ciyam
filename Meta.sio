@@ -2671,6 +2671,14 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>610065
         <item>field
        </specification>
@@ -5779,6 +5787,23 @@
         <id>500877
         <affect>relegate
        </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>124133
+      <name>Allow_Anonymous_Access
+      <type>bool
+      <mandatory>true
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
       </modifiers>
       <specifications/>
        <specification/>
@@ -14789,6 +14814,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600208
         <item>field
        </specification>
@@ -14836,6 +14865,10 @@
        </specification>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -22370,6 +22403,23 @@
       </specifications>
      </field>
      <field/>
+      <id>120129
+      <name>Allow_Anonymous_Access
+      <type>bool
+      <mandatory>true
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>120106
       <name>Change_Restriction
       <type>int
@@ -27373,6 +27423,7 @@
      <field_info>302130:116101!@group:301500+116101
      <field_info>302115;hidden+fkey6
      <field_info>302199:109101!@fkey6:300900+109101
+     <field_info>124133
     </data>
    </specification>
    <specification/>
@@ -31359,8 +31410,10 @@
      <field_info>301476:107101;107100={sgcfield}
      <field_info>301486:107101;107100={tpfield}
      <field_info>301488:107101;107100={tcfield}
+     <field_info>301488:107109;107100={tcfistexttype}
      <field_info>301485:107101;107100={tfield}
      <field_info>301485:107110;107100={tfield_id}
+     <field_info>301485:107109;107100={tfistexttype}
      <field_info>301493:106101;106100={tfclass}
      <field_info>115103={tvalue}
      <field_info>301499:116101;116100={permission}
@@ -32374,6 +32427,7 @@
      <field_info>120106;enum=660
      <field_info>301930:116101!@group:301500+116101
      <field_info>120103
+     <field_info>120129
     </data>
    </specification>
    <specification/>

@@ -5,6 +5,9 @@
    // [(finish field_from_other_field)]
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
+`{`$test_field_is_text_type`=`'`'`}\
+`{`@eq`(`$arg_tfistexttype`,`'1`'`)`&`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
+`{`@eq`(`$arg_tcfistexttype`,`'1`'`)`&`!`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
 `{`$create_only_or_not_null_or_test`=`'`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
@@ -29,7 +32,8 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
 `{`!`@eq`(`$both_null_and_test`,`'`'`) && `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
-!to_string( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) ).empty( )\
+`{`@eq`(`$test_field_is_text_type`,`'true`'`)!is_null( `}get_obj( ).\
+`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )`{`@eq`(`$test_field_is_text_type`,`'true`'`) )`}\
 `,\
 get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}\
 `}`} )

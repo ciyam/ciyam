@@ -5652,8 +5652,10 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{sgcfield}", to_rep_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tpfield}", to_rep_string( get_obj( ).Test_Parent( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tcfield}", to_rep_string( get_obj( ).Test_Child( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tcfistexttype}", to_rep_string( get_obj( ).Test_Child( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tfield}", to_rep_string( get_obj( ).Test_Field( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tfield_id}", to_rep_string( get_obj( ).Test_Field( ).Id( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{tfistexttype}", to_rep_string( get_obj( ).Test_Field( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tfclass}", to_rep_string( get_obj( ).Test_Field_Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tvalue}", to_rep_string( get_obj( ).Test_Value( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{permission}", to_rep_string( get_obj( ).Permission( ).Name( ) ) );
@@ -11170,6 +11172,24 @@ void Meta_Specification::get_required_field_names(
       if( ( use_transients && is_field_transient( e_field_id_Test_Child ) )
        || ( !use_transients && !is_field_transient( e_field_id_Test_Child ) ) )
          names.insert( "Test_Child" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Test_Child" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Test_Child ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Test_Child ) ) )
+         names.insert( "Test_Child" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Test_Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Test_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Test_Field ) ) )
+         names.insert( "Test_Field" );
    }
 
    if( needs_field_value( "Vars", dependents ) )
