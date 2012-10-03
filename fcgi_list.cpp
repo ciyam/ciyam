@@ -112,12 +112,20 @@ bool has_access( const string& extra, const session_info& sess_info, bool has_ow
 {
    bool rc = true;
 
+/*idk
+   if( source.pstate_fields.count( source.value_ids[ i ] )
+    && !( parent_state & source.pstate_fields.find( source.value_ids[ i ] )->second ) )
+*/
+
    map< string, string > extras;
    if( !extra.empty( ) )
       parse_field_extra( extra, extras );
 
    if( extras.count( c_field_extra_hidden )
     && has_perm_extra( c_field_extra_hidden, extras, sess_info ) )
+      rc = false;
+
+   if( extras.count( c_field_extra_no_anon ) && sess_info.user_id.empty( ) )
       rc = false;
 
    if( extras.count( c_field_extra_owner_only )

@@ -3,8 +3,8 @@
    // NOTE: Empty code block for scope purposes.
    {
       set< string > all_keys;
-      if( !get_obj( ).`{`$arg_sfield`}( ).empty( ) )
-         split_string( get_obj( ).`{`$arg_sfield`}( ), all_keys );
+      if( !to_string( get_obj( ).`{`$arg_sfield`}( ) ).empty( ) )
+         split_string( to_string( get_obj( ).`{`$arg_sfield`}( ) ), all_keys );
 
 `{`@eq`(`$arg_admin_always`,`'`'`)\
       if( all_keys.count( get_uid( ) ) )

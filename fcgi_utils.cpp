@@ -75,7 +75,7 @@ const char* const c_str_file = "ciyam_interface.txt";
 
 const char* const c_extkeys_file = "extkeys.txt";
 
-const char* const c_action_clone_key_id = "@id";
+const char* const c_action_ident_key_id = "@id";
 const char* const c_action_child_key_user = "@user";
 
 const char* const c_nbsp = "&nbsp;";
@@ -1274,7 +1274,7 @@ void output_actions( ostream& os,
 
    // NOTE: Full action syntax is as follows (spaces are just here for clarity):
    //
-   // [*?][@~#%] [<][>] [!][^][-][_] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [%@id|value] [&[!]perm]
+   // [*?][@~#%] [<][>] [!][^][-][_] Id[+arg1+arg2...] [$class[.field[=@user|value]]] [[%|*]@id|value]] [&[!]perm]
    //
    // where args can be: @rfields|@rvalues|value
 
@@ -1291,6 +1291,8 @@ void output_actions( ostream& os,
 
       string clone_key;
       string child_key( key );
+      string record_key( c_new_record );
+
       string child_class, child_field;
 
       pos = next_action.find( '&' );
@@ -1315,8 +1317,21 @@ void output_actions( ostream& os,
             clone_key = child_class.substr( pos + 1 );
             child_class.erase( pos );
 
-            if( clone_key == c_action_clone_key_id )
+            if( clone_key == c_action_ident_key_id )
                clone_key = key;
+         }
+         else
+         {
+            pos = child_class.find( '*' );
+
+            if( pos != string::npos )
+            {
+               record_key = child_class.substr( pos + 1 );
+               child_class.erase( pos );
+
+               if( record_key == c_action_ident_key_id )
+                  record_key = key;
+            }
          }
 
          pos = child_class.find( '.' );
@@ -1458,9 +1473,13 @@ void output_actions( ostream& os,
       }
       else
       {
-         os << "window.location.search = 'cmd=" << c_cmd_view << "&data="
-          << c_new_record << clone_key << "&extra=" << child_key << "&field=" << child_field << "&ident="
-          << mod_info.view_cids.find( child_class )->second;
+         os << "window.location.search = 'cmd=" << c_cmd_view << "&data=" << record_key << clone_key;
+
+         if( record_key != string( c_new_record ) )
+            os << "&act=edit";
+
+         os << "&extra=" << child_key << "&field=" << child_field
+          << "&ident=" << mod_info.view_cids.find( child_class )->second;
 
          if( !user_select_key.empty( ) )
             os << "&" << c_param_uselect << "=" << user_select_key;
@@ -1470,8 +1489,13 @@ void output_actions( ostream& os,
 
          if( use_url_checksum )
          {
-            string checksum_values( string( c_cmd_view ) + string( c_new_record ) + clone_key
-             + mod_info.view_cids.find( child_class )->second + user_select_key + to_string( sess_info.checksum_serial ) );
+            string checksum_values( string( c_cmd_view ) + record_key + clone_key
+             + mod_info.view_cids.find( child_class )->second + user_select_key );
+
+            if( record_key != string( c_new_record ) )
+               checksum_values = "edit" + checksum_values;
+
+            checksum_values += to_string( sess_info.checksum_serial );
 
             if( has_hashval )
                checksum_values += c_hash_suffix;
