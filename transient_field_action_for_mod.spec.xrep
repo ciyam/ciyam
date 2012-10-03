@@ -22,8 +22,14 @@ get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`}
          actions += '<';
 `}\
       actions += c_procedure_id_`{`$arg_procedure`};
-`{`@eq`(`$arg_clone_record`,`'true`'`)\
-      actions += "$" + string( get_obj( ).class_id( ) ) + "%" + get_obj( ).get_key( );
+`{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
+      actions += "$" + string( get_obj( ).class_id( ) );
+`}`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_vfield`,`'`'`)\
+      actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
+`}`{`@eq`(`$arg_edit_record`,`'true`'`)\
+      actions += "*@id";
+`}`{`@eq`(`$arg_clone_record`,`'true`'`)\
+      actions += "%" + get_obj( ).get_key( );
 `}\
 
       get_obj( ).`{`$arg_actions`}( actions );
@@ -41,8 +47,14 @@ get_obj( ).`{`$arg_tfield`}( ) && `}get_state( ) & c_modifier_`{`$arg_modifier`}
          actions += '<';
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
-`{`@eq`(`$arg_clone_record`,`'true`'`)\
-         actions += "$" + string( get_obj( ).class_id( ) ) + "%" + get_obj( ).get_key( );
+`{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
+         actions += "$" + string( get_obj( ).class_id( ) );
+`}`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_vfield`,`'`'`)\
+         actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
+`}`{`@eq`(`$arg_edit_record`,`'true`'`)\
+         actions += "*@id";
+`}`{`@eq`(`$arg_clone_record`,`'true`'`)\
+         actions += "%" + get_obj( ).get_key( );
 `}\
 
          get_obj( ).`{`$arg_actions`}( actions );

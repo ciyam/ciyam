@@ -2190,6 +2190,15 @@ void request_handler::process_request( )
             bool was_user_force_field = false;
             if( is_new_record || act == c_act_edit || act == c_act_exec || act == c_act_view )
             {
+               // NOTE: In the case where an edit occurs via an action a field assignment may
+               // be required via use of the field/extra query string variables.
+               if( act == c_act_edit && data != c_new_record && !field.empty( ) )
+               {
+                  if( !set_field_values.empty( ) )
+                     set_field_values += ",";
+                  set_field_values += field + "=" + extra;
+               }
+
                // NOTE: If a "force", "fetch" or "fkey" marked field has been changed then
                // the user-provided value will be passed to the application server.
                if( !userfetch.empty( ) )
