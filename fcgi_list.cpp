@@ -108,35 +108,41 @@ void append_hash_values_query_update( ostream& os,
    os << "query_update( '" << c_param_hashval << "', hex_sha1( hash_values ).substring( 16, 24 ), true ); ";
 }
 
-bool has_access( const string& extra, const session_info& sess_info, bool has_owner_parent )
+bool has_access( const string& extra, const session_info& sess_info, bool has_owner_parent, uint64_t parent_state )
 {
    bool rc = true;
-
-/*idk
-   if( source.pstate_fields.count( source.value_ids[ i ] )
-    && !( parent_state & source.pstate_fields.find( source.value_ids[ i ] )->second ) )
-*/
 
    map< string, string > extras;
    if( !extra.empty( ) )
       parse_field_extra( extra, extras );
 
-   if( extras.count( c_field_extra_hidden )
+   if( extras.count( c_list_field_extra_pstate ) )
+   {
+      istringstream isstr( extras[ c_list_field_extra_pstate ] );
+
+      uint64_t flag;
+      isstr >> hex >> flag;
+
+      if( !( parent_state & flag ) )
+         rc = false;
+   }
+
+   if( rc && extras.count( c_field_extra_hidden )
     && has_perm_extra( c_field_extra_hidden, extras, sess_info ) )
       rc = false;
 
-   if( extras.count( c_field_extra_no_anon ) && sess_info.user_id.empty( ) )
+   if( rc && extras.count( c_field_extra_no_anon ) && sess_info.user_id.empty( ) )
       rc = false;
 
-   if( extras.count( c_field_extra_owner_only )
+   if( rc && extras.count( c_field_extra_owner_only )
     && !has_owner_parent && has_perm_extra( c_field_extra_owner_only, extras, sess_info ) )
       rc = false;
 
-   if( extras.count( c_field_extra_admin_only )
+   if( rc && extras.count( c_field_extra_admin_only )
     && ( !sess_info.is_admin_user && has_perm_extra( c_field_extra_admin_only, extras, sess_info ) ) )
       rc = false;
 
-   if( extras.count( c_field_extra_admin_owner_only )
+   if( rc && extras.count( c_field_extra_admin_owner_only )
     && ( !has_owner_parent && !sess_info.is_admin_user && has_perm_extra( c_field_extra_admin_owner_only, extras, sess_info ) ) )
       rc = false;
 
@@ -771,7 +777,7 @@ void output_list_form( ostream& os,
       values skey_values;
       for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
       {
-         if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent ) )
+         if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
             continue;
 
          if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select )
@@ -1038,7 +1044,7 @@ void output_list_form( ostream& os,
 
       for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
       {
-         if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent ) )
+         if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
             continue;
 
          if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_search ) )
@@ -1638,7 +1644,7 @@ void output_list_form( ostream& os,
 
             for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
             {
-               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent ) )
+               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
                   continue;
 
                if( ( source.lici->second )->parents[ i ].operations.count( c_operation_link )
@@ -1724,7 +1730,7 @@ void output_list_form( ostream& os,
 
             for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
             {
-               if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent ) )
+               if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
                   continue;
 
                if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_link )
@@ -1867,7 +1873,7 @@ void output_list_form( ostream& os,
          {
             for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
             {
-               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent ) )
+               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
                   continue;
 
                if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select ) )
@@ -1964,7 +1970,7 @@ void output_list_form( ostream& os,
 
          for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
          {
-            if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent ) )
+            if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
                continue;
 
             if( ( source.lici->second )->parents[ i ].operations.count( c_operation_checked ) )
@@ -2039,7 +2045,7 @@ void output_list_form( ostream& os,
 
          for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
          {
-            if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent ) )
+            if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
                continue;
 
             if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_select ) )

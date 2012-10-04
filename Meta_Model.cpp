@@ -3667,6 +3667,30 @@ void Meta_Model::impl::impl_Generate( )
                      extras += "no_anon";
                   }
 
+                  if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) ) )
+                  {
+                     Meta_Class* p_parent_Class = &get_obj( ).child_List( ).child_List_Field( ).Parent_Class( );
+                     string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
+
+                     if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
+                     {
+                        uint64_t flag_value( UINT64_C( 0x100 ) );
+                        do
+                        {
+                           ostringstream osstr;
+                           osstr << hex << flag_value;
+                           flag_value <<= 1;
+
+                           if( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
+                           {
+                              if( !extras.empty( ) )
+                                 extras += '+';
+                              extras += "pstate=" + osstr.str( );
+                           }
+                        } while( p_parent_Class->child_Modifier( ).iterate_next( ) );
+                     }
+                  }
+
                   if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "field" )
                   {
                      if( extras != "hidden" )
@@ -3938,30 +3962,6 @@ void Meta_Model::impl::impl_Generate( )
                            if( !extras.empty( ) )
                               extras += '+';
                            extras += "non_prefixed";
-                        }
-                     }
-
-                     if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) ) )
-                     {
-                        Meta_Class* p_parent_Class = &get_obj( ).child_List( ).child_List_Field( ).Parent_Class( );
-                        string modifier_key_info( to_string( Meta_Modifier::static_get_field_id( Meta_Modifier::e_field_id_Name ) ) + ' ' );
-
-                        if( p_parent_Class->child_Modifier( ).iterate_forwards( modifier_key_info ) )
-                        {
-                           uint64_t flag_value( UINT64_C( 0x100 ) );
-                           do
-                           {
-                              ostringstream osstr;
-                              osstr << hex << flag_value;
-                              flag_value <<= 1;
-
-                              if( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) == p_parent_Class->child_Modifier( ) )
-                              {
-                                 if( !extras.empty( ) )
-                                    extras += '+';
-                                 extras += "pstate=" + osstr.str( );
-                              }
-                           } while( p_parent_Class->child_Modifier( ).iterate_next( ) );
                         }
                      }
 
