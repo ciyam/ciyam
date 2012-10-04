@@ -53,8 +53,8 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
    {
       get_obj( ).op_update( );
 `}\
-      get_obj( ).`{`$arg_dfield`}( `{`$arg_nvalue`} );
-`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+      get_obj( ).`{`$arg_dfield`}( `{`$arg_nvalue`} );\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)
       get_obj( ).op_apply( );
    }\
 `}`}`}

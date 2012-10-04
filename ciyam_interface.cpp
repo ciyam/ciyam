@@ -3415,8 +3415,8 @@ void request_handler::process_request( )
                {
                   bool can_output = true;
 
-                  if( using_anonymous
-                   && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                  if( p_session_info->is_admin_user || ( using_anonymous
+                   && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
                      can_output = false;
 
                   if( can_output )
