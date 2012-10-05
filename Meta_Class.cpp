@@ -1850,7 +1850,7 @@ void Meta_Class::impl::impl_Generate( )
       outf << "\x60{\x60$field_default_" << default_values[ i ].first << "\x60=\x60'" << default_values[ i ].second << "\x60'\x60}\n";
 
    if( !order_field.empty( ) )
-      outf << "\n";
+      outf << "\x60{\x60$order_field\x60=\x60'" << order_field << "\x60'\x60}\n";
 
    if( !basic_fields.empty( ) )
    {

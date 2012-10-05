@@ -3567,8 +3567,6 @@ void Meta_Model::impl::impl_Generate( )
             string new_select_dfenum_id;
             string new_select_extras;
 
-            bool has_security_level_field = false;
-
             vector< string > restrict_field_ids;
             vector< string > restrict_field_names;
             vector< string > restrict_field_types;
@@ -4025,9 +4023,6 @@ void Meta_Model::impl::impl_Generate( )
                         }
 
                         column_extras.push_back( extras );
-
-                        if( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ) == 18 ) // i.e. "security_level"
-                           has_security_level_field = true;
 
                         // NOTE: Index determination will be made after all columns have been processed
                         // so that unique indexes that span multiple columns can be used as well as for
@@ -4974,9 +4969,9 @@ void Meta_Model::impl::impl_Generate( )
 
                   if( specification_type == "filter_field_value"
                    || specification_type == "filter_fk_in_uid_set"
+                   || specification_type == "filter_security_level"
                    || specification_type == "filter_perm_restricted"
                    || specification_type == "filter_field_value_perm"
-                   || ( !has_security_level_field && specification_type == "filter_security_level" )
                    || ( !get_obj( ).child_List( ).Ignore_User_Id_Filter( ) && specification_type == "filter_non_uid" ) )
                   {
                      if( !filters.empty( ) )

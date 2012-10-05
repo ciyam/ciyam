@@ -1,4 +1,4 @@
-`{`@eq`(`'after_store`'`,`$section`)\
+`{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start update_children)]
    if( !is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}

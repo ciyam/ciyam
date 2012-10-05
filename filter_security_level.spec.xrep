@@ -2,7 +2,8 @@
    // [(start filter_security_level)]
    if( get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
-      if( !has_sec_level( get_obj( ).`{`$arg_slevel`}( ) ) )
+      if( !has_sec_level( get_obj( ).`{`$arg_slevel`}( ) )
+       || ( get_uid( ).empty( ) && get_obj( ).`{`$arg_slevel`}( ) != gv_default_`{`$arg_slevel`} ) )
          return true;
    }
    // [(finish filter_security_level)]

@@ -2448,7 +2448,6 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Is_Foreign_Key( get_obj( ).Parent_Class( ).get_is_singular( ) );
    else
       get_obj( ).Is_Foreign_Key( false );
-
    // [(finish field_from_other_field)]
 
    // [(start modifier_set_field)]
