@@ -4746,6 +4746,7 @@ void field_from_changed_fk_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_inc_dflt, include_default ? c_true : "" ) );
+   spec_data.data_pairs.push_back( make_pair( "trigger_only", "" ) );
 }
 
 string field_from_changed_fk_specification::static_class_name( ) { return "field_from_changed_fk"; }
@@ -10887,6 +10888,7 @@ void update_children_specification::add_specification_data( model& m, specificat
       tfield_name = get_field_name_for_id( m, class_name, tfield_id );
 
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, tfield_name ) );
+   spec_data.data_pairs.push_back( make_pair( "after_self", "true" ) );
 }
 
 string update_children_specification::static_class_name( ) { return "update_children"; }

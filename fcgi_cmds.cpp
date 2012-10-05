@@ -659,7 +659,7 @@ bool fetch_list_info( const string& module,
    if( p_perms && !p_perms->empty( ) )
       fetch_cmd += " -p=" + *p_perms;
 
-   if( p_security_info )
+   if( p_security_info && !sess_info.user_id.empty( ) )
       fetch_cmd += " -s=" + *p_security_info;
 
    if( !search_text.empty( ) )
@@ -2235,7 +2235,7 @@ void save_record( const string& module_id,
        && !view.new_field_values.count( field_id ) ) ) ) )
          continue;
 
-      // NOTE: If the user has "level 0" security then the security level was not displayed.
+      // NOTE: If the user is anonymous or has "level 0" security then the security level was not displayed.
       if( extra_data.count( c_field_extra_security_level ) )
       {
          if( !view.enum_fields.count( value_id ) )
@@ -2244,7 +2244,7 @@ void save_record( const string& module_id,
          const enum_info& info(
           get_storage_info( ).enums.find( view.enum_fields.find( value_id )->second )->second );
 
-         if( info.values[ 0 ].first == sess_info.user_slevel )
+         if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
             continue;
       }
 

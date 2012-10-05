@@ -1096,7 +1096,7 @@ bool output_view_form( ostream& os, const string& act,
        && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
          continue;
 
-      // NOTE: If the user has "level 0" security then don't display the security level.
+      // NOTE: If the user is anonymous or has "level 0" security then don't display the security level.
       if( extra_data.count( c_field_extra_security_level ) )
       {
          if( !source.enum_fields.count( source_value_id ) )
@@ -1105,7 +1105,7 @@ bool output_view_form( ostream& os, const string& act,
          const enum_info& info(
           sinfo.enums.find( source.enum_fields.find( source_value_id )->second )->second );
 
-         if( info.values[ 0 ].first == sess_info.user_slevel )
+         if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
          {
             if( !is_in_edit )
                continue;
@@ -2361,7 +2361,7 @@ bool output_view_form( ostream& os, const string& act,
                   // not possible for a user to create or modify an instance's security level
                   // to a level greater than the level the user has been granted.
                   if( extra_data.count( c_field_extra_security_level )
-                   && info.values[ i ].first == sess_info.user_slevel )
+                   && ( sess_info.user_id.empty( ) || info.values[ i ].first == sess_info.user_slevel ) )
                      break;
                }
 

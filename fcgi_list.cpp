@@ -1741,14 +1741,14 @@ void output_list_form( ostream& os,
                   if( !( source.lici->second )->restricts[ i ].extra.empty( ) )
                      parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
 
-                  // NOTE: If the restrict link field is the security level and the user
-                  // only has "level 0" security then don't display the security level.
+                  // NOTE: If the restrict link field is actually the security level and the user is
+                  // anonymous or only has "level 0" security then don't display the security level.
                   if( restrict_extras.count( c_field_extra_enum )
                    && restrict_extras.count( c_field_extra_security_level ) )
                   {
                      const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
 
-                     if( info.values[ 0 ].first == sess_info.user_slevel )
+                     if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
                         continue;
                   }
 
@@ -1809,7 +1809,7 @@ void output_list_form( ostream& os,
                            // not possible for a user to create or modify an instance's security level
                            // to a level greater than the level the user has been granted.
                            if( restrict_extras.count( c_field_extra_security_level )
-                            && info.values[ j ].first == sess_info.user_slevel )
+                            && ( sess_info.user_id.empty( ) || info.values[ j ].first == sess_info.user_slevel ) )
                               break;
                         }
                      }
