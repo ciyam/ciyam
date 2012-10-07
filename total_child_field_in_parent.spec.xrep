@@ -1,6 +1,9 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start total_child_field_in_parent)]
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+    && get_obj( ).`{`$arg_sfield`}( )
+`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
@@ -70,6 +73,9 @@
       }
    }
    else if( !is_create
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+    && get_obj( ).`{`$arg_sfield`}( )
+`}\
     && get_obj( ).get_variable( "@total_child_field_in_parent" ).empty( )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && ( get_obj( ).`{`$arg_tfield`}( ).has_changed( )
@@ -102,10 +108,13 @@
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)]
    if( !get_obj( ).get_is_being_cascaded( )
-    && get_obj( ).get_variable( "@total_child_field_in_parent" ).empty( )
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+    && get_obj( ).`{`$arg_sfield`}( )
+`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
+    && get_obj( ).get_variable( "@total_child_field_in_parent" ).empty( )
     && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
@@ -144,6 +153,13 @@
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
       names.insert( "`{`$arg_tfield`}" );
+`}`{`!`@eq`(`$arg_sfield`,`'`'`)\
+
+   dependents.insert( "`{`$arg_sfield`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+      names.insert( "`{`$arg_sfield`}" );
 `}\
    // [(finish total_child_field_in_parent)]
 `}
