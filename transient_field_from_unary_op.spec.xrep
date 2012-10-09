@@ -4,23 +4,11 @@
 `{`@eq`(`$op`,`'bitnot`'`)`$op`=`'~`'`}\
    // [(start field_from_unary_op)]
 `{`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
-   get_obj( ).op_update( );
-`}\
    get_obj( ).`{`$arg_field`}( `{`$op`}get_obj( ).`{`$arg_sfield`}( ) );
-`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
-   get_obj( ).op_apply( );
-`}`,\
+`,\
    if( get_obj( ).`{`$arg_tfield`}( ) )
-`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
-   {
-      get_obj( ).op_update( );
-`}\
       get_obj( ).`{`$arg_field`}( `{`$op`}get_obj( ).`{`$arg_sfield`}( ) );
-`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
-      get_obj( ).op_apply( );
-   }
-`}`}\
+`}\
    // [(finish field_from_unary_op)]
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
