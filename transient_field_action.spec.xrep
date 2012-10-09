@@ -2,6 +2,7 @@
    // [(start transient_field_action)]
 `{`$check_not_in_set`=`'false`'`}`{`@eq`(`$arg_check_not_in_set`,`'true`'`)`$check_not_in_set`=`'true`'`}\
 `{`$admin_op`=`'||`'`}`{`@eq`(`$arg_admin_never`,`'true`'`)`$admin_op`=`'&&`'`}\
+`{`$check_iter`=`'`'`}`{`@eq`(`$arg_iterating`,`'true`'`)`$check_iter`=`'true`'`}`{`@eq`(`$arg_not_iterating`,`'true`'`)`$check_iter`=`'true`'`}\
 `{`$check_admin`=`'`'`}`{`@eq`(`$arg_admin_always`,`'true`'`)`$check_admin`=`'true`'`}`{`@eq`(`$arg_admin_never`,`'true`'`)`$check_admin`=`'true`'`}\
 `{`@eq`(`$check_admin`,`'true`'`)\
 `{`@eq`(`$arg_ufield`,`'`'`)\
@@ -122,7 +123,7 @@
 `,get_obj( ).`{`$arg_ufield`}( )`} )`}`{`!`@eq`(`$arg_state`,`'`'`) )`} ) ) // i.e. `{`$arg_permission`}
 `}`}`}`}`}\
    {
-`{`@eq`(`$arg_not_iterating`,`'`'`)\
+`{`@eq`(`$check_iter`,`'`'`)\
       string actions( get_obj( ).`{`$arg_actions`}( ) );
 
       if( !actions.empty( ) )
@@ -135,10 +136,17 @@
          actions += '<';
 `}\
       actions += c_procedure_id_`{`$arg_procedure`};
+`{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
+      actions += "$" + string( get_obj( ).class_id( ) );
+`}`{`@eq`(`$arg_edit_record`,`'true`'`)
+      actions += "*@id";
+`}`{`@eq`(`$arg_clone_record`,`'true`'`)
+      actions += "%" + get_obj( ).get_key( );
+`}\
 
       get_obj( ).`{`$arg_actions`}( actions );
 `,\
-      if( !get_obj( ).get_is_iterating( ) )
+      if( `{`@eq`(`$arg_not_iterating`,`'true`'`)!`}get_obj( ).get_is_iterating( ) )
       {
          string actions( get_obj( ).`{`$arg_actions`}( ) );
 
@@ -151,6 +159,13 @@
          actions += '<';
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
+`{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
+         actions += "$" + string( get_obj( ).class_id( ) );
+`}`{`@eq`(`$arg_edit_record`,`'true`'`)
+         actions += "*@id";
+`}`{`@eq`(`$arg_clone_record`,`'true`'`)
+         actions += "%" + get_obj( ).get_key( );
+`}\
 
          get_obj( ).`{`$arg_actions`}( actions );
       }
@@ -168,7 +183,7 @@
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
          names.insert( "`{`$arg_ufield`}" );
-`{`!`@eq`(`$arg_tfield`,`'`'`)
+`{`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_altfield`,`'`'`)
 `}`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
       dependents.insert( "`{`$arg_tfield`}" );
@@ -176,6 +191,14 @@
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
          names.insert( "`{`$arg_tfield`}" );
+`{`!`@eq`(`$arg_altfield`,`'`'`)
+`}`}\
+`{`!`@eq`(`$arg_altfield`,`'`'`)\
+      dependents.insert( "`{`$arg_altfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_altfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_altfield`} ) ) )
+         names.insert( "`{`$arg_altfield`}" );
 `}\
    }
    // [(start transient_field_action)]

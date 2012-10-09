@@ -1402,8 +1402,9 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_admin_always=$specification_\0_admin_always arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id arg_altfield=$specification_\0_altfield\
  arg_check_not_in_set=$specification_\0_check_not_in_set arg_vname=$specification_\0_vname\
- arg_not_iterating=$specification_\0_not_iterating arg_state=$specification_\0_state\
- arg_admin_never=$specification_\0_admin_never`}\
+ arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
+ arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
+ arg_state=$specification_\0_state arg_admin_never=$specification_\0_admin_never`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
 `{`#transient_field_action_create_from_fk.spec.xrep section=after_fetch module_name=$module_name\
@@ -1417,8 +1418,9 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield\
  arg_prompt=$specification_\0_prompt arg_back_for_view=$specification_\0_back_for_view\
  arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
- arg_not_iterating=$specification_\0_not_iterating arg_edit_record=$specification_\0_edit_record\
- arg_clone_record=$specification_\0_clone_record arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield`}\
+ arg_iterating=$specification_\0_iterating arg_not_iterating=$specification_\0_not_iterating\
+ arg_edit_record=$specification_\0_edit_record arg_clone_record=$specification_\0_clone_record\
+ arg_ofield=$specification_\0_ofield arg_vfield=$specification_\0_vfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
@@ -1469,12 +1471,18 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)
 `{`#transient_field_from_variable.spec.xrep section=after_fetch class_name=$class_name\
- arg_field=$specification_\0_field arg_variable=$specification_\0_variable`}\
+ arg_field=$specification_\0_field arg_variable=$specification_\0_variable arg_sfield=$specification_\0_sfield\
+ arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_unary_op`'`)
 `{`#transient_field_from_unary_op.spec.xrep section=after_fetch class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_op=$specification_\0_op`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_value_if_has_perm`'`)
+`{`#transient_field_value_if_has_perm.spec.xrep section=after_fetch class_name=$class_name\
+ arg_field=$specification_\0_field arg_value=$specification_\0_value arg_permission=$specification_\0_permission\
+ arg_permission_id=$specification_\0_permission_id arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=after_fetch class_name=$class_name\
@@ -3028,9 +3036,11 @@ void `{`$full_class_name`}::get_required_field_names(
  arg_field=$specification_\0_field arg_user=$specification_\0_user arg_group=$specification_\0_group\
  arg_when=$specification_\0_when arg_duration=$specification_\0_duration arg_finish=$specification_\0_finish`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_action`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_ufield`)`|`!`@eq`(`'`'`,`$specification_\0_tfield`)`)
+`@eq`(`'\1`'`,`'transient_field_action`'`)`&`(`!`@eq`(`'`'`,`$specification_\0_ufield`)\
+`|`!`@eq`(`'`'`,`$specification_\0_tfield`)`|`!`@eq`(`'`'`,`$specification_\0_altfield`)`)
 `{`#transient_field_action.spec.xrep section=get_required_field_names\
- arg_actions=$specification_\0_actions arg_ufield=$specification_\0_ufield arg_tfield=$specification_\0_tfield`}\
+ arg_actions=$specification_\0_actions arg_ufield=$specification_\0_ufield\
+ arg_tfield=$specification_\0_tfield arg_altfield=$specification_\0_altfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_action_create_from_fk`'`)
 `{`#transient_field_action_create_from_fk.spec.xrep section=get_required_field_names\
@@ -3056,6 +3066,10 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'transient_field_from_unary_op`'`)
 `{`#transient_field_from_unary_op.spec.xrep section=get_required_field_names\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`!`@eq`(`'`'`,`$specification_\0_sfield`)
+`{`#transient_field_from_variable.spec.xrep section=get_required_field_names\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_value_if_uid_in_set`'`)
 `{`#transient_field_value_if_uid_in_set.spec.xrep section=get_required_field_names\

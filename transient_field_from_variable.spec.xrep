@@ -3,5 +3,29 @@
    if( !get_obj( ).get_variable( "`{`$arg_variable`}" ).empty( ) )
       get_obj( ).`{`$arg_field`}( from_string< typeof(
        get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}" ) ) );
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+   else
+      get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
+`}\
+   // [(finish transient_field_from_variable)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_from_variable)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+`{`@eq`(`$arg_spfield`,`'`'`)\
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+`,\
+      dependents.insert( "`{`$arg_spfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
+         names.insert( "`{`$arg_spfield`}" );
+`}\
+   }
    // [(finish transient_field_from_variable)]
 `}
