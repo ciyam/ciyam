@@ -8,16 +8,21 @@
 `{`$test_field_is_text_type`=`'`'`}\
 `{`@eq`(`$arg_tfistexttype`,`'1`'`)`&`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
 `{`@eq`(`$arg_tcfistexttype`,`'1`'`)`&`!`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
-`{`$create_only_or_not_null_or_test`=`'`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_only_or_not_null_or_test`=`'true`'`}\
+`{`$needs_if_test`=`'`'`}\
+`{`!`@eq`(`$arg_internal_only`,`'`'`)`$needs_if_test`=`'true`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`$needs_if_test`=`'true`'`}\
+`{`!`@eq`(`$arg_chk_null`,`'`'`)`$needs_if_test`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$needs_if_test`=`'true`'`}\
+`{`$create_or_chk_or_null`=`'`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_or_chk_or_null`=`'true`'`}\
+`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_or_chk_or_null`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_or_chk_or_null`=`'true`'`}\
 `{`$both_null_and_test`=`'`'`}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$both_null_and_test`=`'true`'`}\
 `{`$not_null_and_other`=`'`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$not_null_and_other`=`'true`'`}\
    // [(start field_from_other_field)]
-`{`@eq`(`$create_only_or_not_null_or_test`,`'`'`)\
+`{`@eq`(`$needs_if_test`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
@@ -28,7 +33,8 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
    get_obj( ).op_apply( );\
 `}\
 `,\
-   if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
+   if( `{`!`@eq`(`$arg_internal_only`,`'`'`)is_internal`{`!`@eq`(`$create_or_chk_or_null`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)is_create`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
 `{`!`@eq`(`$both_null_and_test`,`'`'`) && `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
