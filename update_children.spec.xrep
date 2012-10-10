@@ -2,6 +2,9 @@
    // [(start update_children)]
    if( !is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
+`{`!`@eq`(`$arg_tfield`,`'`'`)`&`!`@eq`(`$arg_tvalue`,`'`'`)\
+    && ( get_obj( ).`{`$arg_tfield`}( ) == `{`$arg_tvalue`} )
+`}\
     && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
    {
       do
