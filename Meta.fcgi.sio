@@ -4551,7 +4551,7 @@
      <name>field_permission_name
      <field>116101
      <ftype>string
-     <extra>max_size=30
+     <extra>max_size=100
      <mandatory>true
      <modifiers>
     </field>
@@ -8106,7 +8106,7 @@
      <name>field_permission_name
      <field>116101
      <ftype>string
-     <extra>max_size=30
+     <extra>max_size=100
      <modifiers>
      <unique>true
      <indexed>true

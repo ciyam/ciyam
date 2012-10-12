@@ -507,7 +507,7 @@ int main( int argc, char* argv[ ] )
 {
    if( argc > 1 && argv[ 1 ] == string( "/?" ) )
    {
-      cout << "Usage: MD5 [<file>]" << endl;
+      cout << "Usage: md5 [<file>]" << endl;
       return 0;
    }
 

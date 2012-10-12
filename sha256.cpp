@@ -125,7 +125,7 @@ void sha256_transform( SHA256_CTX* ctx, uchar data[ ] )
    ctx->state[ 5 ] += f;
    ctx->state[ 6 ] += g;
    ctx->state[ 7 ] += h;
-}  
+}
 
 void sha256_init( SHA256_CTX* ctx )
 {  
@@ -156,9 +156,9 @@ void sha256_update( SHA256_CTX* ctx, uchar data[ ], uint len )
          sha256_transform( ctx, ctx->data );
          DBL_INT_ADD( ctx->bitlen[ 0 ], ctx->bitlen[ 1 ], 512 );
          ctx->datalen = 0; 
-      }  
-   }  
-}  
+      }
+   }
+}
 
 void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
 {  
@@ -172,7 +172,7 @@ void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
       ctx->data[ i++ ] = 0x80;
       while( i < 56 )
          ctx->data[ i++ ] = 0x00;
-   }  
+   }
    else
    {
       ctx->data[ i++ ] = 0x80;
@@ -181,8 +181,8 @@ void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
 
       sha256_transform( ctx, ctx->data );
       memset( ctx->data, 0, 56 );
-   }  
-   
+   }
+
    DBL_INT_ADD( ctx->bitlen[ 0 ], ctx->bitlen[ 1 ], ctx->datalen * 8 );
    ctx->data[ 63 ] = ( uchar )( ctx->bitlen[ 0 ] );
    ctx->data[ 62 ] = ( uchar )( ctx->bitlen[ 0 ] >> 8 );
@@ -204,7 +204,7 @@ void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
       hash[ i + 20 ] = ( uchar )( ( ctx->state[ 5 ] >> ( 24 - i * 8 ) ) & 0x000000ff );
       hash[ i + 24 ] = ( uchar )( ( ctx->state[ 6 ] >> ( 24 - i * 8 ) ) & 0x000000ff );
       hash[ i + 28 ] = ( uchar )( ( ctx->state[ 7 ] >> ( 24 - i * 8 ) ) & 0x000000ff );
-   }  
+   }
 }
 
 string digest_as_string( unsigned char digest[ ], char separator = ' ' )
@@ -306,7 +306,7 @@ int main( int argc, char* argv[ ] )
 {
    if( argc > 1 && argv[ 1 ] == string( "/?" ) )
    {
-      cout << "Usage: SHA256 [<file>]" << endl;
+      cout << "Usage: sha256 [<file>]" << endl;
       return 0;
    }
 

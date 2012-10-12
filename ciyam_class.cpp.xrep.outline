@@ -828,7 +828,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_chk_null=$specification_\\0_chk_null arg_func=$specification_\\0_func arg_create_only=$specification_\\0_create_only\
  arg_mfunc=$specification_\\0_mfunc arg_nvalue=$specification_\\0_nvalue arg_update=$specification_\\0_update\
  arg_tfistexttype=$specification_\\0_tfistexttype arg_tcfistexttype=$specification_\\0_tcfistexttype\
- arg_internal_only=$specification_\\0_internal_only`}\
+ arg_internal_only=$specification_\\0_internal_only arg_include_clones=$specification_\\0_include_clones`}\
 `,\
 `@eq`(`'\\1`'`,`'field_from_unary_op`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_from_unary_op.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
@@ -1624,6 +1624,10 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist arg_value=$specification_\0_value\
  arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue`}\
 `,\
+`@eq`(`'\1`'`,`'field_bool_has_changed`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_bool_has_changed.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_value=$specification_\0_value`}\
+`,\
 `@eq`(`'\1`'`,`'field_bool_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_uid.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_field=$specification_\0_field arg_admin=$specification_\0_admin\
@@ -1691,7 +1695,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
  arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype\
- arg_internal_only=$specification_\0_internal_only`}\
+ arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'`'`)
 `{`#field_from_procedure_call.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -1845,6 +1849,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `{`#default_to_uid.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_field=$specification_\0_field arg_force_for_clone=$specification_\0_force_for_clone`}\
 `,\
+`@eq`(`'\1`'`,`'field_bool_has_changed`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_bool_has_changed.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_value=$specification_\0_value`}\
+`,\
 `@eq`(`'\1`'`,`'field_bool_matched_clone`'`)
 `{`#field_bool_matched_clone.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
@@ -1891,7 +1899,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
  arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype\
- arg_internal_only=$specification_\0_internal_only`}\
+ arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\

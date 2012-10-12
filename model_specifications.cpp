@@ -1921,6 +1921,7 @@ void child_field_cascade_specification::add_specification_data( model& m, specif
    spec_data.data_pairs.push_back( make_pair( "ctfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "check_orig", "" ) );
    spec_data.data_pairs.push_back( make_pair( "any_change", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "after_self", "" ) );
 }
 
 string child_field_cascade_specification::static_class_name( ) { return "child_field_cascade"; }
@@ -5153,6 +5154,8 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
 
    spec_data.data_pairs.push_back( make_pair( "update", "" ) );
    spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "internal_only", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "include_clones", "" ) );
 }
 
 string field_from_other_field_specification::static_class_name( ) { return "field_from_other_field"; }
@@ -10888,6 +10891,8 @@ void update_children_specification::add_specification_data( model& m, specificat
       tfield_name = get_field_name_for_id( m, class_name, tfield_id );
 
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, tfield_name ) );
+
+   spec_data.data_pairs.push_back( make_pair( "tvalue", "" ) );
    spec_data.data_pairs.push_back( make_pair( "after_self", "true" ) );
 }
 

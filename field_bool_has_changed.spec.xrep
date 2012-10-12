@@ -1,0 +1,7 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_bool_has_changed)]
+   if( get_obj( ).has_field_changed( c_field_id_`{`$arg_sfield`} )`{`!`@eq`(`$arg_value`,`'`'`)
+    && get_obj( ).`{`$arg_sfield`}( ) == `{`$arg_value`}`} )
+      get_obj( ).`{`$arg_field`}( true );
+   // [(finish field_bool_has_changed)]
+`}

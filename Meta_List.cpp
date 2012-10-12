@@ -3438,7 +3438,6 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Variation_Name( get_obj( ).Title( ) );
    else
       get_obj( ).Variation_Name( "" );
-
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]

@@ -34,7 +34,7 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
 `}\
 `,\
    if( `{`!`@eq`(`$arg_internal_only`,`'`'`)is_internal`{`!`@eq`(`$create_or_chk_or_null`,`'`'`) && `}`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)is_create`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)is_create`{`!`@eq`(`$arg_include_clones`,`'true`'`) && get_obj( ).get_clone_key( ).empty( )`}`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
 `{`!`@eq`(`$both_null_and_test`,`'`'`) && `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
