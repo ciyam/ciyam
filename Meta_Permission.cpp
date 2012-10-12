@@ -120,7 +120,7 @@ bool is_transient_field( const string& ) { static bool false_value( false ); ret
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Id_domain;
-domain_string_max_size< 30 > g_Name_domain;
+domain_string_max_size< 100 > g_Name_domain;
 
 string g_order_field_name;
 

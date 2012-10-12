@@ -238,7 +238,11 @@ std::string CIYAM_BASE_DECL_SPEC gen_key( const char* p_suffix = 0 );
 std::string CIYAM_BASE_DECL_SPEC get_uid( bool remove_display_name = true );
 void CIYAM_BASE_DECL_SPEC set_uid( const std::string& uid );
 
+bool CIYAM_BASE_DECL_SPEC is_sys_uid( );
+bool CIYAM_BASE_DECL_SPEC is_auto_uid( );
+bool CIYAM_BASE_DECL_SPEC is_init_uid( );
 bool CIYAM_BASE_DECL_SPEC is_admin_uid( );
+
 bool CIYAM_BASE_DECL_SPEC is_system_uid( );
 
 bool CIYAM_BASE_DECL_SPEC is_admin_uid_key( const std::string& key );

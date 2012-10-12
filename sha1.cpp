@@ -315,7 +315,7 @@ int main( int argc, char* argv[ ] )
 {
    if( argc > 1 && argv[ 1 ] == string( "/?" ) )
    {
-      cout << "Usage: SHA1 [<file>]" << endl;
+      cout << "Usage: sha1 [<file>]" << endl;
       return 0;
    }
 

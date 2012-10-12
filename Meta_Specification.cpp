@@ -6458,63 +6458,23 @@ void Meta_Specification::impl::for_store( bool is_create, bool is_internal )
    }
    // [(finish parent_auto_int_inc)]
 
-   // [(start parent_field_from_other)]
-   if( is_create && get_obj( ).Specification_Type( ).Has_Next_Specification_Info( ) == true )
-   {
-      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
-
-      cp_parent->op_update( );
-      cp_parent->Actions( get_obj( ).Specification_Type( ).Next_Specification_Actions( ) );
-      cp_parent->op_apply( );
-   }
-   // [(finish parent_field_from_other)]
-
-   // [(start parent_field_from_other)]
-   if( is_create && get_obj( ).Specification_Type( ).Has_Next_Specification_Info( ) == true )
-   {
-      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
-
-      cp_parent->op_update( );
-      cp_parent->Child_Specification_Type( get_obj( ).Specification_Type( ).Next_Child_Specification_Type( ) );
-      cp_parent->op_apply( );
-   }
-   // [(finish parent_field_from_other)]
-
-   // [(start parent_field_from_other)]
-   if( is_create && get_obj( ).Specification_Type( ).Has_Next_Specification_Info( ) == true )
-   {
-      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
-
-      cp_parent->op_update( );
-      cp_parent->Protect_Source_Parent( get_obj( ).Specification_Type( ).Next_Protect_Source_Parent( ) );
-      cp_parent->op_apply( );
-   }
-   // [(finish parent_field_from_other)]
-
-   // [(start parent_field_from_other)]
-   if( is_create && get_obj( ).Specification_Type( ).Has_Next_Specification_Info( ) == true )
-   {
-      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
-
-      cp_parent->op_update( );
-      cp_parent->Protect_Procedure( get_obj( ).Specification_Type( ).Next_Protect_Procedure( ) );
-      cp_parent->op_apply( );
-   }
-   // [(finish parent_field_from_other)]
-
-   // [(start parent_field_from_other)]
-   if( is_create && get_obj( ).Specification_Type( ).Has_Next_Specification_Info( ) == true )
-   {
-      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
-
-      cp_parent->op_update( );
-      cp_parent->Protect_Child_Rel( get_obj( ).Specification_Type( ).Next_Protect_Child_Rel( ) );
-      cp_parent->op_apply( );
-   }
-   // [(finish parent_field_from_other)]
-
    // [<start for_store>]
 //nyi
+   if( is_create && get_obj( ).Specification_Type( ).Has_Next_Specification_Info( ) == true )
+   {
+      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ) );
+
+      cp_parent->op_update( );
+
+      cp_parent->Actions( get_obj( ).Specification_Type( ).Next_Specification_Actions( ) );
+      cp_parent->Child_Specification_Type( get_obj( ).Specification_Type( ).Next_Child_Specification_Type( ) );
+      cp_parent->Protect_Source_Parent( get_obj( ).Specification_Type( ).Next_Protect_Source_Parent( ) );
+      cp_parent->Protect_Procedure( get_obj( ).Specification_Type( ).Next_Protect_Procedure( ) );
+      cp_parent->Protect_Child_Rel( get_obj( ).Specification_Type( ).Next_Protect_Child_Rel( ) );
+
+      cp_parent->op_apply( );
+   }
+
    if( !get_obj( ).Options( ).empty( ) )
       get_obj( ).Name( get_obj( ).Name( ) + " " + get_obj( ).Options( ) );
    // [<finish for_store>]

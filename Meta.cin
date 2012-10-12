@@ -1443,16 +1443,6 @@ specification_add -id=650194 {Specification}_Parent_{Specification}_update_3 upd
 specification_add -id=660194 {Specification}_Parent_{Specification}_update_4 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_restrict -grand_parent"
 specification_add -id=670194 {Specification}_Parent_{Specification}_update_5 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_source_and_value -grand_parent"
 specification_add -id=680194 {Specification}_Parent_{Specification}_update_6 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=home_message_stats_info"
-specification_add -id=610195 {Specification}_Parent_Specification_Actions parent_field_from_other\
- "Specification Parent_{Specification} Actions {Specification_Type}:Next_Specification_Actions -test=Has_Next_Specification_Info=true"
-specification_add -id=620195 {Specification}_Parent_Specification_Child_Specification_Type parent_field_from_other\
- "Specification Parent_{Specification} Child_{Specification_Type} {Specification_Type}:Next_Child_{Specification_Type} -test=Has_Next_Specification_Info=true"
-specification_add -id=630195 {Specification}_Parent_Specification_Protect_Source_Parent parent_field_from_other\
- "Specification Parent_{Specification} Protect_Source_Parent {Specification_Type}:Next_Protect_Source_Parent -test=Has_Next_Specification_Info=true"
-specification_add -id=640195 {Specification}_Parent_Specification_Protect_Procedure parent_field_from_other\
- "Specification Parent_{Specification} Protect_Procedure {Specification_Type}:Next_Protect_Procedure -test=Has_Next_Specification_Info=true"
-specification_add -id=650195 {Specification}_Parent_Specification_Protect_Child_Rel parent_field_from_other\
- "Specification Parent_{Specification} Protect_Child_Rel {Specification_Type}:Next_Protect_Child_Rel -test=Has_Next_Specification_Info=true"
 specification_add -id=600197 {Specification}_Field_Values_meta meta_spec_field_values "Specification\
  Field_Values Restrict_Values Order Specification:Parent_{Specification} {Specification_Type}=restriction_field_list Name"
 specification_add -id=600198 {Specification}_Fields_clear field_clear "Specification Fields"

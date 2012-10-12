@@ -10879,7 +10879,7 @@
      <field/>
       <id>116101
       <name>Name
-      <type>1010
+      <type>1020
       <mandatory>true
       <indexes/>
        <index/>
@@ -12878,10 +12878,6 @@
       <item>class
      </specification>
      <specification/>
-      <id>610195
-      <item>class
-     </specification>
-     <specification/>
       <id>620114
       <item>class
      </specification>
@@ -12910,10 +12906,6 @@
       <item>class
      </specification>
      <specification/>
-      <id>620195
-      <item>class
-     </specification>
-     <specification/>
       <id>630128
       <item>class
      </specification>
@@ -12922,23 +12914,11 @@
       <item>class
      </specification>
      <specification/>
-      <id>630195
-      <item>class
-     </specification>
-     <specification/>
       <id>640194
       <item>class
      </specification>
      <specification/>
-      <id>640195
-      <item>class
-     </specification>
-     <specification/>
       <id>650194
-      <item>class
-     </specification>
-     <specification/>
-      <id>650195
       <item>class
      </specification>
      <specification/>
@@ -12977,10 +12957,6 @@
        <specification/>
         <id>602500
         <item>field
-       </specification>
-       <specification/>
-        <id>610195
-        <item>dfield
        </specification>
       </specifications>
      </field>
@@ -13183,10 +13159,6 @@
        <specification/>
         <id>600158
         <item>field
-       </specification>
-       <specification/>
-        <id>620195
-        <item>dfield
        </specification>
       </specifications>
      </field>
@@ -14249,10 +14221,6 @@
         <id>600128
         <item>field
        </specification>
-       <specification/>
-        <id>650195
-        <item>dfield
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -14270,10 +14238,6 @@
         <id>610181
         <item>field
        </specification>
-       <specification/>
-        <id>640195
-        <item>dfield
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -14290,10 +14254,6 @@
        <specification/>
         <id>600120
         <item>field
-       </specification>
-       <specification/>
-        <id>630195
-        <item>dfield
        </specification>
       </specifications>
      </field>
@@ -16398,10 +16358,6 @@
         <item>spfield
        </specification>
        <specification/>
-        <id>610195
-        <item>spfield
-       </specification>
-       <specification/>
         <id>620114
         <item>field
        </specification>
@@ -16430,10 +16386,6 @@
         <item>fkfield
        </specification>
        <specification/>
-        <id>620195
-        <item>spfield
-       </specification>
-       <specification/>
         <id>630128
         <item>field
        </specification>
@@ -16442,24 +16394,12 @@
         <item>fkfield
        </specification>
        <specification/>
-        <id>630195
-        <item>spfield
-       </specification>
-       <specification/>
         <id>640194
         <item>fkfield
        </specification>
        <specification/>
-        <id>640195
-        <item>spfield
-       </specification>
-       <specification/>
         <id>650194
         <item>fkfield
-       </specification>
-       <specification/>
-        <id>650195
-        <item>spfield
        </specification>
        <specification/>
         <id>660194
@@ -17671,10 +17611,6 @@
       <item>sclass
      </specification>
      <specification/>
-      <id>610195
-      <item>sclass
-     </specification>
-     <specification/>
       <id>620114
       <item>pclass
      </specification>
@@ -17699,24 +17635,8 @@
       <item>pclass
      </specification>
      <specification/>
-      <id>620195
-      <item>sclass
-     </specification>
-     <specification/>
       <id>630128
       <item>pclass
-     </specification>
-     <specification/>
-      <id>630195
-      <item>sclass
-     </specification>
-     <specification/>
-      <id>640195
-      <item>sclass
-     </specification>
-     <specification/>
-      <id>650195
-      <item>sclass
      </specification>
     </specifications>
     <fields/>
@@ -18400,26 +18320,6 @@
        <specification/>
         <id>602400
         <item>field
-       </specification>
-       <specification/>
-        <id>610195
-        <item>tfield
-       </specification>
-       <specification/>
-        <id>620195
-        <item>tfield
-       </specification>
-       <specification/>
-        <id>630195
-        <item>tfield
-       </specification>
-       <specification/>
-        <id>640195
-        <item>tfield
-       </specification>
-       <specification/>
-        <id>650195
-        <item>tfield
        </specification>
       </specifications>
      </field>
@@ -19250,10 +19150,6 @@
         <id>602400
         <item>field
        </specification>
-       <specification/>
-        <id>620195
-        <item>sfield
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -19270,10 +19166,6 @@
        <specification/>
         <id>602400
         <item>field
-       </specification>
-       <specification/>
-        <id>650195
-        <item>sfield
        </specification>
       </specifications>
      </field>
@@ -19292,10 +19184,6 @@
         <id>602400
         <item>field
        </specification>
-       <specification/>
-        <id>640195
-        <item>sfield
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -19313,10 +19201,6 @@
         <id>602400
         <item>field
        </specification>
-       <specification/>
-        <id>630195
-        <item>sfield
-       </specification>
       </specifications>
      </field>
      <field/>
@@ -19332,10 +19216,6 @@
        <specification/>
         <id>602400
         <item>field
-       </specification>
-       <specification/>
-        <id>610195
-        <item>sfield
        </specification>
       </specifications>
      </field>
@@ -30649,86 +30529,6 @@
      <class_id>115100
      <field_id>115105
      <check_null>true
-    </data>
-   </specification>
-   <specification/>
-    <id>610195
-    <name>{Specification}_Parent_Specification_Actions
-    <type>parent_field_from_other
-    <data/>
-     <class_id>115100
-     <pclass_id>115100
-     <sclass_id>114100
-     <pfield_id>301405
-     <dfield_id>115108
-     <sfield_id>114150
-     <spfield_id>301410
-     <tfield_id>114149
-     <test_value>true
-    </data>
-   </specification>
-   <specification/>
-    <id>620195
-    <name>{Specification}_Parent_Specification_Child_Specification_Type
-    <type>parent_field_from_other
-    <data/>
-     <class_id>115100
-     <pclass_id>115100
-     <sclass_id>114100
-     <pfield_id>301405
-     <dfield_id>301406
-     <sfield_id>301720
-     <spfield_id>301410
-     <tfield_id>114149
-     <test_value>true
-    </data>
-   </specification>
-   <specification/>
-    <id>650195
-    <name>{Specification}_Parent_Specification_Protect_Child_Rel
-    <type>parent_field_from_other
-    <data/>
-     <class_id>115100
-     <pclass_id>115100
-     <sclass_id>114100
-     <pfield_id>301405
-     <dfield_id>115122
-     <sfield_id>114169
-     <spfield_id>301410
-     <tfield_id>114149
-     <test_value>true
-    </data>
-   </specification>
-   <specification/>
-    <id>640195
-    <name>{Specification}_Parent_Specification_Protect_Procedure
-    <type>parent_field_from_other
-    <data/>
-     <class_id>115100
-     <pclass_id>115100
-     <sclass_id>114100
-     <pfield_id>301405
-     <dfield_id>115115
-     <sfield_id>114161
-     <spfield_id>301410
-     <tfield_id>114149
-     <test_value>true
-    </data>
-   </specification>
-   <specification/>
-    <id>630195
-    <name>{Specification}_Parent_Specification_Protect_Source_Parent
-    <type>parent_field_from_other
-    <data/>
-     <class_id>115100
-     <pclass_id>115100
-     <sclass_id>114100
-     <pfield_id>301405
-     <dfield_id>115111
-     <sfield_id>114153
-     <spfield_id>301410
-     <tfield_id>114149
-     <test_value>true
     </data>
    </specification>
    <specification/>

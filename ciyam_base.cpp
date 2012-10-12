@@ -5293,6 +5293,21 @@ void set_uid( const string& uid )
    set_session_variable( c_session_variable_uid, s );
 }
 
+bool is_sys_uid( )
+{
+   return get_uid( ) == "sys";
+}
+
+bool is_auto_uid( )
+{
+   return get_uid( ) == "auto";
+}
+
+bool is_init_uid( )
+{
+   return get_uid( ) == "init";
+}
+
 bool is_admin_uid( )
 {
    return get_uid( ) == "admin";

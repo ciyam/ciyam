@@ -2245,7 +2245,10 @@ void save_record( const string& module_id,
           get_storage_info( ).enums.find( view.enum_fields.find( value_id )->second )->second );
 
          if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
+         {
+            num++;
             continue;
+         }
       }
 
       string next;
