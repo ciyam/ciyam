@@ -1426,9 +1426,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'transient_field_alias`'`)
 `{`#transient_field_alias.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
- arg_scfield=$specification_\0_scfield arg_not_dflt=$specification_\0_not_dflt\
- arg_def_value=$specification_\0_def_value arg_iter_only=$specification_\0_iter_only\
- arg_check_mod=$specification_\0_check_mod`}\
+ arg_scfield=$specification_\0_scfield arg_def_value=$specification_\0_def_value\
+ arg_iter_only=$specification_\0_iter_only arg_check_mod=$specification_\0_check_mod`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_uid`'`)
 `{`#transient_field_bool_uid.spec.xrep section=after_fetch class_name=$class_name\
