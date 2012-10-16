@@ -1169,13 +1169,13 @@
 `{`$specification_List_view_fmand010`=`'true`'`}
 `{`$specification_List_view_field011`=`'122103`'`}
 `{`$specification_List_view_ftype011`=`'int`'`}
-`{`$specification_List_view_extra011`=`'enum=680`'`}
+`{`$specification_List_view_extra011`=`'force+enum=680`'`}
 `{`$specification_List_view_fmods011`=`'400:relegate`'`}
 `{`$specification_List_view_fname011`=`'field_list_access_restriction`'`}
 `{`$specification_List_view_fmand011`=`'true`'`}
 `{`$specification_List_view_field012`=`'301993`'`}
 `{`$specification_List_view_ftype012`=`'@class`'`}
-`{`$specification_List_view_extra012`=`'`'`}
+`{`$specification_List_view_extra012`=`'force`'`}
 `{`$specification_List_view_fmods012`=`'400:relegate`'`}
 `{`$specification_List_view_fname012`=`'field_list_access_permission`'`}
 `{`$specification_List_view_fmand012`=`'false`'`}
@@ -1187,7 +1187,7 @@
 `{`$specification_List_view_pridx012`=`'false`'`}
 `{`$specification_List_view_field013`=`'301998`'`}
 `{`$specification_List_view_ftype013`=`'@class`'`}
-`{`$specification_List_view_extra013`=`'`'`}
+`{`$specification_List_view_extra013`=`'force`'`}
 `{`$specification_List_view_fmods013`=`'2000:relegate`'`}
 `{`$specification_List_view_fname013`=`'field_list_access_parent_modifier`'`}
 `{`$specification_List_view_fmand013`=`'false`'`}

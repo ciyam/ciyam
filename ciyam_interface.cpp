@@ -2896,8 +2896,8 @@ void request_handler::process_request( )
                   }
                }
 
-               // NOTE: If there is a PDF specification then generate the PDF file.
-               if( !view.pdf_spec_name.empty( ) )
+               // NOTE: If there is a PDF specification then generate the file (unless session is anonymous).
+               if( !using_anonymous && !view.pdf_spec_name.empty( ) )
                {
                   string owner;
 
@@ -2980,8 +2980,8 @@ void request_handler::process_request( )
 
             string link_name( get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) );
 
-            // NOTE: If there is a PDF specification then generate the PDF file.
-            if( cmd == c_cmd_plist && !had_send_or_recv_error && !list.pdf_spec_name.empty( ) )
+            // NOTE: If there is a PDF specification then generate the file (unless session is anonymous).
+            if( !using_anonymous && cmd == c_cmd_plist && !had_send_or_recv_error && !list.pdf_spec_name.empty( ) )
             {
                populate_list_info( list, list_selections, list_search_text, list_search_values,
                 list_page_info, listsort, "", ( cmd == c_cmd_plist ), 0, "", &specials, *p_session_info,

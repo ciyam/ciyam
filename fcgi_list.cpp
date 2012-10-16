@@ -1449,17 +1449,16 @@ void output_list_form( ostream& os,
    string new_record_fields;
    string new_record_values;
 
-   if( !is_printable && list_type != c_list_type_home && !sess_info.user_id.empty( ) )
+   if( !is_printable && list_type != c_list_type_home )
    {
       if( is_child_list )
          os << "<table><tr>";
       else
          os << "<table class=\"full_width\"><tr>";
 
+      os << "<td>";
       if( allow_list_actions )
       {
-         os << "<td>";
-
          // NOTE: Deleting and other operations that change data are not permitted for the
          // child lists if the parent is found to be uneditable (unless purposefully ignoring).
          // FUTURE: Non-modifying actions ought to be permitted (if they can be identified as such).
@@ -1821,159 +1820,63 @@ void output_list_form( ostream& os,
                }
             }
          }
+      }
 
-         if( !extras.count( c_list_type_extra_search ) && extras.count( c_list_type_extra_text_search ) )
+      if( !extras.count( c_list_type_extra_search ) && extras.count( c_list_type_extra_text_search ) )
+      {
+         if( !had_data )
+            had_data = true;
+         else
+            os << "&nbsp;&nbsp;";
+
+         if( !source.text_search_title_fields.empty( ) )
          {
-            if( !had_data )
-               had_data = true;
-            else
-               os << "&nbsp;&nbsp;";
-
-            if( !source.text_search_title_fields.empty( ) )
+            string text_search_title;
+            for( size_t j = 0; j < source.text_search_title_fields.size( ); j++ )
             {
-               string text_search_title;
-               for( size_t j = 0; j < source.text_search_title_fields.size( ); j++ )
+               if( j > 0 )
                {
-                  if( j > 0 )
-                  {
-                     if( j == source.text_search_title_fields.size( ) - 1 )
-                        text_search_title += GDS( c_display_or );
-                     else
-                        text_search_title += ", ";
-                  }
-
-                  text_search_title += source.text_search_title_fields[ j ];
-               }
-
-               text_search_title += " " + GDS( c_display_contains );
-
-               os << text_search_title << "&nbsp;";
-            }
-
-            os << "<input type=\"text\" id=\"text_search\" size=\"15\"";
-            if( list_search_text.count( source.id + c_srch_suffix ) )
-            {
-               text_search_value = list_search_text.find( source.id + c_srch_suffix )->second;
-               os << " value=\"" << escape_markup( text_search_value ) << "\"";
-            }
-            os << "></input>";
-            os << "&nbsp;<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
-         }
-
-         string checksum_values;
-         string new_checksum_value;
-
-         if( use_url_checksum )
-         {
-            checksum_values = string( c_cmd_list ) + oident + user_select_key;
-            new_checksum_value = get_checksum( sess_info, checksum_values );
-         }
-
-         if( !extras.count( c_list_type_extra_search ) )
-         {
-            for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
-            {
-               if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
-                  continue;
-
-               if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select ) )
-               {
-                  if( !had_data )
-                     had_data = true;
+                  if( j == source.text_search_title_fields.size( ) - 1 )
+                     text_search_title += GDS( c_display_or );
                   else
-                     os << "&nbsp;&nbsp;";
-
-                  string sel_id( source.id );
-                  sel_id += c_prnt_suffix;
-                  sel_id += ( '0' + i );
-
-                  os << get_display_string( ( source.lici->second )->parents[ i ].name ) << ": ";
-                  os << "<select onchange=\"";
-
-                  if( is_child_list )
-                     os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-
-                  if( use_url_checksum )
-                  {
-                     checksum_values = ( is_child_list ? string( c_cmd_view )
-                      : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key;
-
-                     if( has_hashval || extras.count( c_list_type_extra_text_search ) )
-                        checksum_values += c_hash_suffix;
-
-                     new_checksum_value = get_checksum( sess_info, checksum_values );
-
-                     os << "query_update( '" << c_param_uselextra << "', '', true ); ";
-                     os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
-
-                     string value_name( "this.options[ this.selectedIndex ].value" );
-
-                     if( extras.count( c_list_type_extra_text_search ) )
-                        append_hash_values_query_update( os,
-                         sel_id, true, source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
-                  }
-
-                  os << "sel_qry_update( this, '" << sel_id << "' );\">\n";
-
-                  os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
-
-                  string selected_value;
-                  bool has_selected_value = false;
-                  if( list_selections.count( sel_id ) )
-                  {
-                     has_selected_value = true;
-                     selected_value = list_selections.find( sel_id )->second;
-
-                     if( !new_record_fields.empty( ) )
-                     {
-                        new_record_fields += ",";
-                        new_record_values += ",";
-                     }
-
-                     new_record_fields += ( source.lici->second )->parents[ i ].field;
-                     new_record_values += selected_value;
-                  }
-
-                  if( !( source.lici->second )->parents[ i ].mandatory )
-                  {
-                     os << "<option value=\"\"";
-                     if( has_selected_value && selected_value.empty( ) )
-                        os << " selected";
-                     os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
-                  }
-
-                  const data_container& parent_row_data = source.parent_lists[ i ];
-                  for( size_t j = 0; j < parent_row_data.size( ); j++ )
-                  {
-                     string key( parent_row_data[ j ].first );
-                     string display( parent_row_data[ j ].second );
-
-                     // NOTE: Remove parent version information as its not relevant for a select operation.
-                     size_t pos = key.find( ' ' );
-                     if( pos != string::npos )
-                        key.erase( pos );
-
-                     if( display.empty( ) )
-                        display = key;
-
-                     os << "<option value=\"" << key << "\"";
-                     if( key == selected_value )
-                        os << " selected";
-
-                     os << ">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
-                  }
-
-                  os << "</select>";
+                     text_search_title += ", ";
                }
+
+               text_search_title += source.text_search_title_fields[ j ];
             }
+
+            text_search_title += " " + GDS( c_display_contains );
+
+            os << text_search_title << "&nbsp;";
          }
 
+         os << "<input type=\"text\" id=\"text_search\" size=\"15\"";
+         if( list_search_text.count( source.id + c_srch_suffix ) )
+         {
+            text_search_value = list_search_text.find( source.id + c_srch_suffix )->second;
+            os << " value=\"" << escape_markup( text_search_value ) << "\"";
+         }
+         os << "></input>";
+         os << "&nbsp;<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_search ) << "\"></input>";
+      }
+
+      string checksum_values;
+      string new_checksum_value;
+
+      if( use_url_checksum )
+      {
+         checksum_values = string( c_cmd_list ) + oident + user_select_key;
+         new_checksum_value = get_checksum( sess_info, checksum_values );
+      }
+
+      if( !extras.count( c_list_type_extra_search ) )
+      {
          for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
          {
             if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
                continue;
 
-            if( ( source.lici->second )->parents[ i ].operations.count( c_operation_checked ) )
+            if( ( source.lici->second )->parents[ i ].operations.count( c_operation_select ) )
             {
                if( !had_data )
                   had_data = true;
@@ -1984,15 +1887,8 @@ void output_list_form( ostream& os,
                sel_id += c_prnt_suffix;
                sel_id += ( '0' + i );
 
-               bool is_checked = true;
-               if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_false )
-                  is_checked = false;
-
-               string checksum_values;
-               string new_checksum_value;
-
-               os << "<input type=\"checkbox\" id=\"check" << i << "\""
-                << ( is_checked ? " checked=\"checked\"" : "" ) << " onclick=\"";
+               os << get_display_string( ( source.lici->second )->parents[ i ].name ) << ": ";
+               os << "<select onchange=\"";
 
                if( is_child_list )
                   os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
@@ -2002,7 +1898,7 @@ void output_list_form( ostream& os,
                   checksum_values = ( is_child_list ? string( c_cmd_view )
                    : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key;
 
-                  if( has_hashval || extras.count( c_list_type_extra_search ) )
+                  if( has_hashval || extras.count( c_list_type_extra_text_search ) )
                      checksum_values += c_hash_suffix;
 
                   new_checksum_value = get_checksum( sess_info, checksum_values );
@@ -2010,67 +1906,23 @@ void output_list_form( ostream& os,
                   os << "query_update( '" << c_param_uselextra << "', '', true ); ";
                   os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
 
-                  string value_name( "document." + source.id + ".check" + to_string( i ) + ".checked" );
+                  string value_name( "this.options[ this.selectedIndex ].value" );
 
-                  if( extras.count( c_list_type_extra_search ) )
-                     append_hash_values_query_update( os, sel_id, has_text_search,
-                      source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
+                  if( extras.count( c_list_type_extra_text_search ) )
+                     append_hash_values_query_update( os,
+                      sel_id, true, source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
                }
 
-               os << "query_update( '"
-                << sel_id << "', '' + document." << source.id << ".check" << i << ".checked );\">";
+               os << "sel_qry_update( this, '" << sel_id << "' );\">\n";
 
-               string display_name;
-               const data_container& parent_row_data = source.parent_lists[ i ];
-               for( size_t j = 0; j < parent_row_data.size( ); j++ )
-               {
-                  string key( parent_row_data[ j ].first );
-                  string display( parent_row_data[ j ].second );
+               os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
 
-                  // NOTE: Remove parent version information as its not relevant for a checked operation.
-                  size_t pos = key.find( ' ' );
-                  if( pos != string::npos )
-                     key.erase( pos );
-
-                  if( key == ( source.lici->second )->parents[ i ].operations[ c_operation_checked ] )
-                  {
-                     display_name = display;
-                     break;
-                  }
-               }
-
-               os << "&nbsp;" << display_name << " " << GDS( c_display_only ) << "</input>";
-            }
-         }
-
-         for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
-         {
-            if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
-               continue;
-
-            if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_select ) )
-            {
-               map< string, string > restrict_extras;
-               parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
-
-               if( !restrict_extras.count( c_field_extra_enum ) )
-                  continue;
-
-               if( !had_data )
-                  had_data = true;
-               else
-                  os << "&nbsp;&nbsp;";
-
-               string sel_id( source.id );
-               sel_id += c_rest_suffix;
-               sel_id += ( '0' + i );
-
-               const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
-
-               string current_value;
+               string selected_value;
+               bool has_selected_value = false;
                if( list_selections.count( sel_id ) )
                {
-                  current_value = list_selections.find( sel_id )->second;
+                  has_selected_value = true;
+                  selected_value = list_selections.find( sel_id )->second;
 
                   if( !new_record_fields.empty( ) )
                   {
@@ -2078,163 +1930,309 @@ void output_list_form( ostream& os,
                      new_record_values += ",";
                   }
 
-                  new_record_fields += ( source.lici->second )->restricts[ i ].field;
-                  new_record_values += current_value;
+                  new_record_fields += ( source.lici->second )->parents[ i ].field;
+                  new_record_values += selected_value;
                }
 
-               size_t value_offset = 0;
-               for( size_t j = 0; j < info.values.size( ); j++ )
+               if( !( source.lici->second )->parents[ i ].mandatory )
                {
-                  if( info.values[ j ].first == current_value )
-                  {
-                     value_offset = j + 1;
-                     break;
-                  }
-               }
-
-               os << get_display_string( ( source.lici->second )->restricts[ i ].name ) << ": ";
-               os << "<select onchange=\"";
-
-               if( is_child_list )
-                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-
-               if( use_url_checksum )
-               {
-                  string checksum_values( ( is_child_list ? string( c_cmd_view )
-                   : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key );
-
-                  if( has_hashval || extras.count( c_list_type_extra_search ) )
-                     checksum_values += c_hash_suffix;
-
-                  string new_checksum_value( get_checksum( sess_info, checksum_values ) );
-
-                  os << "query_update( '" << c_param_uselextra << "', '', true ); ";
-
-                  os << "query_update( '" << c_param_chksum
-                   << "', '" << new_checksum_value << "', true ); ";
-
-                  string value_name( "this.options[ this.selectedIndex ].value" );
-
-                  if( extras.count( c_list_type_extra_search ) )
-                     append_hash_values_query_update( os, sel_id, has_text_search,
-                      source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
-               }
-
-               os << "sel_qry_update( this, '" << sel_id << "' );\">\n";
-
-               os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
-
-               for( size_t j = 0; j < info.values.size( ); j++ )
-               {
-                  // NOTE: Enum values that start with a '-' are not included for user selection
-                  // as they are deemed as being only available for internal application purposes.
-                  if( info.values[ j ].first[ 0 ] == '-' )
-                     continue;
-
-                  os << "<option";
-                  if( value_offset && ( j + 1 == value_offset ) )
+                  os << "<option value=\"\"";
+                  if( has_selected_value && selected_value.empty( ) )
                      os << " selected";
-                  os << " value=\"" << info.values[ j ].first << "\">"
-                   << get_display_string( info.values[ j ].second ) << "&nbsp;&nbsp;</option>\n";
+                  os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
+               }
+
+               const data_container& parent_row_data = source.parent_lists[ i ];
+               for( size_t j = 0; j < parent_row_data.size( ); j++ )
+               {
+                  string key( parent_row_data[ j ].first );
+                  string display( parent_row_data[ j ].second );
+
+                  // NOTE: Remove parent version information as its not relevant for a select operation.
+                  size_t pos = key.find( ' ' );
+                  if( pos != string::npos )
+                     key.erase( pos );
+
+                  if( display.empty( ) )
+                     display = key;
+
+                  os << "<option value=\"" << key << "\"";
+                  if( key == selected_value )
+                     os << " selected";
+
+                  os << ">" << unescaped( display ) << "&nbsp;&nbsp;</option>\n";
                }
 
                os << "</select>";
             }
-            else if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_checked )
-             || ( source.lici->second )->restricts[ i ].operations.count( c_operation_rchecked )
-             || ( source.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
+         }
+      }
+
+      for( size_t i = 0; i < ( source.lici->second )->parents.size( ); i++ )
+      {
+         if( !has_access( ( source.lici->second )->parents[ i ].extra, sess_info, has_owner_parent, parent_state ) )
+            continue;
+
+         if( ( source.lici->second )->parents[ i ].operations.count( c_operation_checked ) )
+         {
+            if( !had_data )
+               had_data = true;
+            else
+               os << "&nbsp;&nbsp;";
+
+            string sel_id( source.id );
+            sel_id += c_prnt_suffix;
+            sel_id += ( '0' + i );
+
+            bool is_checked = true;
+            if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_false )
+               is_checked = false;
+
+            string checksum_values;
+            string new_checksum_value;
+
+            os << "<input type=\"checkbox\" id=\"check" << i << "\""
+             << ( is_checked ? " checked=\"checked\"" : "" ) << " onclick=\"";
+
+            if( is_child_list )
+               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
+            if( use_url_checksum )
+            {
+               checksum_values = ( is_child_list ? string( c_cmd_view )
+                : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key;
+
+               if( has_hashval || extras.count( c_list_type_extra_search ) )
+                  checksum_values += c_hash_suffix;
+
+               new_checksum_value = get_checksum( sess_info, checksum_values );
+
+               os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+               os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+
+               string value_name( "document." + source.id + ".check" + to_string( i ) + ".checked" );
+
+               if( extras.count( c_list_type_extra_search ) )
+                  append_hash_values_query_update( os, sel_id, has_text_search,
+                   source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
+            }
+
+            os << "query_update( '"
+             << sel_id << "', '' + document." << source.id << ".check" << i << ".checked );\">";
+
+            string display_name;
+            const data_container& parent_row_data = source.parent_lists[ i ];
+            for( size_t j = 0; j < parent_row_data.size( ); j++ )
+            {
+               string key( parent_row_data[ j ].first );
+               string display( parent_row_data[ j ].second );
+
+               // NOTE: Remove parent version information as its not relevant for a checked operation.
+               size_t pos = key.find( ' ' );
+               if( pos != string::npos )
+                  key.erase( pos );
+
+               if( key == ( source.lici->second )->parents[ i ].operations[ c_operation_checked ] )
+               {
+                  display_name = display;
+                  break;
+               }
+            }
+
+            os << "&nbsp;" << display_name << " " << GDS( c_display_only ) << "</input>";
+         }
+      }
+
+      for( size_t i = 0; i < ( source.lici->second )->restricts.size( ); i++ )
+      {
+         if( !has_access( ( source.lici->second )->restricts[ i ].extra, sess_info, has_owner_parent, parent_state ) )
+            continue;
+
+         if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_select ) )
+         {
+            map< string, string > restrict_extras;
+            parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
+
+            if( !restrict_extras.count( c_field_extra_enum ) )
+               continue;
+
+            if( !had_data )
+               had_data = true;
+            else
+               os << "&nbsp;&nbsp;";
+
+            string sel_id( source.id );
+            sel_id += c_rest_suffix;
+            sel_id += ( '0' + i );
+
+            const enum_info& info( sinfo.enums.find( restrict_extras.find( c_field_extra_enum )->second )->second );
+
+            string current_value;
+            if( list_selections.count( sel_id ) )
+            {
+               current_value = list_selections.find( sel_id )->second;
+
+               if( !new_record_fields.empty( ) )
+               {
+                  new_record_fields += ",";
+                  new_record_values += ",";
+               }
+
+               new_record_fields += ( source.lici->second )->restricts[ i ].field;
+               new_record_values += current_value;
+            }
+
+            size_t value_offset = 0;
+            for( size_t j = 0; j < info.values.size( ); j++ )
+            {
+               if( info.values[ j ].first == current_value )
+               {
+                  value_offset = j + 1;
+                  break;
+               }
+            }
+
+            os << get_display_string( ( source.lici->second )->restricts[ i ].name ) << ": ";
+            os << "<select onchange=\"";
+
+            if( is_child_list )
+               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
+            if( use_url_checksum )
+            {
+               string checksum_values( ( is_child_list ? string( c_cmd_view )
+                : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key );
+
+               if( has_hashval || extras.count( c_list_type_extra_search ) )
+                  checksum_values += c_hash_suffix;
+
+               string new_checksum_value( get_checksum( sess_info, checksum_values ) );
+
+               os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+
+               os << "query_update( '" << c_param_chksum
+                << "', '" << new_checksum_value << "', true ); ";
+
+               string value_name( "this.options[ this.selectedIndex ].value" );
+
+               if( extras.count( c_list_type_extra_search ) )
+                  append_hash_values_query_update( os, sel_id, has_text_search,
+                   source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
+            }
+
+            os << "sel_qry_update( this, '" << sel_id << "' );\">\n";
+
+            os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
+
+            for( size_t j = 0; j < info.values.size( ); j++ )
+            {
+               // NOTE: Enum values that start with a '-' are not included for user selection
+               // as they are deemed as being only available for internal application purposes.
+               if( info.values[ j ].first[ 0 ] == '-' )
+                  continue;
+
+               os << "<option";
+               if( value_offset && ( j + 1 == value_offset ) )
+                  os << " selected";
+               os << " value=\"" << info.values[ j ].first << "\">"
+                << get_display_string( info.values[ j ].second ) << "&nbsp;&nbsp;</option>\n";
+            }
+
+            os << "</select>";
+         }
+         else if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_checked )
+          || ( source.lici->second )->restricts[ i ].operations.count( c_operation_rchecked )
+          || ( source.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
+          || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
+         {
+            map< string, string > restrict_extras;
+            parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
+
+            if( !had_data )
+               had_data = true;
+            else
+               os << "&nbsp;&nbsp;";
+
+            string sel_id( source.id );
+            sel_id += c_rest_suffix;
+            sel_id += ( '0' + i );
+
+            bool is_checked = true;
+            bool is_uncheck = false;
+
+            if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
              || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
             {
-               map< string, string > restrict_extras;
-               parse_field_extra( ( source.lici->second )->restricts[ i ].extra, restrict_extras );
-
-               if( !had_data )
-                  had_data = true;
-               else
-                  os << "&nbsp;&nbsp;";
-
-               string sel_id( source.id );
-               sel_id += c_rest_suffix;
-               sel_id += ( '0' + i );
-
-               bool is_checked = true;
-               bool is_uncheck = false;
-
-               if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_unchecked )
-                || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
-               {
-                  is_uncheck = true;
-                  is_checked = false;
-               }
-
-               if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_true )
-                  is_checked = true;
-
-               if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_false )
-                  is_checked = false;
-
-               os << "<input type=\"checkbox\" id=\"check" << i << "\""
-                << ( is_checked ? " checked=\"checked\"" : "" ) << " onclick=\"";
-
-               // NOTE: For a checkbox that changes ordering clear existing sort information.
-               if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_rchecked )
-                || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
-                  os << "query_update( '" << source.id << c_sort_suffix << "', '', true ); ";
-
-               // NOTE: Remove next/prev page info for a new search.
-               os << "query_update( '" << source.id << c_info_suffix << "', '', true ); ";
-
-               if( is_child_list )
-                  os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
-
-               if( use_url_checksum )
-               {
-                  string checksum_values( ( is_child_list ? string( c_cmd_view )
-                   : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key );
-
-                  if( has_hashval || extras.count( c_list_type_extra_search ) )
-                     checksum_values += c_hash_suffix;
-
-                  string new_checksum_value( get_checksum( sess_info, checksum_values ) );
-
-                  os << "query_update( '" << c_param_uselextra << "', '', true ); ";
-                  os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
-
-                  string value_name( "document." + source.id + ".check" + to_string( i ) + ".checked" );
-
-                  if( extras.count( c_list_type_extra_search ) )
-                     append_hash_values_query_update( os, sel_id, has_text_search,
-                      source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
-               }
-
-               if( restrict_extras.count( c_vext_prefix ) )
-               {
-                  if( is_checked )
-                  {
-                     if( is_uncheck )
-                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '', true ); ";
-                     else
-                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '0', true ); ";
-                  }
-                  else
-                  {
-                     if( !is_uncheck )
-                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '', true ); ";
-                     else
-                        os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '1', true ); ";
-                  }
-               }
-
-               os << "query_update( '"
-                << sel_id << "', '' + document." << source.id << ".check" << i << ".checked );\">";
-
-               os << "&nbsp;" << get_display_string( ( source.lici->second )->restricts[ i ].name )
-                << " " << GDS( c_display_only ) << "</input>";
+               is_uncheck = true;
+               is_checked = false;
             }
-         }
 
-         os << "</td>";
+            if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_true )
+               is_checked = true;
+
+            if( list_selections.count( sel_id ) && list_selections.find( sel_id )->second == c_false )
+               is_checked = false;
+
+            os << "<input type=\"checkbox\" id=\"check" << i << "\""
+             << ( is_checked ? " checked=\"checked\"" : "" ) << " onclick=\"";
+
+            // NOTE: For a checkbox that changes ordering clear existing sort information.
+            if( ( source.lici->second )->restricts[ i ].operations.count( c_operation_rchecked )
+             || ( source.lici->second )->restricts[ i ].operations.count( c_operation_runchecked ) )
+               os << "query_update( '" << source.id << c_sort_suffix << "', '', true ); ";
+
+            // NOTE: Remove next/prev page info for a new search.
+            os << "query_update( '" << source.id << c_info_suffix << "', '', true ); ";
+
+            if( is_child_list )
+               os << "query_update( 'bcount', '" << to_string( back_count + 1 ) << "', true ); ";
+
+            if( use_url_checksum )
+            {
+               string checksum_values( ( is_child_list ? string( c_cmd_view )
+                : string( c_cmd_list ) ) + parent_key + ( pident.empty( ) ? oident : pident ) + user_select_key );
+
+               if( has_hashval || extras.count( c_list_type_extra_search ) )
+                  checksum_values += c_hash_suffix;
+
+               string new_checksum_value( get_checksum( sess_info, checksum_values ) );
+
+               os << "query_update( '" << c_param_uselextra << "', '', true ); ";
+               os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
+
+               string value_name( "document." + source.id + ".check" + to_string( i ) + ".checked" );
+
+               if( extras.count( c_list_type_extra_search ) )
+                  append_hash_values_query_update( os, sel_id, has_text_search,
+                   source.id, value_name, list_selections, sess_info, &findinfo_and_listsrch );
+            }
+
+            if( restrict_extras.count( c_vext_prefix ) )
+            {
+               if( is_checked )
+               {
+                  if( is_uncheck )
+                     os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '', true ); ";
+                  else
+                     os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '0', true ); ";
+               }
+               else
+               {
+                  if( !is_uncheck )
+                     os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '', true ); ";
+                  else
+                     os << "query_update( '" << c_vext_prefix << restrict_extras[ c_vext_prefix ] << "', '1', true ); ";
+               }
+            }
+
+            os << "query_update( '"
+             << sel_id << "', '' + document." << source.id << ".check" << i << ".checked );\">";
+
+            os << "&nbsp;" << get_display_string( ( source.lici->second )->restricts[ i ].name )
+             << " " << GDS( c_display_only ) << "</input>";
+         }
       }
+      os << "</td>";
 
       if( !error_message.empty( ) )
       {
@@ -2405,7 +2403,7 @@ void output_list_form( ostream& os,
       if( source.uom_fields.count( source.value_ids[ i ] ) )
          os << " (" << source.uom_fields.find( source.value_ids[ i ] )->second << ")";
 
-      if( !is_printable && list_type != c_list_type_home && !sess_info.user_id.empty( ) )
+      if( !is_printable && list_type != c_list_type_home )
       {
          if( source.sort_fields.count( source.field_ids[ i ] ) )
          {

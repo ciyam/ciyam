@@ -1830,7 +1830,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Name;no_edit,Id;no_edit+non_new,Type:Name;force,{Class}:Name!@fkey1:{Model}+Name;new_edit+link+fkey2\
 ,Parent_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force,Parent_Class;hidden+fkey3,Title,Style;force\
 ,@tab:Security_Options\
-,Print_Restriction,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name,Access_Parent_Modifier:Name!@fkey3:{Class}+Name\
+,Print_Restriction,Access_Restriction;force,Access_{Permission}:Name!@group:{Workgroup}+Name;force,Access_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
 ,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name\
 ,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name,Allow_Anonymous_Access\
 ,@tab:Basic_UI_Options\

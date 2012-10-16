@@ -74,6 +74,7 @@ makefile.vars.xrep
 *.info
 *.keys.lst
 *.specs.sio
+*_extkeys.txt
 *.package.sio
 for_*.spec.xrep
 *_enum_icons.lst

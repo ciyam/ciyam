@@ -1,5 +1,5 @@
 if [ $# -lt 3 ]; then
- echo Usage: copy_icons [package name] [model] [app dir] [[web dir]] 
+ echo Usage: copy_icons [package name] [package type] [app dir] [[web dir]]
 else
  if [ $# -gt 3 ]; then
   export WEBDIR=$4
@@ -8,7 +8,7 @@ else
   echo Error: Missing environment variable 'WEBDIR'.
  else
   if [ -f $1_enum_icons.lst ]; then
-   ./xrep @copy_icons.sh.xrep copy=copy package=$1 model=$2 app_dir=$3 webdir=$WEBDIR next=@$1_enum_icons.lst >~copy_icons.sh
+   ./xrep @copy_icons.sh.xrep copy=copy name=$1 type=$2 app_dir=$3 webdir=$WEBDIR next=@$2_enum_icons.lst >~copy_icons.sh
    chmod a+x ~copy_icons.sh
    ./~copy_icons.sh
    rm ~copy_icons.sh

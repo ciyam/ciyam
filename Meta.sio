@@ -27638,9 +27638,9 @@
      <field_info>122107;force+enum=685
      <field_info>@tab:Security_Options
      <field_info>122123;enum=681
-     <field_info>122103;enum=680
-     <field_info>301993:116101!@group:301500+116101
-     <field_info>301998:109101!@fkey3:300900+109101
+     <field_info>122103;force+enum=680
+     <field_info>301993:116101!@group:301500+116101;force
+     <field_info>301998:109101!@fkey3:300900+109101;force
      <field_info>122104;enum=680
      <field_info>301994:116101!@group:301500+116101
      <field_info>122105;enum=680
