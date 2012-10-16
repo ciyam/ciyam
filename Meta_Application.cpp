@@ -1448,6 +1448,31 @@ void Meta_Application::impl::impl_Generate( )
          } while( get_obj( ).child_Module( ).iterate_next( ) );
       }
 
+      if( !module_packages.empty( ) )
+      {
+#ifdef _WIN32
+         outs << "if exist " << web_dir_var << "\\" << app_dir
+          << "\\extkeys.txt del " << web_dir_var << "\\" << app_dir << "\\extkeys.txt >nul\n";
+#else
+         outs << "if [ -f " << web_dir_var << "/" << app_dir << "/extkeys.txt ]; then\n"
+          << " rm " << web_dir_var << "/" << app_dir << "/extkeys.txt"
+          << "\nfi\n\n";
+#endif
+         for( map< string, string >::iterator i = module_packages.begin( ); i != module_packages.end( ); ++i )
+         {
+#ifdef _WIN32
+            outs << "if exist " << i->second << "_extkeys.txt type " << i->second
+             << "_extkeys.txt >>" << web_dir_var << "/" << app_dir << "/extkeys.txt\n";
+#else
+            outs << "if [ -f " << i->second << "_extkeys.txt ]; then\n"
+             << " cat " << i->second << "_extkeys.txt >>" << web_dir_var << "/" << app_dir << "/extkeys.txt"
+             << "\nfi\n\n";
+#endif
+         }
+
+         outs << "\n";
+      }
+
 #ifdef _WIN32
       string script_prefix( "call " );
       string script_suffix( ".bat" );

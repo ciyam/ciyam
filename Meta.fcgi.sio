@@ -3246,7 +3246,7 @@
      <name>field_list_access_restriction
      <field>122103
      <ftype>int
-     <extra>enum=680
+     <extra>force+enum=680
      <mandatory>true
      <modifiers>400:relegate
     </field>
@@ -3254,7 +3254,7 @@
      <name>field_list_access_permission
      <field>301993
      <ftype>@class
-     <extra>
+     <extra>force
      <mandatory>false
      <modifiers>400:relegate
      <pclass>116100
@@ -3266,7 +3266,7 @@
      <name>field_list_access_parent_modifier
      <field>301998
      <ftype>@class
-     <extra>
+     <extra>force
      <mandatory>false
      <modifiers>2000:relegate
      <pclass>109100

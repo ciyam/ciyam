@@ -4336,6 +4336,9 @@ void Meta_Model::impl::impl_Generate( )
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
 
+                     if( !get_obj( ).child_List( ).child_List_Field( ).Restriction_Value( ).empty( ) )
+                        pextras += "#" + get_obj( ).child_List( ).child_List_Field( ).Restriction_Value( );
+
                      // NOTE: It is being assumed here that the only reason for using a "static instance key" is for a "folder".
                      if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ) )
                       && !is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Parent_Class( ).Static_Instance_Key( ) ) )

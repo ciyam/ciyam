@@ -1077,6 +1077,16 @@ bool fetch_parent_row_data( const string& module,
                   *p_skey_required = c_parent_extra_skey9;
                found_special = true;
             }
+            else if( key == c_parent_extra_extkey )
+            {
+               string::size_type pos = data.find( '#' );
+               if( pos != string::npos )
+               {
+                  value = get_string( data.substr( pos + 1 ).c_str( ) );
+                  data.erase( pos );
+               }
+               found_special = true;
+            }
             else if( key == c_parent_extra_group )
             {
                if( is_optional && sess_info.user_group.empty( ) )

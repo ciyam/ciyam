@@ -12,7 +12,7 @@ set WEBDIR=%4
 if "%WEBDIR%" == "" goto error1
 
 if not exist %1_enum_icons.lst goto done
-xrep @copy_icons.sh.xrep copy=copy package=%1 model=%2 app_dir=%3 webdir=%WEBDIR% next=@%1_enum_icons.lst >~copy_icons.bat
+xrep @copy_icons.sh.xrep copy=copy name=%1 type=%2 app_dir=%3 webdir=%WEBDIR% next=@%2_enum_icons.lst >~copy_icons.bat
 call ~copy_icons.bat >nul
 del ~copy_icons.bat
 :done
@@ -23,7 +23,7 @@ echo Error: Missing environment variable 'WEBDIR'.
 goto end
 
 :usage
-echo Usage: copy_icons [package name] [model] [app dir] [[web dir]]
+echo Usage: copy_icons [package type] [package name] [app dir] [[web dir]]
 
 :end
 endlocal

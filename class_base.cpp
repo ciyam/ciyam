@@ -2642,6 +2642,38 @@ string value_label( const string& s )
    {
       if( s[ i ] == ' ' )
          rs += '_';
+      else if( s[ i ] == '>' )
+      {
+         if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
+         {
+            rs += "_gteq_";
+            ++i;
+         }
+         else
+            rs += "_gt_";
+      }
+      else if( s[ i ] == '<' )
+      {
+         if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
+         {
+            rs += "_lteq_";
+            ++i;
+         }
+         else
+            rs += "_lt_";
+      }
+      else if( s[ i ] == '!' )
+      {
+         if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
+         {
+            rs += "_not_eq_";
+            ++i;
+         }
+         else
+            rs += "_not_";
+      }
+      else if( s[ i ] == '=' )
+         rs += "_eq_";
       else if( s[ i ] == '_' || ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
        || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
          rs += s[ i ];

@@ -267,6 +267,7 @@ const char* const c_parent_extra_skey7 = "@skey7";
 const char* const c_parent_extra_skey8 = "@skey8";
 const char* const c_parent_extra_skey9 = "@skey9";
 const char* const c_parent_extra_xself = "@xself";
+const char* const c_parent_extra_extkey = "@extkey";
 const char* const c_parent_extra_parent = "@parent";
 const char* const c_parent_extra_slevel = "@slevel";
 const char* const c_parent_extra_xfkey0 = "@xfkey0";
