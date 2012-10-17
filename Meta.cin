@@ -1480,6 +1480,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield},Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass}\
 ,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Source_Child_2:Name={sc2field},Source_Child_2:Id={sc2field_id}\
 ,Source_Field:Name={sfield},Source_Field:Id={sfield_id},Source_Grandchild:Name={sgcfield}\
+,Source_Field:Is_Text_Type={sfistexttype},Source_Child:Is_Text_Type={scfistexttype}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Child:Is_Text_Type={tcfistexttype},Test_Field:Name={tfield}\
 ,Test_Field:Id={tfield_id},Test_Field:Is_Text_Type={tfistexttype},Test_Field_Class:Name={tfclass},Test_Value={tvalue}\
 ,{Permission}:Name={permission},{Permission}:Id={permission_id},Other_{Permission}:Name={opermission}\

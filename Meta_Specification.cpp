@@ -5650,6 +5650,8 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{sfield_id}", to_rep_string( get_obj( ).Source_Field( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{sgcfield}", to_rep_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sfistexttype}", to_rep_string( get_obj( ).Source_Field( ).Is_Text_Type( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{scfistexttype}", to_rep_string( get_obj( ).Source_Child( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tpfield}", to_rep_string( get_obj( ).Test_Parent( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tcfield}", to_rep_string( get_obj( ).Test_Child( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tcfistexttype}", to_rep_string( get_obj( ).Test_Child( ).Is_Text_Type( ) ) );
@@ -11114,6 +11116,24 @@ void Meta_Specification::get_required_field_names(
       if( ( use_transients && is_field_transient( e_field_id_Source_Grandchild ) )
        || ( !use_transients && !is_field_transient( e_field_id_Source_Grandchild ) ) )
          names.insert( "Source_Grandchild" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Source_Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
+         names.insert( "Source_Field" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Source_Child" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Source_Child ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Child ) ) )
+         names.insert( "Source_Child" );
    }
 
    if( needs_field_value( "Vars", dependents ) )
