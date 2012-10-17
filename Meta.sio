@@ -2679,6 +2679,14 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>610065
         <item>field
        </specification>
@@ -14330,6 +14338,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600208
         <item>field
        </specification>
@@ -14499,6 +14511,10 @@
        </specification>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -31208,6 +31224,8 @@
      <field_info>301481:107101;107100={sfield}
      <field_info>301481:107110;107100={sfield_id}
      <field_info>301476:107101;107100={sgcfield}
+     <field_info>301481:107109;107100={sfistexttype}
+     <field_info>301495:107109;107100={scfistexttype}
      <field_info>301486:107101;107100={tpfield}
      <field_info>301488:107101;107100={tcfield}
      <field_info>301488:107109;107100={tcfistexttype}
