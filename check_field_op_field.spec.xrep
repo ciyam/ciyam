@@ -1,0 +1,26 @@
+`{`@eq`(`'validate`'`,`$section`)\
+`{`$op`=`$arg_op`}\
+`{`@eq`(`$op`,`'eq`'`)`$op`=`'==`'`}\
+`{`@eq`(`$op`,`'neq`'`)`$op`=`'!=`'`}\
+`{`@eq`(`$op`,`'lt`'`)`$op`=`'<`'`}\
+`{`@eq`(`$op`,`'gt`'`)`$op`=`'>`'`}\
+`{`@eq`(`$op`,`'lteq`'`)`$op`=`'<=`'`}\
+`{`@eq`(`$op`,`'gteq`'`)`$op`=`'>=`'`}\
+   // [(start check_field_op_field)]
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_be_`{`$arg_op`}_other ), make_pair(
+       c_str_parm_field_must_be_greater_or_equal_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_parm_field_must_be_greater_or_equal_field2,\
+`{`@eq`(`$arg_spfield`,`'`'`)\
+ get_module_string( c_field_display_name_`{`$arg_sfield`} ) ) ) ) );
+`,\
+ get_module_string( c_field_display_name_`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`} )`{`!`@eq`(`$arg_spfield`,`'`'`)
+       + " " + get_obj( ).`{`$arg_spfield`}( ).get_field_display_name( "`{`$arg_sfield`}"`} ) ) ) ) );
+`}\
+   // [(finish check_field_op_field)]
+`}
