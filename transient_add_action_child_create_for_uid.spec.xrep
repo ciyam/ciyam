@@ -1,6 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_add_action_child_create_for_uid)]
    if( !get_obj( ).get_key( ).empty( )
+`{`@eq`(`$arg_top_level`,`'true`'`)\
+    && !get_obj( ).get_graph_parent( )
+`}\
 `{`@eq`(`$arg_not_iterating`,`'true`'`)\
     && !get_obj( ).get_is_iterating( )
 `}\

@@ -1,6 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_bool_has_child_for_uid)]
    if( !get_uid( ).empty( )
+`{`@eq`(`$arg_top_level`,`'true`'`)\
+    && !get_obj( ).get_graph_parent( )
+`}\
     && ( required_transients.count( "`{`$arg_field`}" )
     || get_obj( ).needs_field_value( "`{`$arg_field`}" ) )\
 `{`@eq`(`$arg_not_iterating`,`'true`'`)
