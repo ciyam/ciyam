@@ -19,6 +19,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <set>
+#  include <memory>
 #  include <fstream>
 #  include <iostream>
 #  include <stdexcept>

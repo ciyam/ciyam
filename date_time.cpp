@@ -172,7 +172,7 @@ enum element
 
 struct celestial_stem
 {
-   char* p_str;
+   const char* p_str;
    element elem;
 }
 celestial_stems[ ] =
@@ -191,8 +191,8 @@ celestial_stems[ ] =
 
 struct terrestial_branch
 {
-   char* p_str;
-   char* p_english;
+   const char* p_str;
+   const char* p_english;
 }
 terrestial_branches[ ] =
 {

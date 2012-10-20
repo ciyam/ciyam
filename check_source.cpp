@@ -18,6 +18,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <memory.h>
 #  include <vector>
 #  include <string>
 #  include <fstream>
@@ -83,7 +84,7 @@ bool g_return_after_first_error_found = false;
 
 static struct
 {
-   char* label;
+   const char* label;
    short value;
 }
 g_format_masks[ ] =

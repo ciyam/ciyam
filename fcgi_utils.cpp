@@ -18,6 +18,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
 #  include <fstream>
 #  include <iomanip>
 #  include <sstream>
@@ -26,6 +27,7 @@
 #endif
 
 #ifdef __GNUG__
+#  include <limits.h>
 #  include <unistd.h>
 #  define _chdir chdir
 #  define _mkdir mkdir

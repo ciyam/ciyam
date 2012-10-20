@@ -21,7 +21,9 @@
 #  include <cmath>
 #  include <ctime>
 #  include <cstdio>
+#  include <cstring>
 #  include <deque>
+#  include <memory>
 #  include <sstream>
 #  include <fstream>
 #  include <iomanip>

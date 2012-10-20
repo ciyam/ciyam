@@ -74,8 +74,10 @@ REGISTER_TYPEOF( 7, int )
 REGISTER_TYPEOF( 8, unsigned int )
 REGISTER_TYPEOF( 9, long )
 REGISTER_TYPEOF( 10, unsigned long )
+#  ifndef _LP64
 REGISTER_TYPEOF( 11, int64_t )
 REGISTER_TYPEOF( 12, uint64_t )
+#  endif
 REGISTER_TYPEOF( 13, float )
 REGISTER_TYPEOF( 14, double )
 REGISTER_TYPEOF( 15, wchar_t )
