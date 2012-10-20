@@ -26,6 +26,7 @@
 #  endif
 
 #  include "ptypes.h"
+#  include "utilities.h"
 #  include "ciyam_common.h"
 
 #  ifdef CIYAM_BASE_IMPL

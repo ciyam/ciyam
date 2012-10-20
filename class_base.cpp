@@ -54,7 +54,6 @@
 #include "numeric.h"
 #include "hashcash.h"
 #include "date_time.h"
-#include "utilities.h"
 #include "file_utils.h"
 #include "ciyam_base.h"
 #include "mail_source.h"
