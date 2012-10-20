@@ -23,6 +23,7 @@
 #  endif
 
 #  include "macros.h"
+#  include "ptypes.h"
 #  include "threads.h"
 #  include "auto_buffer.h"
 
@@ -38,8 +39,8 @@
 
 #  define ODS_MAX_ERROR_MSG_LENGTH 1024
 
-typedef int int_t;
-typedef unsigned int uint_t;
+typedef int32_t int_t;
+typedef uint32_t uint_t;
 
 const int_t c_max_int_val = std::numeric_limits< int_t >::max( );
 
@@ -118,7 +119,7 @@ class ODS_DECL_SPEC char_buffer
       guard lock_buffer( buffer_lock );
 
       int_t n = std::min( max - pos, ( int_t )s.length( ) );
-      std::memcpy( p_data, s.data( ), n );
+      memcpy( p_data, s.data( ), n );
       len = n;
    }
 
@@ -134,7 +135,7 @@ class ODS_DECL_SPEC char_buffer
       guard lock_buffer( buffer_lock );
 
       int_t n = std::min( dest.max - dest.pos, len );
-      std::memcpy( dest.p_data, p_data, n );
+      memcpy( dest.p_data, p_data, n );
       dest.len = n;
    }
 
@@ -145,7 +146,7 @@ class ODS_DECL_SPEC char_buffer
       guard lock_buffer( buffer_lock );
 
       int_t n = std::min( max - pos, len + ( int_t )s.length( ) );
-      std::memcpy( p_data + len, s.data( ), n );
+      memcpy( p_data + len, s.data( ), n );
       len = n;
    }
 
@@ -161,7 +162,7 @@ class ODS_DECL_SPEC char_buffer
       guard lock_buffer( buffer_lock );
 
       int_t n = std::min( dest.max - dest.pos, dest.len + len );
-      std::memcpy( dest.p_data + dest.len, p_data, n );
+      memcpy( dest.p_data + dest.len, p_data, n );
       dest.len = n;
    }
 
@@ -204,7 +205,7 @@ class ODS_DECL_SPEC char_buffer
 
       int fill_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
       if( fill_len )
-         std::memset( p_data + from, ch, fill_len );
+         memset( p_data + from, ch, fill_len );
    }
 
    void copy_to( char* dest, int_t from = 0, int_t maxnum = c_max_int_val )
@@ -213,7 +214,7 @@ class ODS_DECL_SPEC char_buffer
 
       int_t copy_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
       if( copy_len )
-         std::memcpy( dest, p_data + from, copy_len );
+         memcpy( dest, p_data + from, copy_len );
    }
 
    void copy_from( const char* src, int_t from = 0, int_t maxnum = c_max_int_val )
@@ -222,7 +223,7 @@ class ODS_DECL_SPEC char_buffer
 
       int_t copy_len = from >= max - pos ? 0 : std::min( max - pos - from, maxnum );
       if( copy_len )
-         std::memcpy( p_data + from, src, copy_len );
+         memcpy( p_data + from, src, copy_len );
    }
 
    // IMPORTANT: This final set of public functions should only be called within the scope of a

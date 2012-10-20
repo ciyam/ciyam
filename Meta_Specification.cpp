@@ -33,6 +33,8 @@
 
 #include "Meta_Specification.h"
 
+#include "class_utilities.h"
+
 #include "Meta_List_Field.h"
 #include "Meta_View_Field.h"
 #include "Meta_Class.h"

@@ -17,6 +17,10 @@
 #endif
 #pragma hdrstop
 
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
+#endif
+
 #include "model_specifications.h"
 
 #include "sio.h"

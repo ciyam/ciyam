@@ -19,11 +19,13 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <ctime>
+#  include <cstring>
 #  include <csignal>
 #  include <cstdlib>
 #  include <set>
 #  include <map>
 #  include <deque>
+#  include <memory>
 #  include <vector>
 #  include <string>
 #  include <sstream>

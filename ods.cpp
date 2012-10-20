@@ -243,7 +243,7 @@ int_t char_buffer::first_of( const char* matches ) const
       }
    }
 
-   return string::npos;
+   return -1;
 }
 
 bool char_buffer::has_one_of( const char* matches ) const

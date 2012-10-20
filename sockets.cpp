@@ -19,6 +19,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <stdio.h>
+#  include <memory.h>
 #  ifndef _WIN32
 #     include <fcntl.h>
 #     include <netdb.h>
@@ -190,7 +191,7 @@ bool tcp_socket::connect( const ip_address& addr, size_t timeout )
          if( ::select( socket + 1, 0, &fdset, 0, &tv ) == 1 )
          {
             int so_error = 1;
-            socklen_type len = sizeof( so_error );
+            socklen_t len = sizeof( so_error );
 
             ::getsockopt( socket, SOL_SOCKET, SO_ERROR, ( char* )&so_error, &len );
 
@@ -224,7 +225,7 @@ SOCKET tcp_socket::accept( ip_address& addr, size_t timeout ) const
       return INVALID_SOCKET;
    else
    {
-      socklen_type len = sizeof( sockaddr );
+      socklen_t len = sizeof( sockaddr );
       return ::accept( socket, ( sockaddr* )&addr, &len );
    }
 }
@@ -476,12 +477,12 @@ int tcp_socket::write_line( const string& str, size_t timeout )
    return n;
 }
 
-bool tcp_socket::get_option( int type, int opt, char* p_buffer, socklen_type& buflen )
+bool tcp_socket::get_option( int type, int opt, char* p_buffer, socklen_t& buflen )
 {
    return ::getsockopt( socket, type, opt, p_buffer, &buflen ) != SOCKET_ERROR;
 }
 
-bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_type buflen )
+bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t buflen )
 {
    return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
 }

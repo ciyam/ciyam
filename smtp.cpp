@@ -18,6 +18,8 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <memory.h>
+#  include <memory>
 #  include <iostream>
 #  include <stdexcept>
 #endif

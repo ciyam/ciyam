@@ -19,6 +19,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <map>
+#  include <memory>
 #  include <fstream>
 #  include <sstream>
 #  include <iostream>
