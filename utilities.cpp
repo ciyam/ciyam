@@ -20,9 +20,10 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cerrno>
 #  include <cstdio>
+#  include <cassert>
 #  include <climits>
 #  include <cstdlib>
-#  include <cassert>
+#  include <cstring>
 #  include <fstream>
 #  include <iostream>
 #  include <stdexcept>

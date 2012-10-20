@@ -39,9 +39,8 @@ class winsock_init
 #endif
 
 #ifdef _WIN32
-typedef int socklen_type;
+typedef int socklen_t;
 #else
-typedef size_t socklen_type;
 #  define SOCKET int
 #  define INVALID_SOCKET -1
 #endif
@@ -96,8 +95,8 @@ class tcp_socket
    int read_line( std::string& str, size_t timeout = 0 );
    int write_line( const std::string& str, size_t timeout = 0 );
 
-   bool get_option( int type, int opt, char* p_buffer, socklen_type& buflen );
-   bool set_option( int type, int opt, const char* p_buffer, socklen_type buflen );
+   bool get_option( int type, int opt, char* p_buffer, socklen_t& buflen );
+   bool set_option( int type, int opt, const char* p_buffer, socklen_t buflen );
 
    bool had_timeout( ) const { return timed_out; }
    bool had_blank_line( ) const { return blank_line; }

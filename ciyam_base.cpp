@@ -19,11 +19,12 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <ctime>
+#  include <cassert>
+#  include <climits>
 #  include <map>
 #  include <set>
 #  include <stack>
 #  include <vector>
-#  include <cassert>
 #  include <fstream>
 #  include <sstream>
 #  include <iomanip>
