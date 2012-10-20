@@ -51,6 +51,18 @@ http://www.fastcgi.com/dist/
 tar -zxvf fcgi-2.4.0.tar.gz
 cd fcgi-2.4.0
 
+NOTE: The following patch might be necessary for gcc.
+================== include/fcgio.h ==================
+...
+ #define FCGIO_H
+
+ #include <iostream>
++#include <stdio.h>
+
+ #include "fcgiapp.h"
+...
+=====================================================
+
 ./configure
 make
 su
