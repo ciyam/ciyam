@@ -27,6 +27,7 @@
 #  ifdef __GNUG__
 #     include <unistd.h>
 #  endif
+#  include <memory.h>
 #  include <cstdio>
 #  include <set>
 #  include <memory>

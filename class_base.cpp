@@ -20,6 +20,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cerrno>
 #  include <cstdio>
+#  include <climits>
 #  include <cassert>
 #  include <locale>
 #  include <sstream>

@@ -18,7 +18,9 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <memory.h>
 #  include <ctime>
+#  include <cstdlib>
 #  include <memory>
 #  include <sstream>
 #  include <iostream>

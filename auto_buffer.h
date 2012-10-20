@@ -16,8 +16,8 @@
 #  define AUTO_BUFFER_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <memory.h>
 #     include <stddef.h>
-#     include <memory>
 #     include <stdexcept>
 #  endif
 
@@ -34,7 +34,7 @@ template< typename T > class auto_buffer
    void copy( const auto_buffer& src )
    {
       T* p_new_buf( new T[ src.buf_size ] );
-      std::memcpy( p_new_buf, src.p_buf, src.buf_size );
+      memcpy( p_new_buf, src.p_buf, src.buf_size );
 
       delete[ ] p_buf;
 

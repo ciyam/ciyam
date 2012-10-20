@@ -19,6 +19,7 @@
 #     include <string>
 #  endif
 
+#  include "utilities.h"
 #  include "class_base.h"
 
 #  ifdef MODULE_META_IMPL

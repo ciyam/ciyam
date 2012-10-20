@@ -382,7 +382,7 @@ template< typename T > cache_base< T >::cache_base( unsigned max_cache_items,
    if( use_placement_new )
    {
       p_buffer = new char[ sizeof( cache_item< T > ) * max_cache_items ];
-      std::memset( p_buffer, 0, sizeof( cache_item< T > ) * max_cache_items );
+      memset( p_buffer, 0, sizeof( cache_item< T > ) * max_cache_items );
    }
 }
 
@@ -667,7 +667,7 @@ template< typename T > void cache_base< T >::set_max_cache_items( unsigned new_m
          ;
 
       if( new_max_cache_items > max_cache_items )
-         std::memset( p_new_buffer + ( sizeof( cache_item< T > ) * max_cache_items ),
+         memset( p_new_buffer + ( sizeof( cache_item< T > ) * max_cache_items ),
           0, sizeof( cache_item< T > ) * ( new_max_cache_items - max_cache_items ) );
 
       delete p_buffer;
