@@ -521,6 +521,9 @@ template< typename T, class A > size_t size_determiner( const std::list< T, A >*
       total_size += size_determiner( &*ci );
 
    total_size += sizeof( typename std::list< T, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::list< T, A >::size_type );
+#  endif
 
    return total_size;
 }
@@ -563,6 +566,9 @@ template< typename T, class A > size_t size_determiner( const std::deque< T, A >
       total_size += size_determiner( &*ci );
 
    total_size += sizeof( typename std::deque< T, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::deque< T, A >::size_type );
+#  endif
 
    return total_size;
 }
@@ -604,6 +610,9 @@ template< typename T, class A > size_t size_determiner( const std::vector< T, A 
       total_size += size_determiner( &*ci );
 
    total_size += sizeof( typename std::vector< T, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::vector< T, A >::size_type );
+#  endif
 
    return total_size;
 }
@@ -645,6 +654,9 @@ template< typename K, class C, class A > size_t size_determiner( const std::set<
       total_size += size_determiner( &*ci );
 
    total_size += sizeof( typename std::set< K, C, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::set< K, C, A >::size_type );
+#  endif
 
    return total_size;
 }
@@ -687,6 +699,9 @@ template< typename K, class C, class A > size_t size_determiner( const std::mult
       total_size += size_determiner( &*ci );
 
    total_size += sizeof( typename std::multiset< K, C, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::multiset< K, C, A >::size_type );
+#  endif
 
    return total_size;
 }
@@ -745,6 +760,9 @@ template< typename K, typename T, class C, class A > size_t size_determiner( con
       total_size += data_size * p->size( );
 
    total_size += sizeof( typename std::map< K, T, C, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::map< K, T, C, A >::size_type );
+#  endif
 
    return total_size;
 }
@@ -804,6 +822,9 @@ template< typename K, typename T, class C, class A > size_t size_determiner( con
       total_size += data_size * p->size( );
 
    total_size += sizeof( typename std::multimap< K, T, C, A >::size_type );
+#  ifdef USE_SIZE_PADDING
+   total_size += sizeof( typename std::multimap< K, T, C, A >::size_type );
+#  endif
 
    return total_size;
 }
