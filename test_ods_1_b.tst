@@ -4,7 +4,7 @@ Num Writers = 0
 Total Entries = 14
 Transaction Id = 24
 Index Free List = 13
-Total Size of Data = 236
+Total Size of Data = 284
 Data Transformation Id = 24
 Index Transformation Id = 65
 

@@ -76,9 +76,9 @@ const unsigned c_test_item_size = 1024;
 
 //#define USE_NON_POD
 #ifndef USE_NON_POD
-#  pragma message ( "Note: Compiling testbed for cache containing POD." )
+#  pragma message ( "Compiling testbed for cache containing POD." )
 #else
-#  pragma message ( "Note: Compiling testbed for cache containing UDT." )
+#  pragma message ( "Compiling testbed for cache containing UDT." )
 #endif
 
 #ifdef TEST_CACHE_DEBUG
@@ -155,7 +155,7 @@ template< unsigned block_size > struct mem_block
       ++total_item_strass_calls;
 #  endif
       memcpy( buf,
-       str.c_str( ), min( str.length( ), ( unsigned )( block_size - 1 ) ) );
+       str.c_str( ), min( str.length( ), ( string::size_type )( block_size - 1 ) ) );
 
       if( str.length( ) < block_size - 1 )
          buf[ str.length( ) ] = 0;

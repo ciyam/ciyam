@@ -19,6 +19,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <stack>
+#  include <memory>
 #  include <vector>
 #  include <sstream>
 #  include <iostream>
@@ -34,7 +35,7 @@
 
 using namespace std;
 
-//#define USE_CHAR_BUF
+#define USE_CHAR_BUF
 #ifdef USE_CHAR_BUF
 #  define MAX_DESC_LEN 50
 #endif
@@ -208,8 +209,13 @@ class outline_base : public storable_base
 
 int_t size_of( const outline_base& o )
 {
-   return sizeof( long ) + o.description.length( )
-    + sizeof( long ) + ( o.children.size( ) * sizeof( oid ) );
+#ifdef USE_CHAR_BUF
+   return sizeof( int_t ) + o.description.length( )
+    + sizeof( size_t ) + ( o.children.size( ) * sizeof( oid ) );
+#else
+   return sizeof( string::size_type ) + o.description.length( )
+    + sizeof( size_t ) + ( o.children.size( ) * sizeof( oid ) );
+#endif
 }
 
 read_stream& operator >>( read_stream& rs, outline_base& o )

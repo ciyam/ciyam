@@ -11,11 +11,19 @@
 // usage of this software is not permitted without first obtaining a license for such a purpose
 // from CIYAM. This software may not be publicly distributed unless written permission to do so
 // has been obtained from CIYAM.
-#include <cstdlib>
 
-#include <string>
-#include <fstream>
-#include <iostream>
+#ifdef __BORLANDC__
+#  include "precompile.h"
+#endif
+#pragma hdrstop
+
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <cstring>
+#  include <cstdlib>
+#  include <string>
+#  include <fstream>
+#  include <iostream>
+#endif
 
 #include "fcgiapp.h"
 
