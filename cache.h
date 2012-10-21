@@ -18,6 +18,7 @@
 //#define CACHE_DEBUG
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <memory.h>
 #     include <limits>
 #     include <memory>
 #     include <vector>
@@ -1307,14 +1308,14 @@ template< typename T > void cache_base< T >::dump_cached_item_info( std::ostream
    guard lock( thread_lock );
 
    outs << "<cache info>\n";
-   outs << " items cached: " << ( long )num_cached << "/" << ( long )max_cache_items << "\n";
-   outs << " regions in use: " << ( long )num_regions << "/" << ( long )regions_in_cache << "\n\n";
+   outs << " items cached: " << ( signed )num_cached << "/" << ( signed )max_cache_items << "\n";
+   outs << " regions in use: " << ( signed )num_regions << "/" << ( signed )regions_in_cache << "\n\n";
 
-   outs << " items per region: " << ( long ) items_per_region << "\n\n";
+   outs << " items per region: " << ( signed ) items_per_region << "\n\n";
 
-   outs << " counter: " << ( long )counter << "\n";
-   outs << " temp_read_num: " << ( long )temp_read_num << "\n";
-   outs << " temp_write_num: " << ( long )temp_write_num << "\n\n";
+   outs << " counter: " << ( signed )counter << "\n";
+   outs << " temp_read_num: " << ( signed )temp_read_num << "\n";
+   outs << " temp_write_num: " << ( signed )temp_write_num << "\n\n";
 
    outs << " item_req_count = " << item_req_count << "\n";
    outs << " item_hit_count = " << item_hit_count << "\n";
@@ -1328,31 +1329,31 @@ template< typename T > void cache_base< T >::dump_cached_item_info( std::ostream
             continue;
 
          outs << "\n<cache region: "
-          << ( long )( ( *ap_cache_regions )[ i ].region * items_per_region ) << "-"
-          << ( long )( ( *ap_cache_regions )[ i ].region * items_per_region + items_per_region - 1 )
+          << ( signed )( ( *ap_cache_regions )[ i ].region * items_per_region ) << "-"
+          << ( signed )( ( *ap_cache_regions )[ i ].region * items_per_region + items_per_region - 1 )
           << ">\n";
 
-         outs << " item_cost: " << ( long )( *ap_cache_regions )[ i ].item_cost << "\n";
-         outs << " flush_cost: " << ( long )( *ap_cache_regions )[ i ].flush_cost << "\n";
-         outs << " counter_total: " << ( long )( *ap_cache_regions )[ i ].counter_total << "\n\n";
+         outs << " item_cost: " << ( signed )( *ap_cache_regions )[ i ].item_cost << "\n";
+         outs << " flush_cost: " << ( signed )( *ap_cache_regions )[ i ].flush_cost << "\n";
+         outs << " counter_total: " << ( signed )( *ap_cache_regions )[ i ].counter_total << "\n\n";
 
          outs << " most_recently_used: "
-          << ( long )( *ap_cache_regions )[ i ].most_recently_used << "\n";
+          << ( signed )( *ap_cache_regions )[ i ].most_recently_used << "\n";
 
          outs << " least_recently_used: "
-          << ( long )( *ap_cache_regions )[ i ].least_recently_used << "\n";
+          << ( signed )( *ap_cache_regions )[ i ].least_recently_used << "\n";
 
          outs << " most_recently_changed: "
-          << ( long )( *ap_cache_regions )[ i ].most_recently_changed << "\n";
+          << ( signed )( *ap_cache_regions )[ i ].most_recently_changed << "\n";
 
          outs << " least_recently_changed: "
-          << ( long )( *ap_cache_regions )[ i ].least_recently_changed << "\n";
+          << ( signed )( *ap_cache_regions )[ i ].least_recently_changed << "\n";
 
          outs << " most_recently_unchanged: "
-          << ( long )( *ap_cache_regions )[ i ].most_recently_unchanged << "\n";
+          << ( signed )( *ap_cache_regions )[ i ].most_recently_unchanged << "\n";
 
          outs << " least_recently_unchanged: "
-          << ( long )( *ap_cache_regions )[ i ].least_recently_unchanged << "\n";
+          << ( signed )( *ap_cache_regions )[ i ].least_recently_unchanged << "\n";
 
          if( dump_type > dmp_summary )
          {
@@ -1363,26 +1364,26 @@ template< typename T > void cache_base< T >::dump_cached_item_info( std::ostream
             {
                if( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ] )
                {
-                  long counter =
+                  signed counter =
                    ( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_mask_for_counter );
 
                   unsigned changed =
                    ( ( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->flags & c_flag_for_changed );
 
                   outs << " item #"
-                   << ( long )( ( *ap_cache_regions )[ i ].region * items_per_region + j )
+                   << ( signed )( ( *ap_cache_regions )[ i ].region * items_per_region + j )
                    << ", chg: " << ( changed != 0 ) << ", counter: " << counter << ", used ("
-                   << ( long )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_used_link
+                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_used_link
                    << ", "
-                   << ( long )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_used_link
+                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_used_link
                    << "), chg ("
-                   << ( long )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_changed_link
+                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_changed_link
                    << ", "
-                   << ( long )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_changed_link
+                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_changed_link
                    << "), unchg ("
-                   << ( long )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_unchanged_link
+                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->prev_unchanged_link
                    << ", "
-                   << ( long )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_unchanged_link
+                   << ( signed )( *( *ap_cache_regions )[ i ].ap_cache_items )[ j ]->next_unchanged_link
                    << ")\n";
                }
             }
