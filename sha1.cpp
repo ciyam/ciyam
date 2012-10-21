@@ -61,12 +61,12 @@ A million repetitions of "a"
 
 typedef struct
 {
-   unsigned long state[ 5 ];
-   unsigned long count[ 2 ];
+   unsigned int state[ 5 ];
+   unsigned int count[ 2 ];
    unsigned char buffer[ 64 ];
 } sha1_context;
 
-void sha1_transform( unsigned long state[ 5 ], unsigned char buffer[ 64 ] );
+void sha1_transform( unsigned int state[ 5 ], unsigned char buffer[ 64 ] );
 void sha1_init( sha1_context* context );
 void sha1_update( sha1_context* context, unsigned char* data, unsigned int len );
 void sha1_final( unsigned char digest[ 20 ], sha1_context* context );
@@ -100,13 +100,13 @@ void sha1_final( unsigned char digest[ 20 ], sha1_context* context );
 
 // Hash a single 512-bit block. This is the core of the algorithm.
 
-void sha1_transform( unsigned long state[ 5 ], unsigned char buffer[ 64 ] )
+void sha1_transform( unsigned int state[ 5 ], unsigned char buffer[ 64 ] )
 {
-   unsigned long a, b, c, d, e;
+   unsigned int a, b, c, d, e;
    typedef union
    {
       unsigned char c[ 64 ];
-      unsigned long l[ 16 ];
+      unsigned int l[ 16 ];
    } CHAR64LONG16;
 
    CHAR64LONG16* block;
@@ -200,7 +200,7 @@ void sha1_update( sha1_context* context, unsigned char* data, unsigned int len )
 
 void sha1_final( unsigned char digest[ 20 ], sha1_context* context )
 {
-   unsigned long i, j;
+   unsigned int i, j;
    unsigned char finalcount[ 8 ];
 
    for( i = 0; i < 8; i++ )
