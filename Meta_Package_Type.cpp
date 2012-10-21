@@ -586,6 +586,8 @@ void Meta_Package_Type::impl::impl_Install( )
       }
 
       copy_file( info_filename, name + "." + info_filename );
+      create_directories_for_file_name( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".info" ), true );
+
       copy_file( info_filename, get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".info" ) );
 
       remove_file( package_file );

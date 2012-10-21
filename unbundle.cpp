@@ -124,10 +124,15 @@ bool read_zlib_line( gzFile& gzf, string& s )
    s.erase( );
 
    bool is_escape = false;
-   while( !gzeof( gzf ) )
+   while( true )
    {
-      if( !gzread( gzf, &c, sizeof( char ) ) )
-         throw runtime_error( "reading char" );
+      if( gzread( gzf, &c, sizeof( char ) ) <= 0 )
+      {
+         if( gzeof( gzf ) )
+            break;
+         else
+            throw runtime_error( "reading char" );
+      }
 
       if( is_escape )
       {

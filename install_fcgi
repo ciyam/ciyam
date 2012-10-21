@@ -1,6 +1,7 @@
 if [ $# -lt 2 ]; then
  echo Usage: install_fcgi [FCGI w/o ext] [app dir] [[extra files]]
 else
+ tmp=$1.fcgi
  args=$1.fcgi
  directory=$WEBDIR/$2
 
@@ -33,6 +34,7 @@ else
    done
 
    cp $args $directory
+   rm $tmp
   }
   fi
  fi
