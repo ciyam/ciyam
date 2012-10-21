@@ -2727,9 +2727,15 @@ void read_server_configuration( )
       if( !g_web_root.empty( ) )
       {
          if( g_web_root[ 0 ] == '$' )
-            g_web_root = string( getenv( g_web_root.substr( 1 ).c_str( ) ) );
+         {
+            const char* p_env = getenv( g_web_root.substr( 1 ).c_str( ) );
+            g_web_root = string( p_env ? p_env : "" );
+         }
          else if( g_web_root[ 0 ] == '%' && g_web_root.size( ) > 2 && g_web_root[ g_web_root.size( ) - 1 ] == '%' )
-            g_web_root = string( getenv( g_web_root.substr( 1, g_web_root.size( ) - 2 ).c_str( ) ) );
+         {
+            const char* p_env = getenv( g_web_root.substr( 1, g_web_root.size( ) - 2 ).c_str( ) );
+            g_web_root = string( p_env ? p_env : "" );
+         }
       }
 
       g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );
