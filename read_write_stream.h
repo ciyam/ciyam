@@ -268,6 +268,10 @@ template< typename T, class A > read_stream& operator >>( read_stream& rs, std::
 {
    typename std::list< T, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
 
@@ -285,6 +289,10 @@ template< typename T, class A > read_stream& operator >>( read_stream& rs, std::
 {
    typename std::deque< T, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
 
@@ -302,6 +310,10 @@ template< typename T, class A > read_stream& operator >>( read_stream& rs, std::
 {
    typename std::vector< T, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
    ctr.reserve( size );
@@ -320,6 +332,10 @@ template< typename K, class C, class A > read_stream& operator >>( read_stream& 
 {
    typename std::set< K, C, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
 
@@ -337,6 +353,10 @@ template< typename K, class C, class A > read_stream& operator >>( read_stream& 
 {
    typename std::multiset< K, C, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
 
@@ -354,6 +374,10 @@ template< typename K, typename T, class C, class A > read_stream& operator >>( r
 {
    typename std::map< K, T, C, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
 
@@ -371,6 +395,10 @@ template< typename K, typename T, class C, class A > read_stream& operator >>( r
 {
    typename std::multimap< K, T, C, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
    ctr.clear( );
 
@@ -388,6 +416,10 @@ template< typename C, class T, class A > read_stream& operator >>( read_stream& 
 {
    typename std::basic_string< C, T, A >::size_type size;
    rs >> size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy;
+   rs >> dummy;
+#  endif
 
 #  ifdef USE_FAST_STRING_READ
    ctr = std::basic_string< C, T, A >( size, 0 );
@@ -500,6 +532,10 @@ template< typename T, class A > write_stream& operator <<( write_stream& ws, con
 {
    typename std::list< T, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    typename std::list< T, A >::const_iterator ci;
    for( ci = ctr.begin( ); ci != ctr.end( ); ++ci )
@@ -538,6 +574,10 @@ template< typename T, class A > write_stream& operator <<( write_stream& ws, con
 {
    typename std::deque< T, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    for( typename std::deque< T, A >::size_type i = 0; i < size; i++ )
       ws << ctr[ i ];
@@ -575,6 +615,10 @@ template< typename T, class A > write_stream& operator <<( write_stream& ws, con
 {
    typename std::vector< T, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    for( typename std::vector< T, A >::size_type i = 0; i < size; i++ )
       ws << ctr[ i ];
@@ -612,6 +656,10 @@ template< typename K, class C, class A > write_stream& operator <<( write_stream
 {
    typename std::set< K, C, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    typename std::set< K, C, A >::const_iterator ci;
    for( ci = ctr.begin( ); ci != ctr.end( ); ++ci )
@@ -650,6 +698,10 @@ template< typename K, class C, class A > write_stream& operator <<( write_stream
 {
    typename std::multiset< K, C, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    typename std::multiset< K, C, A >::const_iterator ci;
    for( ci = ctr.begin( ); ci != ctr.end( ); ++ci )
@@ -705,6 +757,10 @@ template< typename K,
 {
    typename std::map< K, T, C, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    typename std::map< K, T, C, A >::const_iterator ci;
    for( ci = ctr.begin( ); ci != ctr.end( ); ++ci )
@@ -760,6 +816,10 @@ template< typename K,
 {
    typename std::multimap< K, T, C, A >::size_type size = ctr.size( );
    ws << size;
+#  ifdef USE_SIZE_PADDING
+   typename std::vector< T, A >::size_type dummy( 0 );
+   ws << dummy;
+#  endif
 
    typename std::multimap< K, T, C, A >::const_iterator ci;
    for( ci = ctr.begin( ); ci != ctr.end( ); ++ci )

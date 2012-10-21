@@ -27,6 +27,14 @@
 #  include <exception>
 #endif
 
+#define USE_CHAR_BUF
+#ifdef USE_CHAR_BUF
+#  ifndef _LP64
+#     define USE_SIZE_PADDING
+#  endif
+#  define MAX_DESC_LEN 100
+#endif
+
 #include "ods.h"
 #include "pointers.h"
 #include "utilities.h"
@@ -34,11 +42,6 @@
 #include "read_write_stream.h"
 
 using namespace std;
-
-#define USE_CHAR_BUF
-#ifdef USE_CHAR_BUF
-#  define MAX_DESC_LEN 100
-#endif
 
 const char* const c_root_node_description = "root";
 
@@ -120,7 +123,7 @@ class outline_base : public storable_base
 #endif
    }
 
-   string get_description( )
+   string get_description( ) const
    {
 #ifdef USE_CHAR_BUF
       return description.data( );
@@ -184,7 +187,7 @@ class outline_base : public storable_base
          count -= num;
    }
 
-   bool has_children( )
+   bool has_children( ) const
    {
       return !children.empty( );
    }
@@ -209,12 +212,11 @@ class outline_base : public storable_base
 
 int_t size_of( const outline_base& o )
 {
-#ifdef _LP64
    int size_holder = sizeof( size_t );
-#else
+#ifdef USE_SIZE_PADDING
    // KLUDGE: In order for regression test output to match under both
    // 32 and 64 bit environments dummy padding is added under 32 bit.
-   int size_holder = sizeof( size_t ) + sizeof( size_t );
+   size_holder += sizeof( size_t );
 #endif
 #ifdef USE_CHAR_BUF
    return sizeof( int_t ) + o.description.length( )
@@ -234,11 +236,6 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
 
    rs >> o.description;
 
-#ifndef _LP64
-   // KLUDGE: (see above)
-   size_t dummy;
-   rs >> dummy;
-#endif
    if( !o.only_read_description )
       rs >> o.children;
    else
@@ -253,12 +250,6 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
 write_stream& operator <<( write_stream& ws, const outline_base& o )
 {
    ws << o.description;
-
-#ifndef _LP64
-   // KLUDGE: (see above)
-   size_t dummy( 0 );
-   ws << dummy;
-#endif
 
    if( !o.only_write_description )
       ws << o.children;
