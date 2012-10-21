@@ -22,6 +22,8 @@ testing the system, populate this DB with tables and data and check that all is 
 The "ciyam" DB should only be used for regression test purposes (by repeating the above steps) so now another
 DB needs to be created for the IDE itself:
 
+(NOTE: in order for this second init to work the user must have rwx permissions for each directory in WEBROOT)
+
 ./create_db Meta
 ./init Meta Meta
 
@@ -36,6 +38,7 @@ It will present a HTML form with a Perform Post Request button. To verify that F
 click on the button. Output should look something like the following:
 
 Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
+(if the browser prompts to download the .fcgi file then configure FCGI according to fcgi_configuration.txt)
 
 If you go "back" to the page and then click the button again you should now see some like this:
 

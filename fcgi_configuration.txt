@@ -13,9 +13,10 @@ Notes for using mod_fcgid with Apache 2.2
 
 1) Copy mod_fcgid.so into Apache's modules directory.
 
-2) Make the following changes to "httpd.conf" (found in Apache's "conf" directory):
+2) Make the following changes to "default_server.conf" (found in Apache's "conf" directory or if there is no
+such file then try "httpd.conf" instead):
 ...
-LoadModule fcgid_module modules/mod_fcgid.so
+LoadModule fcgid_module modules/mod_fcgid.so ### (only add this if there are other LoadModule's around)
 ...
 #
 # This should be changed to whatever you set DocumentRoot to.
@@ -23,13 +24,13 @@ LoadModule fcgid_module modules/mod_fcgid.so
 <Directory "c:/webroot">
 ...
     Options Indexes ExecCGI FollowSymLinks
+    AddHandler fcgid-script .fcgi
 ...
     AllowOverride All
 ...
 </Directory>
 ...
 <IfModule fcgid_module>
-   AddHandler fcgid-script .fcgi
    MaxProcessCount               10
    MaxRequestLen                 10485760
    IdleTimeOut                   3600
@@ -38,3 +39,6 @@ LoadModule fcgid_module modules/mod_fcgid.so
 </IfModule>
 ...
 
+3) For some versions of Linux the "LoadModule" line might not be applicable and activating the module (after
+it has been installed) might instead require the use of a script (such as "a2enmod" with OpenSUSE). Also the
+name of the module for the "IfModule" test might be "mod_fcgid" rather than "fgid_module".
