@@ -41,6 +41,7 @@ xvars
 
 # Ignore temporary files
 ~*
+*.new
 *.sav
 
 # Ignore generated header files.
@@ -76,7 +77,10 @@ makefile.vars.xrep
 *.specs.sio
 *_extkeys.txt
 *.package.sio
-for_*.spec.xrep
+for_blog_*.spec.xrep
+for_forum_*.spec.xrep
+for_photo_*.spec.xrep
+for_user*.spec.xrep
 *_enum_icons.lst
 *ciyam_class.cpp.xrep
 

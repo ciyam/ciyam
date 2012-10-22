@@ -1,9 +1,14 @@
 if [ $# -lt 1 ]; then
- echo Usage: drop_db [db name] [[password]]
+ echo Usage: drop_db [db name] [[.]\|[password]]
 else
  echo DROP USER \'$1\'@\'localhost\'\;>~drop_db
  echo DROP DATABASE IF EXISTS $1\;>>~drop_db
  
- mysql -uroot -p$2<~drop_db
+ if [ "$2" = "." ]; then
+  mysql -uroot<~drop_db
+ else
+  mysql -uroot -p$2<~drop_db
+ fi
+
  rm ~drop_db
 fi
