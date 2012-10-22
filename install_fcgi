@@ -20,7 +20,6 @@ else
     rm $directory/$1.kill.sh
     sleep 2
      if [ -f $directory/$1.kill.sh ]; then
-      chmod a+x $directory/$1.kill.sh
       $directory/$1.kill.sh
      fi
    fi

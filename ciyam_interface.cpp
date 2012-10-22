@@ -115,6 +115,10 @@ const char* const c_kill_script = "ciyam_interface.kill.sh";
 const char* const c_kill_script = "ciyam_interface.kill.bat";
 #endif
 
+#ifndef _WIN32
+const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
+#endif
+
 const char* const c_login_file = "login.htms";
 const char* const c_footer_file = "footer.htms";
 const char* const c_activate_file = "activate.htms";
@@ -608,12 +612,14 @@ void timeout_handler::on_start( )
 
       if( !file_exists( c_kill_script ) )
       {
-#ifdef _WIN32
          ofstream outf( c_kill_script );
+#ifdef _WIN32
          outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
 #else
-         ofstream outf( c_kill_script, ios::out, S_IRWXU | S_IRWXG | S_IRWXO );
          outf << "kill -9 " << get_pid( ) << '\n';
+         outf.close( );
+
+         file_perms( c_kill_script, "rwxrwxrwx" );
 #endif
       }
    }
@@ -1322,7 +1328,8 @@ void request_handler::process_request( )
 #ifdef _WIN32
                   if( _mkdir( path.c_str( ) ) != 0 )
 #else
-                  if( _mkdir( path.c_str( ), S_IRWXU ) != 0 )
+
+                  if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
 #endif
                      throw runtime_error( "unable to create '" + path + "' directory" );
 

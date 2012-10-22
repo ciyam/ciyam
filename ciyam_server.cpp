@@ -457,6 +457,8 @@ int main( int argc, char* argv[ ] )
          close( STDOUT_FILENO );
          // close( STDERR_FILENO );
       }
+      else
+         umask( 0 );
 
       // NOTE: For a non-windows multi-threaded application need to create a thread to wait on the signal.
       pthread_t tid;
