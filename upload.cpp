@@ -224,7 +224,8 @@ void request_handler::process_request( )
       }
 
       string ext;
-      pos = file_source.find_last_of( "." );
+      pos = file_source.find( "." );
+
       if( pos == string::npos )
          FCGX_FPrintF( p_out, "<p>*** unexpected file extension not found in '%s' ***</p>", file_source.c_str( ) );
       else

@@ -475,12 +475,6 @@ void Meta_Package_Type::impl::impl_Install( )
 #endif
       cmd += package_file;
 
-      // NOTE: If is project's own environment then don't extract specification files
-      // that are expected to already be under source control (as otherwise these can
-      // cause issues with the source control software due to CR/LF's).
-      if( storage_name( ) == "ciyam" )
-         cmd += " -x for_auto_code*.spec.xrep";
-
       exec_system( cmd, false );
 
       if( !exists_file( info_filename ) )

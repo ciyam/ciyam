@@ -22,12 +22,19 @@ echo CREATE USER '%1'@'localhost';>>~create_db
 echo GRANT ALL PRIVILEGES ON %1.* TO '%1'@'localhost';>>~create_db
 echo quit>>~create_db
 
+if not '%2' == '.' goto pwd
+mysql -uroot<~create_db
+goto next2
+
+:pwd
 mysql -uroot -p%2<~create_db
+
+:next2
 del ~create_db>nul
 goto end
 
 :usage
-echo Usage: create_db [[-rebuild]] [db_name] [[password]]
+echo Usage: create_db [[-rebuild]] [db_name] [[.]|[password]]
 
 :end
 endlocal
