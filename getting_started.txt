@@ -38,7 +38,7 @@ It will present a HTML form with a Perform Post Request button. To verify that F
 click on the button. Output should look something like the following:
 
 Posted Data: name=Joe+Bloggs&age=&sex=male&submit=Perform+Post+Request...
-(if the browser prompts to download the .fcgi file then configure FCGI according to fcgi_configuration.txt)
+(if the browser prompts to download the .fcgi file then configure Apache according to fcgi_configuration.txt)
 
 If you go "back" to the page and then click the button again you should now see some like this:
 

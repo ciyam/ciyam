@@ -102,6 +102,11 @@ const int c_greeting_timeout = 2500;
 const int c_initial_response_timeout = 7500;
 const int c_subsequent_response_timeout = 2000;
 
+const int c_auto_refresh_seconds_local = 5;
+const int c_auto_refresh_seconds_remote = 10;
+
+const char* const c_local_ip_addr = "127.0.0.1";
+
 const char* const c_license_file = "license.txt";
 
 #ifndef _WIN32
@@ -3751,7 +3756,15 @@ void request_handler::process_request( )
                add_session_info( session_id, p_session_info );
 
             if( !is_in_edit && has_any_changing_records )
-               extra_content_func += "auto_refresh_seconds = 5;\nauto_refresh( );";
+            {
+               string seconds;
+               if( p_session_info->ip_addr == string( c_local_ip_addr ) )
+                  seconds = to_string( c_auto_refresh_seconds_local );
+               else
+                  seconds = to_string( c_auto_refresh_seconds_remote );
+
+               extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );";
+            }
 
             if( g_interface_html.find( c_form_content_comment ) != string::npos )
             {
