@@ -1,5 +1,5 @@
 if [ $# -lt 1 ]; then
- echo Usage: create_db [[-rebuild]] [db name] [[password]]
+ echo Usage: create_db [[-rebuild]] [db name] [[.]\|[password]]
 else
  if [ "$1" = "-rebuild" ]; then
   db_name=$2
@@ -25,6 +25,11 @@ else
  echo GRANT ALL PRIVILEGES ON $db_name.\* TO \'$db_name\'@\'localhost\'\;>>~create_db
  echo quit>>~create_db
 
- mysql -uroot -p$password<~create_db
+ if [ "$password" = "." ]; then
+  mysql -uroot<~create_db
+ else
+  mysql -uroot -p$password<~create_db
+ fi
+
  rm ~create_db
 fi

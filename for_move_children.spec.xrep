@@ -1,0 +1,31 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+`{`$key_suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$key_suffix`=`$arg_key_suffix`}\
+   // [(start for_move_children)]
+`{`@eq`(`$arg_move_from`,`'true`'`)\
+   class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+
+   perform_fetch_rc rc;
+   cp_source->perform_fetch( get_obj( ).get_key( ) + "`{`$key_suffix`}", &rc );
+
+   if( rc == e_perform_fetch_rc_okay && cp_source->child_`{`$arg_children`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         cp_source->child_`{`$arg_children`}( ).op_update( );
+         cp_source->child_`{`$arg_children`}( ).`{`$arg_cpfield`}( get_obj( ).get_key( ) );
+         cp_source->child_`{`$arg_children`}( ).op_apply( );
+      } while( cp_source->child_`{`$arg_children`}( ).iterate_next( ) );
+   }
+`,\
+   if( get_obj( ).child_`{`$arg_children`}( ).iterate_forwards( ) )
+   {
+      do
+      {
+         get_obj( ).child_`{`$arg_children`}( ).op_update( );
+         get_obj( ).child_`{`$arg_children`}( ).`{`$arg_cpfield`}( get_obj( ).get_key( ) + "`{`$key_suffix`}" );
+         get_obj( ).child_`{`$arg_children`}( ).op_apply( );
+      } while( get_obj( ).child_`{`$arg_children`}( ).iterate_next( ) );
+   }
+`}\
+   // [(start for_move_children)]
+`}

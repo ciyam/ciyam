@@ -1,0 +1,35 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+`{`$suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$suffix`=`$arg_key_suffix`}\
+   // [(start for_destroy_clone)]
+   transaction_start( );
+   try
+   {
+`{`!`@eq`(`$arg_field`,`'`'`)\
+      get_obj( ).op_update( );
+      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) );
+
+`}\
+      class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+
+      cp_source->op_destroy( get_obj( ).get_key( ) + "`{`$suffix`}" );
+      cp_source->op_apply( );
+
+`{`!`@eq`(`$arg_field`,`'`'`)\
+      get_obj( ).op_apply( );
+`}\
+      transaction_commit( );
+
+      // FUTURE: The return message itself should be a module string.
+      `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
+       + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+   }
+   catch( ... )
+   {
+`{`!`@eq`(`$arg_field`,`'`'`)\
+      get_obj( ).op_cancel( );
+`}\
+      transaction_rollback( );
+      throw;
+   }
+   // [(start for_destroy_clone)]
+`}
