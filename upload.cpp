@@ -36,6 +36,7 @@
 #ifdef __GNUG__
 #  include <limits.h>
 #  include <unistd.h>
+#  include <sys/stat.h>
 #endif
 
 #ifdef _WIN32
@@ -89,12 +90,14 @@ void pid_handler::on_start( )
 
       if( !file_exists( c_kill_script ) )
       {
-#ifdef _WIN32
          ofstream outf( c_kill_script );
+#ifdef _WIN32
          outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
 #else
-         ofstream outf( c_kill_script, ios::out, S_IRWXU | S_IRWXG | S_IRWXO );
          outf << "kill -9 " << get_pid( ) << '\n';
+         outf.close( );
+
+         file_perms( c_kill_script, "rwxrwxrwx" );
 #endif
       }
    }

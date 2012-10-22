@@ -1469,8 +1469,9 @@ void Meta_Application::impl::impl_Generate( )
              << "\nfi\n\n";
 #endif
          }
-
+#ifdef _WIN32
          outs << "\n";
+#endif
       }
 
 #ifdef _WIN32
