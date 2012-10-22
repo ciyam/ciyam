@@ -4212,7 +4212,12 @@ string get_sql_password( )
 
    if( gtp_session
     && gtp_session->p_storage_handler->get_name( ) == "Meta" ) // i.e. only allow the Meta to do this
-      pwd = decrypt_password( g_sql_password );
+   {
+      if( g_sql_password.empty( ) )
+         pwd = "."; // i.e. used to give batch scripts a non-empty password argument
+      else
+         pwd = decrypt_password( g_sql_password );
+   }
 
    return pwd;
 }

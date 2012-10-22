@@ -77,19 +77,16 @@ makefile.vars.xrep
 *.specs.sio
 *_extkeys.txt
 *.package.sio
-for_blog_*.spec.xrep
-for_forum_*.spec.xrep
-for_photo_*.spec.xrep
-for_user*.spec.xrep
+for_*.spec.xrep
 *_enum_icons.lst
 *ciyam_class.cpp.xrep
 
 # Except specs with matching file names.
 !for_clone.spec.xrep
-!for_cms_gen.spec.xrep
 !for_destroy.spec.xrep
-!for_auto_code.spec.xrep
-!for_auto_code_user.spec.xrep
+!for_call_procs.spec.xrep
+!for_destroy_clone.spec.xrep
+!for_move_children.spec.xrep
 
 # Ignore specific installed package files.
 blog*.jpg
