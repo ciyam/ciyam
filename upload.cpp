@@ -89,10 +89,11 @@ void pid_handler::on_start( )
 
       if( !file_exists( c_kill_script ) )
       {
-         ofstream outf( c_kill_script );
 #ifdef _WIN32
+         ofstream outf( c_kill_script );
          outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
 #else
+         ofstream outf( c_kill_script, ios::out, S_IRWXU | S_IRWXG | S_IRWXO );
          outf << "kill -9 " << get_pid( ) << '\n';
 #endif
       }
@@ -368,56 +369,72 @@ void request_handler::process_request( )
 
 int main( int /*argc*/, char* argv[ ] )
 {
-   g_exe_path = string( argv[ 0 ] );
+   int rc = 0;
+
+   try
+   {
+#ifndef _WIN32
+      umask( 0 );
+#endif
+      g_exe_path = string( argv[ 0 ] );
 
 #ifndef _WIN32
-   size_t pos = g_exe_path.find_last_of( "/" );
+      size_t pos = g_exe_path.find_last_of( "/" );
 #else
-   size_t pos = g_exe_path.find_last_of( "\\" );
+      size_t pos = g_exe_path.find_last_of( "\\" );
 #endif
-   if( pos != string::npos )
-      g_exe_path.erase( pos );
-   else
-      g_exe_path.erase( );
+      if( pos != string::npos )
+         g_exe_path.erase( pos );
+      else
+         g_exe_path.erase( );
 
-   if( !g_exe_path.empty( ) )
-      _chdir( g_exe_path.c_str( ) );
+      if( !g_exe_path.empty( ) )
+         _chdir( g_exe_path.c_str( ) );
 
-   // NOTE: Scope for pid handler temporary object.
-   {
-      pid_handler( ).start( );
+      // NOTE: Scope for pid handler temporary object.
+      {
+         pid_handler( ).start( );
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-      FCGX_Init( );
+         FCGX_Init( );
 
-      // KLUDGE: For some unknown reason when this FCGI interface is started automatically by Apache
-      // (under Windows) it can crash, however, with the delay here this problem seems to be avoided.
-      msleep( 500 );
+         // KLUDGE: For some unknown reason when this FCGI interface is started automatically by Apache
+         // (under Windows) it can crash, however, with the delay here this problem seems to be avoided.
+         msleep( 500 );
 
-      // FUTURE: Currently Apache's "mod_fcgid" only supports single threaded FCGI servers and under
-      // Windows it is simply unable to get back a request that has been handled by any thread other
-      // than the main one. Thus rather than force single threaded compilation a check is being made
-      // to see if "mod_fastcgi" is in use before starting any other request handling threads.
+         // FUTURE: Currently Apache's "mod_fcgid" only supports single threaded FCGI servers and under
+         // Windows it is simply unable to get back a request that has been handled by any thread other
+         // than the main one. Thus rather than force single threaded compilation a check is being made
+         // to see if "mod_fastcgi" is in use before starting any other request handling threads.
 #  ifdef USE_MOD_FASTCGI_KLUDGE
-      if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
+         if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
 #  endif
-      {
-         // Start all but one as separate threads - the main thread runs the final handler.
-         for( size_t i = 1; i < c_num_handlers; i++ )
          {
-            request_handler* p_request_handler = new request_handler;
-            p_request_handler->start( );
+            // Start all but one as separate threads - the main thread runs the final handler.
+            for( size_t i = 1; i < c_num_handlers; i++ )
+            {
+               request_handler* p_request_handler = new request_handler;
+               p_request_handler->start( );
+            }
          }
-      }
 #endif
 
-      request_handler* p_request_handler = new request_handler;
-      p_request_handler->on_start( );
+         request_handler* p_request_handler = new request_handler;
+         p_request_handler->on_start( );
+      }
+   }
+   catch( exception& x )
+   {
+      rc = 1;
+   }
+   catch( ... )
+   {
+      rc = 2;
    }
 
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );
 
-   return 0;
+   return rc;
 }
 

@@ -608,10 +608,11 @@ void timeout_handler::on_start( )
 
       if( !file_exists( c_kill_script ) )
       {
-         ofstream outf( c_kill_script );
 #ifdef _WIN32
+         ofstream outf( c_kill_script );
          outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
 #else
+         ofstream outf( c_kill_script, ios::out, S_IRWXU | S_IRWXG | S_IRWXO );
          outf << "kill -9 " << get_pid( ) << '\n';
 #endif
       }
@@ -4260,7 +4261,6 @@ void request_handler::process_request( )
 
 int main( int argc, char* argv[ ] )
 {
-
    int rc = 0;
 
    try
