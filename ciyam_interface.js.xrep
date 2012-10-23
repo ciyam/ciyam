@@ -12,7 +12,7 @@ var qsFurther = '';
 
 var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
-var usePageFadeIn = true;
+var usePageFading = true;
 var debugDynamicContent = false;
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
@@ -20,6 +20,9 @@ if( secureOnly && source[ 0 ] != 'https' )
 
 var scrollTop = 0;
 var scrollLeft = 0;
+var pageFadeMin = 50;
+var pageFadeRate = 5;
+var pageFadeTimer = 15;
 
 var loggedIn = false;
 var jump_back = false;
@@ -300,6 +303,17 @@ function trim( str )
 
 function load( )
 {
+   if( sessionStorage.getItem( 'old_content' ) != null )
+      document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
+
+   if( usePageFading )
+      fade_out( 100 );
+   else
+      load2( );
+}
+
+function load2( )
+{
    had_act_error = false;
 
    clearTimeout( warn_refresh_timer_id );
@@ -509,9 +523,27 @@ function fade_in( n )
    if( n <= 100 )
    {
       document.body.style.opacity = n / 100;
-      n += 25;
-      window.setTimeout( 'fade_in(' + n + ')', 10 );
+
+      n += pageFadeRate;
+      window.setTimeout( 'fade_in( ' + n + ' )', pageFadeTimer );
    }
+   else
+      focus_on_first_text( );
+}
+
+function fade_out( n )
+{
+   // NOTE: Currently only works for FF (under IE use blendTrans headers)
+   // in order to try and make the page rendering look a little smoother.
+   if( n > pageFadeMin )
+   {
+      document.body.style.opacity = n / 100;
+
+      n -= pageFadeRate;
+      window.setTimeout( 'fade_out( ' + n + ' )', pageFadeTimer );
+   }
+   else
+      load2( );
 }
 
 function after_force( )
@@ -539,11 +571,11 @@ function after_force( )
    {
       jump_back = false;
 
-      if( usePageFadeIn )
-         fade_in( 0 );
-
-      // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
-      setTimeout( "focus_on_first_text( )", 50 );
+      if( usePageFading )
+         fade_in( pageFadeMin );
+      else
+         // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
+         setTimeout( "focus_on_first_text( )", 50 );
    }
 }
 
@@ -623,6 +655,8 @@ function process( )
 
       document.getElementById( 'content' ).innerHTML = utf8_decode( decrypted );
    }
+
+   sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
 
    force_update( );
 }
