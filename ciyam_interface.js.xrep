@@ -12,7 +12,7 @@ var qsFurther = '';
 
 var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
-var usePageFading = true;
+var usePageFading = false;
 var debugDynamicContent = false;
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
@@ -665,6 +665,8 @@ function dyn_load( f, extra, clearContext )
 {
    if( f == null || validate( f ) )
    {
+      sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
+
       if( clearContext )
         qsContext = ''
 
