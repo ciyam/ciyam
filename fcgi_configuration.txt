@@ -11,19 +11,18 @@ FCGI servers are started when Apache itself starts and a re-started automaticall
 Notes for using mod_fcgid with Apache 2.2
 -----------------------------------------
 
-1) Copy mod_fcgid.so into Apache's modules directory.
+1) Copy mod_fcgid.so into Apache's modules directory (Windows only - otherwise ensure "mod_fcgid" installed).
 
-2) Make the following changes to "default_server.conf" (found in Apache's "conf" directory or if there is no
-such file then try "httpd.conf" instead):
+2) Make the following changes to "default_server.conf" (or if no such file then change "httpd.conf" instead):
 ...
-LoadModule fcgid_module modules/mod_fcgid.so ### (only add this if there are other LoadModule's around)
+LoadModule fcgid_module modules/mod_fcgid.so ### (NOTE: only add this if there are other LoadModule's around)
 ...
 #
 # This should be changed to whatever you set DocumentRoot to.
 #
 <Directory "c:/webroot">
 ...
-    Options Indexes ExecCGI FollowSymLinks
+    Options ExecCGI FollowSymLinks
     AddHandler fcgid-script .fcgi
 ...
     AllowOverride All
@@ -41,4 +40,4 @@ LoadModule fcgid_module modules/mod_fcgid.so ### (only add this if there are oth
 
 3) For some versions of Linux the "LoadModule" line might not be applicable and activating the module (after
 it has been installed) might instead require the use of a script (such as "a2enmod" with OpenSUSE). Also the
-name of the module for the "IfModule" test might be "mod_fcgid" rather than "fgid_module".
+name of the module for the "IfModule" test might be "mod_fcgid" rather than "fcgid_module".
