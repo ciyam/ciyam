@@ -14,6 +14,7 @@ var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
 var usePageFading = false;
 var debugDynamicContent = false;
+
 var source = window.location.href.split( ':' );
 if( secureOnly && source[ 0 ] != 'https' )
    window.location.replace( 'https:' + source[ 1 ] );
@@ -25,8 +26,9 @@ var pageFadeRate = 5;
 var pageFadeTimer = 15;
 
 var loggedIn = false;
+var isDynamicLoad = false;
+
 var jump_back = false;
-var isLoggingIn = false;
 var had_act_error = false;
 
 var pwdSalt = '';
@@ -304,7 +306,7 @@ function trim( str )
 
 function load( )
 {
-   if( !isLoggingIn && sessionStorage.getItem( 'old_content' ) != null )
+   if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
       document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
 
    if( usePageFading )
@@ -682,6 +684,8 @@ function dyn_load( f, extra, clearContext )
 
       qsFurther = extra;
 
+      isDynamicLoad = true;
+
       load_form = f;
       load( );
       load_form = null;
@@ -905,9 +909,6 @@ function hash_password( salt, pwd, skip_id )
       if( sessionStorage.getItem( 'key' ) == null )
          sessionStorage.setItem( 'key', retval );
    }
-
-   if( !skip_id )
-      isLoggingIn = true;
 
    if( skip_id != true && uniqueId != '' )
       retval = hex_sha1( retval + uniqueId ).toLowerCase( );
