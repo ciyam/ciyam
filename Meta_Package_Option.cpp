@@ -959,6 +959,9 @@ uint64_t Meta_Package_Option::impl::get_state( ) const
    // [(finish modifier_field_value)]
 
    // [<start get_state>]
+//nyi
+   if( get_obj( ).Package( ).Actions( ).empty( ) )
+      state |= ( c_state_uneditable | c_state_undeletable );
    // [<finish get_state>]
 
    return state;
