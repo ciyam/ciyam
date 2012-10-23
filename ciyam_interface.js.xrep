@@ -26,6 +26,7 @@ var pageFadeTimer = 15;
 
 var loggedIn = false;
 var jump_back = false;
+var isLoggingIn = false;
 var had_act_error = false;
 
 var pwdSalt = '';
@@ -303,7 +304,7 @@ function trim( str )
 
 function load( )
 {
-   if( sessionStorage.getItem( 'old_content' ) != null )
+   if( !isLoggingIn && sessionStorage.getItem( 'old_content' ) != null )
       document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
 
    if( usePageFading )
@@ -665,8 +666,6 @@ function dyn_load( f, extra, clearContext )
 {
    if( f == null || validate( f ) )
    {
-      sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
-
       if( clearContext )
         qsContext = ''
 
@@ -906,6 +905,9 @@ function hash_password( salt, pwd, skip_id )
       if( sessionStorage.getItem( 'key' ) == null )
          sessionStorage.setItem( 'key', retval );
    }
+
+   if( !skip_id )
+      isLoggingIn = true;
 
    if( skip_id != true && uniqueId != '' )
       retval = hex_sha1( retval + uniqueId ).toLowerCase( );
