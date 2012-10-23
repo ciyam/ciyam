@@ -1,4 +1,5 @@
 <sio/>
+# <domain>server.com
 # <license>11F38888
  <timezone>GMT
  <web_root>$WEBDIR
