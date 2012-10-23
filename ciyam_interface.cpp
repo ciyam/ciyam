@@ -3381,7 +3381,7 @@ void request_handler::process_request( )
             }
             else if( cmd == c_cmd_pview || cmd == c_cmd_plist )
             {
-               extra_content << "<p class=\"screen\" align=\"center\">"
+               extra_content << "<p class=\"screen\" align=\"center\"><br/><br/>"
                 << string_message( GDS( c_display_click_the_printer_icon_to_print ),
                 make_pair( c_display_click_the_printer_icon_to_print_parm_href,
                 "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>";
