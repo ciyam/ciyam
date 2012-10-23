@@ -4,6 +4,7 @@ var isIE = navigator.userAgent.indexOf( 'MSIE' ) > 1 && !isOpera;
 var isMoz = navigator.userAgent.indexOf( 'Mozilla/5.' ) == 0 && !isOpera;
 
 var xmlReq = null;
+var reqDone = false;
 var load_form = null;
 
 var ServerApp = 'ciyam_interface.fcgi';
@@ -501,14 +502,36 @@ function load2( )
       disable_form( load_form );
 
    load_content_timer_id = setTimeout( load_timeout, load_content_seconds * 1000 );
+
+   reqDone = false;
+   show_progress( 20 );
+}
+
+function hide_progress( )
+{
+   $( "progress" ).className = "invisible";
+}
+
+function show_progress( n )
+{
+   if( reqDone == false )
+   {
+      if( n == 0 )
+         $( "progress" ).className = "visible";
+      else
+         window.setTimeout( 'show_progress( ' + ( n - 1 ) + ' )', 25 );
+   }
 }
 
 function load_timeout( )
 {
+   reqDone = true;
    xmlReq.abort( );
 
    if( load_form != null )
       enable_form( load_form );
+
+   hide_progress( );
 
    alert( displayTimeout );
 
@@ -599,11 +622,14 @@ function force_update( )
 
 function process( )
 {
+   reqDone = true;
    if( xmlReq.readyState != 4 )
       return;
 
    if( load_form != null )
       enable_form( load_form );
+
+   hide_progress( );
 
    clearTimeout( load_content_timer_id );
 

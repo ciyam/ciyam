@@ -15,6 +15,25 @@ body
    background: #ccc;
 }
 
+#progress
+{
+   position: absolute;
+   text-align: center;
+   width: 100%;
+   left: 0px;
+   top: 20px;
+}
+
+.visible
+{
+   visibility: visible;
+}
+
+.invisible
+{
+   visibility: hidden;
+}
+
 input,textarea,select
 {
    font-family: verdana,helvetica;
