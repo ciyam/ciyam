@@ -1,3 +1,4 @@
+auto_progress.gif
 activate.htms
 background.png
 background_header.png
@@ -14,6 +15,7 @@ footer_row.gif
 forward.png
 forward_fast.png
 header_row.gif
+load_progress.gif
 login.htms
 login_box.gif
 login_header.gif
@@ -26,7 +28,6 @@ password_persistent.htms
 pdf_icon.gif
 printlist.htms
 printview.htms
-progress.gif
 sha1.js
 show_less.gif
 show_more.gif

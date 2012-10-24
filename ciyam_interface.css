@@ -15,7 +15,16 @@ body
    background: #ccc;
 }
 
-#progress
+#auto_progress
+{
+   position: absolute;
+   text-align: center;
+   width: 100%;
+   left: 460px;
+   top: 95px;
+}
+
+#load_progress
 {
    position: absolute;
    text-align: center;

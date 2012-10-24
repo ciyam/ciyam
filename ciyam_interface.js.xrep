@@ -14,6 +14,8 @@ var qsFurther = '';
 var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
 var usePageFading = false;
+var useAutoProgress = true;
+var useLoadProgress = true;
 var debugDynamicContent = false;
 
 var source = window.location.href.split( ':' );
@@ -25,9 +27,11 @@ var scrollLeft = 0;
 var pageFadeMin = 50;
 var pageFadeRate = 5;
 var pageFadeTimer = 15;
+var loadProgressDelay = 20;
 
 var loggedIn = false;
 var isDynamicLoad = false;
+var hasShownAutoProgress = false;
 
 var jump_back = false;
 var had_act_error = false;
@@ -116,6 +120,12 @@ function auto_refresh( )
       replace_with_scroll_info( );
    else if( auto_refresh_seconds > 0 )
    {
+      if( useAutoProgress && !hasShownAutoProgress )
+      {
+         show_auto_progress( );
+         hasShownAutoProgress = true;
+      }
+
       auto_refresh_seconds -= 1;
       setTimeout( "auto_refresh( )", 1000 );
    }
@@ -504,22 +514,28 @@ function load2( )
    load_content_timer_id = setTimeout( load_timeout, load_content_seconds * 1000 );
 
    reqDone = false;
-   show_progress( 20 );
+   if( useLoadProgress )
+      show_load_progress( loadProgressDelay );
 }
 
-function hide_progress( )
+function show_auto_progress( )
 {
-   $( "progress" ).className = "invisible";
+   $( "auto_progress" ).className = "visible";
 }
 
-function show_progress( n )
+function hide_load_progress( )
+{
+   $( "load_progress" ).className = "invisible";
+}
+
+function show_load_progress( n )
 {
    if( reqDone == false )
    {
       if( n == 0 )
-         $( "progress" ).className = "visible";
+         $( "load_progress" ).className = "visible";
       else
-         window.setTimeout( 'show_progress( ' + ( n - 1 ) + ' )', 25 );
+         window.setTimeout( 'show_load_progress( ' + ( n - 1 ) + ' )', 25 );
    }
 }
 
@@ -531,7 +547,7 @@ function load_timeout( )
    if( load_form != null )
       enable_form( load_form );
 
-   hide_progress( );
+   hide_load_progress( );
 
    alert( displayTimeout );
 
@@ -629,7 +645,7 @@ function process( )
    if( load_form != null )
       enable_form( load_form );
 
-   hide_progress( );
+   hide_load_progress( );
 
    clearTimeout( load_content_timer_id );
 
