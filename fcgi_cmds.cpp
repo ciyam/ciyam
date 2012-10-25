@@ -38,7 +38,7 @@ using namespace std;
 namespace
 {
 
-const int c_initial_response_timeout = 10000;
+const int c_initial_response_timeout = 25000;
 const int c_subsequent_response_timeout = 2500;
 
 const char* const c_order_reverse = "reverse";
