@@ -75,7 +75,7 @@ var warn_refresh_seconds = warn_refresh_default;
 
 var warn_refresh_timer_id = 0;
 
-var load_content_seconds = 15;
+var load_content_seconds = 30;
 var load_content_timer_id = 0;
 
 function is_leap_year( year )
