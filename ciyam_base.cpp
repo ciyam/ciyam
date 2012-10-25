@@ -8243,7 +8243,7 @@ void begin_instance_op( instance_op op, class_base& instance,
          }
       }
       else
-         instance_accessor.set_default_values( );
+         instance.init( true );
    }
 
    instance_accessor.set_key( key_for_op, true );

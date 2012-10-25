@@ -4,6 +4,8 @@
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)`&`!`@eq`(`$arg_tvalue`,`'`'`)\
     && ( get_obj( ).`{`$arg_tfield`}( ) == `{`$arg_tvalue`} )
+`}`{`!`@eq`(`$arg_not_var`,`'`'`)\
+    && get_obj( ).get_variable( "`{`$arg_not_var`}" ).empty( )
 `}\
     && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
    {
