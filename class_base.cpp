@@ -736,6 +736,12 @@ void class_base::init( bool for_create )
 
    if( is_create || for_create )
       at_create( );
+
+   original_values.clear( );
+
+   int num_fields = get_num_fields( );
+   for( size_t i = 0; i < num_fields; i++ )
+      original_values.push_back( get_field_value( i ) );
 }
 
 void class_base::prepare( bool for_create )
