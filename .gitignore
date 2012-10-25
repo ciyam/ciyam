@@ -101,6 +101,7 @@ ciyam.dat
 ciyam.hdr
 ciyam.idx
 ciyam.sql
+modules.lst
 packages.lst
 ciyam_server.sid
 ciyam_server.sio
