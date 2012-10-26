@@ -457,12 +457,12 @@ void Meta_Package_Type::impl::impl_Install( )
    string package_file;
    string info_filename( "package.info" );
 
+   string path( get_session_variable( "@package_type_path" ) );
+
    if( storage_locked_for_admin( ) )
       info_filename = get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".info" );
    else
    {
-      string path( get_session_variable( "@package_type_path" ) );
-
       if( !path.empty( ) )
          package_file = path + "/" + get_obj( ).File( );
       else
@@ -584,7 +584,9 @@ void Meta_Package_Type::impl::impl_Install( )
 
       copy_file( info_filename, get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".info" ) );
 
-      remove_file( package_file );
+      if( path.empty( ) )
+         remove_file( package_file );
+
       remove_file( info_filename );
    }
    // [<finish Install_impl>]
@@ -907,6 +909,27 @@ void Meta_Package_Type::impl::after_store( bool is_create, bool is_internal )
    ( void )is_internal;
 
    // [<start after_store>]
+//nyi
+   if( is_create
+    && !is_internal && exists_file( get_obj( ).Name( ) + ".package.bun.gz" ) )
+   {
+      try
+      {
+         set_session_variable( "@package_type_path", "." );
+         class_pointer< Meta_Package_Type > cp_other( e_create_instance );
+         cp_other->perform_fetch( get_obj( ).get_key( ) );
+
+         cp_other->File( get_obj( ).Name( ) + ".package.bun.gz" );
+
+         cp_other->Install( );
+         set_session_variable( "@package_type_path", "" );
+      }
+      catch( ... )
+      {
+         set_session_variable( "@package_type_path", "" );
+         throw;
+      }
+   }
    // [<finish after_store>]
 }
 
