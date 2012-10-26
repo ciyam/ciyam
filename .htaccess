@@ -3,7 +3,7 @@
  deny from all
 </Files>
 
-<Files licence.txt>
+<Files identity.txt>
  order allow,deny
  deny from all
 </Files>
