@@ -767,6 +767,8 @@ bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
 {
    validation_errors.clear( );
 
+   do_post_init( );
+
    if( !p_fields_set )
       validate( get_state( ), is_internal );
    else
