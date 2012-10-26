@@ -475,14 +475,14 @@ int main( int argc, char* argv[ ] )
       init_globals( );
 
 #ifdef USE_MAC_LICENSE
-      // NOTE: Make sure that server has the correct license key.
-      string license_hash( get_checksum( get_mac_addr( ) ) );
+      // NOTE: Make sure that server has the correct registration key.
+      string reg_hash( get_checksum( get_mac_addr( ) ) );
 
-      bool is_licensed = false;
+      bool is_registered = false;
       for( int i = 0; i < 100; i++ )
       {
          hash.init( );
-         hash.update( license_hash + to_string( i ) );
+         hash.update( reg_hash + to_string( i ) );
 
          sha1_quads.clear( );
          split( hash.get_digest_as_string( ',' ), sha1_quads );
@@ -490,21 +490,21 @@ int main( int argc, char* argv[ ] )
          if( sha1_quads.size( ) != 5 )
             throw runtime_error( "unexpected hash result" );
 
-         string license( get_license( ) );
+         string reg( get_identity( ) );
 
-         set< string > all_licenses;
-         split( license, all_licenses, '+' );
+         set< string > all_regs;
+         split( reg, all_regs, '+' );
 
-         if( all_licenses.count( sha1_quads[ 2 ] ) )
+         if( all_regs.count( sha1_quads[ 2 ] ) )
          {
             set_max_user_limit( i );
-            is_licensed = true;
+            is_registered = true;
             break;
          }
       }
 
-      if( !is_licensed )
-         throw runtime_error( "server is not licensed" );
+      if( !is_registered )
+         throw runtime_error( "server is not registered" );
 #endif
 
       tcp_socket s;

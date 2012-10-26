@@ -957,10 +957,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    {
       ostringstream osstr;
 
-      if( command == c_cmd_ciyam_session_license )
-         response = get_license( true, true );
-      else if( command == c_cmd_ciyam_session_version )
+      if( command == c_cmd_ciyam_session_version )
          response = c_protocol_version;
+      else if( command == c_cmd_ciyam_session_identity )
+         response = get_identity( true, true );
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );

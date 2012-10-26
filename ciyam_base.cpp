@@ -103,7 +103,7 @@ const char* const c_attribute_domain = "domain";
 const char* const c_attribute_server = "server";
 const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
-const char* const c_attribute_license = "license";
+const char* const c_attribute_reg_key = "license";
 const char* const c_attribute_identity = "identity";
 const char* const c_attribute_password = "password";
 const char* const c_attribute_security = "security";
@@ -2616,7 +2616,7 @@ string_container g_strings;
 
 string g_sid;
 string g_domain;
-string g_license;
+string g_reg_key;
 string g_timezone;
 string g_web_root;
 
@@ -2719,7 +2719,7 @@ void read_server_configuration( )
 
       g_domain = reader.read_opt_attribute( c_attribute_domain, "localhost" );
 
-      g_license = upper( reader.read_opt_attribute( c_attribute_license ) );
+      g_reg_key = upper( reader.read_opt_attribute( c_attribute_reg_key ) );
 
       g_timezone = upper( reader.read_opt_attribute( c_attribute_timezone ) );
 
@@ -3494,17 +3494,20 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-string get_license( bool prepend_sid, bool append_max_user_limit )
+string get_identity( bool prepend_sid, bool append_max_user_limit )
 {
    guard g( g_mutex );
 
    if( !prepend_sid && !append_max_user_limit )
-      return g_license;
+      return g_reg_key;
 
-   string s( g_license );
+   string s( g_reg_key );
 
    if( prepend_sid )
-      s = g_sid + "-" + s;
+   {
+      sha1 hash( g_sid );
+      s = hash.get_digest_as_string( ) + "-" + s;
+   }
 
    if( append_max_user_limit )
       s += ":" + to_string( g_max_user_limit );
@@ -3512,11 +3515,11 @@ string get_license( bool prepend_sid, bool append_max_user_limit )
    return s;
 }
 
-string get_checksum( const string& data, bool use_license )
+string get_checksum( const string& data, bool use_reg_key )
 {
    guard g( g_mutex );
 
-   string prefix( !use_license ? g_sid : g_license );
+   string prefix( !use_reg_key ? g_sid : g_reg_key );
 
    sha1 hash( prefix + data );
 

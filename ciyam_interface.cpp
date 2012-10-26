@@ -107,7 +107,7 @@ const int c_auto_refresh_seconds_remote = 10;
 
 const char* const c_local_ip_addr = "127.0.0.1";
 
-const char* const c_license_file = "license.txt";
+const char* const c_identity_file = "identity.txt";
 
 #ifndef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.sh";
@@ -1048,15 +1048,15 @@ void request_handler::process_request( )
                         throw runtime_error( "incompatible protocol version "
                          + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
 
-                     string license_info;
-                     if( !simple_command( *p_session_info, "license", &license_info ) )
-                        throw runtime_error( "Unable to determine license information." );
+                     string identity_info;
+                     if( !simple_command( *p_session_info, "identity", &identity_info ) )
+                        throw runtime_error( "Unable to determine identity information." );
 
-                     string::size_type pos = license_info.find( ':' );
+                     string::size_type pos = identity_info.find( ':' );
                      if( pos == string::npos )
-                        throw runtime_error( "unexpected license information '" + license_info + "'" );
+                        throw runtime_error( "unexpected identity information '" + identity_info + "'" );
 
-                     string server_id( license_info.substr( 0, pos ) );
+                     string server_id( identity_info.substr( 0, pos ) );
 
                      pos = server_id.find( '-' );
                      if( pos != string::npos )
@@ -1066,11 +1066,11 @@ void request_handler::process_request( )
                      {
                         set_server_id( server_id );
 
-                        ofstream outf( c_license_file );
+                        ofstream outf( c_identity_file );
                         outf << get_server_id( );
                      }
 
-                     g_max_user_limit = ( size_t )atoi( license_info.substr( pos + 1 ).c_str( ) );
+                     g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
 
                      if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
                         throw runtime_error( "Unable to initialise '" + get_storage_info( ).storage_name + "' storage." );
@@ -1406,7 +1406,7 @@ void request_handler::process_request( )
             if( act != c_act_qlink )
                prefix += act;
 
-            string license_values( cmd + data );
+            string identity_values( cmd + data );
 
             string checksum_values;
 
@@ -1467,7 +1467,7 @@ void request_handler::process_request( )
             // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter is used to
             // ensure the search data hasn't been changed via URL tampering.
             if( ( !hashval.empty( ) && hashval != get_hash( hash_values ) )
-             || ( chksum != get_checksum( license_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) )
+             || ( chksum != get_checksum( identity_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) )
             {
 #ifdef DEBUG
                for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
@@ -4305,9 +4305,9 @@ int main( int argc, char* argv[ ] )
       g_interface_html = buffer_file( c_interface_file );
       g_mini_login_html = buffer_file( c_mini_login_file );
 
-      if( file_exists( c_license_file ) )
+      if( file_exists( c_identity_file ) )
       {
-         set_server_id( buffer_file( c_license_file ) );
+         set_server_id( buffer_file( c_identity_file ) );
          string key( get_server_id( ).substr( 0, 10 ) );
 
          MD5 md5;

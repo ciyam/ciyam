@@ -1,6 +1,5 @@
 <sio/>
 # <domain>server.com
-# <license>11F38888
  <timezone>GMT
  <web_root>$WEBDIR
  <set_trace>1000
