@@ -3475,6 +3475,14 @@
      <modifiers>2000:relegate,1000:relegate
     </field>
     <field/>
+     <name>field_list_ignore_state_for_display
+     <field>122148
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>1000:relegate
+    </field>
+    <field/>
      <name>field_list_ignore_unactionable_records
      <field>122120
      <ftype>bool
@@ -7297,6 +7305,15 @@
      <field>127102
      <ftype>string
      <extra>max_size=5
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_application_generate_status
+     <field>127105
+     <ftype>string
+     <extra>
      <modifiers>
      <unique>false
      <indexed>false

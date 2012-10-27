@@ -196,6 +196,78 @@ _`{`@lower`(`$specification_\$_print_prfnm\\$`)`}`}`{`(`?`$specification_\$_prin
 `]`}`]`}\
    </restricts>
   </list>`}\
+`{`(`?`$specification_\$_list_add_name`)
+  <list/>
+   <id>`{`$specification_\$_list_add_id`}
+   <cid>`{`$specification_\$_list_add_cid`}
+   <name>`{`$specification_\$_list_add_id`}_name
+   <type>`{`$specification_\$_list_add_type`}
+   <extra>`{`$specification_\$_list_add_extra`}
+   <actions>`{`$specification_\$_list_add_acts`}`{`(`?`$specification_\$_list_add_pdf_spec`)
+   <pdf_spec>`{`$specification_\$_list_add_pdf_spec`}`}
+   <modifiers>`{`$specification_\$_list_add_mods`}`{`(`?`$specification_\$_view_id`)
+   <view>`{`$specification_\$_view_id`}`}
+   <class>\$
+   <bclass>`{`$specification_\$_list_add_binfo`}
+   <order>`{`$specification_\$_list_add_order`}`{`(`?`$specification_\$_list_add_pclass`)
+   <pclass>`{`$specification_\$_list_add_pclass`}`}`{`(`?`$specification_\$_list_add_pfield`)
+   <pfield>`{`$specification_\$_list_add_pfield`}`}`{`(`?`$specification_\$_list_add_pfldnm`)
+   <pfldnm>`{`$specification_\$_list_add_pfldnm`}`}`{`(`?`$specification_\$_list_add_nclass`)
+   <nclass>`{`$specification_\$_list_add_nclass`}`}`{`(`?`$specification_\$_list_add_nfield`)
+   <nfield>`{`$specification_\$_list_add_nfield`}`}`{`(`?`$specification_\$_list_add_nextra`)
+   <nextra>`{`$specification_\$_list_add_nextra`}`}`{`(`?`$specification_\$_list_add_dfenum`)
+   <dfenum>`{`$specification_\$_list_add_dfenum`}`}`{`(`?`$specification_\$_list_add_dfield`)
+   <dfield>`{`$specification_\$_list_add_dfield`}`}`{`(`?`$specification_\$_list_add_dvalue`)
+   <dvalue>`{`$specification_\$_list_add_dvalue`}`}
+   <module>`{`$model_name`}`{`(`?`$specification_\$_list_add_filters`)
+   <filters>`{`$specification_\$_list_add_filters`}`}
+   <columns/>
+`{`[`$cnums`,`{`?`$specification_\$_list_add_column\=3$`[`$specification_\$_list_add_column\=3$`,\
+    <column/>
+     <name>field_`{`@lower`(`$specification_\$_list_add_clname\=3$`)`}
+     <field>\=4$
+     <ftype>`{`$specification_\$_list_add_cltype\=3$`}
+     <extra>`{`$specification_\$_list_add_clxtra\=3$`}
+     <modifiers>`{`$specification_\$_list_add_clmods\=3$`}`{`(`?`$specification_\$_list_add_pclass\=3$`)
+     <pclass>`{`$specification_\$_list_add_pclass\=3$`}`}`{`(`?`$specification_\$_list_add_pfield\=3$`)
+     <pfield>`{`$specification_\$_list_add_pfield\=3$`}
+     <pfname>field_`{`@lower`(`$specification_\$_list_add_pclsnm\=3$`)`}_`{`@lower`(`$specification_\$_list_add_pfldnm\=3$`)`}`}
+     <unique>`{`$specification_\$_list_add_cluniq\=3$`}
+     <indexed>`{`$specification_\$_list_add_cindex\=3$`}
+    </column>
+`]`}`]`}\
+   </columns>
+   <parents/>
+`{`[`$pnums`,`{`?`$specification_\$_list_add_parent\=3$`[`$specification_\$_list_add_parent\=3$`,\
+    <parent/>
+`{`(`?`$specification_\$_list_add_prntnm\=3$`)\
+     <name>`{`$specification_\$_list_add_prntnm\=3$`}\
+`,\
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_list_add_parent\=3$`)`}\
+`}
+     <field>`{`$specification_\$_list_add_jfield\=3$`}
+     <extra>`{`$specification_\$_list_add_dextra\=3$`}
+     <pclass>`{`$specification_\$_list_add_pclass\=3$`}
+     <pfield>`{`$specification_\$_list_add_pfield\=3$`}
+     <pextra>`{`$specification_\$_list_add_pextra\=3$`}
+     <mandatory>`{`$specification_\$_list_add_mandatory\=3$`}
+     <operations>`{`$specification_\$_list_add_operations\=3$`}
+    </parent>
+`]`}`]`}\
+   </parents>
+   <restricts/>
+`{`[`$rnums`,`{`?`$specification_\$_list_add_rfield\=3$`[`$specification_\$_list_add_rfield\=3$`,\
+    <restrict/>
+     <name>field_`{`@lower`(`'\$`'`)`}_`{`@lower`(`$specification_\$_list_add_rfldnm\=3$`)`}
+     <field>`{`$specification_\$_list_add_rfield\=3$`}
+     <ftype>`{`$specification_\$_list_add_rftype\=3$`}
+     <extra>`{`$specification_\$_list_add_rfxtra\=3$`}
+     <mandatory>`{`$specification_\$_list_add_rfmand\=3$`}
+     <operations>`{`$specification_\$_list_add_rfldops\=3$`}
+    </restrict>
+`]`}`]`}\
+   </restricts>
+  </list>`}\
 `{`[`$vnums`,`{`(`?`$specification_\$_list_var\\$_name`)
   <list/>
    <id>`{`$specification_\$_list_var\\$_id`}

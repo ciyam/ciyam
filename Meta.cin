@@ -566,6 +566,7 @@ field_add -id=122144 List Number_Multiple_Pages bool mand -def=1
 field_add -id=122145 List Allow_Anonymous_Access bool mand -def=0
 field_add -id=122146 List Is_Not_Anonymous bool mand -def=0
 field_add -id=122147 List Is_Admin bool mand -def=0
+field_add -id=122148 List Ignore_State_For_Display bool mand -def=0
 procedure_add -id=122430 List Generate_PDF_List
 procedure_arg_add -id=122431 List Generate_PDF_List Variation_Num int in
 class_add -id=123100 List_Field_Type List_Field_Types
@@ -1041,7 +1042,7 @@ modifier_add -id=500830 List Is_Home Style:relegate,Limit_Scroll_And_New:relegat
 ,Is_Variation:relegate,Allow_Text_Search:relegate,Print_Without_Highlight:relegate,Multiline_Truncate_For_Print:relegate\
 ,PDF_List_Type:relegate,PDF_Font_Type:relegate,Number_Multiple_Pages:relegate\
 ,Ignore_User_Id_Filter:relegate,Ignore_Implicit_Ordering:relegate,Display_Security_Level:relegate\
-,Ignore_Uneditable_Parent:relegate,Ignore_Unactionable_Records:relegate,Create_Only_If_Default_Other:relegate\
+,Ignore_Uneditable_Parent:relegate,Ignore_State_For_Display:relegate,Ignore_Unactionable_Records:relegate,Create_Only_If_Default_Other:relegate\
 ,Destroy_Only_If_Default_Other:relegate,Display_Only_If_Default_Other:relegate,Create_Restriction:relegate,Create_{Permission}:relegate\
 ,Destroy_Restriction:relegate,Destroy_{Permission}:relegate
 modifier_add -id=500831 List PDF_List_Is_None PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
@@ -1839,7 +1840,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Limit_Scroll_And_New,Is_Variation,Allow_Text_Search;force,Text_Match_Highlight\
 ,Print_Without_Highlight,Multiline_Truncate_For_Print,PDF_List_Type;force,PDF_Font_Type,Number_Multiple_Pages\
 ,@tab:Advanced_UI_Options\
-,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_Unactionable_Records\
+,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\
 ,Display_Security_Level,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
 specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction {Model}"
 specification_add -id=602850 {List_Field}_view view "? standard List_Field {List}:Name;no_edit+link\
@@ -1861,7 +1862,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Parent_Class;hidden+fkey6,Access_Parent_Modifier:Name!@fkey6:{Class}+Name,Allow_Anonymous_Access"
 specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_limit\
  List_Field Name -act=+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues {List}"
-specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version {Workgroup}"
+specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version,Generate_Status {Workgroup}"
 specification_add -id=602910 {Application}_view view "? standard Application\
  Name;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
