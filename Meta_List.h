@@ -70,32 +70,33 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Display_Security_Level = 17,
       e_field_id_Id = 18,
       e_field_id_Ignore_Implicit_Ordering = 19,
-      e_field_id_Ignore_Unactionable_Records = 20,
-      e_field_id_Ignore_Uneditable_Parent = 21,
-      e_field_id_Ignore_User_Id_Filter = 22,
-      e_field_id_Is_Admin = 23,
-      e_field_id_Is_Child = 24,
-      e_field_id_Is_Home = 25,
-      e_field_id_Is_Not_Anonymous = 26,
-      e_field_id_Is_Variation = 27,
-      e_field_id_Limit_Scroll_And_New = 28,
-      e_field_id_Model = 29,
-      e_field_id_Multiline_Truncate_For_Print = 30,
-      e_field_id_Name = 31,
-      e_field_id_Number_Multiple_Pages = 32,
-      e_field_id_PDF_Font_Type = 33,
-      e_field_id_PDF_List_Type = 34,
-      e_field_id_Parent_Class = 35,
-      e_field_id_Parent_Field = 36,
-      e_field_id_Print_Restriction = 37,
-      e_field_id_Print_Without_Highlight = 38,
-      e_field_id_Search_Option_Limit = 39,
-      e_field_id_Sort_Rows_In_UI = 40,
-      e_field_id_Style = 41,
-      e_field_id_Text_Match_Highlight = 42,
-      e_field_id_Title = 43,
-      e_field_id_Type = 44,
-      e_field_id_Variation_Name = 45
+      e_field_id_Ignore_State_For_Display = 20,
+      e_field_id_Ignore_Unactionable_Records = 21,
+      e_field_id_Ignore_Uneditable_Parent = 22,
+      e_field_id_Ignore_User_Id_Filter = 23,
+      e_field_id_Is_Admin = 24,
+      e_field_id_Is_Child = 25,
+      e_field_id_Is_Home = 26,
+      e_field_id_Is_Not_Anonymous = 27,
+      e_field_id_Is_Variation = 28,
+      e_field_id_Limit_Scroll_And_New = 29,
+      e_field_id_Model = 30,
+      e_field_id_Multiline_Truncate_For_Print = 31,
+      e_field_id_Name = 32,
+      e_field_id_Number_Multiple_Pages = 33,
+      e_field_id_PDF_Font_Type = 34,
+      e_field_id_PDF_List_Type = 35,
+      e_field_id_Parent_Class = 36,
+      e_field_id_Parent_Field = 37,
+      e_field_id_Print_Restriction = 38,
+      e_field_id_Print_Without_Highlight = 39,
+      e_field_id_Search_Option_Limit = 40,
+      e_field_id_Sort_Rows_In_UI = 41,
+      e_field_id_Style = 42,
+      e_field_id_Text_Match_Highlight = 43,
+      e_field_id_Title = 44,
+      e_field_id_Type = 45,
+      e_field_id_Variation_Name = 46
    };
 
    Meta_List( );
@@ -142,6 +143,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    bool Ignore_Implicit_Ordering( ) const;
    void Ignore_Implicit_Ordering( bool Ignore_Implicit_Ordering );
+
+   bool Ignore_State_For_Display( ) const;
+   void Ignore_State_For_Display( bool Ignore_State_For_Display );
 
    bool Ignore_Unactionable_Records( ) const;
    void Ignore_Unactionable_Records( bool Ignore_Unactionable_Records );

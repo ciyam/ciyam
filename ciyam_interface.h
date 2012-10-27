@@ -338,6 +338,7 @@ const char* const c_list_type_extra_admin_owner_erase = "admin_owner_erase";
 const char* const c_list_type_extra_print_no_highlight = "print_no_highlight";
 const char* const c_list_type_extra_ignore_parent_state = "ignore_parent_state";
 const char* const c_list_type_extra_ignore_unactionable = "ignore_unactionable";
+const char* const c_list_type_extra_ignore_display_state = "ignore_display_state";
 const char* const c_list_type_extra_new_if_default_other = "new_if_default_other";
 const char* const c_list_type_extra_show_if_default_other = "show_if_default_other";
 const char* const c_list_type_extra_erase_if_default_other = "erase_if_default_other";

@@ -2505,6 +2505,7 @@ void output_list_form( ostream& os,
       // and state. It is being assumed here that the original list fields and source fields have the same
       // offsets.
       if( display_effect.empty( )
+       && !extras.count( c_list_type_extra_ignore_display_state )
        && ( !is_printable || !extras.count( c_list_type_extra_print_no_highlight ) ) )
       {
          for( size_t k = 0; k < ARRAY_SIZE( state_modifiers ); k++ )

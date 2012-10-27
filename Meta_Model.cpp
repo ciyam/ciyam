@@ -3191,6 +3191,13 @@ void Meta_Model::impl::impl_Generate( )
                list_extra += "ignore_parent_state";
             }
 
+            if( get_obj( ).child_List( ).Ignore_State_For_Display( ) )
+            {
+               if( !list_extra.empty( ) )
+                  list_extra += ',';
+               list_extra += "ignore_display_state";
+            }
+
             if( get_obj( ).child_List( ).Ignore_Unactionable_Records( ) )
             {
                if( !list_extra.empty( ) )
@@ -3367,9 +3374,12 @@ void Meta_Model::impl::impl_Generate( )
             vector< string > rfield_ids;
 
             string type_key( get_obj( ).child_List( ).Type( ).get_key( ) );
-            if( type_key == "normal" )
+            if( type_key == "normal" || type_key == "additional" )
             {
                specification_name += "list";
+
+               if( type_key == "additional" )
+                  specification_name += "_add";
 
                if( is_admin_list )
                   list_type = "admin";

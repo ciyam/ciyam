@@ -384,6 +384,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>602900
+        <item>field
+       </specification>
+       <specification/>
         <id>602910
         <item>field
        </specification>
@@ -4728,6 +4732,27 @@
         <id>500825
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500830
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>122148
+      <name>Ignore_State_For_Display
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
        <modifier/>
         <id>500830
         <affect>relegate
@@ -25394,6 +25419,7 @@
      <pfield_id>302220
      <field_info>127101
      <field_info>127102
+     <field_info>127105
     </data>
    </specification>
    <specification/>
@@ -27681,6 +27707,7 @@
      <field_info>122124
      <field_info>122135
      <field_info>122138
+     <field_info>122148
      <field_info>122120
      <field_info>122139
      <field_info>122140
