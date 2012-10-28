@@ -30,6 +30,20 @@ using namespace std;
 
 //#define COMPILE_TESTBED_MAIN
 
+// NOTE: The MD5 algorithm (and SHA1) have been found to be not nearly as collision resistant as they were
+// intended to be (so use SHA256 to avoid any possible "birthday" collisions). The following two values in
+// hex text are examples of such a collision (with MD5):
+//
+// d131dd02c5e6eec4693d9a0698aff95c2fcab58712467eab4004583eb8fb7f89
+// 55ad340609f4b30283e488832571415a085125e8f7cdc99fd91dbdf280373c5b
+// d8823e3156348f5bae6dacd436c919c6dd53e2b487da03fd02396306d248cda0
+// e99f33420f577ee8ce54b67080a80d1ec69821bcb6a8839396f9652b6ff72a70
+//
+// d131dd02c5e6eec4693d9a0698aff95c2fcab50712467eab4004583eb8fb7f89
+// 55ad340609f4b30283e4888325f1415a085125e8f7cdc99fd91dbd7280373c5b
+// d8823e3156348f5bae6dacd436c919c6dd53e23487da03fd02396306d248cda0
+// e99f33420f577ee8ce54b67080280d1ec69821bcb6a8839396f965ab6ff72a70
+
 // MD5.CC - source code for the C++/object oriented translation and modification of MD5.
 
 // Translation and modification (c) 1995 by Mordechai T. Abzug 

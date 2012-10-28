@@ -60,7 +60,7 @@ bool fetch_list_info( const std::string& module,
  const std::string& exclude_key, bool* p_prev = 0, std::string* p_perms = 0,
  const std::string* p_security_info = 0, const std::string* p_extra_debug = 0,
  const std::set< std::string >* p_exclude_keys = 0, const std::string* p_pdf_spec_name = 0,
- const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0 );
+ const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0, bool* p_can_delete_any = 0 );
 
 bool fetch_parent_row_data( const std::string& module, const module_info& mod_info,
  const std::string& record_key, const std::string& field_id, const std::string& pclass_id,

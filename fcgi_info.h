@@ -435,6 +435,7 @@ struct storage_info
    size_t quick_link_limit;
 
    time_t sio_mod;
+   time_t extkeys_mod;
 
    std::string tz_abbr;
    std::string url_opts;
@@ -726,6 +727,7 @@ struct list_source : source
     is_reverse( false ),
     unique_index( false ),
     print_limited( false ),
+    can_delete_any( false ),
     new_record_list_has_view_id( false )
    {
    }
@@ -737,6 +739,7 @@ struct list_source : source
    bool is_reverse;
 
    bool print_limited;
+   bool can_delete_any;
 
    std::string pfield_list;
 

@@ -624,7 +624,7 @@ bool fetch_list_info( const string& module,
  const string& set_field_values, data_container& rows, const string& exclude_key_info,
  bool* p_prev, string* p_perms, const string* p_security_info, const string* p_extra_debug,
  const set< string >* p_exclude_keys, const string* p_pdf_spec_name,
- const string* p_pdf_link_filename, string* p_pdf_view_file_name )
+ const string* p_pdf_link_filename, string* p_pdf_view_file_name, bool* p_can_delete_any )
 {
    bool okay = true;
 
@@ -760,6 +760,18 @@ bool fetch_list_info( const string& module,
 
             if( exclude_keys.count( key ) || ( p_exclude_keys && p_exclude_keys->count( key ) ) )
                continue;
+
+            if( p_can_delete_any && !( *p_can_delete_any ) )
+            {
+               uint64_t state;
+               string type_info;
+               string key_and_version;
+
+               parse_key_ver_rev_state_and_type_info( key_ver_rev_state_and_type_info, key_and_version, state, type_info );
+
+               if( !( state & c_state_undeletable ) )
+                  *p_can_delete_any = true;
+            }
 
             if( !p_prev || !*p_prev )
                rows.push_back( make_pair( key_ver_rev_state_and_type_info,
@@ -1618,11 +1630,12 @@ bool populate_list_info( list_source& list,
    }
 
    list.print_limited = false;
+   list.can_delete_any = false;
 
    if( !fetch_list_info( list.module_id, mod_info, class_info, sess_info,
     is_reverse, row_limit, key_info, field_list, filters, search_text, search_query,
     set_field_values, list.row_data, "", &prev, &perms, p_security_info, 0, 0,
-    p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name ) )
+    p_pdf_spec_name, p_pdf_link_filename, p_pdf_view_file_name, &list.can_delete_any ) )
       okay = false;
    else if( is_printable )
    {

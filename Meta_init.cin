@@ -295,5 +295,6 @@ perform_execute admin 20120102 100 135100 user 135410
 perform_create admin 20120102 100 135100 group "135101=New_Package_Type"
 perform_update admin 20120102 100 135100 group "135103=new.package.bun.gz"
 perform_execute admin 20120102 100 135100 group 135410
+~rm new.package.bun.gz
 storage_term
 quit
