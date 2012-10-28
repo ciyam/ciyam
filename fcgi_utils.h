@@ -46,6 +46,8 @@ struct session_info;
 #     define DEBUG_TRACE( message )
 #  endif
 
+const char* const c_extkeys_file = "extkeys.txt";
+
 void init_log( );
 void log_trace_message( const std::string& message );
 
@@ -53,8 +55,10 @@ const std::string& get_server_id( );
 void set_server_id( const std::string& id );
 
 void init_strings( );
+void init_extkeys( );
 
 std::string get_string( const char* p_id );
+std::string get_extkey( const std::string& id );
 
 std::string get_display_string( const std::string& key );
 

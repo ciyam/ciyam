@@ -1228,6 +1228,8 @@ void Meta_Application::impl::impl_Generate( )
    if( storage_locked_for_admin( ) )
       return;
 
+   set_system_variable( "@" + storage_name( ) + "_protect", "1" );
+
    // NOTE: The UI allows this to be set so use this as the value during
    // the generate but put the value back to its last saved value after.
    int gen_type = get_obj( ).Generate_Type( );
@@ -1685,6 +1687,8 @@ void Meta_Application::impl::impl_Generate( )
        << get_obj( ).static_get_field_id( e_field_id_Generate_Type ) << "=" << to_string( ogen_type ) << ","
        << get_obj( ).static_get_field_id( e_field_id_Keep_Existing_Data ) << "=" << to_string( okeep_data ) << ","
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generated\"\n";
+
+      outssx << "system_variable @" << storage_name( ) << "_protect \"\"\n";
 #ifdef _WIN32
       outssx << "session_lock -release " << session_id( ) << "\n"; // see NOTE below...
 #endif

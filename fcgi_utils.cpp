@@ -67,6 +67,7 @@ string g_server_id;
 set< string > g_non_persistent;
 
 map< string, string > g_strings;
+map< string, string > g_extkeys;
 
 #ifndef _WIN32
 const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
@@ -74,8 +75,6 @@ const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
 
 const char* const c_log_file = "ciyam_interface.log";
 const char* const c_str_file = "ciyam_interface.txt";
-
-const char* const c_extkeys_file = "extkeys.txt";
 
 const char* const c_action_ident_key_id = "@id";
 const char* const c_action_child_key_user = "@user";
@@ -144,17 +143,37 @@ void set_server_id( const string& id )
 void init_strings( )
 {
    read_strings( c_str_file, g_strings, "c_display_" );
+}
+
+void init_extkeys( )
+{
+   g_extkeys.clear( );
 
    if( file_exists( c_extkeys_file ) )
-      read_strings( c_extkeys_file, g_strings );
+   {
+      read_strings( c_extkeys_file, g_extkeys );
+      get_storage_info( ).extkeys_mod = last_modification_time( c_extkeys_file );
+   }
+   else
+      get_storage_info( ).extkeys_mod = 0;
 }
 
 string get_string( const char* p_id )
 {
-   string str( p_id );
+   string str( p_id ? p_id : "" );
 
    if( g_strings.count( p_id ) )
       str = g_strings[ p_id ];
+
+   return str;
+}
+
+string get_extkey( const string& id )
+{
+   string str( id );
+
+   if( g_extkeys.count( id ) )
+      str = g_extkeys[ id ];
 
    return str;
 }
@@ -1657,7 +1676,7 @@ void determine_fixed_query_info( string& fixed_fields,
             {
                string::size_type pos = value.find( '=' );
                if( pos != string::npos && value.substr( 0, pos ) == c_extkey )
-                  value = get_string( value.substr( pos + 1 ).c_str( ) );
+                  value = get_extkey( value.substr( pos + 1 ).c_str( ) );
             }
          }
 
@@ -1744,7 +1763,7 @@ void determine_fixed_query_info( string& fixed_fields,
             {
                string::size_type pos = value.find( '=' );
                if( pos != string::npos && value.substr( 0, pos ) == c_extkey )
-                  value = get_string( value.substr( pos + 1 ).c_str( ) );
+                  value = get_extkey( value.substr( pos + 1 ).c_str( ) );
             }
          }
 

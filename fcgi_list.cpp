@@ -1472,7 +1472,7 @@ void output_list_form( ostream& os,
                   is_no_erase = !sess_info.is_default_other( );
             }
 
-            if( !is_no_erase
+            if( !is_no_erase && source.can_delete_any
              && ( !is_owner_erase || has_owner_parent )
              && ( !is_admin_erase || sess_info.is_admin_user )
              && ( !is_admin_owner_erase || has_owner_parent || sess_info.is_admin_user ) )

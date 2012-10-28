@@ -608,6 +608,13 @@ void timeout_handler::on_start( )
             for( mii = get_storage_info( ).modules_index.begin( ); mii != get_storage_info( ).modules_index.end( ); ++mii )
                read_module_info( mii->first, *mii->second, get_storage_info( ) );
          }
+
+         if( file_exists( c_extkeys_file ) )
+         {
+            time_t t = last_modification_time( c_extkeys_file );
+            if( t != get_storage_info( ).extkeys_mod )
+               init_extkeys( );
+         }
       }
 
       if( !file_exists( c_kill_script ) )
@@ -4297,6 +4304,7 @@ int main( int argc, char* argv[ ] )
       DEBUG_TRACE( "[read strings]" );
 
       init_strings( );
+      init_extkeys( );
 
       g_login_html = buffer_file( c_login_file );
       g_footer_html = buffer_file( c_footer_file );

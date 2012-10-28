@@ -6236,7 +6236,8 @@ void Meta_Model::impl::after_fetch( )
    if( !get_obj( ).get_graph_parent( )
     && get_system_variable( model_key ).empty( ) && !exists_file( script_filename ) )
    {
-      if( !get_obj( ).child_Package( ).get_is_iterating( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
+      if( get_system_variable( "@" + storage_name( ) + "_protect" ).empty( )
+       && !get_obj( ).child_Package( ).get_is_iterating( ) && get_obj( ).child_Package( ).iterate_forwards( ) )
       {
          do
          {

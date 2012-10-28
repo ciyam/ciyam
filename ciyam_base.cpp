@@ -7612,8 +7612,23 @@ string instance_key_info( size_t handle, const string& context, bool key_only )
    string retval( instance.get_key( ) );
 
    if( !key_only )
+   {
+      uint64_t state = instance.get_state( );
+
+      // NOTE: In order to prevent potential issues during a "generate" in Meta
+      // a "system variable" is being used to prevent editing/deleting records.
+      if( gtp_session->p_storage_handler->get_name( ) == "Meta"
+       && !get_system_variable( "@Meta_protect" ).empty( ) )
+      {
+         state |= c_state_uneditable;
+         state |= c_state_undeletable;
+
+         state &= ~c_state_ignore_uneditable;
+      }
+
       retval += " =" + instance.get_version_info( )
-       + " " + to_string( instance.get_state( ) ) + " " + instance.get_original_identity( );
+       + " " + to_string( state ) + " " + instance.get_original_identity( );
+   }
 
    return retval;
 }

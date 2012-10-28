@@ -317,7 +317,7 @@ void setup_view_fields( view_source& view,
                {
                   string::size_type pos = value.find( '=' );
                   if( pos != string::npos && value.substr( 0, pos ) == c_extkey )
-                     value = get_string( value.substr( pos + 1 ).c_str( ) );
+                     value = get_extkey( value.substr( pos + 1 ).c_str( ) );
                }
 
                view.new_field_values.insert( make_pair( field_id, value ) );
