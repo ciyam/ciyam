@@ -4709,6 +4709,9 @@ void term_storage( command_handler& cmd_handler )
          gtp_session->p_storage_handler->release_bulk_write( );
          gtp_session->p_storage_handler->release_ods( );
 
+         if( gtp_session->p_storage_handler->get_log_file( ).is_open( ) )
+            gtp_session->p_storage_handler->get_log_file( ).close( );
+
          delete gtp_session->p_storage_handler;
       }
 
