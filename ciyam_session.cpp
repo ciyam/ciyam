@@ -2836,9 +2836,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   handler.output_progress( "Recovered " + to_string( line ) + " log operations..." );
 
                   // NOTE: Commit at each progress point to avoid any lengthy commit delays.
-                  tline = line;
-                  in_trans = false;
-                  transaction_commit( );
+                  if( in_trans )
+                  {
+                     tline = line;
+                     in_trans = false;
+                     transaction_commit( );
+                  }
 
                   // FUTURE: This message should be handled as a server string message.
                   if( is_condemned_session( ) )
