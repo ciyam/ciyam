@@ -1095,7 +1095,7 @@ bool fetch_parent_row_data( const string& module,
                string::size_type pos = data.find( '#' );
                if( pos != string::npos )
                {
-                  value = get_string( data.substr( pos + 1 ).c_str( ) );
+                  value = get_extkey( data.substr( pos + 1 ).c_str( ) );
                   data.erase( pos );
                }
                found_special = true;

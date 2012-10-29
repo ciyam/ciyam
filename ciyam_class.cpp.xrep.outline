@@ -1268,6 +1268,11 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_tpfield=$specification_\0_tpfield arg_testop=$specification_\0_testop\
  arg_not_null=$specification_\0_not_null arg_not_pedit=$specification_\0_not_pedit`}\
 `,\
+`@eq`(`'\1`'`,`'check_compare_op_value`'`)
+`{`#check_compare_op_value.spec.xrep section=validate class_name=$class_name\
+ arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype\
+ arg_value=$specification_\0_value arg_tfield=$specification_\0_tfield arg_testop=$specification_\0_testop`}\
+`,\
 `@eq`(`'\1`'`,`'check_cond_non_null`'`)
 `{`#check_cond_non_null.spec.xrep section=validate class_name=$class_name\
  arg_field=$specification_\0_field arg_cfield=$specification_\0_cfield arg_pfield=$specification_\0_pfield\
