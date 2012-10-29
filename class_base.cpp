@@ -2648,7 +2648,7 @@ string value_label( const string& s )
    string rs;
    for( size_t i = 0; i < s.size( ); i++ )
    {
-      if( s[ i ] == ' ' )
+      if( s[ i ] == ' ' || s[ i ] == '.' )
          rs += '_';
       else if( s[ i ] == '>' )
       {

@@ -1,0 +1,11 @@
+`{`#$vars @`}
+; NOTE: The following needs to be included in 'manuscript.sio':
+; <script/>
+;  <name>`{`$model`}_`{`$class`}_`{`$gen_proc`}
+;  <filename>*script*
+;  <arguments>`{`$model`}_`{`$class`}_`{`$gen_proc`}.cin @storage @module @uid @tz_abbr @key @file @title
+; </script>
+.storage_init %1
+.perform_fetch %2 `{`$class`}:child_`{`$child`} -u=%3 -tz=%4 "%5:`{`$ofield`} "\
+ `{`$qfields`} -pdf `{`$model`}_`{`$cclass`}.`{`$list_ext`}.pdf.sio "%6" "%7"
+.quit

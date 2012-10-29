@@ -1,0 +1,18 @@
+`{`@eq`(`'validate`'`,`$section`)\
+`{`$op`=`'`'`}\
+`{`@eq`(`$arg_testop`,`'eq`'`)`$op`=`'==`'`}\
+`{`@eq`(`$arg_testop`,`'neq`'`)`$op`=`'!=`'`}\
+`{`@eq`(`$arg_testop`,`'lt`'`)`$op`=`'<`'`}\
+`{`@eq`(`$arg_testop`,`'gt`'`)`$op`=`'>`'`}\
+`{`@eq`(`$arg_testop`,`'lteq`'`)`$op`=`'<=`'`}\
+`{`@eq`(`$arg_testop`,`'gteq`'`)`$op`=`'>=`'`}\
+`{`$value`=`$arg_value`}\
+`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+   // [(start check_compare_op_value)]
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} `{`$value`} ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_be_`{`$arg_testop`}_value ), make_pair(
+       c_str_parm_field_must_be_`{`$arg_testop`}_value_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_parm_field_must_be_`{`$arg_testop`}_value_value, "`{`$arg_value`}" ) ) ) );
+   // [(finish check_compare_op_value)]
+`}

@@ -1,0 +1,22 @@
+`{`@eq`(`$is_auto`,`'`'`)\
+; NOTE: The following needs to be included in 'manuscript.sio':
+; <script/>
+;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
+;  <filename>*script*
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @module @class @uid @key `{`$procedure_id`}
+; </script>\
+`,\
+; NOTE: The following needs to be included in 'autoscript.sio':
+; <script/>
+;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
+;  <time>06:00
+;  <cycle>1d*
+;  <exclude>weekends
+;  <filename>*script*
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage `{`$model_id`} `{`$class_id`} auto @none `{`$procedure_id`}
+; </script>\
+`}
+.storage_init %1
+`{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
+.perform_execute auto @now %2 %3 -v=@uid=%4 "%5" %6
+.quit
