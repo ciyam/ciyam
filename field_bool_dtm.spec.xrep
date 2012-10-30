@@ -1,0 +1,36 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)\
+`{`$type`=`'days`'`}\
+`{`!`@eq`(`$arg_type`,`'`'`)`$type`=`$arg_type`}\
+`{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\
+`{`@eq`(`$type`,`'hour`'`)`$type`=`'hours`'`}\
+`{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
+`{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
+   // [(start field_bool_dtm)]
+   if( !get_dtm( ).empty( ) )
+   {
+      date_time dtm( get_dtm( ) );
+
+      if( `{`@eq`(`$arg_older`,`'`'`)!`}is_null( get_obj( ).`{`$arg_sfield`}( ) )
+`{`@eq`(`$arg_older`,`'true`'`)\
+       || ( get_obj( ).`{`$arg_sfield`}( ) < dtm - ( `{`$type`} )`{`$arg_amount`} ) )
+`,\
+       && ( get_obj( ).`{`$arg_sfield`}( ) > dtm + ( `{`$type`} )`{`$arg_amount`} ) )
+`}\
+         get_obj( ).`{`$arg_field`}( true );
+      else
+         get_obj( ).`{`$arg_field`}( false );
+   }
+   // [(finish field_bool_dtm)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_bool_dtm)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish field_bool_dtm)]
+`}

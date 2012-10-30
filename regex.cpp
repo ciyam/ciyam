@@ -828,7 +828,7 @@ regex::impl::impl( const string& expr )
       parts.push_back( next_part );
    }
 
-   if( !ch_used )
+   if( !ch_used && !expr.empty( ) )
    {
       next_part.clear( );
 
