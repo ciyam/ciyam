@@ -8,6 +8,11 @@
   <name>checkmail
   <filename>checkmail
  </script>
+ <script/>
+  <name>Project_Check_Funds
+  <filename>Project_Check_Funds
+  <arguments>@arg1 @output_file
+ </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>

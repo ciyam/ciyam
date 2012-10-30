@@ -1,0 +1,54 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_script)]
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish field_from_script)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
+   // [(start field_from_script)]
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+   {
+`}`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+`{`$i`}   try
+`{`$i`}   {`{`$o`=`$i`}`{`$i`^`'   `'`}
+`{`$i`}   get_obj( ).op_update( );
+
+`}\
+`{`$i`}   string tmp( get_uuid( ) );
+
+`{`!`@eq`(`$arg_arg1`,`'`'`)\
+`{`$i`}   set_session_variable( "@arg1", get_obj( ).`{`$arg_arg1`}( ) );
+`}\
+`{`!`@eq`(`$arg_arg2`,`'`'`)\
+`{`$i`}   set_session_variable( "@arg2", get_obj( ).`{`$arg_arg2`}( ) );
+`}\
+`{`$i`}   set_session_variable( "@output_file", tmp );
+
+`{`$i`}   run_script( "`{`$arg_script`}", false );
+
+`{`$i`}   string s( load_file( tmp ) );
+`{`$i`}   remove_file( tmp );
+`{`!`@eq`(`$arg_tvalue`,`'`'`)
+`{`$i`}   check_with_regex( "`{`$arg_tvalue`}", s );
+`}\
+
+`{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( s ) );
+`{`!`@eq`(`$arg_sfield`,`'`'`)
+`{`$i`}   get_obj( ).`{`$arg_sfield`}( date_time( get_dtm( ) ) );
+`}\
+`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+
+`{`$i`}   get_obj( ).op_apply( );
+`{`$o`}   }
+`{`$o`}   catch( ... )
+`{`$o`}   {
+`{`$o`}      get_obj( ).op_cancel( );
+`{`$o`}      throw;
+`{`$o`}   }
+`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+   }
+`}\
+   // [(finish field_from_script)]
+`}

@@ -2594,6 +2594,19 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
    return qs;
 }
 
+void check_with_regex( const string& r, const string& s )
+{
+   regex expr( r );
+
+   if( expr.search( s ) == string::npos )
+   {
+      if( !s.empty( ) )
+         throw runtime_error( s );
+     else
+         throw runtime_error( "unexpected check for empty string" );
+   }
+}
+
 string valid_utf8_filename( const string& str )
 {
    bool has_utf8 = false;

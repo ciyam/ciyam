@@ -937,6 +937,8 @@ std::string CLASS_BASE_DECL_SPEC quoted_literal( const std::string& s, char esc 
 
 inline std::string unquoted_literal( const std::string& s, char esc = '\\' ) { return quoted_literal( s, esc, false ); }
 
+void CLASS_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s );
+
 std::string CLASS_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 

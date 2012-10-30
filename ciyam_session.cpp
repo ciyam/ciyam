@@ -1179,6 +1179,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_mclass ) );
          bool is_reverse( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_reverse ) );
          string uid( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_uid ) );
+         string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_dtm ) );
          string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tz_abbr ) );
          string tmp_dir( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tmp_dir ) );
          string filters( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_filters ) );
@@ -1372,6 +1373,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          try
          {
             set_uid( uid );
+            set_dtm( dtm );
             set_tz_abbr( tz_abbr );
             set_tmp_directory( tmp_dir );
             

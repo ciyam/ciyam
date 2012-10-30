@@ -95,6 +95,7 @@ user*.jpg
 photo_*.jpg
 gen_photo_*.xrep
 Forum_*.gif
+Project_*.bat
 
 # Ignore ciyam test storage and related.
 ciyam.dat
