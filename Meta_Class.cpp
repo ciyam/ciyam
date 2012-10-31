@@ -2448,6 +2448,7 @@ void Meta_Class::impl::impl_Generate( )
       }
    }
 
+   // FUTURE: It would be more efficient to iterate only the non-child specifications here (assuming an appropriate index exists).
    string specification_key_info( to_string( Meta_Specification::static_get_field_id( Meta_Specification::e_field_id_Order ) ) + ' ' );
    if( get_obj( ).child_Specification( ).iterate_forwards( specification_key_info ) )
    {
@@ -2472,7 +2473,11 @@ void Meta_Class::impl::impl_Generate( )
 
             string gen_xrep, gen_extra;
             bool is_gen_script_object = false;
-            if( specification_object == "gen_script" || specification_object == "gen_ext_script" )
+            bool is_gen_script_object_only = false;
+
+            if( specification_object == "gen_script"
+             || specification_object == "gen_ext_script"
+             || specification_object == "field_from_script" )
             {
 #ifdef _WIN32
                gen_xrep = "xrep ";
@@ -2492,9 +2497,12 @@ void Meta_Class::impl::impl_Generate( )
                   gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".cin.xrep";
 
                is_gen_script_object = true;
+
+               if( specification_object != "field_from_script" )
+                  is_gen_script_object_only = true;
             }
 
-            if( !is_gen_script_object )
+            if( !is_gen_script_object_only )
             {
                if( !all_specifications.empty( ) )
                   all_specifications += " \\\n";
@@ -2511,7 +2519,7 @@ void Meta_Class::impl::impl_Generate( )
 
             string vars( get_obj( ).child_Specification( ).All_Vars( ) );
 
-            if( !is_gen_script_object )
+            if( !is_gen_script_object_only )
                specification_details += "\x60{\x60$specification_" + specification_name
                 + "_id\x60=\x60'" + get_mapped_id( model_name, get_obj( ).child_Specification( ).Id( ) ) + "\x60'\x60}\n";
 
@@ -2536,7 +2544,8 @@ void Meta_Class::impl::impl_Generate( )
                   else if( next.substr( 0, npos ) != "sections" )
                      gen_xrep += " " + expand_arg( next );
                }
-               else
+
+               if( !is_gen_script_object_only )
                   specification_details += "\x60{\x60$specification_" + specification_name
                    + "_" + next.substr( 0, npos ) + "\x60=\x60'" + next_value + "\x60'\x60}\n";
 
@@ -2568,7 +2577,8 @@ void Meta_Class::impl::impl_Generate( )
                if( !outl.good( ) )
                   throw runtime_error( "output stream extra lst is bad" );
             }
-            else
+
+            if( !is_gen_script_object_only )
                all_specification_details.push_back( specification_details );
          }
 

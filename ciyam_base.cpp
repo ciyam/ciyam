@@ -5331,6 +5331,11 @@ bool is_admin_uid( )
    return get_uid( ) == "admin";
 }
 
+bool is_script_uid( )
+{
+   return get_uid( ) == "auto";
+}
+
 bool is_system_uid( )
 {
    bool rc = false;

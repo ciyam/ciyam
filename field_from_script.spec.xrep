@@ -1,54 +1,36 @@
-`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+`{`@eq`(`'procedure`'`,`$section`)\
    // [(start field_from_script)]
-   if( field_name == "`{`$arg_field`}" )
-      return true;
-   // [(finish field_from_script)]
-`}
-`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
-   // [(start field_from_script)]
-`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
-   if( get_obj( ).`{`$arg_tfield`}( ) )
+   if( !storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
-`}`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
-`{`$i`}   try
-`{`$i`}   {`{`$o`=`$i`}`{`$i`^`'   `'`}
-`{`$i`}   get_obj( ).op_update( );
-
-`}\
-`{`$i`}   string tmp( get_uuid( ) );
+      string tmp( get_uuid( ) );
 
 `{`!`@eq`(`$arg_arg1`,`'`'`)\
-`{`$i`}   set_session_variable( "@arg1", get_obj( ).`{`$arg_arg1`}( ) );
+      set_session_variable( "@arg1", get_obj( ).`{`$arg_arg1`}( ) );
 `}\
 `{`!`@eq`(`$arg_arg2`,`'`'`)\
-`{`$i`}   set_session_variable( "@arg2", get_obj( ).`{`$arg_arg2`}( ) );
+      set_session_variable( "@arg2", get_obj( ).`{`$arg_arg2`}( ) );
 `}\
-`{`$i`}   set_session_variable( "@output_file", tmp );
+      set_session_variable( "@output_file", tmp );
 
-`{`$i`}   run_script( "`{`$arg_script`}", false );
+      run_script( "`{`$arg_value`}", false );
 
-`{`$i`}   string s( load_file( tmp ) );
-`{`$i`}   remove_file( tmp );
+      string s( load_file( tmp ) );
+      remove_file( tmp );
 `{`!`@eq`(`$arg_tvalue`,`'`'`)
-`{`$i`}   check_with_regex( "`{`$arg_tvalue`}", s );
+      check_with_regex( "`{`$arg_tvalue`}", s );
 `}\
 
-`{`$i`}   get_obj( ).`{`$arg_field`}( from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( s ) );
-`{`!`@eq`(`$arg_sfield`,`'`'`)
-`{`$i`}   get_obj( ).`{`$arg_sfield`}( date_time( get_dtm( ) ) );
-`}\
-`{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
+      set_session_variable( "@storage", storage_name( ) );
+      set_session_variable( "@key", get_obj( ).get_key( ) );
 
-`{`$i`}   get_obj( ).op_apply( );
-`{`$o`}   }
-`{`$o`}   catch( ... )
-`{`$o`}   {
-`{`$o`}      get_obj( ).op_cancel( );
-`{`$o`}      throw;
-`{`$o`}   }
+      string fields_and_values( string( c_field_id_`{`$arg_field`} ) + "=" + s );
+`{`!`@eq`(`$arg_sfield`,`'`'`)\
+      fields_and_values += "," + string( c_field_id_`{`$arg_sfield`} ) + "=U" + get_dtm( );
 `}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)\
+
+      set_session_variable( "@fields_and_values", fields_and_values );
+
+      run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_field`}", false );
    }
-`}\
    // [(finish field_from_script)]
 `}
