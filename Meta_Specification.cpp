@@ -33,8 +33,6 @@
 
 #include "Meta_Specification.h"
 
-#include "class_utilities.h"
-
 #include "Meta_List_Field.h"
 #include "Meta_View_Field.h"
 #include "Meta_Class.h"
@@ -6386,6 +6384,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
       get_obj( ).Name( str );
 
+      get_obj( ).add_search_replacement( "Name", "{model}", to_rep_string( get_obj( ).Model( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{class}", to_rep_string( get_obj( ).Class( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{field}", to_rep_string( get_obj( ).Field( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Name", "{ofield}", to_rep_string( get_obj( ).Other_Field( ).Name( ) ) );
@@ -10466,6 +10465,15 @@ void Meta_Specification::get_required_field_names(
    // [(finish field_from_other_field)]
 
    // [(start field_from_search_replace)]
+   if( needs_field_value( "Name", dependents ) )
+   {
+      dependents.insert( "Model" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Model ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Model ) ) )
+         names.insert( "Model" );
+   }
+
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "Class" );

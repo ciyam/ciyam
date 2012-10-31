@@ -1695,25 +1695,36 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_abbr( tz_abbr );
 
+               for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
+               {
+                  // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+                  if( !i->first.empty( ) && i->first[ 0 ] == '@' )
+                     instance_set_variable( handle, "", i->first, i->second );
+               }
+
                op_instance_create( handle, "", key, false );
 
                set< string > fields_set;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
-                  if( !i->second.empty( ) && !tz_abbr.empty( ) )
+                  // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+                  if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
-                     string type_name = get_field_type_name( handle, "", i->first );
-                     if( type_name == "date_time" || type_name == "tdatetime" )
-                        i->second = convert_local_to_utc( i->second, tz_abbr );
+                     if( !i->second.empty( ) && !tz_abbr.empty( ) )
+                     {
+                        string type_name = get_field_type_name( handle, "", i->first );
+                        if( type_name == "date_time" || type_name == "tdatetime" )
+                           i->second = convert_local_to_utc( i->second, tz_abbr );
+                     }
+
+                     string method_name_and_args( "set " );
+                     method_name_and_args += i->first + " ";
+                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+
+                     execute_object_command( handle, "", method_name_and_args );
+
+                     fields_set.insert( i->first );
                   }
-
-                  string method_name_and_args( "set " );
-                  method_name_and_args += i->first + " ";
-                  method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
-
-                  execute_object_command( handle, "", method_name_and_args );
-
-                  fields_set.insert( i->first );
                }
 
                op_instance_apply( handle, "", false, 0, &fields_set );
@@ -1830,6 +1841,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_abbr( tz_abbr );
 
+               for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
+               {
+                  // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+                  if( !i->first.empty( ) && i->first[ 0 ] == '@' )
+                     instance_set_variable( handle, "", i->first, i->second );
+               }
+
                op_instance_update( handle, "", key, ver_info, false );
 
                for( map< string, string >::iterator i = check_value_items.begin( ), end = check_value_items.end( ); i != end; ++i )
@@ -1846,20 +1864,24 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set< string > fields_set;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
-                  if( !i->second.empty( ) && !tz_abbr.empty( ) )
+                  // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
+                  if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
-                     string type_name = get_field_type_name( handle, "", i->first );
-                     if( type_name == "date_time" || type_name == "tdatetime" )
-                        i->second = convert_local_to_utc( i->second, tz_abbr );
+                     if( !i->second.empty( ) && !tz_abbr.empty( ) )
+                     {
+                        string type_name = get_field_type_name( handle, "", i->first );
+                        if( type_name == "date_time" || type_name == "tdatetime" )
+                           i->second = convert_local_to_utc( i->second, tz_abbr );
+                     }
+
+                     string method_name_and_args( "set " );
+                     method_name_and_args += i->first + " ";
+                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+
+                     execute_object_command( handle, "", method_name_and_args );
+
+                     fields_set.insert( i->first );
                   }
-
-                  string method_name_and_args( "set " );
-                  method_name_and_args += i->first + " ";
-                  method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
-
-                  execute_object_command( handle, "", method_name_and_args );
-
-                  fields_set.insert( i->first );
                }
 
                op_instance_apply( handle, "", false, 0, &fields_set );

@@ -1,0 +1,10 @@
+; NOTE: The following needs to be included in 'manuscript.sio':
+; <script/>
+;  <name>`{`$model`}_`{`$class`}_`{`$field`}
+;  <filename>*script*
+;  <arguments>`{`$model`}_`{`$class`}_`{`$field`}.cin @storage @module @class @key @uid @fields_and_values
+; </script>
+.storage_init %1
+`{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
+.perform_update auto @now %2 %3 %4 "@uid=%5,%6"
+.quit
