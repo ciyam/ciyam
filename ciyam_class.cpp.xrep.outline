@@ -1043,7 +1043,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `@eq`(`'\1`'`,`'state_protect`'`)`{`;NOTE: This can be removed when modeller.exe is no longer used.`}
 `{`#$specification_\0_spec_file section=get_state name=\0\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield arg_label=$specification_\0_label\
- arg_value=$specification_\0_spec_value arg_scope=$specification_\0_spec_scope arg_changing=$specification_\0_changing`}\
+ arg_value=$specification_\0_spec_value arg_scope=$specification_\0_spec_scope arg_changing=$specification_\0_changing\
+ arg_allow_scripts=$specification_\0_allow_scripts`}\
 `,\
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
 `{`#unactionable_field_value.spec.xrep section=get_state\
@@ -1604,6 +1605,10 @@ void `{`$full_class_name`}::impl::do_post_init( )
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_amount=$specification_\0_amount arg_type=$specification_\0_type arg_older=$specification_\0_older`}
 `,\
+`@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`#field_bool_is_default.spec.xrep section=do_post_init class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_is_neq=$specification_\0_is_neq`}
+`,\
 `@eq`(`'\1`'`,`'field_bool_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_bool_uid.spec.xrep section=do_post_init class_name=$class_name\
  arg_field=$specification_\0_field arg_admin=$specification_\0_admin\
@@ -1684,6 +1689,10 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_sfield=$specification_\0_sfield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_not_null=$specification_\0_not_null arg_var=$specification_\0_var`}\
 `,\
+`@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
+`{`#field_bool_is_default.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_is_neq=$specification_\0_is_neq`}\
+`,\
 `@eq`(`'\1`'`,`'field_bool_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#field_bool_uid.spec.xrep section=to_or_for_store class_name=$class_name\
  arg_field=$specification_\0_field arg_admin=$specification_\0_admin\
@@ -1692,7 +1701,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_clear`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
- arg_tfield=$specification_\0_tfield arg_is_neg=$specification_\0_is_neg`}\
+ arg_tfield=$specification_\0_tfield arg_fistexttype=$specification_\0_fistexttype arg_is_neg=$specification_\0_is_neg\
+ arg_set_to_default=$specification_\0_set_to_default`}\
 `,\
 `@eq`(`'\1`'`,`'field_clear_on_changed_fk`'`)
 `{`#field_clear_on_changed_fk.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -1924,6 +1934,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_sfield=$specification_\0_sfield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_not_null=$specification_\0_not_null arg_var=$specification_\0_var`}\
 `,\
+`@eq`(`'\1`'`,`'field_bool_is_default`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
+`{`#field_bool_is_default.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_is_neq=$specification_\0_is_neq`}\
+`,\
 `@eq`(`'\1`'`,`'field_bool_matched_clone`'`)
 `{`#field_bool_matched_clone.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
@@ -1937,7 +1951,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `@eq`(`'\1`'`,`'field_clear`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_clear.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
- arg_tfield=$specification_\0_tfield arg_is_neg=$specification_\0_is_neg`}\
+ arg_tfield=$specification_\0_tfield arg_fistexttype=$specification_\0_fistexttype arg_is_neg=$specification_\0_is_neg\
+ arg_set_to_default=$specification_\0_set_to_default`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -3093,6 +3108,18 @@ void `{`$full_class_name`}::get_required_field_names(
 `{`@eq`(`'\1`'`,`'field_bool_dtm`'`)
 `{`#field_bool_dtm.spec.xrep section=get_required_field_names full_class_name=$full_class_name\
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
+`,\
+`@eq`(`'\1`'`,`'field_bool_has_changed`'`)
+`{`#field_bool_has_changed.spec.xrep section=get_required_field_names full_class_name=$full_class_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
+`,\
+`@eq`(`'\1`'`,`'field_bool_is_default`'`)
+`{`#field_bool_is_default.spec.xrep section=get_required_field_names full_class_name=$full_class_name\
+ arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
+`,\
+`@eq`(`'\1`'`,`'field_bool_matched_clone`'`)
+`{`#field_bool_matched_clone.spec.xrep section=get_required_field_names full_class_name=$full_class_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_dependency`'`)
 `{`#field_dependency.spec.xrep section=get_required_field_names full_class_name=$full_class_name\

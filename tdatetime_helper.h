@@ -30,7 +30,11 @@ class tdatetime : public nullable_date_time
 
    tdatetime( julian jdt ) : nullable_date_time( date_time( jdt ) ) { }
 
-   tdatetime( const std::string& s ) : nullable_date_time( date_time( s ) ) { }
+   tdatetime( const std::string& s ) : nullable_date_time( s.empty( ) ? date_time( ) : date_time( s ) )
+   {
+      if( s.empty( ) )
+         set_null( );
+   }
 
    tdatetime( year yr, month mo, day_type dt, occurrence occ = e_occurrence_first )
     : nullable_date_time( date_time( yr, mo, dt, occ ) )

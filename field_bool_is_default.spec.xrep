@@ -1,0 +1,20 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)\
+   // [(start field_bool_is_default)]
+   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} gv_default_`{`$arg_sfield`} )
+      get_obj( ).`{`$arg_field`}( true );
+   else
+      get_obj( ).`{`$arg_field`}( false );
+   // [(finish field_bool_is_default)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_bool_is_default)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish field_bool_is_default)]
+`}

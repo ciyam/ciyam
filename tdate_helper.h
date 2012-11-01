@@ -28,7 +28,11 @@ class tdate : public nullable_udate
 
    tdate( const udate& ud ) : nullable_udate( ud ) { }
 
-   tdate( const std::string& s ) : nullable_udate( udate( s ) ) { }
+   tdate( const std::string& s ) : nullable_udate( s.empty( ) ? udate( ) : udate( s ) )
+   {
+      if( s.empty( ) )
+         set_null( );
+   }
 
    tdate( year yr, month mo, weekday wd, occurrence occ = e_occurrence_first )
     : nullable_udate( udate( yr, mo, wd, occ ) )

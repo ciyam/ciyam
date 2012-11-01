@@ -2469,6 +2469,9 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    // [(finish modifier_set_field)]
 
    // [<start to_store>]
+//nyi
+   if( !( state & c_modifier_Is_Any_Non_Text_Type ) )
+      get_obj( ).Is_Text_Type( true );
    // [<finish to_store>]
 }
 
@@ -4734,6 +4737,12 @@ void Meta_Field::get_always_required_field_names(
    // [(finish modifier_field_value)]
 
    // [<start get_always_required_field_names>]
+//nyi
+   dependents.insert( "Primitive" );
+
+   if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
+      names.insert( "Primitive" );
    // [<finish get_always_required_field_names>]
 }
 

@@ -28,7 +28,11 @@ class ttime : public nullable_mtime
 
    ttime( const mtime& mt ) : nullable_mtime( mt ) { }
 
-   ttime( const std::string& s ) : nullable_mtime( mtime( s ) ) { }
+   ttime( const std::string& s ) : nullable_mtime( s.empty( ) ? mtime( ) : mtime( s ) )
+   {
+      if( s.empty( ) )
+         set_null( );
+   }
 
    ttime( hour hr, minute mn )
     : nullable_mtime( mtime( hr, mn ) )

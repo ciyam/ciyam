@@ -887,7 +887,7 @@ void Meta_Package_Type::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear)]
    if( get_obj( ).Installed( ) )
-      get_obj( ).Actions( "" );
+      get_obj( ).Actions( string( ) );
    // [(finish field_clear)]
 
    // [<start to_store>]

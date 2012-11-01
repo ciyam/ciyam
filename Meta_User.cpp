@@ -727,7 +727,7 @@ void Meta_User::impl::to_store( bool is_create, bool is_internal )
       do_post_init( );
 
    // [(start field_clear)]
-   get_obj( ).Permissions( "" );
+   get_obj( ).Permissions( string( ) );
    // [(finish field_clear)]
 
    // [<start to_store>]

@@ -5,8 +5,8 @@
   <arguments>install_package.cin @storage @name
  </script>
  <script/>
-  <name>btc_balance
-  <filename>btc_balance
+  <name>ext_balance
+  <filename>ext_balance
   <arguments>@arg1 @output_file
  </script>
 ### [<start generated>]

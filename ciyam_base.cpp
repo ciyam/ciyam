@@ -8772,21 +8772,28 @@ bool perform_instance_iterate( class_base& instance,
             // NOTE: It is possible that due to "interdependent" required fields
             // some required fields may not have been added in the first or even
             // later calls to "get_required_field_names" so continue calling the
-            // function until no further field names have been added.
-            size_t required_fields_added = required_fields.size( );
-            while( required_fields_added )
+            // function until no further field names (or deps) have been added.
+            size_t required_fields_size = required_fields.size( );
+            size_t field_dependents_size = field_dependents.size( );
+            while( required_fields_size )
             {
                instance.get_required_field_names( required_fields, false, &field_dependents );
-               if( required_fields.size( ) == required_fields_added )
+
+               if( required_fields.size( ) == required_fields_size
+                && field_dependents_size == field_dependents.size( ) )
                   break;
 
-               required_fields_added = required_fields.size( );
+               required_fields_size = required_fields.size( );
+               field_dependents_size = field_dependents.size( );
             }
 
             for( set< string >::iterator i = required_fields.begin( ); i != required_fields.end( ); ++i )
             {
                if( !supplied_fields.count( *i ) )
+               {
                   field_info.push_back( *i );
+                  instance_accessor.fetch_field_names( ).insert( *i );
+               }
             }
          }
 
