@@ -2935,22 +2935,22 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear)]
    if( get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Field( "" );
+      get_obj( ).Source_Field( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Parent( "" );
+      get_obj( ).Source_Parent( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Child( "" );
+      get_obj( ).Source_Child( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Edit_Child( "" );
+      get_obj( ).Source_Edit_Child( string( ) );
    // [(finish field_clear)]
 
    // [(start field_from_changed_fk)]

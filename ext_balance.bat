@@ -12,6 +12,6 @@ echo.
 goto end
 
 :usage
-echo Usage: btc_balance [address] [[output_file]]
+echo Usage: ext_balance [address] [[output_file]]
 :end
 

@@ -3800,7 +3800,11 @@ void field_clear_specification::add_specification_data( model& m, specification_
    string class_name = get_class_name_for_id( m, class_id );
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
 
-   string field_name = get_field_name_for_id( m, class_name, field_id );
+   string field_type;
+   string field_name = get_field_name_for_id( m, class_name, field_id, &field_type, false, false );
+
+   bool is_text_type( !is_non_string_type( field_type ) );
+
    spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
 
    string sclass_name( class_name );
@@ -3825,6 +3829,8 @@ void field_clear_specification::add_specification_data( model& m, specification_
    spec_data.data_pairs.push_back( make_pair( string( c_data_is_neg ), is_negative ? c_true : "" ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_for_store, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
+   spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
 }
 
 string field_clear_specification::static_class_name( ) { return "field_clear"; }
@@ -9957,6 +9963,7 @@ void state_protect_specification::add_specification_data( model& /*m*/, specific
    spec_data.data_pairs.push_back( make_pair( c_data_changing, is_changing ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_label, "" ) );
+   spec_data.data_pairs.push_back( make_pair( "allow_scripts", "" ) );
 }
 
 string state_protect_specification::static_class_name( ) { return "state_protect"; }
@@ -10628,6 +10635,7 @@ void update_children_specification::add_specification_data( model& m, specificat
 
    spec_data.data_pairs.push_back( make_pair( "tvalue", "" ) );
    spec_data.data_pairs.push_back( make_pair( "after_self", "true" ) );
+   spec_data.data_pairs.push_back( make_pair( "not_var", "" ) );
 }
 
 string update_children_specification::static_class_name( ) { return "update_children"; }

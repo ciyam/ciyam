@@ -5945,17 +5945,17 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Source_Field_Choice( ) && get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Field( "" );
+      get_obj( ).Source_Field( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Source_Field_Choice( ) && !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Parent( "" );
+      get_obj( ).Source_Parent( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Source_Field_Choice( ) && !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Child( "" );
+      get_obj( ).Source_Child( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear_on_changed_fk)]
@@ -6002,17 +6002,17 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Test_Field_Choice( ) && get_obj( ).Use_Test_Parent_Child( ) )
-      get_obj( ).Test_Field( "" );
+      get_obj( ).Test_Field( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Test_Field_Choice( ) && !get_obj( ).Use_Test_Parent_Child( ) )
-      get_obj( ).Test_Parent( "" );
+      get_obj( ).Test_Parent( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Test_Field_Choice( ) && !get_obj( ).Use_Test_Parent_Child( ) )
-      get_obj( ).Test_Child( "" );
+      get_obj( ).Test_Child( string( ) );
    // [(finish field_clear)]
 
    // [(start field_from_other_field)]
@@ -6165,11 +6165,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_values)]
 
    // [(start field_clear)]
-   get_obj( ).Fields( "" );
+   get_obj( ).Fields( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
-   get_obj( ).Field_Pairs( "" );
+   get_obj( ).Field_Pairs( string( ) );
    // [(finish field_clear)]
 
    // [(start meta_spec_field_pairs)]
@@ -6430,7 +6430,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Source_Field_Choice( ) && !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Child_2( "" );
+      get_obj( ).Source_Child_2( string( ) );
    // [(finish field_clear)]
 
    // [(start field_from_other_field)]

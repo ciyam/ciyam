@@ -3749,37 +3749,37 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear)]
    if( get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Field( "" );
+      get_obj( ).Source_Field( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Parent( "" );
+      get_obj( ).Source_Parent( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Child( "" );
+      get_obj( ).Source_Child( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Source_Parent( ) )
-      get_obj( ).Source_Grandchild( "" );
+      get_obj( ).Source_Grandchild( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( get_obj( ).Use_Child_Rel_Source_Parent( ) )
-      get_obj( ).Child_Rel_Source_Field( "" );
+      get_obj( ).Child_Rel_Source_Field( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Child_Rel_Source_Parent( ) )
-      get_obj( ).Child_Rel_Source_Parent( "" );
+      get_obj( ).Child_Rel_Source_Parent( string( ) );
    // [(finish field_clear)]
 
    // [(start field_clear)]
    if( !get_obj( ).Use_Child_Rel_Source_Parent( ) )
-      get_obj( ).Child_Rel_Source_Child( "" );
+      get_obj( ).Child_Rel_Source_Child( string( ) );
    // [(finish field_clear)]
 
    // [(start field_from_changed_fk)]

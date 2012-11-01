@@ -1,5 +1,5 @@
 if [ $# -lt 1 ]; then
- echo Usage: btc_balance [address] [[output_file]]
+ echo Usage: ext_balance [address] [[output_file]]
 else
  if [ ! "$2" = "" ]; then
   curl -s -m 8 http://blockchain.info/q/addressbalance/$1?confirmations=1 >$2
