@@ -85,6 +85,7 @@ const char* const c_field_id_Allow_Other_Field = "114174";
 const char* const c_field_id_Allow_Other_Field_2 = "114183";
 const char* const c_field_id_Allow_Permission = "114136";
 const char* const c_field_id_Allow_Procedure = "114171";
+const char* const c_field_id_Allow_Procedure_Arg = "114204";
 const char* const c_field_id_Allow_Source_Child = "114121";
 const char* const c_field_id_Allow_Source_Child_2 = "114176";
 const char* const c_field_id_Allow_Source_Class = "114172";
@@ -191,6 +192,7 @@ const char* const c_field_name_Allow_Other_Field = "Allow_Other_Field";
 const char* const c_field_name_Allow_Other_Field_2 = "Allow_Other_Field_2";
 const char* const c_field_name_Allow_Permission = "Allow_Permission";
 const char* const c_field_name_Allow_Procedure = "Allow_Procedure";
+const char* const c_field_name_Allow_Procedure_Arg = "Allow_Procedure_Arg";
 const char* const c_field_name_Allow_Source_Child = "Allow_Source_Child";
 const char* const c_field_name_Allow_Source_Child_2 = "Allow_Source_Child_2";
 const char* const c_field_name_Allow_Source_Class = "Allow_Source_Class";
@@ -297,6 +299,7 @@ const char* const c_field_display_name_Allow_Other_Field = "field_specification_
 const char* const c_field_display_name_Allow_Other_Field_2 = "field_specification_type_allow_other_field_2";
 const char* const c_field_display_name_Allow_Permission = "field_specification_type_allow_permission";
 const char* const c_field_display_name_Allow_Procedure = "field_specification_type_allow_procedure";
+const char* const c_field_display_name_Allow_Procedure_Arg = "field_specification_type_allow_procedure_arg";
 const char* const c_field_display_name_Allow_Source_Child = "field_specification_type_allow_source_child";
 const char* const c_field_display_name_Allow_Source_Child_2 = "field_specification_type_allow_source_child_2";
 const char* const c_field_display_name_Allow_Source_Class = "field_specification_type_allow_source_class";
@@ -390,7 +393,7 @@ const char* const c_field_display_name_Use_Parent_Source_Parent = "field_specifi
 const char* const c_field_display_name_Use_Parent_Source_Parent_For_Class = "field_specification_type_use_parent_source_parent_for_class";
 const char* const c_field_display_name_View_Id = "field_specification_type_view_id";
 
-const int c_num_fields = 105;
+const int c_num_fields = 106;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -496,6 +499,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "114201",
    "114202",
    "114203",
+   "114204",
    "301700",
    "301710",
    "301720"
@@ -516,6 +520,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Allow_Other_Field_2",
    "Allow_Permission",
    "Allow_Procedure",
+   "Allow_Procedure_Arg",
    "Allow_Source_Child",
    "Allow_Source_Child_2",
    "Allow_Source_Class",
@@ -659,6 +664,7 @@ bool gv_default_Allow_Other_Field = bool( 0 );
 bool gv_default_Allow_Other_Field_2 = bool( 0 );
 bool gv_default_Allow_Permission = bool( 0 );
 bool gv_default_Allow_Procedure = bool( 0 );
+bool gv_default_Allow_Procedure_Arg = bool( 0 );
 bool gv_default_Allow_Source_Child = bool( 0 );
 bool gv_default_Allow_Source_Child_2 = bool( 0 );
 bool gv_default_Allow_Source_Class = bool( 0 );
@@ -1107,6 +1113,8 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
          string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Permission( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Procedure || field_name == c_field_name_Allow_Procedure )
          string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Procedure( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Allow_Procedure_Arg || field_name == c_field_name_Allow_Procedure_Arg )
+         string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Procedure_Arg( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Source_Child || field_name == c_field_name_Allow_Source_Child )
          string_getter< bool >( cmd_handler.p_Meta_Specification_Type->Allow_Source_Child( ), cmd_handler.retval );
       else if( field_name == c_field_id_Allow_Source_Child_2 || field_name == c_field_name_Allow_Source_Child_2 )
@@ -1340,6 +1348,9 @@ void Meta_Specification_Type_command_functor::operator ( )( const string& comman
       else if( field_name == c_field_id_Allow_Procedure || field_name == c_field_name_Allow_Procedure )
          func_string_setter< Meta_Specification_Type, bool >(
           *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Procedure, field_value );
+      else if( field_name == c_field_id_Allow_Procedure_Arg || field_name == c_field_name_Allow_Procedure_Arg )
+         func_string_setter< Meta_Specification_Type, bool >(
+          *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Procedure_Arg, field_value );
       else if( field_name == c_field_id_Allow_Source_Child || field_name == c_field_name_Allow_Source_Child )
          func_string_setter< Meta_Specification_Type, bool >(
           *cmd_handler.p_Meta_Specification_Type, &Meta_Specification_Type::Allow_Source_Child, field_value );
@@ -1715,6 +1726,9 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
    bool impl_Allow_Procedure( ) const { return lazy_fetch( p_obj ), v_Allow_Procedure; }
    void impl_Allow_Procedure( bool Allow_Procedure ) { v_Allow_Procedure = Allow_Procedure; }
+
+   bool impl_Allow_Procedure_Arg( ) const { return lazy_fetch( p_obj ), v_Allow_Procedure_Arg; }
+   void impl_Allow_Procedure_Arg( bool Allow_Procedure_Arg ) { v_Allow_Procedure_Arg = Allow_Procedure_Arg; }
 
    bool impl_Allow_Source_Child( ) const { return lazy_fetch( p_obj ), v_Allow_Source_Child; }
    void impl_Allow_Source_Child( bool Allow_Source_Child ) { v_Allow_Source_Child = Allow_Source_Child; }
@@ -2253,6 +2267,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
    bool v_Allow_Other_Field_2;
    bool v_Allow_Permission;
    bool v_Allow_Procedure;
+   bool v_Allow_Procedure_Arg;
    bool v_Allow_Source_Child;
    bool v_Allow_Source_Child_2;
    bool v_Allow_Source_Class;
@@ -2687,370 +2702,374 @@ string Meta_Specification_Type::impl::get_field_value( int field ) const
       break;
 
       case 13:
-      retval = to_string( impl_Allow_Source_Child( ) );
+      retval = to_string( impl_Allow_Procedure_Arg( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Allow_Source_Child_2( ) );
+      retval = to_string( impl_Allow_Source_Child( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Allow_Source_Class( ) );
+      retval = to_string( impl_Allow_Source_Child_2( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Allow_Source_Field( ) );
+      retval = to_string( impl_Allow_Source_Class( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Allow_Source_Grandchild( ) );
+      retval = to_string( impl_Allow_Source_Field( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Allow_Source_Parent( ) );
+      retval = to_string( impl_Allow_Source_Grandchild( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Allow_Test_Field( ) );
+      retval = to_string( impl_Allow_Source_Parent( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Allow_Test_Value( ) );
+      retval = to_string( impl_Allow_Test_Field( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Allow_Value( ) );
+      retval = to_string( impl_Allow_Test_Value( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Child_Prefix( ) );
+      retval = to_string( impl_Allow_Value( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Child_Rel_Grandparent_Match( ) );
+      retval = to_string( impl_Child_Prefix( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Child_Rel_Parent_Match( ) );
+      retval = to_string( impl_Child_Rel_Grandparent_Match( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Child_Relationship_Class_Match( ) );
+      retval = to_string( impl_Child_Rel_Parent_Match( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Child_Specification_Type( ) );
+      retval = to_string( impl_Child_Relationship_Class_Match( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Default_Child_Vars( ) );
+      retval = to_string( impl_Child_Specification_Type( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Field_type( ) );
+      retval = to_string( impl_Default_Child_Vars( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Has_Next_Specification_Info( ) );
+      retval = to_string( impl_Field_type( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Is_Child_Only( ) );
+      retval = to_string( impl_Has_Next_Specification_Info( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Is_Required_For_UI_Gen( ) );
+      retval = to_string( impl_Is_Child_Only( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Is_System( ) );
+      retval = to_string( impl_Is_Required_For_UI_Gen( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Is_System( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Needs_Child_Relationship( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Needs_Class( ) );
+      retval = to_string( impl_Needs_Child_Relationship( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Needs_Enum( ) );
+      retval = to_string( impl_Needs_Class( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Needs_Enum_Item( ) );
+      retval = to_string( impl_Needs_Enum( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Needs_Enum_Item_2( ) );
+      retval = to_string( impl_Needs_Enum_Item( ) );
       break;
 
       case 39:
-      retval = to_string( impl_Needs_Enum_Item_3( ) );
+      retval = to_string( impl_Needs_Enum_Item_2( ) );
       break;
 
       case 40:
-      retval = to_string( impl_Needs_Enum_Item_4( ) );
+      retval = to_string( impl_Needs_Enum_Item_3( ) );
       break;
 
       case 41:
-      retval = to_string( impl_Needs_Enum_Item_5( ) );
+      retval = to_string( impl_Needs_Enum_Item_4( ) );
       break;
 
       case 42:
-      retval = to_string( impl_Needs_Field( ) );
+      retval = to_string( impl_Needs_Enum_Item_5( ) );
       break;
 
       case 43:
-      retval = to_string( impl_Needs_Modifier( ) );
+      retval = to_string( impl_Needs_Field( ) );
       break;
 
       case 44:
-      retval = to_string( impl_Needs_Other_Class( ) );
+      retval = to_string( impl_Needs_Modifier( ) );
       break;
 
       case 45:
-      retval = to_string( impl_Needs_Other_Field( ) );
+      retval = to_string( impl_Needs_Other_Class( ) );
       break;
 
       case 46:
-      retval = to_string( impl_Needs_Other_Field_2( ) );
+      retval = to_string( impl_Needs_Other_Field( ) );
       break;
 
       case 47:
-      retval = to_string( impl_Needs_Other_Modifier( ) );
+      retval = to_string( impl_Needs_Other_Field_2( ) );
       break;
 
       case 48:
-      retval = to_string( impl_Needs_Other_Modifier_2( ) );
+      retval = to_string( impl_Needs_Other_Modifier( ) );
       break;
 
       case 49:
-      retval = to_string( impl_Needs_Other_Permission( ) );
+      retval = to_string( impl_Needs_Other_Modifier_2( ) );
       break;
 
       case 50:
-      retval = to_string( impl_Needs_Other_Permission_2( ) );
+      retval = to_string( impl_Needs_Other_Permission( ) );
       break;
 
       case 51:
-      retval = to_string( impl_Needs_Other_Procedure( ) );
+      retval = to_string( impl_Needs_Other_Permission_2( ) );
       break;
 
       case 52:
-      retval = to_string( impl_Needs_Other_Procedure_2( ) );
+      retval = to_string( impl_Needs_Other_Procedure( ) );
       break;
 
       case 53:
-      retval = to_string( impl_Needs_Permission( ) );
+      retval = to_string( impl_Needs_Other_Procedure_2( ) );
       break;
 
       case 54:
-      retval = to_string( impl_Needs_Procedure( ) );
+      retval = to_string( impl_Needs_Permission( ) );
       break;
 
       case 55:
-      retval = to_string( impl_Needs_Procedure_Arg( ) );
+      retval = to_string( impl_Needs_Procedure( ) );
       break;
 
       case 56:
-      retval = to_string( impl_Needs_Procedure_Arg_2( ) );
+      retval = to_string( impl_Needs_Procedure_Arg( ) );
       break;
 
       case 57:
-      retval = to_string( impl_Needs_Procedure_Arg_3( ) );
+      retval = to_string( impl_Needs_Procedure_Arg_2( ) );
       break;
 
       case 58:
-      retval = to_string( impl_Needs_Source_Child( ) );
+      retval = to_string( impl_Needs_Procedure_Arg_3( ) );
       break;
 
       case 59:
-      retval = to_string( impl_Needs_Source_Child_2( ) );
+      retval = to_string( impl_Needs_Source_Child( ) );
       break;
 
       case 60:
-      retval = to_string( impl_Needs_Source_Field( ) );
+      retval = to_string( impl_Needs_Source_Child_2( ) );
       break;
 
       case 61:
-      retval = to_string( impl_Needs_Source_Field_Or_Child( ) );
+      retval = to_string( impl_Needs_Source_Field( ) );
       break;
 
       case 62:
-      retval = to_string( impl_Needs_Source_Parent( ) );
+      retval = to_string( impl_Needs_Source_Field_Or_Child( ) );
       break;
 
       case 63:
-      retval = to_string( impl_Needs_Test_Field( ) );
+      retval = to_string( impl_Needs_Source_Parent( ) );
       break;
 
       case 64:
-      retval = to_string( impl_Needs_Test_Value( ) );
+      retval = to_string( impl_Needs_Test_Field( ) );
       break;
 
       case 65:
-      retval = to_string( impl_Needs_Value( ) );
+      retval = to_string( impl_Needs_Test_Value( ) );
       break;
 
       case 66:
-      retval = to_string( impl_Next_Child_Specification_Type( ) );
+      retval = to_string( impl_Needs_Value( ) );
       break;
 
       case 67:
-      retval = to_string( impl_Next_Protect_Child_Rel( ) );
+      retval = to_string( impl_Next_Child_Specification_Type( ) );
       break;
 
       case 68:
-      retval = to_string( impl_Next_Protect_Procedure( ) );
+      retval = to_string( impl_Next_Protect_Child_Rel( ) );
       break;
 
       case 69:
-      retval = to_string( impl_Next_Protect_Source_Parent( ) );
+      retval = to_string( impl_Next_Protect_Procedure( ) );
       break;
 
       case 70:
-      retval = to_string( impl_Next_Specification_Actions( ) );
+      retval = to_string( impl_Next_Protect_Source_Parent( ) );
       break;
 
       case 71:
-      retval = to_string( impl_Notes( ) );
+      retval = to_string( impl_Next_Specification_Actions( ) );
       break;
 
       case 72:
-      retval = to_string( impl_Parent_Specification_Type( ) );
+      retval = to_string( impl_Notes( ) );
       break;
 
       case 73:
-      retval = to_string( impl_Procedure_Arg_primitive( ) );
+      retval = to_string( impl_Parent_Specification_Type( ) );
       break;
 
       case 74:
-      retval = to_string( impl_Procedure_Arg_type( ) );
+      retval = to_string( impl_Procedure_Arg_primitive( ) );
       break;
 
       case 75:
-      retval = to_string( impl_Protect_Child_Rel_From_Update( ) );
+      retval = to_string( impl_Procedure_Arg_type( ) );
       break;
 
       case 76:
-      retval = to_string( impl_Protect_Class_From_Edit( ) );
+      retval = to_string( impl_Protect_Child_Rel_From_Update( ) );
       break;
 
       case 77:
-      retval = to_string( impl_Protect_Class_From_Update( ) );
+      retval = to_string( impl_Protect_Class_From_Edit( ) );
       break;
 
       case 78:
-      retval = to_string( impl_Protect_Procedure_From_Edit( ) );
+      retval = to_string( impl_Protect_Class_From_Update( ) );
       break;
 
       case 79:
-      retval = to_string( impl_Protect_Source_Parent( ) );
+      retval = to_string( impl_Protect_Procedure_From_Edit( ) );
       break;
 
       case 80:
-      retval = to_string( impl_Set_Field_To_Source_Field_Or_Child( ) );
+      retval = to_string( impl_Protect_Source_Parent( ) );
       break;
 
       case 81:
-      retval = to_string( impl_Source_Field_Needs_Test_Field( ) );
+      retval = to_string( impl_Set_Field_To_Source_Field_Or_Child( ) );
       break;
 
       case 82:
-      retval = to_string( impl_Source_Field_Type_Match( ) );
+      retval = to_string( impl_Source_Field_Needs_Test_Field( ) );
       break;
 
       case 83:
-      retval = to_string( impl_Source_Parent_type( ) );
+      retval = to_string( impl_Source_Field_Type_Match( ) );
       break;
 
       case 84:
-      retval = to_string( impl_Source_type( ) );
+      retval = to_string( impl_Source_Parent_type( ) );
       break;
 
       case 85:
-      retval = to_string( impl_Specification_Actions( ) );
+      retval = to_string( impl_Source_type( ) );
       break;
 
       case 86:
-      retval = to_string( impl_Specification_Name( ) );
+      retval = to_string( impl_Specification_Actions( ) );
       break;
 
       case 87:
-      retval = to_string( impl_Specification_Object( ) );
+      retval = to_string( impl_Specification_Name( ) );
       break;
 
       case 88:
-      retval = to_string( impl_Specification_Strings( ) );
+      retval = to_string( impl_Specification_Object( ) );
       break;
 
       case 89:
-      retval = to_string( impl_Specification_Vars( ) );
+      retval = to_string( impl_Specification_Strings( ) );
       break;
 
       case 90:
-      retval = to_string( impl_Test_Field_Type_Match( ) );
+      retval = to_string( impl_Specification_Vars( ) );
       break;
 
       case 91:
-      retval = to_string( impl_Test_Field_type( ) );
+      retval = to_string( impl_Test_Field_Type_Match( ) );
       break;
 
       case 92:
-      retval = to_string( impl_Use_Class_As_Source_Parent_Class( ) );
+      retval = to_string( impl_Test_Field_type( ) );
       break;
 
       case 93:
-      retval = to_string( impl_Use_Field_Enum( ) );
+      retval = to_string( impl_Use_Class_As_Source_Parent_Class( ) );
       break;
 
       case 94:
-      retval = to_string( impl_Use_Parent_Child_Rel_As_Source_Parent( ) );
+      retval = to_string( impl_Use_Field_Enum( ) );
       break;
 
       case 95:
-      retval = to_string( impl_Use_Parent_Child_Rel_For_Class( ) );
+      retval = to_string( impl_Use_Parent_Child_Rel_As_Source_Parent( ) );
       break;
 
       case 96:
-      retval = to_string( impl_Use_Parent_Class( ) );
+      retval = to_string( impl_Use_Parent_Child_Rel_For_Class( ) );
       break;
 
       case 97:
-      retval = to_string( impl_Use_Parent_Field_For_Class( ) );
+      retval = to_string( impl_Use_Parent_Class( ) );
       break;
 
       case 98:
-      retval = to_string( impl_Use_Parent_Other_Class_For_Class( ) );
+      retval = to_string( impl_Use_Parent_Field_For_Class( ) );
       break;
 
       case 99:
-      retval = to_string( impl_Use_Parent_Procedure( ) );
+      retval = to_string( impl_Use_Parent_Other_Class_For_Class( ) );
       break;
 
       case 100:
-      retval = to_string( impl_Use_Parent_Source_Class( ) );
+      retval = to_string( impl_Use_Parent_Procedure( ) );
       break;
 
       case 101:
-      retval = to_string( impl_Use_Parent_Source_Field_For_Class( ) );
+      retval = to_string( impl_Use_Parent_Source_Class( ) );
       break;
 
       case 102:
-      retval = to_string( impl_Use_Parent_Source_Parent( ) );
+      retval = to_string( impl_Use_Parent_Source_Field_For_Class( ) );
       break;
 
       case 103:
-      retval = to_string( impl_Use_Parent_Source_Parent_For_Class( ) );
+      retval = to_string( impl_Use_Parent_Source_Parent( ) );
       break;
 
       case 104:
+      retval = to_string( impl_Use_Parent_Source_Parent_For_Class( ) );
+      break;
+
+      case 105:
       retval = to_string( impl_View_Id( ) );
       break;
 
@@ -3118,370 +3137,374 @@ void Meta_Specification_Type::impl::set_field_value( int field, const string& va
       break;
 
       case 13:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Child, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Procedure_Arg, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Child_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Child, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Child_2, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Class, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Grandchild, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Field, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Parent, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Grandchild, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Test_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Source_Parent, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Test_Value, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Test_Field, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Value, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Test_Value, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Child_Prefix, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Allow_Value, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Rel_Grandparent_Match, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Child_Prefix, value );
       break;
 
       case 24:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Rel_Parent_Match, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Rel_Grandparent_Match, value );
       break;
 
       case 25:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Relationship_Class_Match, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Rel_Parent_Match, value );
       break;
 
       case 26:
-      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Child_Specification_Type, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Child_Relationship_Class_Match, value );
       break;
 
       case 27:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Default_Child_Vars, value );
+      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Child_Specification_Type, value );
       break;
 
       case 28:
-      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Field_type, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Default_Child_Vars, value );
       break;
 
       case 29:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Has_Next_Specification_Info, value );
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Field_type, value );
       break;
 
       case 30:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_Child_Only, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Has_Next_Specification_Info, value );
       break;
 
       case 31:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_Required_For_UI_Gen, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_Child_Only, value );
       break;
 
       case 32:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_System, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_Required_For_UI_Gen, value );
       break;
 
       case 33:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Name, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Is_System, value );
       break;
 
       case 34:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Child_Relationship, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Name, value );
       break;
 
       case 35:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Child_Relationship, value );
       break;
 
       case 36:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Class, value );
       break;
 
       case 37:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum, value );
       break;
 
       case 38:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item, value );
       break;
 
       case 39:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_3, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_2, value );
       break;
 
       case 40:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_4, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_3, value );
       break;
 
       case 41:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_5, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_4, value );
       break;
 
       case 42:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Enum_Item_5, value );
       break;
 
       case 43:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Modifier, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Field, value );
       break;
 
       case 44:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Modifier, value );
       break;
 
       case 45:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Class, value );
       break;
 
       case 46:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Field_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Field, value );
       break;
 
       case 47:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Modifier, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Field_2, value );
       break;
 
       case 48:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Modifier_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Modifier, value );
       break;
 
       case 49:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Permission, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Modifier_2, value );
       break;
 
       case 50:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Permission_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Permission, value );
       break;
 
       case 51:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Procedure, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Permission_2, value );
       break;
 
       case 52:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Procedure_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Procedure, value );
       break;
 
       case 53:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Permission, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Other_Procedure_2, value );
       break;
 
       case 54:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Permission, value );
       break;
 
       case 55:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure, value );
       break;
 
       case 56:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg, value );
       break;
 
       case 57:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg_3, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg_2, value );
       break;
 
       case 58:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Child, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Procedure_Arg_3, value );
       break;
 
       case 59:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Child_2, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Child, value );
       break;
 
       case 60:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Child_2, value );
       break;
 
       case 61:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Field_Or_Child, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Field, value );
       break;
 
       case 62:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Parent, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Field_Or_Child, value );
       break;
 
       case 63:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Test_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Source_Parent, value );
       break;
 
       case 64:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Test_Value, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Test_Field, value );
       break;
 
       case 65:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Value, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Test_Value, value );
       break;
 
       case 66:
-      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Next_Child_Specification_Type, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Needs_Value, value );
       break;
 
       case 67:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Child_Rel, value );
+      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Next_Child_Specification_Type, value );
       break;
 
       case 68:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Procedure, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Child_Rel, value );
       break;
 
       case 69:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Source_Parent, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Procedure, value );
       break;
 
       case 70:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Next_Specification_Actions, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Next_Protect_Source_Parent, value );
       break;
 
       case 71:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Notes, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Next_Specification_Actions, value );
       break;
 
       case 72:
-      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Parent_Specification_Type, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Notes, value );
       break;
 
       case 73:
-      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Procedure_Arg_primitive, value );
+      func_string_setter< Meta_Specification_Type::impl, Meta_Specification_Type >( *this, &Meta_Specification_Type::impl::impl_Parent_Specification_Type, value );
       break;
 
       case 74:
-      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Procedure_Arg_type, value );
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Procedure_Arg_primitive, value );
       break;
 
       case 75:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Child_Rel_From_Update, value );
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Procedure_Arg_type, value );
       break;
 
       case 76:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Class_From_Edit, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Child_Rel_From_Update, value );
       break;
 
       case 77:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Class_From_Update, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Class_From_Edit, value );
       break;
 
       case 78:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Procedure_From_Edit, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Class_From_Update, value );
       break;
 
       case 79:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Source_Parent, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Procedure_From_Edit, value );
       break;
 
       case 80:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Set_Field_To_Source_Field_Or_Child, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Protect_Source_Parent, value );
       break;
 
       case 81:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Source_Field_Needs_Test_Field, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Set_Field_To_Source_Field_Or_Child, value );
       break;
 
       case 82:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Source_Field_Type_Match, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Source_Field_Needs_Test_Field, value );
       break;
 
       case 83:
-      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Source_Parent_type, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Source_Field_Type_Match, value );
       break;
 
       case 84:
-      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Source_type, value );
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Source_Parent_type, value );
       break;
 
       case 85:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Actions, value );
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Source_type, value );
       break;
 
       case 86:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Name, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Actions, value );
       break;
 
       case 87:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Object, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Name, value );
       break;
 
       case 88:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Strings, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Object, value );
       break;
 
       case 89:
-      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Vars, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Strings, value );
       break;
 
       case 90:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Test_Field_Type_Match, value );
+      func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_Specification_Vars, value );
       break;
 
       case 91:
-      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Test_Field_type, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Test_Field_Type_Match, value );
       break;
 
       case 92:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Class_As_Source_Parent_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, int >( *this, &Meta_Specification_Type::impl::impl_Test_Field_type, value );
       break;
 
       case 93:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Field_Enum, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Class_As_Source_Parent_Class, value );
       break;
 
       case 94:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Child_Rel_As_Source_Parent, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Field_Enum, value );
       break;
 
       case 95:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Child_Rel_For_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Child_Rel_As_Source_Parent, value );
       break;
 
       case 96:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Child_Rel_For_Class, value );
       break;
 
       case 97:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Field_For_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Class, value );
       break;
 
       case 98:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Other_Class_For_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Field_For_Class, value );
       break;
 
       case 99:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Procedure, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Other_Class_For_Class, value );
       break;
 
       case 100:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Procedure, value );
       break;
 
       case 101:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Field_For_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Class, value );
       break;
 
       case 102:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Parent, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Field_For_Class, value );
       break;
 
       case 103:
-      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Parent_For_Class, value );
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Parent, value );
       break;
 
       case 104:
+      func_string_setter< Meta_Specification_Type::impl, bool >( *this, &Meta_Specification_Type::impl::impl_Use_Parent_Source_Parent_For_Class, value );
+      break;
+
+      case 105:
       func_string_setter< Meta_Specification_Type::impl, string >( *this, &Meta_Specification_Type::impl::impl_View_Id, value );
       break;
 
@@ -3586,6 +3609,7 @@ void Meta_Specification_Type::impl::clear( )
    v_Allow_Other_Field_2 = gv_default_Allow_Other_Field_2;
    v_Allow_Permission = gv_default_Allow_Permission;
    v_Allow_Procedure = gv_default_Allow_Procedure;
+   v_Allow_Procedure_Arg = gv_default_Allow_Procedure_Arg;
    v_Allow_Source_Child = gv_default_Allow_Source_Child;
    v_Allow_Source_Child_2 = gv_default_Allow_Source_Child_2;
    v_Allow_Source_Class = gv_default_Allow_Source_Class;
@@ -3881,6 +3905,13 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
    if( !get_obj( ).get_is_preparing( ) )
       do_post_init( );
 
+   // [(start default_to_field)]
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Allow_Procedure_Arg( ) == gv_default_Allow_Procedure_Arg )
+      get_obj( ).Allow_Procedure_Arg( get_obj( ).Needs_Procedure_Arg( ) );
+   // [(finish default_to_field)]
+
    // [<start to_store>]
    // [<finish to_store>]
 }
@@ -4108,6 +4139,16 @@ bool Meta_Specification_Type::Allow_Procedure( ) const
 void Meta_Specification_Type::Allow_Procedure( bool Allow_Procedure )
 {
    p_impl->impl_Allow_Procedure( Allow_Procedure );
+}
+
+bool Meta_Specification_Type::Allow_Procedure_Arg( ) const
+{
+   return p_impl->impl_Allow_Procedure_Arg( );
+}
+
+void Meta_Specification_Type::Allow_Procedure_Arg( bool Allow_Procedure_Arg )
+{
+   p_impl->impl_Allow_Procedure_Arg( Allow_Procedure_Arg );
 }
 
 bool Meta_Specification_Type::Allow_Source_Child( ) const
@@ -5361,6 +5402,16 @@ const char* Meta_Specification_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Allow_Procedure_Arg )
+   {
+      p_id = c_field_id_Allow_Procedure_Arg;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Allow_Source_Child )
    {
       p_id = c_field_id_Allow_Source_Child;
@@ -6422,6 +6473,16 @@ const char* Meta_Specification_Type::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Allow_Procedure_Arg )
+   {
+      p_name = c_field_name_Allow_Procedure_Arg;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Allow_Source_Child )
    {
       p_name = c_field_name_Allow_Source_Child;
@@ -7394,6 +7455,8 @@ string Meta_Specification_Type::get_field_display_name( const string& id_or_name
       display_name = get_module_string( c_field_display_name_Allow_Permission );
    else if( id_or_name == c_field_id_Allow_Procedure || id_or_name == c_field_name_Allow_Procedure )
       display_name = get_module_string( c_field_display_name_Allow_Procedure );
+   else if( id_or_name == c_field_id_Allow_Procedure_Arg || id_or_name == c_field_name_Allow_Procedure_Arg )
+      display_name = get_module_string( c_field_display_name_Allow_Procedure_Arg );
    else if( id_or_name == c_field_id_Allow_Source_Child || id_or_name == c_field_name_Allow_Source_Child )
       display_name = get_module_string( c_field_display_name_Allow_Source_Child );
    else if( id_or_name == c_field_id_Allow_Source_Child_2 || id_or_name == c_field_name_Allow_Source_Child_2 )
@@ -7838,6 +7901,7 @@ void Meta_Specification_Type::get_sql_column_names(
    names.push_back( "C_Allow_Other_Field_2" );
    names.push_back( "C_Allow_Permission" );
    names.push_back( "C_Allow_Procedure" );
+   names.push_back( "C_Allow_Procedure_Arg" );
    names.push_back( "C_Allow_Source_Child" );
    names.push_back( "C_Allow_Source_Child_2" );
    names.push_back( "C_Allow_Source_Class" );
@@ -7954,6 +8018,7 @@ void Meta_Specification_Type::get_sql_column_values(
    values.push_back( to_string( Allow_Other_Field_2( ) ) );
    values.push_back( to_string( Allow_Permission( ) ) );
    values.push_back( to_string( Allow_Procedure( ) ) );
+   values.push_back( to_string( Allow_Procedure_Arg( ) ) );
    values.push_back( to_string( Allow_Source_Child( ) ) );
    values.push_back( to_string( Allow_Source_Child_2( ) ) );
    values.push_back( to_string( Allow_Source_Class( ) ) );
@@ -8133,6 +8198,7 @@ void Meta_Specification_Type::static_get_field_info( field_info_container& all_f
    all_field_info.push_back( field_info( "114183", "Allow_Other_Field_2", "bool", false ) );
    all_field_info.push_back( field_info( "114136", "Allow_Permission", "bool", false ) );
    all_field_info.push_back( field_info( "114171", "Allow_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "114204", "Allow_Procedure_Arg", "bool", false ) );
    all_field_info.push_back( field_info( "114121", "Allow_Source_Child", "bool", false ) );
    all_field_info.push_back( field_info( "114176", "Allow_Source_Child_2", "bool", false ) );
    all_field_info.push_back( field_info( "114172", "Allow_Source_Class", "bool", false ) );
@@ -8308,370 +8374,374 @@ const char* Meta_Specification_Type::static_get_field_id( field_id id )
       break;
 
       case 14:
-      p_id = "114121";
+      p_id = "114204";
       break;
 
       case 15:
-      p_id = "114176";
+      p_id = "114121";
       break;
 
       case 16:
-      p_id = "114172";
+      p_id = "114176";
       break;
 
       case 17:
-      p_id = "114128";
+      p_id = "114172";
       break;
 
       case 18:
-      p_id = "114178";
+      p_id = "114128";
       break;
 
       case 19:
-      p_id = "114125";
+      p_id = "114178";
       break;
 
       case 20:
-      p_id = "114126";
+      p_id = "114125";
       break;
 
       case 21:
-      p_id = "114115";
+      p_id = "114126";
       break;
 
       case 22:
-      p_id = "114135";
+      p_id = "114115";
       break;
 
       case 23:
-      p_id = "114164";
+      p_id = "114135";
       break;
 
       case 24:
-      p_id = "114157";
+      p_id = "114164";
       break;
 
       case 25:
-      p_id = "114156";
+      p_id = "114157";
       break;
 
       case 26:
-      p_id = "114155";
+      p_id = "114156";
       break;
 
       case 27:
-      p_id = "301710";
+      p_id = "114155";
       break;
 
       case 28:
-      p_id = "114165";
+      p_id = "301710";
       break;
 
       case 29:
-      p_id = "114111";
+      p_id = "114165";
       break;
 
       case 30:
-      p_id = "114149";
+      p_id = "114111";
       break;
 
       case 31:
-      p_id = "114151";
+      p_id = "114149";
       break;
 
       case 32:
-      p_id = "114163";
+      p_id = "114151";
       break;
 
       case 33:
-      p_id = "114147";
+      p_id = "114163";
       break;
 
       case 34:
-      p_id = "114101";
+      p_id = "114147";
       break;
 
       case 35:
-      p_id = "114138";
+      p_id = "114101";
       break;
 
       case 36:
-      p_id = "114104";
+      p_id = "114138";
       break;
 
       case 37:
-      p_id = "114108";
+      p_id = "114104";
       break;
 
       case 38:
-      p_id = "114109";
+      p_id = "114108";
       break;
 
       case 39:
-      p_id = "114182";
+      p_id = "114109";
       break;
 
       case 40:
-      p_id = "114185";
+      p_id = "114182";
       break;
 
       case 41:
-      p_id = "114186";
+      p_id = "114185";
       break;
 
       case 42:
-      p_id = "114189";
+      p_id = "114186";
       break;
 
       case 43:
-      p_id = "114105";
+      p_id = "114189";
       break;
 
       case 44:
-      p_id = "114107";
+      p_id = "114105";
       break;
 
       case 45:
-      p_id = "114193";
+      p_id = "114107";
       break;
 
       case 46:
-      p_id = "114175";
+      p_id = "114193";
       break;
 
       case 47:
-      p_id = "114184";
+      p_id = "114175";
       break;
 
       case 48:
-      p_id = "114202";
+      p_id = "114184";
       break;
 
       case 49:
-      p_id = "114203";
+      p_id = "114202";
       break;
 
       case 50:
-      p_id = "114200";
+      p_id = "114203";
       break;
 
       case 51:
-      p_id = "114201";
+      p_id = "114200";
       break;
 
       case 52:
-      p_id = "114187";
+      p_id = "114201";
       break;
 
       case 53:
-      p_id = "114188";
+      p_id = "114187";
       break;
 
       case 54:
-      p_id = "114180";
+      p_id = "114188";
       break;
 
       case 55:
-      p_id = "114106";
+      p_id = "114180";
       break;
 
       case 56:
-      p_id = "114132";
+      p_id = "114106";
       break;
 
       case 57:
-      p_id = "114194";
+      p_id = "114132";
       break;
 
       case 58:
-      p_id = "114195";
+      p_id = "114194";
       break;
 
       case 59:
-      p_id = "114122";
+      p_id = "114195";
       break;
 
       case 60:
-      p_id = "114177";
+      p_id = "114122";
       break;
 
       case 61:
-      p_id = "114113";
+      p_id = "114177";
       break;
 
       case 62:
-      p_id = "114154";
+      p_id = "114113";
       break;
 
       case 63:
-      p_id = "114112";
+      p_id = "114154";
       break;
 
       case 64:
-      p_id = "114114";
+      p_id = "114112";
       break;
 
       case 65:
-      p_id = "114116";
+      p_id = "114114";
       break;
 
       case 66:
-      p_id = "114110";
+      p_id = "114116";
       break;
 
       case 67:
-      p_id = "301720";
+      p_id = "114110";
       break;
 
       case 68:
-      p_id = "114169";
+      p_id = "301720";
       break;
 
       case 69:
-      p_id = "114161";
+      p_id = "114169";
       break;
 
       case 70:
-      p_id = "114153";
+      p_id = "114161";
       break;
 
       case 71:
-      p_id = "114150";
+      p_id = "114153";
       break;
 
       case 72:
-      p_id = "114120";
+      p_id = "114150";
       break;
 
       case 73:
-      p_id = "301700";
+      p_id = "114120";
       break;
 
       case 74:
-      p_id = "114133";
+      p_id = "301700";
       break;
 
       case 75:
-      p_id = "114134";
+      p_id = "114133";
       break;
 
       case 76:
-      p_id = "114145";
+      p_id = "114134";
       break;
 
       case 77:
-      p_id = "114146";
+      p_id = "114145";
       break;
 
       case 78:
-      p_id = "114141";
+      p_id = "114146";
       break;
 
       case 79:
-      p_id = "114160";
+      p_id = "114141";
       break;
 
       case 80:
-      p_id = "114137";
+      p_id = "114160";
       break;
 
       case 81:
-      p_id = "114179";
+      p_id = "114137";
       break;
 
       case 82:
-      p_id = "114129";
+      p_id = "114179";
       break;
 
       case 83:
-      p_id = "114118";
+      p_id = "114129";
       break;
 
       case 84:
-      p_id = "114119";
+      p_id = "114118";
       break;
 
       case 85:
-      p_id = "114130";
+      p_id = "114119";
       break;
 
       case 86:
-      p_id = "114140";
+      p_id = "114130";
       break;
 
       case 87:
-      p_id = "114102";
+      p_id = "114140";
       break;
 
       case 88:
-      p_id = "114103";
+      p_id = "114102";
       break;
 
       case 89:
-      p_id = "114166";
+      p_id = "114103";
       break;
 
       case 90:
-      p_id = "114158";
+      p_id = "114166";
       break;
 
       case 91:
-      p_id = "114127";
+      p_id = "114158";
       break;
 
       case 92:
-      p_id = "114131";
+      p_id = "114127";
       break;
 
       case 93:
-      p_id = "114181";
+      p_id = "114131";
       break;
 
       case 94:
-      p_id = "114162";
+      p_id = "114181";
       break;
 
       case 95:
-      p_id = "114168";
+      p_id = "114162";
       break;
 
       case 96:
-      p_id = "114148";
+      p_id = "114168";
       break;
 
       case 97:
-      p_id = "114139";
+      p_id = "114148";
       break;
 
       case 98:
-      p_id = "114167";
+      p_id = "114139";
       break;
 
       case 99:
-      p_id = "114196";
+      p_id = "114167";
       break;
 
       case 100:
-      p_id = "114159";
+      p_id = "114196";
       break;
 
       case 101:
-      p_id = "114173";
+      p_id = "114159";
       break;
 
       case 102:
-      p_id = "114190";
+      p_id = "114173";
       break;
 
       case 103:
-      p_id = "114144";
+      p_id = "114190";
       break;
 
       case 104:
-      p_id = "114152";
+      p_id = "114144";
       break;
 
       case 105:
+      p_id = "114152";
+      break;
+
+      case 106:
       p_id = "114170";
       break;
    }
@@ -8741,370 +8811,374 @@ const char* Meta_Specification_Type::static_get_field_name( field_id id )
       break;
 
       case 14:
-      p_id = "Allow_Source_Child";
+      p_id = "Allow_Procedure_Arg";
       break;
 
       case 15:
-      p_id = "Allow_Source_Child_2";
+      p_id = "Allow_Source_Child";
       break;
 
       case 16:
-      p_id = "Allow_Source_Class";
+      p_id = "Allow_Source_Child_2";
       break;
 
       case 17:
-      p_id = "Allow_Source_Field";
+      p_id = "Allow_Source_Class";
       break;
 
       case 18:
-      p_id = "Allow_Source_Grandchild";
+      p_id = "Allow_Source_Field";
       break;
 
       case 19:
-      p_id = "Allow_Source_Parent";
+      p_id = "Allow_Source_Grandchild";
       break;
 
       case 20:
-      p_id = "Allow_Test_Field";
+      p_id = "Allow_Source_Parent";
       break;
 
       case 21:
-      p_id = "Allow_Test_Value";
+      p_id = "Allow_Test_Field";
       break;
 
       case 22:
-      p_id = "Allow_Value";
+      p_id = "Allow_Test_Value";
       break;
 
       case 23:
-      p_id = "Child_Prefix";
+      p_id = "Allow_Value";
       break;
 
       case 24:
-      p_id = "Child_Rel_Grandparent_Match";
+      p_id = "Child_Prefix";
       break;
 
       case 25:
-      p_id = "Child_Rel_Parent_Match";
+      p_id = "Child_Rel_Grandparent_Match";
       break;
 
       case 26:
-      p_id = "Child_Relationship_Class_Match";
+      p_id = "Child_Rel_Parent_Match";
       break;
 
       case 27:
-      p_id = "Child_Specification_Type";
+      p_id = "Child_Relationship_Class_Match";
       break;
 
       case 28:
-      p_id = "Default_Child_Vars";
+      p_id = "Child_Specification_Type";
       break;
 
       case 29:
-      p_id = "Field_type";
+      p_id = "Default_Child_Vars";
       break;
 
       case 30:
-      p_id = "Has_Next_Specification_Info";
+      p_id = "Field_type";
       break;
 
       case 31:
-      p_id = "Is_Child_Only";
+      p_id = "Has_Next_Specification_Info";
       break;
 
       case 32:
-      p_id = "Is_Required_For_UI_Gen";
+      p_id = "Is_Child_Only";
       break;
 
       case 33:
-      p_id = "Is_System";
+      p_id = "Is_Required_For_UI_Gen";
       break;
 
       case 34:
-      p_id = "Name";
+      p_id = "Is_System";
       break;
 
       case 35:
-      p_id = "Needs_Child_Relationship";
+      p_id = "Name";
       break;
 
       case 36:
-      p_id = "Needs_Class";
+      p_id = "Needs_Child_Relationship";
       break;
 
       case 37:
-      p_id = "Needs_Enum";
+      p_id = "Needs_Class";
       break;
 
       case 38:
-      p_id = "Needs_Enum_Item";
+      p_id = "Needs_Enum";
       break;
 
       case 39:
-      p_id = "Needs_Enum_Item_2";
+      p_id = "Needs_Enum_Item";
       break;
 
       case 40:
-      p_id = "Needs_Enum_Item_3";
+      p_id = "Needs_Enum_Item_2";
       break;
 
       case 41:
-      p_id = "Needs_Enum_Item_4";
+      p_id = "Needs_Enum_Item_3";
       break;
 
       case 42:
-      p_id = "Needs_Enum_Item_5";
+      p_id = "Needs_Enum_Item_4";
       break;
 
       case 43:
-      p_id = "Needs_Field";
+      p_id = "Needs_Enum_Item_5";
       break;
 
       case 44:
-      p_id = "Needs_Modifier";
+      p_id = "Needs_Field";
       break;
 
       case 45:
-      p_id = "Needs_Other_Class";
+      p_id = "Needs_Modifier";
       break;
 
       case 46:
-      p_id = "Needs_Other_Field";
+      p_id = "Needs_Other_Class";
       break;
 
       case 47:
-      p_id = "Needs_Other_Field_2";
+      p_id = "Needs_Other_Field";
       break;
 
       case 48:
-      p_id = "Needs_Other_Modifier";
+      p_id = "Needs_Other_Field_2";
       break;
 
       case 49:
-      p_id = "Needs_Other_Modifier_2";
+      p_id = "Needs_Other_Modifier";
       break;
 
       case 50:
-      p_id = "Needs_Other_Permission";
+      p_id = "Needs_Other_Modifier_2";
       break;
 
       case 51:
-      p_id = "Needs_Other_Permission_2";
+      p_id = "Needs_Other_Permission";
       break;
 
       case 52:
-      p_id = "Needs_Other_Procedure";
+      p_id = "Needs_Other_Permission_2";
       break;
 
       case 53:
-      p_id = "Needs_Other_Procedure_2";
+      p_id = "Needs_Other_Procedure";
       break;
 
       case 54:
-      p_id = "Needs_Permission";
+      p_id = "Needs_Other_Procedure_2";
       break;
 
       case 55:
-      p_id = "Needs_Procedure";
+      p_id = "Needs_Permission";
       break;
 
       case 56:
-      p_id = "Needs_Procedure_Arg";
+      p_id = "Needs_Procedure";
       break;
 
       case 57:
-      p_id = "Needs_Procedure_Arg_2";
+      p_id = "Needs_Procedure_Arg";
       break;
 
       case 58:
-      p_id = "Needs_Procedure_Arg_3";
+      p_id = "Needs_Procedure_Arg_2";
       break;
 
       case 59:
-      p_id = "Needs_Source_Child";
+      p_id = "Needs_Procedure_Arg_3";
       break;
 
       case 60:
-      p_id = "Needs_Source_Child_2";
+      p_id = "Needs_Source_Child";
       break;
 
       case 61:
-      p_id = "Needs_Source_Field";
+      p_id = "Needs_Source_Child_2";
       break;
 
       case 62:
-      p_id = "Needs_Source_Field_Or_Child";
+      p_id = "Needs_Source_Field";
       break;
 
       case 63:
-      p_id = "Needs_Source_Parent";
+      p_id = "Needs_Source_Field_Or_Child";
       break;
 
       case 64:
-      p_id = "Needs_Test_Field";
+      p_id = "Needs_Source_Parent";
       break;
 
       case 65:
-      p_id = "Needs_Test_Value";
+      p_id = "Needs_Test_Field";
       break;
 
       case 66:
-      p_id = "Needs_Value";
+      p_id = "Needs_Test_Value";
       break;
 
       case 67:
-      p_id = "Next_Child_Specification_Type";
+      p_id = "Needs_Value";
       break;
 
       case 68:
-      p_id = "Next_Protect_Child_Rel";
+      p_id = "Next_Child_Specification_Type";
       break;
 
       case 69:
-      p_id = "Next_Protect_Procedure";
+      p_id = "Next_Protect_Child_Rel";
       break;
 
       case 70:
-      p_id = "Next_Protect_Source_Parent";
+      p_id = "Next_Protect_Procedure";
       break;
 
       case 71:
-      p_id = "Next_Specification_Actions";
+      p_id = "Next_Protect_Source_Parent";
       break;
 
       case 72:
-      p_id = "Notes";
+      p_id = "Next_Specification_Actions";
       break;
 
       case 73:
-      p_id = "Parent_Specification_Type";
+      p_id = "Notes";
       break;
 
       case 74:
-      p_id = "Procedure_Arg_primitive";
+      p_id = "Parent_Specification_Type";
       break;
 
       case 75:
-      p_id = "Procedure_Arg_type";
+      p_id = "Procedure_Arg_primitive";
       break;
 
       case 76:
-      p_id = "Protect_Child_Rel_From_Update";
+      p_id = "Procedure_Arg_type";
       break;
 
       case 77:
-      p_id = "Protect_Class_From_Edit";
+      p_id = "Protect_Child_Rel_From_Update";
       break;
 
       case 78:
-      p_id = "Protect_Class_From_Update";
+      p_id = "Protect_Class_From_Edit";
       break;
 
       case 79:
-      p_id = "Protect_Procedure_From_Edit";
+      p_id = "Protect_Class_From_Update";
       break;
 
       case 80:
-      p_id = "Protect_Source_Parent";
+      p_id = "Protect_Procedure_From_Edit";
       break;
 
       case 81:
-      p_id = "Set_Field_To_Source_Field_Or_Child";
+      p_id = "Protect_Source_Parent";
       break;
 
       case 82:
-      p_id = "Source_Field_Needs_Test_Field";
+      p_id = "Set_Field_To_Source_Field_Or_Child";
       break;
 
       case 83:
-      p_id = "Source_Field_Type_Match";
+      p_id = "Source_Field_Needs_Test_Field";
       break;
 
       case 84:
-      p_id = "Source_Parent_type";
+      p_id = "Source_Field_Type_Match";
       break;
 
       case 85:
-      p_id = "Source_type";
+      p_id = "Source_Parent_type";
       break;
 
       case 86:
-      p_id = "Specification_Actions";
+      p_id = "Source_type";
       break;
 
       case 87:
-      p_id = "Specification_Name";
+      p_id = "Specification_Actions";
       break;
 
       case 88:
-      p_id = "Specification_Object";
+      p_id = "Specification_Name";
       break;
 
       case 89:
-      p_id = "Specification_Strings";
+      p_id = "Specification_Object";
       break;
 
       case 90:
-      p_id = "Specification_Vars";
+      p_id = "Specification_Strings";
       break;
 
       case 91:
-      p_id = "Test_Field_Type_Match";
+      p_id = "Specification_Vars";
       break;
 
       case 92:
-      p_id = "Test_Field_type";
+      p_id = "Test_Field_Type_Match";
       break;
 
       case 93:
-      p_id = "Use_Class_As_Source_Parent_Class";
+      p_id = "Test_Field_type";
       break;
 
       case 94:
-      p_id = "Use_Field_Enum";
+      p_id = "Use_Class_As_Source_Parent_Class";
       break;
 
       case 95:
-      p_id = "Use_Parent_Child_Rel_As_Source_Parent";
+      p_id = "Use_Field_Enum";
       break;
 
       case 96:
-      p_id = "Use_Parent_Child_Rel_For_Class";
+      p_id = "Use_Parent_Child_Rel_As_Source_Parent";
       break;
 
       case 97:
-      p_id = "Use_Parent_Class";
+      p_id = "Use_Parent_Child_Rel_For_Class";
       break;
 
       case 98:
-      p_id = "Use_Parent_Field_For_Class";
+      p_id = "Use_Parent_Class";
       break;
 
       case 99:
-      p_id = "Use_Parent_Other_Class_For_Class";
+      p_id = "Use_Parent_Field_For_Class";
       break;
 
       case 100:
-      p_id = "Use_Parent_Procedure";
+      p_id = "Use_Parent_Other_Class_For_Class";
       break;
 
       case 101:
-      p_id = "Use_Parent_Source_Class";
+      p_id = "Use_Parent_Procedure";
       break;
 
       case 102:
-      p_id = "Use_Parent_Source_Field_For_Class";
+      p_id = "Use_Parent_Source_Class";
       break;
 
       case 103:
-      p_id = "Use_Parent_Source_Parent";
+      p_id = "Use_Parent_Source_Field_For_Class";
       break;
 
       case 104:
-      p_id = "Use_Parent_Source_Parent_For_Class";
+      p_id = "Use_Parent_Source_Parent";
       break;
 
       case 105:
+      p_id = "Use_Parent_Source_Parent_For_Class";
+      break;
+
+      case 106:
       p_id = "View_Id";
       break;
    }
@@ -9147,190 +9221,192 @@ int Meta_Specification_Type::static_get_field_num( const string& field )
       rc += 12;
    else if( field == c_field_id_Allow_Procedure || field == c_field_name_Allow_Procedure )
       rc += 13;
-   else if( field == c_field_id_Allow_Source_Child || field == c_field_name_Allow_Source_Child )
+   else if( field == c_field_id_Allow_Procedure_Arg || field == c_field_name_Allow_Procedure_Arg )
       rc += 14;
-   else if( field == c_field_id_Allow_Source_Child_2 || field == c_field_name_Allow_Source_Child_2 )
+   else if( field == c_field_id_Allow_Source_Child || field == c_field_name_Allow_Source_Child )
       rc += 15;
-   else if( field == c_field_id_Allow_Source_Class || field == c_field_name_Allow_Source_Class )
+   else if( field == c_field_id_Allow_Source_Child_2 || field == c_field_name_Allow_Source_Child_2 )
       rc += 16;
-   else if( field == c_field_id_Allow_Source_Field || field == c_field_name_Allow_Source_Field )
+   else if( field == c_field_id_Allow_Source_Class || field == c_field_name_Allow_Source_Class )
       rc += 17;
-   else if( field == c_field_id_Allow_Source_Grandchild || field == c_field_name_Allow_Source_Grandchild )
+   else if( field == c_field_id_Allow_Source_Field || field == c_field_name_Allow_Source_Field )
       rc += 18;
-   else if( field == c_field_id_Allow_Source_Parent || field == c_field_name_Allow_Source_Parent )
+   else if( field == c_field_id_Allow_Source_Grandchild || field == c_field_name_Allow_Source_Grandchild )
       rc += 19;
-   else if( field == c_field_id_Allow_Test_Field || field == c_field_name_Allow_Test_Field )
+   else if( field == c_field_id_Allow_Source_Parent || field == c_field_name_Allow_Source_Parent )
       rc += 20;
-   else if( field == c_field_id_Allow_Test_Value || field == c_field_name_Allow_Test_Value )
+   else if( field == c_field_id_Allow_Test_Field || field == c_field_name_Allow_Test_Field )
       rc += 21;
-   else if( field == c_field_id_Allow_Value || field == c_field_name_Allow_Value )
+   else if( field == c_field_id_Allow_Test_Value || field == c_field_name_Allow_Test_Value )
       rc += 22;
-   else if( field == c_field_id_Child_Prefix || field == c_field_name_Child_Prefix )
+   else if( field == c_field_id_Allow_Value || field == c_field_name_Allow_Value )
       rc += 23;
-   else if( field == c_field_id_Child_Rel_Grandparent_Match || field == c_field_name_Child_Rel_Grandparent_Match )
+   else if( field == c_field_id_Child_Prefix || field == c_field_name_Child_Prefix )
       rc += 24;
-   else if( field == c_field_id_Child_Rel_Parent_Match || field == c_field_name_Child_Rel_Parent_Match )
+   else if( field == c_field_id_Child_Rel_Grandparent_Match || field == c_field_name_Child_Rel_Grandparent_Match )
       rc += 25;
-   else if( field == c_field_id_Child_Relationship_Class_Match || field == c_field_name_Child_Relationship_Class_Match )
+   else if( field == c_field_id_Child_Rel_Parent_Match || field == c_field_name_Child_Rel_Parent_Match )
       rc += 26;
-   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
+   else if( field == c_field_id_Child_Relationship_Class_Match || field == c_field_name_Child_Relationship_Class_Match )
       rc += 27;
-   else if( field == c_field_id_Default_Child_Vars || field == c_field_name_Default_Child_Vars )
+   else if( field == c_field_id_Child_Specification_Type || field == c_field_name_Child_Specification_Type )
       rc += 28;
-   else if( field == c_field_id_Field_type || field == c_field_name_Field_type )
+   else if( field == c_field_id_Default_Child_Vars || field == c_field_name_Default_Child_Vars )
       rc += 29;
-   else if( field == c_field_id_Has_Next_Specification_Info || field == c_field_name_Has_Next_Specification_Info )
+   else if( field == c_field_id_Field_type || field == c_field_name_Field_type )
       rc += 30;
-   else if( field == c_field_id_Is_Child_Only || field == c_field_name_Is_Child_Only )
+   else if( field == c_field_id_Has_Next_Specification_Info || field == c_field_name_Has_Next_Specification_Info )
       rc += 31;
-   else if( field == c_field_id_Is_Required_For_UI_Gen || field == c_field_name_Is_Required_For_UI_Gen )
+   else if( field == c_field_id_Is_Child_Only || field == c_field_name_Is_Child_Only )
       rc += 32;
-   else if( field == c_field_id_Is_System || field == c_field_name_Is_System )
+   else if( field == c_field_id_Is_Required_For_UI_Gen || field == c_field_name_Is_Required_For_UI_Gen )
       rc += 33;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Is_System || field == c_field_name_Is_System )
       rc += 34;
-   else if( field == c_field_id_Needs_Child_Relationship || field == c_field_name_Needs_Child_Relationship )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 35;
-   else if( field == c_field_id_Needs_Class || field == c_field_name_Needs_Class )
+   else if( field == c_field_id_Needs_Child_Relationship || field == c_field_name_Needs_Child_Relationship )
       rc += 36;
-   else if( field == c_field_id_Needs_Enum || field == c_field_name_Needs_Enum )
+   else if( field == c_field_id_Needs_Class || field == c_field_name_Needs_Class )
       rc += 37;
-   else if( field == c_field_id_Needs_Enum_Item || field == c_field_name_Needs_Enum_Item )
+   else if( field == c_field_id_Needs_Enum || field == c_field_name_Needs_Enum )
       rc += 38;
-   else if( field == c_field_id_Needs_Enum_Item_2 || field == c_field_name_Needs_Enum_Item_2 )
+   else if( field == c_field_id_Needs_Enum_Item || field == c_field_name_Needs_Enum_Item )
       rc += 39;
-   else if( field == c_field_id_Needs_Enum_Item_3 || field == c_field_name_Needs_Enum_Item_3 )
+   else if( field == c_field_id_Needs_Enum_Item_2 || field == c_field_name_Needs_Enum_Item_2 )
       rc += 40;
-   else if( field == c_field_id_Needs_Enum_Item_4 || field == c_field_name_Needs_Enum_Item_4 )
+   else if( field == c_field_id_Needs_Enum_Item_3 || field == c_field_name_Needs_Enum_Item_3 )
       rc += 41;
-   else if( field == c_field_id_Needs_Enum_Item_5 || field == c_field_name_Needs_Enum_Item_5 )
+   else if( field == c_field_id_Needs_Enum_Item_4 || field == c_field_name_Needs_Enum_Item_4 )
       rc += 42;
-   else if( field == c_field_id_Needs_Field || field == c_field_name_Needs_Field )
+   else if( field == c_field_id_Needs_Enum_Item_5 || field == c_field_name_Needs_Enum_Item_5 )
       rc += 43;
-   else if( field == c_field_id_Needs_Modifier || field == c_field_name_Needs_Modifier )
+   else if( field == c_field_id_Needs_Field || field == c_field_name_Needs_Field )
       rc += 44;
-   else if( field == c_field_id_Needs_Other_Class || field == c_field_name_Needs_Other_Class )
+   else if( field == c_field_id_Needs_Modifier || field == c_field_name_Needs_Modifier )
       rc += 45;
-   else if( field == c_field_id_Needs_Other_Field || field == c_field_name_Needs_Other_Field )
+   else if( field == c_field_id_Needs_Other_Class || field == c_field_name_Needs_Other_Class )
       rc += 46;
-   else if( field == c_field_id_Needs_Other_Field_2 || field == c_field_name_Needs_Other_Field_2 )
+   else if( field == c_field_id_Needs_Other_Field || field == c_field_name_Needs_Other_Field )
       rc += 47;
-   else if( field == c_field_id_Needs_Other_Modifier || field == c_field_name_Needs_Other_Modifier )
+   else if( field == c_field_id_Needs_Other_Field_2 || field == c_field_name_Needs_Other_Field_2 )
       rc += 48;
-   else if( field == c_field_id_Needs_Other_Modifier_2 || field == c_field_name_Needs_Other_Modifier_2 )
+   else if( field == c_field_id_Needs_Other_Modifier || field == c_field_name_Needs_Other_Modifier )
       rc += 49;
-   else if( field == c_field_id_Needs_Other_Permission || field == c_field_name_Needs_Other_Permission )
+   else if( field == c_field_id_Needs_Other_Modifier_2 || field == c_field_name_Needs_Other_Modifier_2 )
       rc += 50;
-   else if( field == c_field_id_Needs_Other_Permission_2 || field == c_field_name_Needs_Other_Permission_2 )
+   else if( field == c_field_id_Needs_Other_Permission || field == c_field_name_Needs_Other_Permission )
       rc += 51;
-   else if( field == c_field_id_Needs_Other_Procedure || field == c_field_name_Needs_Other_Procedure )
+   else if( field == c_field_id_Needs_Other_Permission_2 || field == c_field_name_Needs_Other_Permission_2 )
       rc += 52;
-   else if( field == c_field_id_Needs_Other_Procedure_2 || field == c_field_name_Needs_Other_Procedure_2 )
+   else if( field == c_field_id_Needs_Other_Procedure || field == c_field_name_Needs_Other_Procedure )
       rc += 53;
-   else if( field == c_field_id_Needs_Permission || field == c_field_name_Needs_Permission )
+   else if( field == c_field_id_Needs_Other_Procedure_2 || field == c_field_name_Needs_Other_Procedure_2 )
       rc += 54;
-   else if( field == c_field_id_Needs_Procedure || field == c_field_name_Needs_Procedure )
+   else if( field == c_field_id_Needs_Permission || field == c_field_name_Needs_Permission )
       rc += 55;
-   else if( field == c_field_id_Needs_Procedure_Arg || field == c_field_name_Needs_Procedure_Arg )
+   else if( field == c_field_id_Needs_Procedure || field == c_field_name_Needs_Procedure )
       rc += 56;
-   else if( field == c_field_id_Needs_Procedure_Arg_2 || field == c_field_name_Needs_Procedure_Arg_2 )
+   else if( field == c_field_id_Needs_Procedure_Arg || field == c_field_name_Needs_Procedure_Arg )
       rc += 57;
-   else if( field == c_field_id_Needs_Procedure_Arg_3 || field == c_field_name_Needs_Procedure_Arg_3 )
+   else if( field == c_field_id_Needs_Procedure_Arg_2 || field == c_field_name_Needs_Procedure_Arg_2 )
       rc += 58;
-   else if( field == c_field_id_Needs_Source_Child || field == c_field_name_Needs_Source_Child )
+   else if( field == c_field_id_Needs_Procedure_Arg_3 || field == c_field_name_Needs_Procedure_Arg_3 )
       rc += 59;
-   else if( field == c_field_id_Needs_Source_Child_2 || field == c_field_name_Needs_Source_Child_2 )
+   else if( field == c_field_id_Needs_Source_Child || field == c_field_name_Needs_Source_Child )
       rc += 60;
-   else if( field == c_field_id_Needs_Source_Field || field == c_field_name_Needs_Source_Field )
+   else if( field == c_field_id_Needs_Source_Child_2 || field == c_field_name_Needs_Source_Child_2 )
       rc += 61;
-   else if( field == c_field_id_Needs_Source_Field_Or_Child || field == c_field_name_Needs_Source_Field_Or_Child )
+   else if( field == c_field_id_Needs_Source_Field || field == c_field_name_Needs_Source_Field )
       rc += 62;
-   else if( field == c_field_id_Needs_Source_Parent || field == c_field_name_Needs_Source_Parent )
+   else if( field == c_field_id_Needs_Source_Field_Or_Child || field == c_field_name_Needs_Source_Field_Or_Child )
       rc += 63;
-   else if( field == c_field_id_Needs_Test_Field || field == c_field_name_Needs_Test_Field )
+   else if( field == c_field_id_Needs_Source_Parent || field == c_field_name_Needs_Source_Parent )
       rc += 64;
-   else if( field == c_field_id_Needs_Test_Value || field == c_field_name_Needs_Test_Value )
+   else if( field == c_field_id_Needs_Test_Field || field == c_field_name_Needs_Test_Field )
       rc += 65;
-   else if( field == c_field_id_Needs_Value || field == c_field_name_Needs_Value )
+   else if( field == c_field_id_Needs_Test_Value || field == c_field_name_Needs_Test_Value )
       rc += 66;
-   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
+   else if( field == c_field_id_Needs_Value || field == c_field_name_Needs_Value )
       rc += 67;
-   else if( field == c_field_id_Next_Protect_Child_Rel || field == c_field_name_Next_Protect_Child_Rel )
+   else if( field == c_field_id_Next_Child_Specification_Type || field == c_field_name_Next_Child_Specification_Type )
       rc += 68;
-   else if( field == c_field_id_Next_Protect_Procedure || field == c_field_name_Next_Protect_Procedure )
+   else if( field == c_field_id_Next_Protect_Child_Rel || field == c_field_name_Next_Protect_Child_Rel )
       rc += 69;
-   else if( field == c_field_id_Next_Protect_Source_Parent || field == c_field_name_Next_Protect_Source_Parent )
+   else if( field == c_field_id_Next_Protect_Procedure || field == c_field_name_Next_Protect_Procedure )
       rc += 70;
-   else if( field == c_field_id_Next_Specification_Actions || field == c_field_name_Next_Specification_Actions )
+   else if( field == c_field_id_Next_Protect_Source_Parent || field == c_field_name_Next_Protect_Source_Parent )
       rc += 71;
-   else if( field == c_field_id_Notes || field == c_field_name_Notes )
+   else if( field == c_field_id_Next_Specification_Actions || field == c_field_name_Next_Specification_Actions )
       rc += 72;
-   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
+   else if( field == c_field_id_Notes || field == c_field_name_Notes )
       rc += 73;
-   else if( field == c_field_id_Procedure_Arg_primitive || field == c_field_name_Procedure_Arg_primitive )
+   else if( field == c_field_id_Parent_Specification_Type || field == c_field_name_Parent_Specification_Type )
       rc += 74;
-   else if( field == c_field_id_Procedure_Arg_type || field == c_field_name_Procedure_Arg_type )
+   else if( field == c_field_id_Procedure_Arg_primitive || field == c_field_name_Procedure_Arg_primitive )
       rc += 75;
-   else if( field == c_field_id_Protect_Child_Rel_From_Update || field == c_field_name_Protect_Child_Rel_From_Update )
+   else if( field == c_field_id_Procedure_Arg_type || field == c_field_name_Procedure_Arg_type )
       rc += 76;
-   else if( field == c_field_id_Protect_Class_From_Edit || field == c_field_name_Protect_Class_From_Edit )
+   else if( field == c_field_id_Protect_Child_Rel_From_Update || field == c_field_name_Protect_Child_Rel_From_Update )
       rc += 77;
-   else if( field == c_field_id_Protect_Class_From_Update || field == c_field_name_Protect_Class_From_Update )
+   else if( field == c_field_id_Protect_Class_From_Edit || field == c_field_name_Protect_Class_From_Edit )
       rc += 78;
-   else if( field == c_field_id_Protect_Procedure_From_Edit || field == c_field_name_Protect_Procedure_From_Edit )
+   else if( field == c_field_id_Protect_Class_From_Update || field == c_field_name_Protect_Class_From_Update )
       rc += 79;
-   else if( field == c_field_id_Protect_Source_Parent || field == c_field_name_Protect_Source_Parent )
+   else if( field == c_field_id_Protect_Procedure_From_Edit || field == c_field_name_Protect_Procedure_From_Edit )
       rc += 80;
-   else if( field == c_field_id_Set_Field_To_Source_Field_Or_Child || field == c_field_name_Set_Field_To_Source_Field_Or_Child )
+   else if( field == c_field_id_Protect_Source_Parent || field == c_field_name_Protect_Source_Parent )
       rc += 81;
-   else if( field == c_field_id_Source_Field_Needs_Test_Field || field == c_field_name_Source_Field_Needs_Test_Field )
+   else if( field == c_field_id_Set_Field_To_Source_Field_Or_Child || field == c_field_name_Set_Field_To_Source_Field_Or_Child )
       rc += 82;
-   else if( field == c_field_id_Source_Field_Type_Match || field == c_field_name_Source_Field_Type_Match )
+   else if( field == c_field_id_Source_Field_Needs_Test_Field || field == c_field_name_Source_Field_Needs_Test_Field )
       rc += 83;
-   else if( field == c_field_id_Source_Parent_type || field == c_field_name_Source_Parent_type )
+   else if( field == c_field_id_Source_Field_Type_Match || field == c_field_name_Source_Field_Type_Match )
       rc += 84;
-   else if( field == c_field_id_Source_type || field == c_field_name_Source_type )
+   else if( field == c_field_id_Source_Parent_type || field == c_field_name_Source_Parent_type )
       rc += 85;
-   else if( field == c_field_id_Specification_Actions || field == c_field_name_Specification_Actions )
+   else if( field == c_field_id_Source_type || field == c_field_name_Source_type )
       rc += 86;
-   else if( field == c_field_id_Specification_Name || field == c_field_name_Specification_Name )
+   else if( field == c_field_id_Specification_Actions || field == c_field_name_Specification_Actions )
       rc += 87;
-   else if( field == c_field_id_Specification_Object || field == c_field_name_Specification_Object )
+   else if( field == c_field_id_Specification_Name || field == c_field_name_Specification_Name )
       rc += 88;
-   else if( field == c_field_id_Specification_Strings || field == c_field_name_Specification_Strings )
+   else if( field == c_field_id_Specification_Object || field == c_field_name_Specification_Object )
       rc += 89;
-   else if( field == c_field_id_Specification_Vars || field == c_field_name_Specification_Vars )
+   else if( field == c_field_id_Specification_Strings || field == c_field_name_Specification_Strings )
       rc += 90;
-   else if( field == c_field_id_Test_Field_Type_Match || field == c_field_name_Test_Field_Type_Match )
+   else if( field == c_field_id_Specification_Vars || field == c_field_name_Specification_Vars )
       rc += 91;
-   else if( field == c_field_id_Test_Field_type || field == c_field_name_Test_Field_type )
+   else if( field == c_field_id_Test_Field_Type_Match || field == c_field_name_Test_Field_Type_Match )
       rc += 92;
-   else if( field == c_field_id_Use_Class_As_Source_Parent_Class || field == c_field_name_Use_Class_As_Source_Parent_Class )
+   else if( field == c_field_id_Test_Field_type || field == c_field_name_Test_Field_type )
       rc += 93;
-   else if( field == c_field_id_Use_Field_Enum || field == c_field_name_Use_Field_Enum )
+   else if( field == c_field_id_Use_Class_As_Source_Parent_Class || field == c_field_name_Use_Class_As_Source_Parent_Class )
       rc += 94;
-   else if( field == c_field_id_Use_Parent_Child_Rel_As_Source_Parent || field == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
+   else if( field == c_field_id_Use_Field_Enum || field == c_field_name_Use_Field_Enum )
       rc += 95;
-   else if( field == c_field_id_Use_Parent_Child_Rel_For_Class || field == c_field_name_Use_Parent_Child_Rel_For_Class )
+   else if( field == c_field_id_Use_Parent_Child_Rel_As_Source_Parent || field == c_field_name_Use_Parent_Child_Rel_As_Source_Parent )
       rc += 96;
-   else if( field == c_field_id_Use_Parent_Class || field == c_field_name_Use_Parent_Class )
+   else if( field == c_field_id_Use_Parent_Child_Rel_For_Class || field == c_field_name_Use_Parent_Child_Rel_For_Class )
       rc += 97;
-   else if( field == c_field_id_Use_Parent_Field_For_Class || field == c_field_name_Use_Parent_Field_For_Class )
+   else if( field == c_field_id_Use_Parent_Class || field == c_field_name_Use_Parent_Class )
       rc += 98;
-   else if( field == c_field_id_Use_Parent_Other_Class_For_Class || field == c_field_name_Use_Parent_Other_Class_For_Class )
+   else if( field == c_field_id_Use_Parent_Field_For_Class || field == c_field_name_Use_Parent_Field_For_Class )
       rc += 99;
-   else if( field == c_field_id_Use_Parent_Procedure || field == c_field_name_Use_Parent_Procedure )
+   else if( field == c_field_id_Use_Parent_Other_Class_For_Class || field == c_field_name_Use_Parent_Other_Class_For_Class )
       rc += 100;
-   else if( field == c_field_id_Use_Parent_Source_Class || field == c_field_name_Use_Parent_Source_Class )
+   else if( field == c_field_id_Use_Parent_Procedure || field == c_field_name_Use_Parent_Procedure )
       rc += 101;
-   else if( field == c_field_id_Use_Parent_Source_Field_For_Class || field == c_field_name_Use_Parent_Source_Field_For_Class )
+   else if( field == c_field_id_Use_Parent_Source_Class || field == c_field_name_Use_Parent_Source_Class )
       rc += 102;
-   else if( field == c_field_id_Use_Parent_Source_Parent || field == c_field_name_Use_Parent_Source_Parent )
+   else if( field == c_field_id_Use_Parent_Source_Field_For_Class || field == c_field_name_Use_Parent_Source_Field_For_Class )
       rc += 103;
-   else if( field == c_field_id_Use_Parent_Source_Parent_For_Class || field == c_field_name_Use_Parent_Source_Parent_For_Class )
+   else if( field == c_field_id_Use_Parent_Source_Parent || field == c_field_name_Use_Parent_Source_Parent )
       rc += 104;
-   else if( field == c_field_id_View_Id || field == c_field_name_View_Id )
+   else if( field == c_field_id_Use_Parent_Source_Parent_For_Class || field == c_field_name_Use_Parent_Source_Parent_For_Class )
       rc += 105;
+   else if( field == c_field_id_View_Id || field == c_field_name_View_Id )
+      rc += 106;
 
    return rc - 1;
 }
@@ -9371,6 +9447,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Allow_Other_Field_2 INTEGER NOT NULL,"
     "C_Allow_Permission INTEGER NOT NULL,"
     "C_Allow_Procedure INTEGER NOT NULL,"
+    "C_Allow_Procedure_Arg INTEGER NOT NULL,"
     "C_Allow_Source_Child INTEGER NOT NULL,"
     "C_Allow_Source_Child_2 INTEGER NOT NULL,"
     "C_Allow_Source_Class INTEGER NOT NULL,"

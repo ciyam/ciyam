@@ -603,6 +603,8 @@ class CLASS_BASE_DECL_SPEC class_base
       search_replace_has_opt_prefixing.insert( field );
    }
 
+   void fetch_updated_instance( );
+
    void set_key( const std::string& new_key, bool skip_fk_handling = false );
    void set_clone_key( const std::string& new_clone_key ) { clone_key = new_clone_key; }
 

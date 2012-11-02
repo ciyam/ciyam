@@ -31,6 +31,8 @@
       set_session_variable( "@fields_and_values", fields_and_values );
 
       run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_field`}", false );
+
+      get_obj( ).fetch_updated_instance( );
    }
    // [(finish field_from_script)]
 `}

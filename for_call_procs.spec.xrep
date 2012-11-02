@@ -1,21 +1,28 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_call_procs)]
+`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
+`{`@eq`(`$arg_no_trans`,`'`'`)\
    transaction_start( );
    try
    {
-      get_obj( ).`{`$arg_procedure1`}( `{`$arg_output_arg`} );
-      get_obj( ).`{`$arg_procedure2`}( `{`$arg_output_arg`} );
-
+`}\
+`{`$i`}   get_obj( ).`{`$arg_procedure1`}( `{`!`@eq`(`$arg_output_arg`,`'`'`)`{`$arg_output_arg`} `});
+`{`$i`}   get_obj( ).`{`$arg_procedure2`}( `{`!`@eq`(`$arg_output_arg`,`'`'`)`{`$arg_output_arg`} `});
+`{`@eq`(`$arg_no_trans`,`'`'`)
       transaction_commit( );
-
+`}\
+`{`!`@eq`(`$arg_output_arg`,`'`'`)
       // FUTURE: The return message itself should be a module string.
-      `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
-       + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`{`$i`}   `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
+`{`$i`}    + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`}\
+`{`@eq`(`$arg_no_trans`,`'`'`)\
    }
    catch( ... )
    {
       transaction_rollback( );
       throw;
    }
+`}\
    // [(start for_call_procs)]
 `}
