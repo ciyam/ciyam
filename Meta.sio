@@ -17592,6 +17592,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600251
+      <item>class
+     </specification>
+     <specification/>
       <id>600260
       <item>sclass
      </specification>
@@ -18023,6 +18027,31 @@
        <specification/>
         <id>600271
         <item>cfield
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114204
+      <name>Allow_Procedure_Arg
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600104
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>600251
+        <item>field
        </specification>
        <specification/>
         <id>602400
@@ -18944,12 +18973,12 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600104
-        <item>pfield
-       </specification>
-       <specification/>
         <id>600133
         <item>cfield
+       </specification>
+       <specification/>
+        <id>600251
+        <item>src_field
        </specification>
        <specification/>
         <id>602400
@@ -29137,6 +29166,18 @@
     </data>
    </specification>
    <specification/>
+    <id>600251
+    <name>{Specification_Type}_Allow_Procedure_Arg_default
+    <type>default_to_field
+    <data/>
+     <class_id>114100
+     <field_id>114204
+     <pclass_id>
+     <pfield_id>
+     <sfield_id>114132
+    </data>
+   </specification>
+   <specification/>
     <id>600211
     <name>{Specification_Type}_Field_type_val
     <type>meta_trait_val_proc
@@ -29256,6 +29297,7 @@
      <field_info>@tab:Extra_Fields
      <field_info>114171
      <field_info>114106
+     <field_info>114204
      <field_info>114132
      <field_info>114134;enum=640
      <field_info>114133;enum=650
@@ -29849,7 +29891,7 @@
      <pclass_id>114100
      <modifier_id>500625
      <field_id>301410
-     <pfield_id>114132
+     <pfield_id>114204
      <field_value>false
     </data>
    </specification>

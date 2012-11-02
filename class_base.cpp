@@ -1838,6 +1838,13 @@ void class_base::trace( const string& s ) const
    TRACE_LOG( TRACE_MODS_GEN, s );
 }
 
+void class_base::fetch_updated_instance( )
+{
+   perform_fetch( );
+
+   set_ver_exp( get_version_info( ) );
+}
+
 void class_base::set_key( const string& new_key, bool skip_fk_handling )
 {
    // NOTE: Although potentially allowing the creation of an invalid record it is

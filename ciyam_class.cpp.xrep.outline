@@ -792,7 +792,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `@eq`(`'\\1`'`,`'for_call_procs`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_call_procs.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_output_arg=$specification_\\0_output_arg arg_procedure=$specification_\\0_procedure\
- arg_procedure1=$specification_\\0_procedure1 arg_procedure2=$specification_\\0_procedure2`}\
+ arg_procedure1=$specification_\\0_procedure1 arg_procedure2=$specification_\\0_procedure2\
+ arg_no_trans=$specification_\\0_no_trans`}\
 `,\
 `@eq`(`'\\1`'`,`'for_clone`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_clone.spec.xrep section=procedure module_name=$module_name class_name=$class_name full_class_name=$full_class_name\
