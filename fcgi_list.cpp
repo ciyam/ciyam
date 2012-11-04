@@ -555,7 +555,7 @@ void output_list_form( ostream& os,
 
    bool allow_new_record = true;
 
-   if( is_parent_edit )
+   if( is_parent_edit || sess_info.user_id.empty( ) )
       allow_list_actions = false;
 
    bool is_no_new = has_perm_extra( c_list_type_extra_no_new, extras, sess_info );
