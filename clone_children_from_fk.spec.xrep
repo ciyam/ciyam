@@ -2,22 +2,22 @@
    // [(start clone_children_from_fk)]
    if( is_create && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
    {
-      if( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_cclass`}( ).iterate_forwards( ) )
+      if( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).iterate_forwards( ) )
       {
          int child_num = 0;
          do
          {
             string key_info( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
             key_info += ' ';
-            key_info += get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_cclass`}( ).get_key( );
+            key_info += get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).get_key( );
 
-            get_obj( ).child_`{`$arg_cclass`}( ).op_create( key_info );
-            get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
+            get_obj( ).child_`{`$arg_child`}( ).op_create( key_info );
+            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_cpfield`,`'`'`)\
-            get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_cpfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_cclass`}( ).get_key( ) );\
+            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cpfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).get_key( ) );\
 `}
-            get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
-         } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_cclass`}( ).iterate_next( ) );
+            get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+         } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).iterate_next( ) );
       }
    }
    // [(finish clone_children_from_fk)]

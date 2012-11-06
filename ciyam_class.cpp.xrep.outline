@@ -1013,7 +1013,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_admin_always=$specification_\0_admin_always arg_remove=$specification_\0_remove`}\
 `,\
 `@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)
-`{`#permit_ignore_uneditable.spec.xrep section=get_state arg_tfield=$specification_\0_tfield`}\
+`{`#permit_ignore_uneditable.spec.xrep section=get_state\
+ arg_tfield=$specification_\0_tfield arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'protect_equal`'`)
 `{`#protect_equal.spec.xrep section=get_state\
@@ -1542,7 +1543,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_permission_concat.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield\
  arg_tvalue=$specification_\0_tvalue arg_permission=$specification_\0_permission\
- arg_permission_id=$specification_\0_permission_id`}\
+ arg_permission_id=$specification_\0_permission_id arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'transient_permission_from_other_perms`'`)
 `{`#transient_permission_from_other_perms.spec.xrep section=after_fetch class_name=$class_name\
@@ -2117,7 +2118,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `,\
 `@eq`(`'\1`'`,`'clone_children`'`)
 `{`#clone_children.spec.xrep section=after_store full_class_name=$full_class_name\
- arg_cclass=$specification_\0_cclass arg_pfield=$specification_\0_pfield\
+ arg_child=$specification_\0_child arg_pfield=$specification_\0_pfield\
  arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue\
  arg_not_eq=$specification_\0_not_eq arg_copy_files=$specification_\0_copy_files`}\
 `,\
@@ -2135,8 +2136,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `,\
 `@eq`(`'\1`'`,`'clone_children_from_fk`'`)
 `{`#clone_children_from_fk.spec.xrep section=after_store full_class_name=$full_class_name\
- arg_cclass=$specification_\0_cclass arg_pfield=$specification_\0_pfield\
- arg_fkfield=$specification_\0_fkfield arg_cpfield=$specification_\0_cpfield`}\
+ arg_child=$specification_\0_child arg_pfield=$specification_\0_pfield\
+ arg_fkfield=$specification_\0_fkfield arg_fkchild=$specification_\0_fkchild arg_cpfield=$specification_\0_cpfield`}\
 `,\
 `@eq`(`'\1`'`,`'clone_default_for_group`'`)
 `{`#clone_default_for_group.spec.xrep section=after_store full_class_name=$full_class_name\
@@ -2156,7 +2157,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `,\
 `@eq`(`'\1`'`,`'create_child`'`)
 `{`#create_child.spec.xrep section=after_store full_class_name=$full_class_name\
- arg_cclass=$specification_\0_cclass arg_pfield=$specification_\0_pfield\
+ arg_child=$specification_\0_child arg_pfield=$specification_\0_pfield\
  arg_field=$specification_\0_field arg_value=$specification_\0_value\
  arg_nfield=$specification_\0_nfield arg_field_list=$specification_\0_field_list\
  arg_clone_field=$specification_\0_clone_field arg_create_only=$specification_\0_create_only\

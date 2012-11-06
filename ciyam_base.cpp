@@ -105,6 +105,7 @@ const char* const c_attribute_sender = "sender";
 const char* const c_attribute_suffix = "suffix";
 const char* const c_attribute_reg_key = "license";
 const char* const c_attribute_identity = "identity";
+const char* const c_attribute_ip_addrs = "ip_addrs";
 const char* const c_attribute_password = "password";
 const char* const c_attribute_security = "security";
 const char* const c_attribute_timezone = "timezone";
@@ -2636,6 +2637,8 @@ int g_session_timeout = 0;
 
 bool g_script_reconfig = false;
 
+set< string > g_accepted_ip_addrs;
+
 string g_mbox_path;
 string g_mbox_username;
 
@@ -2718,6 +2721,10 @@ void read_server_configuration( )
       sio_reader reader( inpf );
 
       g_domain = reader.read_opt_attribute( c_attribute_domain, "localhost" );
+
+      string ip_addrs( reader.read_opt_attribute( c_attribute_ip_addrs ) );
+      if( !ip_addrs.empty( ) )
+         split( ip_addrs, g_accepted_ip_addrs );
 
       g_reg_key = upper( reader.read_opt_attribute( c_attribute_reg_key ) );
 
@@ -3457,32 +3464,26 @@ string get_string_message( const string& string_message,
 
 int get_max_user_limit( )
 {
-   guard g( g_mutex );
    return g_max_user_limit;
 }
 
 void set_max_user_limit( int new_limit )
 {
-   guard g( g_mutex );
    g_max_user_limit = new_limit;
 }
 
 string get_prefix( )
 {
-   guard g( g_mutex );
    return g_use_https ? "https" : "http";
 }
 
 string get_domain( )
 {
-   guard g( g_mutex );
    return g_domain;
 }
 
 string get_app_url( const string& suffix )
 {
-   guard g( g_mutex );
-
    string url( get_prefix( ) );
    url += "://";
    url += get_domain( );
@@ -3496,8 +3497,6 @@ string get_app_url( const string& suffix )
 
 string get_identity( bool prepend_sid, bool append_max_user_limit )
 {
-   guard g( g_mutex );
-
    if( !prepend_sid && !append_max_user_limit )
       return g_reg_key;
 
@@ -3517,8 +3516,6 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
 
 string get_checksum( const string& data, bool use_reg_key )
 {
-   guard g( g_mutex );
-
    string prefix( !use_reg_key ? g_sid : g_reg_key );
 
    sha1 hash( prefix + data );
@@ -3534,8 +3531,6 @@ string get_checksum( const string& data, bool use_reg_key )
 
 string get_timezone( )
 {
-   guard g( g_mutex );
-
    string tz_abbr( g_timezone );
 
    if( tz_abbr.empty( ) )
@@ -3546,103 +3541,91 @@ string get_timezone( )
 
 string get_web_root( )
 {
-   guard g( g_mutex );
    return g_web_root;
+}
+
+bool get_is_accepted_ip_addr( const string& ip_addr )
+{
+   return g_accepted_ip_addrs.empty( ) || ( g_accepted_ip_addrs.count( ip_addr ) > 0 );
 }
 
 bool get_using_ssl( )
 {
-   guard g( g_mutex );
    return g_using_ssl;
 }
 
 string get_mbox_path( )
 {
-   guard g( g_mutex );
    return g_mbox_path;
 }
 
 string get_mbox_username( )
 {
-   guard g( g_mutex );
    return g_mbox_username;
 }
 
 string get_pop3_server( )
 {
-   guard g( g_mutex );
    return g_pop3_server;
 }
 
 string get_pop3_suffix( )
 {
-   guard g( g_mutex );
    return g_pop3_suffix;
 }
 
 string get_pop3_username( )
 {
-   guard g( g_mutex );
    return g_pop3_username;
 }
 
 string get_pop3_password( )
 {
-   guard g( g_mutex );
    return decrypt_password( g_pop3_password );
 }
 
 string get_pop3_security( )
 {
-   guard g( g_mutex );
    return g_pop3_security;
 }
 
 string get_smtp_server( )
 {
-   guard g( g_mutex );
    return g_smtp_server;
 }
 
 string get_smtp_sender( )
 {
-   guard g( g_mutex );
    return g_smtp_sender;
 }
 
 string get_smtp_suffix( )
 {
-   guard g( g_mutex );
    return g_smtp_suffix;
 }
 
 string get_smtp_username( )
 {
-   guard g( g_mutex );
    return g_smtp_username;
 }
 
 string get_smtp_password( )
 {
-   guard g( g_mutex );
    return decrypt_password( g_smtp_password );
 }
 
 string get_smtp_security( )
 {
-   guard g( g_mutex );
    return g_smtp_security;
 }
 
 int get_smtp_max_send_attempts( )
 {
-   guard g( g_mutex );
    return g_smtp_max_send_attempts;
 }
 
 int64_t get_smtp_max_attached_data( )
 {
-   guard g( g_mutex );
    return g_smtp_max_attached_data;
 }
 

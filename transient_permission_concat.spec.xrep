@@ -4,7 +4,7 @@
    {
       string value( get_obj( ).`{`$arg_field`}( ) );
 
-      if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} )
+      if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid_key( get_obj( ).get_key( ) ) || `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} )
       {
          if( !value.empty( ) )
             value += ',';

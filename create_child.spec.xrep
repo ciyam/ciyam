@@ -16,17 +16,17 @@
       if( !is_null( get_obj( ).`{`$arg_clone_field`}( ) ) )
          child_key += " " + get_obj( ).`{`$arg_clone_field`}( ).get_key( );
 `}
-      get_obj( ).child_`{`$arg_cclass`}( ).op_create( child_key );
+      get_obj( ).child_`{`$arg_child`}( ).op_create( child_key );
 
-      get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
+      get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_field`,`'`'`)\
-      get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_field`}( `{`$arg_value`} );
+      get_obj( ).child_`{`$arg_child`}( ).`{`$arg_field`}( `{`$arg_value`} );
 `}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
-      copy_field_or_file_and_field( get_obj( ).child_`{`$arg_cclass`}( ),
-       get_obj( ).child_`{`$arg_cclass`}( ).get_key( ), "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
+      copy_field_or_file_and_field( get_obj( ).child_`{`$arg_child`}( ),
+       get_obj( ).child_`{`$arg_child`}( ).get_key( ), "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
 `]`}
-      get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
+      get_obj( ).child_`{`$arg_child`}( ).op_apply( );
    }
    // [(finish create_child)]
 `}

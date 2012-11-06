@@ -101,6 +101,8 @@ std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data, bool use
 std::string CIYAM_BASE_DECL_SPEC get_timezone( );
 std::string CIYAM_BASE_DECL_SPEC get_web_root( );
 
+bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
+
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
 std::string CIYAM_BASE_DECL_SPEC get_mbox_path( );

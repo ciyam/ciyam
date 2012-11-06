@@ -5663,6 +5663,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600481a
+      <item>class
+     </specification>
+     <specification/>
       <id>600482
       <item>class
      </specification>
@@ -6243,6 +6247,28 @@
       </specifications>
      </field>
      <field/>
+      <id>124134
+      <name>Link_Empty_Restriction
+      <type>int
+      <mandatory>true
+      <enum_id>692
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500881a
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>124108
       <name>Link_Restriction
       <type>int
@@ -6316,6 +6342,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500881
+        <affect>relegate
+       </modifier>
        <modifier/>
         <id>500889
         <affect>relegate
@@ -7095,6 +7125,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600481a
+        <item>field
+       </specification>
+       <specification/>
         <id>600486
         <item>field
        </specification>
@@ -7457,12 +7491,16 @@
       <name>Hide_For_Restriction_Field
      </modifier>
      <modifier/>
+      <id>500881a
+      <name>Hide_Link_Empty_Restriction
+     </modifier>
+     <modifier/>
       <id>500889
       <name>Hide_Link_Permission_Field
      </modifier>
      <modifier/>
       <id>500881
-      <name>Hide_Link_Restriction
+      <name>Hide_Link_Specifics
      </modifier>
      <modifier/>
       <id>500874
@@ -7663,6 +7701,10 @@
       <item>pclass
      </specification>
      <specification/>
+      <id>600481a
+      <item>pclass
+     </specification>
+     <specification/>
       <id>600486
       <item>pclass
      </specification>
@@ -7743,6 +7785,23 @@
       </specifications>
      </field>
      <field/>
+      <id>123121
+      <name>Allow_Link_Empty_Restriction
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600481a
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>123119
       <name>Allow_Link_Permission
       <type>bool
@@ -7761,7 +7820,7 @@
      </field>
      <field/>
       <id>123112
-      <name>Allow_Link_Restriction
+      <name>Allow_Link_Specifics
       <type>bool
       <mandatory>true
       <default_value>0
@@ -26855,6 +26914,19 @@
     </data>
    </specification>
    <specification/>
+    <id>600481a
+    <name>{List_Field}_Hide_Link_Empty_Restriction
+    <type>modifier_field_value
+    <data/>
+     <class_id>124100
+     <pclass_id>123100
+     <modifier_id>500881a
+     <field_id>302120
+     <pfield_id>123121
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600498
     <name>{List_Field}_Hide_Link_Permission_Field
     <type>modifier_field_value
@@ -26869,7 +26941,7 @@
    </specification>
    <specification/>
     <id>600481
-    <name>{List_Field}_Hide_Link_Restriction
+    <name>{List_Field}_Hide_Link_Specifics
     <type>modifier_field_value
     <data/>
      <class_id>124100
@@ -27382,6 +27454,7 @@
      <field_info>302130:116101!@group:301500+116101
      <field_info>302115;hidden+fkey6
      <field_info>302199:109101!@fkey6:300900+109101
+     <field_info>124134;enum=692
      <field_info>124133
     </data>
    </specification>

@@ -1,5 +1,6 @@
 <sio/>
 # <domain>server.com
+ <ip_addrs>127.0.0.1
  <timezone>GMT
  <web_root>$WEBDIR
  <set_trace>1000
