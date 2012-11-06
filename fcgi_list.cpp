@@ -1651,6 +1651,10 @@ void output_list_form( ostream& os,
                 && ( ( ( source.lici->second )->parents[ i ].operations.find( c_operation_link ) )->second.empty( )
                 || sess_info.user_perms.count( ( source.lici->second )->parents[ i ].operations.find( c_operation_link )->second ) ) )
                {
+                  map< string, string > parent_extras;
+                  if( !( source.lici->second )->parents[ i ].extra.empty( ) )
+                     parse_field_extra( ( source.lici->second )->parents[ i ].extra, parent_extras );
+
                   if( !had_data )
                      had_data = true;
                   else
@@ -1688,14 +1692,18 @@ void output_list_form( ostream& os,
                      is_folder = true;
 
                   if( !( source.lici->second )->parents[ i ].mandatory
+                   && !parent_extras.count( c_list_field_extra_link_none_denied_always )
+                   && ( has_owner_parent || !parent_extras.count( c_list_field_extra_link_none_owner_only ) )
+                   && ( sess_info.is_admin_user || !parent_extras.count( c_list_field_extra_link_none_admin_only ) )
+                   && ( ( has_owner_parent || sess_info.is_admin_user ) || !parent_extras.count( c_list_field_extra_link_none_admin_owner ) )
                    && ( !is_folder || ( source.lici->second )->parents[ i ].field != ( source.lici->second )->parents[ i ].pclass ) )
                      os << "<option value=\"\">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
 
                   const data_container& parent_row_data = source.parent_lists[ i ];
 
-                  set< string > parent_extras;
+                  set< string > parent_pextras;
                   if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
-                     split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
+                     split( ( source.lici->second )->parents[ i ].pextra, parent_pextras, '+' );
 
                   for( size_t j = 0; j < parent_row_data.size( ); j++ )
                   {
@@ -1710,7 +1718,7 @@ void output_list_form( ostream& os,
                      if( display.empty( ) )
                         display = key;
 
-                     if( parent_extras.count( c_parent_extra_manuallink ) )
+                     if( parent_pextras.count( c_parent_extra_manuallink ) )
                      {
                         stringstream ss;
 

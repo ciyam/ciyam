@@ -229,6 +229,8 @@ bool g_is_daemon = false;
 
 int g_port = c_default_ciyam_port;
 
+const int c_accept_timeout = 250;
+
 const char* const c_shutdown_signal_file = "ciyam_server.stop";
 
 string application_title( app_info_request request )
@@ -547,9 +549,9 @@ int main( int argc, char* argv[ ] )
                      cout << "server shutdown (due to interrupt) now underway..." << endl;
                }
 
-               // NOTE: Check for accepts (timeout after 250ms if none occur) and create sessions.
-               auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, 250 ) ) );
-               if( !g_server_shutdown && *ap_socket )
+               // NOTE: Check for accepts and create new sessions.
+               auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
+               if( !g_server_shutdown && *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
                {
                   ciyam_session* p_session = new ciyam_session( ap_socket );
                   p_session->start( );

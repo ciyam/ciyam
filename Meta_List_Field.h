@@ -74,39 +74,40 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
       e_field_id_Label_Class = 17,
       e_field_id_Label_Source = 18,
       e_field_id_Label_Without_Prefix = 19,
-      e_field_id_Link_Permission = 20,
-      e_field_id_Link_Restriction = 21,
-      e_field_id_Link_Type = 22,
-      e_field_id_List = 23,
-      e_field_id_Name = 24,
-      e_field_id_Non_Instance_Procedure = 25,
-      e_field_id_Notes_Truncation = 26,
-      e_field_id_Omit_Versions = 27,
-      e_field_id_Order = 28,
-      e_field_id_Parent_Class = 29,
-      e_field_id_Print_Type = 30,
-      e_field_id_Procedure = 31,
-      e_field_id_Procedure_Args = 32,
-      e_field_id_Restriction_Field = 33,
-      e_field_id_Restriction_Spec = 34,
-      e_field_id_Restriction_Value = 35,
-      e_field_id_Retain_Selected_Rows = 36,
-      e_field_id_Reverse_Order = 37,
-      e_field_id_Search_Option_Limit = 38,
-      e_field_id_Select_Key_Exclusions = 39,
-      e_field_id_Source_Child = 40,
-      e_field_id_Source_Child_Class = 41,
-      e_field_id_Source_Field = 42,
-      e_field_id_Source_Grandchild = 43,
-      e_field_id_Source_Parent = 44,
-      e_field_id_Source_Parent_Class = 45,
-      e_field_id_Switch_Type = 46,
-      e_field_id_Trigger_Option = 47,
-      e_field_id_Type = 48,
-      e_field_id_Use_Child_Rel_Source_Parent = 49,
-      e_field_id_Use_In_Text_Search_Title = 50,
-      e_field_id_Use_Source_Parent = 51,
-      e_field_id_View_Parent_Extra = 52
+      e_field_id_Link_Empty_Restriction = 20,
+      e_field_id_Link_Permission = 21,
+      e_field_id_Link_Restriction = 22,
+      e_field_id_Link_Type = 23,
+      e_field_id_List = 24,
+      e_field_id_Name = 25,
+      e_field_id_Non_Instance_Procedure = 26,
+      e_field_id_Notes_Truncation = 27,
+      e_field_id_Omit_Versions = 28,
+      e_field_id_Order = 29,
+      e_field_id_Parent_Class = 30,
+      e_field_id_Print_Type = 31,
+      e_field_id_Procedure = 32,
+      e_field_id_Procedure_Args = 33,
+      e_field_id_Restriction_Field = 34,
+      e_field_id_Restriction_Spec = 35,
+      e_field_id_Restriction_Value = 36,
+      e_field_id_Retain_Selected_Rows = 37,
+      e_field_id_Reverse_Order = 38,
+      e_field_id_Search_Option_Limit = 39,
+      e_field_id_Select_Key_Exclusions = 40,
+      e_field_id_Source_Child = 41,
+      e_field_id_Source_Child_Class = 42,
+      e_field_id_Source_Field = 43,
+      e_field_id_Source_Grandchild = 44,
+      e_field_id_Source_Parent = 45,
+      e_field_id_Source_Parent_Class = 46,
+      e_field_id_Switch_Type = 47,
+      e_field_id_Trigger_Option = 48,
+      e_field_id_Type = 49,
+      e_field_id_Use_Child_Rel_Source_Parent = 50,
+      e_field_id_Use_In_Text_Search_Title = 51,
+      e_field_id_Use_Source_Parent = 52,
+      e_field_id_View_Parent_Extra = 53
    };
 
    Meta_List_Field( );
@@ -141,6 +142,9 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
 
    bool Label_Without_Prefix( ) const;
    void Label_Without_Prefix( bool Label_Without_Prefix );
+
+   int Link_Empty_Restriction( ) const;
+   void Link_Empty_Restriction( int Link_Empty_Restriction );
 
    int Link_Restriction( ) const;
    void Link_Restriction( int Link_Restriction );

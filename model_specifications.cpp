@@ -379,6 +379,7 @@ const char* const c_data_command = "command";
 const char* const c_data_cpclass = "cpclass";
 const char* const c_data_cpfield = "cpfield";
 const char* const c_data_dn_proc = "dn_proc";
+const char* const c_data_fkchild = "fkchild";
 const char* const c_data_fkclass = "fkclass";
 const char* const c_data_fkfield = "fkfield";
 const char* const c_data_gpfield = "gpfield";
@@ -1081,7 +1082,7 @@ void append_opts_for_iter_specification::add_specification_data( model& m, speci
 
    string child_class_name = get_class_name_for_id( m, child_class_id );
    spec_data.data_pairs.push_back( make_pair( c_data_cclass, child_class_name ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_child, child_class_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_child, child_class_name ) ); // KLUDGE: Assumes class name is the child name.
 
    string field_name = get_field_name_for_id( m, class_name, field_id );
    spec_data.data_pairs.push_back( make_pair( string( c_data_field ), field_name ) );
@@ -1633,7 +1634,8 @@ void child_field_cascade_specification::add_specification_data( model& m, specif
       cpfield_name = m.determine_child_rel_suffix( cpfield_name );
    }
 
-   spec_data.data_pairs.push_back( make_pair( c_data_child, cpfield_name.empty( ) ? child_class_name : cpfield_name ) );
+   // KLUDGE: Assumes class name is the child name.
+    spec_data.data_pairs.push_back( make_pair( c_data_child, cpfield_name.empty( ) ? child_class_name : cpfield_name ) );
 
    string field_list;
    for( size_t i = 0; i < field_info.size( ); i++ )
@@ -1794,6 +1796,7 @@ void child_field_change_cascade_specification::add_specification_data( model& m,
    }
 
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
+   // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_child, cpfield_name.empty( ) ? cclass_name : cpfield_name ) );
 
    string field_name = get_field_name_for_id( m, class_name, field_id );
@@ -1872,7 +1875,7 @@ void clone_children_specification::add_specification_data( model& m, specificati
    string pfield_name = get_field_name_for_id( m, cclass_name, pfield_id );
 
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_cclass, cclass_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_child, cclass_name ) ); // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_ffield, "" ) );
@@ -2128,6 +2131,7 @@ void clone_children_for_create_specification::add_specification_data( model& m, 
       cpfield_name = m.determine_child_rel_suffix( cpfield_name );
    }
 
+   // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_child, cpfield_name.empty( ) ? cclass_name : cpfield_name ) );
 
    string gpfield_name;
@@ -2296,6 +2300,7 @@ void clone_children_for_update_specification::add_specification_data( model& m, 
       cfield_name = m.determine_child_rel_suffix( cfield_name );
    }
 
+   // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_child, cfield_name.empty( ) ? class_name : cfield_name ) );
 
    string xfield_name;
@@ -2397,7 +2402,7 @@ void clone_children_from_fk_specification::add_specification_data( model& m, spe
    string cclass_name = get_class_name_for_id( m, cclass_id );
 
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_cclass, cclass_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_child, cclass_name ) ); // KLUDGE: Assumes class name is the child name.
 
    string pfield_name = get_field_name_for_id( m, cclass_name, pfield_id );
    string fkfield_name = get_field_name_for_id( m, class_name, fkfield_id );
@@ -2407,6 +2412,7 @@ void clone_children_from_fk_specification::add_specification_data( model& m, spe
       cpfield_name = get_field_name_for_id( m, cclass_name, cpfield_id );
 
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fkchild, cclass_name ) ); // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_fkfield, fkfield_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cpfield, cpfield_name ) );
 }
@@ -7516,6 +7522,7 @@ void meta_spec_field_pairs_specification::add_specification_data( model& m, spec
       cfield_name = m.determine_child_rel_suffix( cfield_name );
    }
 
+   // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_child, cfield_name.empty( ) ? cclass_name : cfield_name ) );
 }
 
@@ -8235,6 +8242,7 @@ void meta_spec_field_values_specification::add_specification_data( model& m, spe
       cfield_name = m.determine_child_rel_suffix( cfield_name );
    }
 
+   // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_child, cfield_name.empty( ) ? cclass_name : cfield_name ) );
 }
 
@@ -10625,6 +10633,7 @@ void update_children_specification::add_specification_data( model& m, specificat
    }
 
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
+   // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_child, cfield_name.empty( ) ? cclass_name : cfield_name ) );
 
    string tfield_name;

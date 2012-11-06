@@ -3,7 +3,7 @@
 `{`@eq`(`$arg_tfield`,`'`'`)\
    state |= c_state_ignore_uneditable;\
 `,\
-   if( get_obj( ).`{`$arg_tfield`}( ) )
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}get_obj( ).`{`$arg_tfield`}( ) )
       state |= c_state_ignore_uneditable;\
 `}
    // [(finish permit_ignore_uneditable)]

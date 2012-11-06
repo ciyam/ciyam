@@ -3675,6 +3675,49 @@ void Meta_Model::impl::impl_Generate( )
                      extras += "no_anon";
                   }
 
+                  switch( get_obj( ).child_List( ).child_List_Field( ).Link_Empty_Restriction( ) )
+                  {
+                     case 0: // i.e. none
+                     break;
+
+                     case 1: // i.e. owner_only
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "link_none_owner_only";
+                        break;
+                     }
+
+                     case 2: // i.e. admin_only
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "link_none_admin_only";
+                        break;
+                     }
+
+                     case 3: // i.e. admin_owner
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "link_none_admin_owner";
+                        break;
+                     }
+
+                     case 4: // i.e. denied_always
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "link_none_denied_always";
+                        break;
+                     }
+
+                     default:
+                     throw runtime_error( "unexpected Link_Empty_Restriction value #"
+                      + to_string( get_obj( ).child_List( ).child_List_Field( ).Link_Empty_Restriction( ) )
+                      + " in Model::Generate" );
+                  }
+
                   if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Access_Parent_Modifier( ) ) )
                   {
                      Meta_Class* p_parent_Class = &get_obj( ).child_List( ).child_List_Field( ).Parent_Class( );

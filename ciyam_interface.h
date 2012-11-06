@@ -353,6 +353,10 @@ const char* const c_list_field_extra_exact_match = "exact_match";
 const char* const c_list_field_extra_label_class = "label_class";
 const char* const c_list_field_extra_omit_label = "omit_label";
 const char* const c_list_field_extra_use_list_title = "use_list_title";
+const char* const c_list_field_extra_link_none_admin_only = "link_none_admin_only";
+const char* const c_list_field_extra_link_none_owner_only = "link_none_owner_only";
+const char* const c_list_field_extra_link_none_admin_owner = "link_none_admin_owner";
+const char* const c_list_field_extra_link_none_denied_always = "link_none_denied_always";
 
 const char* const c_view_type_admin = "admin";
 const char* const c_view_type_print = "print";

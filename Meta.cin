@@ -582,7 +582,7 @@ field_add -id=123108 List_Field_Type Allow_Procedure bool mand -def=0
 field_add -id=123109 List_Field_Type Non_Simple_Field bool mand -def=0
 field_add -id=123110 List_Field_Type Trivial_Field_Only bool mand -def=0
 field_add -id=123111 List_Field_Type Allow_Select_Specifics bool mand -def=0
-field_add -id=123112 List_Field_Type Allow_Link_Restriction bool mand -def=0
+field_add -id=123112 List_Field_Type Allow_Link_Specifics bool mand -def=0
 field_add -id=123113 List_Field_Type Allow_Child_Rel_Select_Specifics bool mand -def=0
 field_add -id=123114 List_Field_Type Needs_Source bool mand -def=0
 field_add -id=123115 List_Field_Type Allow_Search_Option_Limit bool mand -def=0
@@ -591,6 +591,7 @@ field_add -id=123117 List_Field_Type Needs_Restriction_Field bool mand -def=0
 field_add -id=123118 List_Field_Type Is_Restrict_Search bool mand -def=0
 field_add -id=123119 List_Field_Type Allow_Link_Permission bool mand -def=0
 field_add -id=123120 List_Field_Type Allow_View_Parent_Extra bool mand -def=0
+field_add -id=123121 List_Field_Type Allow_Link_Empty_Restriction bool mand -def=0
 index_add -id=123201 List_Field_Type Name unique
 class_add -id=124100 List_Field List_Fields -x=ordered
 field_add -id=124101 List_Field Order string mand -x=order
@@ -623,6 +624,7 @@ field_add -id=124130 List_Field Font_Size int mand -def=0 -e=font_size
 field_add -id=124131 List_Field Label_Class int mand -def=0 -e=list_field_label_class
 field_add -id=124132 List_Field View_Parent_Extra int mand -def=0 -e=list_field_view_parent_extra
 field_add -id=124133 List_Field Allow_Anonymous_Access bool mand -def=1
+field_add -id=124134 List_Field Link_Empty_Restriction int mand -def=0 -e=list_field_link_restrict
 procedure_add -id=124410 List_Field Move_Up
 procedure_arg_add -id=124411 List_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=124412 List_Field Move_Up Restrict_Values string in
@@ -1082,7 +1084,8 @@ modifier_add -id=500878 List_Field Hide_Fields_For_Trivial_Field Use_Source_Pare
 ,Non_Instance_Procedure:relegate,Source_Field:relegate,Trigger_Option:relegate,Search_Option_Limit:relegate
 modifier_add -id=500880 List_Field Hide_Select_Specifics Trigger_Option:relegate\
 ,Select_Key_Exclusions:relegate,Include_Key_Additions:relegate
-modifier_add -id=500881 List_Field Hide_Link_Restriction Link_Restriction:relegate
+modifier_add -id=500881 List_Field Hide_Link_Specifics Link_Restriction:relegate,Link_{Permission}:relegate
+modifier_add -id=500881a List_Field Hide_Link_Empty_Restriction Link_Empty_Restriction:relegate
 modifier_add -id=500882 List_Field Hide_Child_Rel_Select_Specifics Child_Relationship:relegate\
 ,Child_Rel_Source_Field:relegate,Use_Child_Rel_Source_Parent:relegate\
 ,Child_Rel_Source_Parent:relegate,Child_Rel_Source_Child:relegate,Label_Class:relegate
@@ -1636,7 +1639,8 @@ specification_add -id=600477 {List_Field}_Hide_Non_Procedure_Fields modifier_fie
 specification_add -id=600478 {List_Field}_Hide_Use_Source_Parent modifier_field_value "List_Field Hide_Non_Simple_Fields Type:Non_Simple_Field true"
 specification_add -id=600479 {List_Field}_Hide_Fields_For_Trivial_Field modifier_field_value "List_Field Hide_Fields_For_Trivial_Field Type:Trivial_Field_Only true"
 specification_add -id=600480 {List_Field}_Hide_Select_Specifics modifier_field_value "List_Field Hide_Select_Specifics Type:Allow_Select_Specifics false"
-specification_add -id=600481 {List_Field}_Hide_Link_Restriction modifier_field_value "List_Field Hide_Link_Restriction Type:Allow_Link_Restriction false"
+specification_add -id=600481 {List_Field}_Hide_Link_Specifics modifier_field_value "List_Field Hide_Link_Specifics Type:Allow_Link_Specifics false"
+specification_add -id=600481a {List_Field}_Hide_Link_Empty_Restriction modifier_field_value "List_Field Hide_Link_Empty_Restriction Type:Allow_Link_Empty_Restriction false"
 specification_add -id=600482 {List_Field}_Hide_Child_Rel_FK_Fields modifier_field_value "List_Field Hide_Child_Rel_FK_Fields Use_Child_Rel_Source_Parent false"
 specification_add -id=600483 {List_Field}_Hide_Child_Rel_Non_FK_Field modifier_field_value "List_Field Hide_Child_Rel_Non_FK_Field Use_Child_Rel_Source_Parent true"
 specification_add -id=600484 {List_Field}_Child_Rel_Child_Class field_from_changed_fk "List_Field Child_Relationship Child_Rel_Child_Class:Child_Class"
@@ -1861,7 +1865,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure\
 ,Font_Size,Alignment,Notes_Truncation,Print_Type,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
 ,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup}+Name,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
-,Parent_Class;hidden+fkey6,Access_Parent_Modifier:Name!@fkey6:{Class}+Name,Allow_Anonymous_Access"
+,Parent_Class;hidden+fkey6,Access_Parent_Modifier:Name!@fkey6:{Class}+Name,Link_Empty_Restriction,Allow_Anonymous_Access"
 specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_limit\
  List_Field Name -act=+!124410+@rfields+@rvalues,+!^124420+@rfields+@rvalues {List}"
 specification_add -id=602900 {Application}_group_list list "* group:no_limit Application Name,Version,Generate_Status {Workgroup}"
