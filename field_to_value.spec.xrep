@@ -6,12 +6,21 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$value`=`$arg_value`}\
-`{`$create_only_or_has_test_field`=`'`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_only_or_has_test_field`=`'true`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_only_or_has_test_field`=`'true`'`}\
 `{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+`{`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_create_only`=`'`'`}\
+`{`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_update_only`=`'`'`}\
+`{`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_internal_only`=`'`'`}\
+`{`$create_update_or_has_test_field`=`'`'`}\
+`{`$create_update_internal_or_has_test_field`=`'`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_update_or_has_test_field`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_update_internal_or_has_test_field`=`'true`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`$create_update_or_has_test_field`=`'true`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)`$create_update_internal_or_has_test_field`=`'true`'`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`$create_update_or_has_test_field`=`'true`'`}\
+`{`@eq`(`$arg_update_only`,`'true`'`)`$create_update_internal_or_has_test_field`=`'true`'`}\
+`{`@eq`(`$arg_internal_only`,`'true`'`)`$create_update_internal_or_has_test_field`=`'true`'`}\
    // [(start field_to_value)]
-`{`@eq`(`$create_only_or_has_test_field`,`'`'`)\
+`{`@eq`(`$create_update_internal_or_has_test_field`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
@@ -20,7 +29,9 @@
    get_obj( ).op_apply( );
 `}\
 `,\
-   if( `{`!`@eq`(`$arg_create_only`,`'`'`)is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
+   if( `{`@eq`(`$arg_internal_only`,`'true`'`)is_internal`{`@eq`(`$create_update_or_has_test_field`,`'true`'`) && `}`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`,\
+`@eq`(`$arg_update_only`,`'true`'`)!is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    {
       get_obj( ).op_update( );

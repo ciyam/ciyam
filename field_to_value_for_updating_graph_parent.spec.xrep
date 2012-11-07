@@ -1,0 +1,19 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+`{`$value`=`$arg_value`}\
+`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+`{`$tvalue`=`$arg_tvalue`}\
+`{`@eq`(`$arg_tfistexttype`,`'1`'`)`$tvalue`=`'"`{`$arg_tvalue`}"`'`}\
+   // [(start field_to_value_for_updating_graph_parent)]
+`{`@eq`(`$arg_tfield`,`'`'`)\
+   // NOTE: Empty code block for scope purposes.
+`,\
+   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$tvalue`}`} )
+`}\
+   {
+      `{`$module_name`}_`{`$arg_spclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_spclass`}* >( get_obj( ).get_graph_parent( ) );
+
+      if( p_parent && p_parent->get_is_updating( )`{`!`@eq`(`$arg_scfield`,`'`'`) && p_parent->`{`$arg_scfield`}( )`} )
+         get_obj( ).`{`$arg_field`}( `{`$value`} );
+   }
+   // [(finish field_to_value_for_updating_graph_parent)]
+`}
