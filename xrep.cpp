@@ -3268,6 +3268,7 @@ void pre_process_expr( string& expr )
       else if( expr[ i ] == c_escape )
       {
          was_escape = true;
+
          if( expr_level > 1 )
             expr[ i ] = c_hidden_escape;
       }
@@ -3340,7 +3341,7 @@ bool process_next( const string& line, string& result,
                start = string::npos;
                has_processed_expression = true;
 
-               if( i != line.size( ) - 1 )
+               if( i < line.size( ) - 1 )
                   result += line.substr( end );
                break;
             }

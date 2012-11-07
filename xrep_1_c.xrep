@@ -1,0 +1,26 @@
+`{`@eq`(`'for_test`'`,`$section`)\
+   // [(start test_spec)]
+   if( !get_obj( ).get_key( ).empty( ) )
+   {
+      string value;
+
+`{`@eq`(`$separator`,`'`'`)\
+`{`[`$arg_field_list`,\
+      if( !is_null( get_obj( ).\\\\$( ) ) )
+         value += to_string( get_obj( ).\\\\$( ) );\
+`+\n\n`]`}\
+`,\
+`{`[`$field_list`%,`,\
+      if( !is_null( get_obj( ).\\\\$( ) ) )
+      {
+         if( !value.empty( ) )
+            value += "`{`$separator`}";
+         value += to_string( get_obj( ).\\\\$( ) );
+      }\
+`+\n\n`]`}\
+`}
+
+      get_obj( ).`{`$field`}( value );
+   }   
+   // [(finish test_spec)]
+`}

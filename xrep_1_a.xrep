@@ -1,0 +1,51 @@
+`{`;This is a test`}
+`{`;This is \
+another test`}
+`{`;Testing assign`$a`=`'one two three`'`}
+`{`;Testing existence`(`?`$a`)`$b`=`'b c d e`'`}
+`{`$c`=`'c d e f`'`}
+`{`$d`=`'`'`}
+`{`$e`=`'extra`'`}
+`{`;Testing function`@in`(`'one`'`,`$a`)one`}
+`{`@in`(`$a`,`'four five six`'`)THIS SHOULD NOT APPEAR`}
+ab`{`(`$d`)THIS SHOULD NOT APPEAR`}cd
+`{`(`$e`)true`}
+`{`(`$d`&`$a`|`$b`)and true`}
+`{`(`$d`&`(`$a`|`$b`)`)THIS SHOULD NOT APPEAR`}
+`{`(`$a`|`(`$b`+`$c`%`$d`)`)and also true`}
+`{`$a`&`(`$b`|`$c`)`&`(`$d`|`$e`)`}
+`{`!`(`$a`&`(`$b`|`$c`)`&`(`$d`|`$e`)`)THIS SHOULD NOT APPEAR`,false`}
+`{`[`$a`/three`/`'zero, `'\#, \?`+, `]...`}
+`{`$a`=`@upper`(`$b`%`$c`)`+`$d`}
+`{`$a`}
+`{`[`$a`:C`=X`/D`/Y`/E`/Z`!`% `,\0\!\0\! \1\!\1\! \2\!\2\!`]`}
+`{`[`$a`:C`=X`/D`/Y`/E`/Z`!\$ -> \?`]`}
+`{`[`$a`:C`=X`/D`/Y`/E`/Z`'....\n`'$\$\??`+\n`]\n....`}
+`{`$a`=`'ice`'`}
+`{`$b`=`'two`'`}
+`{`$c`=`'three four`'`}
+`{`$d`=`(`$a`/ic`/on`+`$b`)`+`$c`}
+`{`@sort`(`$d`)`}
+`{`@eq`(`$d`,`'one two three four`'`)one two three four`}
+`{`$d`=`'a b c`'`}
+`{`?`$include`#$include @`}
+`{`?`$include`#$include a= b=$a c=\$$$`}
+`{`[`$d`/a`/A`/b`/B`/c`/C`;3!`,\
+org=\$
+mod=\?
+val($\$)=`{`$\$`}\
+`+\n`]`}
+`{`$a`=`'a,b,c,d,e 1,2,3,4,5`'`}
+`{`$a`} ==> `{`@count`(`$a`)`}
+`{`[`$a`%,`,\0\2\4`+ `]`}
+`{`$a`=`'one two three four!`'`}
+`{`$a`/`$c`/`$d`}
+`{`$a`} ==> `{`@count`(`$a`)`}
+`{`$a`=`'vwx`'`}
+`{`$a`}
+`{`$a`^`'y`'`}
+`{`$a`^`'z`'`}
+`{`$a`}
+`{`$a`^`$a`}
+`{`$a`}
+`{`$a`*`$a`}
