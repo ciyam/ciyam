@@ -60,7 +60,7 @@ namespace
 
 ofstream g_logfile;
 
-mutex g_log_mutex;
+mutex g_mutex;
 
 string g_server_id;
 
@@ -103,7 +103,7 @@ struct scoped_flusher
 scoped_flusher::scoped_flusher( ostream& os )
  : os( os )
 {
-   p_guard = new guard( g_log_mutex );
+   p_guard = new guard( g_mutex );
 }
 
 scoped_flusher::~scoped_flusher( )
@@ -403,16 +403,22 @@ string hash_password( const string& salted_password )
 
 bool is_non_persistent( const string& session_id )
 {
+   guard g( g_mutex );
+
    return g_non_persistent.count( session_id );
 }
 
 void add_non_persistent( const string& session_id )
 {
+   guard g( g_mutex );
+
    g_non_persistent.insert( session_id );
 }
 
 void remove_non_persistent( const string& session_id )
 {
+   guard g( g_mutex );
+
    if( g_non_persistent.count( session_id ) )
       g_non_persistent.erase( session_id );
 }

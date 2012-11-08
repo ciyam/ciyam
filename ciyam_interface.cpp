@@ -465,6 +465,8 @@ void output_login_logout( ostream& os, const string& extra_details, const string
 
 string get_unique( const string& id, const string& ip_addr )
 {
+   guard g( g_socket_mutex );
+
    // FUTURE: If a huge number of connections are made from different IP addresses that
    // never perform a successful login then the map being used could chew up very large
    // amounts of memory (perhaps also need an IP address to timestamp map so that those
@@ -479,6 +481,8 @@ string get_unique( const string& id, const string& ip_addr )
 
 void clear_unique( map< string, string >& input_data )
 {
+   guard g( g_socket_mutex );
+
    if( g_uuid_for_ip_addr.count( input_data[ c_http_param_raddr ] ) )
       g_uuid_for_ip_addr.erase( input_data[ c_http_param_raddr ] );
 }

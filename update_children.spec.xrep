@@ -11,8 +11,11 @@
    {
       do
       {
-         get_obj( ).child_`{`$arg_child`}( ).op_update( );
-         get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_`{`$arg_child`}( ) ) )
+         {
+            get_obj( ).child_`{`$arg_child`}( ).op_update( );
+            get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+         }
       } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
    }
    // [(finish update_children)]
