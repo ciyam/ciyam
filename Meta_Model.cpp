@@ -2378,7 +2378,10 @@ void Meta_Model::impl::impl_Generate( )
 
                         field_ids.push_back( p_pfield->Id( ) );
 
-                        field_types.push_back( "@class" );
+                        field_types.push_back( meta_field_type_name(
+                         get_obj( ).child_View( ).child_View_Field( ).Source_Child( ).Primitive( ),
+                         get_obj( ).child_View( ).child_View_Field( ).Source_Child( ).Mandatory( ), "", "" ) );
+
 
                         field_names.push_back( field_name + "_"
                          + lower( get_obj( ).child_View( ).child_View_Field( ).Source_Parent( ).Name( ) ) );
@@ -4094,8 +4097,6 @@ void Meta_Model::impl::impl_Generate( )
                         is_fk_field = true;
                         column_ids.push_back( get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Id( ) );
 
-                        column_types.push_back( "@class" );
-
                         string other_extras;
 
                         if( is_null( get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ) ) )
@@ -4104,6 +4105,10 @@ void Meta_Model::impl::impl_Generate( )
                             + '_' + get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Name( ) );
 
                            column_pids.push_back( "" );
+
+                           column_types.push_back( meta_field_type_name(
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Primitive( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Mandatory( ), "", "" ) );
 
                            other_extras = meta_field_extras(
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).UOM( ),
@@ -4144,6 +4149,10 @@ void Meta_Model::impl::impl_Generate( )
                             + '_' + get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Name( ) );
 
                            column_pids.push_back( get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Id( ) );
+
+                           column_types.push_back( meta_field_type_name(
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Primitive( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Mandatory( ), "", "" ) );
 
                            other_extras = meta_field_extras(
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).UOM( ),

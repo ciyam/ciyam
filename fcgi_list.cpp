@@ -2875,6 +2875,9 @@ void output_list_form( ostream& os,
                }
             }
 
+            if( view_edit_effect == c_modifier_effect_relegate )
+               cell_data.erase( );
+
             bool is_href = false;
             bool is_image = false;
             bool was_output = false;

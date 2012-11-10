@@ -14,9 +14,10 @@
             get_obj( ).child_`{`$arg_child`}( ).op_create( key_info );
             get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_cpfield`,`'`'`)\
-            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cpfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).get_key( ) );\
-`}
+            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cpfield`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).get_key( ) );
+`}\
             get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+
          } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).iterate_next( ) );
       }
    }

@@ -8,6 +8,7 @@
 `{`$test_field_is_text_type`=`'`'`}\
 `{`@eq`(`$arg_tfistexttype`,`'1`'`)`&`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
 `{`@eq`(`$arg_tcfistexttype`,`'1`'`)`&`!`@eq`(`$arg_tpfield`,`'`'`)`$test_field_is_text_type`=`'true`'`}\
+`{`$tvalue`=`$arg_tvalue`}`{`@eq`(`$test_field_is_text_type`,`'true`'`)`$tvalue`=`'"`{`$arg_tvalue`}"`'`}\
 `{`$needs_if_test`=`'`'`}\
 `{`!`@eq`(`$arg_internal_only`,`'`'`)`$needs_if_test`=`'true`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`$needs_if_test`=`'true`'`}\
@@ -41,7 +42,7 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
 `{`@eq`(`$test_field_is_text_type`,`'true`'`)!is_null( `}get_obj( ).\
 `{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )`{`@eq`(`$test_field_is_text_type`,`'true`'`) )`}\
 `,\
-get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}\
+get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$tvalue`}\
 `}`} )
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    {

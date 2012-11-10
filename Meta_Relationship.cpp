@@ -1364,8 +1364,11 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Child( ).op_update( );
-         get_obj( ).child_Specification_Child( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Child( ) ) )
+         {
+            get_obj( ).child_Specification_Child( ).op_update( );
+            get_obj( ).child_Specification_Child( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Child( ).iterate_next( ) );
    }
    // [(finish update_children)]

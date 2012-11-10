@@ -2531,7 +2531,7 @@ bool output_view_form( ostream& os, const string& act,
                   date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
                   cell_data = dt.get_date( ).as_string( );
                }
-               else
+               else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
 
@@ -2557,7 +2557,7 @@ bool output_view_form( ostream& os, const string& act,
                   date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
                   cell_data = dt.get_time( ).as_string( );
                }
-               else
+               else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
 
@@ -2583,7 +2583,7 @@ bool output_view_form( ostream& os, const string& act,
                   date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
                   cell_data = dt.as_string( );
                }
-               else
+               else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
 

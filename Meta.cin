@@ -453,6 +453,8 @@ procedure_add -id=115442 Specification Add_Opt_Info
 procedure_add -id=115443 Specification Add_Extra_Info
 procedure_add -id=115444 Specification Add_Next
 procedure_add -id=115445 Specification Add_Other_Info
+procedure_add -id=115446 Specification Add_Field_Info
+procedure_add -id=115447 Specification Add_Destination_Info
 procedure_add -id=115500 Specification Generate_All_Vars
 procedure_arg_add -id=115501 Specification Generate_All_Vars All_Vars string out
 procedure_arg_add -id=115502 Specification Generate_All_Vars Parent_Prefix string in
@@ -1239,6 +1241,7 @@ specification_add -id=610079 {Modifier}_clone_{Modifier}_children_for_create clo
 specification_add -id=620079 {Modifier}_clone_{Modifier}_children_for_update clone_children_for_update "Modifier {Class} Source_{Modifier} Modifier:Source_{Modifier}"
 specification_add -id=600080 {Modifier_Affect}_{Class}_default default_to_field "Modifier_Affect {Class} {Modifier}:{Class}"
 specification_add -id=600081 {Modifier_Affect}_Is_Class modifier_field_value "Modifier_Affect Is_Class Scope class -enum=modifier_affect_scope"
+specification_add -id=600081a {Modifier_Affect}_Needs_{Field}_cond_check check_cond_non_null "Modifier_Affect {Field} Scope -negative"
 specification_add -id=600082 {Modifier_Affect}_Is_Internal modifier_field_value "Modifier_Affect Is_Internal Internal true"
 specification_add -id=600083 {Modifier_Affect}_Internal_protect state_protect "equal Modifier_Affect Internal true"
 specification_add -id=600084 {Modifier_Affect}_Internal_if_non_null field_empty_action "Modifier_Affect Source_{Modifier_Affect} Internal true -no_clear"
