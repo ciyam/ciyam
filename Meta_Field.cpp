@@ -2548,8 +2548,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification( ).op_update( );
-         get_obj( ).child_Specification( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         {
+            get_obj( ).child_Specification( ).op_update( );
+            get_obj( ).child_Specification( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2561,8 +2564,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Source( ).op_update( );
-         get_obj( ).child_Specification_Source( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source( ) ) )
+         {
+            get_obj( ).child_Specification_Source( ).op_update( );
+            get_obj( ).child_Specification_Source( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Source( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2574,8 +2580,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Source_Parent( ).op_update( );
-         get_obj( ).child_Specification_Source_Parent( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source_Parent( ) ) )
+         {
+            get_obj( ).child_Specification_Source_Parent( ).op_update( );
+            get_obj( ).child_Specification_Source_Parent( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Source_Parent( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2587,8 +2596,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Source_Child( ).op_update( );
-         get_obj( ).child_Specification_Source_Child( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source_Child( ) ) )
+         {
+            get_obj( ).child_Specification_Source_Child( ).op_update( );
+            get_obj( ).child_Specification_Source_Child( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Source_Child( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2600,8 +2612,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Test( ).op_update( );
-         get_obj( ).child_Specification_Test( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Test( ) ) )
+         {
+            get_obj( ).child_Specification_Test( ).op_update( );
+            get_obj( ).child_Specification_Test( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Test( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2613,8 +2628,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Test_Parent( ).op_update( );
-         get_obj( ).child_Specification_Test_Parent( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Test_Parent( ) ) )
+         {
+            get_obj( ).child_Specification_Test_Parent( ).op_update( );
+            get_obj( ).child_Specification_Test_Parent( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Test_Parent( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2626,8 +2644,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Test_Child( ).op_update( );
-         get_obj( ).child_Specification_Test_Child( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Test_Child( ) ) )
+         {
+            get_obj( ).child_Specification_Test_Child( ).op_update( );
+            get_obj( ).child_Specification_Test_Child( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Test_Child( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -2680,8 +2701,11 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification_Source_Child_2( ).op_update( );
-         get_obj( ).child_Specification_Source_Child_2( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source_Child_2( ) ) )
+         {
+            get_obj( ).child_Specification_Source_Child_2( ).op_update( );
+            get_obj( ).child_Specification_Source_Child_2( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification_Source_Child_2( ).iterate_next( ) );
    }
    // [(finish update_children)]

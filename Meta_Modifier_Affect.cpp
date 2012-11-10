@@ -943,6 +943,13 @@ void Meta_Modifier_Affect::impl::validate( unsigned state, bool is_internal, val
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
+   // [(start check_cond_non_null)]
+   if( !get_obj( ).Scope( ) && is_null( get_obj( ).Field( ) ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Field,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
+   // [(finish check_cond_non_null)]
+
    // [<start validate>]
    // [<finish validate>]
 }

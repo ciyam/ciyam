@@ -9179,6 +9179,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600081a
+      <item>class
+     </specification>
+     <specification/>
       <id>600082
       <item>class
      </specification>
@@ -9266,6 +9270,10 @@
        <specification/>
         <id>600081
         <item>field
+       </specification>
+       <specification/>
+        <id>600081a
+        <item>cfield
        </specification>
        <specification/>
         <id>602010
@@ -9375,6 +9383,10 @@
        </modifier>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>600081a
+        <item>field
+       </specification>
        <specification/>
         <id>602010
         <item>field
@@ -16772,6 +16784,14 @@
       </args>
      </procedure>
      <procedure/>
+      <id>115447
+      <name>Add_Destination_Info
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
       <id>115443
       <name>Add_Extra_Info
       <specifications/>
@@ -16782,6 +16802,14 @@
      <procedure/>
       <id>115430
       <name>Add_Field
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
+      <id>115446
+      <name>Add_Field_Info
       <specifications/>
       </specifications>
       <args/>
@@ -28024,6 +28052,17 @@
      <modifier_id>500510
      <field_id>110104
      <field_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600081a
+    <name>{Modifier_Affect}_Needs_{Field}_cond_check
+    <type>check_cond_non_null
+    <data/>
+     <class_id>110100
+     <field_id>301020
+     <cfield_id>110101
+     <is_negative>true
     </data>
    </specification>
    <specification/>

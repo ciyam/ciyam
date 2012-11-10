@@ -3339,8 +3339,11 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification( ).op_update( );
-         get_obj( ).child_Specification( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         {
+            get_obj( ).child_Specification( ).op_update( );
+            get_obj( ).child_Specification( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -3361,6 +3364,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
             get_obj( ).child_Field( ).Class( get_obj( ).get_key( ) );
             get_obj( ).child_Field( ).Source_Field( get_obj( ).Source_Class( ).child_Field( ).get_key( ) );
             get_obj( ).child_Field( ).op_apply( );
+
          } while( get_obj( ).Source_Class( ).child_Field( ).iterate_next( ) );
       }
    }
@@ -3373,8 +3377,11 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Relationship_Child( ).op_update( );
-         get_obj( ).child_Relationship_Child( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Relationship_Child( ) ) )
+         {
+            get_obj( ).child_Relationship_Child( ).op_update( );
+            get_obj( ).child_Relationship_Child( ).op_apply( );
+         }
       } while( get_obj( ).child_Relationship_Child( ).iterate_next( ) );
    }
    // [(finish update_children)]
@@ -3395,6 +3402,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
             get_obj( ).child_Index( ).Class( get_obj( ).get_key( ) );
             get_obj( ).child_Index( ).Source_Index( get_obj( ).Source_Class( ).child_Index( ).get_key( ) );
             get_obj( ).child_Index( ).op_apply( );
+
          } while( get_obj( ).Source_Class( ).child_Index( ).iterate_next( ) );
       }
    }
@@ -3416,6 +3424,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
             get_obj( ).child_Modifier( ).Class( get_obj( ).get_key( ) );
             get_obj( ).child_Modifier( ).Source_Modifier( get_obj( ).Source_Class( ).child_Modifier( ).get_key( ) );
             get_obj( ).child_Modifier( ).op_apply( );
+
          } while( get_obj( ).Source_Class( ).child_Modifier( ).iterate_next( ) );
       }
    }
@@ -3437,6 +3446,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
             get_obj( ).child_Procedure( ).Class( get_obj( ).get_key( ) );
             get_obj( ).child_Procedure( ).Source_Procedure( get_obj( ).Source_Class( ).child_Procedure( ).get_key( ) );
             get_obj( ).child_Procedure( ).op_apply( );
+
          } while( get_obj( ).Source_Class( ).child_Procedure( ).iterate_next( ) );
       }
    }

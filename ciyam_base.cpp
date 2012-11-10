@@ -8271,8 +8271,8 @@ void begin_instance_op( instance_op op, class_base& instance,
       {
          string sql;
 
-         // NOTE: Skip this check during a restore as an optimsation to reduce SQL.
-         if( !storage_locked_for_admin( ) )
+         // NOTE: Skip this check during a restore as an optimsation to reduce SQL (iff requested).
+         if( !storage_locked_for_admin( ) || !session_skip_fk_fetches( ) )
          {
             instance_accessor.fetch( sql, true );
             bool found = fetch_instance_from_db( instance, sql, true );
@@ -8291,7 +8291,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
          }
 
-         // NOTE: In order for foreign keys to be linked the "create" op must be set.
+         // NOTE: In order for foreign keys to be linked the "create" op must be set here.
          instance_accessor.set_op( class_base::e_op_type_create, false );
          instance_accessor.at_create( );
       }

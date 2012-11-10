@@ -1,0 +1,58 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start trigger_copy_fk_children_below_other_fk)]
+`{`!`@eq`(`$arg_src_fk_key_class`,`'`'`)\
+#include "`{`$module_name`}_`{`$arg_src_fk_key_class`}.h"
+`}\
+#include "`{`$module_name`}_`{`$arg_scclass`}.h"
+#include "`{`$module_name`}_`{`$arg_dcclass`}.h"
+// [(finish trigger_copy_fk_children_below_other_fk)]
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_copy_fk_children_below_other_fk)]
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+   {
+`}\
+`{`$i`}   if( get_obj( ).`{`$arg_src_fk`}( ).child_`{`$arg_schild`}( ).iterate_forwards( ) )
+`{`$i`}   {
+`{`$i`}      do
+`{`$i`}      {
+`{`!`@eq`(`$arg_src_tfield`,`'`'`)`{`$oi`=`$i`}`{`$i`^`'   `'`}\
+`{`$i`}      if( get_obj( ).`{`$arg_src_fk`}( ).child_`{`$arg_schild`}( ).`{`$arg_src_tfield`}( ) )
+`{`$i`}      {
+`}\
+`{`$i`}         string other_key = get_obj( ).`{`$arg_dest_fk`}( ).get_key( )
+`{`@eq`(`$arg_src_fk_key_suffix`,`'`'`)\
+`{`$i`}          + "_" + get_obj( ).`{`$arg_src_fk`}( ).child_`{`$arg_schild`}( ).get_key( );
+`,\
+`{`$i`}          + "_" + get_obj( ).`{`$arg_src_fk`}( ).child_`{`$arg_schild`}( ).`{`$arg_src_fk_key_suffix`}( ).get_key( );
+`}\
+`{`$i`}
+`{`$i`}         string fk_child_key( get_obj( ).`{`$arg_src_fk`}( ).child_`{`$arg_schild`}( ) );
+`{`$i`}
+`{`@eq`(`$arg_create_or_update`,`'`'`)\
+`{`$i`}         get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).op_create( other_key );
+`,\
+`{`$i`}         op_update_rc rc;
+`{`$i`}         get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).op_update( other_key, &rc );
+`{`$i`}
+`{`$i`}         if( rc == e_op_update_rc_not_found )
+`{`$i`}            get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).op_create( other_key );
+`{`$i`}         else if( rc != e_op_update_rc_okay )
+`{`$i`}            get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).op_update( other_key );
+`}\
+`{`$i`}
+`{`$i`}         get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).`{`$arg_fk_back_to_self`}( get_obj( ) );
+`{`$i`}         get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).`{`$arg_schild`}( fk_child_key );
+`{`$i`}
+`{`$i`}         get_obj( ).`{`$arg_dest_fk`}( ).child_`{`$arg_dchild`}( ).op_apply( );
+`{`!`@eq`(`$arg_src_tfield`,`'`'`)`{`$i`=`$oi`}\
+`{`$i`}         }
+`}\
+`{`$i`}      } while( get_obj( ).`{`$arg_src_fk`}( ).child_`{`$arg_schild`}( ).iterate_next( ) );
+`{`$i`}   }
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+   }
+`}\
+   // [(finish trigger_copy_fk_children_below_other_fk)]
+`}

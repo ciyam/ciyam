@@ -3540,21 +3540,23 @@ void request_handler::process_request( )
                         ++x;
                         string list_type = child_lists[ i->second ].lici->second->type;
 
+                        // FUTURE: Currently the only expected format for child list permission is that of
+                        // <child_type>=<perm>. If <child_type>=!<perm> were also expected then the KLUDGE
+                        // that follows would not be required (with the "if..else" statement needing to be
+                        // then completely rewritten).
                         bool is_okay = has_permission( child_lists[ i->second ].perm, *p_session_info );
                         if( !is_okay )
                         {
-                           if( is_owner
-                            && ( list_type == c_list_type_child_owner || list_type == c_list_type_child_admin_owner ) )
-                              is_okay = true;
-
+                           // KLUDGE: It doesn't really make sense to deny "admin" access due to not having a
+                           // permission so is allowing "admin" here despite not having the permission (if it
+                           // is desired to prevent the list appearing below the "admin" user then use pstate
+                           // to achieve this).
                            if( p_session_info->is_admin_user
                             && ( list_type == c_list_type_child_admin || list_type == c_list_type_child_admin_owner ) )
                               is_okay = true;
                         }
                         else if( list_type == c_list_type_child_owner )
                            is_okay = is_owner;
-                        else if( list_type == c_list_type_child_admin )
-                           is_okay = p_session_info->is_admin_user;
                         else if( list_type == c_list_type_child_admin_owner )
                            is_okay = ( is_owner || p_session_info->is_admin_user );
 

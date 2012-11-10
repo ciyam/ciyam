@@ -420,9 +420,13 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
 
    virtual void Add_Child_Info( );
 
+   virtual void Add_Destination_Info( );
+
    virtual void Add_Extra_Info( );
 
    virtual void Add_Field( );
+
+   virtual void Add_Field_Info( );
 
    virtual void Add_Field_Pair( );
 

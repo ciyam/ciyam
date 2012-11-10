@@ -615,8 +615,10 @@ inline bool is_transient_field( const string& field )
 const char* const c_procedure_id_Add_Arg_1 = "115439";
 const char* const c_procedure_id_Add_Arg_2 = "115440";
 const char* const c_procedure_id_Add_Child_Info = "115432";
+const char* const c_procedure_id_Add_Destination_Info = "115447";
 const char* const c_procedure_id_Add_Extra_Info = "115443";
 const char* const c_procedure_id_Add_Field = "115430";
+const char* const c_procedure_id_Add_Field_Info = "115446";
 const char* const c_procedure_id_Add_Field_Pair = "115431";
 const char* const c_procedure_id_Add_Grandchild_Info = "115438";
 const char* const c_procedure_id_Add_Info = "115441";
@@ -1352,6 +1354,12 @@ void Meta_Specification_command_functor::operator ( )( const string& command, co
 
       cmd_handler.retval.erase( );
    }
+   else if( command == c_cmd_Meta_Specification_Add_Destination_Info )
+   {
+      cmd_handler.p_Meta_Specification->Add_Destination_Info( );
+
+      cmd_handler.retval.erase( );
+   }
    else if( command == c_cmd_Meta_Specification_Add_Extra_Info )
    {
       cmd_handler.p_Meta_Specification->Add_Extra_Info( );
@@ -1361,6 +1369,12 @@ void Meta_Specification_command_functor::operator ( )( const string& command, co
    else if( command == c_cmd_Meta_Specification_Add_Field )
    {
       cmd_handler.p_Meta_Specification->Add_Field( );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Specification_Add_Field_Info )
+   {
+      cmd_handler.p_Meta_Specification->Add_Field_Info( );
 
       cmd_handler.retval.erase( );
    }
@@ -2964,9 +2978,13 @@ struct Meta_Specification::impl : public Meta_Specification_command_handler
 
    void impl_Add_Child_Info( );
 
+   void impl_Add_Destination_Info( );
+
    void impl_Add_Extra_Info( );
 
    void impl_Add_Field( );
+
+   void impl_Add_Field_Info( );
 
    void impl_Add_Field_Pair( );
 
@@ -3238,6 +3256,12 @@ void Meta_Specification::impl::impl_Add_Child_Info( )
    // [<finish Add_Child_Info_impl>]
 }
 
+void Meta_Specification::impl::impl_Add_Destination_Info( )
+{
+   // [<start Add_Destination_Info_impl>]
+   // [<finish Add_Destination_Info_impl>]
+}
+
 void Meta_Specification::impl::impl_Add_Extra_Info( )
 {
    // [<start Add_Extra_Info_impl>]
@@ -3248,6 +3272,12 @@ void Meta_Specification::impl::impl_Add_Field( )
 {
    // [<start Add_Field_impl>]
    // [<finish Add_Field_impl>]
+}
+
+void Meta_Specification::impl::impl_Add_Field_Info( )
+{
+   // [<start Add_Field_Info_impl>]
+   // [<finish Add_Field_Info_impl>]
 }
 
 void Meta_Specification::impl::impl_Add_Field_Pair( )
@@ -7775,6 +7805,11 @@ void Meta_Specification::Add_Child_Info( )
    p_impl->impl_Add_Child_Info( );
 }
 
+void Meta_Specification::Add_Destination_Info( )
+{
+   p_impl->impl_Add_Destination_Info( );
+}
+
 void Meta_Specification::Add_Extra_Info( )
 {
    p_impl->impl_Add_Extra_Info( );
@@ -7783,6 +7818,11 @@ void Meta_Specification::Add_Extra_Info( )
 void Meta_Specification::Add_Field( )
 {
    p_impl->impl_Add_Field( );
+}
+
+void Meta_Specification::Add_Field_Info( )
+{
+   p_impl->impl_Add_Field_Info( );
 }
 
 void Meta_Specification::Add_Field_Pair( )
@@ -13294,8 +13334,10 @@ procedure_info_container& Meta_Specification::static_get_procedure_info( )
       procedures.insert( make_pair( "115439", "Add_Arg_1" ) );
       procedures.insert( make_pair( "115440", "Add_Arg_2" ) );
       procedures.insert( make_pair( "115432", "Add_Child_Info" ) );
+      procedures.insert( make_pair( "115447", "Add_Destination_Info" ) );
       procedures.insert( make_pair( "115443", "Add_Extra_Info" ) );
       procedures.insert( make_pair( "115430", "Add_Field" ) );
+      procedures.insert( make_pair( "115446", "Add_Field_Info" ) );
       procedures.insert( make_pair( "115431", "Add_Field_Pair" ) );
       procedures.insert( make_pair( "115438", "Add_Grandchild_Info" ) );
       procedures.insert( make_pair( "115441", "Add_Info" ) );

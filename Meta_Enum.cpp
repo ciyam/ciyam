@@ -862,8 +862,11 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         get_obj( ).child_Specification( ).op_update( );
-         get_obj( ).child_Specification( ).op_apply( );
+         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         {
+            get_obj( ).child_Specification( ).op_update( );
+            get_obj( ).child_Specification( ).op_apply( );
+         }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
    // [(finish update_children)]
