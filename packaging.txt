@@ -412,19 +412,19 @@ Step 3. Replace external package keys with mapping variables and remove external
 Classes that belong to other packages (such as User or Group) must be removed from the .package.sio file but
 their keys will have been used for other artifacts (such as Relationships or Specifications). The format for
 external class key replacements is always "var_<package>_class" where <package> is the package name in lower
-case. The following is a sample addition to the .keys.lst file for the User class (which belongs to the User
-package).
+case.
 
-[Sample.keys.lst]
+[Sample.package.sio]
 ...
-;These replaces are for the user
-;var_user_class=<user_class> (optional)
-;
+ <class/>
+  <name>Relationship
+  <fields>@key,Cascade_Op,Child_Class,Extra,Field_Id,Field_Key,Internal,Mandatory,Model,Name,Parent_Class,Source_Relationship,Transient
+  <record>20120506183822750008,0,20120506055523350008,1,M100C100F101,20120506183822750008_C,0,0,key_model,User,var_user_class,,0
+ </class>
+...
 
-Note that once again this key mapping is only a comment as the actual mapping for the "var_user_class" value
-will be determined when the dependent User package is installed. Also note that artifacts such as Fields and
-perhaps even Relationships may in fact belong to the dependent package and so also will need to be carefully
-examined and if determined to not belong to the new package then removed.
+Note that the "var_user_class" used above is not a literal value but instead will be determined according to
+the value that was created for this variable when the User package was installed.
 
 As well as Classes there may also be Fields and other artifacts belonging to external packages that may need
 key mapping entries. If such artifacts are not able to be identified at this stage then they will be readily
@@ -439,18 +439,6 @@ It is most likely that some of the Types used by Fields that belong to the new p
 been selected from those Types installed via the Standard package. Search for "<name>Type" and for each type
 found determine if it is a standard type and if so then replace this key where used in the .package.sio file
 with a standard type mapping (refer to Standard.keys.lst to find the mapping names for the standard types).
-
-After a standard type key has been replaced it is recommended to add a mapping comment to the .keys.lst file
-so that the dependencies are clearly documented. The "standard type" record itself must be then removed from
-the .package.sio (Types that are not "standard" ones should be left as part of the package using the package
-name in lower case followed by an underbar as their naming prefix).
-
-[Sample.keys.lst]
-...
-;These replaces are for standard enums and types
-;var_standard_str100=<str100>
-;var_standard_date_type=<date>
-;
 
 Step 5. Add any package options
 
@@ -488,7 +476,7 @@ mapping variables need to be created for these artifacts (and the key values rep
 the .package.sio file).
 
 At the very least major class names should be mapped although it is recommended to also map fields which are
-likely to used for foreign key selection (such as "name" or "description") and any "restrict specifications"
+likely to used for foreign key selection (such as "Name" or "Description") and any "restrict specifications"
 that are also likely to be required for such selections.
 
 The more mappings that are supplied for the new package then the more usable this package will be for future

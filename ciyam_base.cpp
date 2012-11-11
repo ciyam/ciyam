@@ -7436,6 +7436,33 @@ void import_package( const string& module,
                         is_remove_op = true;
                   }
 
+                  // NOTE: Allow a key field to be specified in the following manner: @3_20101010101010101010
+                  // where the text between the @ and _ (in the case "3") is used to replace the equal number
+                  // of leading characters in the key (so the final key will become 30101010101010101010).
+                  if( !next_key.empty( ) && next_key[ 0 ] == '@' )
+                  {
+                     string::size_type pos = next_key.find( '_' );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected key format '" + next_key + "' processing line #" + to_string( line_num ) );
+
+                     string prefix_replace;
+                     if( pos > 1 )
+                        prefix_replace = next_key.substr( 1, pos - 1 );
+
+                     if( prefix_replace.length( ) )
+                     {
+                        if( next_key.length( ) > pos * 2 )
+                        {
+                           next_key.erase( 0, pos + 1 + prefix_replace.length( ) );
+                           next_key = prefix_replace + next_key;
+                        }
+                        else if( pos == next_key.length( ) - 1 )
+                           skip_op = true;
+                        else
+                           throw runtime_error( "unexpected key prefix '" + next_key + "' processing line #" + to_string( line_num ) );
+                     }
+                  }
+
                   if( is_remove_op && !for_remove )
                      skip_op = true;
                   else if( for_remove && !is_remove_op )

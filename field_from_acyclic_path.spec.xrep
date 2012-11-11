@@ -1,11 +1,16 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch_or_for_store`'`,`$section`)\
    // [(start field_from_acyclic_path)]
+`{`@eq`(`$arg_ftransient`,`'1`'`)\
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" )
     || required_transients.count( "`{`$arg_dest_field`}" ) ) )
+`,\
+   // NOTE: Empty code block for scope purposes.
+`}\
    {
       string s;
       `{`$full_class_name`}* p_parent = &get_obj( ).`{`$arg_pfield`}( );
+
       while( true )
       {
          if( p_parent->get_key( ).empty( ) )
