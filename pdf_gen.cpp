@@ -359,6 +359,8 @@ struct pdf_gen_field_info
    string prefix;
    string suffix;
 
+   string special;
+
    string clear_var;
    string assign_var;
 
@@ -523,6 +525,8 @@ const char* const c_link_extra_block = "block";
 
 const char* const c_border_extra_shadow = "shadow";
 
+const char* const c_special_format_html = "html";
+
 const char* const c_section_font = "font";
 const char* const c_section_field = "field";
 const char* const c_section_fonts = "fonts";
@@ -565,6 +569,7 @@ const char* const c_attribute_borderx = "borderx";
 const char* const c_attribute_details = "details";
 const char* const c_attribute_padding = "padding";
 const char* const c_attribute_spacing = "spacing";
+const char* const c_attribute_special = "special";
 const char* const c_attribute_encoding = "encoding";
 const char* const c_attribute_paddingx = "paddingx";
 const char* const c_attribute_paddingy = "paddingy";
@@ -2177,6 +2182,8 @@ void read_pdf_gen_format( const string& file_name, pdf_gen_format& format )
                   field_info.line_spacing = atof( spacing.c_str( ) );
                }
 
+               field_info.special = reader.read_opt_attribute( c_attribute_special );
+
                string truncate = reader.read_opt_attribute( c_attribute_truncate );
                if( !truncate.empty( ) )
                   field_info.truncate = atoi( truncate.c_str( ) );
@@ -3363,6 +3370,15 @@ bool process_group(
 
                if( !okay )
                   continue;
+            }
+
+            if( !is_continuation && !format.fields[ j ].special.empty( ) )
+            {
+               // FUTURE: Rather than just extracting the text from HTML it would
+               // be much better if some sort of more sophisticated approach that
+               // might permit the usage of different font weightings or similar.
+               if( format.fields[ j ].special == string( c_special_format_html ) )
+                  data = extract_text_from_html( data );
             }
 
             if( !is_continuation

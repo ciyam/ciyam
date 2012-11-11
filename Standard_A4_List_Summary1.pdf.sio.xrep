@@ -163,7 +163,8 @@
    <color>`{`$\$_color`}`}
    <width>`{`$\$_width`}
    <height>`{`$\$_height`}`{`(`?`$\$_padding`)
-   <padding>`{`$\$_padding`}`}`{`(`?`$\$_truncate`)
+   <padding>`{`$\$_padding`}`}`{`(`?`$\$_special`)
+   <special>`{`$\$_special`}`}`{`(`?`$\$_truncate`)
    <truncate>`{`$\$_truncate`}`}`{`(`?`$\$_alignment`)
    <alignment>`{`$\$_alignment`}`}
    <data>`{`$\$_data`}`{`(`?`$\$_dtype`)

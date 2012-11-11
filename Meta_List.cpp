@@ -1746,6 +1746,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          vector< string > query_fields;
          vector< string > summary_fields;
 
+         set< string > html_fields;
+
          set< string > wide_fields;
          set< string > notes_fields;
          set< string > narrow_fields;
@@ -1807,8 +1809,11 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                    + get_obj( ).child_List_Field( ).Source_Field( ).Enum( ).Name( ) + "_" ) );
                }
 
+               if( get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
+                  html_fields.insert( name );
+
                if( get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 4 // i.e. notes
-                || get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. content
+                || get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
                {
                   wide_fields.insert( name );
                   notes_fields.insert( name );
@@ -2325,6 +2330,10 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
             varsf << "\x60{\x60$f" << to_string( fnum )
              << "_padding\x60=\x60'0,3\x60'\x60}\n";
+
+            if( html_fields.count( next_field ) )
+               varsf << "\x60{\x60$f" << to_string( fnum )
+                << "_special\x60=\x60'html\x60'\x60}\n";
 
             if( trunc_fields.count( next_field ) )
                varsf << "\x60{\x60$f" << to_string( fnum )

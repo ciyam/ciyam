@@ -164,7 +164,8 @@
    <color>`{`$\$_color`}`}
    <width>`{`$\$_width`}
    <height>`{`$\$_height`}`{`(`?`$\$_padding`)
-   <padding>`{`$\$_padding`}`}`{`(`?`$\$_alignment`)
+   <padding>`{`$\$_padding`}`}`{`(`?`$\$_special`)
+   <special>`{`$\$_special`}`}`{`(`?`$\$_alignment`)
    <alignment>`{`$\$_alignment`}`}
    <data>`{`$\$_data`}`{`(`?`$\$_dtype`)
    <dtype>`{`$\$_dtype`}`}

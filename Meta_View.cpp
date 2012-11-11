@@ -979,6 +979,8 @@ void Meta_View::impl::impl_Generate_PDF_View( )
 
          vector< string > field_names;
 
+         set< string > html_fields;
+
          set< string > wide_fields;
          set< string > notes_fields;
 
@@ -1019,8 +1021,11 @@ void Meta_View::impl::impl_Generate_PDF_View( )
                   prefixes.insert( make_pair( name, "@enum_" + get_obj( ).child_View_Field( ).Source_Field( ).Enum( ).Name( ) + "_" ) );
                }
 
+               if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
+                  html_fields.insert( name );
+
                if( get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 4 // i.e. notes
-                || get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. content
+                || get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
                   notes_fields.insert( name );
                else if( get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Primitive( ) == 0 // i.e. string
                 && get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Max_Size( ) >= 100 )
@@ -1381,6 +1386,10 @@ void Meta_View::impl::impl_Generate_PDF_View( )
             if( notes_fields.count( next_field ) )
                varsf << "\x60{\x60$f" << to_string( i + 1 )
                 << "_spacing\x60=\x60'3\x60'\x60}\n";
+
+            if( html_fields.count( next_field ) )
+               varsf << "\x60{\x60$f" << to_string( i + 1 )
+                << "_special\x60=\x60'html\x60'\x60}\n";
 
             varsf << "\x60{\x60$f" << to_string( i + 1 )
              << "_alignment\x60=\x60'" << ( is_label ? "right" : "left" ) << "\x60'\x60}\n";

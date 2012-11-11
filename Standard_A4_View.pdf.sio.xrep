@@ -116,7 +116,8 @@
    <width>`{`$\$_width`}
    <height>`{`$\$_height`}
    <padding>`{`$\$_padding`}`{`(`?`$\$_spacing`)
-   <spacing>`{`$\$_spacing`}`}
+   <spacing>`{`$\$_spacing`}`}`{`(`?`$\$_special`)
+   <special>`{`$\$_special`}`}
    <alignment>`{`$\$_alignment`}
    <data>`{`$\$_data`}`{`(`?`$\$_dtype`)
    <dtype>`{`$\$_dtype`}`}`{`(`?`$\$_prefix`)
