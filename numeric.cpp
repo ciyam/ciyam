@@ -308,12 +308,37 @@ numeric::numeric( const char* p, char dec, char sep )
    int n = 0;
    const char* op( p );
 
-   if( p )
+   const char* lp( p );
+   const char* np( p );
+
+   if( p && *p )
    {
+      bool dp = false;
+
+      // NOTE: Locate the last digit or last non-zero digit after the decimal point
+      // so that extraneos trailing zero decimals will not cause a digits overflow.
+      while( true )
+      {
+         if( *np == dec )
+         {
+            dp = true;
+            lp = np + 1;
+         }
+         else if( !dp )
+            lp = np;
+         else if( *np != '0' )
+            lp = np;
+
+         if( *++np == 0 )
+            break;
+      }
+
+      ++lp;
+
       uint8_t d = 0;
       uint64_t m = 0;
 
-      bool dp = false;
+      dp = false;
       if( *p == '-' )
       {
          ++p;
@@ -322,7 +347,7 @@ numeric::numeric( const char* p, char dec, char sep )
       else if( *p == '+' )
          ++p;
 
-      for( ; *p != 0; ++p )
+      for( ; p != lp; ++p )
       {
          if( *p == dec )
          {
