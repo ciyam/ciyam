@@ -1458,6 +1458,9 @@ void Meta_Model::impl::impl_Generate( )
                      string next( strings.substr( 0, pos ) );
 
                      string::size_type npos = next.find( '=' );
+                     if( npos == string::npos )
+                        throw runtime_error( "unexpected format for specification string '" + next + "'" );
+
                      string name( next.substr( 0, npos ) );
                      string value( next.substr( npos + 1 ) );
 
@@ -1486,7 +1489,7 @@ void Meta_Model::impl::impl_Generate( )
 
                   string::size_type npos = next.find( '=' );
                   if( npos == string::npos )
-                     throw runtime_error( "unexpected format for specification vars '" + get_obj( ).child_Specification( ).Vars( ) + "'" );
+                     throw runtime_error( "unexpected format for specification var '" + next + "'" );
 
                   outf << "\x60{\x60$specification_" + specification_name
                    << "_" << next.substr( 0, npos ) << "\x60=\x60'"

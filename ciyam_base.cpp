@@ -8968,9 +8968,13 @@ bool perform_instance_iterate( class_base& instance,
          deque< vector< string > > rows;
          sql_dataset& ds( *instance_accessor.p_sql_dataset( ) );
 
+         bool found_next = false;
          bool query_finished = true;
+
          while( ds.next( ) )
          {
+            found_next = true;
+
             vector< string > columns;
             for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
                columns.push_back( ds.as_string( i ) );
@@ -8985,13 +8989,18 @@ bool perform_instance_iterate( class_base& instance,
          }
 
          // NOTE: Put a dummy row at the end to stop iteration.
-         if( query_finished )
+         if( query_finished && ( found_next || key_info != c_nul_key ) )
             rows.push_back( vector< string >( ) );
 
          instance_accessor.row_cache( ) = rows;
 
          if( key_info == c_nul_key )
-            fetch_instance_from_row_cache( instance, skip_after_fetch );
+         {
+            if( !found_next )
+               found = false;
+            else
+               fetch_instance_from_row_cache( instance, skip_after_fetch );
+         }
 
          if( query_finished )
          {

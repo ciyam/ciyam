@@ -3341,7 +3341,7 @@ bool process_next( const string& line, string& result,
                start = string::npos;
                has_processed_expression = true;
 
-               if( i < line.size( ) - 1 )
+               if( end < line.size( ) )
                   result += line.substr( end );
                break;
             }
@@ -3360,7 +3360,7 @@ bool process_next( const string& line, string& result,
 
    if( start == string::npos )
       last.erase( );
-   else
+   else if( end < line.size( ) )
       last += line.substr( end );
 
    return has_processed_expression || !result.empty( );
