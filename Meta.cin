@@ -361,8 +361,8 @@ field_add -id=114172 Specification_Type Allow_Source_Class bool mand -def=0
 field_add -id=114173 Specification_Type Use_Parent_Source_Class bool mand -def=0
 field_add -id=114174 Specification_Type Allow_Other_Field bool mand -def=0
 field_add -id=114175 Specification_Type Needs_Other_Field bool mand -def=0
-field_add -id=114176 Specification_Type Allow_Source_Child_2 bool mand -def=0
-field_add -id=114177 Specification_Type Needs_Source_Child_2 bool mand -def=0
+field_add -id=114176 Specification_Type Allow_Other_Source_Child bool mand -def=0
+field_add -id=114177 Specification_Type Needs_Other_Source_Child bool mand -def=0
 field_add -id=114178 Specification_Type Allow_Source_Grandchild bool mand -def=0
 field_add -id=114179 Specification_Type Set_Field_To_Source_Field_Or_Child bool mand -def=0
 field_add -id=114180 Specification_Type Needs_Permission bool mand -def=0
@@ -390,6 +390,8 @@ field_add -id=114201 Specification_Type Needs_Other_Permission_2 bool mand -def=
 field_add -id=114202 Specification_Type Needs_Other_Modifier bool mand -def=0
 field_add -id=114203 Specification_Type Needs_Other_Modifier_2 bool mand -def=0
 field_add -id=114204 Specification_Type Allow_Procedure_Arg bool mand -def=0
+field_add -id=114205 Specification_Type Allow_Other_Source_Child_2 bool mand -def=0
+field_add -id=114206 Specification_Type Needs_Other_Source_Child_2 bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -828,7 +830,8 @@ relationship_add -id=201492 -fid=301492 Specification Field_Class Class opt rest
 relationship_add -id=201493 -fid=301493 Specification Test_Field_Class Class opt restrict
 relationship_add -id=201494 -fid=301494 Specification Source_Class Class opt restrict
 relationship_add -id=201495 -fid=301495 Specification Source_Child Field opt restrict
-relationship_add -id=201496 -fid=301496 Specification Source_Child_2 Field opt restrict
+relationship_add -id=201496 -fid=301496 Specification Other_Source_Child Field opt restrict
+relationship_add -id=201497 -fid=301497 Specification Other_Source_Child_2 Field opt restrict
 relationship_add -id=201498 -fid=301498 Specification {Procedure_Arg} Procedure_Arg opt restrict
 relationship_add -id=201499 -fid=301499 Specification {Permission} Permission opt restrict
 relationship_add -id=201500 -fid=301500 Permission {Workgroup} Workgroup mand destroy
@@ -959,9 +962,10 @@ modifier_add -id=500550 Procedure Is_Internal @class:lowlight
 modifier_add -id=500560 Procedure_Arg Is_Internal @class:lowlight
 modifier_add -id=500580 Relationship Is_Internal @class:lowlight
 modifier_add -id=500600 Specification Hide_Field {Field}:relegate
-modifier_add -id=500601 Specification Hide_Source_Child_2 Source_Child_2:relegate
-modifier_add -id=500602 Specification Hide_Source_Grandchild Source_Grandchild:relegate
-modifier_add -id=500603 Specification Hide_Other_Class Other_Class:relegate
+modifier_add -id=500601 Specification Hide_Other_Source_Child Other_Source_Child:relegate
+modifier_add -id=500602 Specification Hide_Other_Source_Child_2 Other_Source_Child_2:relegate
+modifier_add -id=500604 Specification Hide_Source_Grandchild Source_Grandchild:relegate
+modifier_add -id=500605 Specification Hide_Other_Class Other_Class:relegate
 modifier_add -id=500610 Specification Hide_Other_Field Other_Field:relegate
 modifier_add -id=500611 Specification Hide_Other_Field_2 Other_Field_2:relegate
 modifier_add -id=500620 Specification Hide_Procedure {Procedure}:relegate
@@ -1208,7 +1212,8 @@ specification_add -id=600055 {Field}_{Specification}_update_children update_chil
 specification_add -id=600056 {Field}_{Specification}_Source_Field_update_children update_children "Field Specification:Source_Field Name"
 specification_add -id=600057 {Field}_{Specification}_Source_Parent_update_children update_children "Field Specification:Source_Parent Name"
 specification_add -id=600058 {Field}_{Specification}_Source_Child_update_children update_children "Field Specification:Source_Child Name"
-specification_add -id=610058 {Field}_{Specification}_Source_Child_2_update_children update_children "Field Specification:Source_Child_2 Name"
+specification_add -id=610058 {Field}_{Specification}_Other_Source_Child_update_children update_children "Field Specification:Other_Source_Child Name"
+specification_add -id=620058 {Field}_{Specification}_Other_Source_Child_2_update_children update_children "Field Specification:Other_Source_Child_2 Name"
 specification_add -id=600059 {Field}_{Specification}_Test_Field_update_children update_children "Field Specification:Test_Field Name"
 specification_add -id=600060 {Field}_{Specification}_Test_Parent_update_children update_children "Field Specification:Test_Parent Name"
 specification_add -id=600061 {Field}_{Specification}_Test_Child_update_children update_children "Field Specification:Test_Child Name"
@@ -1302,13 +1307,15 @@ specification_add -id=600111 {Specification}_Hide_Test_Field modifier_field_valu
 specification_add -id=600112 {Specification}_Hide_Test_Value modifier_field_value "Specification Hide_Test_Value {Specification_Type}:Allow_Test_Value false"
 specification_add -id=600113 {Specification}_Hide_Options modifier_field_value "Specification Hide_Options {Specification_Type}:Allow_Options false"
 specification_add -id=600114 {Specification}_Hide_Source_Child modifier_field_value "Specification Hide_Source_Child {Specification_Type}:Allow_Source_Child false"
-specification_add -id=610114 {Specification}_Hide_Source_Child_2 modifier_field_value "Specification Hide_Source_Child_2 {Specification_Type}:Allow_Source_Child_2 false"
-specification_add -id=620114 {Specification}_Hide_Source_Grandchild modifier_field_value "Specification Hide_Source_Grandchild {Specification_Type}:Allow_Source_Grandchild false"
+specification_add -id=610114 {Specification}_Hide_Other_Source_Child modifier_field_value "Specification Hide_Other_Source_Child {Specification_Type}:Allow_Other_Source_Child false"
+specification_add -id=620114 {Specification}_Hide_Other_Source_Child_2 modifier_field_value "Specification Hide_Other_Source_Child_2 {Specification_Type}:Allow_Other_Source_Child_2 false"
+specification_add -id=630114 {Specification}_Hide_Source_Grandchild modifier_field_value "Specification Hide_Source_Grandchild {Specification_Type}:Allow_Source_Grandchild false"
 specification_add -id=600115 {Specification}_Hide_Use_Source_Parent modifier_field_value "Specification Hide_Use_Source_Parent {Specification_Type}:Allow_FK_Source_Field_Choice false"
 specification_add -id=600116 {Specification}_Hide_Source_Parent_for_Use_Source_Parent modifier_field_value "Specification Hide_Source_Parent Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
 specification_add -id=600117 {Specification}_Hide_Source_Child_for_Use_Source_Parent modifier_field_value "Specification Hide_Source_Child Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
-specification_add -id=610117 {Specification}_Hide_Source_Child_2_for_Use_Source_Parent modifier_field_value "Specification Hide_Source_Child_2 Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
-specification_add -id=620117 {Specification}_Hide_Source_Grandchild_for_Use_Source_Parent modifier_field_value "Specification Hide_Source_Grandchild Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
+specification_add -id=610117 {Specification}_Hide_Other_Source_Child_for_Use_Source_Parent modifier_field_value "Specification Hide_Other_Source_Child Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
+specification_add -id=620117 {Specification}_Hide_Other_Source_Child_2_for_Use_Source_Parent modifier_field_value "Specification Hide_Other_Source_Child_2 Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
+specification_add -id=630117 {Specification}_Hide_Source_Grandchild_for_Use_Source_Parent modifier_field_value "Specification Hide_Source_Grandchild Use_Source_Parent false -test={Specification_Type}:Allow_FK_Source_Field_Choice"
 specification_add -id=600118 {Specification}_Hide_Source_Field_for_Use_Source_Parent modifier_field_value "Specification Hide_Source_Field Use_Source_Parent true -test={Specification_Type}:Allow_FK_Source_Field_Choice"
 specification_add -id=600119 {Specification}_Hide_Permission modifier_field_value "Specification Hide_Permission {Specification_Type}:Allow_Permission false"
 specification_add -id=600119a {Specification}_Hide_Other_Permission modifier_field_value "Specification Hide_Other_Permission {Specification_Type}:Needs_Other_Permission false"
@@ -1350,7 +1357,8 @@ specification_add -id=600140 {Specification}_Needs_Test_Field_cond_check check_c
 specification_add -id=600141 {Specification}_Needs_Test_Child_cond_check check_cond_non_null "Specification Test_Child Use_Test_Parent_Child -test={Specification_Type}:Needs_Test_Field"
 specification_add -id=600142 {Specification}_Needs_Test_Value_cond_check check_cond_non_null "Specification Test_Value {Specification_Type}:Needs_Test_Value"
 specification_add -id=600143 {Specification}_Needs_Source_Child_cond_check check_cond_non_null "Specification Source_Child {Specification_Type}:Needs_Source_Child"
-specification_add -id=610143 {Specification}_Needs_Source_Child_2_cond_check check_cond_non_null "Specification Source_Child_2 {Specification_Type}:Needs_Source_Child_2"
+specification_add -id=610143 {Specification}_Needs_Other_Source_Child_cond_check check_cond_non_null "Specification Other_Source_Child {Specification_Type}:Needs_Other_Source_Child"
+specification_add -id=620143 {Specification}_Needs_Other_Source_Child_2_cond_check check_cond_non_null "Specification Other_Source_Child_2 {Specification_Type}:Needs_Other_Source_Child_2"
 specification_add -id=600144 {Specification}_Use_Source_Parent_Source_Field_cond_check check_cond_non_null "Specification Source_Field Use_Source_Parent -negative -test={Specification_Type}:Needs_Source_Field_Or_Child"
 specification_add -id=600145 {Specification}_Use_Source_Parent_Source_Child_cond_check check_cond_non_null "Specification Source_Child Use_Source_Parent -test={Specification_Type}:Needs_Source_Field_Or_Child"
 specification_add -id=600146 {Specification}_Needs_Child_Relationship_cond_check check_cond_non_null "Specification Child_Relationship {Specification_Type}:Needs_Child_Relationship"
@@ -1394,7 +1402,8 @@ specification_add -id=600161 {Specification}_Source_Parent_clear_for_Class field
 specification_add -id=600162 {Specification}_Source_Field_clear field_clear "Specification Source_Field {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent"
 specification_add -id=600163 {Specification}_Source_Parent_clear field_clear "Specification Source_Parent {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
 specification_add -id=600164 {Specification}_Source_Child_clear field_clear "Specification Source_Child {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
-specification_add -id=610164 {Specification}_Source_Child_2_clear field_clear "Specification Source_Child_2 {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
+specification_add -id=610164 {Specification}_Other_Source_Child_clear field_clear "Specification Other_Source_Child {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
+specification_add -id=620164 {Specification}_Other_Source_Child_2_clear field_clear "Specification Other_Source_Child_2 {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
 specification_add -id=600165 {Specification}_Child_Relationship_clear_for_Class field_clear_on_changed_fk "Specification {Class} Child_Relationship -not_create"
 specification_add -id=600166 {Specification}_Source_Parent_Class field_from_other_field "Specification Source_Parent:Parent_Class Source_Parent_Class"
 specification_add -id=600166a {Specification}_Source_Parent_Class_default default_to_field\
@@ -1469,7 +1478,8 @@ specification_add -id=600204 {Specification}_Name_from_search_replace field_from
  {Specification_Type}:Specification_Name {Model}:Name={model},{Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
 ,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Other_{Modifier}:Name={omodifier},Other_{Modifier}_2:Name={o2modifier}\
 ,Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
-,Source_Child:Name={scfield},Source_Child_2:Name={sc2field},Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
+,Source_Child:Name={scfield},Other_Source_Child:Name={oscfield},Other_Source_Child_2:Name={o2scfield}\
+,Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue}\
 ,{Permission}:Name={permission},Other_{Permission}:Name={opermission},Other_{Permission}_2:Name={o2permission}\
 ,{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg},Other_{Procedure}:Name={oprocedure},Other_{Procedure}_2:Name={o2procedure}\
@@ -1486,7 +1496,8 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
 ,{Modifier}:Name={modifier},Other_{Modifier}:Name={omodifier},Other_{Modifier}_2:Name={o2modifier}\
 ,Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield},Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass}\
-,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Source_Child_2:Name={sc2field},Source_Child_2:Id={sc2field_id}\
+,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Other_Source_Child:Name={oscfield},Other_Source_Child:Id={oscfield_id}\
+,Other_Source_Child_2:Name={o2scfield},Other_Source_Child_2:Id={o2scfield_id}\
 ,Source_Field:Name={sfield},Source_Field:Id={sfield_id},Source_Grandchild:Name={sgcfield}\
 ,Source_Field:Is_Text_Type={sfistexttype},Source_Child:Is_Text_Type={scfistexttype}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Child:Is_Text_Type={tcfistexttype},Test_Field:Name={tfield}\
@@ -1506,7 +1517,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 specification_add -id=600208 {Specification}_Strings_from_search_replace field_from_search_replace "Specification Strings\
  {Specification_Type}:Specification_Strings {Model}:Name={model}\
 ,{Class}:Name={class},{Field}:Name={field},Field_Class:Name={fclass}\
-,{Modifier}:Name={modifier},Source_Parent:Name={spfield},Source_Child:Name={scfield},Source_Child_2:Name={sc2field},Source_Field:Name={sfield}\
+,{Modifier}:Name={modifier},Source_Parent:Name={spfield},Source_Child:Name={scfield},Source_Field:Name={sfield}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Field_Class:Name={tfclass},Test_Value={tvalue}\
 ,{Procedure}:Name={procedure},Child_Relationship:Child_Name={child}\
 ,{Enum}:Name={enum},{Enum_Item}:Label={enum_item},{Enum_Item}:Value={enum_value},Value={value},Value_Right_Part={value_rightpart} -transient"
@@ -1771,7 +1782,8 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,@tab:Extra_Fields,Allow_Procedure,Needs_Procedure,Allow_Procedure_Arg,Needs_Procedure_Arg,Procedure_Arg_type,Procedure_Arg_primitive\
 ,Needs_Procedure_Arg_2,Needs_Procedure_Arg_3,Needs_Other_Procedure,Needs_Other_Procedure_2\
 ,Allow_Source_Field,Needs_Source_Field,Source_type,Allow_Source_Parent\
-,Needs_Source_Parent,Source_Parent_type,Allow_Source_Child,Needs_Source_Child,Allow_Source_Child_2,Needs_Source_Child_2,Allow_Source_Grandchild\
+,Needs_Source_Parent,Source_Parent_type,Allow_Source_Child,Needs_Source_Child,Allow_Other_Source_Child,Needs_Other_Source_Child\
+,Allow_Other_Source_Child_2,Needs_Other_Source_Child_2,Allow_Source_Grandchild\
 ,Allow_Child_Relationship,Needs_Child_Relationship,Allow_Options,Allow_Permission,Needs_Permission,Needs_Other_Permission,Needs_Other_Permission_2\
 ,@tab:Basic_Options,Source_Field_Type_Match,Allow_FK_Source_Field_Choice\
 ,Child_Relationship_Class_Match,Child_Rel_Parent_Match,Child_Rel_Grandparent_Match\
@@ -1802,7 +1814,8 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 ,Enum_Item_4:Label!@fkey3:{Enum}+Label;link,Enum_Item_5:Label!@fkey3:{Enum}+Label;link\
 ,Use_Source_Parent;force,Source_Class:Name;no_edit+link+fkey7,Source_Field:Name!@fkey7:{Class}+Name;link\
 ,Source_Parent_Class:Name;hidden+fkey4,Source_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force\
-,Source_Child:Name!@fkey4:{Class}+Name;link+force,Source_Child_Class:Name;hidden+fkey8,Source_Child_2:Name!@fkey4:{Class}+Name;link\
+,Source_Child:Name!@fkey4:{Class}+Name;link+force,Source_Child_Class:Name;hidden+fkey8\
+,Other_Source_Child:Name!@fkey4:{Class}+Name;link,Other_Source_Child_2:Name!@fkey4:{Class}+Name;link\
 ,Source_Grandchild:Name!@fkey8:{Class}+Name;link,Child_Relationship:Child_Name!@fkey2:Parent_Class+@sort\
 ,Use_Test_Parent_Child;force,Test_Field:Name!@fkey2:{Class}+Name;link,Test_Parent_Class:Name;hidden+fkey6\
 ,Test_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force+forced,Test_Child:Name!@fkey6:{Class}+Name;link\

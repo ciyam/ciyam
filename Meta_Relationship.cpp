@@ -2601,9 +2601,10 @@ void Meta_Relationship::get_transient_replacement_field_names( const string& nam
    // [<finish get_transient_replacement_field_names>]
 }
 
-void Meta_Relationship::do_generate_sql( generate_sql_type type, vector< string >& sql_stmts ) const
+void Meta_Relationship::do_generate_sql(
+ generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
 {
-   generate_sql( static_class_name( ), type, sql_stmts );
+   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info );
 }
 
 const char* Meta_Relationship::static_resolved_module_id( )

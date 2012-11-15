@@ -1745,6 +1745,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_field=$specification_\0_field arg_cfield=$specification_\0_cfield arg_ofield=$specification_\0_ofield\
  arg_children=$specification_\0_children arg_cclass=$specification_\0_cclass arg_separator=$specification_\0_separator\
  arg_ctransient=$specification_\0_ctransient arg_embed_links=$specification_\0_embed_links\
+ arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_concatenation`'`)
@@ -1993,6 +1994,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_field=$specification_\0_field arg_cfield=$specification_\0_cfield arg_ofield=$specification_\0_ofield\
  arg_children=$specification_\0_children arg_cclass=$specification_\0_cclass arg_separator=$specification_\0_separator\
  arg_ctransient=$specification_\0_ctransient arg_embed_links=$specification_\0_embed_links\
+ arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
@@ -2113,9 +2115,9 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)`&`@eq`(`$specification_\0_after_self`,`'`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
- arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_pfield=$specification_\0_pfield\
- arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field arg_tfield=$specification_\0_tfield\
- arg_sfield=$specification_\0_sfield`}\
+ arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_n3field=$specification_\0_n3field\
+ arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
+ arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)`&`@eq`(`$specification_\0_after_self`,`'`'`)
 `{`#update_children.spec.xrep section=for_or_after_store full_class_name=$full_class_name\
@@ -2204,13 +2206,14 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `@eq`(`'\1`'`,`'field_from_child_concat`'`)`&`!`?`$specification_\0_class\
 `&`?`$specification_\0_cclass`&`@eq`(`$class_name`,`$specification_\0_cclass`)
 `{`#field_from_child_concat.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
- arg_cfield=$specification_\0_cfield arg_ofield=$specification_\0_ofield arg_pfield=$specification_\0_pfield`}\
+ arg_cfield=$specification_\0_cfield arg_ofield=$specification_\0_ofield\
+ arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
- arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_pfield=$specification_\0_pfield\
- arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field arg_tfield=$specification_\0_tfield\
- arg_sfield=$specification_\0_sfield`}\
+ arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_n3field=$specification_\0_n3field\
+ arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
+ arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_clone_default_user_children`'`)
 `{`#trigger_clone_default_user_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
@@ -2283,9 +2286,9 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)`&`@eq`(`$specification_\0_after_self`,`'`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_or_after_destroy class_name=$class_name module_name=$module_name\
- arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_pfield=$specification_\0_pfield\
- arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field arg_tfield=$specification_\0_tfield\
- arg_sfield=$specification_\0_sfield`}\
+ arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_n3field=$specification_\0_n3field\
+ arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
+ arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 ### for_destroy
 `}`]`}
 
@@ -2301,13 +2304,14 @@ void `{`$full_class_name`}::impl::after_destroy( bool is_internal )
 `{`@eq`(`'\1`'`,`'field_from_child_concat`'`)`&`!`?`$specification_\0_class\
 `&`?`$specification_\0_cclass`&`@eq`(`$class_name`,`$specification_\0_cclass`)
 `{`#field_from_child_concat.spec.xrep section=after_destroy class_name=$class_name module_name=$module_name\
- arg_pfield=$specification_\0_pfield`}\
+ arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue\
+ arg_tfistexttype=$specification_\0_tfistexttype`}\
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#total_child_field_in_parent.spec.xrep section=for_or_after_destroy class_name=$class_name module_name=$module_name\
- arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_pfield=$specification_\0_pfield\
- arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field arg_tfield=$specification_\0_tfield\
- arg_sfield=$specification_\0_sfield`}\
+ arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_n3field=$specification_\0_n3field\
+ arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
+ arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_parent_cascade`'`)
 `{`#update_parent_cascade.spec.xrep section=after_destroy module_name=$module_name full_class_name=$full_class_name\
@@ -3356,7 +3360,7 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `,\
 `@eq`(`'\1`'`,`'total_child_field_in_parent`'`)
 `{`#total_child_field_in_parent.spec.xrep section=get_always_required_field_names class_name=$class_name\
- arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field\
+ arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_n3field=$specification_\0_n3field\
  arg_pfield=$specification_\0_pfield arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'unactionable_field_value`'`)
@@ -3393,12 +3397,13 @@ void `{`$full_class_name`}::get_transient_replacement_field_names( const string&
    // [<finish get_transient_replacement_field_names>]
 }
 
-void `{`$full_class_name`}::do_generate_sql( generate_sql_type type, vector< string >& sql_stmts ) const
+void `{`$full_class_name`}::do_generate_sql(
+ generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
 {
 `{`?`$parent_class`&`!`@eq`(`$is_alias`,`'true`'`)\
-   parent_class_type::do_generate_sql( type, sql_stmts );
+   parent_class_type::do_generate_sql( type, sql_stmts, tx_key_info );
 `}
-   generate_sql( static_class_name( ), type, sql_stmts );
+   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info );
 }
 
 const char* `{`$full_class_name`}::static_resolved_module_id( )

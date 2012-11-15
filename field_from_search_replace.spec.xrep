@@ -4,7 +4,7 @@
     && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
     || required_transients.count( "`{`$arg_dfield`}" ) ) )
    {
-`{`@eq`(`$arg_cfield`,`'`'`)
+`{`@eq`(`$arg_cfield`,`'`'`)\
       string str( get_obj( ).`{`$arg_sfield`}( ) );\
 `,\
       string str( get_obj( ).`{`$arg_sfield`}( ).`{`$arg_cfield`}( ) );\

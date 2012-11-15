@@ -1718,9 +1718,10 @@ void Meta_Package_Type::get_transient_replacement_field_names( const string& nam
    // [<finish get_transient_replacement_field_names>]
 }
 
-void Meta_Package_Type::do_generate_sql( generate_sql_type type, vector< string >& sql_stmts ) const
+void Meta_Package_Type::do_generate_sql(
+ generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
 {
-   generate_sql( static_class_name( ), type, sql_stmts );
+   generate_sql( static_class_name( ), type, sql_stmts, tx_key_info );
 }
 
 const char* Meta_Package_Type::static_resolved_module_id( )

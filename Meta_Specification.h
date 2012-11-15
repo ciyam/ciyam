@@ -100,43 +100,44 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
       e_field_id_Other_Permission_2 = 34,
       e_field_id_Other_Procedure = 35,
       e_field_id_Other_Procedure_2 = 36,
-      e_field_id_Parent_Specification = 37,
-      e_field_id_Permission = 38,
-      e_field_id_Procedure = 39,
-      e_field_id_Procedure_Arg = 40,
-      e_field_id_Procedure_Arg_2 = 41,
-      e_field_id_Procedure_Arg_3 = 42,
-      e_field_id_Protect_Child_Rel = 43,
-      e_field_id_Protect_Procedure = 44,
-      e_field_id_Protect_Source_Parent = 45,
-      e_field_id_Restrict_Values = 46,
-      e_field_id_Source_Child = 47,
-      e_field_id_Source_Child_2 = 48,
-      e_field_id_Source_Child_Class = 49,
-      e_field_id_Source_Class = 50,
-      e_field_id_Source_Field = 51,
-      e_field_id_Source_Field_Class = 52,
-      e_field_id_Source_Grandchild = 53,
-      e_field_id_Source_Parent = 54,
-      e_field_id_Source_Parent_Class = 55,
-      e_field_id_Specification_Type = 56,
-      e_field_id_Strings = 57,
-      e_field_id_Test_Child = 58,
-      e_field_id_Test_Field = 59,
-      e_field_id_Test_Field_Class = 60,
-      e_field_id_Test_Parent = 61,
-      e_field_id_Test_Parent_Class = 62,
-      e_field_id_Test_Value = 63,
-      e_field_id_Use_Source_Parent = 64,
-      e_field_id_Use_Test_Parent_Child = 65,
-      e_field_id_Value = 66,
-      e_field_id_Value_Label = 67,
-      e_field_id_Value_Left_Part = 68,
-      e_field_id_Value_Literal = 69,
-      e_field_id_Value_Numeric_String = 70,
-      e_field_id_Value_Right_Part = 71,
-      e_field_id_Value_String = 72,
-      e_field_id_Vars = 73
+      e_field_id_Other_Source_Child = 37,
+      e_field_id_Other_Source_Child_2 = 38,
+      e_field_id_Parent_Specification = 39,
+      e_field_id_Permission = 40,
+      e_field_id_Procedure = 41,
+      e_field_id_Procedure_Arg = 42,
+      e_field_id_Procedure_Arg_2 = 43,
+      e_field_id_Procedure_Arg_3 = 44,
+      e_field_id_Protect_Child_Rel = 45,
+      e_field_id_Protect_Procedure = 46,
+      e_field_id_Protect_Source_Parent = 47,
+      e_field_id_Restrict_Values = 48,
+      e_field_id_Source_Child = 49,
+      e_field_id_Source_Child_Class = 50,
+      e_field_id_Source_Class = 51,
+      e_field_id_Source_Field = 52,
+      e_field_id_Source_Field_Class = 53,
+      e_field_id_Source_Grandchild = 54,
+      e_field_id_Source_Parent = 55,
+      e_field_id_Source_Parent_Class = 56,
+      e_field_id_Specification_Type = 57,
+      e_field_id_Strings = 58,
+      e_field_id_Test_Child = 59,
+      e_field_id_Test_Field = 60,
+      e_field_id_Test_Field_Class = 61,
+      e_field_id_Test_Parent = 62,
+      e_field_id_Test_Parent_Class = 63,
+      e_field_id_Test_Value = 64,
+      e_field_id_Use_Source_Parent = 65,
+      e_field_id_Use_Test_Parent_Child = 66,
+      e_field_id_Value = 67,
+      e_field_id_Value_Label = 68,
+      e_field_id_Value_Left_Part = 69,
+      e_field_id_Value_Literal = 70,
+      e_field_id_Value_Numeric_String = 71,
+      e_field_id_Value_Right_Part = 72,
+      e_field_id_Value_String = 73,
+      e_field_id_Vars = 74
    };
 
    Meta_Specification( );
@@ -321,6 +322,14 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
    const Meta_Procedure& Other_Procedure_2( ) const;
    void Other_Procedure_2( const std::string& key );
 
+   Meta_Field& Other_Source_Child( );
+   const Meta_Field& Other_Source_Child( ) const;
+   void Other_Source_Child( const std::string& key );
+
+   Meta_Field& Other_Source_Child_2( );
+   const Meta_Field& Other_Source_Child_2( ) const;
+   void Other_Source_Child_2( const std::string& key );
+
    Meta_Specification& Parent_Specification( );
    const Meta_Specification& Parent_Specification( ) const;
    void Parent_Specification( const std::string& key );
@@ -348,10 +357,6 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
    Meta_Field& Source_Child( );
    const Meta_Field& Source_Child( ) const;
    void Source_Child( const std::string& key );
-
-   Meta_Field& Source_Child_2( );
-   const Meta_Field& Source_Child_2( ) const;
-   void Source_Child_2( const std::string& key );
 
    Meta_Class& Source_Child_Class( );
    const Meta_Class& Source_Child_Class( ) const;
@@ -559,7 +564,8 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
 
    void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
 
-   void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts ) const;
+   void do_generate_sql( generate_sql_type type,
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
 
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );

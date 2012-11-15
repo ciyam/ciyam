@@ -205,6 +205,9 @@ void CIYAM_BASE_DECL_SPEC upgrade_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC term_storage( command_handler& cmd_handler );
 
+size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( );
+size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( size_t new_limit );
+
 void CIYAM_BASE_DECL_SPEC slice_storage_log( command_handler& cmd_handler,
  const std::string& name, const std::vector< std::string >& module_list );
 void CIYAM_BASE_DECL_SPEC splice_storage_log( command_handler& cmd_handler,
@@ -350,6 +353,7 @@ size_t CIYAM_BASE_DECL_SPEC obtain_instance_fk_lock( const std::string& lock_cla
 
 void CIYAM_BASE_DECL_SPEC release_obtained_lock( size_t lock_handle );
 
+void CIYAM_BASE_DECL_SPEC dump_storage_cache( std::ostream& os );
 void CIYAM_BASE_DECL_SPEC dump_storage_locks( std::ostream& os );
 
 std::string CIYAM_BASE_DECL_SPEC exec_bulk_ops( const std::string& module,

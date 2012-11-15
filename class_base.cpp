@@ -1195,7 +1195,7 @@ string class_base::get_original_field_value( int field ) const
    return str;
 }
 
-bool class_base::get_sql_stmts( vector< string >& sql_stmts )
+bool class_base::get_sql_stmts( vector< string >& sql_stmts, set< string >& tx_key_info )
 {
    bool retval = false;
    sql_stmts.clear( );
@@ -1209,7 +1209,7 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts )
       case e_op_type_create:
       revision = 0;
       original_identity = construct_class_identity( *this );
-      do_generate_sql( e_generate_sql_type_insert, sql_stmts );
+      do_generate_sql( e_generate_sql_type_insert, sql_stmts, tx_key_info );
       /* drop through */
 
       case e_op_type_update:
@@ -1217,13 +1217,13 @@ bool class_base::get_sql_stmts( vector< string >& sql_stmts )
       p_impl->has_changed_user_fields = false;
 
       if( sql_stmts.empty( ) )
-         do_generate_sql( e_generate_sql_type_update, sql_stmts );
+         do_generate_sql( e_generate_sql_type_update, sql_stmts, tx_key_info );
 
       retval = true;
       break;
 
       case e_op_type_destroy:
-      do_generate_sql( e_generate_sql_type_delete, sql_stmts );
+      do_generate_sql( e_generate_sql_type_delete, sql_stmts, tx_key_info );
 
       destroy( );
       retval = true;
@@ -1674,20 +1674,24 @@ int class_base::get_max_index_depth( const vector< string >& field_names ) const
    return max_depth;
 }
 
-void class_base::generate_sql( const string& class_name, generate_sql_type type, vector< string >& sql_stmts ) const
+void class_base::generate_sql( const string& class_name,
+ generate_sql_type type, vector< string >& sql_stmts, set< string >& tx_key_info ) const
 {
    switch( type )
    {
       case e_generate_sql_type_insert:
       sql_stmts.push_back( generate_sql_insert( class_name ) );
+      tx_key_info.insert( string( class_id( ) ) + ":" + key );
       break;
 
       case e_generate_sql_type_update:
       sql_stmts.push_back( generate_sql_update( class_name ) );
+      tx_key_info.insert( string( class_id( ) ) + ":" + key );
       break;
 
       case e_generate_sql_type_delete:
       sql_stmts.push_back( generate_sql_delete( class_name ) );
+      tx_key_info.insert( string( class_id( ) ) + ":" + key );
       break;
 
       default:

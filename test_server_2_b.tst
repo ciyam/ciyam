@@ -75,7 +75,7 @@ Found
 Two Test App Name Is Soon Found
 
 > session_list -min
-3* session_list <none> <unknown> 5:5 0
+3* session_list <none> <unknown> 5:5 0:0
 
 > object_list
 1 Meta User

@@ -412,10 +412,11 @@ class CLASS_BASE_DECL_SPEC class_base
 
    int get_max_index_depth( const std::vector< std::string >& field_names ) const;
 
-   virtual void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts ) const = 0;
+   virtual void do_generate_sql( generate_sql_type type,
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const = 0;
 
    void generate_sql( const std::string& class_name,
-    generate_sql_type type, std::vector< std::string >& sql_stmts ) const;
+    generate_sql_type type, std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
 
    std::string generate_sql_insert( const std::string& class_name ) const;
    std::string generate_sql_update( const std::string& class_name ) const;
@@ -493,7 +494,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
    class_pointer_base* p_class_pointer_base;
 
-   bool get_sql_stmts( std::vector< std::string >& sql_stmts );
+   bool get_sql_stmts( std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info );
 
    bool has_skipped_empty_update( );
 
@@ -634,7 +635,7 @@ struct class_base_accessor
 {
    class_base_accessor( class_base& cb ) : cb( cb ) { }
 
-   bool get_sql_stmts( std::vector< std::string >& sql_stmts ) { return cb.get_sql_stmts( sql_stmts ); }
+   bool get_sql_stmts( std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) { return cb.get_sql_stmts( sql_stmts, tx_key_info ); }
 
    bool has_skipped_empty_update( ) { return cb.has_skipped_empty_update( ); }
 
