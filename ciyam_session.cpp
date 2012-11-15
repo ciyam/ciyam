@@ -3075,10 +3075,27 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          splice_storage_log( handler, name, module_list );
       }
+      else if( command == c_cmd_ciyam_session_storage_dump_cache )
+      {
+         dump_storage_cache( osstr );
+         output_response_lines( socket, osstr.str( ) );
+      }
       else if( command == c_cmd_ciyam_session_storage_dump_locks )
       {
          dump_storage_locks( osstr );
          output_response_lines( socket, osstr.str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_storage_cache_limit )
+      {
+         string new_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_cache_limit_new_limit ) );
+
+         size_t cache_limit;
+         if( new_limit.empty( ) )
+            cache_limit = storage_cache_limit( );
+         else
+            cache_limit = storage_cache_limit( from_string< size_t >( new_limit ) );
+
+         response = to_string( cache_limit );
       }
       else if( command == c_cmd_ciyam_session_storage_trans_start )
          transaction_start( );

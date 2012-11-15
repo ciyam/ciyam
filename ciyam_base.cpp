@@ -75,7 +75,10 @@ const string c_nul_key( 1, '\0' );
 const char c_module_prefix_separator = '_';
 
 const int c_identity_burn = 100;
-const int c_iteration_row_cache_limit = 500;
+
+const size_t c_iteration_row_cache_limit = 500;
+
+size_t c_default_cache_limit = 1000;
 
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 100;
@@ -201,6 +204,7 @@ struct session
     id( id ),
     slot( slot ),
     sql_count( 0 ),
+    cache_count( 0 ),
     next_handle( 0 ),
     is_captured( false ),
     running_script( false ),
@@ -234,6 +238,7 @@ struct session
    string tmp_directory;
 
    size_t sql_count;
+   size_t cache_count;
    size_t next_handle;
 
    bool is_captured;
@@ -261,6 +266,7 @@ struct session
 
    map< string, string > variables;
 
+   set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
    set< size_t > release_sessions;
@@ -452,6 +458,7 @@ struct storage_root
     :
     version( c_storage_format_version ),
     identity( uuid( ).as_string( ) ),
+    cache_limit( c_default_cache_limit ),
     web_root( c_default_web_root ),
     truncation_count( 0 )
    {
@@ -459,6 +466,8 @@ struct storage_root
 
    int32_t version;
    string identity;
+
+   int32_t cache_limit;
 
    string web_root;
 
@@ -481,6 +490,8 @@ int_t size_of( const storage_root& sr )
    size += size_determiner( &sr.version );
    size += size_determiner( &sr.identity );
 
+   size += size_determiner( &sr.cache_limit );
+
    size += size_determiner( &sr.web_root );
 
    size += size_determiner( &sr.module_directory );
@@ -499,6 +510,7 @@ read_stream& operator >>( read_stream& rs, storage_root& sr )
    rs
     >> sr.version
     >> sr.identity
+    >> sr.cache_limit
     >> sr.web_root
     >> sr.module_directory
     >> sr.truncation_count
@@ -514,6 +526,7 @@ write_stream& operator <<( write_stream& ws, const storage_root& sr )
    ws
     << sr.version
     << sr.identity
+    << sr.cache_limit
     << sr.web_root
     << sr.module_directory
     << sr.truncation_count
@@ -546,6 +559,10 @@ write_stream& operator <<( write_stream& ws, const storage_module& sm )
 
    return ws;
 }
+
+typedef multimap< time_t, string > time_info_container;
+typedef time_info_container::iterator time_info_iterator;
+typedef time_info_container::const_iterator time_info_const_iterator;
 
 class storage_handler
 {
@@ -589,6 +606,7 @@ class storage_handler
    bool get_is_locked_for_admin( ) const { return is_locked_for_admin; }
    void set_is_locked_for_admin( bool lock_for_admin = true ) { is_locked_for_admin = lock_for_admin; }
 
+   void dump_cache( ostream& os ) const;
    void dump_locks( ostream& os ) const;
 
    bool obtain_lock( size_t& handle, const string& lock_class, const string& lock_instance,
@@ -609,6 +627,13 @@ class storage_handler
    void release_locks_for_rollback( session* p_session );
 
    set< string >& get_dead_keys( ) { return dead_keys; }
+
+   time_info_container& get_key_for_time( ) { return key_for_time; }
+   map< string, time_t >& get_time_for_key( ) { return time_for_key; }
+
+   void set_cache_limit( size_t new_limit );
+
+   map< string, vector< string > >& get_record_cache( ) { return record_cache; }
 
    private:
    size_t slot;
@@ -637,9 +662,38 @@ class storage_handler
 
    set< string > dead_keys;
 
+   time_info_container key_for_time;
+   map< string, time_t > time_for_key;
+
+   map< string, vector< string > > record_cache;
+
    storage_handler( const storage_handler& );
    storage_handler& operator ==( const storage_handler& );
 };
+
+void storage_handler::dump_cache( ostream& os ) const
+{
+   os << "date_time_accessed  key (class_id:instance)                                          ver.rev\n";
+   os << "------------------- ---------------------------------------------------------------- -------\n";
+   for( time_info_const_iterator ci = key_for_time.begin( ); ci != key_for_time.end( ); ++ci )
+   {
+      time_t t = ci->first;
+      struct tm* p_t = localtime( &t );
+
+      date_time dt( p_t->tm_year + 1900, ( month )( p_t->tm_mon + 1 ),
+       p_t->tm_mday, p_t->tm_hour, p_t->tm_min, ( second )p_t->tm_sec );
+
+      os.setf( ios::left );
+
+      os << dt.as_string( e_time_format_hhmmss, true ) << ' ' << setw( 64 ) << ci->second << ' ';
+
+      const vector< string >& columns( record_cache.find( ci->second )->second );
+      if( columns.size( ) > 2 )
+         os << columns[ 1 ] << '.' << columns[ 2 ];
+
+      os << '\n';
+   }
+}
 
 void storage_handler::dump_locks( ostream& os ) const
 {
@@ -1027,6 +1081,30 @@ void storage_handler::release_locks_for_rollback( session* p_session )
    }
 }
 
+void storage_handler::set_cache_limit( size_t new_limit )
+{
+   if( !new_limit )
+   {
+      get_record_cache( ).clear( );
+      get_time_for_key( ).clear( );
+      get_key_for_time( ).clear( );
+   }
+   else
+   {
+      while( get_record_cache( ).size( )
+       && get_record_cache( ).size( ) > new_limit )
+      {
+         string oldest_key_info = get_key_for_time( ).begin( )->second;
+
+         get_record_cache( ).erase( oldest_key_info );
+         get_time_for_key( ).erase( oldest_key_info );
+         get_key_for_time( ).erase( get_key_for_time( ).begin( ) );
+      }
+   }
+
+   get_root( ).cache_limit = new_limit;
+}
+
 struct scoped_lock_holder
 {
    scoped_lock_holder( storage_handler& handler, size_t lock_handle )
@@ -1304,6 +1382,66 @@ void perform_storage_op( storage_op op,
    }
 }
 
+bool fetch_instance_from_cache( class_base& instance, const string& key, bool check_only = false )
+{
+   guard g( g_mutex );
+
+   bool found = false;
+   class_base_accessor instance_accessor( instance );
+
+   string key_info( string( instance.class_id( ) ) + ":" + key );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   found = handler.get_record_cache( ).count( key_info );
+
+   if( found )
+   {
+      time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
+      while( tii->second != key_info )
+         ++tii;
+
+      time_t tm( time( 0 ) );
+      handler.get_time_for_key( )[ key_info ] = tm;
+
+      handler.get_key_for_time( ).erase( tii );
+      handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+   }
+
+   if( found && !check_only )
+   {
+      TRACE_LOG( TRACE_SQLSTMTS, "*** fetching '" + key_info + "' from cache ***" );
+
+      found = true;
+
+      ++gtp_session->cache_count;
+
+      vector< string >& columns( handler.get_record_cache( )[ key_info ] );
+
+      TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
+
+      instance_accessor.set_key( columns[ 0 ], true );
+      instance_accessor.set_version( from_string< int >( columns[ 1 ] ) );
+      instance_accessor.set_revision( from_string< int >( columns[ 2 ] ) );
+      instance_accessor.set_original_identity( columns[ 3 ] );
+
+      int fnum = 4;
+      for( int i = fnum; i < columns.size( ); i++, fnum++ )
+      {
+         while( instance.is_field_transient( fnum - 4 ) )
+            fnum++;
+
+         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + columns[ i ] );
+         instance.set_field_value( fnum - 4, columns[ i ] );
+      }
+
+      instance_accessor.after_fetch_from_db( );
+      instance_accessor.perform_after_fetch( );
+   }
+
+   return found;
+}
+
 bool fetch_instance_from_db( class_base& instance,
  const map< int, int >& fields, const vector< int >& columns, bool skip_after_fetch )
 {
@@ -1325,6 +1463,8 @@ bool fetch_instance_from_db( class_base& instance,
    }
    else
    {
+      TRACE_LOG( TRACE_SQLCLSET, "(from instance dataset)" );
+
       instance_accessor.set_key( ds.as_string( 0 ), true );
       instance_accessor.set_version( ds.as_int( 1 ) );
       instance_accessor.set_revision( ds.as_int( 2 ) );
@@ -1351,12 +1491,15 @@ bool fetch_instance_from_db( class_base& instance,
 }
 
 bool fetch_instance_from_db( class_base& instance,
- const string& sql, bool check_only = false, bool is_minimal_fetch = false )
+ const string& sql, bool check_only = false, bool is_minimal_fetch = false, bool allow_caching = false )
 {
    bool found = false;
    class_base_accessor instance_accessor( instance );
 
-   if( gtp_session && gtp_session->ap_db.get( ) )
+   if( check_only && allow_caching )
+      found = fetch_instance_from_cache( instance, instance_accessor.get_lazy_fetch_key( ), true );
+
+   if( !found && gtp_session && gtp_session->ap_db.get( ) )
    {
       TRACE_LOG( TRACE_SQLSTMTS, sql );
 
@@ -1371,6 +1514,8 @@ bool fetch_instance_from_db( class_base& instance,
 
          if( found )
          {
+            TRACE_LOG( TRACE_SQLCLSET, "(from temporary dataset)" );
+
             instance_accessor.set_key( ds.as_string( 0 ), true );
             instance_accessor.set_version( ds.as_int( 1 ) );
             instance_accessor.set_revision( ds.as_int( 2 ) );
@@ -1385,6 +1530,49 @@ bool fetch_instance_from_db( class_base& instance,
                TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + ds.as_string( i ) );
                instance.set_field_value( fnum - 4, ds.as_string( i ) );
             }
+
+            if( allow_caching )
+            {
+               guard g( g_mutex );
+
+               storage_handler& handler( *gtp_session->p_storage_handler );
+
+               if( handler.get_root( ).cache_limit )
+               {
+                  string key_info( to_string( instance.class_id( ) ) + ":" + ds.as_string( 0 ) );
+
+                  vector< string > columns;
+                  for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
+                     columns.push_back( ds.as_string( i ) );
+
+                  if( handler.get_record_cache( ).count( key_info ) )
+                  {
+                     time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
+                     while( tii->second != key_info )
+                        ++tii;
+
+                     handler.get_key_for_time( ).erase( tii );
+                     handler.get_time_for_key( ).erase( key_info );
+
+                     handler.get_record_cache( ).erase( key_info );
+                  }
+
+                  if( handler.get_record_cache( ).size( )
+                   && handler.get_record_cache( ).size( ) >= handler.get_root( ).cache_limit )
+                  {
+                     string oldest_key_info = handler.get_key_for_time( ).begin( )->second;
+
+                     handler.get_record_cache( ).erase( oldest_key_info );
+                     handler.get_time_for_key( ).erase( oldest_key_info );
+                     handler.get_key_for_time( ).erase( handler.get_key_for_time( ).begin( ) );
+                  }
+
+                  time_t tm( time( 0 ) );
+                  handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+                  handler.get_time_for_key( ).insert( make_pair( key_info, tm ) );
+                  handler.get_record_cache( ).insert( make_pair( key_info, columns ) );
+               }
+            }
          }
 
          instance_accessor.after_fetch_from_db( );
@@ -1393,6 +1581,26 @@ bool fetch_instance_from_db( class_base& instance,
    }
 
    return found;
+}
+
+void remove_tx_info_from_cache( )
+{
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   for( set< string >::iterator i = gtp_session->tx_key_info.begin( ), e = gtp_session->tx_key_info.end( ); i != e; ++i )
+   {
+      if( handler.get_record_cache( ).count( *i ) )
+      {
+         time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( *i )->second );
+         while( tii->second != *i )
+            ++tii;
+
+         handler.get_key_for_time( ).erase( tii );
+         handler.get_time_for_key( ).erase( *i );
+
+         handler.get_record_cache( ).erase( *i );
+      }
+   }
 }
 
 bool is_child_constrained( class_base& instance,
@@ -3205,6 +3413,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    instance_accessor.clear( );
 
+   TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + string( instance.class_id( ) ) + "')" );
+
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
    instance_accessor.set_version( atoi( instance_accessor.row_cache( )[ 0 ][ 1 ].c_str( ) ) );
    instance_accessor.set_revision( atoi( instance_accessor.row_cache( )[ 0 ][ 2 ].c_str( ) ) );
@@ -3212,6 +3422,8 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    const map< int, int >& fields( instance_accessor.select_fields( ) );
    const vector< int >& columns( instance_accessor.select_columns( ) );
+
+   TRACE_LOG( TRACE_SQLCLSET, "(from row cache)" );
 
    for( int i = 4; i < instance_accessor.row_cache( )[ 0 ].size( ); i++ )
    {
@@ -3965,7 +4177,7 @@ void list_sessions( ostream& os, bool inc_dtms )
 
          os << ' ' << g_sessions[ i ]->instance_registry.size( ) << ':' << g_sessions[ i ]->next_handle;
 
-         os << ' ' << g_sessions[ i ]->sql_count;
+         os << ' ' << g_sessions[ i ]->sql_count << ':' << g_sessions[ i ]->cache_count;
 
          if( g_sessions[ i ]->is_captured )
             os << '*';
@@ -4701,6 +4913,38 @@ void term_storage( command_handler& cmd_handler )
       set_session_variable( c_session_variable_storage, "" );
       gtp_session->p_storage_handler = g_storage_handlers[ 0 ];
    }
+}
+
+size_t storage_cache_limit( )
+{
+   guard g( g_mutex );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   return handler.get_root( ).cache_limit;
+}
+
+size_t storage_cache_limit( size_t new_limit )
+{
+   guard g( g_mutex );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   handler.set_cache_limit( new_limit );
+
+   ods* p_ods( ods::instance( ) );
+
+   if( p_ods )
+   {
+      ods::transaction tx( *p_ods );
+      *p_ods << handler.get_root( );
+      tx.commit( );
+
+      gtp_session->transaction_log_command = ";cache_limit ==> " + to_string( new_limit );
+      append_transaction_log_command( *gtp_session->p_storage_handler );
+   }
+
+   return new_limit;
 }
 
 void slice_storage_log( command_handler& cmd_handler, const string& name, const vector< string >& module_list )
@@ -6332,6 +6576,17 @@ void release_obtained_lock( size_t lock_handle )
    handler.release_lock( lock_handle );
 }
 
+void dump_storage_cache( ostream& os )
+{
+   guard g( g_mutex );
+
+   if( !gtp_session->p_storage_handler->get_ods( ) )
+      throw runtime_error( "no storage is currently linked" );
+
+   os << '\n';
+   gtp_session->p_storage_handler->dump_cache( os );
+}
+
 void dump_storage_locks( ostream& os )
 {
    guard g( g_mutex );
@@ -7674,7 +7929,9 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
 
    string sql;
    instance_accessor.fetch( sql, true, true );
-   bool found = fetch_instance_from_db( instance, sql, true );
+
+   bool found = fetch_instance_from_db( instance, sql, true,
+    false, !gtp_session->p_storage_handler->get_is_locked_for_admin( ) );
 
    if( !found )
    {
@@ -7902,9 +8159,13 @@ void transaction_commit( )
             exec_sql( *gtp_session->ap_db, "COMMIT" );
          }
       }
+
+      remove_tx_info_from_cache( );
    }
 
    handler.release_locks_for_commit( gtp_session );
+
+   gtp_session->tx_key_info.clear( );
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
@@ -7918,6 +8179,8 @@ void transaction_rollback( )
    gtp_session->transactions.top( )->rollback( );
 
    gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
+
+   gtp_session->tx_key_info.clear( );
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
@@ -8484,7 +8747,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
          }
 
          vector< string > sql_stmts;
-         if( !instance_accessor.get_sql_stmts( sql_stmts ) )
+         if( !instance_accessor.get_sql_stmts( sql_stmts, gtp_session->tx_key_info ) )
             throw runtime_error( "unexpected get_sql_stmts failure" );
 
          // NOTE: If updating but no fields apart from the ver/rev ones were changed (by any
@@ -8653,19 +8916,30 @@ void perform_instance_fetch( class_base& instance,
       throw runtime_error( "cannot fetch "
        + string( instance.class_name( ) ) + " record whilst currently perfoming an instance operation" );
 
-   string sql;
-   vector< string > field_info;
-   vector< string > order_info;
-   vector< pair< string, string > > query_info;
-   vector< pair< string, string > > fixed_info;
-   vector< pair< string, string > > paging_info;
+   bool found_in_cache = false;
 
-   split_key_info( key_info, fixed_info, paging_info, order_info, true );
+   if( !only_sys_fields && key_info.find( ' ' ) == string::npos
+    && !gtp_session->tx_key_info.count( string( instance.class_id( ) ) + ":" + key_info ) )
+      found_in_cache = fetch_instance_from_cache( instance, key_info );
 
-   sql = construct_sql_select( instance,
-    field_info, order_info, query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
+   bool found = found_in_cache;
 
-   bool found = fetch_instance_from_db( instance, sql );
+   if( !found )
+   {
+      string sql;
+      vector< string > field_info;
+      vector< string > order_info;
+      vector< pair< string, string > > query_info;
+      vector< pair< string, string > > fixed_info;
+      vector< pair< string, string > > paging_info;
+
+      split_key_info( key_info, fixed_info, paging_info, order_info, true );
+
+      sql = construct_sql_select( instance,
+       field_info, order_info, query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
+
+      found = fetch_instance_from_db( instance, sql, false, false, true );
+   }
 
    if( !found )
    {

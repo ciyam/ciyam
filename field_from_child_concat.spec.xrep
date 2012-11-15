@@ -24,6 +24,16 @@
       {
          do
          {
+`{`$tvalue`=`$arg_tvalue`}`{`@eq`(`$arg_tfistexttype`,`'1`'`)`$tvalue`=`'"`{`$arg_tvalue`}"`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tvalue`,`'`'`)`&`@eq`(`$arg_tfistexttype`,`'1`'`)
+            if( is_null( get_obj( ).child_`{`$arg_children`}( ).`{`$arg_tfield`}( ) ) )
+`,\
+            if( `{`@eq`(`$arg_tvalue`,`'`'`)!`}get_obj( ).child_`{`$arg_children`}( ).`{`$arg_tfield`}( )`{`!`@eq`(`$tvalue`,`'`'`) != `{`$tvalue`}`} )
+`}\
+               continue;
+
+`}\
             string order, display;
 
 `{`@eq`(`$arg_xpfield`,`'`'`)\
@@ -79,20 +89,24 @@
 `}
 `{`@eq`(`'after_store`'`,`$section`)\
    // [(start field_from_child_concat)]
+`{`$has_two`=`'`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)`$has_two`=`'true`'`}\
+`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
+`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
 `{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
-`,\
-`{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)\
+`,`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_ofield`,`'`'`)`&`@eq`(`$arg_tfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
-`,`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)\
+`,`@eq`(`$has_two`,`'true`'`)\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
-    && ( get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )
-    || get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} ) ) )
+    && ( `{`!`@eq`(`$arg_cfield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )
+    || `}`{`!`@eq`(`$arg_ofield`,`'`'`)get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`!`@eq`(`$arg_ofield`,`'`'`)
+    || `}get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} ) )
 `,\
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )`{`!`@eq`(`$arg_cfield`,`'`'`)\
  && get_obj( ).has_field_changed( c_field_id_`{`$arg_cfield`} )`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
- && get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`} )
-`}`}`}\
+ && get_obj( ).has_field_changed( c_field_id_`{`$arg_ofield`} )`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
+ && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`} )
+`}\
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
@@ -100,8 +114,15 @@
    // [(finish field_from_child_concat)]
 `}
 `{`@eq`(`'after_destroy`'`,`$section`)\
+`{`$tvalue`=`$arg_tvalue`}`{`@eq`(`$arg_tfistexttype`,`'1`'`)`$tvalue`=`'"`{`$arg_tvalue`}"`'`}\
    // [(start field_from_child_concat)]
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tvalue`,`'`'`)`&`@eq`(`$arg_tfistexttype`,`'1`'`)
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )
+`,\
+    && get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$tvalue`}`}
+`}`}\
     && !is_destroy_locked( get_obj( ).`{`$arg_pfield`}( ), true ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );

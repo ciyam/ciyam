@@ -30,13 +30,20 @@
                 - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
                get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( )
                 - from_string< typeof( get_obj( ).`{`$arg_n2field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n2field`} ) ) );
-`,\
+`{`!`@eq`(`$arg_n3field`,`'`'`)`&`!`@eq`(`$arg_pn3field`,`'`'`)\
+               get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( )
+                - from_string< typeof( get_obj( ).`{`$arg_n3field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n3field`} ) ) );
+`}`,\
                if( !get_obj( ).`{`$arg_tfield`}( ).has_changed( ) )
                {
                   get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( )
                    - from_string< typeof( get_obj( ).`{`$arg_nfield`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_nfield`} ) ) );
                   get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( )
                    - from_string< typeof( get_obj( ).`{`$arg_n2field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n2field`} ) ) );
+`{`!`@eq`(`$arg_n3field`,`'`'`)`&`!`@eq`(`$arg_pn3field`,`'`'`)\
+                  get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( )
+                   - from_string< typeof( get_obj( ).`{`$arg_n3field`}( ) ) >( get_obj( ).get_original_field_value( c_field_name_`{`$arg_n3field`} ) ) );
+`}\
                }
 `}\
             }
@@ -57,6 +64,9 @@
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
                   original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
 `}\
+`{`!`@eq`(`$arg_n3field`,`'`'`)`&`!`@eq`(`$arg_pn3field`,`'`'`)\
+                  original.`{`$arg_pfield`}( ).`{`$arg_pn3field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn3field`}( ) - original.`{`$arg_n3field`}( ) );
+`}\
                   original.`{`$arg_pfield`}( ).op_apply( );
                }
             }
@@ -68,6 +78,9 @@
          get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) + get_obj( ).`{`$arg_nfield`}( ) );
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
          get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) + get_obj( ).`{`$arg_n2field`}( ) );
+`}\
+`{`!`@eq`(`$arg_n3field`,`'`'`)`&`!`@eq`(`$arg_pn3field`,`'`'`)\
+         get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( ) + get_obj( ).`{`$arg_n3field`}( ) );
 `}\
          get_obj( ).`{`$arg_pfield`}( ).op_apply( );
       }
@@ -100,6 +113,9 @@
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
          original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - original.`{`$arg_n2field`}( ) );
 `}\
+`{`!`@eq`(`$arg_n3field`,`'`'`)`&`!`@eq`(`$arg_pn3field`,`'`'`)\
+         original.`{`$arg_pfield`}( ).`{`$arg_pn3field`}( original.`{`$arg_pfield`}( ).`{`$arg_pn3field`}( ) - original.`{`$arg_n3field`}( ) );
+`}\
          original.`{`$arg_pfield`}( ).op_apply( );
       }
    }
@@ -121,6 +137,9 @@
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );
 `{`!`@eq`(`$arg_n2field`,`'`'`)`&`!`@eq`(`$arg_pn2field`,`'`'`)\
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn2field`}( ) - get_obj( ).`{`$arg_n2field`}( ) );
+`}\
+`{`!`@eq`(`$arg_n3field`,`'`'`)`&`!`@eq`(`$arg_pn3field`,`'`'`)\
+      get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pn3field`}( ) - get_obj( ).`{`$arg_n3field`}( ) );
 `}\
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
@@ -146,6 +165,13 @@
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_n2field`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_n2field`} ) ) )
       names.insert( "`{`$arg_n2field`}" );
+`}`{`!`@eq`(`$arg_n3field`,`'`'`)\
+
+   dependents.insert( "`{`$arg_n3field`}" );
+
+   if( ( use_transients && is_field_transient( e_field_id_`{`$arg_n3field`} ) )
+    || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_n3field`} ) ) )
+      names.insert( "`{`$arg_n3field`}" );
 `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 
    dependents.insert( "`{`$arg_tfield`}" );

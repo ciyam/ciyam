@@ -2955,7 +2955,9 @@ void output_list_form( ostream& os,
             if( num_fk_fields && !fk_refs.count( source_field_id )
              && fk_column < num_fk_fields && source.fk_field_ids[ fk_column ] == source_field_id )
             {
-               if( !source.non_link_fields.count( source_value_id ) && !source.non_fk_link_fields.count( source_value_id ) )
+               if( !source.non_link_fields.count( source_value_id )
+                && !source.non_fk_link_fields.count( source_value_id )
+                && ( !source.owner_link_fields.count( source_value_id ) || has_owner_parent ) )
                {
                   is_foreign_link = true;
                   fk_refs.insert( source_field_id );
@@ -2969,9 +2971,11 @@ void output_list_form( ostream& os,
                      view_id.erase( );
                }
             }
-            else if( had_link || source.non_link_fields.count( source_value_id )
+
+            if( !is_foreign_link
+             && ( had_link || source.non_link_fields.count( source_value_id )
              || ( source.owner_link_fields.count( source_value_id ) && !has_owner_parent )
-             || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) )
+             || ( ( state & c_state_unactionable ) && !extras.count( c_list_type_extra_ignore_unactionable ) ) ) )
                view_id.erase( ); // NOTE: Only provide a hyperlink to the first non-fk link permitted field.
 
             if( inc_fk_column )

@@ -51,101 +51,103 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
       e_field_id_Allow_Other_Class = 9,
       e_field_id_Allow_Other_Field = 10,
       e_field_id_Allow_Other_Field_2 = 11,
-      e_field_id_Allow_Permission = 12,
-      e_field_id_Allow_Procedure = 13,
-      e_field_id_Allow_Procedure_Arg = 14,
-      e_field_id_Allow_Source_Child = 15,
-      e_field_id_Allow_Source_Child_2 = 16,
-      e_field_id_Allow_Source_Class = 17,
-      e_field_id_Allow_Source_Field = 18,
-      e_field_id_Allow_Source_Grandchild = 19,
-      e_field_id_Allow_Source_Parent = 20,
-      e_field_id_Allow_Test_Field = 21,
-      e_field_id_Allow_Test_Value = 22,
-      e_field_id_Allow_Value = 23,
-      e_field_id_Child_Prefix = 24,
-      e_field_id_Child_Rel_Grandparent_Match = 25,
-      e_field_id_Child_Rel_Parent_Match = 26,
-      e_field_id_Child_Relationship_Class_Match = 27,
-      e_field_id_Child_Specification_Type = 28,
-      e_field_id_Default_Child_Vars = 29,
-      e_field_id_Field_type = 30,
-      e_field_id_Has_Next_Specification_Info = 31,
-      e_field_id_Is_Child_Only = 32,
-      e_field_id_Is_Required_For_UI_Gen = 33,
-      e_field_id_Is_System = 34,
-      e_field_id_Name = 35,
-      e_field_id_Needs_Child_Relationship = 36,
-      e_field_id_Needs_Class = 37,
-      e_field_id_Needs_Enum = 38,
-      e_field_id_Needs_Enum_Item = 39,
-      e_field_id_Needs_Enum_Item_2 = 40,
-      e_field_id_Needs_Enum_Item_3 = 41,
-      e_field_id_Needs_Enum_Item_4 = 42,
-      e_field_id_Needs_Enum_Item_5 = 43,
-      e_field_id_Needs_Field = 44,
-      e_field_id_Needs_Modifier = 45,
-      e_field_id_Needs_Other_Class = 46,
-      e_field_id_Needs_Other_Field = 47,
-      e_field_id_Needs_Other_Field_2 = 48,
-      e_field_id_Needs_Other_Modifier = 49,
-      e_field_id_Needs_Other_Modifier_2 = 50,
-      e_field_id_Needs_Other_Permission = 51,
-      e_field_id_Needs_Other_Permission_2 = 52,
-      e_field_id_Needs_Other_Procedure = 53,
-      e_field_id_Needs_Other_Procedure_2 = 54,
-      e_field_id_Needs_Permission = 55,
-      e_field_id_Needs_Procedure = 56,
-      e_field_id_Needs_Procedure_Arg = 57,
-      e_field_id_Needs_Procedure_Arg_2 = 58,
-      e_field_id_Needs_Procedure_Arg_3 = 59,
-      e_field_id_Needs_Source_Child = 60,
-      e_field_id_Needs_Source_Child_2 = 61,
-      e_field_id_Needs_Source_Field = 62,
-      e_field_id_Needs_Source_Field_Or_Child = 63,
-      e_field_id_Needs_Source_Parent = 64,
-      e_field_id_Needs_Test_Field = 65,
-      e_field_id_Needs_Test_Value = 66,
-      e_field_id_Needs_Value = 67,
-      e_field_id_Next_Child_Specification_Type = 68,
-      e_field_id_Next_Protect_Child_Rel = 69,
-      e_field_id_Next_Protect_Procedure = 70,
-      e_field_id_Next_Protect_Source_Parent = 71,
-      e_field_id_Next_Specification_Actions = 72,
-      e_field_id_Notes = 73,
-      e_field_id_Parent_Specification_Type = 74,
-      e_field_id_Procedure_Arg_primitive = 75,
-      e_field_id_Procedure_Arg_type = 76,
-      e_field_id_Protect_Child_Rel_From_Update = 77,
-      e_field_id_Protect_Class_From_Edit = 78,
-      e_field_id_Protect_Class_From_Update = 79,
-      e_field_id_Protect_Procedure_From_Edit = 80,
-      e_field_id_Protect_Source_Parent = 81,
-      e_field_id_Set_Field_To_Source_Field_Or_Child = 82,
-      e_field_id_Source_Field_Needs_Test_Field = 83,
-      e_field_id_Source_Field_Type_Match = 84,
-      e_field_id_Source_Parent_type = 85,
-      e_field_id_Source_type = 86,
-      e_field_id_Specification_Actions = 87,
-      e_field_id_Specification_Name = 88,
-      e_field_id_Specification_Object = 89,
-      e_field_id_Specification_Strings = 90,
-      e_field_id_Specification_Vars = 91,
-      e_field_id_Test_Field_Type_Match = 92,
-      e_field_id_Test_Field_type = 93,
-      e_field_id_Use_Class_As_Source_Parent_Class = 94,
-      e_field_id_Use_Field_Enum = 95,
-      e_field_id_Use_Parent_Child_Rel_As_Source_Parent = 96,
-      e_field_id_Use_Parent_Child_Rel_For_Class = 97,
-      e_field_id_Use_Parent_Class = 98,
-      e_field_id_Use_Parent_Field_For_Class = 99,
-      e_field_id_Use_Parent_Other_Class_For_Class = 100,
-      e_field_id_Use_Parent_Procedure = 101,
-      e_field_id_Use_Parent_Source_Class = 102,
-      e_field_id_Use_Parent_Source_Field_For_Class = 103,
-      e_field_id_Use_Parent_Source_Parent = 104,
-      e_field_id_Use_Parent_Source_Parent_For_Class = 105,
-      e_field_id_View_Id = 106
+      e_field_id_Allow_Other_Source_Child = 12,
+      e_field_id_Allow_Other_Source_Child_2 = 13,
+      e_field_id_Allow_Permission = 14,
+      e_field_id_Allow_Procedure = 15,
+      e_field_id_Allow_Procedure_Arg = 16,
+      e_field_id_Allow_Source_Child = 17,
+      e_field_id_Allow_Source_Class = 18,
+      e_field_id_Allow_Source_Field = 19,
+      e_field_id_Allow_Source_Grandchild = 20,
+      e_field_id_Allow_Source_Parent = 21,
+      e_field_id_Allow_Test_Field = 22,
+      e_field_id_Allow_Test_Value = 23,
+      e_field_id_Allow_Value = 24,
+      e_field_id_Child_Prefix = 25,
+      e_field_id_Child_Rel_Grandparent_Match = 26,
+      e_field_id_Child_Rel_Parent_Match = 27,
+      e_field_id_Child_Relationship_Class_Match = 28,
+      e_field_id_Child_Specification_Type = 29,
+      e_field_id_Default_Child_Vars = 30,
+      e_field_id_Field_type = 31,
+      e_field_id_Has_Next_Specification_Info = 32,
+      e_field_id_Is_Child_Only = 33,
+      e_field_id_Is_Required_For_UI_Gen = 34,
+      e_field_id_Is_System = 35,
+      e_field_id_Name = 36,
+      e_field_id_Needs_Child_Relationship = 37,
+      e_field_id_Needs_Class = 38,
+      e_field_id_Needs_Enum = 39,
+      e_field_id_Needs_Enum_Item = 40,
+      e_field_id_Needs_Enum_Item_2 = 41,
+      e_field_id_Needs_Enum_Item_3 = 42,
+      e_field_id_Needs_Enum_Item_4 = 43,
+      e_field_id_Needs_Enum_Item_5 = 44,
+      e_field_id_Needs_Field = 45,
+      e_field_id_Needs_Modifier = 46,
+      e_field_id_Needs_Other_Class = 47,
+      e_field_id_Needs_Other_Field = 48,
+      e_field_id_Needs_Other_Field_2 = 49,
+      e_field_id_Needs_Other_Modifier = 50,
+      e_field_id_Needs_Other_Modifier_2 = 51,
+      e_field_id_Needs_Other_Permission = 52,
+      e_field_id_Needs_Other_Permission_2 = 53,
+      e_field_id_Needs_Other_Procedure = 54,
+      e_field_id_Needs_Other_Procedure_2 = 55,
+      e_field_id_Needs_Other_Source_Child = 56,
+      e_field_id_Needs_Other_Source_Child_2 = 57,
+      e_field_id_Needs_Permission = 58,
+      e_field_id_Needs_Procedure = 59,
+      e_field_id_Needs_Procedure_Arg = 60,
+      e_field_id_Needs_Procedure_Arg_2 = 61,
+      e_field_id_Needs_Procedure_Arg_3 = 62,
+      e_field_id_Needs_Source_Child = 63,
+      e_field_id_Needs_Source_Field = 64,
+      e_field_id_Needs_Source_Field_Or_Child = 65,
+      e_field_id_Needs_Source_Parent = 66,
+      e_field_id_Needs_Test_Field = 67,
+      e_field_id_Needs_Test_Value = 68,
+      e_field_id_Needs_Value = 69,
+      e_field_id_Next_Child_Specification_Type = 70,
+      e_field_id_Next_Protect_Child_Rel = 71,
+      e_field_id_Next_Protect_Procedure = 72,
+      e_field_id_Next_Protect_Source_Parent = 73,
+      e_field_id_Next_Specification_Actions = 74,
+      e_field_id_Notes = 75,
+      e_field_id_Parent_Specification_Type = 76,
+      e_field_id_Procedure_Arg_primitive = 77,
+      e_field_id_Procedure_Arg_type = 78,
+      e_field_id_Protect_Child_Rel_From_Update = 79,
+      e_field_id_Protect_Class_From_Edit = 80,
+      e_field_id_Protect_Class_From_Update = 81,
+      e_field_id_Protect_Procedure_From_Edit = 82,
+      e_field_id_Protect_Source_Parent = 83,
+      e_field_id_Set_Field_To_Source_Field_Or_Child = 84,
+      e_field_id_Source_Field_Needs_Test_Field = 85,
+      e_field_id_Source_Field_Type_Match = 86,
+      e_field_id_Source_Parent_type = 87,
+      e_field_id_Source_type = 88,
+      e_field_id_Specification_Actions = 89,
+      e_field_id_Specification_Name = 90,
+      e_field_id_Specification_Object = 91,
+      e_field_id_Specification_Strings = 92,
+      e_field_id_Specification_Vars = 93,
+      e_field_id_Test_Field_Type_Match = 94,
+      e_field_id_Test_Field_type = 95,
+      e_field_id_Use_Class_As_Source_Parent_Class = 96,
+      e_field_id_Use_Field_Enum = 97,
+      e_field_id_Use_Parent_Child_Rel_As_Source_Parent = 98,
+      e_field_id_Use_Parent_Child_Rel_For_Class = 99,
+      e_field_id_Use_Parent_Class = 100,
+      e_field_id_Use_Parent_Field_For_Class = 101,
+      e_field_id_Use_Parent_Other_Class_For_Class = 102,
+      e_field_id_Use_Parent_Procedure = 103,
+      e_field_id_Use_Parent_Source_Class = 104,
+      e_field_id_Use_Parent_Source_Field_For_Class = 105,
+      e_field_id_Use_Parent_Source_Parent = 106,
+      e_field_id_Use_Parent_Source_Parent_For_Class = 107,
+      e_field_id_View_Id = 108
    };
 
    Meta_Specification_Type( );
@@ -184,6 +186,12 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
    bool Allow_Other_Field_2( ) const;
    void Allow_Other_Field_2( bool Allow_Other_Field_2 );
 
+   bool Allow_Other_Source_Child( ) const;
+   void Allow_Other_Source_Child( bool Allow_Other_Source_Child );
+
+   bool Allow_Other_Source_Child_2( ) const;
+   void Allow_Other_Source_Child_2( bool Allow_Other_Source_Child_2 );
+
    bool Allow_Permission( ) const;
    void Allow_Permission( bool Allow_Permission );
 
@@ -195,9 +203,6 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
 
    bool Allow_Source_Child( ) const;
    void Allow_Source_Child( bool Allow_Source_Child );
-
-   bool Allow_Source_Child_2( ) const;
-   void Allow_Source_Child_2( bool Allow_Source_Child_2 );
 
    bool Allow_Source_Class( ) const;
    void Allow_Source_Class( bool Allow_Source_Class );
@@ -310,6 +315,12 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
    bool Needs_Other_Procedure_2( ) const;
    void Needs_Other_Procedure_2( bool Needs_Other_Procedure_2 );
 
+   bool Needs_Other_Source_Child( ) const;
+   void Needs_Other_Source_Child( bool Needs_Other_Source_Child );
+
+   bool Needs_Other_Source_Child_2( ) const;
+   void Needs_Other_Source_Child_2( bool Needs_Other_Source_Child_2 );
+
    bool Needs_Permission( ) const;
    void Needs_Permission( bool Needs_Permission );
 
@@ -327,9 +338,6 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
 
    bool Needs_Source_Child( ) const;
    void Needs_Source_Child( bool Needs_Source_Child );
-
-   bool Needs_Source_Child_2( ) const;
-   void Needs_Source_Child_2( bool Needs_Source_Child_2 );
 
    bool Needs_Source_Field( ) const;
    void Needs_Source_Field( bool Needs_Source_Field );
@@ -590,7 +598,8 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
 
    void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
 
-   void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts ) const;
+   void do_generate_sql( generate_sql_type type,
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
 
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );

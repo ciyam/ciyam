@@ -212,7 +212,8 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
 
    void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
 
-   void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts ) const;
+   void do_generate_sql( generate_sql_type type,
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
 
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );

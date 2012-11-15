@@ -181,6 +181,12 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Specification& child_Specification_Other( );
    const Meta_Specification& child_Specification_Other( ) const;
 
+   Meta_Specification& child_Specification_Other_Source_Child_2( );
+   const Meta_Specification& child_Specification_Other_Source_Child_2( ) const;
+
+   Meta_Specification& child_Specification_Other_Source_Child( );
+   const Meta_Specification& child_Specification_Other_Source_Child( ) const;
+
    Meta_List& child_List_Parent( );
    const Meta_List& child_List_Parent( ) const;
 
@@ -189,9 +195,6 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_List_Field& child_List_Field_Restriction( );
    const Meta_List_Field& child_List_Field_Restriction( ) const;
-
-   Meta_Specification& child_Specification_Source_Child_2( );
-   const Meta_Specification& child_Specification_Source_Child_2( ) const;
 
    Meta_List_Field& child_List_Field_Source_Child( );
    const Meta_List_Field& child_List_Field_Source_Child( ) const;
@@ -353,7 +356,8 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    void get_transient_replacement_field_names( const std::string& name, std::vector< std::string >& names ) const;
 
-   void do_generate_sql( generate_sql_type type, std::vector< std::string >& sql_stmts ) const;
+   void do_generate_sql( generate_sql_type type,
+    std::vector< std::string >& sql_stmts, std::set< std::string >& tx_key_info ) const;
 
    static void static_class_init( const char* p_module_name );
    static void static_class_term( const char* p_module_name );

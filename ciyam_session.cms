@@ -47,7 +47,9 @@ storage_restore "perform storage restore" [<val/-trace=/trace_info>][<val/-stop_
 storage_web_root "get/set web root path of currently linked storage" [<opt/-expand/expand>][<oval//new_root>]
 storage_log_slice "slice a storage log into individual module logs" <val//name>[<list//modules>]
 storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
+storage_dump_cache "dump storage cached records"
 storage_dump_locks "dump storage lock information"
+storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
 storage_trans_start "start a transaction in the current storage"
 storage_trans_commit "commit a transaction in the current storage"
 storage_trans_rollback "rollback a transaction in the current storage"

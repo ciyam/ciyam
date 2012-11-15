@@ -2466,6 +2466,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>620058
+      <item>class
+     </specification>
+     <specification/>
       <id>620065
       <item>class
      </specification>
@@ -2558,6 +2562,10 @@
        <specification/>
         <id>600095
         <item>field_field_id
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
        </specification>
        <specification/>
         <id>600207
@@ -2824,7 +2832,7 @@
         <item>field
        </specification>
        <specification/>
-        <id>600207
+        <id>600204
         <item>field
        </specification>
        <specification/>
@@ -2868,7 +2876,11 @@
         <item>field
        </specification>
        <specification/>
-        <id>600208
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -2965,6 +2977,10 @@
        </specification>
        <specification/>
         <id>610058
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>620058
         <item>tfield
        </specification>
       </specifications>
@@ -12986,6 +13002,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>620058
+      <item>cclass
+     </specification>
+     <specification/>
       <id>620114
       <item>class
      </specification>
@@ -13002,7 +13022,15 @@
       <item>class
      </specification>
      <specification/>
+      <id>620143
+      <item>class
+     </specification>
+     <specification/>
       <id>620146
+      <item>class
+     </specification>
+     <specification/>
+      <id>620164
       <item>class
      </specification>
      <specification/>
@@ -13011,6 +13039,14 @@
      </specification>
      <specification/>
       <id>620194
+      <item>class
+     </specification>
+     <specification/>
+      <id>630114
+      <item>class
+     </specification>
+     <specification/>
+      <id>630117
       <item>class
      </specification>
      <specification/>
@@ -13781,7 +13817,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>500603
+        <id>500605
         <affect>relegate
        </modifier>
       </modifiers>
@@ -13880,6 +13916,98 @@
        </specification>
        <specification/>
         <id>620131
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301496
+      <name>Other_Source_Child
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>201496
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500601
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+       <specification/>
+        <id>610058
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>610143
+        <item>field
+       </specification>
+       <specification/>
+        <id>610164
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301497
+      <name>Other_Source_Child_2
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>201497
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500602
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+       <specification/>
+        <id>620058
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>620143
+        <item>field
+       </specification>
+       <specification/>
+        <id>620164
         <item>field
        </specification>
       </specifications>
@@ -14456,56 +14584,6 @@
       </specifications>
      </field>
      <field/>
-      <id>301496
-      <name>Source_Child_2
-      <type>@class
-      <mandatory>false
-      <class_id>107100
-      <relationship_id>201496
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500601
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600208
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
-        <item>field
-       </specification>
-       <specification/>
-        <id>610058
-        <item>cfield
-       </specification>
-       <specification/>
-        <id>610143
-        <item>field
-       </specification>
-       <specification/>
-        <id>610164
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
       <id>301489
       <name>Source_Child_Class
       <type>@class
@@ -14676,7 +14754,7 @@
       </indexes>
       <modifiers/>
        <modifier/>
-        <id>500602
+        <id>500604
         <affect>relegate
        </modifier>
       </modifiers>
@@ -15180,6 +15258,14 @@
        </specification>
        <specification/>
         <id>620117
+        <item>field
+       </specification>
+       <specification/>
+        <id>620164
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>630117
         <item>field
        </specification>
       </specifications>
@@ -16494,8 +16580,16 @@
         <item>pfield
        </specification>
        <specification/>
+        <id>620143
+        <item>pfield
+       </specification>
+       <specification/>
         <id>620146
         <item>field
+       </specification>
+       <specification/>
+        <id>620164
+        <item>spfield
        </specification>
        <specification/>
         <id>620181
@@ -16504,6 +16598,14 @@
        <specification/>
         <id>620194
         <item>fkfield
+       </specification>
+       <specification/>
+        <id>630114
+        <item>field
+       </specification>
+       <specification/>
+        <id>630117
+        <item>tpfield
        </specification>
        <specification/>
         <id>630128
@@ -16630,7 +16732,7 @@
       <name>Hide_Options
      </modifier>
      <modifier/>
-      <id>500603
+      <id>500605
       <name>Hide_Other_Class
      </modifier>
      <modifier/>
@@ -16666,6 +16768,14 @@
       <name>Hide_Other_Procedure_2
      </modifier>
      <modifier/>
+      <id>500601
+      <name>Hide_Other_Source_Child
+     </modifier>
+     <modifier/>
+      <id>500602
+      <name>Hide_Other_Source_Child_2
+     </modifier>
+     <modifier/>
       <id>500686
       <name>Hide_Permission
      </modifier>
@@ -16690,10 +16800,6 @@
       <name>Hide_Source_Child
      </modifier>
      <modifier/>
-      <id>500601
-      <name>Hide_Source_Child_2
-     </modifier>
-     <modifier/>
       <id>500665
       <name>Hide_Source_Class
      </modifier>
@@ -16702,7 +16808,7 @@
       <name>Hide_Source_Field
      </modifier>
      <modifier/>
-      <id>500602
+      <id>500604
       <name>Hide_Source_Grandchild
      </modifier>
      <modifier/>
@@ -17767,12 +17873,28 @@
       <item>pclass
      </specification>
      <specification/>
+      <id>620143
+      <item>pclass
+     </specification>
+     <specification/>
       <id>620146
       <item>pclass
      </specification>
      <specification/>
+      <id>620164
+      <item>sclass
+     </specification>
+     <specification/>
       <id>620181
       <item>pclass
+     </specification>
+     <specification/>
+      <id>630114
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>630117
+      <item>tclass
      </specification>
      <specification/>
       <id>630128
@@ -17896,6 +18018,14 @@
        </specification>
        <specification/>
         <id>620117
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>620164
+        <item>sfield
+       </specification>
+       <specification/>
+        <id>630117
         <item>tfield
        </specification>
       </specifications>
@@ -18072,6 +18202,48 @@
       </specifications>
      </field>
      <field/>
+      <id>114176
+      <name>Allow_Other_Source_Child
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+       <specification/>
+        <id>610114
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114205
+      <name>Allow_Other_Source_Child_2
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+       <specification/>
+        <id>620114
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>114136
       <name>Allow_Permission
       <type>bool
@@ -18168,27 +18340,6 @@
       </specifications>
      </field>
      <field/>
-      <id>114176
-      <name>Allow_Source_Child_2
-      <type>bool
-      <mandatory>true
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>602400
-        <item>field
-       </specification>
-       <specification/>
-        <id>610114
-        <item>pfield
-       </specification>
-      </specifications>
-     </field>
-     <field/>
       <id>114172
       <name>Allow_Source_Class
       <type>bool
@@ -18242,7 +18393,7 @@
         <item>field
        </specification>
        <specification/>
-        <id>620114
+        <id>630114
         <item>pfield
        </specification>
       </specifications>
@@ -19007,6 +19158,48 @@
       </specifications>
      </field>
      <field/>
+      <id>114177
+      <name>Needs_Other_Source_Child
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+       <specification/>
+        <id>610143
+        <item>cfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114206
+      <name>Needs_Other_Source_Child_2
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+       <specification/>
+        <id>620143
+        <item>cfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>114180
       <name>Needs_Permission
       <type>bool
@@ -19141,27 +19334,6 @@
        <specification/>
         <id>602400
         <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>114177
-      <name>Needs_Source_Child_2
-      <type>bool
-      <mandatory>true
-      <default_value>0
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>602400
-        <item>field
-       </specification>
-       <specification/>
-        <id>610143
-        <item>cfield
        </specification>
       </specifications>
      </field>
@@ -24530,6 +24702,24 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201497
+    <name>Other_Source_Child_2_{Specification}
+    <parent_id>107100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201496
+    <name>Other_Source_Child_{Specification}
+    <parent_id>107100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201442
     <name>Other_{Modifier}_2_{Specification}
     <parent_id>109100
@@ -24696,15 +24886,6 @@
     <name>Restriction_Spec_{View_Field}
     <parent_id>115100
     <child_id>120100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201496
-    <name>Source_Child_2_{Specification}
-    <parent_id>107100
-    <child_id>115100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -26409,8 +26590,19 @@
     </data>
    </specification>
    <specification/>
+    <id>620058
+    <name>{Field}_{Specification}_Other_Source_Child_2_update_children
+    <type>update_children
+    <data/>
+     <class_id>107100
+     <cclass_id>115100
+     <cfield_id>301497
+     <tfield_id>107101
+    </data>
+   </specification>
+   <specification/>
     <id>610058
-    <name>{Field}_{Specification}_Source_Child_2_update_children
+    <name>{Field}_{Specification}_Other_Source_Child_update_children
     <type>update_children
     <data/>
      <class_id>107100
@@ -29427,6 +29619,8 @@
      <field_info>114122
      <field_info>114176
      <field_info>114177
+     <field_info>114205
+     <field_info>114206
      <field_info>114178
      <field_info>114191
      <field_info>114138
@@ -29858,7 +30052,7 @@
     <data/>
      <class_id>115100
      <pclass_id>114100
-     <modifier_id>500603
+     <modifier_id>500605
      <field_id>301410
      <pfield_id>114192
      <field_value>false
@@ -29969,6 +30163,60 @@
     </data>
    </specification>
    <specification/>
+    <id>610114
+    <name>{Specification}_Hide_Other_Source_Child
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <modifier_id>500601
+     <field_id>301410
+     <pfield_id>114176
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>620114
+    <name>{Specification}_Hide_Other_Source_Child_2
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <modifier_id>500602
+     <field_id>301410
+     <pfield_id>114205
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>620117
+    <name>{Specification}_Hide_Other_Source_Child_2_for_Use_Source_Parent
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <tclass_id>114100
+     <modifier_id>500602
+     <field_id>115107
+     <tfield_id>114123
+     <tpfield_id>301410
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>610117
+    <name>{Specification}_Hide_Other_Source_Child_for_Use_Source_Parent
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <tclass_id>114100
+     <modifier_id>500601
+     <field_id>115107
+     <tfield_id>114123
+     <tpfield_id>301410
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600119
     <name>{Specification}_Hide_Permission
     <type>modifier_field_value
@@ -30047,33 +30295,6 @@
     </data>
    </specification>
    <specification/>
-    <id>610114
-    <name>{Specification}_Hide_Source_Child_2
-    <type>modifier_field_value
-    <data/>
-     <class_id>115100
-     <pclass_id>114100
-     <modifier_id>500601
-     <field_id>301410
-     <pfield_id>114176
-     <field_value>false
-    </data>
-   </specification>
-   <specification/>
-    <id>610117
-    <name>{Specification}_Hide_Source_Child_2_for_Use_Source_Parent
-    <type>modifier_field_value
-    <data/>
-     <class_id>115100
-     <tclass_id>114100
-     <modifier_id>500601
-     <field_id>115107
-     <tfield_id>114123
-     <tpfield_id>301410
-     <field_value>false
-    </data>
-   </specification>
-   <specification/>
     <id>600117
     <name>{Specification}_Hide_Source_Child_for_Use_Source_Parent
     <type>modifier_field_value
@@ -30128,26 +30349,26 @@
     </data>
    </specification>
    <specification/>
-    <id>620114
+    <id>630114
     <name>{Specification}_Hide_Source_Grandchild
     <type>modifier_field_value
     <data/>
      <class_id>115100
      <pclass_id>114100
-     <modifier_id>500602
+     <modifier_id>500604
      <field_id>301410
      <pfield_id>114178
      <field_value>false
     </data>
    </specification>
    <specification/>
-    <id>620117
+    <id>630117
     <name>{Specification}_Hide_Source_Grandchild_for_Use_Source_Parent
     <type>modifier_field_value
     <data/>
      <class_id>115100
      <tclass_id>114100
-     <modifier_id>500602
+     <modifier_id>500604
      <field_id>115107
      <tfield_id>114123
      <tpfield_id>301410
@@ -30359,7 +30580,8 @@
      <field_info>301480:107101;107100={spfield}
      <field_info>301490:106101;106100={spclass}
      <field_info>301495:107101;107100={scfield}
-     <field_info>301496:107101;107100={sc2field}
+     <field_info>301496:107101;107100={oscfield}
+     <field_info>301497:107101;107100={o2scfield}
      <field_info>301481:107101;107100={sfield}
      <field_info>301476:107101;107100={sgcfield}
      <field_info>301486:107101;107100={tpfield}
@@ -30569,6 +30791,30 @@
     </data>
    </specification>
    <specification/>
+    <id>620143
+    <name>{Specification}_Needs_Other_Source_Child_2_cond_check
+    <type>check_cond_non_null
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <field_id>301497
+     <cfield_id>114206
+     <pfield_id>301410
+    </data>
+   </specification>
+   <specification/>
+    <id>610143
+    <name>{Specification}_Needs_Other_Source_Child_cond_check
+    <type>check_cond_non_null
+    <data/>
+     <class_id>115100
+     <pclass_id>114100
+     <field_id>301496
+     <cfield_id>114177
+     <pfield_id>301410
+    </data>
+   </specification>
+   <specification/>
     <id>610146
     <name>{Specification}_Needs_Permission_cond_check
     <type>check_cond_non_null
@@ -30625,18 +30871,6 @@
      <pclass_id>114100
      <field_id>301450
      <cfield_id>114106
-     <pfield_id>301410
-    </data>
-   </specification>
-   <specification/>
-    <id>610143
-    <name>{Specification}_Needs_Source_Child_2_cond_check
-    <type>check_cond_non_null
-    <data/>
-     <class_id>115100
-     <pclass_id>114100
-     <field_id>301496
-     <cfield_id>114177
      <pfield_id>301410
     </data>
    </specification>
@@ -30735,6 +30969,34 @@
      <class_id>115100
      <field_id>115105
      <check_null>true
+    </data>
+   </specification>
+   <specification/>
+    <id>620164
+    <name>{Specification}_Other_Source_Child_2_clear
+    <type>field_clear
+    <data/>
+     <class_id>115100
+     <sclass_id>114100
+     <field_id>301497
+     <sfield_id>114123
+     <spfield_id>301410
+     <tfield_id>115107
+     <is_negative>true
+    </data>
+   </specification>
+   <specification/>
+    <id>610164
+    <name>{Specification}_Other_Source_Child_clear
+    <type>field_clear
+    <data/>
+     <class_id>115100
+     <sclass_id>114100
+     <field_id>301496
+     <sfield_id>114123
+     <spfield_id>301410
+     <tfield_id>115107
+     <is_negative>true
     </data>
    </specification>
    <specification/>
@@ -30957,20 +31219,6 @@
     </data>
    </specification>
    <specification/>
-    <id>610164
-    <name>{Specification}_Source_Child_2_clear
-    <type>field_clear
-    <data/>
-     <class_id>115100
-     <sclass_id>114100
-     <field_id>301496
-     <sfield_id>114123
-     <spfield_id>301410
-     <tfield_id>115107
-     <is_negative>true
-    </data>
-   </specification>
-   <specification/>
     <id>600194
     <name>{Specification}_Source_Child_Class
     <type>field_from_other_field
@@ -31151,7 +31399,6 @@
      <field_info>301440:109101;109100={modifier}
      <field_info>301480:107101;107100={spfield}
      <field_info>301495:107101;107100={scfield}
-     <field_info>301496:107101;107100={sc2field}
      <field_info>301481:107101;107100={sfield}
      <field_info>301486:107101;107100={tpfield}
      <field_info>301488:107101;107100={tcfield}
@@ -31409,8 +31656,10 @@
      <field_info>301489:106101;106100={scclass}
      <field_info>301495:107101;107100={scfield}
      <field_info>301495:107110;107100={scfield_id}
-     <field_info>301496:107101;107100={sc2field}
-     <field_info>301496:107110;107100={sc2field_id}
+     <field_info>301496:107101;107100={oscfield}
+     <field_info>301496:107110;107100={oscfield_id}
+     <field_info>301497:107101;107100={o2scfield}
+     <field_info>301497:107110;107100={o2scfield_id}
      <field_info>301481:107101;107100={sfield}
      <field_info>301481:107110;107100={sfield_id}
      <field_info>301476:107101;107100={sgcfield}
@@ -31648,6 +31897,7 @@
      <field_info>301495:107101!@fkey4:300700+107101;link+force
      <field_info>301489:106101;hidden+fkey8+filename+max_size=30
      <field_info>301496:107101!@fkey4:300700+107101;link
+     <field_info>301497:107101!@fkey4:300700+107101;link
      <field_info>301476:107101!@fkey8:300700+107101;link
      <field_info>301475:113105!@fkey2:301320+@sort
      <field_info>115110;force

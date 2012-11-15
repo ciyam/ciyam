@@ -143,7 +143,7 @@ string create_hashcash( const string& resource, int num_bits, const char* p_ext 
             break;
       }
 
-      // NOTE: The work done will only be minimal if num_bits % 4 == 0.
+      // KLUDGE: The work done will only be minimal here if num_bits % 4 == 0.
       if( zeroes * 4 >= num_bits )
       {
          retval = prefix + counter;
