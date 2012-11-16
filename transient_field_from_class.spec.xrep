@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_from_class)]
-   get_obj( ).`{`$arg_field`}( get_obj( ).class_id( ) );
+   get_obj( ).`{`$arg_field`}( get_obj( ).get_class_id( ) );
    // [(finish transient_field_from_class)]
 `}

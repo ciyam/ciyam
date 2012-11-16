@@ -961,7 +961,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
    {
       class_pointer< Meta_Auto_Code > cp_auto_code( e_create_instance );
 
-      string key( get_obj( ).lock_class_id( ) );
+      string key( get_obj( ).get_lock_class_id( ) );
       key += "X" + to_string( c_field_id_Id );
 
       cp_auto_code->set_instance( key );
@@ -1752,27 +1752,27 @@ void Meta_Workgroup::add_extra_paging_info( vector< pair< string, string > >& pa
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Workgroup::class_id( ) const
+string Meta_Workgroup::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Workgroup::class_name( ) const
+string Meta_Workgroup::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Workgroup::plural_name( ) const
+string Meta_Workgroup::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Workgroup::module_id( ) const
+string Meta_Workgroup::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Workgroup::module_name( ) const
+string Meta_Workgroup::get_module_name( ) const
 {
    return static_module_name( );
 }

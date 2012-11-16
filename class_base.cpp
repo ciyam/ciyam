@@ -516,12 +516,12 @@ class_base::class_base( )
 
 bool class_base::class_has_derivations( ) const
 {
-   return get_module_class_has_derivations( module_id( ), class_id( ) );
+   return get_module_class_has_derivations( get_module_id( ), get_class_id( ) );
 }
 
 void class_base::set_dynamic_if_class_has_derivations( )
 {
-   is_dynamic_enabled = get_module_class_has_derivations( module_id( ), class_id( ) );
+   is_dynamic_enabled = get_module_class_has_derivations( get_module_id( ), get_class_id( ) );
 }
 
 class_base::~class_base( )
@@ -748,7 +748,7 @@ void class_base::prepare( bool for_create )
 {
    bool is_create( op == e_op_type_create );
 
-   TRACE_LOG( TRACE_CLASSOPS, "prepare( ) [class: " + string( class_name( ) )
+   TRACE_LOG( TRACE_CLASSOPS, "prepare( ) [class: " + get_class_name( )
     + "] is_create = " + to_string( is_create ) + ", for_create = " + to_string( for_create ) );
 
    restorable< bool > tmp_is_preparing( is_preparing, true );
@@ -998,9 +998,9 @@ void class_base::set_instance( const string& key )
 
 void class_base::copy_all_field_values( const class_base& src )
 {
-   if( class_id( ) != src.class_id( ) )
+   if( get_class_id( ) != src.get_class_id( ) )
       throw runtime_error( "cannot copy all field values from a '"
-       + string( src.class_name( ) ) + "' to a '" + string( class_name( ) ) + "'" );
+       + src.get_class_name( ) + "' to a '" + get_class_name( ) + "'" );
 
    size_t num_fields( get_num_fields( ) );
    for( size_t i = 0; i < num_fields; i++ )
@@ -1019,9 +1019,9 @@ void class_base::copy_all_field_values( const class_base& src )
 
 void class_base::copy_original_field_values( const class_base& src )
 {
-   if( class_id( ) != src.class_id( ) )
+   if( get_class_id( ) != src.get_class_id( ) )
       throw runtime_error( "cannot copy all field values from a '"
-       + string( src.class_name( ) ) + "' to a '" + string( class_name( ) ) + "'" );
+       + src.get_class_name( ) + "' to a '" + get_class_name( ) + "'" );
 
    if( get_num_fields( ) != src.original_values.size( ) )
       throw runtime_error( "unexpected get_num_fields( ) != src.original_values.size( )" );
@@ -1107,7 +1107,7 @@ string class_base::get_attached_file_path( const string& file_name ) const
    if( path.empty( ) )
    {
       path = storage_web_root( true );
-      path += "/" + string( c_files_directory ) + "/" + string( module_id( ) ) + "/" + string( class_id( ) );
+      path += "/" + string( c_files_directory ) + "/" + get_module_id( ) + "/" + get_class_id( );
    }
 
    if( !file_name.empty( ) )
@@ -1319,7 +1319,7 @@ void class_base::fetch( string& sql, bool check_only, bool use_lazy_key )
          }
       }
 
-      string table_name( "T_" + string( module_name( ) ) + "_" + string( class_name( ) ) );
+      string table_name( "T_" + get_module_name( ) + "_" + get_class_name( ) );
 
       sql += " FROM " + table_name;
       sql += " WHERE C_Key_ = " + sql_quote( use_lazy_key ? lazy_fetch_key : key );
@@ -1407,7 +1407,7 @@ void class_base::perform_after_fetch( bool is_minimal, bool is_for_prepare )
 {
    restorable< bool > tmp_is_fetching( is_fetching, true );
 
-   TRACE_LOG( TRACE_CLASSOPS, "perform_after_fetch( ) [class: " + string( class_name( ) )
+   TRACE_LOG( TRACE_CLASSOPS, "perform_after_fetch( ) [class: " + get_class_name( )
      + "] key = " + key + ", is_minimal = " + to_string( is_minimal ) + ", is_for_prepare = "
      + to_string( is_for_prepare ) + ", is_being_cascaded = " + to_string( is_being_cascaded ) );
 
@@ -1430,7 +1430,7 @@ void class_base::perform_to_store( bool is_create, bool is_internal )
    p_impl->search_replacements.clear( );
    search_replace_has_opt_prefixing.clear( );
 
-   TRACE_LOG( TRACE_CLASSOPS, "perform_to_store( ) [class: " + string( class_name( ) ) + "]" );
+   TRACE_LOG( TRACE_CLASSOPS, "perform_to_store( ) [class: " + get_class_name( ) + "]" );
 
    to_store( is_create, is_internal );
    perform_field_search_replacements( );
@@ -1681,17 +1681,17 @@ void class_base::generate_sql( const string& class_name,
    {
       case e_generate_sql_type_insert:
       sql_stmts.push_back( generate_sql_insert( class_name ) );
-      tx_key_info.insert( string( class_id( ) ) + ":" + key );
+      tx_key_info.insert( get_class_id( ) + ":" + key );
       break;
 
       case e_generate_sql_type_update:
       sql_stmts.push_back( generate_sql_update( class_name ) );
-      tx_key_info.insert( string( class_id( ) ) + ":" + key );
+      tx_key_info.insert( get_class_id( ) + ":" + key );
       break;
 
       case e_generate_sql_type_delete:
       sql_stmts.push_back( generate_sql_delete( class_name ) );
-      tx_key_info.insert( string( class_id( ) ) + ":" + key );
+      tx_key_info.insert( get_class_id( ) + ":" + key );
       break;
 
       default:
@@ -1701,7 +1701,7 @@ void class_base::generate_sql( const string& class_name,
 
 string class_base::generate_sql_insert( const string& class_name ) const
 {
-   string sql_stmt( "INSERT INTO T_" + string( module_name( ) ) + "_" + class_name );
+   string sql_stmt( "INSERT INTO T_" + get_module_name( ) + "_" + class_name );
 
    bool done = false;
    vector< string > sql_column_names;
@@ -1748,7 +1748,7 @@ string class_base::generate_sql_insert( const string& class_name ) const
 
 string class_base::generate_sql_update( const string& class_name ) const
 {
-   string sql_stmt( "UPDATE T_" + string( module_name( ) ) + "_" + class_name );
+   string sql_stmt( "UPDATE T_" + get_module_name( ) + "_" + class_name );
    sql_stmt += " SET C_Ver_=" + to_string( version ) + ",C_Rev_=" + to_string( revision );
 
    bool done = false;
@@ -1795,7 +1795,7 @@ string class_base::generate_sql_update( const string& class_name ) const
 
 string class_base::generate_sql_delete( const string& class_name ) const
 {
-   string sql_stmt( "DELETE FROM T_" + string( module_name( ) ) + "_" + class_name );
+   string sql_stmt( "DELETE FROM T_" + get_module_name( ) + "_" + class_name );
 
    sql_stmt += " WHERE C_Key_=" + sql_quote( key ) + ";";
 
@@ -1892,7 +1892,7 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
             }
             else
             {
-               fk_lock_handle = obtain_instance_fk_lock( lock_class_id( ), new_key, false );
+               fk_lock_handle = obtain_instance_fk_lock( get_lock_class_id( ), new_key, false );
 
                if( !fk_lock_handle )
                   throw runtime_error( "unable to obtain lock for '" + new_key + "'" );
@@ -1954,9 +1954,9 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
 #ifdef __BORLANDC__
 string construct_class_identity( const class_base& cb )
 {
-   string identity( cb.module_id( ) );
+   string identity( cb.get_module_id( ) );
    identity += ':';
-   identity += cb.class_id( );
+   identity += cb.get_class_id( );
    return identity;
 }
 #endif
@@ -2387,9 +2387,9 @@ string copy_class_file( const string& src_path,
 
 void copy_class_files( const class_base& src, class_base& dest )
 {
-   if( src.class_id( ) != dest.class_id( ) )
+   if( src.get_class_id( ) != dest.get_class_id( ) )
       throw runtime_error( "cannot copy class files from a '"
-       + string( src.class_name( ) ) + "' to a '" + string( dest.class_name( ) ) + "'" );
+       + src.get_class_name( ) + "' to a '" + dest.get_class_name( ) + "'" );
 
    vector< string > file_field_names;
    src.get_file_field_names( file_field_names );
@@ -2400,7 +2400,7 @@ void copy_class_files( const class_base& src, class_base& dest )
 
       if( !next_file.empty( ) )
          dest.set_field_value( dest.get_field_num( file_field_names[ i ] ),
-          copy_class_file( src.get_attached_file_path( next_file ), dest.class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+          copy_class_file( src.get_attached_file_path( next_file ), dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
    }
 }
 
@@ -2413,7 +2413,7 @@ void copy_class_files_for_clone(
 
       if( !next_file.empty( ) )
          dest.set_field_value( dest.get_field_num( file_field_name_and_values[ i ].first ),
-          copy_class_file( dest.get_attached_file_path( next_file ), dest.class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
+          copy_class_file( dest.get_attached_file_path( next_file ), dest.get_class_id( ), dest.get_key( ), storage_locked_for_admin( ) ) );
    }
 }
 

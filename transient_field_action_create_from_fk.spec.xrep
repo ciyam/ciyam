@@ -10,11 +10,11 @@
 
 `{`@eq`(`$arg_spfield`,`'`'`)\
       actions += string( c_procedure_id_`{`$arg_action`} )
-          + "$" + string( get_obj( ).class_id( ) ) + "." + string( c_field_id_`{`$arg_sfield`} )
+          + "$" + get_obj( ).get_class_id( ) + "." + string( c_field_id_`{`$arg_sfield`} )
           + "=" + get_obj( ).`{`$arg_fkfield`}( ).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( );
 `,\
       actions += string( c_procedure_id_`{`$arg_action`} )
-       + "$" + string( get_obj( ).`{`$arg_spfield`}( ).class_id( ) ) + "."
+       + "$" + get_obj( ).`{`$arg_spfield`}( ).get_class_id( ) + "."
        + FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_sfield`} ) + "="
        + get_obj( ).`{`$arg_fkfield`}( ).get_key( ) + "`{`$key_sep`}" + get_obj( ).get_key( );
 `}

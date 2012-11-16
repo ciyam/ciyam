@@ -15,7 +15,7 @@
 
       if( !p_parent || !p_parent->get_is_editing( )
        || p_parent->get_key( ) != get_obj( ).`{`$arg_pfield`}( ).get_key( )
-       || strcmp( p_parent->lock_class_id( ), get_obj( ).`{`$arg_pfield`}( ).lock_class_id( ) ) )
+       || p_parent->get_lock_class_id( ) != get_obj( ).`{`$arg_pfield`}( ).get_lock_class_id( ) )
       {
          if( is_create || !get_obj( ).`{`$arg_pfield`}( ).has_changed( ) )
             get_obj( ).`{`$arg_pfield`}( ).op_update( );
@@ -106,7 +106,7 @@
       if( !is_null( original.`{`$arg_pfield`}( ) )
        && ( !p_parent || !p_parent->get_is_editing( )
        || p_parent->get_key( ) != original.`{`$arg_pfield`}( ).get_key( )
-       || strcmp( p_parent->lock_class_id( ), original.`{`$arg_pfield`}( ).lock_class_id( ) ) ) )
+       || p_parent->get_lock_class_id( ) != original.`{`$arg_pfield`}( ).get_lock_class_id( ) ) )
       {
          original.`{`$arg_pfield`}( ).op_update( );
          original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( original.`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - original.`{`$arg_nfield`}( ) );

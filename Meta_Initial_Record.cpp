@@ -1395,27 +1395,27 @@ void Meta_Initial_Record::add_extra_paging_info( vector< pair< string, string > 
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Initial_Record::class_id( ) const
+string Meta_Initial_Record::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Initial_Record::class_name( ) const
+string Meta_Initial_Record::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Initial_Record::plural_name( ) const
+string Meta_Initial_Record::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Initial_Record::module_id( ) const
+string Meta_Initial_Record::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Initial_Record::module_name( ) const
+string Meta_Initial_Record::get_module_name( ) const
 {
    return static_module_name( );
 }

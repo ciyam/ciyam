@@ -337,18 +337,18 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
 
    bool is_filtered( ) const;
 
-   const char* class_id( ) const;
-   const char* class_name( ) const;
-   const char* plural_name( ) const;
+   std::string get_class_id( ) const;
+   std::string get_class_name( ) const;
+   std::string get_plural_name( ) const;
 
-   const char* module_id( ) const;
-   const char* module_name( ) const;
+   std::string get_module_id( ) const;
+   std::string get_module_name( ) const;
 
-   const char* resolved_module_id( ) const { return static_resolved_module_id( ); }
-   const char* resolved_module_name( ) const { return static_resolved_module_name( ); }
+   std::string get_resolved_module_id( ) const { return static_resolved_module_id( ); }
+   std::string get_resolved_module_name( ) const { return static_resolved_module_name( ); }
 
-   const char* lock_class_id( ) const { return static_lock_class_id( ); }
-   const char* check_class_name( ) const { return static_check_class_name( ); }
+   std::string get_lock_class_id( ) const { return static_lock_class_id( ); }
+   std::string get_check_class_name( ) const { return static_check_class_name( ); }
 
    std::string get_display_name( bool plural = false ) const;
 

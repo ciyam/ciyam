@@ -1393,7 +1393,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
    bool found = false;
    class_base_accessor instance_accessor( instance );
 
-   string key_info( string( instance.class_id( ) ) + ":" + key );
+   string key_info( instance.get_class_id( ) + ":" + key );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
@@ -1551,7 +1551,7 @@ bool fetch_instance_from_db( class_base& instance,
 
                   if( handler.get_root( ).cache_limit )
                   {
-                     string key_info( to_string( instance.class_id( ) ) + ":" + ds.as_string( 0 ) );
+                     string key_info( instance.get_class_id( ) + ":" + ds.as_string( 0 ) );
 
                      vector< string > columns;
                      for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
@@ -1583,6 +1583,10 @@ bool fetch_instance_from_db( class_base& instance,
                      handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
                      handler.get_time_for_key( ).insert( make_pair( key_info, tm ) );
                      handler.get_record_cache( ).insert( make_pair( key_info, columns ) );
+
+                     if( handler.get_key_for_time( ).size( ) != handler.get_time_for_key( ).size( )
+                      || handler.get_key_for_time( ).size( ) != handler.get_record_cache( ).size( ) )
+                        throw runtime_error( "*** record cache maps size mismatch ***" );
                   }
                }
             }
@@ -1625,7 +1629,7 @@ bool is_child_constrained( class_base& instance,
    string sql, next_child_field;
 
    size_t num_children = instance_accessor.get_num_foreign_key_children( );
-   if( num_children && !instance_keys[ instance.class_id( ) ].count( instance.get_key( ) ) )
+   if( num_children && !instance_keys[ instance.get_class_id( ) ].count( instance.get_key( ) ) )
    {
       for( int pass = 0; pass < 2; ++pass )
       {
@@ -1661,7 +1665,7 @@ bool is_child_constrained( class_base& instance,
                      // it can be safely ignored (i.e. continue iteration to find the next instance). Once
                      // an actual restricting instance is found then no further iteration is required.
                      op_lock lock = handler.get_lock_info_for_owner(
-                      p_class_base->lock_class_id( ), p_class_base->get_key( ), root_instance );
+                      p_class_base->get_lock_class_id( ), p_class_base->get_key( ), root_instance );
 
                      if( lock.type != op_lock::e_lock_type_destroy )
                      {
@@ -1684,7 +1688,7 @@ bool is_child_constrained( class_base& instance,
                         fetch_instance_from_db( *p_dyn_class_base, sql );
 
                      if( next_op == e_cascade_op_destroy )
-                        instance_keys[ p_class_base->class_id( ) ].insert( p_class_base->get_key( ) );
+                        instance_keys[ p_class_base->get_class_id( ) ].insert( p_class_base->get_key( ) );
 
                      if( is_child_constrained( *p_dyn_class_base, root_instance, constraining_class, instance_keys ) )
                      {
@@ -1716,7 +1720,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
    storage_handler& handler( *gtp_session->p_storage_handler );
 
    size_t num_children = instance_accessor.get_num_foreign_key_children( );
-   if( num_children && !instance_keys[ instance.class_id( ) ].count( instance.get_key( ) ) )
+   if( num_children && !instance_keys[ instance.get_class_id( ) ].count( instance.get_key( ) ) )
    {
       for( int pass = 0; pass < 2; ++pass )
       {
@@ -1747,7 +1751,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                   // NOTE: A lock may have already been obtained during the recursion due to multiple
                   // relationship paths leading to the same instance - if found then simply continue.
                   op_lock lock = handler.get_lock_info_for_owner(
-                   p_class_base->lock_class_id( ), p_class_base->get_key( ), root_instance );
+                   p_class_base->get_lock_class_id( ), p_class_base->get_key( ), root_instance );
 
                   if( lock.type != op_lock::e_lock_type_none )
                      continue;
@@ -1764,14 +1768,14 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                      // the assumption that the lock is part of the same operation is fine, however, were
                      // it to become desirable for multiple operations (belonging to the same session) to
                      // be supported then this assumption could be incorrect and lead to potential issues.
-                     lock = handler.get_lock_info( p_class_base->lock_class_id( ), p_class_base->get_key( ) );
+                     lock = handler.get_lock_info( p_class_base->get_lock_class_id( ), p_class_base->get_key( ) );
                      if( lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_destroy )
                         continue;
                   }
 
                   if( next_op == e_cascade_op_unlink )
                   {
-                     if( !handler.obtain_lock( lock_handle, p_class_base->lock_class_id( ),
+                     if( !handler.obtain_lock( lock_handle, p_class_base->get_lock_class_id( ),
                       p_class_base->get_key( ), op_lock::e_lock_type_update, gtp_session, &instance, &root_instance ) )
                      {
                         p_class_base->iterate_stop( );
@@ -1780,7 +1784,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                   }
                   else
                   {
-                     if( handler.obtain_lock( lock_handle, p_class_base->lock_class_id( ),
+                     if( handler.obtain_lock( lock_handle, p_class_base->get_lock_class_id( ),
                       p_class_base->get_key( ), op_lock::e_lock_type_destroy, gtp_session, &instance, &root_instance ) )
                      {
                         // NOTE: If the child instance is actually a derived class then get the derived object.
@@ -1792,7 +1796,7 @@ bool obtain_cascade_locks_for_destroy( class_base& instance,
                            fetch_instance_from_db( *p_dyn_class_base, sql );
 
                         if( next_op == e_cascade_op_destroy )
-                           instance_keys[ p_class_base->class_id( ) ].insert( p_class_base->get_key( ) );
+                           instance_keys[ p_class_base->get_class_id( ) ].insert( p_class_base->get_key( ) );
 
                         if( !obtain_cascade_locks_for_destroy( *p_dyn_class_base, root_instance, instance_keys ) )
                         {
@@ -2331,7 +2335,7 @@ string construct_sql_select(
    }
 
    sql_fields_and_table += " FROM T_"
-    + string( instance.module_name( ) ) + "_" + string( instance.class_name( ) );
+    + string( instance.get_module_name( ) ) + "_" + string( instance.get_class_name( ) );
 
    if( !query_info.empty( ) || !text_search.empty( )
     || !fixed_info.empty( ) || !paging_info.empty( ) || !security_info.empty( ) )
@@ -2369,8 +2373,8 @@ string construct_sql_select(
             get_field_name( *p_instance, graph_parent_fk_field );
 
             sub_select_sql_prefix = "C_Key_ IN (SELECT C_"
-             + graph_parent_fk_field + " FROM T_" + to_string( p_instance->module_name( ) )
-             + "_" + to_string( p_instance->class_name( ) ) + " WHERE ";
+             + graph_parent_fk_field + " FROM T_" + to_string( p_instance->get_module_name( ) )
+             + "_" + p_instance->get_class_name( ) + " WHERE ";
 
             sub_select_sql_suffix = " GROUP BY C_" + graph_parent_fk_field + ")";
 
@@ -2505,7 +2509,7 @@ string construct_sql_select(
       instance.get_text_search_fields( text_search_fields );
 
       if( text_search_fields.empty( ) )
-         throw runtime_error( "no text search fields defined in class '" + string( instance.class_name( ) ) + "'" );
+         throw runtime_error( "no text search fields defined in class '" + string( instance.get_class_name( ) ) + "'" );
 
       vector< string > text_search_words;
       split_text_search( text_search, text_search_words );
@@ -2755,8 +2759,8 @@ string construct_sql_select(
 
          if( found )
          {
-            index_to_use = "I_" + string( instance.module_name( ) ) + "_"
-             + string( instance.class_name( ) ) + "_" + ( i < 10 ? "0" : "" ) + to_string( i );
+            index_to_use = "I_" + string( instance.get_module_name( ) ) + "_"
+             + string( instance.get_class_name( ) ) + "_" + ( i < 10 ? "0" : "" ) + to_string( i );
             break;
          }
       }
@@ -3080,16 +3084,16 @@ void get_all_field_data( size_t handle, const string& context,
    class_base& dcb( *cb.get_dynamic_instance( ) );
 
    if( p_class_id )
-      *p_class_id = string( dcb.class_id( ) );
+      *p_class_id = string( dcb.get_class_id( ) );
 
    if( p_class_name )
-      *p_class_name = string( dcb.class_name( ) );
+      *p_class_name = string( dcb.get_class_name( ) );
 
    if( p_base_class_info )
       dcb.get_base_class_info( *p_base_class_info );
 
    foreign_key_info_container foreign_key_info;
-   get_foreign_key_info_for_module_class( dcb.module_id( ), dcb.class_id( ), foreign_key_info );
+   get_foreign_key_info_for_module_class( dcb.get_module_id( ), dcb.get_class_id( ), foreign_key_info );
 
    field_info_container field_info;
    dcb.get_field_info( field_info );
@@ -3102,10 +3106,10 @@ void get_all_field_data( size_t handle, const string& context,
       if( foreign_key_info.count( field_info[ i ].id ) )
       {
          size_t offset = 0;
-         if( foreign_key_info[ field_info[ i ].id ].second.find( dcb.module_name( ) ) == 0 )
-            offset = strlen( dcb.module_name( ) ) + 1;
+         if( foreign_key_info[ field_info[ i ].id ].second.find( dcb.get_module_name( ) ) == 0 )
+            offset = dcb.get_module_name( ).length( ) + 1;
 
-         class_id = get_class_id_for_id_or_name( dcb.module_id( ), foreign_key_info[ field_info[ i ].id ].second.substr( offset ) );
+         class_id = get_class_id_for_id_or_name( dcb.get_module_id( ), foreign_key_info[ field_info[ i ].id ].second.substr( offset ) );
       }
 
       string field_value;
@@ -3372,11 +3376,11 @@ void export_data( ostream& outs,
 
                if( p_class_base )
                {
-                  child_class_and_field = string( p_class_base->class_id( ) ) + "#" + next_child_field;
+                  child_class_and_field = p_class_base->get_class_id( ) + "#" + next_child_field;
 
                   if( excludes.count( class_id )
                    && ( excludes.find( class_id )->second.count( "*" + exclude_suffix )
-                   || excludes.find( class_id )->second.count( p_class_base->class_id( ) + exclude_suffix )
+                   || excludes.find( class_id )->second.count( p_class_base->get_class_id( ) + exclude_suffix )
                    || excludes.find( class_id )->second.count( child_class_and_field + exclude_suffix ) ) )
                      continue;
 
@@ -3389,16 +3393,16 @@ void export_data( ostream& outs,
                   {
                      do
                      {
-                        if( rounds.count( p_class_base->class_id( ) )
-                         && rounds.find( p_class_base->class_id( ) )->second > current_round )
+                        if( rounds.count( p_class_base->get_class_id( ) )
+                         && rounds.find( p_class_base->get_class_id( ) )->second > current_round )
                         {
-                           int round( rounds.find( p_class_base->class_id( ) )->second );
+                           int round( rounds.find( p_class_base->get_class_id( ) )->second );
                            future_rounds[ round ].push_back(
-                            make_pair( p_class_base->class_id( ), p_class_base->get_key( ) ) );
+                            make_pair( p_class_base->get_class_id( ), p_class_base->get_key( ) ) );
                            continue;
                         }
 
-                        export_data( outs, module, p_class_base->class_id( ),
+                        export_data( outs, module, p_class_base->get_class_id( ),
                          p_class_base->get_key( ), last_class_id, true, handler, all_class_ids,
                          excludes, tests, includes, exported_records, exported_children, next_pass,
                          will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
@@ -3426,7 +3430,7 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
 
    instance_accessor.clear( );
 
-   TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + string( instance.class_id( ) ) + "')" );
+   TRACE_LOG( TRACE_SQLSTMTS, "(row cache for '" + instance.get_class_id( ) + "')" );
 
    instance_accessor.set_key( instance_accessor.row_cache( )[ 0 ][ 0 ], true );
    instance_accessor.set_version( atoi( instance_accessor.row_cache( )[ 0 ][ 1 ].c_str( ) ) );
@@ -6088,7 +6092,7 @@ void list_object_instances( ostream& os )
    {
       os << oiri->first
        << ' ' << ( oiri->second ).p_dynamic_library->get_module_name( )
-       << ' ' << ( oiri->second ).p_class_base->class_name( ) << '\n';
+       << ' ' << ( oiri->second ).p_class_base->get_class_name( ) << '\n';
    }
 }
 
@@ -6129,7 +6133,7 @@ string execute_object_command( size_t handle, const string& context, const strin
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   TRACE_LOG( TRACE_CLASSOPS, "execute_object_command( ) [class: " + to_string( instance.class_name( ) ) + "] " + method_name_and_args );
+   TRACE_LOG( TRACE_CLASSOPS, "execute_object_command( ) [class: " + instance.get_class_name( ) + "] " + method_name_and_args );
 
    return instance.execute( method_name_and_args );
 }
@@ -6165,7 +6169,7 @@ void destroy_object_instance( size_t handle )
 
    class_base* p_class_base( ( oiri->second ).p_class_base );
    dynamic_library* p_dynamic_library( ( oiri->second ).p_dynamic_library );
-   destroy_object( p_dynamic_library->get_module_name( ), p_class_base->class_id( ), p_class_base );
+   destroy_object( p_dynamic_library->get_module_name( ), p_class_base->get_class_id( ), p_class_base );
 
    assert( p_class_base == 0 );
 
@@ -6186,7 +6190,7 @@ void destroy_object_instances( const string& module_name )
       {
          class_base* p_class_base( ( oiri->second ).p_class_base );
          dynamic_library* p_dynamic_library( ( oiri->second ).p_dynamic_library );
-         destroy_object( p_dynamic_library->get_module_name( ), p_class_base->class_id( ), p_class_base );
+         destroy_object( p_dynamic_library->get_module_name( ), p_class_base->get_class_id( ), p_class_base );
 
          assert( p_class_base == 0 );
 
@@ -6206,7 +6210,7 @@ void destroy_all_object_instances( )
       class_base* p_class_base( ( oiri->second ).p_class_base );
 
       dynamic_library* p_dynamic_library( ( oiri->second ).p_dynamic_library );
-      destroy_object( p_dynamic_library->get_module_name( ), p_class_base->class_id( ), p_class_base );
+      destroy_object( p_dynamic_library->get_module_name( ), p_class_base->get_class_id( ), p_class_base );
 
       assert( p_class_base == 0 );
    }
@@ -6218,14 +6222,14 @@ string get_class_id( size_t handle, const string& context )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   return instance.class_id( );
+   return instance.get_class_id( );
 }
 
 string get_class_name( size_t handle, const string& context )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   return instance.class_name( );
+   return instance.get_class_name( );
 }
 
 string get_class_display_name( size_t handle, const string& context, bool plural )
@@ -7961,21 +7965,21 @@ void instance_check( class_base& instance, instance_check_rc* p_rc )
          *p_rc = e_instance_check_rc_not_found;
       else
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-          make_pair( c_str_parm_record_not_found_class, instance.class_name( ) ),
+          make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
           make_pair( c_str_parm_record_not_found_key, instance_accessor.get_lazy_fetch_key( ) ) ) );
    }
 }
 
 bool is_change_locked( class_base& instance, bool include_cascades )
 {
-   op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.lock_class_id( ), instance.get_key( ) );
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.get_lock_class_id( ), instance.get_key( ) );
 
    return lock.type >= op_lock::e_lock_type_update && ( include_cascades || !lock.p_root_class );
 }
 
 bool is_destroy_locked( class_base& instance, bool include_cascades )
 {
-   op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.lock_class_id( ), instance.get_key( ) );
+   op_lock lock = gtp_session->p_storage_handler->get_lock_info( instance.get_lock_class_id( ), instance.get_key( ) );
 
    return lock.type == op_lock::e_lock_type_destroy && ( include_cascades || !lock.p_root_class );
 }
@@ -7986,7 +7990,7 @@ bool is_create_locked_by_own_session( class_base& instance, const char* p_key, b
    bool rc = false;
 
    lock = gtp_session->p_storage_handler->get_lock_info(
-    instance.lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
+    instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    if( lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_create )
    {
@@ -8009,7 +8013,7 @@ bool is_update_locked_by_own_session( class_base& instance, const char* p_key )
    bool rc = false;
 
    lock = gtp_session->p_storage_handler->get_lock_info(
-    instance.lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
+    instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
 
    return lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_update;
 }
@@ -8049,7 +8053,7 @@ string instance_execute( size_t handle,
    class_base& instance( get_class_base_from_handle( handle, context ) );
    class_base_accessor instance_accessor( instance );
 
-   TRACE_LOG( TRACE_CLASSOPS, "instance_execute( ) [class: " + to_string( instance.class_name( ) ) + "] " + method_name_and_args );
+   TRACE_LOG( TRACE_CLASSOPS, "instance_execute( ) [class: " + instance.get_class_name( ) + "] " + method_name_and_args );
 
    return instance.execute( method_name_and_args );
 }
@@ -8341,7 +8345,7 @@ void begin_instance_op( instance_op op, class_base& instance,
       return;
 
    TRACE_LOG( TRACE_CLASSOPS, "begin (enter) op = "
-    + to_string( op ) + ", class = " + instance.class_name( )
+    + to_string( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 
    if( instance.get_is_in_op( ) )
@@ -8380,9 +8384,9 @@ void begin_instance_op( instance_op op, class_base& instance,
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
-   const string& class_id( instance.class_id( ) );
-   const string& module_name( instance.module_name( ) );
-   const string& lock_class_id( instance.lock_class_id( ) );
+   string class_id( instance.get_class_id( ) );
+   string module_name( instance.get_module_name( ) );
+   string lock_class_id( instance.get_lock_class_id( ) );
 
    bool is_minimal_update( op == e_instance_op_update && !instance_accessor.fetch_field_names( ).empty( ) );
 
@@ -8453,7 +8457,7 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
             else
                throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                make_pair( c_str_parm_record_not_found_class, instance.class_name( ) ),
+                make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
                 make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
          }
 
@@ -8548,7 +8552,7 @@ void begin_instance_op( instance_op op, class_base& instance,
                }
                else
                   throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-                   make_pair( c_str_parm_record_not_found_class, instance.class_name( ) ),
+                   make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
                    make_pair( c_str_parm_record_not_found_key, instance.get_key( ) ) ) );
             }
          }
@@ -8674,7 +8678,7 @@ void begin_instance_op( instance_op op, class_base& instance,
       instance_accessor.set_op( class_base::e_op_type_destroy, key_for_op != key_in_use );
 
    TRACE_LOG( TRACE_CLASSOPS, "begin (leave) op = "
-    + to_string( op ) + ", class = " + instance.class_name( )
+    + to_string( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 }
 
@@ -8693,7 +8697,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
       return;
 
    TRACE_LOG( TRACE_CLASSOPS, "finish (enter) op = "
-    + to_string( op ) + ", class = " + instance.class_name( )
+    + to_string( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_operation )
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
 
@@ -8864,8 +8868,9 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                vector< string > unique_index_columns;
                split( all_unique_indexes[ i ], unique_index_columns );
 
-               string sql( "SELECT C_Key_ FROM T_" + string( instance.module_name( ) )
-                + "_" + string( instance.class_name( ) ) + " WHERE " );
+               string sql( "SELECT C_Key_ FROM T_" + string( instance.get_module_name( ) )
+                + "_" + instance.get_class_name( ) + " WHERE " );
+
                for( size_t j = 0; j < unique_index_columns.size( ); j++ )
                {
                   if( column_numbers.count( unique_index_columns[ j ] ) == 0 )
@@ -8910,7 +8915,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
    instance_accessor.set_ver_exp( "" );
 
    TRACE_LOG( TRACE_CLASSOPS, "finish (leave) op = "
-    + to_string( op ) + ", class = " + instance.class_name( )
+    + to_string( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_operation )
     + ", apply_changes = " + to_string( apply_changes ) + ", key = " + instance.get_key( ) );
 }
@@ -8923,26 +8928,26 @@ void perform_instance_fetch( class_base& instance,
 
    if( key_info.empty( ) )
       throw runtime_error( "cannot fetch "
-       + string( instance.class_name( ) ) + " record without key information" );
+       + instance.get_class_name( ) + " record without key information" );
 
    if( p_rc )
       *p_rc = e_instance_fetch_rc_okay;
 
-   const string& class_id( instance.class_id( ) );
-   const string& module_name( instance.module_name( ) );
+   string class_id( instance.get_class_id( ) );
+   string module_name( instance.get_module_name( ) );
 
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
 
    if( instance.get_is_in_op( ) )
       throw runtime_error( "cannot fetch "
-       + string( instance.class_name( ) ) + " record whilst currently perfoming an instance operation" );
+       + instance.get_class_name( ) + " record whilst currently perfoming an instance operation" );
 
    bool found_in_cache = false;
    bool has_simple_keyinfo = ( key_info.find( ' ' ) == string::npos );
 
    if( has_simple_keyinfo
-    && !gtp_session->tx_key_info.count( string( instance.class_id( ) ) + ":" + key_info ) )
+    && !gtp_session->tx_key_info.count( instance.get_class_id( ) + ":" + key_info ) )
       found_in_cache = fetch_instance_from_cache( instance, key_info, only_sys_fields );
 
    bool found = found_in_cache;
@@ -8970,7 +8975,7 @@ void perform_instance_fetch( class_base& instance,
          *p_rc = e_instance_fetch_rc_not_found;
       else
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
-          make_pair( c_str_parm_record_not_found_class, instance.class_name( ) ),
+          make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
           make_pair( c_str_parm_record_not_found_key, key_info ) ) );
    }
 }
@@ -8983,7 +8988,7 @@ bool perform_instance_iterate( class_base& instance,
    bool found = false;
 
    TRACE_LOG( TRACE_CLASSOPS, "[iterate] class = '"
-    + to_string( instance.class_name( ) ) + "', key_info = '" + key_info
+    + instance.get_class_name( ) + "', key_info = '" + key_info
     + "', fields = '" + fields + "', direction = " + to_string( direction ) );
 
    oid id;
@@ -8991,8 +8996,8 @@ bool perform_instance_iterate( class_base& instance,
 
    size_t num_fields = 0;
 
-   const string& class_id( instance.class_id( ) );
-   const string& module_name( instance.module_name( ) );
+   string class_id( instance.get_class_id( ) );
+   string module_name( instance.get_module_name( ) );
 
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
@@ -9000,11 +9005,11 @@ bool perform_instance_iterate( class_base& instance,
    // NOTE: If row_limit < 0 then iteration is being continued.
    if( row_limit >= 0 && instance.get_is_iterating( ) )
    {
-      string class_name( instance.class_name( ) );
+      string class_name( instance.get_class_name( ) );
       class_base* p_parent = instance.get_graph_parent( );
       while( p_parent )
       {
-         class_name += string( " <- " ) + p_parent->class_name( );
+         class_name += string( " <- " ) + p_parent->get_class_name( );
          p_parent = p_parent->get_graph_parent( );
       }
 
@@ -9327,8 +9332,8 @@ bool perform_instance_iterate_next( class_base& instance )
    if( !instance.get_is_iterating( ) )
       return false;
 
-   const string& class_id( instance.class_id( ) );
-   const string& module_name( instance.module_name( ) );
+   string class_id( instance.get_class_id( ) );
+   string module_name( instance.get_module_name( ) );
 
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );

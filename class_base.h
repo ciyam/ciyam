@@ -349,15 +349,18 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual const std::string& execute( const std::string& cmd_and_args ) = 0;
 
-   virtual const char* class_id( ) const = 0;
-   virtual const char* class_name( ) const = 0;
-   virtual const char* plural_name( ) const = 0;
+   virtual std::string get_class_id( ) const = 0;
+   virtual std::string get_class_name( ) const = 0;
+   virtual std::string get_plural_name( ) const = 0;
 
-   virtual const char* module_id( ) const = 0;
-   virtual const char* module_name( ) const = 0;
+   virtual std::string get_module_id( ) const = 0;
+   virtual std::string get_module_name( ) const = 0;
 
-   virtual const char* lock_class_id( ) const = 0;
-   virtual const char* check_class_name( ) const = 0;
+   virtual std::string get_resolved_module_id( ) const = 0;
+   virtual std::string get_resolved_module_name( ) const = 0;
+
+   virtual std::string get_lock_class_id( ) const = 0;
+   virtual std::string get_check_class_name( ) const = 0;
 
    virtual std::string get_display_name( bool plural = false ) const = 0;
 
@@ -624,9 +627,9 @@ std::string construct_class_identity( const class_base& cb );
 #else
 inline std::string construct_class_identity( const class_base& cb )
 {
-   std::string identity( cb.module_id( ) );
+   std::string identity( cb.get_module_id( ) );
    identity += ':';
-   identity += cb.class_id( );
+   identity += cb.get_class_id( );
    return identity;
 }
 #endif
@@ -897,7 +900,7 @@ inline void copy_field_or_file_and_field( class_base& dest, const std::string& d
    if( dest.is_file_field_name( dest_field_name ) )
       dest.set_field_value(
        dest.get_field_num( dest_field_name ), copy_class_file( src.get_field_value(
-       src.get_field_num( src_field_name ) ), dest.class_id( ), dest_key, return_name_only ) );
+       src.get_field_num( src_field_name ) ), dest.get_class_id( ), dest_key, return_name_only ) );
    else
       dest.set_field_value( dest.get_field_num( dest_field_name ),
        src.get_field_value( src.get_field_num( src_field_name ) ) );

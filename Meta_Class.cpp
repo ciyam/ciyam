@@ -5123,27 +5123,27 @@ void Meta_Class::add_extra_paging_info( vector< pair< string, string > >& paging
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Class::class_id( ) const
+string Meta_Class::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Class::class_name( ) const
+string Meta_Class::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Class::plural_name( ) const
+string Meta_Class::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Class::module_id( ) const
+string Meta_Class::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Class::module_name( ) const
+string Meta_Class::get_module_name( ) const
 {
    return static_module_name( );
 }

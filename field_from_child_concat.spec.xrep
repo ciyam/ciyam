@@ -50,7 +50,7 @@
 `,\
             order = get_obj( ).child_`{`$arg_children`}( ).`{`$arg_cfield`}( );
 `}
-            display = "{" + to_string( get_obj( ).child_`{`$arg_children`}( ).class_id( ) )
+            display = "{" + get_obj( ).child_`{`$arg_children`}( ).get_class_id( )
              + "$" + get_obj( ).child_`{`$arg_children`}( ).get_key( ) + ":" + get_obj( ).child_`{`$arg_children`}( ).`{`$arg_cfield`}( ) + "}";
 `}`,\
 `{`@eq`(`$arg_embed_links`,`'`'`)\
@@ -66,7 +66,7 @@
 `,\
             order = get_obj( ).child_`{`$arg_children`}( ).`{`$arg_xpfield`}( ).`{`$arg_xdfield`}( );
 `}
-            display = "{" + to_string( get_obj( ).child_`{`$arg_children`}( ).`{`$arg_xpfield`}( ).class_id( ) )
+            display = "{" + get_obj( ).child_`{`$arg_children`}( ).`{`$arg_xpfield`}( ).get_class_id( )
              + "$" + get_obj( ).child_`{`$arg_children`}( ).`{`$arg_xpfield`}( ).get_key( ) + ":" + get_obj( ).child_`{`$arg_children`}( ).`{`$arg_xpfield`}( ).`{`$arg_xdfield`}( ) + "}";
 `}`}
             parts.insert( make_pair( order, display ) );
