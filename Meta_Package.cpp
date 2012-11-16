@@ -1016,11 +1016,11 @@ void Meta_Package::impl::impl_Install( )
          if( !get_session_variable( "@attached_file_path" ).empty( ) )
             outc << ".session_variable @attached_file_path \"" << get_session_variable( "@attached_file_path" ) << "\"\n";
 
-         outc << "perform_package_import " << get_uid( ) << " @now " << get_obj( ).module_name( )
+         outc << "perform_package_import " << get_uid( ) << " @now " << get_obj( ).get_module_name( )
           << " " << type_name << ".package.sio -new_only -s=@Meta_Class.skips.lst -r=@" << list_filename << "\n";
 
-         outc << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
-          << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136430\n";
+         outc << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).get_module_name( ) << " "
+          << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136430\n";
 
          if( async )
             outc << ".session_lock -release -at_term " << session_id( ) << "\n"; // see NOTE below...
@@ -1214,11 +1214,11 @@ void Meta_Package::impl::impl_Remove( )
                string map_filename( get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".map" ) );
                if( exists_file( map_filename ) )
                   outf << ".perform_package_import " << get_uid( ) << " @now "
-                   << get_obj( ).module_name( ) << " " << get_obj( ).Package_Type( ).Name( )
+                   << get_obj( ).get_module_name( ) << " " << get_obj( ).Package_Type( ).Name( )
                    << ".package.sio -for_remove -r=@" << escaped_string( map_filename ) << "\n";
 
                vector< string > ordered;
-               string acyclic_filename( string( get_obj( ).module_name( ) ) + ".acyclic.lst" );
+               string acyclic_filename( get_obj( ).get_module_name( ) + ".acyclic.lst" );
                read_file_lines( acyclic_filename, ordered );
 
                // NOTE: Forcing the order to reach "Class" as quickly as possible is done as a performance
@@ -1236,12 +1236,12 @@ void Meta_Package::impl::impl_Remove( )
                int total = 0;
                for( size_t i = 0; i < ordered.size( ); i++ )
                {
-                  string next_cid = get_class_id_for_id_or_name( get_obj( ).module_id( ), ordered[ i ] );
+                  string next_cid = get_class_id_for_id_or_name( get_obj( ).get_module_name( ), ordered[ i ] );
                   for( int j = 0; j < class_keys[ next_cid ].size( ); j++ )
                   {
                      outf << "@ifndef %ERROR%\n";
                      outf << ".perform_destroy " << get_uid( ) << " @now "
-                      << get_obj( ).module_id( ) << ' ' << next_cid << " -q " << class_keys[ next_cid ][ j ] << '\n';
+                      << get_obj( ).get_module_name( ) << ' ' << next_cid << " -q " << class_keys[ next_cid ][ j ] << '\n';
                      outf << "@ifdef %ERROR%\n";
                      outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
                      outf << "@endif\n";
@@ -1264,11 +1264,11 @@ void Meta_Package::impl::impl_Remove( )
                }
 
                outf << "@ifndef %ERROR%\n";
-               outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
-                << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136440\n"; // i.e. Complete_Remove
+               outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).get_module_name( ) << " "
+                << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136440\n"; // i.e. Complete_Remove
                outf << "@else\n";
-               outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).module_id( ) << " "
-                << get_obj( ).class_id( ) << " " << get_obj( ).get_key( ) << " 136450\n"; // i.e. Cancel_Remove
+               outf << ".perform_execute " << get_uid( ) << " @now " << get_obj( ).get_module_name( ) << " "
+                << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " 136450\n"; // i.e. Cancel_Remove
                outf << "@endif\n";
 
                if( do_exec || is_last )
@@ -2718,27 +2718,27 @@ void Meta_Package::add_extra_paging_info( vector< pair< string, string > >& pagi
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Package::class_id( ) const
+string Meta_Package::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Package::class_name( ) const
+string Meta_Package::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Package::plural_name( ) const
+string Meta_Package::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Package::module_id( ) const
+string Meta_Package::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Package::module_name( ) const
+string Meta_Package::get_module_name( ) const
 {
    return static_module_name( );
 }

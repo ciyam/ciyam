@@ -1008,27 +1008,27 @@ void Meta_View_Type::add_extra_paging_info( vector< pair< string, string > >& pa
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_View_Type::class_id( ) const
+string Meta_View_Type::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_View_Type::class_name( ) const
+string Meta_View_Type::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_View_Type::plural_name( ) const
+string Meta_View_Type::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_View_Type::module_id( ) const
+string Meta_View_Type::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_View_Type::module_name( ) const
+string Meta_View_Type::get_module_name( ) const
 {
    return static_module_name( );
 }

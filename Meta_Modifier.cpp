@@ -1621,27 +1621,27 @@ void Meta_Modifier::add_extra_paging_info( vector< pair< string, string > >& pag
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Modifier::class_id( ) const
+string Meta_Modifier::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Modifier::class_name( ) const
+string Meta_Modifier::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Modifier::plural_name( ) const
+string Meta_Modifier::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Modifier::module_id( ) const
+string Meta_Modifier::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Modifier::module_name( ) const
+string Meta_Modifier::get_module_name( ) const
 {
    return static_module_name( );
 }

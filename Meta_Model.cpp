@@ -7736,27 +7736,27 @@ void Meta_Model::add_extra_paging_info( vector< pair< string, string > >& paging
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Model::class_id( ) const
+string Meta_Model::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Model::class_name( ) const
+string Meta_Model::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Model::plural_name( ) const
+string Meta_Model::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Model::module_id( ) const
+string Meta_Model::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Model::module_name( ) const
+string Meta_Model::get_module_name( ) const
 {
    return static_module_name( );
 }

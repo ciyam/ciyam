@@ -2991,38 +2991,38 @@ void `{`$full_class_name`}::add_extra_paging_info( vector< pair< string, string 
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* `{`$full_class_name`}::class_id( ) const
+string `{`$full_class_name`}::get_class_id( ) const
 {
 `{`@eq`(`$is_alias`,`'true`'`)\
-   return parent_class_type::class_id( );\
+   return parent_class_type::get_class_id( );\
 `,\
    return static_class_id( );\
 `}
 }
 
-const char* `{`$full_class_name`}::class_name( ) const
+string `{`$full_class_name`}::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* `{`$full_class_name`}::plural_name( ) const
+string `{`$full_class_name`}::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* `{`$full_class_name`}::module_id( ) const
+string `{`$full_class_name`}::get_module_id( ) const
 {
 `{`@eq`(`$is_alias`,`'true`'`)\
-   return parent_class_type::module_id( );\
+   return parent_class_type::get_module_id( );\
 `,\
    return static_module_id( );\
 `}
 }
 
-const char* `{`$full_class_name`}::module_name( ) const
+string `{`$full_class_name`}::get_module_name( ) const
 {
 `{`@eq`(`$is_alias`,`'true`'`)\
-   return parent_class_type::module_name( );\
+   return parent_class_type::get_module_name( );\
 `,\
    return static_module_name( );\
 `}
@@ -3054,7 +3054,7 @@ bool `{`$full_class_name`}::get_is_alias( ) const
 void `{`$full_class_name`}::get_alias_base_info( pair< string, string >& alias_base_info ) const
 {
 `{`@eq`(`$is_alias`,`'true`'`)\
-   alias_base_info = make_pair( `{`$parent_class`}::class_id( ), `{`$parent_class`}::class_name( ) );\
+   alias_base_info = make_pair( `{`$parent_class`}::get_class_id( ), `{`$parent_class`}::get_class_name( ) );\
 `,\
    ( void )alias_base_info;\
 `}
@@ -3065,7 +3065,7 @@ void `{`$full_class_name`}::get_base_class_info( vector< pair< string, string > 
 `{`?`$parent_class`&`!`@eq`(`$is_alias`,`'true`'`)\
    `{`$parent_class`}::get_base_class_info( base_class_info );
 
-   base_class_info.push_back( make_pair( `{`$parent_class`}::class_id( ), `{`$parent_class`}::class_name( ) ) );\
+   base_class_info.push_back( make_pair( `{`$parent_class`}::get_class_id( ), `{`$parent_class`}::get_class_name( ) ) );\
 `,\
    ( void )base_class_info;\
 `}

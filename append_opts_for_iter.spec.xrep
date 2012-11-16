@@ -30,7 +30,7 @@
 `{`@eq`(`$arg_embed_links`,`'`'`)\
             str += get_obj( ).child_`{`$arg_child`}( ).`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`{`$arg_cfield`}`}( );
 `,\
-            str += "{" + to_string( get_obj( ).child_`{`$arg_child`}( ).class_id( ) )
+            str += "{" +  get_obj( ).child_`{`$arg_child`}( ).get_class_id( )
              + "$" + get_obj( ).child_`{`$arg_child`}( ).get_key( ) + ":" + get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cfield`}( ) + "}";
 `}\
 

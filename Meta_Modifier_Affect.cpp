@@ -1778,27 +1778,27 @@ void Meta_Modifier_Affect::add_extra_paging_info( vector< pair< string, string >
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Modifier_Affect::class_id( ) const
+string Meta_Modifier_Affect::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Modifier_Affect::class_name( ) const
+string Meta_Modifier_Affect::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Modifier_Affect::plural_name( ) const
+string Meta_Modifier_Affect::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Modifier_Affect::module_id( ) const
+string Meta_Modifier_Affect::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Modifier_Affect::module_name( ) const
+string Meta_Modifier_Affect::get_module_name( ) const
 {
    return static_module_name( );
 }

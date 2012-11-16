@@ -137,7 +137,7 @@
 `}\
       actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
-      actions += "$" + string( get_obj( ).class_id( ) );
+      actions += "$" + get_obj( ).get_class_id( );
 `}`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_vfield`,`'`'`)\
          actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
 `}`{`@eq`(`$arg_edit_record`,`'true`'`)
@@ -162,7 +162,7 @@
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
-         actions += "$" + string( get_obj( ).class_id( ) );
+         actions += "$" + get_obj( ).get_class_id( );
 `}`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_vfield`,`'`'`)\
          actions += "." + string( c_field_id_`{`$arg_ofield`} ) + "=" + to_string( get_obj( ).`{`$arg_vfield`}( ) );
 `}`{`@eq`(`$arg_edit_record`,`'true`'`)

@@ -24,7 +24,7 @@
 `{`@eq`(`$arg_external`,`'`'`)\
          s = "{" + p_parent->get_key( ) + ":" + p_parent->`{`$arg_src_field`}( ) + "}" + s;
 `,\
-         s = "{" + to_string( p_parent->class_id( ) )
+         s = "{" + p_parent->get_class_id( )
           + "$" + p_parent->get_key( ) + ":" + p_parent->`{`$arg_src_field`}( ) + "}" + s;
 `}`}
          p_parent = &p_parent->`{`$arg_pfield`}( );
@@ -35,7 +35,7 @@
 `{`@eq`(`$arg_external`,`'`'`)\
       s += get_obj( ).`{`$arg_src_field`}( );
 `,\
-      s += "{" + to_string( get_obj( ).class_id( ) )
+      s += "{" + get_obj( ).get_class_id( )
        + "$" + get_obj( ).get_key( ) + ":" + get_obj( ).`{`$arg_src_field`}( ) + "}";
 `}
       get_obj( ).`{`$arg_dest_field`}( s );

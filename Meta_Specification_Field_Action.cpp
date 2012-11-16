@@ -1915,27 +1915,27 @@ void Meta_Specification_Field_Action::add_extra_paging_info( vector< pair< strin
    p_impl->add_extra_paging_info( paging_info );
 }
 
-const char* Meta_Specification_Field_Action::class_id( ) const
+string Meta_Specification_Field_Action::get_class_id( ) const
 {
    return static_class_id( );
 }
 
-const char* Meta_Specification_Field_Action::class_name( ) const
+string Meta_Specification_Field_Action::get_class_name( ) const
 {
    return static_class_name( );
 }
 
-const char* Meta_Specification_Field_Action::plural_name( ) const
+string Meta_Specification_Field_Action::get_plural_name( ) const
 {
    return static_plural_name( );
 }
 
-const char* Meta_Specification_Field_Action::module_id( ) const
+string Meta_Specification_Field_Action::get_module_id( ) const
 {
    return static_module_id( );
 }
 
-const char* Meta_Specification_Field_Action::module_name( ) const
+string Meta_Specification_Field_Action::get_module_name( ) const
 {
    return static_module_name( );
 }
@@ -1962,7 +1962,7 @@ void Meta_Specification_Field_Action::get_base_class_info( vector< pair< string,
 {
    Meta_Specification::get_base_class_info( base_class_info );
 
-   base_class_info.push_back( make_pair( Meta_Specification::class_id( ), Meta_Specification::class_name( ) ) );
+   base_class_info.push_back( make_pair( Meta_Specification::get_class_id( ), Meta_Specification::get_class_name( ) ) );
 }
 
 class_base& Meta_Specification_Field_Action::get_or_create_graph_child( const string& context )
