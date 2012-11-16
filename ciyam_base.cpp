@@ -76,9 +76,9 @@ const char c_module_prefix_separator = '_';
 
 const int c_identity_burn = 100;
 
-const size_t c_iteration_row_cache_limit = 500;
+const size_t c_default_cache_limit = 1000;
 
-size_t c_default_cache_limit = 1000;
+const size_t c_iteration_row_cache_limit = 100;
 
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 100;
@@ -631,6 +631,7 @@ class storage_handler
    time_info_container& get_key_for_time( ) { return key_for_time; }
    map< string, time_t >& get_time_for_key( ) { return time_for_key; }
 
+   void clear_cache( );
    void set_cache_limit( size_t new_limit );
 
    map< string, vector< string > >& get_record_cache( ) { return record_cache; }
@@ -1081,14 +1082,17 @@ void storage_handler::release_locks_for_rollback( session* p_session )
    }
 }
 
+void storage_handler::clear_cache( )
+{
+   get_record_cache( ).clear( );
+   get_time_for_key( ).clear( );
+   get_key_for_time( ).clear( );
+}
+
 void storage_handler::set_cache_limit( size_t new_limit )
 {
    if( !new_limit )
-   {
-      get_record_cache( ).clear( );
-      get_time_for_key( ).clear( );
-      get_key_for_time( ).clear( );
-   }
+      clear_cache( );
    else
    {
       while( get_record_cache( ).size( )
@@ -1382,7 +1386,7 @@ void perform_storage_op( storage_op op,
    }
 }
 
-bool fetch_instance_from_cache( class_base& instance, const string& key, bool check_only = false )
+bool fetch_instance_from_cache( class_base& instance, const string& key, bool sys_only_fields = false )
 {
    guard g( g_mutex );
 
@@ -1408,35 +1412,39 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool ch
       handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
    }
 
-   if( found && !check_only )
+   if( found )
    {
-      TRACE_LOG( TRACE_SQLSTMTS, "*** fetching '" + key_info + "' from cache ***" );
-
       found = true;
-
       ++gtp_session->cache_count;
 
-      vector< string >& columns( handler.get_record_cache( )[ key_info ] );
+      if( !sys_only_fields )
+         instance_accessor.clear( );
 
-      TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
+      TRACE_LOG( TRACE_SQLSTMTS, "*** fetching '" + key_info + "' from cache ***" );
+
+      vector< string >& columns( handler.get_record_cache( )[ key_info ] );
 
       instance_accessor.set_key( columns[ 0 ], true );
       instance_accessor.set_version( from_string< int >( columns[ 1 ] ) );
       instance_accessor.set_revision( from_string< int >( columns[ 2 ] ) );
       instance_accessor.set_original_identity( columns[ 3 ] );
 
-      int fnum = 4;
-      for( int i = fnum; i < columns.size( ); i++, fnum++ )
+      if( !sys_only_fields )
       {
-         while( instance.is_field_transient( fnum - 4 ) )
-            fnum++;
+         int fnum = 4;
+         TRACE_LOG( TRACE_SQLCLSET, "(from cache)" );
+         for( int i = fnum; i < columns.size( ); i++, fnum++ )
+         {
+            while( instance.is_field_transient( fnum - 4 ) )
+               fnum++;
 
-         TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + columns[ i ] );
-         instance.set_field_value( fnum - 4, columns[ i ] );
+            TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + columns[ i ] );
+            instance.set_field_value( fnum - 4, columns[ i ] );
+         }
+
+         instance_accessor.after_fetch_from_db( );
+         instance_accessor.perform_after_fetch( );
       }
-
-      instance_accessor.after_fetch_from_db( );
-      instance_accessor.perform_after_fetch( );
    }
 
    return found;
@@ -1491,12 +1499,12 @@ bool fetch_instance_from_db( class_base& instance,
 }
 
 bool fetch_instance_from_db( class_base& instance,
- const string& sql, bool check_only = false, bool is_minimal_fetch = false, bool allow_caching = false )
+ const string& sql, bool sys_only_fields = false, bool is_minimal_fetch = false, bool allow_caching = false )
 {
    bool found = false;
    class_base_accessor instance_accessor( instance );
 
-   if( check_only && allow_caching )
+   if( sys_only_fields && allow_caching )
       found = fetch_instance_from_cache( instance, instance_accessor.get_lazy_fetch_key( ), true );
 
    if( !found && gtp_session && gtp_session->ap_db.get( ) )
@@ -1508,75 +1516,80 @@ bool fetch_instance_from_db( class_base& instance,
 
       ++gtp_session->sql_count;
 
-      if( !check_only )
-      {
+      if( !sys_only_fields )
          instance_accessor.clear( );
 
-         if( found )
-         {
-            TRACE_LOG( TRACE_SQLCLSET, "(from temporary dataset)" );
+      if( found )
+      {
+         instance_accessor.set_key( ds.as_string( 0 ), true );
 
-            instance_accessor.set_key( ds.as_string( 0 ), true );
+         if( ds.get_fieldcount( ) > 1 )
+         {
             instance_accessor.set_version( ds.as_int( 1 ) );
             instance_accessor.set_revision( ds.as_int( 2 ) );
             instance_accessor.set_original_identity( ds.as_string( 3 ) );
 
-            int fnum = 4;
-            for( int i = fnum; i < ds.get_fieldcount( ); i++, fnum++ )
+            if( !sys_only_fields )
             {
-               while( instance.is_field_transient( fnum - 4 ) )
-                  fnum++;
+               TRACE_LOG( TRACE_SQLCLSET, "(from temporary dataset)" );
 
-               TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + ds.as_string( i ) );
-               instance.set_field_value( fnum - 4, ds.as_string( i ) );
-            }
-
-            if( allow_caching )
-            {
-               guard g( g_mutex );
-
-               storage_handler& handler( *gtp_session->p_storage_handler );
-
-               if( handler.get_root( ).cache_limit )
+               int fnum = 4;
+               for( int i = fnum; i < ds.get_fieldcount( ); i++, fnum++ )
                {
-                  string key_info( to_string( instance.class_id( ) ) + ":" + ds.as_string( 0 ) );
+                  while( instance.is_field_transient( fnum - 4 ) )
+                     fnum++;
 
-                  vector< string > columns;
-                  for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
-                     columns.push_back( ds.as_string( i ) );
+                  TRACE_LOG( TRACE_SQLCLSET, "setting field #" + to_string( fnum - 4 + 1 ) + " to " + ds.as_string( i ) );
+                  instance.set_field_value( fnum - 4, ds.as_string( i ) );
+               }
 
-                  if( handler.get_record_cache( ).count( key_info ) )
+               if( allow_caching && !is_minimal_fetch )
+               {
+                  guard g( g_mutex );
+
+                  storage_handler& handler( *gtp_session->p_storage_handler );
+
+                  if( handler.get_root( ).cache_limit )
                   {
-                     time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
-                     while( tii->second != key_info )
-                        ++tii;
+                     string key_info( to_string( instance.class_id( ) ) + ":" + ds.as_string( 0 ) );
 
-                     handler.get_key_for_time( ).erase( tii );
-                     handler.get_time_for_key( ).erase( key_info );
+                     vector< string > columns;
+                     for( size_t i = 0; i < ds.get_fieldcount( ); i++ )
+                        columns.push_back( ds.as_string( i ) );
 
-                     handler.get_record_cache( ).erase( key_info );
+                     if( handler.get_record_cache( ).count( key_info ) )
+                     {
+                        time_info_iterator tii = handler.get_key_for_time( ).lower_bound( handler.get_time_for_key( ).find( key_info )->second );
+                        while( tii->second != key_info )
+                           ++tii;
+
+                        handler.get_key_for_time( ).erase( tii );
+                        handler.get_time_for_key( ).erase( key_info );
+
+                        handler.get_record_cache( ).erase( key_info );
+                     }
+
+                     if( handler.get_record_cache( ).size( )
+                      && handler.get_record_cache( ).size( ) >= handler.get_root( ).cache_limit )
+                     {
+                        string oldest_key_info = handler.get_key_for_time( ).begin( )->second;
+
+                        handler.get_record_cache( ).erase( oldest_key_info );
+                        handler.get_time_for_key( ).erase( oldest_key_info );
+                        handler.get_key_for_time( ).erase( handler.get_key_for_time( ).begin( ) );
+                     }
+
+                     time_t tm( time( 0 ) );
+                     handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
+                     handler.get_time_for_key( ).insert( make_pair( key_info, tm ) );
+                     handler.get_record_cache( ).insert( make_pair( key_info, columns ) );
                   }
-
-                  if( handler.get_record_cache( ).size( )
-                   && handler.get_record_cache( ).size( ) >= handler.get_root( ).cache_limit )
-                  {
-                     string oldest_key_info = handler.get_key_for_time( ).begin( )->second;
-
-                     handler.get_record_cache( ).erase( oldest_key_info );
-                     handler.get_time_for_key( ).erase( oldest_key_info );
-                     handler.get_key_for_time( ).erase( handler.get_key_for_time( ).begin( ) );
-                  }
-
-                  time_t tm( time( 0 ) );
-                  handler.get_key_for_time( ).insert( make_pair( tm, key_info ) );
-                  handler.get_time_for_key( ).insert( make_pair( key_info, tm ) );
-                  handler.get_record_cache( ).insert( make_pair( key_info, columns ) );
                }
             }
-         }
 
-         instance_accessor.after_fetch_from_db( );
-         instance_accessor.perform_after_fetch( is_minimal_fetch );
+            instance_accessor.after_fetch_from_db( );
+            instance_accessor.perform_after_fetch( is_minimal_fetch );
+         }
       }
    }
 
@@ -4913,6 +4926,15 @@ void term_storage( command_handler& cmd_handler )
       set_session_variable( c_session_variable_storage, "" );
       gtp_session->p_storage_handler = g_storage_handlers[ 0 ];
    }
+}
+
+void storage_cache_clear( )
+{
+   guard g( g_mutex );
+
+   storage_handler& handler( *gtp_session->p_storage_handler );
+
+   handler.clear_cache( );
 }
 
 size_t storage_cache_limit( )
@@ -8917,10 +8939,11 @@ void perform_instance_fetch( class_base& instance,
        + string( instance.class_name( ) ) + " record whilst currently perfoming an instance operation" );
 
    bool found_in_cache = false;
+   bool has_simple_keyinfo = ( key_info.find( ' ' ) == string::npos );
 
-   if( !only_sys_fields && key_info.find( ' ' ) == string::npos
+   if( has_simple_keyinfo
     && !gtp_session->tx_key_info.count( string( instance.class_id( ) ) + ":" + key_info ) )
-      found_in_cache = fetch_instance_from_cache( instance, key_info );
+      found_in_cache = fetch_instance_from_cache( instance, key_info, only_sys_fields );
 
    bool found = found_in_cache;
 
@@ -8938,7 +8961,7 @@ void perform_instance_fetch( class_base& instance,
       sql = construct_sql_select( instance,
        field_info, order_info, query_info, fixed_info, paging_info, "", false, true, 1, only_sys_fields, "" );
 
-      found = fetch_instance_from_db( instance, sql, false, false, true );
+      found = fetch_instance_from_db( instance, sql, only_sys_fields, false, has_simple_keyinfo );
    }
 
    if( !found )
