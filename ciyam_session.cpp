@@ -3085,6 +3085,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          dump_storage_locks( osstr );
          output_response_lines( socket, osstr.str( ) );
       }
+      else if( command == c_cmd_ciyam_session_storage_cache_clear )
+         storage_cache_clear( );
       else if( command == c_cmd_ciyam_session_storage_cache_limit )
       {
          string new_limit( get_parm_val( parameters, c_cmd_parm_ciyam_session_storage_cache_limit_new_limit ) );

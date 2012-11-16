@@ -49,6 +49,7 @@ storage_log_slice "slice a storage log into individual module logs" <val//name>[
 storage_log_splice "splice individual module logs into a master storage log" <val//name><list//modules>
 storage_dump_cache "dump storage cached records"
 storage_dump_locks "dump storage lock information"
+storage_cache_clear "clear the storage record cache"
 storage_cache_limit "get/set storage record cache limit" [<oval//new_limit>]
 storage_trans_start "start a transaction in the current storage"
 storage_trans_commit "commit a transaction in the current storage"
