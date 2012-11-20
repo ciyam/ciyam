@@ -1319,7 +1319,7 @@ bool output_view_form( ostream& os, const string& act,
        && ( source.file_fields.count( source_value_id )
        || source.image_fields.count( source_value_id ) ) ) )
       {
-         os << "   <" << td_type << " class=\"list\">";
+         os << "   <" << td_type << " class=\"list" + ( extra_effect.empty( ) ? string( "" ) : " " + extra_effect ) + "\">";
          os << escape_markup( is_in_edit ? source.edit_display_names[ i ] : source.display_names[ i ] );
          if( source.uom_fields.count( source_value_id ) )
             os << " (" << source.uom_fields.find( source_value_id )->second << ")";

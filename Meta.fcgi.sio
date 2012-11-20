@@ -4727,14 +4727,6 @@
      <pextra>@fkey1:300600+106101
     </field>
     <field/>
-     <name>field_relationship_name
-     <field>113101
-     <ftype>string
-     <extra>forced+max_size=30
-     <mandatory>false
-     <modifiers>
-    </field>
-    <field/>
      <name>field_relationship_mandatory
      <field>113102
      <ftype>bool
@@ -4748,6 +4740,14 @@
      <ftype>bool
      <extra>force
      <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_relationship_name
+     <field>113101
+     <ftype>string
+     <extra>forced+max_size=30
+     <mandatory>false
      <modifiers>
     </field>
     <field/>

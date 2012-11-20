@@ -114,6 +114,10 @@ const char* const c_str_home_group_stats = "Your {@group} currently has {@num} {
 const char* const c_str_parm_home_group_stats_group = "{@group}";
 const char* const c_str_parm_home_group_stats_num = "{@num}";
 const char* const c_str_parm_home_group_stats_type = "{@type}";
+const char* const c_str_has_one_or_more_active_children = "This {@class} has one or more {@cfield} child {@children}.";
+const char* const c_str_parm_has_one_or_more_active_children_class = "{@class}";
+const char* const c_str_parm_has_one_or_more_active_children_cfield = "{@cfield}";
+const char* const c_str_parm_has_one_or_more_active_children_children = "{@children}";
 
 #endif
 
