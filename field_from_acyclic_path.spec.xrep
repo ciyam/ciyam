@@ -1,4 +1,6 @@
 `{`@eq`(`'after_fetch_or_for_store`'`,`$section`)\
+`{`@eq`(`$arg_embed_links`,`'`'`)`$arg_ext_field`=`'`'`}\
+`{`!`@eq`(`$arg_ext_field`,`'`'`)`$arg_external`=`'`'`}\
    // [(start field_from_acyclic_path)]
 `{`@eq`(`$arg_ftransient`,`'1`'`)\
    if( !get_obj( ).get_key( ).empty( )
@@ -8,7 +10,11 @@
    // NOTE: Empty code block for scope purposes.
 `}\
    {
+`{`@eq`(`$arg_ext_field`,`'`'`)\
       string s;
+`,\
+      string s, es;
+`}\
       `{`$full_class_name`}* p_parent = &get_obj( ).`{`$arg_pfield`}( );
 
       while( true )
@@ -18,12 +24,20 @@
 
          if( !s.empty( ) )
             s = "`{`$arg_separator`}" + s;
+`{`!`@eq`(`$arg_ext_field`,`'`'`)\
+         if( !es.empty( ) )
+            es = "`{`$arg_separator`}" + es;
+
+`}\
 `{`@eq`(`$arg_embed_links`,`'`'`)\
          s = p_parent->`{`$arg_src_field`}( ) + s;
 `,\
 `{`@eq`(`$arg_external`,`'`'`)\
          s = "{" + p_parent->get_key( ) + ":" + p_parent->`{`$arg_src_field`}( ) + "}" + s;
-`,\
+`{`!`@eq`(`$arg_ext_field`,`'`'`)
+         es = "{" + p_parent->get_class_id( )
+          + "$" + p_parent->get_key( ) + ":" + p_parent->`{`$arg_src_field`}( ) + "}" + es;
+`}`,\
          s = "{" + p_parent->get_class_id( )
           + "$" + p_parent->get_key( ) + ":" + p_parent->`{`$arg_src_field`}( ) + "}" + s;
 `}`}
@@ -32,13 +46,24 @@
 
       if( !s.empty( ) )
          s += "`{`$arg_separator`}";
+`{`!`@eq`(`$arg_ext_field`,`'`'`)\
+      if( !es.empty( ) )
+         es += "`{`$arg_separator`}";
+
+`}\
 `{`@eq`(`$arg_external`,`'`'`)\
       s += get_obj( ).`{`$arg_src_field`}( );
-`,\
+`{`!`@eq`(`$arg_ext_field`,`'`'`)
+      es += "{" + get_obj( ).get_class_id( )
+       + "$" + get_obj( ).get_key( ) + ":" + get_obj( ).`{`$arg_src_field`}( ) + "}";
+`}`,\
       s += "{" + get_obj( ).get_class_id( )
        + "$" + get_obj( ).get_key( ) + ":" + get_obj( ).`{`$arg_src_field`}( ) + "}";
 `}
       get_obj( ).`{`$arg_dest_field`}( s );
+`{`!`@eq`(`$arg_ext_field`,`'`'`)\
+      get_obj( ).`{`$arg_ext_field`}( es );
+`}\
    }
    // [(finish field_from_acyclic_path)]
 `}

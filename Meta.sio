@@ -29289,9 +29289,9 @@
      <field_info>301310:106101!@fkey1:300600+106101;link+force+new_edit
      <field_info>113106;no_edit+non_new
      <field_info>301320:106101!@fkey1:300600+106101;link+force+new_edit
-     <field_info>113101;forced
      <field_info>113102
      <field_info>113111;force
+     <field_info>113101;forced
      <field_info>113103;enum=580
      <field_info>113104;forced+enum=585
     </data>

@@ -13,6 +13,8 @@
       get_obj( ).`{`$arg_dfield`}( str );
 `{`!`@eq`(`$arg_keyrep`,`'`'`)
       get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "`{`$arg_keyrep`}", get_obj( ).get_key( ) );\
+`}`{`!`@eq`(`$arg_classrep`,`'`'`)
+      get_obj( ).add_search_replacement( "`{`$arg_dfield`}", "`{`$arg_classrep`}", get_obj( ).get_class_id( ) );\
 `}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
 `{`@eq`(`$arg_inc_labels`,`'true`'`)\

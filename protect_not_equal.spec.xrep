@@ -1,6 +1,6 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start protect_not_equal)]
-   if( `{`@eq`(`$arg_allow_scripts`,`'true`'`)!is_script_uid( ) && `}check_not_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$arg_value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)!is_admin_uid( ) && `}`{`@eq`(`$arg_scripts_always`,`'true`'`)!is_script_uid( ) && `}check_not_equal( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ), `{`$arg_value`} ) )`{`!`@eq`(`$arg_label`,`'`'`) // i.e. `{`$arg_label`}`}\
 `{`@eq`(`$arg_scope`,`'edit`'`)
       state |= ( c_state_uneditable`{`@eq`(`$arg_changing`,`'true`'`) | c_state_is_changing`} );\
 `,`@eq`(`$arg_scope`,`'delete`'`)

@@ -862,6 +862,46 @@ td.list
       background: #eee;
    }
 
+   tbody tr.odd_data td.extralight
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.odd_data td.extralight a:link
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.odd_data td.extralight a:active
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.odd_data td.extralight a:visited
+   {
+      background: #ffe5cc;
+   }
+
+   tbody tr.odd_data td.extralight1
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.odd_data td.extralight1 a:link
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.odd_data td.extralight1 a:active
+   {
+      background: #d9deea;
+   }
+
+   tbody tr.odd_data td.extralight1 a:visited
+   {
+      background: #d9deea;
+   }
+
    tbody tr.odd_error td
    {
       background: #eee;

@@ -9971,7 +9971,8 @@ void state_protect_specification::add_specification_data( model& /*m*/, specific
    spec_data.data_pairs.push_back( make_pair( c_data_changing, is_changing ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_label, "" ) );
-   spec_data.data_pairs.push_back( make_pair( "allow_scripts", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "admin_always", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "scripts_always", "" ) );
 }
 
 string state_protect_specification::static_class_name( ) { return "state_protect"; }

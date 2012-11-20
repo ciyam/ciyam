@@ -1768,7 +1768,7 @@ specification_add -id=602250 {Permission}_view view "? standard Permission Name,
 specification_add -id=602260 {Permission}_group_list list "* group:no_limit Permission Name,Id {Workgroup}"
 specification_add -id=602300 {Relationship}_view view "? standard Relationship\
  {Model}:Name;no_edit+link+fkey1,Child_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Field_Id;no_edit+non_new\
-,Parent_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Name;forced,Mandatory,Transient;force,Cascade_Op,Extra;forced"
+,Parent_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Mandatory,Transient;force,Name;forced,Cascade_Op,Extra;forced"
 specification_add -id=602320 {Relationship}_child_list0 list "@602320_* child:sort_no_limit Relationship\
  Child_Class:Name,Parent_Class:Name,Name,Mandatory,Cascade_Op {Model}"
 specification_add -id=602321 {Relationship}_child_list1 list "@602321_Child_* child:no_new,sort_no_limit Relationship\
