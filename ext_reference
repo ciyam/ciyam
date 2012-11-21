@@ -2,8 +2,8 @@ if [ $# -lt 1 ]; then
  echo Usage: ext_reference [url] [[output_file]]
 else
  if [ ! "$2" = "" ]; then
-  curl -s -m 8 http://blockchain.info/q/resolvefirstbits/$1 >$2
+  curl -s -m 8 $1 >$2
  else
-  curl -s -m 8 http://blockchain.info/q/resolvefirstbits/$1
+  curl -s -m 8 $1
  fi
 fi

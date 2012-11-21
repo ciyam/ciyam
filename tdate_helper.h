@@ -60,7 +60,10 @@ class tdate : public nullable_udate
 
    std::string as_string( bool use_separators = false ) const
    {
-      return static_cast< const udate& >( *this ).as_string( use_separators );
+      if( is_null( ) )
+         return std::string( );
+      else
+         return static_cast< const udate& >( *this ).as_string( use_separators );
    }
 
    days get_day_of_year( ) const { return static_cast< const udate& >( *this ).get_day_of_year( ); }
