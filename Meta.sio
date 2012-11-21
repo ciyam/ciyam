@@ -10076,6 +10076,25 @@
     </specifications>
     <fields/>
      <field/>
+      <id>137116
+      <name>Actions
+      <type>string
+      <mandatory>false
+      <transient>true
+      <extra>actions
+      <default_value>137410$137100*@id
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601550
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>137111
       <name>Date
       <type>string
@@ -10660,6 +10679,14 @@
      </modifier>
     </modifiers>
     <procedures/>
+     <procedure/>
+      <id>137410
+      <name>Edit
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
     </procedures>
    </class>
    <class/>
@@ -28627,6 +28654,7 @@
      <pfield_id>302820
      <field_info>137115
      <field_info>137107
+     <field_info>137116;omit_label
     </data>
    </specification>
    <specification/>
