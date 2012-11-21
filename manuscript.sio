@@ -9,6 +9,11 @@
   <filename>ext_balance
   <arguments>@arg1 @output_file
  </script>
+ <script/>
+  <name>ext_reference
+  <filename>ext_reference
+  <arguments>@arg1 @output_file
+ </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>

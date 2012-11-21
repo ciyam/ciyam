@@ -41,28 +41,32 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Date = 1,
-      e_field_id_Datetime = 2,
-      e_field_id_Id = 3,
-      e_field_id_Installed = 4,
-      e_field_id_Integer = 5,
-      e_field_id_Is_Other_Package = 6,
-      e_field_id_Model = 7,
-      e_field_id_Name = 8,
-      e_field_id_Numeric = 9,
-      e_field_id_Other_Package = 10,
-      e_field_id_Other_Package_Required = 11,
-      e_field_id_Other_Package_Type = 12,
-      e_field_id_Package = 13,
-      e_field_id_Primitive = 14,
-      e_field_id_String = 15,
-      e_field_id_Time = 16,
-      e_field_id_Use_Option = 17,
-      e_field_id_Value = 18
+      e_field_id_Actions = 1,
+      e_field_id_Date = 2,
+      e_field_id_Datetime = 3,
+      e_field_id_Id = 4,
+      e_field_id_Installed = 5,
+      e_field_id_Integer = 6,
+      e_field_id_Is_Other_Package = 7,
+      e_field_id_Model = 8,
+      e_field_id_Name = 9,
+      e_field_id_Numeric = 10,
+      e_field_id_Other_Package = 11,
+      e_field_id_Other_Package_Required = 12,
+      e_field_id_Other_Package_Type = 13,
+      e_field_id_Package = 14,
+      e_field_id_Primitive = 15,
+      e_field_id_String = 16,
+      e_field_id_Time = 17,
+      e_field_id_Use_Option = 18,
+      e_field_id_Value = 19
    };
 
    Meta_Package_Option( );
    ~Meta_Package_Option( );
+
+   const std::string& Actions( ) const;
+   void Actions( const std::string& Actions );
 
    const std::string& Date( ) const;
    void Date( const std::string& Date );
@@ -120,6 +124,8 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    Meta_Package& Package( );
    const Meta_Package& Package( ) const;
    void Package( const std::string& key );
+
+   virtual void Edit( );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );

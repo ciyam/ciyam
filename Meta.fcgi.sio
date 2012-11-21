@@ -8103,6 +8103,15 @@
      <unique>false
      <indexed>false
     </column>
+    <column/>
+     <name>field_package_option_actions
+     <field>137116
+     <ftype>string
+     <extra>omit_label+actions
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
    </columns>
    <parents/>
    </parents>

@@ -754,6 +754,8 @@ field_add -id=137112 Package_Option Time string opt
 field_add -id=137113 Package_Option Numeric string opt
 field_add -id=137114 Package_Option Integer int mand -def=0
 field_add -id=137115 Package_Option Name str100 mand
+field_add -id=137116 Package_Option Actions string opt -def=137410$137100*@id -transient -x=actions
+procedure_add -id=137410 Package_Option Edit
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -1731,7 +1733,7 @@ specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
 ,{Package_Type}:Name;new_edit+force,Install_Details;no_edit,Actions,Key;hidden"
-specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child:no_limit Package_Option Name,Value {Package}"
+specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child:no_limit Package_Option Name,Value,Actions;omit_label {Package}"
 specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Package_Option\
  {Package}:Name;no_edit+link,Name;no_edit,String,Datetime,Date,Time,Numeric,Integer,Use_Option\
 ,Other_Package:Name!@fkey1:{Model}+@key1:{Package_Type},{Model};hidden+fkey1,Other_Package_Type;hidden+key1"
