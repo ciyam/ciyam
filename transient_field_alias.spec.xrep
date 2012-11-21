@@ -32,7 +32,8 @@
 `}\
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
 `}`}
-      get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( )`{`!`@eq`(`$arg_scfield`,`'`'`).`{`$arg_scfield`}( )`} );
+      get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}get_obj( ).`{`$arg_sfield`}( )\
+`{`!`@eq`(`$arg_scfield`,`'`'`).`{`$arg_scfield`}( )`}`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );
    // [(finish transient_field_alias)]
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\

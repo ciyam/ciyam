@@ -56,7 +56,10 @@ class ttime : public nullable_mtime
 
    std::string as_string( bool use_separators = false, bool include_milliseconds = true ) const
    {
-      return static_cast< const mtime& >( *this ).as_string( use_separators, include_milliseconds );
+      if( is_null( ) )
+         return std::string( );
+      else
+         return static_cast< const mtime& >( *this ).as_string( use_separators, include_milliseconds );
    }
 
    static mtime local( ) { return mtime::local( ); }

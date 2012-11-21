@@ -47,10 +47,12 @@
 #include "pop3.h"
 #include "mime.h"
 #include "smtp.h"
+#include "sha1.h"
 #include "regex.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
+#include "sha256.h"
 #include "sql_db.h"
 #include "numeric.h"
 #include "hashcash.h"
@@ -2616,6 +2618,18 @@ void check_with_regex( const string& r, const string& s )
      else
          throw runtime_error( "unexpected check for empty string" );
    }
+}
+
+string hash_sha1( const string& s )
+{
+   sha1 hash( s );
+   return lower( hash.get_digest_as_string( ) );
+}
+
+string hash_sha256( const string& s )
+{
+   sha256 hash( s );
+   return lower( hash.get_digest_as_string( ) );
 }
 
 string valid_utf8_filename( const string& str )

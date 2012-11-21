@@ -94,7 +94,10 @@ class tdatetime : public nullable_date_time
 
    std::string as_string( bool use_separators = false, bool include_milliseconds = true ) const
    {
-      return static_cast< const date_time& >( *this ).as_string( use_separators, include_milliseconds );
+      if( is_null( ) )
+         return std::string( );
+      else
+         return static_cast< const date_time& >( *this ).as_string( use_separators, include_milliseconds );
    }
 
    days get_day_of_year( ) const { return static_cast< const date_time& >( *this ).get_day_of_year( ); }
