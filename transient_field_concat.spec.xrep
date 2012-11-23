@@ -1,6 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start transient_field_concat)]
    if( !get_obj( ).get_key( ).empty( )
+`{`@eq`(`$arg_top_level`,`'true`'`)\
+    && !get_obj( ).get_graph_parent( )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
     || required_transients.count( "`{`$arg_dfield`}" ) ) )
    {

@@ -43,6 +43,7 @@
 #include "salt.h"
 #include "sha1.h"
 #include "base64.h"
+#include "sha256.h"
 #include "sql_db.h"
 #include "config.h"
 #include "format.h"
@@ -2882,6 +2883,16 @@ string g_smtp_security;
 int g_smtp_max_send_attempts = 1;
 int64_t g_smtp_max_attached_data = INT64_C( 0 );
 
+// NOTE: For added security this function should be customised.
+string sid_hash( )
+{
+   sha256 hash1( c_salt_value + g_sid );
+
+   sha1 hash2( hash1.get_digest_as_string( ) );
+
+   return hash2.get_digest_as_string( );
+}
+
 struct script_info
 {
    string filename;
@@ -3724,6 +3735,11 @@ string get_app_url( const string& suffix )
    return url;
 }
 
+string get_sid( )
+{
+   return sid_hash( );
+}
+
 string get_identity( bool prepend_sid, bool append_max_user_limit )
 {
    if( !prepend_sid && !append_max_user_limit )
@@ -3732,10 +3748,7 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
    string s( g_reg_key );
 
    if( prepend_sid )
-   {
-      sha1 hash( g_sid );
-      s = hash.get_digest_as_string( ) + "-" + s;
-   }
+      s = sid_hash( ) + "-" + s;
 
    if( append_max_user_limit )
       s += ":" + to_string( g_max_user_limit );

@@ -61,6 +61,7 @@
 #include "ciyam_base.h"
 #include "mail_source.h"
 #include "oid_pointer.h"
+#include "crypt_stream.h"
 #include "module_management.h"
 
 #ifdef ICONV_SUPPORT
@@ -2630,6 +2631,16 @@ string hash_sha256( const string& s )
 {
    sha256 hash( s );
    return lower( hash.get_digest_as_string( ) );
+}
+
+string decrypt( const string& s )
+{
+   return password_decrypt( s, get_sid( ) );
+}
+
+string encrypt( const string& s )
+{
+   return password_encrypt( s, get_sid( ) );
 }
 
 string valid_utf8_filename( const string& str )

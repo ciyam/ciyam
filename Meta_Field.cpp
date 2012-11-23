@@ -124,6 +124,7 @@ const int32_t c_version = 1;
 const char* const c_okay = "okay";
 
 const char* const c_field_id_Class = "300700";
+const char* const c_field_id_Def_Value = "107115";
 const char* const c_field_id_Default = "107102";
 const char* const c_field_id_Enum = "300720";
 const char* const c_field_id_Extra = "107103";
@@ -144,6 +145,7 @@ const char* const c_field_id_UOM = "107104";
 const char* const c_field_id_Use_In_Text_Search = "107111";
 
 const char* const c_field_name_Class = "Class";
+const char* const c_field_name_Def_Value = "Def_Value";
 const char* const c_field_name_Default = "Default";
 const char* const c_field_name_Enum = "Enum";
 const char* const c_field_name_Extra = "Extra";
@@ -164,6 +166,7 @@ const char* const c_field_name_UOM = "UOM";
 const char* const c_field_name_Use_In_Text_Search = "Use_In_Text_Search";
 
 const char* const c_field_display_name_Class = "field_field_class";
+const char* const c_field_display_name_Def_Value = "field_field_def_value";
 const char* const c_field_display_name_Default = "field_field_default";
 const char* const c_field_display_name_Enum = "field_field_enum";
 const char* const c_field_display_name_Extra = "field_field_extra";
@@ -183,7 +186,7 @@ const char* const c_field_display_name_Type = "field_field_type";
 const char* const c_field_display_name_UOM = "field_field_uom";
 const char* const c_field_display_name_Use_In_Text_Search = "field_field_use_in_text_search";
 
-const int c_num_fields = 19;
+const int c_num_fields = 20;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -201,6 +204,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "107112",
    "107113",
    "107114",
+   "107115",
    "300700",
    "300710",
    "300720",
@@ -211,6 +215,7 @@ const char* const c_all_sorted_field_ids[ ] =
 const char* const c_all_sorted_field_names[ ] =
 {
    "Class",
+   "Def_Value",
    "Default",
    "Enum",
    "Extra",
@@ -239,16 +244,18 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 2;
+const int c_num_transient_fields = 3;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "107113",
-   "107114"
+   "107114",
+   "107115"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
+   "Def_Value",
    "Numeric_Decimals",
    "Parent_Class_Name"
 };
@@ -298,6 +305,7 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 string gv_default_Class = string( );
+string gv_default_Def_Value = string( );
 string gv_default_Default = string( );
 string gv_default_Enum = string( );
 int gv_default_Extra = int( 0 );
@@ -591,6 +599,8 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          throw runtime_error( "field name must not be empty for getter call" );
       else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
          string_getter< Meta_Class >( cmd_handler.p_Meta_Field->Class( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
+         string_getter< string >( cmd_handler.p_Meta_Field->Def_Value( ), cmd_handler.retval );
       else if( field_name == c_field_id_Default || field_name == c_field_name_Default )
          string_getter< string >( cmd_handler.p_Meta_Field->Default( ), cmd_handler.retval );
       else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
@@ -640,6 +650,9 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
       else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
          func_string_setter< Meta_Field, Meta_Class >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Class, field_value );
+      else if( field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
+         func_string_setter< Meta_Field, string >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Def_Value, field_value );
       else if( field_name == c_field_id_Default || field_name == c_field_name_Default )
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Default, field_value );
@@ -755,6 +768,9 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    {
       return *cp_obj;
    }
+
+   const string& impl_Def_Value( ) const { return lazy_fetch( p_obj ), v_Def_Value; }
+   void impl_Def_Value( const string& Def_Value ) { v_Def_Value = Def_Value; }
 
    const string& impl_Default( ) const { return lazy_fetch( p_obj ), v_Default; }
    void impl_Default( const string& Default ) { v_Default = Default; }
@@ -1775,6 +1791,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    size_t total_child_relationships;
 
+   string v_Def_Value;
    string v_Default;
    int v_Extra;
    string v_Id;
@@ -1886,74 +1903,78 @@ string Meta_Field::impl::get_field_value( int field ) const
       break;
 
       case 1:
-      retval = to_string( impl_Default( ) );
+      retval = to_string( impl_Def_Value( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Enum( ) );
+      retval = to_string( impl_Default( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Enum( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Is_Foreign_Key( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Is_Text_Type( ) );
+      retval = to_string( impl_Is_Foreign_Key( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Mandatory( ) );
+      retval = to_string( impl_Is_Text_Type( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Mandatory( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Numeric_Decimals( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Parent_Class_Name( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Parent_Class_Name( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Transient( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Transient( ) );
       break;
 
       case 17:
-      retval = to_string( impl_UOM( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 18:
+      retval = to_string( impl_UOM( ) );
+      break;
+
+      case 19:
       retval = to_string( impl_Use_In_Text_Search( ) );
       break;
 
@@ -1973,74 +1994,78 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 1:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Default, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Def_Value, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Default, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
+      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
+      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
+      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
       break;
 
       case 18:
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      break;
+
+      case 19:
       func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Use_In_Text_Search, value );
       break;
 
@@ -2181,6 +2206,7 @@ void Meta_Field::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Field::impl::clear( )
 {
+   v_Def_Value = gv_default_Def_Value;
    v_Default = gv_default_Default;
    v_Extra = gv_default_Extra;
    v_Id = gv_default_Id;
@@ -2424,12 +2450,39 @@ void Meta_Field::impl::after_fetch( )
    // [(finish transient_field_alias)]
 
    // [(start transient_field_alias)]
+   if( get_obj( ).needs_field_value( "Def_Value" )
+    || required_transients.count( "Def_Value" ) )
+      get_obj( ).Def_Value( get_obj( ).Default( ) );
+   // [(finish transient_field_alias)]
+
+   // [(start transient_field_alias)]
    if( get_obj( ).needs_field_value( "Numeric_Decimals" )
     || required_transients.count( "Numeric_Decimals" ) )
       get_obj( ).Numeric_Decimals( get_obj( ).Type( ).Numeric_Decimals( ) );
    // [(finish transient_field_alias)]
 
    // [<start after_fetch>]
+//nyi
+   if( get_obj( ).Def_Value( ).size( ) > 5 )
+   {
+      string str( get_obj( ).Def_Value( ) );
+
+      size_t truncate_at = 5;
+      for( size_t i = 0; i < 5; i++ )
+      {
+         if( str[ i ] == ' ' || str[ i ] == '_'
+          || str[ i ] == '-' || str[ i ] == '+' || str[ i ] == '/' || str[ i ] == '|' )
+         {
+            truncate_at = i;
+            break;
+         }
+      }
+
+      str.erase( truncate_at );
+      str += "...";
+
+      get_obj( ).Def_Value( str );
+   }
    // [<finish after_fetch>]
 }
 
@@ -2865,6 +2918,16 @@ Meta_Field::~Meta_Field( )
 {
    cleanup( );
    delete p_impl;
+}
+
+const string& Meta_Field::Def_Value( ) const
+{
+   return p_impl->impl_Def_Value( );
+}
+
+void Meta_Field::Def_Value( const string& Def_Value )
+{
+   p_impl->impl_Def_Value( Def_Value );
 }
 
 const string& Meta_Field::Default( ) const
@@ -3578,6 +3641,16 @@ const char* Meta_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Def_Value )
+   {
+      p_id = c_field_id_Def_Value;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Default )
    {
       p_id = c_field_id_Default;
@@ -3775,6 +3848,16 @@ const char* Meta_Field::get_field_name(
 
       if( p_type_name )
          *p_type_name = "Meta_Class";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Def_Value )
+   {
+      p_name = c_field_name_Def_Value;
+
+      if( p_type_name )
+         *p_type_name = "string";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -3987,6 +4070,8 @@ string Meta_Field::get_field_display_name( const string& id_or_name ) const
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
    else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
       display_name = get_module_string( c_field_display_name_Class );
+   else if( id_or_name == c_field_id_Def_Value || id_or_name == c_field_name_Def_Value )
+      display_name = get_module_string( c_field_display_name_Def_Value );
    else if( id_or_name == c_field_id_Default || id_or_name == c_field_name_Default )
       display_name = get_module_string( c_field_display_name_Default );
    else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
@@ -4742,6 +4827,17 @@ void Meta_Field::get_required_field_names(
    // [(finish field_from_other_field)]
 
    // [(start transient_field_alias)]
+   if( needs_field_value( "Def_Value", dependents ) )
+   {
+      dependents.insert( "Default" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Default ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Default ) ) )
+         names.insert( "Default" );
+   }
+   // [(finish transient_field_alias)]
+
+   // [(start transient_field_alias)]
    if( needs_field_value( "Numeric_Decimals", dependents ) )
    {
       dependents.insert( "Type" );
@@ -4877,6 +4973,7 @@ void Meta_Field::static_get_class_info( class_info_container& class_info )
 void Meta_Field::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "300700", "Class", "Meta_Class", true ) );
+   all_field_info.push_back( field_info( "107115", "Def_Value", "string", false ) );
    all_field_info.push_back( field_info( "107102", "Default", "string", false ) );
    all_field_info.push_back( field_info( "300720", "Enum", "Meta_Enum", false ) );
    all_field_info.push_back( field_info( "107103", "Extra", "int", false ) );
@@ -4932,74 +5029,78 @@ const char* Meta_Field::static_get_field_id( field_id id )
       break;
 
       case 2:
-      p_id = "107102";
+      p_id = "107115";
       break;
 
       case 3:
-      p_id = "300720";
+      p_id = "107102";
       break;
 
       case 4:
-      p_id = "107103";
+      p_id = "300720";
       break;
 
       case 5:
-      p_id = "107110";
+      p_id = "107103";
       break;
 
       case 6:
-      p_id = "107106";
+      p_id = "107110";
       break;
 
       case 7:
-      p_id = "107108";
+      p_id = "107106";
       break;
 
       case 8:
-      p_id = "107109";
+      p_id = "107108";
       break;
 
       case 9:
-      p_id = "107105";
+      p_id = "107109";
       break;
 
       case 10:
-      p_id = "107101";
+      p_id = "107105";
       break;
 
       case 11:
-      p_id = "107114";
+      p_id = "107101";
       break;
 
       case 12:
-      p_id = "300730";
+      p_id = "107114";
       break;
 
       case 13:
-      p_id = "107113";
+      p_id = "300730";
       break;
 
       case 14:
-      p_id = "107107";
+      p_id = "107113";
       break;
 
       case 15:
-      p_id = "300740";
+      p_id = "107107";
       break;
 
       case 16:
-      p_id = "107112";
+      p_id = "300740";
       break;
 
       case 17:
-      p_id = "300710";
+      p_id = "107112";
       break;
 
       case 18:
-      p_id = "107104";
+      p_id = "300710";
       break;
 
       case 19:
+      p_id = "107104";
+      break;
+
+      case 20:
       p_id = "107111";
       break;
    }
@@ -5021,74 +5122,78 @@ const char* Meta_Field::static_get_field_name( field_id id )
       break;
 
       case 2:
-      p_id = "Default";
+      p_id = "Def_Value";
       break;
 
       case 3:
-      p_id = "Enum";
+      p_id = "Default";
       break;
 
       case 4:
-      p_id = "Extra";
+      p_id = "Enum";
       break;
 
       case 5:
-      p_id = "Id";
+      p_id = "Extra";
       break;
 
       case 6:
-      p_id = "Internal";
+      p_id = "Id";
       break;
 
       case 7:
-      p_id = "Is_Foreign_Key";
+      p_id = "Internal";
       break;
 
       case 8:
-      p_id = "Is_Text_Type";
+      p_id = "Is_Foreign_Key";
       break;
 
       case 9:
-      p_id = "Mandatory";
+      p_id = "Is_Text_Type";
       break;
 
       case 10:
-      p_id = "Name";
+      p_id = "Mandatory";
       break;
 
       case 11:
-      p_id = "Numeric_Decimals";
+      p_id = "Name";
       break;
 
       case 12:
-      p_id = "Parent_Class";
+      p_id = "Numeric_Decimals";
       break;
 
       case 13:
-      p_id = "Parent_Class_Name";
+      p_id = "Parent_Class";
       break;
 
       case 14:
-      p_id = "Primitive";
+      p_id = "Parent_Class_Name";
       break;
 
       case 15:
-      p_id = "Source_Field";
+      p_id = "Primitive";
       break;
 
       case 16:
-      p_id = "Transient";
+      p_id = "Source_Field";
       break;
 
       case 17:
-      p_id = "Type";
+      p_id = "Transient";
       break;
 
       case 18:
-      p_id = "UOM";
+      p_id = "Type";
       break;
 
       case 19:
+      p_id = "UOM";
+      break;
+
+      case 20:
       p_id = "Use_In_Text_Search";
       break;
    }
@@ -5107,42 +5212,44 @@ int Meta_Field::static_get_field_num( const string& field )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
    else if( field == c_field_id_Class || field == c_field_name_Class )
       rc += 1;
-   else if( field == c_field_id_Default || field == c_field_name_Default )
+   else if( field == c_field_id_Def_Value || field == c_field_name_Def_Value )
       rc += 2;
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( field == c_field_id_Default || field == c_field_name_Default )
       rc += 3;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
       rc += 4;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 5;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 6;
-   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 7;
-   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
+   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
       rc += 8;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
       rc += 9;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
       rc += 10;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 11;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 12;
-   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 13;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
       rc += 14;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 15;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 16;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
       rc += 17;
-   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 18;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( field == c_field_id_UOM || field == c_field_name_UOM )
       rc += 19;
+   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+      rc += 20;
 
    return rc - 1;
 }

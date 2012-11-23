@@ -235,6 +235,7 @@ field_add -id=107111 Field Use_In_Text_Search bool mand -def=0
 field_add -id=107112 Field Transient bool mand -def=0
 field_add -id=107113 Field Parent_Class_Name identifier opt -transient
 field_add -id=107114 Field Numeric_Decimals numeric mand -def=0 -transient
+field_add -id=107115 Field Def_Value string opt -transient
 modifier_add -id=107310 Field Is_Type_bool UOM:relegate
 modifier_add -id=107315 Field Is_Any_Non_Text_Type Mandatory:protect,Use_In_Text_Search:relegate
 modifier_add -id=107320 Field Is_Transient Use_In_Text_Search:relegate,@class:lowlight1
@@ -1210,6 +1211,7 @@ specification_add -id=600052 {Field}_Is_Internal modifier_field_value "Field Is_
 specification_add -id=600053 {Field}_Primitive_from_other_field field_from_other_field "Field {Type}:Primitive Primitive"
 specification_add -id=600053a {Field}_Parent_Class_Name transient_field_alias "Field Parent_Class_Name Parent_Class:Name"
 specification_add -id=600054 {Field}_Is_Foreign_Key_from_other_field field_from_other_field "Field Parent_Class Is_Foreign_Key false -check_null -memfunc=get_is_singular"
+specification_add -id=600054a {Field}_Def_Value transient_field_alias "Field Def_Value Default"
 specification_add -id=600055 {Field}_{Specification}_update_children update_children "Field Specification Name"
 specification_add -id=600056 {Field}_{Specification}_Source_Field_update_children update_children "Field Specification:Source_Field Name"
 specification_add -id=600057 {Field}_{Specification}_Source_Parent_update_children update_children "Field Specification:Source_Parent Name"
@@ -1747,7 +1749,7 @@ specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no
 ,Id;no_edit+non_new,{Type}:Name!@group:{Workgroup}+Name;force+link,Name,Transient;force,Mandatory,Default\
 ,Primitive;hidden+key1,Parent_Class:Name;no_edit+link,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link,Extra,UOM,Use_In_Text_Search"
 specification_add -id=601720 {Field}_child_list0 list "@601720_* child:no_limit Field\
- Name,Id,{Type}:Name;link,Mandatory,Default {Class}"
+ Name,Id,{Type}:Name;link,Mandatory,Def_Value {Class}"
 specification_add -id=601810 {Index}_view view "? standard Index {Class}:Name;no_edit+link+fkey1\
 ,Unique,Field_1:Name!@fkey1:{Class}+Name,Field_2:Name!@fkey1:{Class}+Name\
 ,Field_3:Name!@fkey1:{Class}+Name,Field_4:Name!@fkey1:{Class}+Name,Field_5:Name!@fkey1:{Class}+Name"

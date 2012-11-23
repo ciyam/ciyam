@@ -2322,6 +2322,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600054a
+      <item>class
+     </specification>
+     <specification/>
       <id>600055
       <item>class
      </specification>
@@ -2488,6 +2492,27 @@
     </specifications>
     <fields/>
      <field/>
+      <id>107115
+      <name>Def_Value
+      <type>string
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600054a
+        <item>field
+       </specification>
+       <specification/>
+        <id>601720
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>107102
       <name>Default
       <type>1025
@@ -2498,15 +2523,15 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600054a
+        <item>sfield
+       </specification>
+       <specification/>
         <id>600600
         <item>field
        </specification>
        <specification/>
         <id>601710
-        <item>field
-       </specification>
-       <specification/>
-        <id>601720
         <item>field
        </specification>
        <specification/>
@@ -26344,6 +26369,16 @@
     </data>
    </specification>
    <specification/>
+    <id>600054a
+    <name>{Field}_Def_Value
+    <type>transient_field_alias
+    <data/>
+     <class_id>107100
+     <field_id>107115
+     <sfield_id>107102
+    </data>
+   </specification>
+   <specification/>
     <id>620065
     <name>{Field}_Id_auto_inc
     <type>parent_auto_int_inc
@@ -26547,7 +26582,7 @@
      <field_info>107110
      <field_info>300710:102101;link+max_size=100
      <field_info>107105
-     <field_info>107102
+     <field_info>107115
     </data>
    </specification>
    <specification/>

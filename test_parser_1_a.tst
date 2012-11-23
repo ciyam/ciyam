@@ -50,4 +50,4 @@ performing tests...
 [<opt/a>{[<opt/b>]}|<opt/c>{[<opt/d>]}]<opt/e>
 [<opt/a>{[<opt/b>]<opt/c>}|<opt/d>{[<opt/e>]}|<opt/f>]
 
-performed 820 test(s) and found 0 error(s)
+performed 828 test(s) and found 0 error(s)

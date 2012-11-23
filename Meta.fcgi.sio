@@ -7565,10 +7565,10 @@
      <indexed>false
     </column>
     <column/>
-     <name>field_field_default
-     <field>107102
+     <name>field_field_def_value
+     <field>107115
      <ftype>string
-     <extra>max_size=200
+     <extra>
      <modifiers>
      <unique>false
      <indexed>false

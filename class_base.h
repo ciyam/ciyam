@@ -948,6 +948,9 @@ void CLASS_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::str
 std::string CLASS_BASE_DECL_SPEC hash_sha1( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC hash_sha256( const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& s );
+std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& s );
+
 std::string CLASS_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 

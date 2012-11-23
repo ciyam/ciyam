@@ -758,10 +758,10 @@
 `{`$specification_Field_child_list0_clmods03`=`'100:protect`'`}
 `{`$specification_Field_child_list0_cluniq03`=`'false`'`}
 `{`$specification_Field_child_list0_cindex03`=`'false`'`}
-`{`$specification_Field_child_list0_column04`=`'107102`'`}
-`{`$specification_Field_child_list0_clname04`=`'Field_Default`'`}
+`{`$specification_Field_child_list0_column04`=`'107115`'`}
+`{`$specification_Field_child_list0_clname04`=`'Field_Def_Value`'`}
 `{`$specification_Field_child_list0_cltype04`=`'string`'`}
-`{`$specification_Field_child_list0_clxtra04`=`'max_size=200`'`}
+`{`$specification_Field_child_list0_clxtra04`=`'`'`}
 `{`$specification_Field_child_list0_clmods04`=`'`'`}
 `{`$specification_Field_child_list0_cluniq04`=`'false`'`}
 `{`$specification_Field_child_list0_cindex04`=`'false`'`}
