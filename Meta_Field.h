@@ -63,28 +63,32 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    {
       e_field_id_none = 0,
       e_field_id_Class = 1,
-      e_field_id_Default = 2,
-      e_field_id_Enum = 3,
-      e_field_id_Extra = 4,
-      e_field_id_Id = 5,
-      e_field_id_Internal = 6,
-      e_field_id_Is_Foreign_Key = 7,
-      e_field_id_Is_Text_Type = 8,
-      e_field_id_Mandatory = 9,
-      e_field_id_Name = 10,
-      e_field_id_Numeric_Decimals = 11,
-      e_field_id_Parent_Class = 12,
-      e_field_id_Parent_Class_Name = 13,
-      e_field_id_Primitive = 14,
-      e_field_id_Source_Field = 15,
-      e_field_id_Transient = 16,
-      e_field_id_Type = 17,
-      e_field_id_UOM = 18,
-      e_field_id_Use_In_Text_Search = 19
+      e_field_id_Def_Value = 2,
+      e_field_id_Default = 3,
+      e_field_id_Enum = 4,
+      e_field_id_Extra = 5,
+      e_field_id_Id = 6,
+      e_field_id_Internal = 7,
+      e_field_id_Is_Foreign_Key = 8,
+      e_field_id_Is_Text_Type = 9,
+      e_field_id_Mandatory = 10,
+      e_field_id_Name = 11,
+      e_field_id_Numeric_Decimals = 12,
+      e_field_id_Parent_Class = 13,
+      e_field_id_Parent_Class_Name = 14,
+      e_field_id_Primitive = 15,
+      e_field_id_Source_Field = 16,
+      e_field_id_Transient = 17,
+      e_field_id_Type = 18,
+      e_field_id_UOM = 19,
+      e_field_id_Use_In_Text_Search = 20
    };
 
    Meta_Field( );
    ~Meta_Field( );
+
+   const std::string& Def_Value( ) const;
+   void Def_Value( const std::string& Def_Value );
 
    const std::string& Default( ) const;
    void Default( const std::string& Default );

@@ -1,6 +1,9 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
+`{`@eq`(`$arg_top_level`,`'true`'`)\
+    && !get_obj( ).get_graph_parent( )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
     || required_transients.count( "`{`$arg_dfield`}" ) ) )
    {
@@ -58,7 +61,7 @@
 `}
 `{`@eq`(`'to_store`'`,`$section`)\
    // [(start field_from_search_replace)]
-   if( get_obj( ).get_is_editing( ) )
+   if( get_obj( ).get_is_editing( )`{`@eq`(`$arg_top_level`,`'true`'`) && !get_obj( ).get_graph_parent( )`} )
    {
 `{`@eq`(`$arg_cfield`,`'`'`)
       string str( get_obj( ).`{`$arg_sfield`}( ) );\

@@ -192,6 +192,9 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
 string password_decrypt( const string& password, const string& key, bool use_ssl )
 {
    string s;
+   if( password.empty( ) )
+      return password;
+
    stringstream ss( base64::decode( password ) );
 
 #ifndef SSL_SUPPORT

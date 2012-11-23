@@ -1330,7 +1330,7 @@ string::size_type regex::impl::do_search(
       if( okay || ( match_at_start && begins == string::npos ) )
          break;
 
-      if( start++ >= text.size( ) - 1 )
+      if( !text.size( ) || start++ >= text.size( ) - 1 )
          break;
 #ifdef DEBUG
        cout << "retry match from pos: " << start << endl;

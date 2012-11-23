@@ -5332,6 +5332,8 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
    spec_data.data_pairs.push_back( make_pair( c_data_orightb, options_right_bracket ) );
 
    spec_data.data_pairs.push_back( make_pair( "keyrep", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "classrep", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "top_level", "" ) );
    spec_data.data_pairs.push_back( make_pair( "inc_labels", "" ) );
 }
 
@@ -10206,6 +10208,8 @@ void transient_field_alias_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( c_data_scfield, scfield_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, "" ) );
+   spec_data.data_pairs.push_back( make_pair( "func", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "mfunc", "" ) );
    spec_data.data_pairs.push_back( make_pair( "def_value", "" ) );
    spec_data.data_pairs.push_back( make_pair( "iter_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "check_mod", "" ) );
@@ -10383,6 +10387,8 @@ void transient_field_concat_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_separator, separator ) );
    spec_data.data_pairs.push_back( make_pair( c_data_reverse, is_reverse ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_non_empty, both_non_empty ? c_true : "" ) );
+
+   spec_data.data_pairs.push_back( make_pair( "top_level", "" ) );
 }
 
 string transient_field_concat_specification::static_class_name( ) { return "transient_field_concat"; }
