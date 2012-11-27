@@ -2683,7 +2683,7 @@ string numeric_name( const string& s, bool show_plus_if_no_sign )
          else
             retval += no_sign_prefix + s[ i ];
       }
-      else if( s[ i ] == ' ' )
+      else if( s[ i ] == ' ' || s[ i ] == '.'  )
          retval += "_";
       else
          retval += s[ i ];
@@ -3783,6 +3783,18 @@ string meta_field_uom( int uom )
       str = "mg";
       break;
 
+      case 900:
+      str = "#";
+      break;
+
+      case 901:
+      str = "$";
+      break;
+
+      case 902:
+      str = "%";
+      break;
+
       default:
       throw runtime_error( "unexpected uom #" + to_string( uom ) + " in meta_field_uom" );
    }
@@ -4293,7 +4305,9 @@ string meta_field_extras( int uom, int extra, bool transient, int max_size,
       throw runtime_error( "unexpected field extra #" + to_string( extra ) + " in meta_field_extras" );
    }
 
-   if( uom > 0 )
+   if( uom == 999 )
+      all_extras.push_back( "uom=???" ); // KLUDGE: need to implement customised UOM's here...
+   else if( uom > 0 )
       all_extras.push_back( "uom=" + meta_field_uom( uom ) );
 
    switch( string_domain )

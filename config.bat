@@ -1,6 +1,7 @@
 @echo off
 
 if not exist config.info copy config.info.default config.info
+if not exist modules.lst copy modules.lst.default modules.lst
 if not exist ciyam_server.sio copy ciyam_server.sio.default ciyam_server.sio
 
 if exist xrep.exe goto has_tools

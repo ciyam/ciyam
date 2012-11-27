@@ -1,0 +1,48 @@
+`{`@eq`(`'validate`'`,`$section`)\
+`{`$op`=`'`'`}\
+`{`@eq`(`$arg_op`,`'eq`'`)`$op`=`'==`'`}\
+`{`@eq`(`$arg_op`,`'neq`'`)`$op`=`'!=`'`}\
+`{`@eq`(`$arg_op`,`'lt`'`)`$op`=`'<`'`}\
+`{`@eq`(`$arg_op`,`'gt`'`)`$op`=`'>`'`}\
+`{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
+`{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
+   // [(start check_compare_op_field)]
+`{`@eq`(`$arg_spfield`,`'`'`)\
+`{`@eq`(`$arg_not_pedit`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
+    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`} )
+`,\
+   if( ( !get_obj( ).get_graph_parent( )
+    || !get_obj( ).get_graph_parent( )->get_is_editing( ) )
+`{`!`@eq`(`$arg_tfield`,`'`'`)`\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
+    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`} )
+`}\
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_be_`{`$arg_op`}_other ), make_pair(
+       c_str_parm_field_must_be_`{`$arg_op`}_other_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_parm_field_must_be_`{`$arg_op`}_other_field2, get_module_string( c_field_display_name_`{`$arg_sfield`} ) ) ) ) );
+`,\
+`{`@eq`(`$arg_not_pedit`,`'`'`)\
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
+    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`} )
+`,\
+   if( ( !get_obj( ).get_graph_parent( )
+    || !get_obj( ).get_graph_parent( )->get_is_editing( ) )
+`{`!`@eq`(`$arg_tfield`,`'`'`)`\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
+    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`} )
+`}\
+      p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+       get_string_message( GS( c_str_field_must_be_`{`$arg_op`}_other ), make_pair(
+       c_str_parm_field_must_be_`{`$arg_op`}_other_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+       make_pair( c_str_parm_field_must_be_`{`$arg_op`}_other_field2, get_module_string( c_field_display_name_`{`$arg_spfield`} ) ) ) ) );
+`}\
+   // [(finish check_compare_op_field)]
+`}

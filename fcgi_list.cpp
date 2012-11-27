@@ -2518,19 +2518,23 @@ void output_list_form( ostream& os,
       {
          for( size_t k = 0; k < ARRAY_SIZE( state_modifiers ); k++ )
          {
-            string new_effect;
             if( state & state_modifiers[ k ] )
             {
-               if( source.lici->second->modifiers.count( state_modifiers[ k ] ) )
-                  new_effect = source.lici->second->modifiers.find( state_modifiers[ k ] )->second;
+               pair< modifier_const_iterator, modifier_const_iterator > range
+                = source.lici->second->modifiers.equal_range( state_modifiers[ k ] );
+
+               for( modifier_const_iterator ci = range.first; ci != range.second; ++ci )
+               {
+                  string new_effect( ci->second );
+
+                  if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
+                   || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
+                     display_effect = new_effect;
+
+                  if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+                     extra_effect = new_effect;
+               }
             }
-
-            if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
-             || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
-               display_effect = new_effect;
-
-            if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
-               extra_effect = new_effect;
          }
       }
 
@@ -2855,23 +2859,27 @@ void output_list_form( ostream& os,
             {
                for( size_t k = 0; k < ARRAY_SIZE( state_modifiers ); k++ )
                {
-                  string new_effect;
                   if( state & state_modifiers[ k ] )
                   {
-                     if( source.lici->second->fields[ j ].modifiers.count( state_modifiers[ k ] ) )
-                        new_effect = source.lici->second->fields[ j ].modifiers.find( state_modifiers[ k ] )->second;
+                     pair< modifier_const_iterator, modifier_const_iterator > range
+                      = source.lici->second->fields[ j ].modifiers.equal_range( state_modifiers[ k ] );
+
+                     for( modifier_const_iterator ci = range.first; ci != range.second; ++ci )
+                     {
+                        string new_effect( ci->second );
+
+                        if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
+                         || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
+                           display_effect = new_effect;
+
+                        if( new_effect == c_modifier_effect_relegate
+                         || ( view_edit_effect.empty( ) && new_effect == c_modifier_effect_protect ) )
+                           view_edit_effect = new_effect;
+
+                        if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
+                           extra_effect = new_effect;
+                     }
                   }
-
-                  if( new_effect == c_modifier_effect_lowlight || new_effect == c_modifier_effect_lowlight1
-                   || new_effect == c_modifier_effect_highlight || new_effect == c_modifier_effect_highlight1 )
-                     display_effect = new_effect;
-
-                  if( new_effect == c_modifier_effect_relegate
-                   || ( view_edit_effect.empty( ) && new_effect == c_modifier_effect_protect ) )
-                     view_edit_effect = new_effect;
-
-                  if( new_effect == c_modifier_effect_extralight || new_effect == c_modifier_effect_extralight1 )
-                     extra_effect = new_effect;
                }
             }
 

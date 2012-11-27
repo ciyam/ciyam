@@ -222,7 +222,9 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
 }
 
+const char* const c_procedure_id_Clear = "137430";
 const char* const c_procedure_id_Edit = "137410";
+const char* const c_procedure_id_Select = "137420";
 
 const uint64_t c_modifier_Is_Bool = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Date = UINT64_C( 0x200 );
@@ -516,9 +518,21 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
+   else if( command == c_cmd_Meta_Package_Option_Clear )
+   {
+      cmd_handler.p_Meta_Package_Option->Clear( );
+
+      cmd_handler.retval.erase( );
+   }
    else if( command == c_cmd_Meta_Package_Option_Edit )
    {
       cmd_handler.p_Meta_Package_Option->Edit( );
+
+      cmd_handler.retval.erase( );
+   }
+   else if( command == c_cmd_Meta_Package_Option_Select )
+   {
+      cmd_handler.p_Meta_Package_Option->Select( );
 
       cmd_handler.retval.erase( );
    }
@@ -681,7 +695,11 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
       cba.set_key( key );
    }
 
+   void impl_Clear( );
+
    void impl_Edit( );
+
+   void impl_Select( );
 
    string get_field_value( int field ) const;
    void set_field_value( int field, const string& value );
@@ -765,10 +783,30 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    mutable class_pointer< Meta_Package > cp_Package;
 };
 
+void Meta_Package_Option::impl::impl_Clear( )
+{
+   // [<start Clear_impl>]
+//nyi
+   get_obj( ).op_update( );
+   get_obj( ).Use_Option( false );
+   get_obj( ).op_apply( );
+   // [<finish Clear_impl>]
+}
+
 void Meta_Package_Option::impl::impl_Edit( )
 {
    // [<start Edit_impl>]
    // [<finish Edit_impl>]
+}
+
+void Meta_Package_Option::impl::impl_Select( )
+{
+   // [<start Select_impl>]
+//nyi
+   get_obj( ).op_update( );
+   get_obj( ).Use_Option( true );
+   get_obj( ).op_apply( );
+   // [<finish Select_impl>]
 }
 
 string Meta_Package_Option::impl::get_field_value( int field ) const
@@ -1215,6 +1253,13 @@ void Meta_Package_Option::impl::after_fetch( )
 //nyi
    if( get_state( ) & c_state_uneditable || get_obj( ).Package( ).Installed( ) )
       get_obj( ).Actions( "" );
+   else if( !get_obj( ).Is_Other_Package( ) && get_obj( ).Primitive( ) == e_primitive_bool )
+   {
+      if( get_obj( ).Use_Option( ) )
+         get_obj( ).Actions( c_procedure_id_Clear );
+      else
+         get_obj( ).Actions( c_procedure_id_Select );
+   }
 
    if( !get_obj( ).Is_Other_Package( ) )
    {
@@ -1604,9 +1649,19 @@ void Meta_Package_Option::Package( const string& key )
    p_impl->impl_Package( key );
 }
 
+void Meta_Package_Option::Clear( )
+{
+   p_impl->impl_Clear( );
+}
+
 void Meta_Package_Option::Edit( )
 {
    p_impl->impl_Edit( );
+}
+
+void Meta_Package_Option::Select( )
+{
+   p_impl->impl_Select( );
 }
 
 string Meta_Package_Option::get_field_value( int field ) const
@@ -2951,7 +3006,9 @@ procedure_info_container& Meta_Package_Option::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
+      procedures.insert( make_pair( "137430", "Clear" ) );
       procedures.insert( make_pair( "137410", "Edit" ) );
+      procedures.insert( make_pair( "137420", "Select" ) );
    }
 
    return procedures;

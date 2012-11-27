@@ -15,7 +15,7 @@ user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=href,9=html,23=tex
 ,24=orientation,25=epassword,26=hpassword,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level,27=hpassword\\_salt\
 ,15=create\\_datetime,16=modify\\_datetime,28=is\\_effective\\_owner,19=replace\\_underbars,20=enforce\\_uppercase\
 ,-2=user\\_group,-3=user\\_other,-1=owning\\_user,-4=create\\_user\\_key,-5=modify\\_user\\_key
-user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg
+user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg,900=number,901=dollars,902=percent,999=customised
 user_defined_enum_add -id=540 modifier_affect_scope int 0=field,1=class
 user_defined_enum_add -id=550 modifier_affect_type int 0=protect,1=relegate\
 ,2=lowlight,3=lowlight1,4=highlight,5=highlight1,6=extralight,7=extralight1
@@ -140,18 +140,23 @@ field_add -id=102116 Type Int_Type int mand -def=0 -e=int_type
 field_add -id=102117 Type Numeric_Type int mand -def=0 -e=numeric_type
 field_add -id=102118 Type Auto_Round bool mand -def=0
 field_add -id=102119 Type Rounding_Method int mand -def=3 -e=round_type
+field_add -id=102120 Type Default_UOM int mand -def=0 -e=uom
 modifier_add -id=102310 Type Is_String Min_Value:relegate,Max_Value:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,Date_Precision:relegate,Time_Precision:relegate\
-,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate\
+,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate,Default_UOM:relegate
 modifier_add -id=102311 Type Is_Datetime Max_Size:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
-,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate\
+,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate,Default_UOM:relegate
 modifier_add -id=102312 Type Is_Date Max_Size:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Time_Precision:relegate\
-,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate\
+,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate,Default_UOM:relegate
 modifier_add -id=102313 Type Is_Time Max_Size:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
-,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate\
+,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate,Default_UOM:relegate
 modifier_add -id=102314 Type Is_Numeric Max_Size:relegate\
 ,String_Domain:relegate,Date_Precision:relegate,Time_Precision:relegate,Int_Type:relegate
 modifier_add -id=102315 Type Is_Int Numeric_Digits:relegate\
@@ -159,10 +164,12 @@ modifier_add -id=102315 Type Is_Int Numeric_Digits:relegate\
 ,Time_Precision:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Numeric_Type:relegate
 modifier_add -id=102316 Type Is_Bool Max_Size:relegate,Min_Value:relegate,Max_Value:relegate\
 ,Numeric_Digits:relegate,Numeric_Decimals:relegate,String_Domain:relegate,Date_Precision:relegate\
-,Time_Precision:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate
-modifier_add -id=102317 Type Is_Not_Normal_Int Max_Size:relegate,Min_Value:relegate,Max_Value:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate
+,Time_Precision:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate\
+,Fraction_Limit:relegate,Int_Type:relegate,Numeric_Type:relegate,Default_UOM:relegate
+modifier_add -id=102317 Type Is_Not_Normal_Int Max_Size:relegate,Min_Value:relegate,Max_Value:relegate\
+,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Default_UOM:relegate
 modifier_add -id=102318 Type Is_Not_Normal_Numeric Min_Value:relegate,Max_Value:relegate,Numeric_Digits:relegate\
-,Numeric_Decimals:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate
+,Numeric_Decimals:relegate,Auto_Round:relegate,Rounding_Method:relegate,Show_Plus_Sign:relegate,Zero_Padding:relegate,Fraction_Limit:relegate,Default_UOM:relegate
 modifier_add -id=102319 Type Is_Not_Auto_Rounded Rounding_Method:relegate
 class_add -id=103100 Enum Enums
 field_add -id=103101 Enum Name identifier mand
@@ -236,7 +243,10 @@ field_add -id=107112 Field Transient bool mand -def=0
 field_add -id=107113 Field Parent_Class_Name identifier opt -transient
 field_add -id=107114 Field Numeric_Decimals numeric mand -def=0 -transient
 field_add -id=107115 Field Def_Value string opt -transient
+field_add -id=107116 Field UOM_Name str100 opt
+field_add -id=107117 Field UOM_Symbol str10 opt
 modifier_add -id=107310 Field Is_Type_bool UOM:relegate
+modifier_add -id=107311 Field Is_Non_Custom_UOM UOM_Name:relegate,UOM_Symbol:relegate
 modifier_add -id=107315 Field Is_Any_Non_Text_Type Mandatory:protect,Use_In_Text_Search:relegate
 modifier_add -id=107320 Field Is_Transient Use_In_Text_Search:relegate,@class:lowlight1
 procedure_add -id=107410 Field Get_Text_Type
@@ -757,6 +767,8 @@ field_add -id=137114 Package_Option Integer int mand -def=0
 field_add -id=137115 Package_Option Name str100 mand
 field_add -id=137116 Package_Option Actions string opt -def=137410$137100*@id -transient -x=actions
 procedure_add -id=137410 Package_Option Edit
+procedure_add -id=137420 Package_Option Select
+procedure_add -id=137430 Package_Option Clear
 relationship_add -id=200100 -fid=300100 User {Workgroup} Workgroup opt restrict
 relationship_add -id=200200 -fid=300200 Type {Workgroup} Workgroup opt restrict
 relationship_add -id=200300 -fid=300300 Enum {Workgroup} Workgroup opt restrict
@@ -1201,6 +1213,7 @@ specification_add -id=630038 {Class}_Header_File_file_link file_link "Class Name
 specification_add -id=640038 {Class}_Commands_File_file_link file_link "Class Name Commands_File .cms {Model}:Name"
 specification_add -id=600039 {Class}_Next_Field_Id_Id_required field_required "Class Next_Field_Id"
 specification_add -id=610039 {Class}_Next_Procedure_Id_Id_required field_required "Class Next_Procedure_Id"
+specification_add -id=600047 {Field}_Is_Non_Custom_UOM modifier_field_value "Field Is_Non_Custom_UOM UOM 999 -not_equal"
 specification_add -id=600048 {Field}_Is_Any_Non_Text_Type_int modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive int -enum=primitive"
 specification_add -id=600049 {Field}_Is_Any_Non_Text_Type_bool modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive bool -enum=primitive"
 specification_add -id=600050 {Field}_Is_Any_Non_Text_Type_numeric modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive numeric -enum=primitive"
@@ -1209,7 +1222,8 @@ specification_add -id=620050 {Field}_Is_Type_bool modifier_field_value "Field Is
 specification_add -id=600051 {Field}_Internal_protect state_protect "equal Field Internal true"
 specification_add -id=600052 {Field}_Is_Internal modifier_field_value "Field Is_Internal Internal true"
 specification_add -id=600053 {Field}_Primitive_from_other_field field_from_other_field "Field {Type}:Primitive Primitive"
-specification_add -id=600053a {Field}_Parent_Class_Name transient_field_alias "Field Parent_Class_Name Parent_Class:Name"
+specification_add -id=600053a {Field}_UOM_from_other_field default_to_field "Field UOM {Type}:Default_UOM"
+specification_add -id=600053b {Field}_Parent_Class_Name transient_field_alias "Field Parent_Class_Name Parent_Class:Name"
 specification_add -id=600054 {Field}_Is_Foreign_Key_from_other_field field_from_other_field "Field Parent_Class Is_Foreign_Key false -check_null -memfunc=get_is_singular"
 specification_add -id=600054a {Field}_Def_Value transient_field_alias "Field Def_Value Default"
 specification_add -id=600055 {Field}_{Specification}_update_children update_children "Field Specification Name"
@@ -1720,7 +1734,8 @@ specification_add -id=601110 {Workgroup}_view view "? admin Workgroup Name,Id;no
 specification_add -id=601210 {Type}_view view "? standard Type\
  Name,Id;no_edit+non_new,Primitive;no_edit\
 ,Max_Size,Min_Value,Max_Value,Numeric_Digits,Numeric_Decimals\
-,String_Domain,Date_Precision,Time_Precision,Auto_Round;force,Rounding_Method,Show_Plus_Sign,Zero_Padding,Fraction_Limit,Int_Type;force,Numeric_Type;force"
+,String_Domain,Date_Precision,Time_Precision,Auto_Round;force,Rounding_Method\
+,Show_Plus_Sign,Zero_Padding,Fraction_Limit,Int_Type;force,Numeric_Type;force,Default_UOM"
 specification_add -id=601220 {Type}_group_list list "* group:no_limit Type Name,Id,Primitive -n=Primitive {Workgroup}"
 specification_add -id=601300 {Enum}_group_list list "* group:no_limit Enum Name,Id,Primitive {Workgroup}"
 specification_add -id=601310 {Enum}_view view "? standard Enum Name,Id;no_edit+non_new,Primitive;new_edit"
@@ -1747,7 +1762,8 @@ specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no
 specification_add -id=601620 {Class}_child_list0 list "@601620_* child:no_limit Class Name,Id {Model}"
 specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no_edit+link\
 ,Id;no_edit+non_new,{Type}:Name!@group:{Workgroup}+Name;force+link,Name,Transient;force,Mandatory,Default\
-,Primitive;hidden+key1,Parent_Class:Name;no_edit+link,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link,Extra,UOM,Use_In_Text_Search"
+,Primitive;hidden+key1,Parent_Class:Name;no_edit+link,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link\
+,Extra,UOM;force,UOM_Name,UOM_Symbol,Use_In_Text_Search"
 specification_add -id=601720 {Field}_child_list0 list "@601720_* child:no_limit Field\
  Name,Id,{Type}:Name;link,Mandatory,Def_Value {Class}"
 specification_add -id=601810 {Index}_view view "? standard Index {Class}:Name;no_edit+link+fkey1\

@@ -14,11 +14,6 @@
   <filename>ext_reference
   <arguments>@arg1 @output_file
  </script>
- <script/>
-  <name>ext_confirmation
-  <filename>ext_confirmation
-  <arguments>@arg1 @output_file
- </script>
 ### [<start generated>]
 ### [<finish generated>]
 </sio>

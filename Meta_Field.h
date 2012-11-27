@@ -81,7 +81,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
       e_field_id_Transient = 17,
       e_field_id_Type = 18,
       e_field_id_UOM = 19,
-      e_field_id_Use_In_Text_Search = 20
+      e_field_id_UOM_Name = 20,
+      e_field_id_UOM_Symbol = 21,
+      e_field_id_Use_In_Text_Search = 22
    };
 
    Meta_Field( );
@@ -128,6 +130,12 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    int UOM( ) const;
    void UOM( int UOM );
+
+   const std::string& UOM_Name( ) const;
+   void UOM_Name( const std::string& UOM_Name );
+
+   const std::string& UOM_Symbol( ) const;
+   void UOM_Symbol( const std::string& UOM_Symbol );
 
    bool Use_In_Text_Search( ) const;
    void Use_In_Text_Search( bool Use_In_Text_Search );
