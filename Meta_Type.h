@@ -43,24 +43,25 @@ class META_TYPE_DECL_SPEC Meta_Type : public class_base
       e_field_id_none = 0,
       e_field_id_Auto_Round = 1,
       e_field_id_Date_Precision = 2,
-      e_field_id_Fraction_Limit = 3,
-      e_field_id_Id = 4,
-      e_field_id_Int_Type = 5,
-      e_field_id_Internal = 6,
-      e_field_id_Max_Size = 7,
-      e_field_id_Max_Value = 8,
-      e_field_id_Min_Value = 9,
-      e_field_id_Name = 10,
-      e_field_id_Numeric_Decimals = 11,
-      e_field_id_Numeric_Digits = 12,
-      e_field_id_Numeric_Type = 13,
-      e_field_id_Primitive = 14,
-      e_field_id_Rounding_Method = 15,
-      e_field_id_Show_Plus_Sign = 16,
-      e_field_id_String_Domain = 17,
-      e_field_id_Time_Precision = 18,
-      e_field_id_Workgroup = 19,
-      e_field_id_Zero_Padding = 20
+      e_field_id_Default_UOM = 3,
+      e_field_id_Fraction_Limit = 4,
+      e_field_id_Id = 5,
+      e_field_id_Int_Type = 6,
+      e_field_id_Internal = 7,
+      e_field_id_Max_Size = 8,
+      e_field_id_Max_Value = 9,
+      e_field_id_Min_Value = 10,
+      e_field_id_Name = 11,
+      e_field_id_Numeric_Decimals = 12,
+      e_field_id_Numeric_Digits = 13,
+      e_field_id_Numeric_Type = 14,
+      e_field_id_Primitive = 15,
+      e_field_id_Rounding_Method = 16,
+      e_field_id_Show_Plus_Sign = 17,
+      e_field_id_String_Domain = 18,
+      e_field_id_Time_Precision = 19,
+      e_field_id_Workgroup = 20,
+      e_field_id_Zero_Padding = 21
    };
 
    Meta_Type( );
@@ -71,6 +72,9 @@ class META_TYPE_DECL_SPEC Meta_Type : public class_base
 
    int Date_Precision( ) const;
    void Date_Precision( int Date_Precision );
+
+   int Default_UOM( ) const;
+   void Default_UOM( int Default_UOM );
 
    int Fraction_Limit( ) const;
    void Fraction_Limit( int Fraction_Limit );

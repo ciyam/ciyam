@@ -125,7 +125,11 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    const Meta_Package& Package( ) const;
    void Package( const std::string& key );
 
+   virtual void Clear( );
+
    virtual void Edit( );
+
+   virtual void Select( );
 
    std::string get_field_value( int field ) const;
    void set_field_value( int field, const std::string& value );

@@ -1764,6 +1764,22 @@
      <data>8
      <name>enum_uom_mg
     </value>
+    <value/>
+     <data>900
+     <name>enum_uom_number
+    </value>
+    <value/>
+     <data>901
+     <name>enum_uom_dollars
+    </value>
+    <value/>
+     <data>902
+     <name>enum_uom_percent
+    </value>
+    <value/>
+     <data>999
+     <name>enum_uom_customised
+    </value>
    </values>
   </enum>
   <enum/>
@@ -2820,7 +2836,7 @@
    <name>601710_name
    <type>standard
    <extra>
-   <modifiers>400:lowlight1,200:lowlight
+   <modifiers>800:lowlight1,200:lowlight
    <class>Field
    <bclass>
    <module>Meta
@@ -2933,9 +2949,25 @@
      <name>field_field_uom
      <field>107104
      <ftype>int
-     <extra>enum=535
+     <extra>force+enum=535
      <mandatory>true
-     <modifiers>800:relegate
+     <modifiers>1000:relegate
+    </field>
+    <field/>
+     <name>field_field_uom_name
+     <field>107116
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>false
+     <modifiers>400:relegate
+    </field>
+    <field/>
+     <name>field_field_uom_symbol
+     <field>107117
+     <ftype>string
+     <extra>max_size=10
+     <mandatory>false
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>field_field_use_in_text_search
@@ -2943,7 +2975,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>100:relegate,400:relegate
+     <modifiers>100:relegate,800:relegate
     </field>
    </fields>
   </view>
@@ -6626,6 +6658,14 @@
      <mandatory>true
      <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate
     </field>
+    <field/>
+     <name>field_type_default_uom
+     <field>102120
+     <ftype>int
+     <extra>enum=535
+     <mandatory>true
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,100:relegate,4000:relegate,8000:relegate
+    </field>
    </fields>
   </view>
   <view/>
@@ -7515,7 +7555,7 @@
    <type>child
    <extra>no_limit
    <actions>
-   <modifiers>400:lowlight1,200:lowlight
+   <modifiers>800:lowlight1,200:lowlight
    <view>601710
    <class>Field
    <bclass>

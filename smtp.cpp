@@ -630,39 +630,37 @@ void send_message( const string& host_and_port,
             str += string( "\r\n" );
          }
 
+         date_time dt( date_time::standard( ) );
+
          if( user_info.p_dt )
-         {
-            date_time dt( *user_info.p_dt );
-            if( dt == date_time( ) )
-               dt = date_time::standard( );
+            dt = *user_info.p_dt;
 
-            string date_header( "Date: " );
-            date_header += dt.weekday_name( ).substr( 0, 3 );
-            date_header += ", " + to_string( ( int )dt.get_day( ) ) + " " + dt.month_name( ).substr( 0, 3 );
-            date_header += " " + to_string( dt.get_year( ) );
-            date_header += " " + dt.get_time( ).as_string( e_time_format_hhmmss, true );
+         string date_header( "Date: " );
+         date_header += dt.weekday_name( ).substr( 0, 3 );
+         date_header += ", " + to_string( ( int )dt.get_day( ) ) + " " + dt.month_name( ).substr( 0, 3 );
+         date_header += " " + to_string( dt.get_year( ) );
+         date_header += " " + dt.get_time( ).as_string( e_time_format_hhmmss, true );
 
-            if( user_info.utc_offset >= 0 )
-               date_header += " +";
-            else
-               date_header += " -";
+         if( user_info.utc_offset >= 0 )
+            date_header += " +";
+         else
+            date_header += " -";
 
-            if( user_info.utc_offset < 10 )
-               date_header += "0";
-            date_header += to_string( ( int )user_info.utc_offset );
+         if( user_info.utc_offset < 10 )
+            date_header += "0";
+         date_header += to_string( ( int )user_info.utc_offset );
 
-            int minutes = ( int )( ( user_info.utc_offset - ( int )user_info.utc_offset ) * 60.0 );
+         int minutes = ( int )( ( user_info.utc_offset - ( int )user_info.utc_offset ) * 60.0 );
 
-            if( minutes < 10 )
-               date_header += "0";
-            date_header += to_string( minutes );
+         if( minutes < 10 )
+            date_header += "0";
+         date_header += to_string( minutes );
 
-            if( user_info.p_tz_abbr && !user_info.p_tz_abbr->empty( ) )
-               date_header += " (" + *user_info.p_tz_abbr + ")";
+         if( user_info.p_tz_abbr && !user_info.p_tz_abbr->empty( ) )
+            date_header += " (" + *user_info.p_tz_abbr + ")";
 
-            str += date_header;
-            str += string( "\r\n" );
-         }
+         str += date_header;
+         str += string( "\r\n" );
 
          // NOTE: It is being assumed that if extra headers were supplied
          // then Message-ID is amongst them.

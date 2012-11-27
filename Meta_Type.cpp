@@ -81,6 +81,7 @@ const char* const c_okay = "okay";
 
 const char* const c_field_id_Auto_Round = "102118";
 const char* const c_field_id_Date_Precision = "102112";
+const char* const c_field_id_Default_UOM = "102120";
 const char* const c_field_id_Fraction_Limit = "102115";
 const char* const c_field_id_Id = "102111";
 const char* const c_field_id_Int_Type = "102116";
@@ -102,6 +103,7 @@ const char* const c_field_id_Zero_Padding = "102114";
 
 const char* const c_field_name_Auto_Round = "Auto_Round";
 const char* const c_field_name_Date_Precision = "Date_Precision";
+const char* const c_field_name_Default_UOM = "Default_UOM";
 const char* const c_field_name_Fraction_Limit = "Fraction_Limit";
 const char* const c_field_name_Id = "Id";
 const char* const c_field_name_Int_Type = "Int_Type";
@@ -123,6 +125,7 @@ const char* const c_field_name_Zero_Padding = "Zero_Padding";
 
 const char* const c_field_display_name_Auto_Round = "field_type_auto_round";
 const char* const c_field_display_name_Date_Precision = "field_type_date_precision";
+const char* const c_field_display_name_Default_UOM = "field_type_default_uom";
 const char* const c_field_display_name_Fraction_Limit = "field_type_fraction_limit";
 const char* const c_field_display_name_Id = "field_type_id";
 const char* const c_field_display_name_Int_Type = "field_type_int_type";
@@ -142,7 +145,7 @@ const char* const c_field_display_name_Time_Precision = "field_type_time_precisi
 const char* const c_field_display_name_Workgroup = "field_type_workgroup";
 const char* const c_field_display_name_Zero_Padding = "field_type_zero_padding";
 
-const int c_num_fields = 20;
+const int c_num_fields = 21;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -165,6 +168,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "102117",
    "102118",
    "102119",
+   "102120",
    "300200"
 };
 
@@ -172,6 +176,7 @@ const char* const c_all_sorted_field_names[ ] =
 {
    "Auto_Round",
    "Date_Precision",
+   "Default_UOM",
    "Fraction_Limit",
    "Id",
    "Int_Type",
@@ -244,6 +249,7 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 bool gv_default_Auto_Round = bool( 0 );
 int gv_default_Date_Precision = int( 0 );
+int gv_default_Default_UOM = int( 0 );
 int gv_default_Fraction_Limit = int( 0 );
 string gv_default_Id = string( );
 int gv_default_Int_Type = int( 0 );
@@ -264,6 +270,7 @@ string gv_default_Workgroup = string( );
 int gv_default_Zero_Padding = int( 0 );
 
 set< int > g_date_precision_enum;
+set< int > g_uom_enum;
 set< int > g_fraction_limit_enum;
 set< int > g_int_type_enum;
 set< int > g_numeric_type_enum;
@@ -291,6 +298,58 @@ string get_enum_string_date_precision( int val )
       string_name = "enum_date_precision_decades";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for date_precision" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_uom_none( 0 );
+const int c_enum_uom_sqm( 1 );
+const int c_enum_uom_km( 2 );
+const int c_enum_uom_m( 3 );
+const int c_enum_uom_cm( 4 );
+const int c_enum_uom_mm( 5 );
+const int c_enum_uom_kg( 6 );
+const int c_enum_uom_g( 7 );
+const int c_enum_uom_mg( 8 );
+const int c_enum_uom_number( 900 );
+const int c_enum_uom_dollars( 901 );
+const int c_enum_uom_percent( 902 );
+const int c_enum_uom_customised( 999 );
+
+string get_enum_string_uom( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for uom" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_uom_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_uom_sqm";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_uom_km";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_uom_m";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_uom_cm";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_uom_mm";
+   else if( to_string( val ) == to_string( "6" ) )
+      string_name = "enum_uom_kg";
+   else if( to_string( val ) == to_string( "7" ) )
+      string_name = "enum_uom_g";
+   else if( to_string( val ) == to_string( "8" ) )
+      string_name = "enum_uom_mg";
+   else if( to_string( val ) == to_string( "900" ) )
+      string_name = "enum_uom_number";
+   else if( to_string( val ) == to_string( "901" ) )
+      string_name = "enum_uom_dollars";
+   else if( to_string( val ) == to_string( "902" ) )
+      string_name = "enum_uom_percent";
+   else if( to_string( val ) == to_string( "999" ) )
+      string_name = "enum_uom_customised";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for uom" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -572,6 +631,8 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
          string_getter< bool >( cmd_handler.p_Meta_Type->Auto_Round( ), cmd_handler.retval );
       else if( field_name == c_field_id_Date_Precision || field_name == c_field_name_Date_Precision )
          string_getter< int >( cmd_handler.p_Meta_Type->Date_Precision( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Default_UOM || field_name == c_field_name_Default_UOM )
+         string_getter< int >( cmd_handler.p_Meta_Type->Default_UOM( ), cmd_handler.retval );
       else if( field_name == c_field_id_Fraction_Limit || field_name == c_field_name_Fraction_Limit )
          string_getter< int >( cmd_handler.p_Meta_Type->Fraction_Limit( ), cmd_handler.retval );
       else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
@@ -624,6 +685,9 @@ void Meta_Type_command_functor::operator ( )( const string& command, const param
       else if( field_name == c_field_id_Date_Precision || field_name == c_field_name_Date_Precision )
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Date_Precision, field_value );
+      else if( field_name == c_field_id_Default_UOM || field_name == c_field_name_Default_UOM )
+         func_string_setter< Meta_Type, int >(
+          *cmd_handler.p_Meta_Type, &Meta_Type::Default_UOM, field_value );
       else if( field_name == c_field_id_Fraction_Limit || field_name == c_field_name_Fraction_Limit )
          func_string_setter< Meta_Type, int >(
           *cmd_handler.p_Meta_Type, &Meta_Type::Fraction_Limit, field_value );
@@ -723,6 +787,9 @@ struct Meta_Type::impl : public Meta_Type_command_handler
 
    int impl_Date_Precision( ) const { return lazy_fetch( p_obj ), v_Date_Precision; }
    void impl_Date_Precision( int Date_Precision ) { v_Date_Precision = Date_Precision; }
+
+   int impl_Default_UOM( ) const { return lazy_fetch( p_obj ), v_Default_UOM; }
+   void impl_Default_UOM( int Default_UOM ) { v_Default_UOM = Default_UOM; }
 
    int impl_Fraction_Limit( ) const { return lazy_fetch( p_obj ), v_Fraction_Limit; }
    void impl_Fraction_Limit( int Fraction_Limit ) { v_Fraction_Limit = Fraction_Limit; }
@@ -884,6 +951,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
 
    bool v_Auto_Round;
    int v_Date_Precision;
+   int v_Default_UOM;
    int v_Fraction_Limit;
    string v_Id;
    int v_Int_Type;
@@ -923,74 +991,78 @@ string Meta_Type::impl::get_field_value( int field ) const
       break;
 
       case 2:
-      retval = to_string( impl_Fraction_Limit( ) );
+      retval = to_string( impl_Default_UOM( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Fraction_Limit( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Int_Type( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Int_Type( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Max_Size( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Max_Value( ) );
+      retval = to_string( impl_Max_Size( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Min_Value( ) );
+      retval = to_string( impl_Max_Value( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Min_Value( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Numeric_Decimals( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Numeric_Digits( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Numeric_Type( ) );
+      retval = to_string( impl_Numeric_Digits( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Numeric_Type( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Rounding_Method( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Show_Plus_Sign( ) );
+      retval = to_string( impl_Rounding_Method( ) );
       break;
 
       case 16:
-      retval = to_string( impl_String_Domain( ) );
+      retval = to_string( impl_Show_Plus_Sign( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Time_Precision( ) );
+      retval = to_string( impl_String_Domain( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Workgroup( ) );
+      retval = to_string( impl_Time_Precision( ) );
       break;
 
       case 19:
+      retval = to_string( impl_Workgroup( ) );
+      break;
+
+      case 20:
       retval = to_string( impl_Zero_Padding( ) );
       break;
 
@@ -1014,74 +1086,78 @@ void Meta_Type::impl::set_field_value( int field, const string& value )
       break;
 
       case 2:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Fraction_Limit, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Default_UOM, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Id, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Fraction_Limit, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Int_Type, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Id, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Internal, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Int_Type, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Max_Size, value );
+      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Internal, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Max_Value, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Max_Size, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Min_Value, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Max_Value, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Name, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Min_Value, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Decimals, value );
+      func_string_setter< Meta_Type::impl, string >( *this, &Meta_Type::impl::impl_Name, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Digits, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Decimals, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Type, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Digits, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Primitive, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Numeric_Type, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Rounding_Method, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Primitive, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Show_Plus_Sign, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Rounding_Method, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_String_Domain, value );
+      func_string_setter< Meta_Type::impl, bool >( *this, &Meta_Type::impl::impl_Show_Plus_Sign, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Time_Precision, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_String_Domain, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Type::impl, Meta_Workgroup >( *this, &Meta_Type::impl::impl_Workgroup, value );
+      func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Time_Precision, value );
       break;
 
       case 19:
+      func_string_setter< Meta_Type::impl, Meta_Workgroup >( *this, &Meta_Type::impl::impl_Workgroup, value );
+      break;
+
+      case 20:
       func_string_setter< Meta_Type::impl, int >( *this, &Meta_Type::impl::impl_Zero_Padding, value );
       break;
 
@@ -1221,6 +1297,7 @@ void Meta_Type::impl::clear( )
 {
    v_Auto_Round = gv_default_Auto_Round;
    v_Date_Precision = gv_default_Date_Precision;
+   v_Default_UOM = gv_default_Default_UOM;
    v_Fraction_Limit = gv_default_Fraction_Limit;
    v_Id = gv_default_Id;
    v_Int_Type = gv_default_Int_Type;
@@ -1331,6 +1408,11 @@ void Meta_Type::impl::validate( unsigned state, bool is_internal, validation_err
       p_validation_errors->insert( validation_error_value_type( c_field_name_Date_Precision,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Date_Precision ) ) ) ) );
+
+   if( !g_uom_enum.count( v_Default_UOM ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Default_UOM,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Default_UOM ) ) ) ) );
 
    if( !g_fraction_limit_enum.count( v_Fraction_Limit ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Fraction_Limit,
@@ -1766,6 +1848,16 @@ void Meta_Type::Date_Precision( int Date_Precision )
    p_impl->impl_Date_Precision( Date_Precision );
 }
 
+int Meta_Type::Default_UOM( ) const
+{
+   return p_impl->impl_Default_UOM( );
+}
+
+void Meta_Type::Default_UOM( int Default_UOM )
+{
+   p_impl->impl_Default_UOM( Default_UOM );
+}
+
 int Meta_Type::Fraction_Limit( ) const
 {
    return p_impl->impl_Fraction_Limit( );
@@ -2112,6 +2204,16 @@ const char* Meta_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Default_UOM )
+   {
+      p_id = c_field_id_Default_UOM;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Fraction_Limit )
    {
       p_id = c_field_id_Fraction_Limit;
@@ -2316,6 +2418,16 @@ const char* Meta_Type::get_field_name(
    else if( id == c_field_id_Date_Precision )
    {
       p_name = c_field_name_Date_Precision;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Default_UOM )
+   {
+      p_name = c_field_name_Default_UOM;
 
       if( p_type_name )
          *p_type_name = "int";
@@ -2533,6 +2645,8 @@ string Meta_Type::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Auto_Round );
    else if( id_or_name == c_field_id_Date_Precision || id_or_name == c_field_name_Date_Precision )
       display_name = get_module_string( c_field_display_name_Date_Precision );
+   else if( id_or_name == c_field_id_Default_UOM || id_or_name == c_field_name_Default_UOM )
+      display_name = get_module_string( c_field_display_name_Default_UOM );
    else if( id_or_name == c_field_id_Fraction_Limit || id_or_name == c_field_name_Fraction_Limit )
       display_name = get_module_string( c_field_display_name_Fraction_Limit );
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
@@ -2769,6 +2883,7 @@ void Meta_Type::get_sql_column_names(
 
    names.push_back( "C_Auto_Round" );
    names.push_back( "C_Date_Precision" );
+   names.push_back( "C_Default_UOM" );
    names.push_back( "C_Fraction_Limit" );
    names.push_back( "C_Id" );
    names.push_back( "C_Int_Type" );
@@ -2800,6 +2915,7 @@ void Meta_Type::get_sql_column_values(
 
    values.push_back( to_string( Auto_Round( ) ) );
    values.push_back( to_string( Date_Precision( ) ) );
+   values.push_back( to_string( Default_UOM( ) ) );
    values.push_back( to_string( Fraction_Limit( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
    values.push_back( to_string( Int_Type( ) ) );
@@ -2991,6 +3107,7 @@ void Meta_Type::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "102118", "Auto_Round", "bool", false ) );
    all_field_info.push_back( field_info( "102112", "Date_Precision", "int", false ) );
+   all_field_info.push_back( field_info( "102120", "Default_UOM", "int", false ) );
    all_field_info.push_back( field_info( "102115", "Fraction_Limit", "int", false ) );
    all_field_info.push_back( field_info( "102111", "Id", "string", false ) );
    all_field_info.push_back( field_info( "102116", "Int_Type", "int", false ) );
@@ -3046,74 +3163,78 @@ const char* Meta_Type::static_get_field_id( field_id id )
       break;
 
       case 3:
-      p_id = "102115";
+      p_id = "102120";
       break;
 
       case 4:
-      p_id = "102111";
+      p_id = "102115";
       break;
 
       case 5:
-      p_id = "102116";
+      p_id = "102111";
       break;
 
       case 6:
-      p_id = "102109";
+      p_id = "102116";
       break;
 
       case 7:
-      p_id = "102103";
+      p_id = "102109";
       break;
 
       case 8:
-      p_id = "102105";
+      p_id = "102103";
       break;
 
       case 9:
-      p_id = "102104";
+      p_id = "102105";
       break;
 
       case 10:
-      p_id = "102101";
+      p_id = "102104";
       break;
 
       case 11:
-      p_id = "102107";
+      p_id = "102101";
       break;
 
       case 12:
-      p_id = "102106";
+      p_id = "102107";
       break;
 
       case 13:
-      p_id = "102117";
+      p_id = "102106";
       break;
 
       case 14:
-      p_id = "102102";
+      p_id = "102117";
       break;
 
       case 15:
-      p_id = "102119";
+      p_id = "102102";
       break;
 
       case 16:
-      p_id = "102113";
+      p_id = "102119";
       break;
 
       case 17:
-      p_id = "102108";
+      p_id = "102113";
       break;
 
       case 18:
-      p_id = "102110";
+      p_id = "102108";
       break;
 
       case 19:
-      p_id = "300200";
+      p_id = "102110";
       break;
 
       case 20:
+      p_id = "300200";
+      break;
+
+      case 21:
       p_id = "102114";
       break;
    }
@@ -3139,74 +3260,78 @@ const char* Meta_Type::static_get_field_name( field_id id )
       break;
 
       case 3:
-      p_id = "Fraction_Limit";
+      p_id = "Default_UOM";
       break;
 
       case 4:
-      p_id = "Id";
+      p_id = "Fraction_Limit";
       break;
 
       case 5:
-      p_id = "Int_Type";
+      p_id = "Id";
       break;
 
       case 6:
-      p_id = "Internal";
+      p_id = "Int_Type";
       break;
 
       case 7:
-      p_id = "Max_Size";
+      p_id = "Internal";
       break;
 
       case 8:
-      p_id = "Max_Value";
+      p_id = "Max_Size";
       break;
 
       case 9:
-      p_id = "Min_Value";
+      p_id = "Max_Value";
       break;
 
       case 10:
-      p_id = "Name";
+      p_id = "Min_Value";
       break;
 
       case 11:
-      p_id = "Numeric_Decimals";
+      p_id = "Name";
       break;
 
       case 12:
-      p_id = "Numeric_Digits";
+      p_id = "Numeric_Decimals";
       break;
 
       case 13:
-      p_id = "Numeric_Type";
+      p_id = "Numeric_Digits";
       break;
 
       case 14:
-      p_id = "Primitive";
+      p_id = "Numeric_Type";
       break;
 
       case 15:
-      p_id = "Rounding_Method";
+      p_id = "Primitive";
       break;
 
       case 16:
-      p_id = "Show_Plus_Sign";
+      p_id = "Rounding_Method";
       break;
 
       case 17:
-      p_id = "String_Domain";
+      p_id = "Show_Plus_Sign";
       break;
 
       case 18:
-      p_id = "Time_Precision";
+      p_id = "String_Domain";
       break;
 
       case 19:
-      p_id = "Workgroup";
+      p_id = "Time_Precision";
       break;
 
       case 20:
+      p_id = "Workgroup";
+      break;
+
+      case 21:
       p_id = "Zero_Padding";
       break;
    }
@@ -3227,42 +3352,44 @@ int Meta_Type::static_get_field_num( const string& field )
       rc += 1;
    else if( field == c_field_id_Date_Precision || field == c_field_name_Date_Precision )
       rc += 2;
-   else if( field == c_field_id_Fraction_Limit || field == c_field_name_Fraction_Limit )
+   else if( field == c_field_id_Default_UOM || field == c_field_name_Default_UOM )
       rc += 3;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Fraction_Limit || field == c_field_name_Fraction_Limit )
       rc += 4;
-   else if( field == c_field_id_Int_Type || field == c_field_name_Int_Type )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 5;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Int_Type || field == c_field_name_Int_Type )
       rc += 6;
-   else if( field == c_field_id_Max_Size || field == c_field_name_Max_Size )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 7;
-   else if( field == c_field_id_Max_Value || field == c_field_name_Max_Value )
+   else if( field == c_field_id_Max_Size || field == c_field_name_Max_Size )
       rc += 8;
-   else if( field == c_field_id_Min_Value || field == c_field_name_Min_Value )
+   else if( field == c_field_id_Max_Value || field == c_field_name_Max_Value )
       rc += 9;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Min_Value || field == c_field_name_Min_Value )
       rc += 10;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 11;
-   else if( field == c_field_id_Numeric_Digits || field == c_field_name_Numeric_Digits )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 12;
-   else if( field == c_field_id_Numeric_Type || field == c_field_name_Numeric_Type )
+   else if( field == c_field_id_Numeric_Digits || field == c_field_name_Numeric_Digits )
       rc += 13;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Numeric_Type || field == c_field_name_Numeric_Type )
       rc += 14;
-   else if( field == c_field_id_Rounding_Method || field == c_field_name_Rounding_Method )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 15;
-   else if( field == c_field_id_Show_Plus_Sign || field == c_field_name_Show_Plus_Sign )
+   else if( field == c_field_id_Rounding_Method || field == c_field_name_Rounding_Method )
       rc += 16;
-   else if( field == c_field_id_String_Domain || field == c_field_name_String_Domain )
+   else if( field == c_field_id_Show_Plus_Sign || field == c_field_name_Show_Plus_Sign )
       rc += 17;
-   else if( field == c_field_id_Time_Precision || field == c_field_name_Time_Precision )
+   else if( field == c_field_id_String_Domain || field == c_field_name_String_Domain )
       rc += 18;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Time_Precision || field == c_field_name_Time_Precision )
       rc += 19;
-   else if( field == c_field_id_Zero_Padding || field == c_field_name_Zero_Padding )
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
       rc += 20;
+   else if( field == c_field_id_Zero_Padding || field == c_field_name_Zero_Padding )
+      rc += 21;
 
    return rc - 1;
 }
@@ -3285,6 +3412,7 @@ string Meta_Type::static_get_sql_columns( )
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Auto_Round INTEGER NOT NULL,"
     "C_Date_Precision INTEGER NOT NULL,"
+    "C_Default_UOM INTEGER NOT NULL,"
     "C_Fraction_Limit INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
     "C_Int_Type INTEGER NOT NULL,"
@@ -3318,6 +3446,20 @@ void Meta_Type::static_get_all_enum_pairs( vector< pair< string, string > >& pai
    pairs.push_back( make_pair( "enum_date_precision_0", get_enum_string_date_precision( 0 ) ) );
    pairs.push_back( make_pair( "enum_date_precision_1", get_enum_string_date_precision( 1 ) ) );
    pairs.push_back( make_pair( "enum_date_precision_2", get_enum_string_date_precision( 2 ) ) );
+
+   pairs.push_back( make_pair( "enum_uom_0", get_enum_string_uom( 0 ) ) );
+   pairs.push_back( make_pair( "enum_uom_1", get_enum_string_uom( 1 ) ) );
+   pairs.push_back( make_pair( "enum_uom_2", get_enum_string_uom( 2 ) ) );
+   pairs.push_back( make_pair( "enum_uom_3", get_enum_string_uom( 3 ) ) );
+   pairs.push_back( make_pair( "enum_uom_4", get_enum_string_uom( 4 ) ) );
+   pairs.push_back( make_pair( "enum_uom_5", get_enum_string_uom( 5 ) ) );
+   pairs.push_back( make_pair( "enum_uom_6", get_enum_string_uom( 6 ) ) );
+   pairs.push_back( make_pair( "enum_uom_7", get_enum_string_uom( 7 ) ) );
+   pairs.push_back( make_pair( "enum_uom_8", get_enum_string_uom( 8 ) ) );
+   pairs.push_back( make_pair( "enum_uom_900", get_enum_string_uom( 900 ) ) );
+   pairs.push_back( make_pair( "enum_uom_901", get_enum_string_uom( 901 ) ) );
+   pairs.push_back( make_pair( "enum_uom_902", get_enum_string_uom( 902 ) ) );
+   pairs.push_back( make_pair( "enum_uom_999", get_enum_string_uom( 999 ) ) );
 
    pairs.push_back( make_pair( "enum_fraction_limit_0", get_enum_string_fraction_limit( 0 ) ) );
    pairs.push_back( make_pair( "enum_fraction_limit_2", get_enum_string_fraction_limit( 2 ) ) );
@@ -3403,6 +3545,20 @@ void Meta_Type::static_class_init( const char* p_module_name )
    g_date_precision_enum.insert( 0 );
    g_date_precision_enum.insert( 1 );
    g_date_precision_enum.insert( 2 );
+
+   g_uom_enum.insert( 0 );
+   g_uom_enum.insert( 1 );
+   g_uom_enum.insert( 2 );
+   g_uom_enum.insert( 3 );
+   g_uom_enum.insert( 4 );
+   g_uom_enum.insert( 5 );
+   g_uom_enum.insert( 6 );
+   g_uom_enum.insert( 7 );
+   g_uom_enum.insert( 8 );
+   g_uom_enum.insert( 900 );
+   g_uom_enum.insert( 901 );
+   g_uom_enum.insert( 902 );
+   g_uom_enum.insert( 999 );
 
    g_fraction_limit_enum.insert( 0 );
    g_fraction_limit_enum.insert( 2 );

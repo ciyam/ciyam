@@ -142,6 +142,8 @@ const char* const c_field_id_Source_Field = "300740";
 const char* const c_field_id_Transient = "107112";
 const char* const c_field_id_Type = "300710";
 const char* const c_field_id_UOM = "107104";
+const char* const c_field_id_UOM_Name = "107116";
+const char* const c_field_id_UOM_Symbol = "107117";
 const char* const c_field_id_Use_In_Text_Search = "107111";
 
 const char* const c_field_name_Class = "Class";
@@ -163,6 +165,8 @@ const char* const c_field_name_Source_Field = "Source_Field";
 const char* const c_field_name_Transient = "Transient";
 const char* const c_field_name_Type = "Type";
 const char* const c_field_name_UOM = "UOM";
+const char* const c_field_name_UOM_Name = "UOM_Name";
+const char* const c_field_name_UOM_Symbol = "UOM_Symbol";
 const char* const c_field_name_Use_In_Text_Search = "Use_In_Text_Search";
 
 const char* const c_field_display_name_Class = "field_field_class";
@@ -184,9 +188,11 @@ const char* const c_field_display_name_Source_Field = "field_field_source_field"
 const char* const c_field_display_name_Transient = "field_field_transient";
 const char* const c_field_display_name_Type = "field_field_type";
 const char* const c_field_display_name_UOM = "field_field_uom";
+const char* const c_field_display_name_UOM_Name = "field_field_uom_name";
+const char* const c_field_display_name_UOM_Symbol = "field_field_uom_symbol";
 const char* const c_field_display_name_Use_In_Text_Search = "field_field_use_in_text_search";
 
-const int c_num_fields = 20;
+const int c_num_fields = 22;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -205,6 +211,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "107113",
    "107114",
    "107115",
+   "107116",
+   "107117",
    "300700",
    "300710",
    "300720",
@@ -233,6 +241,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Transient",
    "Type",
    "UOM",
+   "UOM_Name",
+   "UOM_Symbol",
    "Use_In_Text_Search"
 };
 
@@ -274,8 +284,9 @@ const char* const c_procedure_id_Get_Text_Type = "107410";
 
 const uint64_t c_modifier_Is_Any_Non_Text_Type = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x200 );
-const uint64_t c_modifier_Is_Transient = UINT64_C( 0x400 );
-const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Transient = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x1000 );
 
 domain_string_max_size< 200 > g_Default_domain;
 aggregate_domain< string,
@@ -287,6 +298,8 @@ aggregate_domain< string,
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Parent_Class_Name_domain;
+domain_string_max_size< 100 > g_UOM_Name_domain;
+domain_string_max_size< 10 > g_UOM_Symbol_domain;
 
 string g_order_field_name;
 
@@ -323,6 +336,8 @@ string gv_default_Source_Field = string( );
 bool gv_default_Transient = bool( 0 );
 string gv_default_Type = string( );
 int gv_default_UOM = int( 0 );
+string gv_default_UOM_Name = string( );
+string gv_default_UOM_Symbol = string( );
 bool gv_default_Use_In_Text_Search = bool( 0 );
 
 set< int > g_field_extra_enum;
@@ -487,6 +502,10 @@ const int c_enum_uom_mm( 5 );
 const int c_enum_uom_kg( 6 );
 const int c_enum_uom_g( 7 );
 const int c_enum_uom_mg( 8 );
+const int c_enum_uom_number( 900 );
+const int c_enum_uom_dollars( 901 );
+const int c_enum_uom_percent( 902 );
+const int c_enum_uom_customised( 999 );
 
 string get_enum_string_uom( int val )
 {
@@ -512,6 +531,14 @@ string get_enum_string_uom( int val )
       string_name = "enum_uom_g";
    else if( to_string( val ) == to_string( "8" ) )
       string_name = "enum_uom_mg";
+   else if( to_string( val ) == to_string( "900" ) )
+      string_name = "enum_uom_number";
+   else if( to_string( val ) == to_string( "901" ) )
+      string_name = "enum_uom_dollars";
+   else if( to_string( val ) == to_string( "902" ) )
+      string_name = "enum_uom_percent";
+   else if( to_string( val ) == to_string( "999" ) )
+      string_name = "enum_uom_customised";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for uom" );
 
@@ -635,6 +662,10 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          string_getter< Meta_Type >( cmd_handler.p_Meta_Field->Type( ), cmd_handler.retval );
       else if( field_name == c_field_id_UOM || field_name == c_field_name_UOM )
          string_getter< int >( cmd_handler.p_Meta_Field->UOM( ), cmd_handler.retval );
+      else if( field_name == c_field_id_UOM_Name || field_name == c_field_name_UOM_Name )
+         string_getter< string >( cmd_handler.p_Meta_Field->UOM_Name( ), cmd_handler.retval );
+      else if( field_name == c_field_id_UOM_Symbol || field_name == c_field_name_UOM_Symbol )
+         string_getter< string >( cmd_handler.p_Meta_Field->UOM_Symbol( ), cmd_handler.retval );
       else if( field_name == c_field_id_Use_In_Text_Search || field_name == c_field_name_Use_In_Text_Search )
          string_getter< bool >( cmd_handler.p_Meta_Field->Use_In_Text_Search( ), cmd_handler.retval );
       else
@@ -704,6 +735,12 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
       else if( field_name == c_field_id_UOM || field_name == c_field_name_UOM )
          func_string_setter< Meta_Field, int >(
           *cmd_handler.p_Meta_Field, &Meta_Field::UOM, field_value );
+      else if( field_name == c_field_id_UOM_Name || field_name == c_field_name_UOM_Name )
+         func_string_setter< Meta_Field, string >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::UOM_Name, field_value );
+      else if( field_name == c_field_id_UOM_Symbol || field_name == c_field_name_UOM_Symbol )
+         func_string_setter< Meta_Field, string >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::UOM_Symbol, field_value );
       else if( field_name == c_field_id_Use_In_Text_Search || field_name == c_field_name_Use_In_Text_Search )
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Use_In_Text_Search, field_value );
@@ -810,6 +847,12 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    int impl_UOM( ) const { return lazy_fetch( p_obj ), v_UOM; }
    void impl_UOM( int UOM ) { v_UOM = UOM; }
+
+   const string& impl_UOM_Name( ) const { return lazy_fetch( p_obj ), v_UOM_Name; }
+   void impl_UOM_Name( const string& UOM_Name ) { v_UOM_Name = UOM_Name; }
+
+   const string& impl_UOM_Symbol( ) const { return lazy_fetch( p_obj ), v_UOM_Symbol; }
+   void impl_UOM_Symbol( const string& UOM_Symbol ) { v_UOM_Symbol = UOM_Symbol; }
 
    bool impl_Use_In_Text_Search( ) const { return lazy_fetch( p_obj ), v_Use_In_Text_Search; }
    void impl_Use_In_Text_Search( bool Use_In_Text_Search ) { v_Use_In_Text_Search = Use_In_Text_Search; }
@@ -1805,6 +1848,8 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    int v_Primitive;
    bool v_Transient;
    int v_UOM;
+   string v_UOM_Name;
+   string v_UOM_Symbol;
    bool v_Use_In_Text_Search;
 
    string v_Class;
@@ -1975,6 +2020,14 @@ string Meta_Field::impl::get_field_value( int field ) const
       break;
 
       case 19:
+      retval = to_string( impl_UOM_Name( ) );
+      break;
+
+      case 20:
+      retval = to_string( impl_UOM_Symbol( ) );
+      break;
+
+      case 21:
       retval = to_string( impl_Use_In_Text_Search( ) );
       break;
 
@@ -2066,6 +2119,14 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 19:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      break;
+
+      case 20:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      break;
+
+      case 21:
       func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Use_In_Text_Search, value );
       break;
 
@@ -2077,6 +2138,11 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
 uint64_t Meta_Field::impl::get_state( ) const
 {
    uint64_t state = 0;
+
+   // [(start modifier_field_value)]
+   if( get_obj( ).UOM( ) != 999 )
+      state |= c_modifier_Is_Non_Custom_UOM;
+   // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    if( get_obj( ).Type( ).Primitive( ) == 5 ) // i.e. int
@@ -2220,6 +2286,8 @@ void Meta_Field::impl::clear( )
    v_Primitive = gv_default_Primitive;
    v_Transient = gv_default_Transient;
    v_UOM = gv_default_UOM;
+   v_UOM_Name = gv_default_UOM_Name;
+   v_UOM_Symbol = gv_default_UOM_Symbol;
    v_Use_In_Text_Search = gv_default_Use_In_Text_Search;
 
    v_Class = string( );
@@ -2314,6 +2382,20 @@ void Meta_Field::impl::validate( unsigned state, bool is_internal, validation_er
     && !g_Parent_Class_Name_domain.is_valid( v_Parent_Class_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class_Name,
        get_module_string( c_field_display_name_Parent_Class_Name ) + " " + error_message ) );
+
+   if( !is_null( v_UOM_Name )
+    && ( v_UOM_Name != gv_default_UOM_Name
+    || !value_will_be_provided( c_field_name_UOM_Name ) )
+    && !g_UOM_Name_domain.is_valid( v_UOM_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
+       get_module_string( c_field_display_name_UOM_Name ) + " " + error_message ) );
+
+   if( !is_null( v_UOM_Symbol )
+    && ( v_UOM_Symbol != gv_default_UOM_Symbol
+    || !value_will_be_provided( c_field_name_UOM_Symbol ) )
+    && !g_UOM_Symbol_domain.is_valid( v_UOM_Symbol, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Symbol,
+       get_module_string( c_field_display_name_UOM_Symbol ) + " " + error_message ) );
 
    if( !g_field_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
@@ -2419,6 +2501,18 @@ void Meta_Field::impl::validate_set_fields( set< string >& fields_set, validatio
     && !g_Parent_Class_Name_domain.is_valid( v_Parent_Class_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class_Name,
        get_module_string( c_field_display_name_Parent_Class_Name ) + " " + error_message ) );
+
+   if( !is_null( v_UOM_Name )
+    && ( fields_set.count( c_field_id_UOM_Name ) || fields_set.count( c_field_name_UOM_Name ) )
+    && !g_UOM_Name_domain.is_valid( v_UOM_Name, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
+       get_module_string( c_field_display_name_UOM_Name ) + " " + error_message ) );
+
+   if( !is_null( v_UOM_Symbol )
+    && ( fields_set.count( c_field_id_UOM_Symbol ) || fields_set.count( c_field_name_UOM_Symbol ) )
+    && !g_UOM_Symbol_domain.is_valid( v_UOM_Symbol, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Symbol,
+       get_module_string( c_field_display_name_UOM_Symbol ) + " " + error_message ) );
 }
 
 void Meta_Field::impl::after_fetch( )
@@ -2518,6 +2612,13 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    // [(start field_from_other_field)]
    get_obj( ).Primitive( get_obj( ).Type( ).Primitive( ) );
    // [(finish field_from_other_field)]
+
+   // [(start default_to_field)]
+   if( is_create
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).UOM( ) == gv_default_UOM )
+      get_obj( ).UOM( get_obj( ).Type( ).Default_UOM( ) );
+   // [(finish default_to_field)]
 
    // [(start field_from_other_field)]
    if( !is_null( get_obj( ).Parent_Class( ) ) )
@@ -3058,6 +3159,26 @@ int Meta_Field::UOM( ) const
 void Meta_Field::UOM( int UOM )
 {
    p_impl->impl_UOM( UOM );
+}
+
+const string& Meta_Field::UOM_Name( ) const
+{
+   return p_impl->impl_UOM_Name( );
+}
+
+void Meta_Field::UOM_Name( const string& UOM_Name )
+{
+   p_impl->impl_UOM_Name( UOM_Name );
+}
+
+const string& Meta_Field::UOM_Symbol( ) const
+{
+   return p_impl->impl_UOM_Symbol( );
+}
+
+void Meta_Field::UOM_Symbol( const string& UOM_Symbol )
+{
+   p_impl->impl_UOM_Symbol( UOM_Symbol );
 }
 
 bool Meta_Field::Use_In_Text_Search( ) const
@@ -3821,6 +3942,26 @@ const char* Meta_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_UOM_Name )
+   {
+      p_id = c_field_id_UOM_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_UOM_Symbol )
+   {
+      p_id = c_field_id_UOM_Symbol;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Use_In_Text_Search )
    {
       p_id = c_field_id_Use_In_Text_Search;
@@ -4032,6 +4173,26 @@ const char* Meta_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_UOM_Name )
+   {
+      p_name = c_field_name_UOM_Name;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_UOM_Symbol )
+   {
+      p_name = c_field_name_UOM_Symbol;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Use_In_Text_Search )
    {
       p_name = c_field_name_Use_In_Text_Search;
@@ -4106,6 +4267,10 @@ string Meta_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Type );
    else if( id_or_name == c_field_id_UOM || id_or_name == c_field_name_UOM )
       display_name = get_module_string( c_field_display_name_UOM );
+   else if( id_or_name == c_field_id_UOM_Name || id_or_name == c_field_name_UOM_Name )
+      display_name = get_module_string( c_field_display_name_UOM_Name );
+   else if( id_or_name == c_field_id_UOM_Symbol || id_or_name == c_field_name_UOM_Symbol )
+      display_name = get_module_string( c_field_display_name_UOM_Symbol );
    else if( id_or_name == c_field_id_Use_In_Text_Search || id_or_name == c_field_name_Use_In_Text_Search )
       display_name = get_module_string( c_field_display_name_Use_In_Text_Search );
 
@@ -4751,6 +4916,8 @@ void Meta_Field::get_sql_column_names(
    names.push_back( "C_Transient" );
    names.push_back( "C_Type" );
    names.push_back( "C_UOM" );
+   names.push_back( "C_UOM_Name" );
+   names.push_back( "C_UOM_Symbol" );
    names.push_back( "C_Use_In_Text_Search" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -4779,6 +4946,8 @@ void Meta_Field::get_sql_column_values(
    values.push_back( to_string( Transient( ) ) );
    values.push_back( sql_quote( to_string( Type( ) ) ) );
    values.push_back( to_string( UOM( ) ) );
+   values.push_back( sql_quote( to_string( UOM_Name( ) ) ) );
+   values.push_back( sql_quote( to_string( UOM_Symbol( ) ) ) );
    values.push_back( to_string( Use_In_Text_Search( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -4858,6 +5027,14 @@ void Meta_Field::get_always_required_field_names(
    ( void )names;
    ( void )dependents;
    ( void )use_transients;
+
+   // [(start modifier_field_value)]
+   dependents.insert( "UOM" ); // (for Is_Non_Custom_UOM modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_UOM ) )
+    || ( !use_transients && !is_field_transient( e_field_id_UOM ) ) )
+      names.insert( "UOM" );
+   // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Type" ); // (for Is_Any_Non_Text_Type modifier)
@@ -4991,6 +5168,8 @@ void Meta_Field::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "107112", "Transient", "bool", false ) );
    all_field_info.push_back( field_info( "300710", "Type", "Meta_Type", true ) );
    all_field_info.push_back( field_info( "107104", "UOM", "int", false ) );
+   all_field_info.push_back( field_info( "107116", "UOM_Name", "string", false ) );
+   all_field_info.push_back( field_info( "107117", "UOM_Symbol", "string", false ) );
    all_field_info.push_back( field_info( "107111", "Use_In_Text_Search", "bool", false ) );
 }
 
@@ -5101,6 +5280,14 @@ const char* Meta_Field::static_get_field_id( field_id id )
       break;
 
       case 20:
+      p_id = "107116";
+      break;
+
+      case 21:
+      p_id = "107117";
+      break;
+
+      case 22:
       p_id = "107111";
       break;
    }
@@ -5194,6 +5381,14 @@ const char* Meta_Field::static_get_field_name( field_id id )
       break;
 
       case 20:
+      p_id = "UOM_Name";
+      break;
+
+      case 21:
+      p_id = "UOM_Symbol";
+      break;
+
+      case 22:
       p_id = "Use_In_Text_Search";
       break;
    }
@@ -5248,8 +5443,12 @@ int Meta_Field::static_get_field_num( const string& field )
       rc += 18;
    else if( field == c_field_id_UOM || field == c_field_name_UOM )
       rc += 19;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
       rc += 20;
+   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+      rc += 21;
+   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+      rc += 22;
 
    return rc - 1;
 }
@@ -5293,6 +5492,8 @@ string Meta_Field::static_get_sql_columns( )
     "C_Transient INTEGER NOT NULL,"
     "C_Type VARCHAR(64) NOT NULL,"
     "C_UOM INTEGER NOT NULL,"
+    "C_UOM_Name VARCHAR(200) NOT NULL,"
+    "C_UOM_Symbol VARCHAR(200) NOT NULL,"
     "C_Use_In_Text_Search INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
@@ -5358,6 +5559,10 @@ void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pa
    pairs.push_back( make_pair( "enum_uom_6", get_enum_string_uom( 6 ) ) );
    pairs.push_back( make_pair( "enum_uom_7", get_enum_string_uom( 7 ) ) );
    pairs.push_back( make_pair( "enum_uom_8", get_enum_string_uom( 8 ) ) );
+   pairs.push_back( make_pair( "enum_uom_900", get_enum_string_uom( 900 ) ) );
+   pairs.push_back( make_pair( "enum_uom_901", get_enum_string_uom( 901 ) ) );
+   pairs.push_back( make_pair( "enum_uom_902", get_enum_string_uom( 902 ) ) );
+   pairs.push_back( make_pair( "enum_uom_999", get_enum_string_uom( 999 ) ) );
 }
 
 void Meta_Field::static_get_sql_indexes( vector< string >& indexes )
@@ -5454,6 +5659,10 @@ void Meta_Field::static_class_init( const char* p_module_name )
    g_uom_enum.insert( 6 );
    g_uom_enum.insert( 7 );
    g_uom_enum.insert( 8 );
+   g_uom_enum.insert( 900 );
+   g_uom_enum.insert( 901 );
+   g_uom_enum.insert( 902 );
+   g_uom_enum.insert( 999 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

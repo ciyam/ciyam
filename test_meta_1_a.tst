@@ -73,6 +73,8 @@ std_date,T108
 std_datetime,T110
 std_time,T109
 std_timestamp,T111
+std_numeric,T112
+std_percentage,T113
 bool,T006
 date,T002
 datetime,T001

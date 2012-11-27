@@ -149,6 +149,11 @@ const uint64_t state_modifiers[ ] =
    c_state_modifier_55
 };
 
+typedef std::multimap< uint64_t, std::string > modifier_container;
+typedef modifier_container::iterator modifier_iterator;
+typedef modifier_container::const_iterator modifier_const_iterator;
+typedef modifier_container::value_type modifier_value_type;
+
 struct fld_info
 {
    fld_info( ) : tab_id( 0 ), unique( false ), indexed( false ), mandatory( false ), index_count( 0 ) { }
@@ -172,7 +177,7 @@ struct fld_info
    std::string pdname;
    std::string pextra;
 
-   std::map< uint64_t, std::string > modifiers;
+   modifier_container modifiers;
 };
 
 struct par_info
@@ -239,7 +244,8 @@ struct view_info
    std::string static_instance_key;
 
    std::map< std::string, std::string > extras;
-   std::map< uint64_t, std::string > modifiers;
+
+   modifier_container modifiers;
 
    std::vector< fld_info > fields;
    std::vector< std::string > file_ids;
@@ -287,7 +293,8 @@ struct list_info
    std::vector< std::string > var_ids;
 
    std::map< std::string, std::string > extras;
-   std::map< uint64_t, std::string > modifiers;
+
+   modifier_container modifiers;
 
    std::vector< std::string > actions;
 

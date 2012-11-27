@@ -910,10 +910,8 @@ regex::impl::impl( const string& expr )
 string::size_type regex::impl::search(
  const string& text, string::size_type* p_length, vector< string >* p_refs )
 {
-   string::size_type pos = string::npos;
-
-   if( parts.empty( ) )
-      return pos;
+   if( parts.empty( ) || ( min_size && text.length( ) < min_size ) )
+      return string::npos;
 
 #ifdef DEBUG
    dump( cout );
@@ -922,10 +920,24 @@ string::size_type regex::impl::search(
    // NOTE: If the expression needs to match at the start and starts with a literal
    // or it needs to match at the end and ends with a literal then first check that
    // the literal is present before continuing.
-   if( ( match_at_start && parts[ 0 ].type == e_part_type_lit )
-    || ( match_at_finish && parts[ parts.size( ) - 1 ].type == e_part_type_lit ) )
+   if( match_at_start && parts[ 0 ].type == e_part_type_lit )
    {
-      part& test_part( match_at_start ? parts[ 0 ] : parts[ parts.size( ) - 1 ] );
+      part& test_part( parts[ 0 ] );
+
+      if( test_part.min_matches )
+      {
+         string literal;
+         for( size_t i = 0; i < test_part.min_matches; i++ )
+            literal += test_part.literal;
+
+         if( !match_literal( literal, text, 0 ) )
+            return string::npos;
+      }
+   }
+
+   if( match_at_finish && parts[ parts.size( ) - 1 ].type == e_part_type_lit )
+   {
+      part& test_part( parts[ parts.size( ) - 1 ] );
 
       if( test_part.min_matches )
       {
@@ -935,17 +947,12 @@ string::size_type regex::impl::search(
          for( size_t i = 0; i < test_part.min_matches; i++ )
             literal += test_part.literal;
 
-         if( match_at_start && !match_literal( literal, text, 0 ) )
-            okay = false;
-
-         if( match_at_finish
-          && !match_literal( literal, text, text.length( ) - literal_size( literal ) ) )
-            okay = false;
-
-         if( !okay )
+         if( !match_literal( literal, text, text.length( ) - literal_size( literal ) ) )
             return string::npos;
       }
    }
+
+   string::size_type pos = string::npos;
 
    // NOTE: If the expression needs to match at the end then matching is first
    // attempted at the last possible position and from the first position. The
@@ -1449,6 +1456,9 @@ void regex::impl::dump( ostream& os )
          }
       }
    }
+
+   os << "\nmatch_at_start = " << match_at_start << '\n';
+   os << "match_at_finish = " << match_at_finish << '\n';
 
    os << endl;
 }

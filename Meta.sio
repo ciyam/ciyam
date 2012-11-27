@@ -870,7 +870,7 @@
       <item>class
      </specification>
      <specification/>
-      <id>600053a
+      <id>600053b
       <item>sclass
      </specification>
      <specification/>
@@ -1224,7 +1224,7 @@
         <item>field
        </specification>
        <specification/>
-        <id>600053a
+        <id>600053b
         <item>scfield
        </specification>
        <specification/>
@@ -2290,6 +2290,10 @@
       <item>cclass
      </specification>
      <specification/>
+      <id>600047
+      <item>class
+     </specification>
+     <specification/>
       <id>600048
       <item>class
      </specification>
@@ -2315,6 +2319,10 @@
      </specification>
      <specification/>
       <id>600053a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600053b
       <item>class
      </specification>
      <specification/>
@@ -3045,7 +3053,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600053a
+        <id>600053b
         <item>sfield
        </specification>
        <specification/>
@@ -3122,7 +3130,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600053a
+        <id>600053b
         <item>field
        </specification>
        <specification/>
@@ -3244,6 +3252,54 @@
       <modifiers/>
        <modifier/>
         <id>107310
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600047
+        <item>field
+       </specification>
+       <specification/>
+        <id>600053a
+        <item>field
+       </specification>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>107116
+      <name>UOM_Name
+      <type>1020
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>107311
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>107117
+      <name>UOM_Symbol
+      <type>1005
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>107311
         <affect>relegate
        </modifier>
       </modifiers>
@@ -3388,6 +3444,10 @@
         <item>src_pfield
        </specification>
        <specification/>
+        <id>600053a
+        <item>pfield
+       </specification>
+       <specification/>
         <id>600095
         <item>tfield
        </specification>
@@ -3431,6 +3491,10 @@
       <id>500400
       <name>Is_Internal
       <affect>lowlight
+     </modifier>
+     <modifier/>
+      <id>107311
+      <name>Is_Non_Custom_UOM
      </modifier>
      <modifier/>
       <id>107320
@@ -10705,8 +10769,24 @@
     </modifiers>
     <procedures/>
      <procedure/>
+      <id>137430
+      <name>Clear
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
       <id>137410
       <name>Edit
+      <specifications/>
+      </specifications>
+      <args/>
+      </args>
+     </procedure>
+     <procedure/>
+      <id>137420
+      <name>Select
       <specifications/>
       </specifications>
       <args/>
@@ -20689,6 +20769,10 @@
       <item>sclass
      </specification>
      <specification/>
+      <id>600053a
+      <item>pclass
+     </specification>
+     <specification/>
       <id>601210
       <item>class
      </specification>
@@ -20823,6 +20907,56 @@
        </modifier>
       </modifiers>
       <specifications/>
+       <specification/>
+        <id>601210
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>102120
+      <name>Default_UOM
+      <type>int
+      <mandatory>true
+      <enum_id>535
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>102310
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102311
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102312
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102313
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102316
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102317
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>102318
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600053a
+        <item>src_field
+       </specification>
        <specification/>
         <id>601210
         <item>field
@@ -26483,6 +26617,18 @@
     </data>
    </specification>
    <specification/>
+    <id>600047
+    <name>{Field}_Is_Non_Custom_UOM
+    <type>modifier_field_value
+    <data/>
+     <class_id>107100
+     <modifier_id>107311
+     <field_id>107104
+     <field_value>999
+     <not_equal>true
+    </data>
+   </specification>
+   <specification/>
     <id>610065
     <name>{Field}_Is_Text_Type_if_not_Is_Any_Non_Text_Type
     <type>modifier_set_field
@@ -26543,7 +26689,7 @@
     </data>
    </specification>
    <specification/>
-    <id>600053a
+    <id>600053b
     <name>{Field}_Parent_Class_Name
     <type>transient_field_alias
     <data/>
@@ -26564,6 +26710,18 @@
      <sfield_id>102102
      <pfield_id>300710
      <dfield_id>107107
+    </data>
+   </specification>
+   <specification/>
+    <id>600053a
+    <name>{Field}_UOM_from_other_field
+    <type>default_to_field
+    <data/>
+     <class_id>107100
+     <field_id>107104
+     <pclass_id>102100
+     <pfield_id>300710
+     <sfield_id>102120
     </data>
    </specification>
    <specification/>
@@ -26647,7 +26805,9 @@
      <field_info>300730:106101;no_edit+link+filename+max_size=30
      <field_info>300720:103101!@group:300300+@key1:103102;link
      <field_info>107103;enum=530
-     <field_info>107104;enum=535
+     <field_info>107104;force+enum=535
+     <field_info>107116
+     <field_info>107117
      <field_info>107111
     </data>
    </specification>
@@ -32344,6 +32504,7 @@
      <field_info>102115;enum=514
      <field_info>102116;force+enum=505
      <field_info>102117;force+enum=506
+     <field_info>102120;enum=535
     </data>
    </specification>
    <specification/>
@@ -33347,7 +33508,7 @@
     <id>535
     <name>uom
     <type>int
-    <key_values>0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg
+    <key_values>0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg,900=number,901=dollars,902=percent,999=customised
    </user_defined_enum>
    <user_defined_enum/>
     <id>655
