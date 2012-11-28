@@ -2493,7 +2493,8 @@ void model::impl::modifier_add( const string& modifier_id, const string& class_n
 
       if( affect_type != "protect" && affect_type != "relegate"
        && affect_type != "lowlight" && affect_type != "lowlight1"
-       && affect_type != "highlight" && affect_type != "highlight1" )
+       && affect_type != "highlight" && affect_type != "highlight1"
+       && affect_type != "extralight" && affect_type != "extralight1" )
          throw runtime_error( "unexpected modifier affect type '" + affect_type + "'" );
 
       if( !affect_extra.empty( ) && affect_extra != "list" && affect_extra != "view" )

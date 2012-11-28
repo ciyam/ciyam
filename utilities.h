@@ -330,7 +330,7 @@ template< typename T > std::string signed_to_string( T val )
       buf[ pos ] = '0' + ( char )( val % 10 );
       val /= 10;
 
-      if( !val )
+      if( !val || pos == 0 + is_neg )
          break;
       --pos;
    }
@@ -354,7 +354,7 @@ template< typename T > std::string unsigned_to_string( T val )
       buf[ pos ] = '0' + ( char )( val % 10 );
       val /= 10;
 
-      if( !val )
+      if( !val || pos == 0 )
          break;
       --pos;
    }
@@ -385,6 +385,11 @@ template< > inline std::string string_converter< char >::operator ( )( const cha
    return std::string( 1, v );
 }
 
+template< > inline std::string string_converter< short >::operator ( )( const short& v ) const
+{
+   return signed_to_string< short >( v );
+}
+
 template< > inline std::string string_converter< int >::operator ( )( const int& v ) const
 {
    return signed_to_string< int >( v );
@@ -395,10 +400,12 @@ template< > inline std::string string_converter< long >::operator ( )( const lon
    return signed_to_string< long >( v );
 }
 
-template< > inline std::string string_converter< short >::operator ( )( const short& v ) const
+#  ifndef _LP64
+template< > inline std::string string_converter< int64_t >::operator ( )( const int64_t& v ) const
 {
-   return signed_to_string< short >( v );
+   return signed_to_string< int64_t >( v );
 }
+#  endif
 
 template< > inline std::string string_converter< unsigned char >::operator ( )( const unsigned char& v ) const
 {
@@ -410,15 +417,22 @@ template< > inline std::string string_converter< unsigned >::operator ( )( const
    return unsigned_to_string< unsigned >( v );
 }
 
+template< > inline std::string string_converter< unsigned short >::operator ( )( const unsigned short& v ) const
+{
+   return unsigned_to_string< unsigned short >( v );
+}
+
 template< > inline std::string string_converter< unsigned long >::operator ( )( const unsigned long& v ) const
 {
    return unsigned_to_string< unsigned long >( v );
 }
 
-template< > inline std::string string_converter< unsigned short >::operator ( )( const unsigned short& v ) const
+#  ifndef _LP64
+template< > inline std::string string_converter< uint64_t >::operator ( )( const uint64_t& v ) const
 {
-   return unsigned_to_string< unsigned short >( v );
+   return unsigned_to_string< uint64_t >( v );
 }
+#  endif
 
 template< typename T > inline std::string to_string( const T& t )
 {

@@ -678,11 +678,12 @@ const uint64_t c_modifier_Hide_Test_Value = UINT64_C( 0x40000000000 );
 const uint64_t c_modifier_Hide_Use_Source_Parent = UINT64_C( 0x80000000000 );
 const uint64_t c_modifier_Hide_Use_Test_Parent_Child = UINT64_C( 0x100000000000 );
 const uint64_t c_modifier_Hide_Value = UINT64_C( 0x200000000000 );
-const uint64_t c_modifier_Protect_Child_Relationship = UINT64_C( 0x400000000000 );
-const uint64_t c_modifier_Protect_Class = UINT64_C( 0x800000000000 );
-const uint64_t c_modifier_Protect_Enum = UINT64_C( 0x1000000000000 );
-const uint64_t c_modifier_Protect_Procedure = UINT64_C( 0x2000000000000 );
-const uint64_t c_modifier_Protect_Source_Parent = UINT64_C( 0x4000000000000 );
+const uint64_t c_modifier_Is_Comment = UINT64_C( 0x400000000000 );
+const uint64_t c_modifier_Protect_Child_Relationship = UINT64_C( 0x800000000000 );
+const uint64_t c_modifier_Protect_Class = UINT64_C( 0x1000000000000 );
+const uint64_t c_modifier_Protect_Enum = UINT64_C( 0x2000000000000 );
+const uint64_t c_modifier_Protect_Procedure = UINT64_C( 0x4000000000000 );
+const uint64_t c_modifier_Protect_Source_Parent = UINT64_C( 0x8000000000000 );
 
 domain_string_max_size< 100 > g_Comments_domain;
 aggregate_domain< string,
@@ -4278,6 +4279,11 @@ uint64_t Meta_Specification::impl::get_state( ) const
    uint64_t state = 0;
 
    // [(start modifier_field_value)]
+   if( get_obj( ).Specification_Type( ) == "comment" )
+      state |= c_modifier_Is_Comment;
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
    if( get_obj( ).Specification_Type( ).Allow_Other_Class( ) == false )
       state |= c_modifier_Hide_Other_Class;
    // [(finish modifier_field_value)]
@@ -6057,7 +6063,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear_on_changed_fk)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
-      get_obj( ).Source_Parent( "" );
+      get_obj( ).Source_Parent( string( ) );
    // [(finish field_clear_on_changed_fk)]
 
    // [(start field_clear)]
@@ -6077,7 +6083,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear_on_changed_fk)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
-      get_obj( ).Child_Relationship( "" );
+      get_obj( ).Child_Relationship( string( ) );
    // [(finish field_clear_on_changed_fk)]
 
    // [(start field_from_other_field)]
@@ -6105,12 +6111,12 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_clear_on_changed_fk)]
    if( get_obj( ).Specification_Type( ).Use_Field_Enum( ) && get_obj( ).Class( ).has_changed( ) )
-      get_obj( ).Enum( "" );
+      get_obj( ).Enum( string( ) );
    // [(finish field_clear_on_changed_fk)]
 
    // [(start field_clear_on_changed_fk)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
-      get_obj( ).Test_Parent( "" );
+      get_obj( ).Test_Parent( string( ) );
    // [(finish field_clear_on_changed_fk)]
 
    // [(start field_from_other_field)]
@@ -11992,6 +11998,14 @@ void Meta_Specification::get_always_required_field_names(
    ( void )names;
    ( void )dependents;
    ( void )use_transients;
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Specification_Type" ); // (for Is_Comment modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+      names.insert( "Specification_Type" );
+   // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
    dependents.insert( "Specification_Type" ); // (for Hide_Other_Class modifier)

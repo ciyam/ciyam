@@ -2683,7 +2683,7 @@ string numeric_name( const string& s, bool show_plus_if_no_sign )
          else
             retval += no_sign_prefix + s[ i ];
       }
-      else if( s[ i ] == ' ' || s[ i ] == '.'  )
+      else if( s[ i ] == ' ' || s[ i ] == '.' )
          retval += "_";
       else
          retval += s[ i ];
@@ -4045,20 +4045,20 @@ string meta_field_domain_type( const string& enum_id, int primitive, int max_siz
          else if( primitive == 4 )
          {
             string::size_type pos = min_value.find( '.' );
-            int min_whole = atoi( min_value.substr( 0, pos ).c_str( ) );
-            int min_decimal = 0;
+            int64_t min_whole = from_string< int64_t >( min_value.substr( 0, pos ) );
+            int64_t min_decimal = 0;
             if( pos != string::npos )
-               min_decimal = atoi( min_value.substr( pos + 1 ).c_str( ) );
+               min_decimal = from_string< int64_t >( min_value.substr( pos + 1 ) );
 
             pos = max_value.find( '.' );
-            int max_whole = atoi( max_value.substr( 0, pos ).c_str( ) );
-            int max_decimal = 0;
+            int64_t max_whole = from_string< int64_t >( max_value.substr( 0, pos ) );
+            int64_t max_decimal = 0;
             if( pos != string::npos )
-               max_decimal = atoi( max_value.substr( pos + 1 ).c_str( ) );
+               max_decimal = from_string< int64_t >( max_value.substr( pos + 1 ) );
 
-            new_domain_type = "domain_numeric_range< numeric, "
-             + to_string( min_whole ) + ", " + to_string( min_decimal )
-             + ", " + to_string( max_whole ) + ", " + to_string( max_decimal ) + " >";
+            new_domain_type = "domain_numeric_range< numeric, UINT64_C( "
+             + to_string( min_whole ) + " ), UINT64_C( " + to_string( min_decimal )
+             + " ), UINT64_C( " + to_string( max_whole ) + " ), UINT64_C( " + to_string( max_decimal ) + " ) >";
          }
          else if( primitive == 5 )
          {

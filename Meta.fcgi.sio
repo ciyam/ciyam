@@ -4877,7 +4877,7 @@
      <ftype>@class
      <extra>link+fkey2+force
      <mandatory>true
-     <modifiers>800000000000:protect
+     <modifiers>1000000000000:protect
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -4981,7 +4981,7 @@
      <ftype>@class
      <extra>link+fkey5
      <mandatory>false
-     <modifiers>40000000:relegate,2000000000000:protect
+     <modifiers>40000000:relegate,4000000000000:protect
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -5053,7 +5053,7 @@
      <ftype>@class
      <extra>link+fkey3
      <mandatory>false
-     <modifiers>200:relegate,1000000000000:protect
+     <modifiers>200:relegate,2000000000000:protect
      <pclass>103100
      <pfield>103101
      <pfname>field_enum_name
@@ -5169,7 +5169,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>4000000000:relegate,4000000000000:protect
+     <modifiers>4000000000:relegate,8000000000000:protect
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5241,7 +5241,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>100:relegate,400000000000:protect
+     <modifiers>100:relegate,800000000000:protect
      <pclass>113100
      <pfield>113105
      <pfname>field_relationship_child_name
@@ -5458,7 +5458,7 @@
      <ftype>@class
      <extra>link+fkey2
      <mandatory>true
-     <modifiers>800000000000:protect
+     <modifiers>1000000000000:protect
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -5498,7 +5498,7 @@
      <ftype>@class
      <extra>link
      <mandatory>false
-     <modifiers>40000000:relegate,2000000000000:protect
+     <modifiers>40000000:relegate,4000000000000:protect
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -5510,7 +5510,7 @@
      <ftype>@class
      <extra>link+fkey3
      <mandatory>false
-     <modifiers>8000000000000:relegate
+     <modifiers>10000000000000:relegate
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -5522,7 +5522,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>8000000000000:relegate
+     <modifiers>10000000000000:relegate
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -5534,7 +5534,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>8000000000000:relegate
+     <modifiers>10000000000000:relegate
     </field>
     <field/>
      <name>field_specification_field_action_clone_key
@@ -5542,7 +5542,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>8000000000000:relegate
+     <modifiers>10000000000000:relegate
     </field>
     <field/>
      <name>field_specification_use_source_parent
@@ -5582,7 +5582,7 @@
      <ftype>@class
      <extra>link+force
      <mandatory>false
-     <modifiers>4000000000:relegate,4000000000000:protect
+     <modifiers>4000000000:relegate,8000000000000:protect
      <pclass>107100
      <pfield>107101
      <pfname>field_field_name
@@ -8479,7 +8479,7 @@
    <type>child
    <extra>no_new,no_limit
    <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
-   <modifiers>
+   <modifiers>400000000000:extralight1
    <view>602500
    <class>Specification
    <bclass>
@@ -8520,7 +8520,7 @@
    <type>child
    <extra>no_limit
    <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
-   <modifiers>
+   <modifiers>400000000000:extralight1
    <view>602500
    <class>Specification
    <bclass>
@@ -8575,7 +8575,7 @@
    <type>child
    <extra>no_limit
    <actions>+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues
-   <modifiers>
+   <modifiers>400000000000:extralight1
    <view>602500
    <class>Specification
    <bclass>

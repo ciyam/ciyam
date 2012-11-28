@@ -8,7 +8,8 @@ Name   Description                 Sample Value
 CPPENV C++ Compiler (Windows only) mvc
 WEBDIR Web Document Root path**    /srv/www/htdocs
 
-** This path must *not* contain spaces.
+** This path must *not* contain spaces and each directory in the path must have rwx permissions for all users
+(the permissions requirement is necessary for development sites but is not recommended for production sites).
 
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 
@@ -19,6 +20,8 @@ The following are platform specific instructions for installing 3rd party librar
 
 NOTE: To make things easier for Windows developers some .lib and .dll files have been included.
 Also note that you will need to be using VS2003 or higher.
+
+For Linux environments the development packages for libpng and readline will need to have been installed.
 
 
 MySQL

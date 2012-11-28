@@ -3836,6 +3836,7 @@ void field_clear_specification::add_specification_data( model& m, specification_
 
    spec_data.data_pairs.push_back( make_pair( c_data_for_store, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
+   spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
    spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
 }
 
@@ -3861,8 +3862,8 @@ struct field_clear_on_changed_fk_specification : specification
    string class_id;
    string tclass_id;
 
+   string field_id;
    string pfield_id;
-   string dfield_id;
 
    string tfield_id;
    string tpfield_id;
@@ -3912,8 +3913,8 @@ void field_clear_on_changed_fk_specification::add( model& m, const vector< strin
    if( pclass_name.empty( ) )
       throw runtime_error( "unexpected non-parent field '" + arg_pfield_name + "' was provided to field_clear_on_changed_fk" );
 
-   dfield_id = get_field_id_for_name( m, arg_class_name, arg_dfield_name, 0, true );
-   if( dfield_id.empty( ) )
+   field_id = get_field_id_for_name( m, arg_class_name, arg_dfield_name, 0, true );
+   if( field_id.empty( ) )
       throw runtime_error( "unknown field '" + arg_dfield_name + "' for class '" + arg_class_name + "'" );
 
    if( !test_field_info.empty( ) )
@@ -3961,8 +3962,8 @@ void field_clear_on_changed_fk_specification::add( model& m, const vector< strin
    if( !tclass_id.empty( ) && tclass_id != class_id )
       details.push_back( specification_detail( tclass_id, "tclass", e_model_element_type_class ) );
 
+   details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
    details.push_back( specification_detail( pfield_id, "pfield", e_model_element_type_field ) );
-   details.push_back( specification_detail( dfield_id, "dfield", e_model_element_type_field ) );
 
    if( !tfield_id.empty( ) )
       details.push_back( specification_detail( tfield_id, "tfield", e_model_element_type_field ) );
@@ -3976,8 +3977,8 @@ void field_clear_on_changed_fk_specification::read_data( sio_reader& reader )
    class_id = reader.read_attribute( c_attribute_class_id );
    tclass_id = reader.read_opt_attribute( c_attribute_tclass_id );
 
+   field_id = reader.read_attribute( c_attribute_field_id );
    pfield_id = reader.read_attribute( c_attribute_pfield_id );
-   dfield_id = reader.read_attribute( c_attribute_dfield_id );
 
    tfield_id = reader.read_opt_attribute( c_attribute_tfield_id );
    tpfield_id = reader.read_opt_attribute( c_attribute_tpfield_id );
@@ -3992,8 +3993,8 @@ void field_clear_on_changed_fk_specification::write_data( sio_writer& writer ) c
    writer.write_attribute( c_attribute_class_id, class_id );
    writer.write_opt_attribute( c_attribute_tclass_id, tclass_id );
 
+   writer.write_attribute( c_attribute_field_id, field_id );
    writer.write_attribute( c_attribute_pfield_id, pfield_id );
-   writer.write_attribute( c_attribute_dfield_id, dfield_id );
 
    writer.write_opt_attribute( c_attribute_tfield_id, tfield_id );
    writer.write_opt_attribute( c_attribute_tpfield_id, tpfield_id );
@@ -4011,8 +4012,12 @@ void field_clear_on_changed_fk_specification::add_specification_data( model& m, 
    string pfield_name = get_field_name_for_id( m, class_name, pfield_id );
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
 
-   string dfield_name = get_field_name_for_id( m, class_name, dfield_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_dfield, dfield_name ) );
+   string field_type;
+   string field_name = get_field_name_for_id( m, class_name, field_id, &field_type );
+   spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
+
+   bool is_text_type( !is_non_string_type( field_type ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_fistexttype, is_text_type ? "1" : "0" ) );
 
    string tclass_name( class_name );
    if( !tclass_id.empty( ) )
@@ -4031,6 +4036,9 @@ void field_clear_on_changed_fk_specification::add_specification_data( model& m, 
 
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, not_default ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
+
+   spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
 }
 
 string field_clear_on_changed_fk_specification::static_class_name( ) { return "field_clear_on_changed_fk"; }
