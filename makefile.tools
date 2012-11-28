@@ -20,7 +20,7 @@ BIND = ar
 LINK = $(CPP)
 
 # Compiler flags
-CPPFLAGS = -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include
+CPPFLAGS = -fPIC -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONSTANT_MACROS -I/usr/local/ssl/include
 
 # Implicit rules (and override for simple builtins)
 %: %.o
