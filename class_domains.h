@@ -145,7 +145,7 @@ template< int D > struct divisor< 0, D >
    static const int result = 1;
 };
 
-template< typename N, int W1, int F1, int W2, int F2 > struct domain_numeric_range
+template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 > struct domain_numeric_range
 {
    bool is_valid( const N& n, std::string& error ) const;
 
@@ -156,7 +156,7 @@ template< typename N, int W1, int F1, int W2, int F2 > struct domain_numeric_ran
 #     pragma option push -w-8008
 #     pragma option push -w-8066
 #  endif
-template< typename N, int W1, int F1, int W2, int F2 >
+template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 >
  bool domain_numeric_range< N, W1, F1, W2, F2 >::is_valid( const N& n, std::string& error ) const
 {
    N n1( F1 );
@@ -186,7 +186,7 @@ template< typename N, int W1, int F1, int W2, int F2 >
 #     pragma option pop
 #  endif
 
-template< typename N, int W1, int F1, int W2, int F2 >
+template< typename N, int64_t W1, int64_t F1, int64_t W2, int64_t F2 >
  std::string domain_numeric_range< N, W1, F1, W2, F2 >::error_message( const std::string& mask ) const
 {
    std::string min( mask.empty( ) ? to_string( W1 ) + "." + to_string( F1 )

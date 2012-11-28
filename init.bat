@@ -2,6 +2,10 @@
 setlocal
 if '%1' == '' goto usage
 
+if '%2' == 'ciyam' goto skip
+if '%WEBDIR%' == '' goto error1
+
+:skip
 set CIYAM_MODEL=%1
 set CIYAM_STORAGE=%1
 if not '%2' == '' set CIYAM_STORAGE=%2
@@ -11,6 +15,10 @@ start /min ciyam_server -quiet
 ping 127.0.0.1 -n 2 > nul
 ciyam_client -quiet -no_prompt < init.cin
 touch ciyam_server.stop
+goto end
+
+:error1
+echo Error: Missing environment variable 'WEBDIR'.
 goto end
 
 :usage

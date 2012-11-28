@@ -2974,7 +2974,7 @@
 `{`$specification_Specification_view_field006`=`'301420`'`}
 `{`$specification_Specification_view_ftype006`=`'@class`'`}
 `{`$specification_Specification_view_extra006`=`'link+fkey2+force`'`}
-`{`$specification_Specification_view_fmods006`=`'800000000000:protect`'`}
+`{`$specification_Specification_view_fmods006`=`'1000000000000:protect`'`}
 `{`$specification_Specification_view_fname006`=`'field_specification_class`'`}
 `{`$specification_Specification_view_fmand006`=`'true`'`}
 `{`$specification_Specification_view_prcls006`=`'106100`'`}
@@ -3076,7 +3076,7 @@
 `{`$specification_Specification_view_field015`=`'301450`'`}
 `{`$specification_Specification_view_ftype015`=`'@class`'`}
 `{`$specification_Specification_view_extra015`=`'link+fkey5`'`}
-`{`$specification_Specification_view_fmods015`=`'40000000:relegate,2000000000000:protect`'`}
+`{`$specification_Specification_view_fmods015`=`'40000000:relegate,4000000000000:protect`'`}
 `{`$specification_Specification_view_fname015`=`'field_specification_procedure`'`}
 `{`$specification_Specification_view_fmand015`=`'false`'`}
 `{`$specification_Specification_view_prcls015`=`'111100`'`}
@@ -3148,7 +3148,7 @@
 `{`$specification_Specification_view_field021`=`'301460`'`}
 `{`$specification_Specification_view_ftype021`=`'@class`'`}
 `{`$specification_Specification_view_extra021`=`'link+fkey3`'`}
-`{`$specification_Specification_view_fmods021`=`'200:relegate,1000000000000:protect`'`}
+`{`$specification_Specification_view_fmods021`=`'200:relegate,2000000000000:protect`'`}
 `{`$specification_Specification_view_fname021`=`'field_specification_enum`'`}
 `{`$specification_Specification_view_fmand021`=`'false`'`}
 `{`$specification_Specification_view_prcls021`=`'103100`'`}
@@ -3262,7 +3262,7 @@
 `{`$specification_Specification_view_field031`=`'301480`'`}
 `{`$specification_Specification_view_ftype031`=`'@class`'`}
 `{`$specification_Specification_view_extra031`=`'link+force`'`}
-`{`$specification_Specification_view_fmods031`=`'4000000000:relegate,4000000000000:protect`'`}
+`{`$specification_Specification_view_fmods031`=`'4000000000:relegate,8000000000000:protect`'`}
 `{`$specification_Specification_view_fname031`=`'field_specification_source_parent`'`}
 `{`$specification_Specification_view_fmand031`=`'false`'`}
 `{`$specification_Specification_view_prcls031`=`'107100`'`}
@@ -3334,7 +3334,7 @@
 `{`$specification_Specification_view_field037`=`'301475`'`}
 `{`$specification_Specification_view_ftype037`=`'@class`'`}
 `{`$specification_Specification_view_extra037`=`'`'`}
-`{`$specification_Specification_view_fmods037`=`'100:relegate,400000000000:protect`'`}
+`{`$specification_Specification_view_fmods037`=`'100:relegate,800000000000:protect`'`}
 `{`$specification_Specification_view_fname037`=`'field_specification_child_relationship`'`}
 `{`$specification_Specification_view_fmand037`=`'false`'`}
 `{`$specification_Specification_view_prcls037`=`'113100`'`}
@@ -3469,7 +3469,7 @@
 `{`$specification_Specification_child_list0_name`=`'@602530_Child_Specifications`'`}
 `{`$specification_Specification_child_list0_type`=`'child`'`}
 `{`$specification_Specification_child_list0_acts`=`'+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues`'`}
-`{`$specification_Specification_child_list0_mods`=`'`'`}
+`{`$specification_Specification_child_list0_mods`=`'400000000000:extralight1`'`}
 `{`$specification_Specification_child_list0_extra`=`'no_new,no_limit`'`}
 `{`$specification_Specification_child_list0_order`=`'forward`'`}
 `{`$specification_Specification_child_list0_binfo`=`'`'`}
@@ -3497,7 +3497,7 @@
 `{`$specification_Specification_child_list1_name`=`'@602540_Specifications`'`}
 `{`$specification_Specification_child_list1_type`=`'child`'`}
 `{`$specification_Specification_child_list1_acts`=`'+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues`'`}
-`{`$specification_Specification_child_list1_mods`=`'`'`}
+`{`$specification_Specification_child_list1_mods`=`'400000000000:extralight1`'`}
 `{`$specification_Specification_child_list1_extra`=`'no_limit`'`}
 `{`$specification_Specification_child_list1_order`=`'forward`'`}
 `{`$specification_Specification_child_list1_binfo`=`'`'`}
@@ -3540,7 +3540,7 @@
 `{`$specification_Specification_child_list1_name`=`'@602540_Specifications`'`}
 `{`$specification_Specification_child_list1_type`=`'child`'`}
 `{`$specification_Specification_child_list1_acts`=`'+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues`'`}
-`{`$specification_Specification_child_list1_mods`=`'`'`}
+`{`$specification_Specification_child_list1_mods`=`'400000000000:extralight1`'`}
 `{`$specification_Specification_child_list1_extra`=`'no_limit`'`}
 `{`$specification_Specification_child_list1_order`=`'forward`'`}
 `{`$specification_Specification_child_list1_binfo`=`'`'`}
@@ -3583,7 +3583,7 @@
 `{`$specification_Specification_child_list2_name`=`'@602550_Specifications`'`}
 `{`$specification_Specification_child_list2_type`=`'child`'`}
 `{`$specification_Specification_child_list2_acts`=`'+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues`'`}
-`{`$specification_Specification_child_list2_mods`=`'`'`}
+`{`$specification_Specification_child_list2_mods`=`'400000000000:extralight1`'`}
 `{`$specification_Specification_child_list2_extra`=`'no_limit`'`}
 `{`$specification_Specification_child_list2_order`=`'forward`'`}
 `{`$specification_Specification_child_list2_binfo`=`'`'`}
@@ -3632,7 +3632,7 @@
 `{`$specification_Specification_child_list2_name`=`'@602550_Specifications`'`}
 `{`$specification_Specification_child_list2_type`=`'child`'`}
 `{`$specification_Specification_child_list2_acts`=`'+!115410+@rfields+@rvalues,+!^115420+@rfields+@rvalues`'`}
-`{`$specification_Specification_child_list2_mods`=`'`'`}
+`{`$specification_Specification_child_list2_mods`=`'400000000000:extralight1`'`}
 `{`$specification_Specification_child_list2_extra`=`'no_limit`'`}
 `{`$specification_Specification_child_list2_order`=`'forward`'`}
 `{`$specification_Specification_child_list2_binfo`=`'`'`}
@@ -3741,7 +3741,7 @@
 `{`$specification_Specification_Field_Action_view_field006`=`'301420`'`}
 `{`$specification_Specification_Field_Action_view_ftype006`=`'@class`'`}
 `{`$specification_Specification_Field_Action_view_extra006`=`'link+fkey2`'`}
-`{`$specification_Specification_Field_Action_view_fmods006`=`'800000000000:protect`'`}
+`{`$specification_Specification_Field_Action_view_fmods006`=`'1000000000000:protect`'`}
 `{`$specification_Specification_Field_Action_view_fname006`=`'field_specification_class`'`}
 `{`$specification_Specification_Field_Action_view_fmand006`=`'true`'`}
 `{`$specification_Specification_Field_Action_view_prcls006`=`'106100`'`}
@@ -3777,7 +3777,7 @@
 `{`$specification_Specification_Field_Action_view_field010`=`'301450`'`}
 `{`$specification_Specification_Field_Action_view_ftype010`=`'@class`'`}
 `{`$specification_Specification_Field_Action_view_extra010`=`'link`'`}
-`{`$specification_Specification_Field_Action_view_fmods010`=`'40000000:relegate,2000000000000:protect`'`}
+`{`$specification_Specification_Field_Action_view_fmods010`=`'40000000:relegate,4000000000000:protect`'`}
 `{`$specification_Specification_Field_Action_view_fname010`=`'field_specification_procedure`'`}
 `{`$specification_Specification_Field_Action_view_fmand010`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_prcls010`=`'111100`'`}
@@ -3789,7 +3789,7 @@
 `{`$specification_Specification_Field_Action_view_field011`=`'302300`'`}
 `{`$specification_Specification_Field_Action_view_ftype011`=`'@class`'`}
 `{`$specification_Specification_Field_Action_view_extra011`=`'link+fkey3`'`}
-`{`$specification_Specification_Field_Action_view_fmods011`=`'8000000000000:relegate`'`}
+`{`$specification_Specification_Field_Action_view_fmods011`=`'10000000000000:relegate`'`}
 `{`$specification_Specification_Field_Action_view_fname011`=`'field_specification_field_action_new_record_class`'`}
 `{`$specification_Specification_Field_Action_view_fmand011`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_prcls011`=`'106100`'`}
@@ -3801,7 +3801,7 @@
 `{`$specification_Specification_Field_Action_view_field012`=`'302310`'`}
 `{`$specification_Specification_Field_Action_view_ftype012`=`'@class`'`}
 `{`$specification_Specification_Field_Action_view_extra012`=`'`'`}
-`{`$specification_Specification_Field_Action_view_fmods012`=`'8000000000000:relegate`'`}
+`{`$specification_Specification_Field_Action_view_fmods012`=`'10000000000000:relegate`'`}
 `{`$specification_Specification_Field_Action_view_fname012`=`'field_specification_field_action_new_record_fk_field`'`}
 `{`$specification_Specification_Field_Action_view_fmand012`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_prcls012`=`'107100`'`}
@@ -3813,13 +3813,13 @@
 `{`$specification_Specification_Field_Action_view_field013`=`'128105`'`}
 `{`$specification_Specification_Field_Action_view_ftype013`=`'string`'`}
 `{`$specification_Specification_Field_Action_view_extra013`=`'max_size=100`'`}
-`{`$specification_Specification_Field_Action_view_fmods013`=`'8000000000000:relegate`'`}
+`{`$specification_Specification_Field_Action_view_fmods013`=`'10000000000000:relegate`'`}
 `{`$specification_Specification_Field_Action_view_fname013`=`'field_specification_field_action_new_record_fk_value`'`}
 `{`$specification_Specification_Field_Action_view_fmand013`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field014`=`'128101`'`}
 `{`$specification_Specification_Field_Action_view_ftype014`=`'string`'`}
 `{`$specification_Specification_Field_Action_view_extra014`=`'max_size=100`'`}
-`{`$specification_Specification_Field_Action_view_fmods014`=`'8000000000000:relegate`'`}
+`{`$specification_Specification_Field_Action_view_fmods014`=`'10000000000000:relegate`'`}
 `{`$specification_Specification_Field_Action_view_fname014`=`'field_specification_field_action_clone_key`'`}
 `{`$specification_Specification_Field_Action_view_fmand014`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field015`=`'115107`'`}
@@ -3855,7 +3855,7 @@
 `{`$specification_Specification_Field_Action_view_field018`=`'301480`'`}
 `{`$specification_Specification_Field_Action_view_ftype018`=`'@class`'`}
 `{`$specification_Specification_Field_Action_view_extra018`=`'link+force`'`}
-`{`$specification_Specification_Field_Action_view_fmods018`=`'4000000000:relegate,4000000000000:protect`'`}
+`{`$specification_Specification_Field_Action_view_fmods018`=`'4000000000:relegate,8000000000000:protect`'`}
 `{`$specification_Specification_Field_Action_view_fname018`=`'field_specification_source_parent`'`}
 `{`$specification_Specification_Field_Action_view_fmand018`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_prcls018`=`'107100`'`}

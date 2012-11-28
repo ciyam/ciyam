@@ -12530,6 +12530,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600101b
+      <item>class
+     </specification>
+     <specification/>
       <id>600102
       <item>class
      </specification>
@@ -13372,7 +13376,7 @@
        </specification>
        <specification/>
         <id>600165
-        <item>dfield
+        <item>field
        </specification>
        <specification/>
         <id>600178
@@ -14951,7 +14955,7 @@
        </specification>
        <specification/>
         <id>600161
-        <item>dfield
+        <item>field
        </specification>
        <specification/>
         <id>600163
@@ -15231,7 +15235,7 @@
        </specification>
        <specification/>
         <id>600172
-        <item>dfield
+        <item>field
        </specification>
        <specification/>
         <id>600173
@@ -15859,7 +15863,7 @@
        </specification>
        <specification/>
         <id>600171
-        <item>dfield
+        <item>field
        </specification>
        <specification/>
         <id>600191
@@ -16249,6 +16253,10 @@
        </specification>
        <specification/>
         <id>600101a
+        <item>field
+       </specification>
+       <specification/>
+        <id>600101b
         <item>field
        </specification>
        <specification/>
@@ -16976,6 +16984,11 @@
       <name>Hide_Value
      </modifier>
      <modifier/>
+      <id>500590
+      <name>Is_Comment
+      <affect>extralight1;list
+     </modifier>
+     <modifier/>
       <id>500693
       <name>Protect_Child_Relationship
      </modifier>
@@ -17509,11 +17522,11 @@
     <version>
     <specifications/>
      <specification/>
-      <id>600101
+      <id>600101a
       <item>pclass
      </specification>
      <specification/>
-      <id>600101a
+      <id>600101b
       <item>pclass
      </specification>
      <specification/>
@@ -18219,7 +18232,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600101a
+        <id>600101b
         <item>pfield
        </specification>
        <specification/>
@@ -18282,7 +18295,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600101
+        <id>600101a
         <item>pfield
        </specification>
        <specification/>
@@ -29973,8 +29986,8 @@
     <type>field_clear_on_changed_fk
     <data/>
      <class_id>115100
+     <field_id>301475
      <pfield_id>301420
-     <dfield_id>301475
      <not_create>true
     </data>
    </specification>
@@ -30230,7 +30243,7 @@
     </data>
    </specification>
    <specification/>
-    <id>600101a
+    <id>600101b
     <name>{Specification}_Hide_Field
     <type>modifier_field_value
     <data/>
@@ -30269,7 +30282,7 @@
     </data>
    </specification>
    <specification/>
-    <id>600101
+    <id>600101a
     <name>{Specification}_Hide_Other_Class
     <type>modifier_field_value
     <data/>
@@ -30742,6 +30755,17 @@
      <field_id>115117
      <pfield_id>301400
      <cfield_id>105106
+    </data>
+   </specification>
+   <specification/>
+    <id>600101
+    <name>{Specification}_Is_Comment
+    <type>modifier_field_value
+    <data/>
+     <class_id>115100
+     <modifier_id>500590
+     <field_id>301410
+     <field_value>comment
     </data>
    </specification>
    <specification/>
@@ -31568,8 +31592,8 @@
     <type>field_clear_on_changed_fk
     <data/>
      <class_id>115100
+     <field_id>301480
      <pfield_id>301420
-     <dfield_id>301480
      <not_create>true
     </data>
    </specification>
@@ -31716,8 +31740,8 @@
     <type>field_clear_on_changed_fk
     <data/>
      <class_id>115100
+     <field_id>301486
      <pfield_id>301420
-     <dfield_id>301486
      <not_create>true
     </data>
    </specification>
@@ -32241,8 +32265,8 @@
     <data/>
      <class_id>115100
      <tclass_id>114100
+     <field_id>301460
      <pfield_id>301420
-     <dfield_id>301460
      <tfield_id>114162
      <tpfield_id>301410
     </data>

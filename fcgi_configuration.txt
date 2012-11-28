@@ -13,7 +13,7 @@ Notes for using mod_fcgid with Apache 2.2
 
 1) Copy mod_fcgid.so into Apache's modules directory (Windows only - otherwise ensure "mod_fcgid" installed).
 
-2) Make the following changes to "default_server.conf" (or if no such file then change "httpd.conf" instead):
+2) Make the following changes to "default-server.conf" (or if no such file then change "httpd.conf" instead):
 ...
 LoadModule fcgid_module modules/mod_fcgid.so ### (NOTE: only add this if there are other LoadModule's around)
 ...
