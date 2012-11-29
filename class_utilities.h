@@ -25,6 +25,14 @@
 
 inline bool is_null( const std::string& s ) { return s.empty( ); }
 
+template< > inline bool from_string< bool >( const std::string& s )
+{
+   if( s.empty( ) || ( s[ 0 ] == '0' || s[ 0 ] == 'f' || s[ 0 ] == 'F' ) )
+      return false;
+   else
+      return true;
+}
+
 // NOTE: It is being assumed that a type cannot be null unless it has its own "is_null" function
 // (the function is not being inlined for BCB due to noisy warnings that it will otherwise issue)
 // and also any string value is valid unless it has provided its own "is_valid_str_val" function.
