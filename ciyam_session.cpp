@@ -1496,7 +1496,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      if( !set_value_items.empty( ) )
                         prepare_object_instance( handle, context, false );
 
-                     if( !filter_set.empty( ) && instance_filtered( handle, context ) )
+                     if( ( !filter_set.empty( ) || instance_has_transient_filter_fields( handle, context ) )
+                      && instance_filtered( handle, context ) )
                         continue;
 
                      if( create_pdf )

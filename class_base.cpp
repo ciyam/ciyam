@@ -1033,6 +1033,25 @@ void class_base::copy_original_field_values( const class_base& src )
       set_field_value( i, src.original_values[ i ] );
 }
 
+bool class_base::filtered( ) const
+{
+   if( !transient_filter_field_values.empty( ) )
+   {
+      for( map< string, string >::const_iterator
+       ci = transient_filter_field_values.begin( ); ci != transient_filter_field_values.end( ); ++ci )
+      {
+//idk
+TEMP_TRACE( "ci->first = " + ci->first );
+TEMP_TRACE( "ci->second = " + ci->second );
+TEMP_TRACE( "get_field_value( " + to_string( get_field_num( ci->first ) ) + " ) = " + get_field_value( get_field_num( ci->first ) ) );
+         if( get_field_value( get_field_num( ci->first ) ) != ci->second )
+            return true;
+      }
+   }
+
+   return filters.empty( ) ? false : is_filtered( );
+}
+
 string class_base::get_validation_errors( validation_errors_type type )
 {
    string retval;
@@ -1850,6 +1869,13 @@ void class_base::fetch_updated_instance( )
    perform_fetch( );
 
    set_ver_exp( get_version_info( ) );
+}
+
+void class_base::add_required_transients( std::set< std::string >& required_transients )
+{
+   for( map< string, string >::const_iterator
+    ci = transient_filter_field_values.begin( ); ci != transient_filter_field_values.end( ); ++ci )
+      required_transients.insert( ci->first );
 }
 
 void class_base::set_key( const string& new_key, bool skip_fk_handling )

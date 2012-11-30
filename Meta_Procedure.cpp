@@ -1051,7 +1051,10 @@ void Meta_Procedure::impl::get_required_transients( ) const
 {
    required_transients.clear( );
 
-   set< string > dependents;
+   get_obj( ).add_required_transients( required_transients );
+
+   set< string > dependents( required_transients.begin( ), required_transients.end( ) );
+
    p_obj->get_required_field_names( required_transients, true, &dependents );
 
    // NOTE: It is possible that due to "interdependent" required fields

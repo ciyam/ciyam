@@ -428,6 +428,7 @@ bool CIYAM_BASE_DECL_SPEC instance_iterate_next( size_t handle, const std::strin
 void CIYAM_BASE_DECL_SPEC instance_iterate_stop( size_t handle, const std::string& context );
 
 bool CIYAM_BASE_DECL_SPEC instance_filtered( size_t handle, const std::string& context );
+bool CIYAM_BASE_DECL_SPEC instance_has_transient_filter_fields( size_t handle, const std::string& context );
 
 void CIYAM_BASE_DECL_SPEC instance_review_begin( size_t handle, const std::string& context, const std::string& key );
 void CIYAM_BASE_DECL_SPEC instance_review_finish( size_t handle, const std::string& context );
