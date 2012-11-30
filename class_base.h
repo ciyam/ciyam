@@ -257,7 +257,9 @@ class CLASS_BASE_DECL_SPEC class_base
    void copy_all_field_values( const class_base& src );
    void copy_original_field_values( const class_base& src );
 
-   bool filtered( ) const { return is_filtered( ); }
+   bool filtered( ) const;
+
+   bool has_transient_filter_fields( ) const { return !transient_filter_field_values.empty( ); }
 
    std::string get_validation_errors( validation_errors_type type = e_validation_errors_type_all );
 
@@ -466,6 +468,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    std::deque< std::vector< std::string > > row_cache;
 
+   std::map< std::string, std::string > transient_filter_field_values;
+
    class_base* p_graph_parent;
    std::string graph_parent_fk_field;
 
@@ -609,6 +613,8 @@ class CLASS_BASE_DECL_SPEC class_base
 
    void fetch_updated_instance( );
 
+   void add_required_transients( std::set< std::string >& required_transients );
+
    void set_key( const std::string& new_key, bool skip_fk_handling = false );
    void set_clone_key( const std::string& new_clone_key ) { clone_key = new_clone_key; }
 
@@ -706,6 +712,8 @@ struct class_base_accessor
    std::set< std::string >& fetch_field_names( ) { return cb.fetch_field_names; }
 
    std::deque< std::vector< std::string > >& row_cache( ) { return cb.row_cache; }
+
+   std::map< std::string, std::string >& transient_filter_field_values( ) { return cb.transient_filter_field_values; }
 
    size_t get_lock_handle( ) const { return cb.get_lock_handle( ); }
    void set_lock_handle( size_t new_lock_handle ) { cb.set_lock_handle( new_lock_handle ); }

@@ -8107,6 +8107,11 @@ bool instance_filtered( size_t handle, const string& context )
    return get_class_base_from_handle( handle, context ).filtered( );
 }
 
+bool instance_has_transient_filter_fields( size_t handle, const string& context )
+{
+   return get_class_base_from_handle( handle, context ).has_transient_filter_fields( );
+}
+
 void op_instance_create( size_t handle,
  const string& context, const string& key, bool internal_operation, op_create_rc* p_rc )
 {
@@ -9059,6 +9064,8 @@ bool perform_instance_iterate( class_base& instance,
                transient_field_names.insert( instance.get_field_name( i ) );
          }
 
+         instance_accessor.transient_filter_field_values( ).clear( );
+
          if( !fields.empty( ) && fields != c_key_field )
          {
             set< string > fetch_field_names;
@@ -9162,19 +9169,73 @@ bool perform_instance_iterate( class_base& instance,
          else
          {
             vector< string > all_keys;
+            vector< string > extra_key_values;
+
             if( !keys.empty( ) )
+            {
                split( keys, all_keys );
 
+               pos = extra_key_info.find( ' ' );
+               if( pos != string::npos && pos != extra_key_info.size( ) - 1 )
+               {
+                  split( extra_key_info.substr( pos + 1 ), extra_key_values );
+                  extra_key_info.erase( pos + 1 );
+               }
+            }
+
+            bool first_extra = true;
             vector< string > final_keys;
             for( size_t i = 0; i < all_keys.size( ); i++ )
             {
                string next( all_keys[ i ] );
                get_field_name( instance, next );
    
+               bool add_extra = false;
                if( !transient_field_names.count( next ) )
+               {
+                  add_extra = true;
                   final_keys.push_back( next );
+               }
                else
+               {
+                  size_t size = final_keys.size( );
                   instance.get_transient_replacement_field_names( next, final_keys );
+
+                  if( size != final_keys.size( ) )
+                     add_extra = true;
+                  else
+                  {
+                     string next_value;
+                     if( i < extra_key_values.size( ) )
+                        next_value = extra_key_values[ i ];
+
+                     // NOTE: If transients have been used as restricts, and no non-transient replacement
+                     // was provided, then tests for record filtering based upon each and every transient
+                     // restriction will need to occur after the record has been fetched from the DB. The
+                     // row limit therefore must be cleared as it is not known which records may later be
+                     // filtered.
+                     row_limit = 0;
+                     instance_accessor.transient_filter_field_values( ).insert( make_pair( next, next_value ) );
+                  }
+               }
+
+               if( add_extra )
+               {
+                  if( i < extra_key_values.size( ) )
+                  {
+                     if( !first_extra )
+                        extra_key_info += ',';
+
+                     first_extra = false;
+                     extra_key_info += extra_key_values[ i ];
+                  }
+               }
+            }
+
+            if( !extra_key_info.empty( ) && extra_key_info[ 0 ] == '#'
+             && !instance_accessor.transient_filter_field_values( ).empty( ) )
+            {
+               extra_key_info[ 1 ] -= ( unsigned char )instance_accessor.transient_filter_field_values( ).size( );
             }
 
             for( size_t i = 0; i < final_keys.size( ); i++ )
@@ -9330,6 +9391,8 @@ bool perform_instance_iterate( class_base& instance,
             delete instance_accessor.p_sql_dataset( );
          instance_accessor.p_sql_dataset( ) = 0;
 
+         instance_accessor.transient_filter_field_values( ).clear( );
+
          instance_accessor.set_is_in_iteration( false );
       }
    }
@@ -9358,6 +9421,8 @@ bool perform_instance_iterate_next( class_base& instance )
       {
          cache_depleted = true;
          instance_accessor.row_cache( ).clear( );
+         instance_accessor.transient_filter_field_values( ).clear( );
+
          instance_accessor.set_is_in_iteration( false );
       }
       else
