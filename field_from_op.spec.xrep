@@ -1,4 +1,4 @@
-`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$op`=`$arg_op`}\
 `{`@eq`(`$op`,`'eq`'`)`$op`=`'==`'`}\
 `{`@eq`(`$op`,`'neq`'`)`$op`=`'!=`'`}\

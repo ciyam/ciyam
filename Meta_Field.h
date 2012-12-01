@@ -65,25 +65,26 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
       e_field_id_Class = 1,
       e_field_id_Def_Value = 2,
       e_field_id_Default = 3,
-      e_field_id_Enum = 4,
-      e_field_id_Extra = 5,
-      e_field_id_Id = 6,
-      e_field_id_Internal = 7,
-      e_field_id_Is_Foreign_Key = 8,
-      e_field_id_Is_Text_Type = 9,
-      e_field_id_Mandatory = 10,
-      e_field_id_Name = 11,
-      e_field_id_Numeric_Decimals = 12,
-      e_field_id_Parent_Class = 13,
-      e_field_id_Parent_Class_Name = 14,
-      e_field_id_Primitive = 15,
-      e_field_id_Source_Field = 16,
-      e_field_id_Transient = 17,
-      e_field_id_Type = 18,
-      e_field_id_UOM = 19,
-      e_field_id_UOM_Name = 20,
-      e_field_id_UOM_Symbol = 21,
-      e_field_id_Use_In_Text_Search = 22
+      e_field_id_Dummy_1 = 4,
+      e_field_id_Enum = 5,
+      e_field_id_Extra = 6,
+      e_field_id_Id = 7,
+      e_field_id_Internal = 8,
+      e_field_id_Is_Foreign_Key = 9,
+      e_field_id_Is_Text_Type = 10,
+      e_field_id_Mandatory = 11,
+      e_field_id_Name = 12,
+      e_field_id_Numeric_Decimals = 13,
+      e_field_id_Parent_Class = 14,
+      e_field_id_Parent_Class_Name = 15,
+      e_field_id_Primitive = 16,
+      e_field_id_Source_Field = 17,
+      e_field_id_Transient = 18,
+      e_field_id_Type = 19,
+      e_field_id_UOM = 20,
+      e_field_id_UOM_Name = 21,
+      e_field_id_UOM_Symbol = 22,
+      e_field_id_Use_In_Text_Search = 23
    };
 
    Meta_Field( );
@@ -94,6 +95,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    const std::string& Default( ) const;
    void Default( const std::string& Default );
+
+   bool Dummy_1( ) const;
+   void Dummy_1( bool Dummy_1 );
 
    int Extra( ) const;
    void Extra( int Extra );
@@ -292,7 +296,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -344,6 +348,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    bool is_file_field_name( const std::string& name ) const;
    void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
+   std::string get_field_uom_symbol( const std::string& id_or_name ) const;
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }

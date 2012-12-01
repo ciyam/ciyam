@@ -717,6 +717,34 @@ string convert_utf8_to_other( const string& utf8, const string& other )
 
    return str;
 }
+
+void decode_text( string& text, const pdf_font& text_font, bool is_continuation = false, bool* p_using_wide_chars = 0 )
+{
+   string encoding( text_font.get_encoding( ) );
+
+   if( !encoding.empty( ) && !is_continuation )
+   {
+      if( text_font.get_uses_wide_chars( ) )
+      {
+         // NOTE: It can be possible for a BOM to be present at the start of
+         // a UTF-8 data string (due to Windows copy and paste behaviour) so
+         // if this appears to be the case then it will need to be skipped.
+         string::size_type pos = 0;
+         if( text.size( ) >= 3 && text[ 0 ] == ( char )0xef )
+            pos = 3;
+
+         if( p_using_wide_chars )
+            *p_using_wide_chars = true;
+
+         if( encoding == "GB-EUC-H" || encoding == "GB-EUC-V" )
+            text = convert_utf8_to_other( text.substr( pos ), "gb2312" );
+         else
+            throw runtime_error( "pdf_gen: unsupported wide character encoding '" + encoding + "'" );
+      }
+      else if( encoding != "StandardEncoding" )
+         text = convert_utf8_to_other( text, encoding );
+   }
+}
 #endif
 
 void parse_sides( const string& sides, bool& left, bool& right, bool& top, bool& bottom )
@@ -2813,6 +2841,13 @@ bool process_group(
                suffix = variables.find( suffix )->second;
             else if( dynamic_variables.count( suffix ) )
                suffix = dynamic_variables.find( suffix )->second;
+            else if( suffix == " (uom)" )
+            {
+               string uom_symbol( format.fields[ j ].data + "_" + suffix.substr( 1 ) );
+
+               if( variables.count( uom_symbol ) )
+                  suffix = " " + variables.find( uom_symbol )->second;
+            }
 
             data += suffix;
          }
@@ -3458,28 +3493,7 @@ bool process_group(
             bool using_wide_chars = false;
 
 #ifdef ICONV_SUPPORT
-            string encoding( text_font.get_encoding( ) );
-
-            if( !encoding.empty( ) && !is_continuation )
-            {
-               if( text_font.get_uses_wide_chars( ) )
-               {
-                  // NOTE: It can be possible for a BOM to be present at the start of
-                  // a UTF-8 data string (due to Windows copy and paste behaviour) so
-                  // if this appears to be the case then it will need to be skipped.
-                  string::size_type pos = 0;
-                  if( data.size( ) >= 3 && data[ 0 ] == ( char )0xef )
-                     pos = 3;
-
-                  using_wide_chars = true;
-                  if( encoding == "GB-EUC-H" || encoding == "GB-EUC-V" )
-                     data = convert_utf8_to_other( data.substr( pos ), "gb2312" );
-                  else
-                     throw runtime_error( "pdf_gen: unsupported wide character encoding '" + encoding + "'" );
-               }
-               else if( encoding != "StandardEncoding" )
-                  data = convert_utf8_to_other( data, encoding );
-            }
+            decode_text( data, text_font, is_continuation, &using_wide_chars );
 #endif
 
             float red = ( format.fields[ j ].color_r / 255.0 );

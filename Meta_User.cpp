@@ -400,7 +400,7 @@ struct Meta_User::impl : public Meta_User_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -691,7 +691,10 @@ void Meta_User::impl::after_fetch( )
    if( cp_Workgroup )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -709,10 +712,10 @@ void Meta_User::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_User::impl::do_post_init( )
+void Meta_User::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_User::impl::to_store( bool is_create, bool is_internal )
@@ -720,11 +723,11 @@ void Meta_User::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start field_clear)]
    get_obj( ).Permissions( string( ) );
@@ -986,9 +989,9 @@ void Meta_User::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_User::do_post_init( )
+void Meta_User::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_User::to_store( bool is_create, bool is_internal )
@@ -1207,6 +1210,59 @@ void Meta_User::get_file_field_names( vector< string >& file_field_names ) const
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_User::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Active || id_or_name == c_field_name_Active )
+   {
+      name = string( c_field_display_name_Active );
+      get_module_string( c_field_display_name_Active, &next );
+   }
+   else if( id_or_name == c_field_id_Description || id_or_name == c_field_name_Description )
+   {
+      name = string( c_field_display_name_Description );
+      get_module_string( c_field_display_name_Description, &next );
+   }
+   else if( id_or_name == c_field_id_Email || id_or_name == c_field_name_Email )
+   {
+      name = string( c_field_display_name_Email );
+      get_module_string( c_field_display_name_Email, &next );
+   }
+   else if( id_or_name == c_field_id_Password || id_or_name == c_field_name_Password )
+   {
+      name = string( c_field_display_name_Password );
+      get_module_string( c_field_display_name_Password, &next );
+   }
+   else if( id_or_name == c_field_id_Permissions || id_or_name == c_field_name_Permissions )
+   {
+      name = string( c_field_display_name_Permissions );
+      get_module_string( c_field_display_name_Permissions, &next );
+   }
+   else if( id_or_name == c_field_id_User_Id || id_or_name == c_field_name_User_Id )
+   {
+      name = string( c_field_display_name_User_Id );
+      get_module_string( c_field_display_name_User_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   {
+      name = string( c_field_display_name_Workgroup );
+      get_module_string( c_field_display_name_Workgroup, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_User::get_field_display_name( const string& id_or_name ) const

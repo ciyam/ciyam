@@ -11,8 +11,8 @@ user_defined_enum_add -id=514 fraction_limit int 0=none,2=halves,4=quarters
 user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_group,3=user_other
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
 user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active\
-,3=image,7=mailto,21=file\\_link,8=actions,22=filename,10=password,11=defcurrent,17=permission\
-,24=orientation,25=epassword,26=hpassword,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level,27=hpassword\\_salt\
+,3=image,7=mailto,21=file\\_link,8=actions,22=filename,10=password,25=encrypted,11=defcurrent,17=permission\
+,24=orientation,26=hpassword,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level,27=hpassword\\_salt\
 ,15=create\\_datetime,16=modify\\_datetime,28=is\\_effective\\_owner,19=replace\\_underbars,20=enforce\\_uppercase\
 ,-2=user\\_group,-3=user\\_other,-1=owning\\_user,-4=create\\_user\\_key,-5=modify\\_user\\_key
 user_defined_enum_add -id=535 uom int 0=none,1=sqm,2=km,3=m,4=cm,5=mm,6=kg,7=g,8=mg,900=number,901=dollars,902=percent,999=customised
@@ -245,6 +245,7 @@ field_add -id=107114 Field Numeric_Decimals numeric mand -def=0 -transient
 field_add -id=107115 Field Def_Value string opt -transient
 field_add -id=107116 Field UOM_Name str100 opt
 field_add -id=107117 Field UOM_Symbol str10 opt
+field_add -id=107118 Field Dummy_1 bool mand -def=1 -transient
 modifier_add -id=107310 Field Is_Type_bool UOM:relegate
 modifier_add -id=107311 Field Is_Non_Custom_UOM UOM_Name:relegate,UOM_Symbol:relegate
 modifier_add -id=107315 Field Is_Any_Non_Text_Type Mandatory:protect,Use_In_Text_Search:relegate
@@ -1214,6 +1215,7 @@ specification_add -id=630038 {Class}_Header_File_file_link file_link "Class Name
 specification_add -id=640038 {Class}_Commands_File_file_link file_link "Class Name Commands_File .cms {Model}:Name"
 specification_add -id=600039 {Class}_Next_Field_Id_Id_required field_required "Class Next_Field_Id"
 specification_add -id=610039 {Class}_Next_Procedure_Id_Id_required field_required "Class Next_Procedure_Id"
+specification_add -id=600045 {Field}_UOM_Name_cond_check check_cond_non_null "Field UOM_Name Dummy_1 -test=UOM=999"
 specification_add -id=600047 {Field}_Is_Non_Custom_UOM modifier_field_value "Field Is_Non_Custom_UOM UOM 999 -not_equal"
 specification_add -id=600048 {Field}_Is_Any_Non_Text_Type_int modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive int -enum=primitive"
 specification_add -id=600049 {Field}_Is_Any_Non_Text_Type_bool modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive bool -enum=primitive"

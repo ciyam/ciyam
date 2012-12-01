@@ -412,7 +412,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -835,7 +835,10 @@ void Meta_Package_Type::impl::after_fetch( )
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -858,10 +861,10 @@ void Meta_Package_Type::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Package_Type::impl::do_post_init( )
+void Meta_Package_Type::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Package_Type::impl::to_store( bool is_create, bool is_internal )
@@ -869,11 +872,11 @@ void Meta_Package_Type::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start field_empty_action)]
    if( !get_obj( ).get_key( ).empty( ) )
@@ -1192,9 +1195,9 @@ void Meta_Package_Type::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Package_Type::do_post_init( )
+void Meta_Package_Type::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Package_Type::to_store( bool is_create, bool is_internal )
@@ -1433,6 +1436,64 @@ void Meta_Package_Type::get_file_field_names( vector< string >& file_field_names
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Package_Type::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   {
+      name = string( c_field_display_name_Actions );
+      get_module_string( c_field_display_name_Actions, &next );
+   }
+   else if( id_or_name == c_field_id_Dependencies || id_or_name == c_field_name_Dependencies )
+   {
+      name = string( c_field_display_name_Dependencies );
+      get_module_string( c_field_display_name_Dependencies, &next );
+   }
+   else if( id_or_name == c_field_id_File || id_or_name == c_field_name_File )
+   {
+      name = string( c_field_display_name_File );
+      get_module_string( c_field_display_name_File, &next );
+   }
+   else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
+   {
+      name = string( c_field_display_name_Installed );
+      get_module_string( c_field_display_name_Installed, &next );
+   }
+   else if( id_or_name == c_field_id_Multi || id_or_name == c_field_name_Multi )
+   {
+      name = string( c_field_display_name_Multi );
+      get_module_string( c_field_display_name_Multi, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
+   {
+      name = string( c_field_display_name_Plural );
+      get_module_string( c_field_display_name_Plural, &next );
+   }
+   else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
+   {
+      name = string( c_field_display_name_Version );
+      get_module_string( c_field_display_name_Version, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Package_Type::get_field_display_name( const string& id_or_name ) const

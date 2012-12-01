@@ -60,6 +60,8 @@ const char* const c_new_session = "new_session";
 const char* const c_anon_user_key = "anon";
 const char* const c_admin_user_key = "admin";
 
+const char* const c_uom_prefix = "uom_";
+
 const char* const c_list_prefix = "list";
 const char* const c_hash_suffix = "hash";
 const char* const c_info_suffix = "info";
@@ -414,7 +416,7 @@ const char* const c_view_field_extra_non_view = "non_view";
 const char* const c_view_field_extra_password = "password";
 const char* const c_view_field_extra_edit_edit = "edit_edit";
 const char* const c_view_field_extra_edit_only = "edit_only";
-const char* const c_view_field_extra_epassword = "epassword";
+const char* const c_view_field_extra_encrypted = "encrypted";
 const char* const c_view_field_extra_hpassword = "hpassword";
 const char* const c_view_field_extra_new_value = "new_value";
 const char* const c_view_field_extra_view_only = "view_only";

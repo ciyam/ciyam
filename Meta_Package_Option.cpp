@@ -730,7 +730,7 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1247,7 +1247,10 @@ void Meta_Package_Option::impl::after_fetch( )
    if( cp_Package )
       p_obj->setup_foreign_key( *cp_Package, v_Package );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
 //nyi
@@ -1318,10 +1321,10 @@ void Meta_Package_Option::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Package_Option::impl::do_post_init( )
+void Meta_Package_Option::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
@@ -1329,11 +1332,11 @@ void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -1746,9 +1749,9 @@ void Meta_Package_Option::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Package_Option::do_post_init( )
+void Meta_Package_Option::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Package_Option::to_store( bool is_create, bool is_internal )
@@ -2207,6 +2210,119 @@ void Meta_Package_Option::get_file_field_names( vector< string >& file_field_nam
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Package_Option::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   {
+      name = string( c_field_display_name_Actions );
+      get_module_string( c_field_display_name_Actions, &next );
+   }
+   else if( id_or_name == c_field_id_Date || id_or_name == c_field_name_Date )
+   {
+      name = string( c_field_display_name_Date );
+      get_module_string( c_field_display_name_Date, &next );
+   }
+   else if( id_or_name == c_field_id_Datetime || id_or_name == c_field_name_Datetime )
+   {
+      name = string( c_field_display_name_Datetime );
+      get_module_string( c_field_display_name_Datetime, &next );
+   }
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   {
+      name = string( c_field_display_name_Id );
+      get_module_string( c_field_display_name_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Installed || id_or_name == c_field_name_Installed )
+   {
+      name = string( c_field_display_name_Installed );
+      get_module_string( c_field_display_name_Installed, &next );
+   }
+   else if( id_or_name == c_field_id_Integer || id_or_name == c_field_name_Integer )
+   {
+      name = string( c_field_display_name_Integer );
+      get_module_string( c_field_display_name_Integer, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Other_Package || id_or_name == c_field_name_Is_Other_Package )
+   {
+      name = string( c_field_display_name_Is_Other_Package );
+      get_module_string( c_field_display_name_Is_Other_Package, &next );
+   }
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   {
+      name = string( c_field_display_name_Model );
+      get_module_string( c_field_display_name_Model, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Numeric || id_or_name == c_field_name_Numeric )
+   {
+      name = string( c_field_display_name_Numeric );
+      get_module_string( c_field_display_name_Numeric, &next );
+   }
+   else if( id_or_name == c_field_id_Other_Package || id_or_name == c_field_name_Other_Package )
+   {
+      name = string( c_field_display_name_Other_Package );
+      get_module_string( c_field_display_name_Other_Package, &next );
+   }
+   else if( id_or_name == c_field_id_Other_Package_Required || id_or_name == c_field_name_Other_Package_Required )
+   {
+      name = string( c_field_display_name_Other_Package_Required );
+      get_module_string( c_field_display_name_Other_Package_Required, &next );
+   }
+   else if( id_or_name == c_field_id_Other_Package_Type || id_or_name == c_field_name_Other_Package_Type )
+   {
+      name = string( c_field_display_name_Other_Package_Type );
+      get_module_string( c_field_display_name_Other_Package_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Package || id_or_name == c_field_name_Package )
+   {
+      name = string( c_field_display_name_Package );
+      get_module_string( c_field_display_name_Package, &next );
+   }
+   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
+   {
+      name = string( c_field_display_name_Primitive );
+      get_module_string( c_field_display_name_Primitive, &next );
+   }
+   else if( id_or_name == c_field_id_String || id_or_name == c_field_name_String )
+   {
+      name = string( c_field_display_name_String );
+      get_module_string( c_field_display_name_String, &next );
+   }
+   else if( id_or_name == c_field_id_Time || id_or_name == c_field_name_Time )
+   {
+      name = string( c_field_display_name_Time );
+      get_module_string( c_field_display_name_Time, &next );
+   }
+   else if( id_or_name == c_field_id_Use_Option || id_or_name == c_field_name_Use_Option )
+   {
+      name = string( c_field_display_name_Use_Option );
+      get_module_string( c_field_display_name_Use_Option, &next );
+   }
+   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
+   {
+      name = string( c_field_display_name_Value );
+      get_module_string( c_field_display_name_Value, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Package_Option::get_field_display_name( const string& id_or_name ) const

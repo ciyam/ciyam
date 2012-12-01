@@ -2410,7 +2410,19 @@ void output_list_form( ostream& os,
       ++display_offset;
 
       if( source.uom_fields.count( source.value_ids[ i ] ) )
-         os << " (" << source.uom_fields.find( source.value_ids[ i ] )->second << ")";
+      {
+         string symbol( source.uom_fields.find( source.value_ids[ i ] )->second );
+
+         if( symbol.find( c_uom_prefix ) == 0 )
+         {
+            string name_key( source.lici->second->fields[ i ].pfname );
+            if( name_key.empty( ) )
+               name_key = source.lici->second->fields[ i ].name;
+
+            symbol = get_display_string( name_key + "_(" + symbol.substr( strlen( c_uom_prefix ) ) + ")" );
+         }
+         os << " (" << symbol << ")";
+      }
 
       if( !is_printable && list_type != c_list_type_home )
       {

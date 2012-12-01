@@ -2171,7 +2171,7 @@ void save_record( const string& module_id,
  const string& flags, const string& app, const string& chk,
  const string& field, const string& extra, const string& exec,
  const string& cont, bool is_new_record, const map< string, string >& new_field_and_values,
- const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view,
+ const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view, int vtab_num,
  session_info& sess_info, string& act, string& data, string& new_key, string& error_message, bool& was_invalid, bool& had_send_or_recv_error )
 {
    string key_info;
@@ -2213,7 +2213,7 @@ void save_record( const string& module_id,
 
       // FUTURE: The skipping of fields here repeats what is already being done in
       // the output of the "view" itself. The "user_field_info" should probably be
-      // used here instead to avoid unnecessary repetition.
+      // used here instead to avoid this unnecessary repetition.
 
       // NOTE: Fields that were included in the view but not editable must be skipped.
       if( field_id == c_key_field )
@@ -2262,6 +2262,51 @@ void save_record( const string& module_id,
        || ( !view.defcurrent_fields.count( value_id )
        && !view.new_field_values.count( field_id ) ) ) ) )
          continue;
+
+      // NOTE: If the field belongs to a tab which the user does not have access to
+      // then this field must be skipped (otherwise URL tampering could allow these
+      // fields to appear as 'vtab' is not part of the URL checksum).
+      if( ( view.field_tab_ids[ i ] != 0 && vtab_num == view.field_tab_ids[ i ] ) )
+      {
+         string owner;
+
+         if( !view.owning_user_field.empty( ) && view.fk_field_values.count( view.owning_user_field ) )
+            owner = view.fk_field_values.find( view.owning_user_field )->second;
+
+         bool is_record_owner = false;
+         if( owner == sess_info.user_key )
+            is_record_owner = true;
+
+         if( !view.is_effective_owner_field.empty( ) )
+         {
+            int is_effective_owner_field = atoi( view.field_values.find( view.is_effective_owner_field )->second.c_str( ) );
+            if( is_effective_owner_field )
+               is_record_owner = true;
+         }
+
+         // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
+         if( view.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
+            is_record_owner = true;
+
+         map< string, string > extra_data;
+         if( !view.tab_extras[ vtab_num - 1 ].empty( ) )
+            parse_field_extra( view.tab_extras[ vtab_num - 1 ], extra_data );
+
+         if( !sess_info.is_admin_user
+          && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
+            continue;
+
+         if( !is_new_record && !is_record_owner
+          && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
+            continue;
+
+         if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
+          && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
+            continue;
+
+         if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
+            continue;
+      }
 
       // NOTE: If the user is anonymous or has "level 0" security then the security level was not displayed.
       if( extra_data.count( c_field_extra_security_level ) )
@@ -2378,7 +2423,7 @@ void save_record( const string& module_id,
          }
       }
       else if( view.password_fields.count( value_id )
-       || view.epassword_fields.count( value_id ) || view.hpassword_fields.count( value_id ) )
+       || view.encrypted_fields.count( value_id ) || view.hpassword_fields.count( value_id ) )
          next = password_encrypt( values.at( num++ ), get_server_id( ) );
       else
       {

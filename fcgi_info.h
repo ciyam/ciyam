@@ -682,7 +682,7 @@ struct view_source : source
 
    std::set< std::string > upper_fields;
    std::set< std::string > password_fields;
-   std::set< std::string > epassword_fields;
+   std::set< std::string > encrypted_fields;
    std::set< std::string > hpassword_fields;
    std::set< std::string > protected_fields;
    std::set< std::string > mandatory_fields;

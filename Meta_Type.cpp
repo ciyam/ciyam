@@ -923,7 +923,7 @@ struct Meta_Type::impl : public Meta_Type_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1679,7 +1679,10 @@ void Meta_Type::impl::after_fetch( )
    if( cp_Workgroup )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -1697,10 +1700,10 @@ void Meta_Type::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Type::impl::do_post_init( )
+void Meta_Type::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Type::impl::to_store( bool is_create, bool is_internal )
@@ -1708,11 +1711,11 @@ void Meta_Type::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -2135,9 +2138,9 @@ void Meta_Type::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Type::do_post_init( )
+void Meta_Type::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Type::to_store( bool is_create, bool is_internal )
@@ -2636,6 +2639,129 @@ void Meta_Type::get_file_field_names( vector< string >& file_field_names ) const
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Type::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Auto_Round || id_or_name == c_field_name_Auto_Round )
+   {
+      name = string( c_field_display_name_Auto_Round );
+      get_module_string( c_field_display_name_Auto_Round, &next );
+   }
+   else if( id_or_name == c_field_id_Date_Precision || id_or_name == c_field_name_Date_Precision )
+   {
+      name = string( c_field_display_name_Date_Precision );
+      get_module_string( c_field_display_name_Date_Precision, &next );
+   }
+   else if( id_or_name == c_field_id_Default_UOM || id_or_name == c_field_name_Default_UOM )
+   {
+      name = string( c_field_display_name_Default_UOM );
+      get_module_string( c_field_display_name_Default_UOM, &next );
+   }
+   else if( id_or_name == c_field_id_Fraction_Limit || id_or_name == c_field_name_Fraction_Limit )
+   {
+      name = string( c_field_display_name_Fraction_Limit );
+      get_module_string( c_field_display_name_Fraction_Limit, &next );
+   }
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   {
+      name = string( c_field_display_name_Id );
+      get_module_string( c_field_display_name_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Int_Type || id_or_name == c_field_name_Int_Type )
+   {
+      name = string( c_field_display_name_Int_Type );
+      get_module_string( c_field_display_name_Int_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   {
+      name = string( c_field_display_name_Internal );
+      get_module_string( c_field_display_name_Internal, &next );
+   }
+   else if( id_or_name == c_field_id_Max_Size || id_or_name == c_field_name_Max_Size )
+   {
+      name = string( c_field_display_name_Max_Size );
+      get_module_string( c_field_display_name_Max_Size, &next );
+   }
+   else if( id_or_name == c_field_id_Max_Value || id_or_name == c_field_name_Max_Value )
+   {
+      name = string( c_field_display_name_Max_Value );
+      get_module_string( c_field_display_name_Max_Value, &next );
+   }
+   else if( id_or_name == c_field_id_Min_Value || id_or_name == c_field_name_Min_Value )
+   {
+      name = string( c_field_display_name_Min_Value );
+      get_module_string( c_field_display_name_Min_Value, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Numeric_Decimals || id_or_name == c_field_name_Numeric_Decimals )
+   {
+      name = string( c_field_display_name_Numeric_Decimals );
+      get_module_string( c_field_display_name_Numeric_Decimals, &next );
+   }
+   else if( id_or_name == c_field_id_Numeric_Digits || id_or_name == c_field_name_Numeric_Digits )
+   {
+      name = string( c_field_display_name_Numeric_Digits );
+      get_module_string( c_field_display_name_Numeric_Digits, &next );
+   }
+   else if( id_or_name == c_field_id_Numeric_Type || id_or_name == c_field_name_Numeric_Type )
+   {
+      name = string( c_field_display_name_Numeric_Type );
+      get_module_string( c_field_display_name_Numeric_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
+   {
+      name = string( c_field_display_name_Primitive );
+      get_module_string( c_field_display_name_Primitive, &next );
+   }
+   else if( id_or_name == c_field_id_Rounding_Method || id_or_name == c_field_name_Rounding_Method )
+   {
+      name = string( c_field_display_name_Rounding_Method );
+      get_module_string( c_field_display_name_Rounding_Method, &next );
+   }
+   else if( id_or_name == c_field_id_Show_Plus_Sign || id_or_name == c_field_name_Show_Plus_Sign )
+   {
+      name = string( c_field_display_name_Show_Plus_Sign );
+      get_module_string( c_field_display_name_Show_Plus_Sign, &next );
+   }
+   else if( id_or_name == c_field_id_String_Domain || id_or_name == c_field_name_String_Domain )
+   {
+      name = string( c_field_display_name_String_Domain );
+      get_module_string( c_field_display_name_String_Domain, &next );
+   }
+   else if( id_or_name == c_field_id_Time_Precision || id_or_name == c_field_name_Time_Precision )
+   {
+      name = string( c_field_display_name_Time_Precision );
+      get_module_string( c_field_display_name_Time_Precision, &next );
+   }
+   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   {
+      name = string( c_field_display_name_Workgroup );
+      get_module_string( c_field_display_name_Workgroup, &next );
+   }
+   else if( id_or_name == c_field_id_Zero_Padding || id_or_name == c_field_name_Zero_Padding )
+   {
+      name = string( c_field_display_name_Zero_Padding );
+      get_module_string( c_field_display_name_Zero_Padding, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Type::get_field_display_name( const string& id_or_name ) const

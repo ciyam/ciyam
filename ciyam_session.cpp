@@ -415,6 +415,10 @@ void add_pdf_variables( size_t handle,
 
          pdf_variables.insert( make_pair( name, value ) );
 
+         string uom_symbol( get_field_uom_symbol( handle, context, field ) );
+         if( !uom_symbol.empty( ) )
+            pdf_variables.insert( make_pair( name + "_(uom)", "(" + uom_symbol + ")" ) );
+
          if( !contexts.count( context ) )
          {
             vector< pair< string, string > > enum_pairs;

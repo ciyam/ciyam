@@ -531,6 +531,10 @@
      <name>enum_field_extra_password
     </value>
     <value/>
+     <data>25
+     <name>enum_field_extra_encrypted
+    </value>
+    <value/>
      <data>11
      <name>enum_field_extra_defcurrent
     </value>
@@ -541,10 +545,6 @@
     <value/>
      <data>24
      <name>enum_field_extra_orientation
-    </value>
-    <value/>
-     <data>25
-     <name>enum_field_extra_epassword
     </value>
     <value/>
      <data>26

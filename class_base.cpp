@@ -770,7 +770,7 @@ bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )
 {
    validation_errors.clear( );
 
-   do_post_init( );
+   post_init( );
 
    if( !p_fields_set )
       validate( get_state( ), is_internal );
@@ -4183,10 +4183,11 @@ string meta_field_domain_type( const string& enum_id, int primitive, int max_siz
    return domain_type;
 }
 
-string meta_field_extras( int uom, int extra, bool transient, int max_size,
- const string& enum_id, int primitive, const string& min_value, const string& max_value,
- int numeric_digits, int numeric_decimals, int string_domain, int date_precision, int time_precision,
- bool show_plus_sign, int zero_padding, int int_type, int numeric_type )
+string meta_field_extras( int uom, const string& uom_name,
+ int extra, bool transient, int max_size, const string& enum_id, int primitive,
+ const string& min_value, const string& max_value, int numeric_digits, int numeric_decimals,
+ int string_domain, int date_precision, int time_precision, bool show_plus_sign, int zero_padding,
+ int int_type, int numeric_type )
 {
    vector< string > all_extras;
 
@@ -4312,7 +4313,7 @@ string meta_field_extras( int uom, int extra, bool transient, int max_size,
       break;
 
       case 25:
-      all_extras.push_back( "epassword" );
+      all_extras.push_back( "encrypted" );
       break;
 
       case 26:
@@ -4332,7 +4333,7 @@ string meta_field_extras( int uom, int extra, bool transient, int max_size,
    }
 
    if( uom == 999 )
-      all_extras.push_back( "uom=???" ); // KLUDGE: need to implement customised UOM's here...
+      all_extras.push_back( "uom=uom_" + lower( uom_name ) );
    else if( uom > 0 )
       all_extras.push_back( "uom=" + meta_field_uom( uom ) );
 

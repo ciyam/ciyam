@@ -96,7 +96,7 @@ void save_record( const std::string& module_id,
  const std::string& field, const std::string& extra, const std::string& exec,
  const std::string& cont, bool is_new_record, const std::map< std::string, std::string >& new_field_and_values,
  const std::map< std::string, std::string >& extra_field_info, view_info_const_iterator& vici,
- const view_source& view, session_info& sess_info, std::string& act, std::string& data, std::string& new_key,
- std::string& error_message, bool& was_invalid, bool& had_send_or_recv_error );
+ const view_source& view, int vtab_num, session_info& sess_info, std::string& act, std::string& data,
+ std::string& new_key, std::string& error_message, bool& was_invalid, bool& had_send_or_recv_error );
 
 #endif

@@ -808,7 +808,7 @@ struct Meta_Specification_Field_Action::impl : public Meta_Specification_Field_A
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1188,7 +1188,10 @@ void Meta_Specification_Field_Action::impl::after_fetch( )
    if( cp_New_Record_FK_Field )
       p_obj->setup_foreign_key( *cp_New_Record_FK_Field, v_New_Record_FK_Field );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -1206,10 +1209,10 @@ void Meta_Specification_Field_Action::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Specification_Field_Action::impl::do_post_init( )
+void Meta_Specification_Field_Action::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_internal )
@@ -1217,11 +1220,11 @@ void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_in
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start field_from_search_replace)]
    if( get_obj( ).get_is_editing( ) )
@@ -1531,10 +1534,10 @@ void Meta_Specification_Field_Action::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Specification_Field_Action::do_post_init( )
+void Meta_Specification_Field_Action::post_init( )
 {
-   parent_class_type::do_post_init( );
-   p_impl->do_post_init( );
+   parent_class_type::post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Specification_Field_Action::to_store( bool is_create, bool is_internal )
@@ -1771,6 +1774,61 @@ void Meta_Specification_Field_Action::get_file_field_names( vector< string >& fi
 
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Specification_Field_Action::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol( parent_class_type::get_field_uom_symbol( id_or_name ) );
+   if( !uom_symbol.empty( ) )
+      return uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Clone_Key || id_or_name == c_field_name_Clone_Key )
+   {
+      name = string( c_field_display_name_Clone_Key );
+      get_module_string( c_field_display_name_Clone_Key, &next );
+   }
+   else if( id_or_name == c_field_id_Create_Type || id_or_name == c_field_name_Create_Type )
+   {
+      name = string( c_field_display_name_Create_Type );
+      get_module_string( c_field_display_name_Create_Type, &next );
+   }
+   else if( id_or_name == c_field_id_New_Record_Class || id_or_name == c_field_name_New_Record_Class )
+   {
+      name = string( c_field_display_name_New_Record_Class );
+      get_module_string( c_field_display_name_New_Record_Class, &next );
+   }
+   else if( id_or_name == c_field_id_New_Record_FK_Field || id_or_name == c_field_name_New_Record_FK_Field )
+   {
+      name = string( c_field_display_name_New_Record_FK_Field );
+      get_module_string( c_field_display_name_New_Record_FK_Field, &next );
+   }
+   else if( id_or_name == c_field_id_New_Record_FK_Value || id_or_name == c_field_name_New_Record_FK_Value )
+   {
+      name = string( c_field_display_name_New_Record_FK_Value );
+      get_module_string( c_field_display_name_New_Record_FK_Value, &next );
+   }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Specification_Field_Action::get_field_display_name( const string& id_or_name ) const

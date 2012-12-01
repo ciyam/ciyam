@@ -1591,7 +1591,7 @@ struct Meta_List::impl : public Meta_List_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1850,7 +1850,10 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                    get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Fraction_Limit( ), domain_mask, &tmask ) );
 
                   int uom = get_obj( ).child_List_Field( ).Source_Field( ).UOM( );
-                  if( uom != 0 )
+
+                  if( uom == 999 )
+                     uom_fields.insert( make_pair( name, "uom" ) );
+                  else if( uom != 0 )
                      uom_fields.insert( make_pair( name, meta_field_uom( uom ) ) );
 
                   if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) != 1 ) // i.e. datetime
@@ -3409,7 +3412,10 @@ void Meta_List::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
@@ -3449,10 +3455,10 @@ void Meta_List::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_List::impl::do_post_init( )
+void Meta_List::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_List::impl::to_store( bool is_create, bool is_internal )
@@ -3460,11 +3466,11 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start field_from_other_field)]
    if( get_obj( ).Is_Variation( ) == true )
@@ -4242,9 +4248,9 @@ void Meta_List::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_List::do_post_init( )
+void Meta_List::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_List::to_store( bool is_create, bool is_internal )
@@ -5243,6 +5249,254 @@ void Meta_List::get_file_field_names( vector< string >& file_field_names ) const
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_List::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Parent_Modifier || id_or_name == c_field_name_Access_Parent_Modifier )
+   {
+      name = string( c_field_display_name_Access_Parent_Modifier );
+      get_module_string( c_field_display_name_Access_Parent_Modifier, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+   {
+      name = string( c_field_display_name_Allow_Anonymous_Access );
+      get_module_string( c_field_display_name_Allow_Anonymous_Access, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Quick_Link || id_or_name == c_field_name_Allow_Quick_Link )
+   {
+      name = string( c_field_display_name_Allow_Quick_Link );
+      get_module_string( c_field_display_name_Allow_Quick_Link, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Text_Search || id_or_name == c_field_name_Allow_Text_Search )
+   {
+      name = string( c_field_display_name_Allow_Text_Search );
+      get_module_string( c_field_display_name_Allow_Text_Search, &next );
+   }
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   {
+      name = string( c_field_display_name_Class );
+      get_module_string( c_field_display_name_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Create_Only_If_Default_Other || id_or_name == c_field_name_Create_Only_If_Default_Other )
+   {
+      name = string( c_field_display_name_Create_Only_If_Default_Other );
+      get_module_string( c_field_display_name_Create_Only_If_Default_Other, &next );
+   }
+   else if( id_or_name == c_field_id_Create_Permission || id_or_name == c_field_name_Create_Permission )
+   {
+      name = string( c_field_display_name_Create_Permission );
+      get_module_string( c_field_display_name_Create_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Create_Restriction || id_or_name == c_field_name_Create_Restriction )
+   {
+      name = string( c_field_display_name_Create_Restriction );
+      get_module_string( c_field_display_name_Create_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Destroy_Only_If_Default_Other || id_or_name == c_field_name_Destroy_Only_If_Default_Other )
+   {
+      name = string( c_field_display_name_Destroy_Only_If_Default_Other );
+      get_module_string( c_field_display_name_Destroy_Only_If_Default_Other, &next );
+   }
+   else if( id_or_name == c_field_id_Destroy_Permission || id_or_name == c_field_name_Destroy_Permission )
+   {
+      name = string( c_field_display_name_Destroy_Permission );
+      get_module_string( c_field_display_name_Destroy_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Destroy_Restriction || id_or_name == c_field_name_Destroy_Restriction )
+   {
+      name = string( c_field_display_name_Destroy_Restriction );
+      get_module_string( c_field_display_name_Destroy_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Direction || id_or_name == c_field_name_Direction )
+   {
+      name = string( c_field_display_name_Direction );
+      get_module_string( c_field_display_name_Direction, &next );
+   }
+   else if( id_or_name == c_field_id_Display_Only_If_Default_Other || id_or_name == c_field_name_Display_Only_If_Default_Other )
+   {
+      name = string( c_field_display_name_Display_Only_If_Default_Other );
+      get_module_string( c_field_display_name_Display_Only_If_Default_Other, &next );
+   }
+   else if( id_or_name == c_field_id_Display_Row_Limit || id_or_name == c_field_name_Display_Row_Limit )
+   {
+      name = string( c_field_display_name_Display_Row_Limit );
+      get_module_string( c_field_display_name_Display_Row_Limit, &next );
+   }
+   else if( id_or_name == c_field_id_Display_Security_Level || id_or_name == c_field_name_Display_Security_Level )
+   {
+      name = string( c_field_display_name_Display_Security_Level );
+      get_module_string( c_field_display_name_Display_Security_Level, &next );
+   }
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   {
+      name = string( c_field_display_name_Id );
+      get_module_string( c_field_display_name_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_Implicit_Ordering || id_or_name == c_field_name_Ignore_Implicit_Ordering )
+   {
+      name = string( c_field_display_name_Ignore_Implicit_Ordering );
+      get_module_string( c_field_display_name_Ignore_Implicit_Ordering, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_State_For_Display || id_or_name == c_field_name_Ignore_State_For_Display )
+   {
+      name = string( c_field_display_name_Ignore_State_For_Display );
+      get_module_string( c_field_display_name_Ignore_State_For_Display, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_Unactionable_Records || id_or_name == c_field_name_Ignore_Unactionable_Records )
+   {
+      name = string( c_field_display_name_Ignore_Unactionable_Records );
+      get_module_string( c_field_display_name_Ignore_Unactionable_Records, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_Uneditable_Parent || id_or_name == c_field_name_Ignore_Uneditable_Parent )
+   {
+      name = string( c_field_display_name_Ignore_Uneditable_Parent );
+      get_module_string( c_field_display_name_Ignore_Uneditable_Parent, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_User_Id_Filter || id_or_name == c_field_name_Ignore_User_Id_Filter )
+   {
+      name = string( c_field_display_name_Ignore_User_Id_Filter );
+      get_module_string( c_field_display_name_Ignore_User_Id_Filter, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Admin || id_or_name == c_field_name_Is_Admin )
+   {
+      name = string( c_field_display_name_Is_Admin );
+      get_module_string( c_field_display_name_Is_Admin, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Child || id_or_name == c_field_name_Is_Child )
+   {
+      name = string( c_field_display_name_Is_Child );
+      get_module_string( c_field_display_name_Is_Child, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Home || id_or_name == c_field_name_Is_Home )
+   {
+      name = string( c_field_display_name_Is_Home );
+      get_module_string( c_field_display_name_Is_Home, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Not_Anonymous || id_or_name == c_field_name_Is_Not_Anonymous )
+   {
+      name = string( c_field_display_name_Is_Not_Anonymous );
+      get_module_string( c_field_display_name_Is_Not_Anonymous, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Variation || id_or_name == c_field_name_Is_Variation )
+   {
+      name = string( c_field_display_name_Is_Variation );
+      get_module_string( c_field_display_name_Is_Variation, &next );
+   }
+   else if( id_or_name == c_field_id_Limit_Scroll_And_New || id_or_name == c_field_name_Limit_Scroll_And_New )
+   {
+      name = string( c_field_display_name_Limit_Scroll_And_New );
+      get_module_string( c_field_display_name_Limit_Scroll_And_New, &next );
+   }
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   {
+      name = string( c_field_display_name_Model );
+      get_module_string( c_field_display_name_Model, &next );
+   }
+   else if( id_or_name == c_field_id_Multiline_Truncate_For_Print || id_or_name == c_field_name_Multiline_Truncate_For_Print )
+   {
+      name = string( c_field_display_name_Multiline_Truncate_For_Print );
+      get_module_string( c_field_display_name_Multiline_Truncate_For_Print, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Number_Multiple_Pages || id_or_name == c_field_name_Number_Multiple_Pages )
+   {
+      name = string( c_field_display_name_Number_Multiple_Pages );
+      get_module_string( c_field_display_name_Number_Multiple_Pages, &next );
+   }
+   else if( id_or_name == c_field_id_PDF_Font_Type || id_or_name == c_field_name_PDF_Font_Type )
+   {
+      name = string( c_field_display_name_PDF_Font_Type );
+      get_module_string( c_field_display_name_PDF_Font_Type, &next );
+   }
+   else if( id_or_name == c_field_id_PDF_List_Type || id_or_name == c_field_name_PDF_List_Type )
+   {
+      name = string( c_field_display_name_PDF_List_Type );
+      get_module_string( c_field_display_name_PDF_List_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Parent_Class || id_or_name == c_field_name_Parent_Class )
+   {
+      name = string( c_field_display_name_Parent_Class );
+      get_module_string( c_field_display_name_Parent_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Parent_Field || id_or_name == c_field_name_Parent_Field )
+   {
+      name = string( c_field_display_name_Parent_Field );
+      get_module_string( c_field_display_name_Parent_Field, &next );
+   }
+   else if( id_or_name == c_field_id_Print_Restriction || id_or_name == c_field_name_Print_Restriction )
+   {
+      name = string( c_field_display_name_Print_Restriction );
+      get_module_string( c_field_display_name_Print_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Print_Without_Highlight || id_or_name == c_field_name_Print_Without_Highlight )
+   {
+      name = string( c_field_display_name_Print_Without_Highlight );
+      get_module_string( c_field_display_name_Print_Without_Highlight, &next );
+   }
+   else if( id_or_name == c_field_id_Search_Option_Limit || id_or_name == c_field_name_Search_Option_Limit )
+   {
+      name = string( c_field_display_name_Search_Option_Limit );
+      get_module_string( c_field_display_name_Search_Option_Limit, &next );
+   }
+   else if( id_or_name == c_field_id_Sort_Rows_In_UI || id_or_name == c_field_name_Sort_Rows_In_UI )
+   {
+      name = string( c_field_display_name_Sort_Rows_In_UI );
+      get_module_string( c_field_display_name_Sort_Rows_In_UI, &next );
+   }
+   else if( id_or_name == c_field_id_Style || id_or_name == c_field_name_Style )
+   {
+      name = string( c_field_display_name_Style );
+      get_module_string( c_field_display_name_Style, &next );
+   }
+   else if( id_or_name == c_field_id_Text_Match_Highlight || id_or_name == c_field_name_Text_Match_Highlight )
+   {
+      name = string( c_field_display_name_Text_Match_Highlight );
+      get_module_string( c_field_display_name_Text_Match_Highlight, &next );
+   }
+   else if( id_or_name == c_field_id_Title || id_or_name == c_field_name_Title )
+   {
+      name = string( c_field_display_name_Title );
+      get_module_string( c_field_display_name_Title, &next );
+   }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Variation_Name || id_or_name == c_field_name_Variation_Name )
+   {
+      name = string( c_field_display_name_Variation_Name );
+      get_module_string( c_field_display_name_Variation_Name, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_List::get_field_display_name( const string& id_or_name ) const
