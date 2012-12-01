@@ -41,10 +41,11 @@ Class_Id,M001C101F105
 Created_On,M001C101F106
 Description,M001C101F107
 Email,M001C101F108
-Hide_Email,M001C101F109
-Permissions,M001C101F110
-Is_Self_Or_Admin,M001C101F111
-Key,M001C101F112
+Email_Address,M001C101F109
+Hide_Email_Address,M001C101F110
+Permissions,M001C101F111
+Is_Self_Or_Admin,M001C101F112
+Key,M001C101F113
 
 > perform_fetch Meta Enum "" Name,Id -min
 Day_Type,E100

@@ -4,12 +4,12 @@
       return true;
    // [(finish field_to_value)]
 `}
-`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
-`{`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_create_only`=`'`'`}\
-`{`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_update_only`=`'`'`}\
-`{`@eq`(`'do_post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_internal_only`=`'`'`}\
+`{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_create_only`=`'`'`}\
+`{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_update_only`=`'`'`}\
+`{`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)`$arg_internal_only`=`'`'`}\
 `{`$create_update_or_has_test_field`=`'`'`}\
 `{`$create_update_internal_or_has_test_field`=`'`'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`$create_update_or_has_test_field`=`'true`'`}\

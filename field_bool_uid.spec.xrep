@@ -1,4 +1,4 @@
-`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_bool_uid)]
 `{`!`@eq`(`$arg_admin`,`'`'`)`&`!`@eq`(`$arg_system`,`'`'`)\
    if( is_admin_uid( ) || is_system_uid( ) )

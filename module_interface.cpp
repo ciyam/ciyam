@@ -157,14 +157,22 @@ void obtain_module_strings( const module_strings_container*& p_module_strings )
    p_module_strings = &get_module_strings( );
 }
 
-string get_module_string( const string& key )
+string get_module_string( const string& key, pair< string, string >* p_next )
 {
    string str( key );
    const module_strings_container& msc( get_module_strings( ) );
 
    module_strings_const_iterator msci = msc.find( key );
    if( msci != msc.end( ) )
+   {
       str = msci->second;
+
+      if( p_next && ++msci != msc.end( ) )
+      {
+         p_next->first = msci->first;
+         p_next->second = msci->second;
+      }
+   }
 
    return str;
 }

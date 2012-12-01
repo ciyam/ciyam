@@ -1,4 +1,4 @@
-`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_bool_is_default)]
    if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} gv_default_`{`$arg_sfield`} )
       get_obj( ).`{`$arg_field`}( true );

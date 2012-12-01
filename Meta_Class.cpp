@@ -1489,7 +1489,7 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -3082,7 +3082,10 @@ void Meta_Class::impl::after_fetch( )
    if( cp_Source_Model )
       p_obj->setup_foreign_key( *cp_Source_Model, v_Source_Model );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -3100,10 +3103,10 @@ void Meta_Class::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Class::impl::do_post_init( )
+void Meta_Class::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Class::impl::to_store( bool is_create, bool is_internal )
@@ -3111,11 +3114,11 @@ void Meta_Class::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start field_from_other_field)]
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
@@ -4227,9 +4230,9 @@ void Meta_Class::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Class::do_post_init( )
+void Meta_Class::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Class::to_store( bool is_create, bool is_internal )
@@ -4628,6 +4631,104 @@ void Meta_Class::get_file_field_names( vector< string >& file_field_names ) cons
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Class::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
+   {
+      name = string( c_field_display_name_Commands_File );
+      get_module_string( c_field_display_name_Commands_File, &next );
+   }
+   else if( id_or_name == c_field_id_Delay_Initial_Records || id_or_name == c_field_name_Delay_Initial_Records )
+   {
+      name = string( c_field_display_name_Delay_Initial_Records );
+      get_module_string( c_field_display_name_Delay_Initial_Records, &next );
+   }
+   else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
+   {
+      name = string( c_field_display_name_Extra );
+      get_module_string( c_field_display_name_Extra, &next );
+   }
+   else if( id_or_name == c_field_id_Header_File || id_or_name == c_field_name_Header_File )
+   {
+      name = string( c_field_display_name_Header_File );
+      get_module_string( c_field_display_name_Header_File, &next );
+   }
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   {
+      name = string( c_field_display_name_Id );
+      get_module_string( c_field_display_name_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   {
+      name = string( c_field_display_name_Model );
+      get_module_string( c_field_display_name_Model, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Next_Field_Id || id_or_name == c_field_name_Next_Field_Id )
+   {
+      name = string( c_field_display_name_Next_Field_Id );
+      get_module_string( c_field_display_name_Next_Field_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Next_Procedure_Id || id_or_name == c_field_name_Next_Procedure_Id )
+   {
+      name = string( c_field_display_name_Next_Procedure_Id );
+      get_module_string( c_field_display_name_Next_Procedure_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
+   {
+      name = string( c_field_display_name_Plural );
+      get_module_string( c_field_display_name_Plural, &next );
+   }
+   else if( id_or_name == c_field_id_Quick_Link_Field || id_or_name == c_field_name_Quick_Link_Field )
+   {
+      name = string( c_field_display_name_Quick_Link_Field );
+      get_module_string( c_field_display_name_Quick_Link_Field, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Class || id_or_name == c_field_name_Source_Class )
+   {
+      name = string( c_field_display_name_Source_Class );
+      get_module_string( c_field_display_name_Source_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Source_File || id_or_name == c_field_name_Source_File )
+   {
+      name = string( c_field_display_name_Source_File );
+      get_module_string( c_field_display_name_Source_File, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Model || id_or_name == c_field_name_Source_Model )
+   {
+      name = string( c_field_display_name_Source_Model );
+      get_module_string( c_field_display_name_Source_Model, &next );
+   }
+   else if( id_or_name == c_field_id_Static_Instance_Key || id_or_name == c_field_name_Static_Instance_Key )
+   {
+      name = string( c_field_display_name_Static_Instance_Key );
+      get_module_string( c_field_display_name_Static_Instance_Key, &next );
+   }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Class::get_field_display_name( const string& id_or_name ) const

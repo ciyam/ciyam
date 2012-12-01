@@ -641,7 +641,7 @@ struct Meta_Modifier_Affect::impl : public Meta_Modifier_Affect_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -979,7 +979,10 @@ void Meta_Modifier_Affect::impl::after_fetch( )
    if( cp_Source_Modifier_Affect )
       p_obj->setup_foreign_key( *cp_Source_Modifier_Affect, v_Source_Modifier_Affect );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -997,10 +1000,10 @@ void Meta_Modifier_Affect::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Modifier_Affect::impl::do_post_init( )
+void Meta_Modifier_Affect::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Modifier_Affect::impl::to_store( bool is_create, bool is_internal )
@@ -1008,11 +1011,11 @@ void Meta_Modifier_Affect::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -1359,9 +1362,9 @@ void Meta_Modifier_Affect::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Modifier_Affect::do_post_init( )
+void Meta_Modifier_Affect::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Modifier_Affect::to_store( bool is_create, bool is_internal )
@@ -1600,6 +1603,64 @@ void Meta_Modifier_Affect::get_file_field_names( vector< string >& file_field_na
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Modifier_Affect::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   {
+      name = string( c_field_display_name_Class );
+      get_module_string( c_field_display_name_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
+   {
+      name = string( c_field_display_name_Extra );
+      get_module_string( c_field_display_name_Extra, &next );
+   }
+   else if( id_or_name == c_field_id_Field || id_or_name == c_field_name_Field )
+   {
+      name = string( c_field_display_name_Field );
+      get_module_string( c_field_display_name_Field, &next );
+   }
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   {
+      name = string( c_field_display_name_Internal );
+      get_module_string( c_field_display_name_Internal, &next );
+   }
+   else if( id_or_name == c_field_id_Modifier || id_or_name == c_field_name_Modifier )
+   {
+      name = string( c_field_display_name_Modifier );
+      get_module_string( c_field_display_name_Modifier, &next );
+   }
+   else if( id_or_name == c_field_id_Scope || id_or_name == c_field_name_Scope )
+   {
+      name = string( c_field_display_name_Scope );
+      get_module_string( c_field_display_name_Scope, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Modifier_Affect || id_or_name == c_field_name_Source_Modifier_Affect )
+   {
+      name = string( c_field_display_name_Source_Modifier_Affect );
+      get_module_string( c_field_display_name_Source_Modifier_Affect, &next );
+   }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Modifier_Affect::get_field_display_name( const string& id_or_name ) const

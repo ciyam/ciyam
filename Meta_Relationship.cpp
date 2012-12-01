@@ -769,7 +769,7 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1217,7 +1217,10 @@ void Meta_Relationship::impl::after_fetch( )
    if( cp_Source_Relationship )
       p_obj->setup_foreign_key( *cp_Source_Relationship, v_Source_Relationship );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start meta_relationship_child_name)]
    if( get_obj( ).needs_field_value( "Child_Name" )
@@ -1252,10 +1255,10 @@ void Meta_Relationship::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Relationship::impl::do_post_init( )
+void Meta_Relationship::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
@@ -1263,11 +1266,11 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start field_from_changed_fk)]
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Parent_Class( ).has_changed( ) )
@@ -1813,9 +1816,9 @@ void Meta_Relationship::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Relationship::do_post_init( )
+void Meta_Relationship::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Relationship::to_store( bool is_create, bool is_internal )
@@ -2174,6 +2177,94 @@ void Meta_Relationship::get_file_field_names( vector< string >& file_field_names
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Relationship::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Cascade_Op || id_or_name == c_field_name_Cascade_Op )
+   {
+      name = string( c_field_display_name_Cascade_Op );
+      get_module_string( c_field_display_name_Cascade_Op, &next );
+   }
+   else if( id_or_name == c_field_id_Child_Class || id_or_name == c_field_name_Child_Class )
+   {
+      name = string( c_field_display_name_Child_Class );
+      get_module_string( c_field_display_name_Child_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Child_Class_Name || id_or_name == c_field_name_Child_Class_Name )
+   {
+      name = string( c_field_display_name_Child_Class_Name );
+      get_module_string( c_field_display_name_Child_Class_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Child_Name || id_or_name == c_field_name_Child_Name )
+   {
+      name = string( c_field_display_name_Child_Name );
+      get_module_string( c_field_display_name_Child_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
+   {
+      name = string( c_field_display_name_Extra );
+      get_module_string( c_field_display_name_Extra, &next );
+   }
+   else if( id_or_name == c_field_id_Field_Id || id_or_name == c_field_name_Field_Id )
+   {
+      name = string( c_field_display_name_Field_Id );
+      get_module_string( c_field_display_name_Field_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Field_Key || id_or_name == c_field_name_Field_Key )
+   {
+      name = string( c_field_display_name_Field_Key );
+      get_module_string( c_field_display_name_Field_Key, &next );
+   }
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   {
+      name = string( c_field_display_name_Internal );
+      get_module_string( c_field_display_name_Internal, &next );
+   }
+   else if( id_or_name == c_field_id_Mandatory || id_or_name == c_field_name_Mandatory )
+   {
+      name = string( c_field_display_name_Mandatory );
+      get_module_string( c_field_display_name_Mandatory, &next );
+   }
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   {
+      name = string( c_field_display_name_Model );
+      get_module_string( c_field_display_name_Model, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Parent_Class || id_or_name == c_field_name_Parent_Class )
+   {
+      name = string( c_field_display_name_Parent_Class );
+      get_module_string( c_field_display_name_Parent_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Relationship || id_or_name == c_field_name_Source_Relationship )
+   {
+      name = string( c_field_display_name_Source_Relationship );
+      get_module_string( c_field_display_name_Source_Relationship, &next );
+   }
+   else if( id_or_name == c_field_id_Transient || id_or_name == c_field_name_Transient )
+   {
+      name = string( c_field_display_name_Transient );
+      get_module_string( c_field_display_name_Transient, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Relationship::get_field_display_name( const string& id_or_name ) const

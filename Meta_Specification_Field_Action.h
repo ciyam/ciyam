@@ -106,7 +106,7 @@ class META_SPECIFICATION_FIELD_ACTION_DECL_SPEC Meta_Specification_Field_Action 
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -158,6 +158,7 @@ class META_SPECIFICATION_FIELD_ACTION_DECL_SPEC Meta_Specification_Field_Action 
    bool is_file_field_name( const std::string& name ) const;
    void get_file_field_names( std::vector< std::string >& file_field_names ) const;
 
+   std::string get_field_uom_symbol( const std::string& id_or_name ) const;
    std::string get_field_display_name( const std::string& id_or_name ) const;
 
    const procedure_info_container& get_procedure_info( ) const { return static_get_procedure_info( ); }

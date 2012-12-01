@@ -885,7 +885,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1051,7 +1051,10 @@ void Meta_View::impl::impl_Generate_PDF_View( )
                    get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Fraction_Limit( ), domain_mask ) );
 
                   int uom = get_obj( ).child_View_Field( ).Source_Field( ).UOM( );
-                  if( uom != 0 )
+
+                  if( uom == 999 )
+                     uom_fields.insert( make_pair( name, "uom" ) );
+                  else if( uom != 0 )
                      uom_fields.insert( make_pair( name, meta_field_uom( uom ) ) );
 
                   if( get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Primitive( ) == 4 // i.e. numeric
@@ -1917,7 +1920,10 @@ void Meta_View::impl::after_fetch( )
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
@@ -1955,10 +1961,10 @@ void Meta_View::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_View::impl::do_post_init( )
+void Meta_View::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_View::impl::to_store( bool is_create, bool is_internal )
@@ -1966,11 +1972,11 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -2435,9 +2441,9 @@ void Meta_View::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_View::do_post_init( )
+void Meta_View::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_View::to_store( bool is_create, bool is_internal )
@@ -2896,6 +2902,119 @@ void Meta_View::get_file_field_names( vector< string >& file_field_names ) const
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_View::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Copy_Action || id_or_name == c_field_name_Allow_Copy_Action )
+   {
+      name = string( c_field_display_name_Allow_Copy_Action );
+      get_module_string( c_field_display_name_Allow_Copy_Action, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Printable_Version || id_or_name == c_field_name_Allow_Printable_Version )
+   {
+      name = string( c_field_display_name_Allow_Printable_Version );
+      get_module_string( c_field_display_name_Allow_Printable_Version, &next );
+   }
+   else if( id_or_name == c_field_id_Auto_Back_After_Save || id_or_name == c_field_name_Auto_Back_After_Save )
+   {
+      name = string( c_field_display_name_Auto_Back_After_Save );
+      get_module_string( c_field_display_name_Auto_Back_After_Save, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+   {
+      name = string( c_field_display_name_Change_Permission );
+      get_module_string( c_field_display_name_Change_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+   {
+      name = string( c_field_display_name_Change_Restriction );
+      get_module_string( c_field_display_name_Change_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   {
+      name = string( c_field_display_name_Class );
+      get_module_string( c_field_display_name_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   {
+      name = string( c_field_display_name_Id );
+      get_module_string( c_field_display_name_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_Unactionable_Records || id_or_name == c_field_name_Ignore_Unactionable_Records )
+   {
+      name = string( c_field_display_name_Ignore_Unactionable_Records );
+      get_module_string( c_field_display_name_Ignore_Unactionable_Records, &next );
+   }
+   else if( id_or_name == c_field_id_Model || id_or_name == c_field_name_Model )
+   {
+      name = string( c_field_display_name_Model );
+      get_module_string( c_field_display_name_Model, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_PDF_Font_Type || id_or_name == c_field_name_PDF_Font_Type )
+   {
+      name = string( c_field_display_name_PDF_Font_Type );
+      get_module_string( c_field_display_name_PDF_Font_Type, &next );
+   }
+   else if( id_or_name == c_field_id_PDF_View_Type || id_or_name == c_field_name_PDF_View_Type )
+   {
+      name = string( c_field_display_name_PDF_View_Type );
+      get_module_string( c_field_display_name_PDF_View_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Print_Without_Highlight || id_or_name == c_field_name_Print_Without_Highlight )
+   {
+      name = string( c_field_display_name_Print_Without_Highlight );
+      get_module_string( c_field_display_name_Print_Without_Highlight, &next );
+   }
+   else if( id_or_name == c_field_id_Title || id_or_name == c_field_name_Title )
+   {
+      name = string( c_field_display_name_Title );
+      get_module_string( c_field_display_name_Title, &next );
+   }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Type_Key || id_or_name == c_field_name_Type_Key )
+   {
+      name = string( c_field_display_name_Type_Key );
+      get_module_string( c_field_display_name_Type_Key, &next );
+   }
+   else if( id_or_name == c_field_id_Use_First_Row_As_Header || id_or_name == c_field_name_Use_First_Row_As_Header )
+   {
+      name = string( c_field_display_name_Use_First_Row_As_Header );
+      get_module_string( c_field_display_name_Use_First_Row_As_Header, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_View::get_field_display_name( const string& id_or_name ) const

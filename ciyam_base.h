@@ -329,6 +329,7 @@ std::string CIYAM_BASE_DECL_SPEC get_field_id_for_name(
 
 std::string CIYAM_BASE_DECL_SPEC get_field_type_name( size_t handle, const std::string& context, const std::string& id_or_name );
 
+std::string CIYAM_BASE_DECL_SPEC get_field_uom_symbol( size_t handle, const std::string& context, const std::string& id_or_name );
 std::string CIYAM_BASE_DECL_SPEC get_field_display_name( size_t handle, const std::string& context, const std::string& id_or_name );
 
 std::string CIYAM_BASE_DECL_SPEC get_field_values(

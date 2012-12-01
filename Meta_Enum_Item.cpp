@@ -509,7 +509,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -920,7 +920,10 @@ void Meta_Enum_Item::impl::after_fetch( )
    if( cp_Enum )
       p_obj->setup_foreign_key( *cp_Enum, v_Enum );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -938,10 +941,10 @@ void Meta_Enum_Item::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Enum_Item::impl::do_post_init( )
+void Meta_Enum_Item::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
@@ -949,11 +952,11 @@ void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_from_key)]
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
@@ -1276,9 +1279,9 @@ void Meta_Enum_Item::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Enum_Item::do_post_init( )
+void Meta_Enum_Item::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Enum_Item::to_store( bool is_create, bool is_internal )
@@ -1457,6 +1460,49 @@ void Meta_Enum_Item::get_file_field_names( vector< string >& file_field_names ) 
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Enum_Item::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Enum || id_or_name == c_field_name_Enum )
+   {
+      name = string( c_field_display_name_Enum );
+      get_module_string( c_field_display_name_Enum, &next );
+   }
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   {
+      name = string( c_field_display_name_Internal );
+      get_module_string( c_field_display_name_Internal, &next );
+   }
+   else if( id_or_name == c_field_id_Label || id_or_name == c_field_name_Label )
+   {
+      name = string( c_field_display_name_Label );
+      get_module_string( c_field_display_name_Label, &next );
+   }
+   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   {
+      name = string( c_field_display_name_Order );
+      get_module_string( c_field_display_name_Order, &next );
+   }
+   else if( id_or_name == c_field_id_Value || id_or_name == c_field_name_Value )
+   {
+      name = string( c_field_display_name_Value );
+      get_module_string( c_field_display_name_Value, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Enum_Item::get_field_display_name( const string& id_or_name ) const

@@ -386,6 +386,7 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual bool is_file_field_name( const std::string& name ) const = 0;
    virtual void get_file_field_names( std::vector< std::string >& file_field_names ) const = 0;
 
+   virtual std::string get_field_uom_symbol( const std::string& id_or_name ) const = 0;
    virtual std::string get_field_display_name( const std::string& id_or_name ) const = 0;
 
    void get_alternative_key_field_info( std::vector< key_field_info_container >& all_key_field_info ) const;
@@ -525,7 +526,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void perform_after_fetch( bool is_minimal = false, bool is_for_prepare = false );
 
    virtual void at_create( ) = 0;
-   virtual void do_post_init( ) = 0;
+   virtual void post_init( ) = 0;
 
    virtual void to_store( bool is_create, bool is_internal ) = 0;
    void perform_to_store( bool is_create, bool is_internal );
@@ -1182,10 +1183,10 @@ std::string CLASS_BASE_DECL_SPEC meta_field_domain_type( const std::string& enum
  int numeric_digits, int numeric_decimals, int string_domain, int date_precision, int time_precision,
  bool show_plus_sign, int zero_padding, int fraction_limit, std::string& mask, std::string* p_tmask = 0 );
 
-std::string CLASS_BASE_DECL_SPEC meta_field_extras( int uom, int extra, bool transient, int max_size,
- const std::string& enum_id, int primitive, const std::string& min_value, const std::string& max_value,
- int numeric_digits, int numeric_decimals, int string_domain, int date_precision, int time_precision,
- bool show_plus_sign, int zero_padding, int int_type, int numeric_type );
+std::string CLASS_BASE_DECL_SPEC meta_field_extras( int uom, const std::string& uom_name, int extra,
+ bool transient, int max_size, const std::string& enum_id, int primitive, const std::string& min_value,
+ const std::string& max_value, int numeric_digits, int numeric_decimals, int string_domain, int date_precision,
+ int time_precision, bool show_plus_sign, int zero_padding, int int_type, int numeric_type );
 
 std::string CLASS_BASE_DECL_SPEC meta_procedure_arg_type( int primitive );
 

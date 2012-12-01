@@ -7,11 +7,11 @@
     || required_transients.count( "`{`$arg_field`}" ) )\
 `,\
     || required_transients.count( "`{`$arg_field`}" )
-    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} ) )\
+    && ( state & c_modifier_`{`$arg_check_mod`} ) )\
 `}`,\
    if( get_obj( ).get_is_iterating( )
 `{`!`@eq`(`$arg_check_mod`,`'`'`)\
-    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+    && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) ) )\
@@ -20,7 +20,7 @@
    if( ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
 `{`!`@eq`(`$arg_check_mod`,`'`'`)\
-    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+    && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
 `,\
@@ -28,7 +28,7 @@
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
 `{`!`@eq`(`$arg_check_mod`,`'`'`)\
-    && ( get_obj( ).get_state( ) & c_modifier_`{`$arg_check_mod`} )
+    && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
     && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
 `}`}

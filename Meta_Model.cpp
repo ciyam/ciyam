@@ -1014,7 +1014,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1369,6 +1369,14 @@ void Meta_Model::impl::impl_Generate( )
                    "field_" + lower( get_obj( ).child_Class( ).Name( ) )
                    + "_" + lower( get_obj( ).child_Class( ).child_Field( ).Name( ) )
                    + " \"" + search_replace( get_obj( ).child_Class( ).child_Field( ).Name( ), "_", " " ) + "\"" );
+
+                  if( !get_obj( ).child_Class( ).child_Field( ).UOM_Name( ).empty( ) )
+                     class_strings.push_back(
+                      "field_" + lower( get_obj( ).child_Class( ).Name( ) )
+                      + "_" + lower( get_obj( ).child_Class( ).child_Field( ).Name( ) )
+                      + "_(" + lower( get_obj( ).child_Class( ).child_Field( ).UOM_Name( ) )
+                      + ") \"" + escaped_string( get_obj( ).child_Class( ).child_Field( ).UOM_Symbol( ), "\"" ) + "\"" );
+
                } while( get_obj( ).child_Class( ).child_Field( ).iterate_next( ) );
             }
 
@@ -2845,7 +2853,7 @@ void Meta_Model::impl::impl_Generate( )
                      if( !p_xfield )
                         p_xfield = p_field;
 
-                     string other_extras( meta_field_extras( p_xfield->UOM( ),
+                     string other_extras( meta_field_extras( p_xfield->UOM( ), p_xfield->UOM_Name( ),
                       p_xfield->Extra( ), p_xfield->Transient( ), p_xfield->Type( ).Max_Size( ), p_xfield->Enum( ).Id( ),
                       p_xfield->Type( ).Primitive( ), p_xfield->Type( ).Min_Value( ), p_xfield->Type( ).Max_Value( ),
                       p_xfield->Type( ).Numeric_Digits( ), p_xfield->Type( ).Numeric_Decimals( ),
@@ -4057,6 +4065,7 @@ void Meta_Model::impl::impl_Generate( )
 
                         string other_extras( meta_field_extras(
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).UOM( ),
+                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).UOM_Name( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Transient( ),
                          get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ),
@@ -4115,6 +4124,7 @@ void Meta_Model::impl::impl_Generate( )
 
                            other_extras = meta_field_extras(
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).UOM( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).UOM_Name( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Extra( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Transient( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Max_Size( ),
@@ -4159,6 +4169,7 @@ void Meta_Model::impl::impl_Generate( )
 
                            other_extras = meta_field_extras(
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).UOM( ),
+                            get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).UOM_Name( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Extra( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Transient( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Max_Size( ),
@@ -4633,7 +4644,7 @@ void Meta_Model::impl::impl_Generate( )
                      restrict_field_types.push_back( meta_field_type_name(
                       p_field->Primitive( ), p_field->Mandatory( ), "", "" ) );
 
-                     string field_extras( meta_field_extras( p_field->UOM( ),
+                     string field_extras( meta_field_extras( p_field->UOM( ), p_field->UOM_Name( ),
                       p_field->Extra( ), p_field->Transient( ), p_field->Type( ).Max_Size( ), p_field->Enum( ).Id( ),
                       p_field->Type( ).Primitive( ), p_field->Type( ).Min_Value( ), p_field->Type( ).Max_Value( ),
                       p_field->Type( ).Numeric_Digits( ), p_field->Type( ).Numeric_Decimals( ),
@@ -6277,7 +6288,10 @@ void Meta_Model::impl::after_fetch( )
    if( cp_Workgroup )
       p_obj->setup_foreign_key( *cp_Workgroup, v_Workgroup );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
 //nyi
@@ -6322,10 +6336,10 @@ void Meta_Model::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Model::impl::do_post_init( )
+void Meta_Model::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Model::impl::to_store( bool is_create, bool is_internal )
@@ -6333,11 +6347,11 @@ void Meta_Model::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -7022,9 +7036,9 @@ void Meta_Model::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Model::do_post_init( )
+void Meta_Model::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Model::to_store( bool is_create, bool is_internal )
@@ -7463,6 +7477,114 @@ void Meta_Model::get_file_field_names( vector< string >& file_field_names ) cons
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Model::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Actions || id_or_name == c_field_name_Actions )
+   {
+      name = string( c_field_display_name_Actions );
+      get_module_string( c_field_display_name_Actions, &next );
+   }
+   else if( id_or_name == c_field_id_Add_Packages || id_or_name == c_field_name_Add_Packages )
+   {
+      name = string( c_field_display_name_Add_Packages );
+      get_module_string( c_field_display_name_Add_Packages, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+   {
+      name = string( c_field_display_name_Allow_Anonymous_Access );
+      get_module_string( c_field_display_name_Allow_Anonymous_Access, &next );
+   }
+   else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
+   {
+      name = string( c_field_display_name_Commands_File );
+      get_module_string( c_field_display_name_Commands_File, &next );
+   }
+   else if( id_or_name == c_field_id_Created || id_or_name == c_field_name_Created )
+   {
+      name = string( c_field_display_name_Created );
+      get_module_string( c_field_display_name_Created, &next );
+   }
+   else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
+   {
+      name = string( c_field_display_name_Id );
+      get_module_string( c_field_display_name_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Next_Class_Id || id_or_name == c_field_name_Next_Class_Id )
+   {
+      name = string( c_field_display_name_Next_Class_Id );
+      get_module_string( c_field_display_name_Next_Class_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Next_List_Id || id_or_name == c_field_name_Next_List_Id )
+   {
+      name = string( c_field_display_name_Next_List_Id );
+      get_module_string( c_field_display_name_Next_List_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Next_Specification_Id || id_or_name == c_field_name_Next_Specification_Id )
+   {
+      name = string( c_field_display_name_Next_Specification_Id );
+      get_module_string( c_field_display_name_Next_Specification_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Next_View_Id || id_or_name == c_field_name_Next_View_Id )
+   {
+      name = string( c_field_display_name_Next_View_Id );
+      get_module_string( c_field_display_name_Next_View_Id, &next );
+   }
+   else if( id_or_name == c_field_id_Permission || id_or_name == c_field_name_Permission )
+   {
+      name = string( c_field_display_name_Permission );
+      get_module_string( c_field_display_name_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Source_File || id_or_name == c_field_name_Source_File )
+   {
+      name = string( c_field_display_name_Source_File );
+      get_module_string( c_field_display_name_Source_File, &next );
+   }
+   else if( id_or_name == c_field_id_Status || id_or_name == c_field_name_Status )
+   {
+      name = string( c_field_display_name_Status );
+      get_module_string( c_field_display_name_Status, &next );
+   }
+   else if( id_or_name == c_field_id_Use_Package_Demo_Data || id_or_name == c_field_name_Use_Package_Demo_Data )
+   {
+      name = string( c_field_display_name_Use_Package_Demo_Data );
+      get_module_string( c_field_display_name_Use_Package_Demo_Data, &next );
+   }
+   else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
+   {
+      name = string( c_field_display_name_Version );
+      get_module_string( c_field_display_name_Version, &next );
+   }
+   else if( id_or_name == c_field_id_Workgroup || id_or_name == c_field_name_Workgroup )
+   {
+      name = string( c_field_display_name_Workgroup );
+      get_module_string( c_field_display_name_Workgroup, &next );
+   }
+   else if( id_or_name == c_field_id_Year_Created || id_or_name == c_field_name_Year_Created )
+   {
+      name = string( c_field_display_name_Year_Created );
+      get_module_string( c_field_display_name_Year_Created, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Model::get_field_display_name( const string& id_or_name ) const

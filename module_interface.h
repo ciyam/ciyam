@@ -83,7 +83,7 @@ std::string& get_module_directory( );
 module_strings_container& get_module_strings( );
 class_registry_container& get_class_registry( );
 
-std::string get_module_string( const std::string& key );
+std::string get_module_string( const std::string& key, std::pair< std::string, std::string >* p_next = 0 );
 
 template< typename T > struct registration : registration_base
 {

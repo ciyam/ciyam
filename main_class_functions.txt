@@ -28,7 +28,7 @@ at_create      Create        Create       Record is in an "empty" or cloned stat
                                           the setting of field values prior to the call to "op_apply".
 
                                           (op_apply)
-do_post_init   Create        Create       This function is available to provide values for fields that depend
+post_init      Create        Create       This function is available to provide values for fields that depend
                                           upon other field values (unlike "to_store" this function will later
                                           be called again in case "to_store" causes these values to change).
 
@@ -39,7 +39,7 @@ to_store       Create        Create       This function is available to provide 
                                           due to other values. After the function returns it is expected that
                                           the record should be valid for storing.
 
-do_post_init   Create        Create       This function is available to provide values for fields that depend
+post_init      Create        Create       This function is available to provide values for fields that depend
                                           upon other field values (second call for "to_store" side-affects).
 
 validate       Create        Create       Prior to any attempt to store the record in the DB this function is
@@ -82,7 +82,7 @@ object.op_apply( );
 Function       Lock Before   Lock After   Description
 -------------------------------------------------------------------------------------------------------------
                                           (op_update - <key>)
-do_post_init   Update        Update       This function is available to provide values for fields that depend
+post_init      Update        Update       This function is available to provide values for fields that depend
                                           upon other field values.
 
 after_fetch    Update        Update       The lock is acquired before the record is fetched. If both the lock
@@ -91,7 +91,7 @@ after_fetch    Update        Update       The lock is acquired before the record
                                           to use other field (or other record field) values.
 
                                           (op_apply)
-do_post_init   Update        Update       This function is available to provide values for fields that depend
+post_init      Update        Update       This function is available to provide values for fields that depend
                                           upon other field values (unlike "to_store" this function will later
                                           be called again in case "to_store" causes these values to change).
 
@@ -102,7 +102,7 @@ to_store       Update        Update       This function is available to provide 
                                           due to other values. After the function returns it is expected that
                                           the record should be valid for storing.
 
-do_post_init   Update        Update       This function is available to provide values for fields that depend
+post_init      Update        Update       This function is available to provide values for fields that depend
                                           upon other field values (second call for "to_store" side-affects).
 
 validate       Update        Update       Prior to any attempt to store the record in the DB this function is
@@ -135,7 +135,7 @@ object.op_apply( );
 Function       Lock Before   Lock After   Description
 -------------------------------------------------------------------------------------------------------------
                                           (op_destroy - <key>)
-do_post_init   Destroy       Destroy      This function is available to provide values for fields that depend
+post_init      Destroy       Destroy      This function is available to provide values for fields that depend
                                           upon other field values.
 
 after_fetch    Destroy       Destroy      The lock is acquired before the record is fetched and if the record
@@ -175,7 +175,7 @@ object.perform_fetch( <key> ); // NOTE: Via rules a single record fetch will alw
 Function       Lock Before   Lock After   Description
 -------------------------------------------------------------------------------------------------------------
                                           (perform_fetch - <key>)
-do_post_init   <none>        <none>       This function is available to provide values for fields that depend
+post_init      <none>        <none>       This function is available to provide values for fields that depend
                                           upon other field values.
 
 after_fetch    <none>        <none>       It should be noted that fetching a record using this method doesn't
@@ -192,7 +192,7 @@ object.finish_review( );
 Function       Lock Before   Lock After   Description
 -------------------------------------------------------------------------------------------------------------
                                           (begin_review - <key>)
-do_post_init   Review        Review       This function is available to provide values for fields that depend
+post_init      Review        Review       This function is available to provide values for fields that depend
                                           upon other field values.
 
 after_fetch    Review        Review       This method of fetching a record is available via protocol but only
@@ -222,7 +222,7 @@ if( object.iterate_forwards( "", "field1,field2..." ) )
 Function       Lock Before   Lock After   Description
 -------------------------------------------------------------------------------------------------------------
                                           (perform_fetch)
-do_post_init   <none>        <none>       This function is available to provide values for fields that depend
+post_init      <none>        <none>       This function is available to provide values for fields that depend
                                           upon other field values.
 
 after_fetch    <none>        <none>       Locking is not involved (for maximum performance) and the SQL query

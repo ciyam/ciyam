@@ -298,8 +298,8 @@ void setup_view_fields( view_source& view,
 
             if( extra_data.count( c_view_field_extra_password ) )
                view.password_fields.insert( value_id );
-            else if( extra_data.count( c_view_field_extra_epassword ) )
-               view.epassword_fields.insert( value_id );
+            else if( extra_data.count( c_view_field_extra_encrypted ) )
+               view.encrypted_fields.insert( value_id );
             else if( extra_data.count( c_view_field_extra_hpassword ) )
                view.hpassword_fields.insert( value_id );
 
@@ -1329,8 +1329,22 @@ bool output_view_form( ostream& os, const string& act,
       {
          os << "   <" << td_type << " class=\"list" + ( extra_effect.empty( ) ? string( "" ) : " " + extra_effect ) + "\">";
          os << escape_markup( is_in_edit ? source.edit_display_names[ i ] : source.display_names[ i ] );
+
          if( source.uom_fields.count( source_value_id ) )
-            os << " (" << source.uom_fields.find( source_value_id )->second << ")";
+         {
+            string symbol( source.uom_fields.find( source_value_id )->second );
+
+            if( symbol.find( c_uom_prefix ) == 0 )
+            {
+               string name_key( source.vici->second->fields[ i ].pfname );
+               if( name_key.empty( ) )
+                  name_key = source.vici->second->fields[ i ].name;
+
+               symbol = get_display_string( name_key + "_(" + symbol.substr( strlen( c_uom_prefix ) ) + ")" );
+            }
+            os << " (" << symbol << ")";
+         }
+
          os << "</" << td_type << ">\n";
       }
       else

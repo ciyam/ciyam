@@ -685,7 +685,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -1283,7 +1283,10 @@ void Meta_Index::impl::after_fetch( )
    if( cp_Source_Index )
       p_obj->setup_foreign_key( *cp_Source_Index, v_Source_Index );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -1301,10 +1304,10 @@ void Meta_Index::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Index::impl::do_post_init( )
+void Meta_Index::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Index::impl::to_store( bool is_create, bool is_internal )
@@ -1312,11 +1315,11 @@ void Meta_Index::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_from_key)]
    if( is_create && is_null( get_obj( ).Order( ) ) )
@@ -1706,9 +1709,9 @@ void Meta_Index::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Index::do_post_init( )
+void Meta_Index::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Index::to_store( bool is_create, bool is_internal )
@@ -1987,6 +1990,74 @@ void Meta_Index::get_file_field_names( vector< string >& file_field_names ) cons
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Index::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   {
+      name = string( c_field_display_name_Class );
+      get_module_string( c_field_display_name_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Field_1 || id_or_name == c_field_name_Field_1 )
+   {
+      name = string( c_field_display_name_Field_1 );
+      get_module_string( c_field_display_name_Field_1, &next );
+   }
+   else if( id_or_name == c_field_id_Field_2 || id_or_name == c_field_name_Field_2 )
+   {
+      name = string( c_field_display_name_Field_2 );
+      get_module_string( c_field_display_name_Field_2, &next );
+   }
+   else if( id_or_name == c_field_id_Field_3 || id_or_name == c_field_name_Field_3 )
+   {
+      name = string( c_field_display_name_Field_3 );
+      get_module_string( c_field_display_name_Field_3, &next );
+   }
+   else if( id_or_name == c_field_id_Field_4 || id_or_name == c_field_name_Field_4 )
+   {
+      name = string( c_field_display_name_Field_4 );
+      get_module_string( c_field_display_name_Field_4, &next );
+   }
+   else if( id_or_name == c_field_id_Field_5 || id_or_name == c_field_name_Field_5 )
+   {
+      name = string( c_field_display_name_Field_5 );
+      get_module_string( c_field_display_name_Field_5, &next );
+   }
+   else if( id_or_name == c_field_id_Internal || id_or_name == c_field_name_Internal )
+   {
+      name = string( c_field_display_name_Internal );
+      get_module_string( c_field_display_name_Internal, &next );
+   }
+   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   {
+      name = string( c_field_display_name_Order );
+      get_module_string( c_field_display_name_Order, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Index || id_or_name == c_field_name_Source_Index )
+   {
+      name = string( c_field_display_name_Source_Index );
+      get_module_string( c_field_display_name_Source_Index, &next );
+   }
+   else if( id_or_name == c_field_id_Unique || id_or_name == c_field_name_Unique )
+   {
+      name = string( c_field_display_name_Unique );
+      get_module_string( c_field_display_name_Unique, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Index::get_field_display_name( const string& id_or_name ) const

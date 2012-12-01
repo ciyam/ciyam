@@ -6339,6 +6339,22 @@ string get_field_type_name( size_t handle, const string& context, const string& 
    return type_name;
 }
 
+string get_field_uom_symbol( size_t handle, const string& context, const string& id_or_name )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+   class_base_accessor instance_accessor( instance );
+
+   string field( id_or_name );
+   if( !instance_accessor.get_field_name( field ) )
+   {
+      const char* p_id = instance_accessor.get_field_id( field );
+      if( p_id )
+         field = string( p_id );
+   }
+
+   return instance.get_field_uom_symbol( field );
+}
+
 string get_field_display_name( size_t handle, const string& context, const string& id_or_name )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );

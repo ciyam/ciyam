@@ -1781,7 +1781,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -2860,7 +2860,10 @@ void Meta_View_Field::impl::after_fetch( )
    if( cp_View )
       p_obj->setup_foreign_key( *cp_View, v_View );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start field_from_search_replace)]
    if( !get_obj( ).get_key( ).empty( )
@@ -2904,10 +2907,10 @@ void Meta_View_Field::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_View_Field::impl::do_post_init( )
+void Meta_View_Field::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
@@ -2915,11 +2918,11 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_to_field)]
    if( is_create
@@ -3635,9 +3638,9 @@ void Meta_View_Field::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_View_Field::do_post_init( )
+void Meta_View_Field::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_View_Field::to_store( bool is_create, bool is_internal )
@@ -4516,6 +4519,224 @@ void Meta_View_Field::get_file_field_names( vector< string >& file_field_names )
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_View_Field::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Scope || id_or_name == c_field_name_Access_Scope )
+   {
+      name = string( c_field_display_name_Access_Scope );
+      get_module_string( c_field_display_name_Access_Scope, &next );
+   }
+   else if( id_or_name == c_field_id_Allow_Anonymous_Access || id_or_name == c_field_name_Allow_Anonymous_Access )
+   {
+      name = string( c_field_display_name_Allow_Anonymous_Access );
+      get_module_string( c_field_display_name_Allow_Anonymous_Access, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+   {
+      name = string( c_field_display_name_Change_Permission );
+      get_module_string( c_field_display_name_Change_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+   {
+      name = string( c_field_display_name_Change_Restriction );
+      get_module_string( c_field_display_name_Change_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Scope || id_or_name == c_field_name_Change_Scope )
+   {
+      name = string( c_field_display_name_Change_Scope );
+      get_module_string( c_field_display_name_Change_Scope, &next );
+   }
+   else if( id_or_name == c_field_id_Child_List_Extra_Option || id_or_name == c_field_name_Child_List_Extra_Option )
+   {
+      name = string( c_field_display_name_Child_List_Extra_Option );
+      get_module_string( c_field_display_name_Child_List_Extra_Option, &next );
+   }
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   {
+      name = string( c_field_display_name_Class );
+      get_module_string( c_field_display_name_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Date_Precision_Option || id_or_name == c_field_name_Date_Precision_Option )
+   {
+      name = string( c_field_display_name_Date_Precision_Option );
+      get_module_string( c_field_display_name_Date_Precision_Option, &next );
+   }
+   else if( id_or_name == c_field_id_Enum_Finishes_At || id_or_name == c_field_name_Enum_Finishes_At )
+   {
+      name = string( c_field_display_name_Enum_Finishes_At );
+      get_module_string( c_field_display_name_Enum_Finishes_At, &next );
+   }
+   else if( id_or_name == c_field_id_Enum_Starts_At || id_or_name == c_field_name_Enum_Starts_At )
+   {
+      name = string( c_field_display_name_Enum_Starts_At );
+      get_module_string( c_field_display_name_Enum_Starts_At, &next );
+   }
+   else if( id_or_name == c_field_id_FK_Trigger_Behaviour || id_or_name == c_field_name_FK_Trigger_Behaviour )
+   {
+      name = string( c_field_display_name_FK_Trigger_Behaviour );
+      get_module_string( c_field_display_name_FK_Trigger_Behaviour, &next );
+   }
+   else if( id_or_name == c_field_id_FK_Trigger_Option || id_or_name == c_field_name_FK_Trigger_Option )
+   {
+      name = string( c_field_display_name_FK_Trigger_Option );
+      get_module_string( c_field_display_name_FK_Trigger_Option, &next );
+   }
+   else if( id_or_name == c_field_id_Font_Size || id_or_name == c_field_name_Font_Size )
+   {
+      name = string( c_field_display_name_Font_Size );
+      get_module_string( c_field_display_name_Font_Size, &next );
+   }
+   else if( id_or_name == c_field_id_Ignore_Manual_Links || id_or_name == c_field_name_Ignore_Manual_Links )
+   {
+      name = string( c_field_display_name_Ignore_Manual_Links );
+      get_module_string( c_field_display_name_Ignore_Manual_Links, &next );
+   }
+   else if( id_or_name == c_field_id_Label_Without_Prefix || id_or_name == c_field_name_Label_Without_Prefix )
+   {
+      name = string( c_field_display_name_Label_Without_Prefix );
+      get_module_string( c_field_display_name_Label_Without_Prefix, &next );
+   }
+   else if( id_or_name == c_field_id_Link_Permission || id_or_name == c_field_name_Link_Permission )
+   {
+      name = string( c_field_display_name_Link_Permission );
+      get_module_string( c_field_display_name_Link_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Link_Restriction || id_or_name == c_field_name_Link_Restriction )
+   {
+      name = string( c_field_display_name_Link_Restriction );
+      get_module_string( c_field_display_name_Link_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Mandatory_Option || id_or_name == c_field_name_Mandatory_Option )
+   {
+      name = string( c_field_display_name_Mandatory_Option );
+      get_module_string( c_field_display_name_Mandatory_Option, &next );
+   }
+   else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
+   {
+      name = string( c_field_display_name_Name );
+      get_module_string( c_field_display_name_Name, &next );
+   }
+   else if( id_or_name == c_field_id_New_Source || id_or_name == c_field_name_New_Source )
+   {
+      name = string( c_field_display_name_New_Source );
+      get_module_string( c_field_display_name_New_Source, &next );
+   }
+   else if( id_or_name == c_field_id_New_Value || id_or_name == c_field_name_New_Value )
+   {
+      name = string( c_field_display_name_New_Value );
+      get_module_string( c_field_display_name_New_Value, &next );
+   }
+   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   {
+      name = string( c_field_display_name_Order );
+      get_module_string( c_field_display_name_Order, &next );
+   }
+   else if( id_or_name == c_field_id_Restriction_Spec || id_or_name == c_field_name_Restriction_Spec )
+   {
+      name = string( c_field_display_name_Restriction_Spec );
+      get_module_string( c_field_display_name_Restriction_Spec, &next );
+   }
+   else if( id_or_name == c_field_id_Show_Hide_Start_Point || id_or_name == c_field_name_Show_Hide_Start_Point )
+   {
+      name = string( c_field_display_name_Show_Hide_Start_Point );
+      get_module_string( c_field_display_name_Show_Hide_Start_Point, &next );
+   }
+   else if( id_or_name == c_field_id_Sort_Manually || id_or_name == c_field_name_Sort_Manually )
+   {
+      name = string( c_field_display_name_Sort_Manually );
+      get_module_string( c_field_display_name_Sort_Manually, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Child || id_or_name == c_field_name_Source_Child )
+   {
+      name = string( c_field_display_name_Source_Child );
+      get_module_string( c_field_display_name_Source_Child, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Edit_Child || id_or_name == c_field_name_Source_Edit_Child )
+   {
+      name = string( c_field_display_name_Source_Edit_Child );
+      get_module_string( c_field_display_name_Source_Edit_Child, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Field || id_or_name == c_field_name_Source_Field )
+   {
+      name = string( c_field_display_name_Source_Field );
+      get_module_string( c_field_display_name_Source_Field, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Parent || id_or_name == c_field_name_Source_Parent )
+   {
+      name = string( c_field_display_name_Source_Parent );
+      get_module_string( c_field_display_name_Source_Parent, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Parent_Class || id_or_name == c_field_name_Source_Parent_Class )
+   {
+      name = string( c_field_display_name_Source_Parent_Class );
+      get_module_string( c_field_display_name_Source_Parent_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Tab_Name || id_or_name == c_field_name_Tab_Name )
+   {
+      name = string( c_field_display_name_Tab_Name );
+      get_module_string( c_field_display_name_Tab_Name, &next );
+   }
+   else if( id_or_name == c_field_id_Trigger_Behaviour || id_or_name == c_field_name_Trigger_Behaviour )
+   {
+      name = string( c_field_display_name_Trigger_Behaviour );
+      get_module_string( c_field_display_name_Trigger_Behaviour, &next );
+   }
+   else if( id_or_name == c_field_id_Trigger_For_State || id_or_name == c_field_name_Trigger_For_State )
+   {
+      name = string( c_field_display_name_Trigger_For_State );
+      get_module_string( c_field_display_name_Trigger_For_State, &next );
+   }
+   else if( id_or_name == c_field_id_Trigger_Option || id_or_name == c_field_name_Trigger_Option )
+   {
+      name = string( c_field_display_name_Trigger_Option );
+      get_module_string( c_field_display_name_Trigger_Option, &next );
+   }
+   else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
+   {
+      name = string( c_field_display_name_Type );
+      get_module_string( c_field_display_name_Type, &next );
+   }
+   else if( id_or_name == c_field_id_Use_Full_Width || id_or_name == c_field_name_Use_Full_Width )
+   {
+      name = string( c_field_display_name_Use_Full_Width );
+      get_module_string( c_field_display_name_Use_Full_Width, &next );
+   }
+   else if( id_or_name == c_field_id_Use_Source_Parent || id_or_name == c_field_name_Use_Source_Parent )
+   {
+      name = string( c_field_display_name_Use_Source_Parent );
+      get_module_string( c_field_display_name_Use_Source_Parent, &next );
+   }
+   else if( id_or_name == c_field_id_View || id_or_name == c_field_name_View )
+   {
+      name = string( c_field_display_name_View );
+      get_module_string( c_field_display_name_View, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_View_Field::get_field_display_name( const string& id_or_name ) const

@@ -1,4 +1,4 @@
-`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'do_post_init`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
 `{`$type`=`'days`'`}\
 `{`!`@eq`(`$arg_type`,`'`'`)`$type`=`$arg_type`}\
 `{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\

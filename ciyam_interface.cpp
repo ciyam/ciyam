@@ -1914,8 +1914,8 @@ void request_handler::process_request( )
                         extra_field_info.insert( make_pair( view.create_user_key_field, p_session_info->user_key ) );
 
                      save_record( module_id, flags, app, chk, field, extra, exec, cont,
-                      is_new_record, new_field_and_values, extra_field_info, vici,
-                      view, *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
+                      is_new_record, new_field_and_values, extra_field_info, vici, view, vtab_num,
+                      *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
                   }
                }
                else if( act == c_act_cont )
@@ -2349,7 +2349,7 @@ void request_handler::process_request( )
                      // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
                      if( item_values[ field_num ].length( ) >= 20
                       && ( view.password_fields.count( view.field_ids[ i ] )
-                      || view.epassword_fields.count( view.field_ids[ i ] )
+                      || view.encrypted_fields.count( view.field_ids[ i ] )
                       || view.hpassword_fields.count( view.field_ids[ i ] ) ) )
                         item_values[ field_num ] = password_decrypt( item_values[ field_num ], get_server_id( ) );
 

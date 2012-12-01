@@ -409,7 +409,7 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
    void finalise_fetch( );
 
    void at_create( );
-   void do_post_init( );
+   void post_init( );
 
    void to_store( bool is_create, bool is_internal );
    void for_store( bool is_create, bool is_internal );
@@ -791,7 +791,10 @@ void Meta_Initial_Record::impl::after_fetch( )
    if( cp_Class )
       p_obj->setup_foreign_key( *cp_Class, v_Class );
 
-   do_post_init( );
+   post_init( );
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -809,10 +812,10 @@ void Meta_Initial_Record::impl::at_create( )
    // [<finish at_create>]
 }
 
-void Meta_Initial_Record::impl::do_post_init( )
+void Meta_Initial_Record::impl::post_init( )
 {
-   // [<start do_post_init>]
-   // [<finish do_post_init>]
+   // [<start post_init>]
+   // [<finish post_init>]
 }
 
 void Meta_Initial_Record::impl::to_store( bool is_create, bool is_internal )
@@ -820,11 +823,11 @@ void Meta_Initial_Record::impl::to_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   if( !get_obj( ).get_is_preparing( ) )
+      post_init( );
+
    uint64_t state = p_obj->get_state( );
    ( void )state;
-
-   if( !get_obj( ).get_is_preparing( ) )
-      do_post_init( );
 
    // [(start default_from_key)]
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
@@ -1100,9 +1103,9 @@ void Meta_Initial_Record::at_create( )
    p_impl->at_create( );
 }
 
-void Meta_Initial_Record::do_post_init( )
+void Meta_Initial_Record::post_init( )
 {
-   p_impl->do_post_init( );
+   p_impl->post_init( );
 }
 
 void Meta_Initial_Record::to_store( bool is_create, bool is_internal )
@@ -1261,6 +1264,44 @@ void Meta_Initial_Record::get_file_field_names( vector< string >& file_field_nam
 {
    for( set< string >::const_iterator ci = g_file_field_names.begin( ); ci != g_file_field_names.end( ); ++ci )
       file_field_names.push_back( *ci );
+}
+
+string Meta_Initial_Record::get_field_uom_symbol( const string& id_or_name ) const
+{
+   string uom_symbol;
+
+   string name;
+   pair< string, string > next;
+
+   if( id_or_name.empty( ) )
+      throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
+   {
+      name = string( c_field_display_name_Class );
+      get_module_string( c_field_display_name_Class, &next );
+   }
+   else if( id_or_name == c_field_id_Comments || id_or_name == c_field_name_Comments )
+   {
+      name = string( c_field_display_name_Comments );
+      get_module_string( c_field_display_name_Comments, &next );
+   }
+   else if( id_or_name == c_field_id_Key || id_or_name == c_field_name_Key )
+   {
+      name = string( c_field_display_name_Key );
+      get_module_string( c_field_display_name_Key, &next );
+   }
+   else if( id_or_name == c_field_id_Order || id_or_name == c_field_name_Order )
+   {
+      name = string( c_field_display_name_Order );
+      get_module_string( c_field_display_name_Order, &next );
+   }
+
+   // NOTE: It is being assumed here that the customised UOM symbol for a field (if it
+   // has one) will be in the module string that immediately follows that of its name.
+   if( next.first.find( name + "_(" ) == 0 )
+      uom_symbol = next.second;
+
+   return uom_symbol;
 }
 
 string Meta_Initial_Record::get_field_display_name( const string& id_or_name ) const
