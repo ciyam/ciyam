@@ -59,7 +59,6 @@
 #  define _mkdir mkdir
 #endif
 
-#include "md5.h"
 #include "sha1.h"
 #include "base64.h"
 #include "config.h"
@@ -941,9 +940,11 @@ void request_handler::process_request( )
             if( temp_session )
             {
                // NOTE: For temporary sessions force the session id to be the unique id for the
-               // IP address and derive both the hash values and checksum prefixes from this id.
+               // IP address and derive both the hash values and checksum prefixes from "g_id".
+               // This allows users to keep URL links for anonymous sessions that will still be
+               // valid when used at another time or from another machine.
                session_id = p_session_info->session_id = unique_id;
-               p_session_info->hashval_prefix = sha1( g_id + unique_id ).get_digest_as_string( );
+               p_session_info->hashval_prefix = sha1( g_id + g_id ).get_digest_as_string( );
                p_session_info->checksum_prefix = sha1( g_id + p_session_info->hashval_prefix ).get_digest_as_string( );
 
                input_data[ c_param_session ] = session_id;
@@ -1076,9 +1077,14 @@ void request_handler::process_request( )
                      if( get_server_id( ) != server_id )
                      {
                         set_server_id( server_id );
+                        g_id = get_id_from_server_id( );
 
                         ofstream outf( c_identity_file );
                         outf << get_server_id( );
+
+                        // NOTE: As the original "g_id" value was empty any URL link or attempt to login
+                        // could fail so force the page to refresh using the now corrected "g_id" value.
+                        extra_content_func += "refresh( false );\n";
                      }
 
                      g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
@@ -4322,15 +4328,8 @@ int main( int argc, char* argv[ ] )
       if( file_exists( c_identity_file ) )
       {
          set_server_id( buffer_file( c_identity_file ) );
-         string key( get_server_id( ).substr( 0, 10 ) );
 
-         MD5 md5;
-         md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
-         md5.finalize( );
-
-         auto_ptr< char > ap_digest( md5.hex_digest( ) );
-
-         g_id = string( ap_digest.get( ) ).substr( 12 );
+         g_id = get_id_from_server_id( );
       }
 
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
