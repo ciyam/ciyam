@@ -5,7 +5,11 @@
    {
       // NOTE: Empty code block for scope purposes.
       {
+`{`@eq`(`$arg_minimal`,`'`'`)\
+         get_obj( ).op_update( get_obj( ).get_key( ) );
+`,\
          get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
+`}\
 
          class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
 
@@ -35,9 +39,15 @@
             get_obj( ).`{`$arg_field`}( gen_key( ) );
             get_obj( ).op_apply( );
 
+`{`@eq`(`$arg_minimal`,`'`'`)\
+            get_obj( ).op_update( get_obj( ).get_key( ) );
+
+            cp_other->op_update( cp_other->get_key( ) );
+`,\
             get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
 
             cp_other->op_update( cp_other->get_key( ), c_field_name_`{`$arg_field`} );
+`}\
             cp_other->`{`$arg_field`}( old_val );
             cp_other->op_apply( );
 
@@ -73,7 +83,11 @@
    {
       // NOTE: Empty code block for scope purposes.
       {
+`{`@eq`(`$arg_minimal`,`'`'`)\
+         get_obj( ).op_update( get_obj( ).get_key( ) );
+`,\
          get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
+`}\
 
          class_pointer< `{`$module_name`}_`{`$class_name`} > cp_other( e_create_instance );
 
@@ -103,9 +117,15 @@
             get_obj( ).`{`$arg_field`}( gen_key( ) );
             get_obj( ).op_apply( );
 
+`{`@eq`(`$arg_minimal`,`'`'`)\
+            get_obj( ).op_update( get_obj( ).get_key( ) );
+
+            cp_other->op_update( cp_other->get_key( ) );
+`,\
             get_obj( ).op_update( get_obj( ).get_key( ), c_field_name_`{`$arg_field`} );
 
             cp_other->op_update( cp_other->get_key( ), c_field_name_`{`$arg_field`} );
+`}\
             cp_other->`{`$arg_field`}( old_val );
             cp_other->op_apply( );
 

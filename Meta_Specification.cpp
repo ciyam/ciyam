@@ -3591,6 +3591,23 @@ void Meta_Specification::impl::impl_Move_Down( const string& Restrict_Fields, co
    // [(finish move_up_and_down)]
 
    // [<start Move_Down_impl>]
+//nyi
+   // NOTE: The "Move Up/Down" implementation uses "minimal" updates which is fine except in the
+   // case when the Specification being moved is part of a "field list". So if the Specification
+   // Type matches a known field list "field" type then force an update (on the grandparent).
+   string spec_type( get_obj( ).Specification_Type( ).get_key( ) );
+
+   if( spec_type == "field" || spec_type == "field_pair" || spec_type == "field_pair2"
+    || spec_type == "field_pair_g" || spec_type == "field_restrict" || spec_type == "field_source_and_value" )
+   {
+      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }
    // [<finish Move_Down_impl>]
 }
 
@@ -3657,6 +3674,23 @@ void Meta_Specification::impl::impl_Move_Up( const string& Restrict_Fields, cons
    // [(finish move_up_and_down)]
 
    // [<start Move_Up_impl>]
+//nyi
+   // NOTE: The "Move Up/Down" implementation uses "minimal" updates which is fine except in the
+   // case when the Specification being moved is part of a "field list". So if the Specification
+   // Type matches a known field list "field" type then force an update (on the grandparent).
+   string spec_type( get_obj( ).Specification_Type( ).get_key( ) );
+
+   if( spec_type == "field" || spec_type == "field_pair" || spec_type == "field_pair2"
+    || spec_type == "field_pair_g" || spec_type == "field_restrict" || spec_type == "field_source_and_value" )
+   {
+      class_pointer< Meta_Specification > cp_parent( &get_obj( ).Parent_Specification( ).Parent_Specification( ) );
+
+      if( !cp_parent->get_key( ).empty( ) )
+      {
+         cp_parent->op_update( );
+         cp_parent->op_apply( );
+      }
+   }
    // [<finish Move_Up_impl>]
 }
 

@@ -42,6 +42,7 @@
 
 #include "fcgi_utils.h"
 
+#include "md5.h"
 #include "sha1.h"
 #include "regex.h"
 #include "config.h"
@@ -138,6 +139,19 @@ const string& get_server_id( )
 void set_server_id( const string& id )
 {
    g_server_id = id;
+}
+
+string get_id_from_server_id( )
+{
+   string key( get_server_id( ).substr( 0, 10 ) );
+
+   MD5 md5;
+   md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
+   md5.finalize( );
+
+   auto_ptr< char > ap_digest( md5.hex_digest( ) );
+
+   return string( ap_digest.get( ) ).substr( 12 );
 }
 
 void init_strings( )

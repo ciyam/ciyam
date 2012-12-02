@@ -691,8 +691,8 @@ field_add -id=127126 Application Created_Database bool mand -def=0
 field_add -id=127127 Application Default_Max_Attached_File_Size int mand -def=0 -x=int_type=bytes
 field_add -id=127128 Application Add_Modules_Automatically bool mand -def=1 -transient
 field_add -id=127129 Application Keep_Existing_Data bool mand -def=1
-field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=0
-field_add -id=127131 Application Use_Embedded_Images bool mand -def=0
+field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=1
+field_add -id=127131 Application Use_Embedded_Images bool mand -def=1
 procedure_add -id=127410 Application Generate
 procedure_add -id=127420 Application Generate_Modules
 procedure_add -id=127430 Application Generate_File_Links

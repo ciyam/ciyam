@@ -54,6 +54,8 @@ void log_trace_message( const std::string& message );
 const std::string& get_server_id( );
 void set_server_id( const std::string& id );
 
+std::string get_id_from_server_id( );
+
 void init_strings( );
 void init_extkeys( );
 

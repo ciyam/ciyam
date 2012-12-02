@@ -1040,10 +1040,6 @@ bool class_base::filtered( ) const
       for( map< string, string >::const_iterator
        ci = transient_filter_field_values.begin( ); ci != transient_filter_field_values.end( ); ++ci )
       {
-//idk
-TEMP_TRACE( "ci->first = " + ci->first );
-TEMP_TRACE( "ci->second = " + ci->second );
-TEMP_TRACE( "get_field_value( " + to_string( get_field_num( ci->first ) ) + " ) = " + get_field_value( get_field_num( ci->first ) ) );
          if( get_field_value( get_field_num( ci->first ) ) != ci->second )
             return true;
       }

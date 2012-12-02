@@ -9358,6 +9358,7 @@ void move_up_and_down_specification::add_specification_data( model& m, specifica
     = get_procedure_arg_name_for_id( m, class_name, move_down_procedure_name, move_down_values_arg_id );
    spec_data.data_pairs.push_back( make_pair( string( c_data_dn_values ), move_down_values_arg_name ) );
 
+   spec_data.data_pairs.push_back( make_pair( "minimal", "true" ) );
    spec_data.data_pairs.push_back( make_pair( "update_parent", "" ) );
 }
 

@@ -470,11 +470,11 @@ void perform_test_step( const test_step& s, const string& test_name )
    {
       if( _access( test_output_file_name.c_str( ), 0 ) == 0 )
       {
-         if( files_differ( temp_output_file_name.c_str( ), test_output_file_name.c_str( ) ) )
+         if( files_differ( test_output_file_name.c_str( ), temp_output_file_name.c_str( ) ) )
          {
             ++num_test_steps_mismatched;
             cout << "  " << test_step_name << ": *** failed *** "
-             << "diff " << temp_output_file_name << ' ' << test_output_file_name << endl;
+             << "diff " << test_output_file_name << ' ' << temp_output_file_name << endl;
 
             if( !is_quiet )
             {
