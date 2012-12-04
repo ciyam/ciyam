@@ -1,49 +1,73 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_clone)]
+`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
+`{`@eq`(`$arg_no_trans`,`'`'`)\
    transaction_start( );
    try
    {
+`}\
 `{`$suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$suffix`=`$arg_key_suffix`}\
-`{`@eq`(`$arg_sfield`,`'`'`)\
-      get_obj( ).begin_review( );
+`{`@eq`(`$arg_proc_arg_is_key_suffix`,`'true`'`)`$suffix`=`'_`'`}\
+`{`@eq`(`$arg_sfield`,`'`'`)`|`@eq`(`$arg_clone_only`,`'true`'`)\
+`{`$i`}   get_obj( ).begin_review( );
 `,\
-      get_obj( ).op_update( );
-`}`{`!`@eq`(`$arg_spfield`,`'`'`)
-      get_obj( ).`{`$arg_spfield`}( ).op_update( );
-      int next_copy_num = get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( );
+`{`$i`}   get_obj( ).op_update( );
+`}`{`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)
+`{`$i`}   string key_source_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
+`{`$i`}   key_source_info += "#1 " + `{`$arg_proc_arg`};
 
-      string key_info( construct_key_from_int( get_obj( ).get_key( ) + "`{`$suffix`}", next_copy_num ) );
-      key_info += " " + get_obj( ).get_key( );
+`{`$i`}   class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_key_source( e_create_instance );
+`{`$i`}   cp_key_source->perform_fetch( key_source_info );
+`}`{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'`'`)
+`{`$i`}   get_obj( ).`{`$arg_spfield`}( ).op_update( );
+`{`$i`}   int next_copy_num = get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( );
 
-      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( next_copy_num + 1 );
-      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+`{`$i`}   string key_info( construct_key_from_int( get_obj( ).get_key( ) + "`{`$suffix`}"\
+`{`!`@eq`(`$arg_proc_arg_is_key_suffix`,`'`'`) + `{`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
+cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`}, next_copy_num ) );
+`{`$i`}   key_info += " " + get_obj( ).get_key( );
+
+`{`$i`}   get_obj( ).`{`$arg_spfield`}( ).`{`$arg_scfield`}( next_copy_num + 1 );
+`{`$i`}   get_obj( ).`{`$arg_spfield`}( ).op_apply( );
 `,
-      string key_info( get_obj( ).get_key( ) + "`{`$suffix`} " + get_obj( ).get_key( ) );
+`{`$i`}   string key_info( get_obj( ).get_key( ) + "`{`$suffix`}"\
+`{`!`@eq`(`$arg_proc_arg_is_key_suffix`,`'`'`) + `{`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
+cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).get_key( ) );
 `}
-      class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
+`{`$i`}   class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 
-      cp_source->op_create( key_info );
+`{`$i`}   cp_source->op_create( key_info );
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
-      cp_source->`{`$arg_tfield`}( "" );
+`{`$i`}   cp_source->`{`$arg_tfield`}( "" );
 `}\
-      cp_source->`{`$arg_field`}( `{`$arg_value`} );
-      cp_source->op_apply( );
+`{`$i`}   cp_source->`{`$arg_field`}( `{`$arg_value`} );
+`{`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)\
+`{`$i`}   cp_source->`{`$arg_spfield`}( cp_key_source->get_key( ) );
+`}\
+`{`!`@eq`(`$arg_sfield`,`'`'`)`&`@eq`(`$arg_clone_only`,`'true`'`)\
+`{`$i`}   cp_source->`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
+`}\
+`{`$i`}   cp_source->op_apply( );
 
-`{`@eq`(`$arg_sfield`,`'`'`)\
-      get_obj( ).finish_review( );
+`{`@eq`(`$arg_sfield`,`'`'`)`|`@eq`(`$arg_clone_only`,`'true`'`)\
+`{`$i`}   get_obj( ).finish_review( );
 `,\
-      get_obj( ).`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
-      get_obj( ).op_apply( );
-`}\
+`{`$i`}   get_obj( ).`{`$arg_sfield`}( get_obj( ).`{`$arg_svalue`}( ) );
+`{`@eq`(`$arg_clone_only`,`'`'`)\
+`{`$i`}   get_obj( ).op_apply( );
+`}`}\
+`{`@eq`(`$arg_no_trans`,`'`'`)\
       transaction_commit( );
-
+`}\
+`{`!`@eq`(`$arg_proc_arg`,`'`'`)`&`@eq`(`$arg_proc_arg_is_key_suffix`,`'`'`)\
       // FUTURE: The return message itself should be a module string.
 `{`@eq`(`$arg_use_proc_name`,`'`'`)\
-      `{`$arg_output_arg`} = "Created New " + get_obj( ).get_display_name( );
+`{`$i`}   `{`$arg_proc_arg`} = "Created New " + get_obj( ).get_display_name( );
 `,\
-      `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
-       + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
-`}\
+`{`$i`}   `{`$arg_proc_arg`} = get_obj( ).get_display_name( ) + " "
+`{`$i`}    + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`}`}\
+`{`@eq`(`$arg_no_trans`,`'`'`)\
    }
    catch( ... )
    {
@@ -55,5 +79,6 @@
       transaction_rollback( );
       throw;
    }
+`}\
    // [(finish for_clone)]
 `}

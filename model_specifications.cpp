@@ -2556,6 +2556,10 @@ void clone_default_group_children_specification::add_specification_data( model& 
 
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_cclass, cclass_name ) );
+
+   // KLUDGE: Assumes class name is the child name.
+   spec_data.data_pairs.push_back( make_pair( c_data_child, cclass_name ) );
+
    spec_data.data_pairs.push_back( make_pair( c_data_gfield, gfield_name ) );
 }
 
