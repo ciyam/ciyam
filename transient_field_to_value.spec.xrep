@@ -1,0 +1,9 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`$value`=`$arg_value`}\
+`{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+   // [(start transient_field_to_value)]
+   if( required_transients.count( "`{`$arg_field`}" )
+    || get_obj( ).needs_field_value( "`{`$arg_field`}" ) )
+      get_obj( ).`{`$arg_field`}( `{`$value`} );
+   // [(finish transient_field_to_value)]
+`}

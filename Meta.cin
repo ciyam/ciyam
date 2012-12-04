@@ -404,6 +404,7 @@ field_add -id=114203 Specification_Type Needs_Other_Modifier_2 bool mand -def=0
 field_add -id=114204 Specification_Type Allow_Procedure_Arg bool mand -def=0
 field_add -id=114205 Specification_Type Allow_Other_Source_Child_2 bool mand -def=0
 field_add -id=114206 Specification_Type Needs_Other_Source_Child_2 bool mand -def=0
+field_add -id=114207 Specification_Type Use_Source_Field_Enum bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -1353,7 +1354,8 @@ specification_add -id=600127 {Specification}_Hide_Test_Field_for_Use_Test_Parent
 specification_add -id=600128 {Specification}_Protect_Child_Relationship_from_edit_1 modifier_field_value "Specification Protect_Child_Relationship Protect_Child_Rel true"
 specification_add -id=610128 {Specification}_Protect_Child_Relationship_from_edit_2 modifier_field_value "Specification Protect_Child_Relationship {Specification_Type}:Protect_Child_Rel_From_Update true -not_default"
 specification_add -id=620128 {Specification}_Protect_Class_from_edit modifier_field_value "Specification Protect_Class {Specification_Type}:Protect_Class_From_Edit true"
-specification_add -id=630128 {Specification}_Protect_Enum_from_edit modifier_field_value "Specification Protect_Enum {Specification_Type}:Use_Field_Enum true"
+specification_add -id=630128 {Specification}_Protect_Enum_from_edit_1 modifier_field_value "Specification Protect_Enum {Specification_Type}:Use_Field_Enum true"
+specification_add -id=630128a {Specification}_Protect_Enum_from_edit_2 modifier_field_value "Specification Protect_Enum {Specification_Type}:Use_Source_Field_Enum true"
 specification_add -id=600130 {Specification}_Needs_Class_cond_check check_cond_non_null "Specification {Class} {Specification_Type}:Needs_Class"
 specification_add -id=600130a {Specification}_Needs_Needs_Other_Class_cond_check check_cond_non_null "Specification Other_Class {Specification_Type}:Needs_Other_Class"
 specification_add -id=600131 {Specification}_Needs_Field_cond_check check_cond_non_null "Specification {Field} {Specification_Type}:Needs_Field"
@@ -1435,7 +1437,8 @@ specification_add -id=600168 {Specification}_Order_default default_from_key "Spe
 specification_add -id=600169 {Specification}_move_up_and_down move_up_and_down "Specification Move_Up Move_Down Restrict_Fields Restrict_Values Order"
 specification_add -id=600170 {Specification}_copy_{Specification_Type}_children copy_child_links_from_fk\
  "Specification Parent_{Specification} Specification_Type Parent_{Specification_Type} Actions-Specification_Actions -self_child"
-specification_add -id=600171 {Specification}_{Enum}_clear field_clear_on_changed_fk "Specification {Class} {Enum} -test={Specification_Type}:Use_Field_Enum"
+specification_add -id=600171 {Specification}_{Enum}_clear_1 field_clear_on_changed_fk "Specification {Class} {Enum} -test={Specification_Type}:Use_Field_Enum"
+specification_add -id=600171a {Specification}_{Enum}_clear_2 field_clear_on_changed_fk "Specification {Class} {Enum} -test={Specification_Type}:Use_Source_Field_Enum"
 specification_add -id=600172 {Specification}_Test_Parent_clear_for_Class field_clear_on_changed_fk "Specification {Class} Test_Parent -not_create"
 specification_add -id=600173 {Specification}_Test_Parent_Class field_from_other_field "Specification Test_Parent:Parent_Class Test_Parent_Class"
 specification_add -id=600174 {Specification}_Test_Field_clear field_clear "Specification Test_Field {Specification_Type}:Allow_FK_Test_Field_Choice Use_Test_Parent_Child"
@@ -1468,8 +1471,10 @@ specification_add -id=600190 {Specification}_Value_Right_Part_from_other_field f
  "Specification Value Value_Right_Part -func=value_rightpart -check_null"
 specification_add -id=600190a {Specification}_Value_Label_from_other_field field_from_other_field\
  "Specification Value Value_Label -func=value_label -check_null"
-specification_add -id=600191 {Specification}_{Enum}_from_other_field field_from_other_field\
+specification_add -id=600191 {Specification}_{Enum}_from_other_field_1 field_from_other_field\
  "Specification {Field}:{Enum} {Enum} -test={Specification_Type}:Use_Field_Enum=true"
+specification_add -id=600191a {Specification}_{Enum}_from_other_field_2 field_from_other_field\
+ "Specification Source_Field:{Enum} {Enum} -test={Specification_Type}:Use_Source_Field_Enum=true"
 specification_add -id=600192 {Specification}_Field_Class field_from_other_field "Specification {Field}:Parent_Class Field_Class"
 specification_add -id=610192 {Specification}_Source_Field_Class field_from_other_field "Specification Source_Field:Parent_Class Source_Field_Class"
 specification_add -id=600193 {Specification}_Test_Field_Class field_from_other_field "Specification Test_Field:Parent_Class Test_Field_Class"
@@ -1813,7 +1818,8 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,Child_Relationship_Class_Match,Child_Rel_Parent_Match,Child_Rel_Grandparent_Match\
 ,Needs_Source_Field_Or_Child,Test_Field_Type_Match,Allow_FK_Test_Field_Choice\
 ,Is_System,Is_Child_Only,Child_Prefix,Protect_Class_From_Edit,Is_Required_For_UI_Gen\
-,@tab:Advanced_Options,Use_Field_Enum,Use_Parent_Class,Use_Parent_Other_Class_For_Class,Use_Parent_Field_For_Class,Use_Parent_Source_Field_For_Class\
+,@tab:Advanced_Options,Use_Field_Enum,Use_Source_Field_Enum,Use_Parent_Class\
+,Use_Parent_Other_Class_For_Class,Use_Parent_Field_For_Class,Use_Parent_Source_Field_For_Class\
 ,Use_Parent_Source_Class,Use_Parent_Source_Parent,Use_Parent_Source_Parent_For_Class,Use_Class_As_Source_Parent_Class\
 ,Use_Parent_Child_Rel_For_Class,Use_Parent_Child_Rel_As_Source_Parent,Use_Parent_Procedure,Set_Field_To_Source_Field_Or_Child\
 ,Protect_Class_From_Update,Protect_Procedure_From_Edit,Protect_Child_Rel_From_Update\
@@ -1836,7 +1842,7 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 ,{Enum}:Name!@group:{Workgroup}+Name;link+fkey3,{Enum_Item}:Label!@fkey3:{Enum}+Label;link\
 ,Enum_Item_2:Label!@fkey3:{Enum}+Label;link,Enum_Item_3:Label!@fkey3:{Enum}+Label;link\
 ,Enum_Item_4:Label!@fkey3:{Enum}+Label;link,Enum_Item_5:Label!@fkey3:{Enum}+Label;link\
-,Use_Source_Parent;force,Source_Class:Name;no_edit+link+fkey7,Source_Field:Name!@fkey7:{Class}+Name;link\
+,Use_Source_Parent;force,Source_Class:Name;no_edit+link+fkey7,Source_Field:Name!@fkey7:{Class}+Name;link+force\
 ,Source_Parent_Class:Name;hidden+fkey4,Source_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force\
 ,Source_Child:Name!@fkey4:{Class}+Name;link+force,Source_Child_Class:Name;hidden+fkey8\
 ,Other_Source_Child:Name!@fkey4:{Class}+Name;link,Other_Source_Child_2:Name!@fkey4:{Class}+Name;link\

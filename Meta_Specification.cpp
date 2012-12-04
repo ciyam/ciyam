@@ -4587,6 +4587,11 @@ uint64_t Meta_Specification::impl::get_state( ) const
       state |= c_modifier_Protect_Enum;
    // [(finish modifier_field_value)]
 
+   // [(start modifier_field_value)]
+   if( get_obj( ).Specification_Type( ).Use_Source_Field_Enum( ) == true )
+      state |= c_modifier_Protect_Enum;
+   // [(finish modifier_field_value)]
+
    // [<start get_state>]
    // [<finish get_state>]
 
@@ -6152,6 +6157,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_clear_on_changed_fk)]
 
    // [(start field_clear_on_changed_fk)]
+   if( get_obj( ).Specification_Type( ).Use_Source_Field_Enum( ) && get_obj( ).Class( ).has_changed( ) )
+      get_obj( ).Enum( string( ) );
+   // [(finish field_clear_on_changed_fk)]
+
+   // [(start field_clear_on_changed_fk)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Test_Parent( string( ) );
    // [(finish field_clear_on_changed_fk)]
@@ -6241,6 +6251,11 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start field_from_other_field)]
    if( get_obj( ).Specification_Type( ).Use_Field_Enum( ) == true )
       get_obj( ).Enum( get_obj( ).Field( ).Enum( ) );
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
+   if( get_obj( ).Specification_Type( ).Use_Source_Field_Enum( ) == true )
+      get_obj( ).Enum( get_obj( ).Source_Field( ).Enum( ) );
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
@@ -11040,6 +11055,23 @@ void Meta_Specification::get_required_field_names(
    // [(finish field_from_other_field)]
 
    // [(start field_from_other_field)]
+   if( needs_field_value( "Enum", dependents ) )
+   {
+      dependents.insert( "Source_Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
+         names.insert( "Source_Field" );
+
+      dependents.insert( "Specification_Type" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+         names.insert( "Specification_Type" );
+   }
+   // [(finish field_from_other_field)]
+
+   // [(start field_from_other_field)]
    if( needs_field_value( "Field_Class", dependents ) )
    {
       dependents.insert( "Field" );
@@ -12923,6 +12955,14 @@ void Meta_Specification::get_always_required_field_names(
       names.insert( "Use_Source_Parent" );
 
    dependents.insert( "Specification_Type" ); // (for Hide_Source_Grandchild modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
+      names.insert( "Specification_Type" );
+   // [(finish modifier_field_value)]
+
+   // [(start modifier_field_value)]
+   dependents.insert( "Specification_Type" ); // (for Protect_Enum modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )

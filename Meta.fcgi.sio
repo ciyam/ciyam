@@ -5143,7 +5143,7 @@
      <name>field_specification_source_field
      <field>301481
      <ftype>@class
-     <extra>link
+     <extra>link+force
      <mandatory>false
      <modifiers>1000000000:relegate
      <pclass>107100
@@ -6304,6 +6304,14 @@
     <field/>
      <name>field_specification_type_use_field_enum
      <field>114162
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_use_source_field_enum
+     <field>114207
      <ftype>bool
      <extra>
      <mandatory>true

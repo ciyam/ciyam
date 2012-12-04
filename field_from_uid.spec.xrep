@@ -6,7 +6,7 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_from_uid)]
-   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!get_uid( ).empty( ) && !is_system_uid( ) )
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}!get_uid( ).empty( ) && !is_system_uid( ) )
       get_obj( ).`{`$arg_field`}( get_uid( ) );
    // [(finish field_from_uid)]
 `}

@@ -1,0 +1,22 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+`{`$value`=`$arg_value`}\
+`{`@eq`(`$arg_sfistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
+   // [(start field_bool_from_other_enum)]
+   if( get_obj( ).`{`$arg_sfield`}( ) == `{`$value`} ) // i.e. `{`$arg_evalue`}
+      get_obj( ).`{`$arg_field`}( true );
+   else
+      get_obj( ).`{`$arg_field`}( false );
+   // [(finish field_bool_from_other_enum)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start field_bool_from_other_enum)]
+   if( needs_field_value( "`{`$arg_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_sfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_sfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
+         names.insert( "`{`$arg_sfield`}" );
+   }
+   // [(finish field_bool_from_other_enum)]
+`}
