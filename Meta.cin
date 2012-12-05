@@ -446,6 +446,7 @@ field_add -id=115128 Specification Is_Required_For_UI_Gen bool mand -def=0
 field_add -id=115129 Specification Value_Left_Part string opt
 field_add -id=115130 Specification Value_Right_Part string opt
 field_add -id=115131 Specification Value_Label string opt
+field_add -id=115132 Specification Test_Value_Label string opt
 procedure_add -id=115410 Specification Move_Up
 procedure_arg_add -id=115411 Specification Move_Up Restrict_Fields string in
 procedure_arg_add -id=115412 Specification Move_Up Restrict_Values string in
@@ -1471,6 +1472,8 @@ specification_add -id=600190 {Specification}_Value_Right_Part_from_other_field f
  "Specification Value Value_Right_Part -func=value_rightpart -check_null"
 specification_add -id=600190a {Specification}_Value_Label_from_other_field field_from_other_field\
  "Specification Value Value_Label -func=value_label -check_null"
+specification_add -id=600190b {Specification}_Test_Value_Label_from_other_field field_from_other_field\
+ "Specification Test_Value Test_Value_Label -func=value_label -check_null"
 specification_add -id=600191 {Specification}_{Enum}_from_other_field_1 field_from_other_field\
  "Specification {Field}:{Enum} {Enum} -test={Specification_Type}:Use_Field_Enum=true"
 specification_add -id=600191a {Specification}_{Enum}_from_other_field_2 field_from_other_field\
@@ -1507,7 +1510,7 @@ specification_add -id=600204 {Specification}_Name_from_search_replace field_from
 ,Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
 ,Source_Child:Name={scfield},Other_Source_Child:Name={oscfield},Other_Source_Child_2:Name={o2scfield}\
 ,Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
-,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue}\
+,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Field:Name={tfield},Test_Value={tvalue},Test_Value_Label={tvalue_label}\
 ,{Permission}:Name={permission},Other_{Permission}:Name={opermission},Other_{Permission}_2:Name={o2permission}\
 ,{Procedure}:Name={procedure},{Procedure_Arg}:Name={procedure_arg},Other_{Procedure}:Name={oprocedure},Other_{Procedure}_2:Name={o2procedure}\
 ,Child_Relationship:Name={cname},Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass}\

@@ -36,9 +36,9 @@ const char c_sep = ',';
 const char c_esc = '\\';
 const char c_nul = '\0';
 
-const char* const c_whitespace_chars = "\f\t\n\v\r";
+const char* const c_whitespace_chars = " \f\n\r\t\v";
 
-const char* const c_special_characters = "abftnvr\a\b\f\t\n\v\r";
+const char* const c_special_characters = "abfnrtv\a\b\f\n\r\t\v";
 
 const int c_uuid_size = 16;
 
@@ -633,6 +633,8 @@ bool has_environment_variable( const char* p_env_var_name );
 
 void replace_environment_variables( std::string& s, char bc = '%', const char* p_chars = 0, char esc = c_esc );
 std::string replace_environment_variables( const char* p_str, char bc = '%', const char* p_chars = 0, char esc = c_esc );
+
+std::string trim( const std::string& s, bool leading_only = false );
 
 size_t split( const std::string& s, std::set< std::string >& c, char sep = c_sep, char esc = c_esc, bool unescape = true );
 size_t split( const std::string& s, std::deque< std::string >& c, char sep = c_sep, char esc = c_esc, bool unescape = true );

@@ -1927,6 +1927,9 @@ bool output_view_form( ostream& os, const string& act,
          }
          else if( source.text_fields.count( source_value_id ) )
          {
+            if( has_value )
+               cell_data = user_values.find( source_field_id )->second;
+
             if( is_always_editable || ( is_in_edit && !is_protected_field ) )
             {
                add_to_field_list = true;

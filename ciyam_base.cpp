@@ -9008,9 +9008,17 @@ void perform_instance_fetch( class_base& instance,
       if( p_rc )
          *p_rc = e_instance_fetch_rc_not_found;
       else
+      {
+         string keys( key_info );
+
+         string::size_type pos = keys.find( ' ' );
+         if( pos != string::npos )
+            keys.erase( 0, pos + 1 );
+
          throw runtime_error( get_string_message( GS( c_str_record_not_found ),
           make_pair( c_str_parm_record_not_found_class, instance.get_class_name( ) ),
-          make_pair( c_str_parm_record_not_found_key, key_info ) ) );
+          make_pair( c_str_parm_record_not_found_key, keys ) ) );
+      }
    }
 }
 

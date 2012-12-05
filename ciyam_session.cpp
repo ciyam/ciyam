@@ -3254,7 +3254,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    }
    catch( exception& x )
    {
-      TRACE_LOG( TRACE_ANYTHING, string( "session error: " ) + x.what( ) );
+      TRACE_LOG( TRACE_SESSIONS, string( "session error: " ) + x.what( ) );
 
       if( socket_handler.is_restoring( ) )
          socket_handler.set_restore_error( x.what( ) );

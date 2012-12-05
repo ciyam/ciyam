@@ -867,7 +867,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `@eq`(`'\\1`'`,`'for_each`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_each.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_field=$specification_\\0_field arg_separator=$specification_\\0_separator\
- arg_oprocedure=$specification_\\0_oprocedure arg_no_trans=$specification_\\0_no_trans`}\
+ arg_oprocedure=$specification_\\0_oprocedure arg_no_trans=$specification_\\0_no_trans\
+ arg_trim_whitespace=$specification_\\0_trim_whitespace`}\
 `,\
 `@eq`(`'\\1`'`,`'key_generator`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#key_generator.spec.xrep section=procedure class_name=$class_name\
@@ -1314,6 +1315,15 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield\
  arg_op=$specification_\0_op arg_tfield=$specification_\0_tfield`}\
 `,\
+`@eq`(`'\1`'`,`'check_list_duplicates`'`)
+`{`#check_list_duplicates.spec.xrep section=validate class_name=$class_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_separator=$specification_\0_separator`}\
+`,\
+`@eq`(`'\1`'`,`'check_list_size_limit`'`)
+`{`#check_list_size_limit.spec.xrep section=validate class_name=$class_name\
+ arg_field=$specification_\0_field arg_tvalue=$specification_\0_tvalue\
+ arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_separator=$specification_\0_separator`}\
+`,\
 `@eq`(`'\1`'`,`'check_parent_fk_match`'`)
 `{`#check_parent_fk_match.spec.xrep section=validate class_name=$class_name\
  arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
@@ -1407,8 +1417,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `@eq`(`'\1`'`,`'default_for_clone`'`)
 `{`#default_for_clone.spec.xrep section=after_fetch class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
-`@eq`(`'\1`'`,`'default_to_label`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
-`{`#default_to_label.spec.xrep section=after_fetch class_name=$class_name\
+`@eq`(`'\1`'`,`'default_to_string`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
+`{`#default_to_string.spec.xrep section=after_fetch class_name=$class_name\
  arg_field=$specification_\0_field arg_label_str=$specification_\0_label_str`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_acyclic_path`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
@@ -1704,8 +1714,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_cvt_func=$specification_\0_cvt_func\
  arg_fistexttype=$specification_\0_fistexttype arg_inc_clones=$specification_\0_inc_clones`}\
 `,\
-`@eq`(`'\1`'`,`'default_to_label`'`)`&`@eq`(`$specification_\0_ftransient`,`'0`'`)
-`{`#default_to_label.spec.xrep section=to_store class_name=$class_name\
+`@eq`(`'\1`'`,`'default_to_string`'`)`&`@eq`(`$specification_\0_ftransient`,`'0`'`)
+`{`#default_to_string.spec.xrep section=to_store class_name=$class_name\
  arg_field=$specification_\0_field arg_label_str=$specification_\0_label_str`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)

@@ -17,6 +17,7 @@
 `{`$i`}   key_source_info += "#1 " + `{`$arg_proc_arg`};
 
 `{`$i`}   class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_key_source( e_create_instance );
+
 `{`$i`}   cp_key_source->perform_fetch( key_source_info );
 `}`{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'`'`)
 `{`$i`}   get_obj( ).`{`$arg_spfield`}( ).op_update( );
