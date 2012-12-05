@@ -483,9 +483,9 @@ void perform_test_step( const test_step& s, const string& test_name )
 #else
                string str( "./diff -q " );
 #endif
-               str += temp_output_file_name;
-               str += ' ';
                str += test_output_file_name;
+               str += ' ';
+               str += temp_output_file_name;
                system( str.c_str( ) );
             }
          }

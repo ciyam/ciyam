@@ -128,16 +128,17 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
       e_field_id_Test_Parent = 62,
       e_field_id_Test_Parent_Class = 63,
       e_field_id_Test_Value = 64,
-      e_field_id_Use_Source_Parent = 65,
-      e_field_id_Use_Test_Parent_Child = 66,
-      e_field_id_Value = 67,
-      e_field_id_Value_Label = 68,
-      e_field_id_Value_Left_Part = 69,
-      e_field_id_Value_Literal = 70,
-      e_field_id_Value_Numeric_String = 71,
-      e_field_id_Value_Right_Part = 72,
-      e_field_id_Value_String = 73,
-      e_field_id_Vars = 74
+      e_field_id_Test_Value_Label = 65,
+      e_field_id_Use_Source_Parent = 66,
+      e_field_id_Use_Test_Parent_Child = 67,
+      e_field_id_Value = 68,
+      e_field_id_Value_Label = 69,
+      e_field_id_Value_Left_Part = 70,
+      e_field_id_Value_Literal = 71,
+      e_field_id_Value_Numeric_String = 72,
+      e_field_id_Value_Right_Part = 73,
+      e_field_id_Value_String = 74,
+      e_field_id_Vars = 75
    };
 
    Meta_Specification( );
@@ -199,6 +200,9 @@ class META_SPECIFICATION_DECL_SPEC Meta_Specification : public class_base
 
    const std::string& Test_Value( ) const;
    void Test_Value( const std::string& Test_Value );
+
+   const std::string& Test_Value_Label( ) const;
+   void Test_Value_Label( const std::string& Test_Value_Label );
 
    bool Use_Source_Parent( ) const;
    void Use_Source_Parent( bool Use_Source_Parent );

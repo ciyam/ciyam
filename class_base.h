@@ -932,6 +932,8 @@ void CLASS_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name, bool allow_all_rwx = false );
 std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
 
+std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );
+
 size_t CLASS_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
 
 void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, char sep = ',' );

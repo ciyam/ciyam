@@ -158,6 +158,7 @@ const char* const c_field_id_Test_Field_Class = "301493";
 const char* const c_field_id_Test_Parent = "301486";
 const char* const c_field_id_Test_Parent_Class = "301487";
 const char* const c_field_id_Test_Value = "115103";
+const char* const c_field_id_Test_Value_Label = "115132";
 const char* const c_field_id_Use_Source_Parent = "115107";
 const char* const c_field_id_Use_Test_Parent_Child = "115110";
 const char* const c_field_id_Value = "115102";
@@ -241,6 +242,7 @@ const char* const c_field_name_Test_Field_Class = "Test_Field_Class";
 const char* const c_field_name_Test_Parent = "Test_Parent";
 const char* const c_field_name_Test_Parent_Class = "Test_Parent_Class";
 const char* const c_field_name_Test_Value = "Test_Value";
+const char* const c_field_name_Test_Value_Label = "Test_Value_Label";
 const char* const c_field_name_Use_Source_Parent = "Use_Source_Parent";
 const char* const c_field_name_Use_Test_Parent_Child = "Use_Test_Parent_Child";
 const char* const c_field_name_Value = "Value";
@@ -324,6 +326,7 @@ const char* const c_field_display_name_Test_Field_Class = "field_specification_t
 const char* const c_field_display_name_Test_Parent = "field_specification_test_parent";
 const char* const c_field_display_name_Test_Parent_Class = "field_specification_test_parent_class";
 const char* const c_field_display_name_Test_Value = "field_specification_test_value";
+const char* const c_field_display_name_Test_Value_Label = "field_specification_test_value_label";
 const char* const c_field_display_name_Use_Source_Parent = "field_specification_use_source_parent";
 const char* const c_field_display_name_Use_Test_Parent_Child = "field_specification_use_test_parent_child";
 const char* const c_field_display_name_Value = "field_specification_value";
@@ -2477,6 +2480,7 @@ string Meta_Specification_Field_Action::static_get_sql_columns( )
     "C_Test_Parent VARCHAR(64) NOT NULL,"
     "C_Test_Parent_Class VARCHAR(64) NOT NULL,"
     "C_Test_Value VARCHAR(200) NOT NULL,"
+    "C_Test_Value_Label VARCHAR(200) NOT NULL,"
     "C_Use_Source_Parent INTEGER NOT NULL,"
     "C_Use_Test_Parent_Child INTEGER NOT NULL,"
     "C_Value VARCHAR(200) NOT NULL,"

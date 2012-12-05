@@ -1,0 +1,18 @@
+`{`@eq`(`'validate`'`,`$section`)\
+`{`$separator`=`',`'`}`{`!`@eq`(`$arg_separator`,`'`'`)`$separator`=`$arg_separator`}\
+   // [(start check_list_duplicates)]
+   if( !get_obj( ).`{`$arg_field`}( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   {
+      vector< string > all_items;
+      set< string > unique_items;
+
+      split_string( get_obj( ).`{`$arg_field`}( ), all_items, "`{`$separator`}" );
+      split_string( get_obj( ).`{`$arg_field`}( ), unique_items, "`{`$separator`}" );
+
+      if( all_items.size( ) != unique_items.size( ) )
+         p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+          get_string_message( GS( c_str_invalid_duplicate_field_value ), make_pair(
+          c_str_parm_invalid_duplicate_field_value_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ) ) ) );
+   }
+   // [(finish check_list_duplicates)]
+`}

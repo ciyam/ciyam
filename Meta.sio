@@ -13028,6 +13028,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600190b
+      <item>class
+     </specification>
+     <specification/>
       <id>600191
       <item>class
      </specification>
@@ -15366,6 +15370,10 @@
         <item>tvfield
        </specification>
        <specification/>
+        <id>600190b
+        <item>src_field
+       </specification>
+       <specification/>
         <id>600204
         <item>field
        </specification>
@@ -15379,6 +15387,26 @@
        </specification>
        <specification/>
         <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>115132
+      <name>Test_Value_Label
+      <type>string
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600190b
+        <item>dest_field
+       </specification>
+       <specification/>
+        <id>600204
         <item>field
        </specification>
       </specifications>
@@ -30967,6 +30995,7 @@
      <field_info>301488:107101;107100={tcfield}
      <field_info>301485:107101;107100={tfield}
      <field_info>115103={tvalue}
+     <field_info>115132={tvalue_label}
      <field_info>301499:116101;116100={permission}
      <field_info>301331:116101;116100={opermission}
      <field_info>301332:116101;116100={o2permission}
@@ -31888,6 +31917,19 @@
      <field_id>301486
      <pfield_id>301420
      <not_create>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600190b
+    <name>{Specification}_Test_Value_Label_from_other_field
+    <type>field_from_other_field
+    <data/>
+     <class_id>115100
+     <sclass_id>
+     <sfield_id>115103
+     <dfield_id>115132
+     <check_null>true
+     <function>value_label
     </data>
    </specification>
    <specification/>

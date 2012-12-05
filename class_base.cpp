@@ -2544,6 +2544,11 @@ string get_directory_for_file_name( const string& file_name )
    return directory;
 }
 
+string trim_whitespace( const string& s )
+{
+   return trim( s );
+}
+
 size_t split_count( const string& s, char sep )
 {
    return split_size( s, sep );

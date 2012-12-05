@@ -597,7 +597,7 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars )
    return s;
 }
 
-boyer_moore::boyer_moore( const std::string& pattern )
+boyer_moore::boyer_moore( const string& pattern )
  :
  pattern( pattern ),
  slide( c_char_size ),
@@ -622,7 +622,7 @@ boyer_moore::boyer_moore( const std::string& pattern )
    {
       while( match < psize && pattern[ curr ] != pattern[ match ] )
       {
-         jump[ match ] = std::min( jump[ match ], psize - curr - 1 );
+         jump[ match ] = min( jump[ match ], psize - curr - 1 );
          match = matches[ match ];
       }
 
@@ -634,7 +634,7 @@ boyer_moore::boyer_moore( const std::string& pattern )
    int curr_match = matches[ 0 ];
    for( int i = 0; i < psize; ++i )
    {
-      jump[ i ] = std::min( jump[ i ], psize + curr_match - i );
+      jump[ i ] = min( jump[ i ], psize + curr_match - i );
 
       if( jump[ i ] > psize )
       {
@@ -647,7 +647,7 @@ boyer_moore::boyer_moore( const std::string& pattern )
    }
 }
 
-string::size_type boyer_moore::find( const std::string& text )
+string::size_type boyer_moore::find( const string& text )
 {
    if( text.empty( ) || pattern.empty( ) || text.size( ) < pattern.size( ) )
       return string::npos;
@@ -665,7 +665,7 @@ string::size_type boyer_moore::find( const std::string& text )
       if( pattern_i < 0 )
          return text_i + 1;
  
-      text_i += std::max( slide[ pattern[ pattern_i ] ], jump[ pattern_i ] );
+      text_i += max( slide[ pattern[ pattern_i ] ], jump[ pattern_i ] );
    }
 
    return string::npos;
@@ -689,7 +689,7 @@ bool wildcard_match( const char* p_expr, const char* p_data )
    }
 }
 
-string& replace( std::string& s, const char* p_findstr, const char* p_replstr )
+string& replace( string& s, const char* p_findstr, const char* p_replstr )
 {
    string str;
 
@@ -1034,6 +1034,42 @@ void replace_environment_variables( string& s, char bc, const char* p_chars, cha
 
       pos = s.find( bc, npos );
    }
+}
+
+string trim( const string& s, bool leading_only )
+{
+   string t;
+   if( s.length( ) )
+   {
+      string ws( c_whitespace_chars );
+
+      string::size_type start = 0;
+      string::size_type finish = s.length( ) - 1;
+
+      for( string::size_type i = 0; i < s.length( ); i++ )
+      {
+         if( ws.find( s[ i ] ) == string::npos )
+            break;
+         ++start;
+      }
+
+      if( start < finish )
+      {
+         if( !leading_only )
+         {
+            for( string::size_type i = s.length( ) - 1; i > 0; i-- )
+            {
+               if( ws.find( s[ i ] ) == string::npos )
+                  break;
+               --finish;
+            }
+         }
+
+         t = s.substr( start, finish - start + 1 );
+      }
+   }
+
+   return t;
 }
 
 string replace_environment_variables( const char* p_str, char bc, const char* p_chars, char esc )
