@@ -698,7 +698,17 @@ function process( )
          decrypted += String.fromCharCode( val );
       }
 
-      document.getElementById( 'content' ).innerHTML = utf8_decode( decrypted );
+      var str = utf8_decode( decrypted );
+
+      if( debugDynamicContent )
+      {
+
+         str = str.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
+         str = "<div id='debug'><pre>\n" + str + "\n</pre></div>\n";
+         str = utf8_decode( decrypted ) + str;
+      }
+
+      document.getElementById( 'content' ).innerHTML = str;
    }
 
    sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );

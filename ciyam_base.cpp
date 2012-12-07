@@ -726,7 +726,7 @@ bool storage_handler::obtain_lock( size_t& handle,
    int attempts = c_max_lock_attempts;
 
    TRACE_LOG( TRACE_LOCK_OPS, "[obtain lock] class = " + lock_class
-    + ", instance = " + lock_instance + ", type = " + to_string( type ) );
+    + ", instance = " + lock_instance + ", type = " + to_string( type ) + " (" + op_lock::lock_type_name( type ) + ")" );
 
    bool found = false;
    while( attempts-- )

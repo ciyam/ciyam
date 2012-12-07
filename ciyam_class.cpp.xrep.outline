@@ -828,7 +828,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_tfield=$specification_\\0_tfield arg_value=$specification_\\0_value arg_ofield=$specification_\\0_ofield\
  arg_sfistexttype=$specification_\\0_sfistexttype arg_scfistexttype=$specification_\\0_scfistexttype\
  arg_op=$specification_\\0_op arg_type=$specification_\\0_type arg_check=$specification_\\0_check\
- arg_tfistexttype=$specification_\\0_tfistexttype arg_update=$specification_\\0_update`}\
+ arg_tfistexttype=$specification_\\0_tfistexttype arg_update=$specification_\\0_update arg_evalue=$specification_\\0_evalue`}\
 `,\
 `@eq`(`'\\1`'`,`'field_from_other_field`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_from_other_field.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
@@ -837,7 +837,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_chk_null=$specification_\\0_chk_null arg_func=$specification_\\0_func arg_create_only=$specification_\\0_create_only\
  arg_mfunc=$specification_\\0_mfunc arg_nvalue=$specification_\\0_nvalue arg_update=$specification_\\0_update\
  arg_tfistexttype=$specification_\\0_tfistexttype arg_tcfistexttype=$specification_\\0_tcfistexttype\
- arg_internal_only=$specification_\\0_internal_only arg_include_clones=$specification_\\0_include_clones`}\
+ arg_internal_only=$specification_\\0_internal_only arg_include_clones=$specification_\\0_include_clones\
+ arg_new_only=$specification_\\0_new_only`}\
 `,\
 `@eq`(`'\\1`'`,`'field_from_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_from_script.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
@@ -1206,6 +1207,9 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `,\
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=value_will_be_provided class_name=$class_name arg_dfield=$specification_\0_dfield`}\
+`,\
+`@eq`(`'\1`'`,`'field_from_clone_key`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_clone_key.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_dtm.spec.xrep section=value_will_be_provided class_name=$class_name arg_field=$specification_\0_field`}\
@@ -1663,7 +1667,7 @@ void `{`$full_class_name`}::impl::post_init( )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_ofield=$specification_\0_ofield\
  arg_sfistexttype=$specification_\0_sfistexttype arg_scfistexttype=$specification_\0_scfistexttype\
  arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check=$specification_\0_check\
- arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update`}
+ arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update arg_evalue=$specification_\0_evalue`}
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#field_from_uid.spec.xrep section=post_init class_name=$class_name module_name=$module_name\
@@ -1793,10 +1797,15 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_clone_key`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#field_from_clone_key.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_new_only=$specification_\0_new_only`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_concatenation`'`)
 `{`#field_from_concatenation.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
  arg_dfield=$specification_\0_dfield arg_tfield=$specification_\0_tfield\
- arg_field_list=$specification_\0_field_list arg_separator=$specification_\0_separator`}\
+ arg_field_list=$specification_\0_field_list arg_new_only=$specification_\0_new_only\
+ arg_separator=$specification_\0_separator`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
 `{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -1813,7 +1822,7 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_ofield=$specification_\0_ofield\
  arg_sfistexttype=$specification_\0_sfistexttype arg_scfistexttype=$specification_\0_scfistexttype\
  arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check=$specification_\0_check\
- arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update`}\
+ arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update arg_evalue=$specification_\0_evalue`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#field_from_other_field.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -1822,7 +1831,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
  arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype\
- arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones`}\
+ arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones\
+ arg_new_only=$specification_\0_new_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'`'`)
 `{`#field_from_procedure_call.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -2057,6 +2067,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue arg_tfistexttype=$specification_\0_tfistexttype\
  arg_xpfield=$specification_\0_xpfield arg_xdfield=$specification_\0_xdfield`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_clone_key`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#field_from_clone_key.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_new_only=$specification_\0_new_only`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_dtm.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
  arg_field=$specification_\0_field`}\
@@ -2067,7 +2081,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tfield=$specification_\0_tfield arg_value=$specification_\0_value arg_ofield=$specification_\0_ofield\
  arg_sfistexttype=$specification_\0_sfistexttype arg_scfistexttype=$specification_\0_scfistexttype\
  arg_op=$specification_\0_op arg_type=$specification_\0_type arg_check=$specification_\0_check\
- arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update`}\
+ arg_tfistexttype=$specification_\0_tfistexttype arg_update=$specification_\0_update arg_evalue=$specification_\0_evalue`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_other_field`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_other_field.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -2076,7 +2090,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_chk_null=$specification_\0_chk_null arg_func=$specification_\0_func arg_create_only=$specification_\0_create_only\
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
  arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype\
- arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones`}\
+ arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones\
+ arg_new_only=$specification_\0_new_only`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
@@ -2178,6 +2193,10 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_nfield=$specification_\0_nfield arg_n2field=$specification_\0_n2field arg_n3field=$specification_\0_n3field\
  arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
  arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_after_store`,`'`'`)
+`{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)`&`@eq`(`$specification_\0_after_self`,`'`'`)
 `{`#update_children.spec.xrep section=for_or_after_store full_class_name=$full_class_name\
@@ -2292,6 +2311,10 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_src_fk_key_suffix=$specification_\0_src_fk_key_suffix arg_dest_fk=$specification_\0_dest_fk\
  arg_dchild=$specification_\0_dchild arg_fk_back_to_self=$specification_\0_fk_back_to_self\
  arg_fk_src_child_branch=$specification_\0_fk_src_child_branch arg_create_or_update=$specification_\0_create_or_update`}\
+`,\
+`@eq`(`'\1`'`,`'trigger_parent_update_field`'`)`&`@eq`(`$specification_\0_after_store`,`'true`'`)
+`{`#trigger_parent_update_field.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_spfield=$specification_\0_spfield arg_scfield=$specification_\0_scfield`}\
 `,\
 `@eq`(`'\1`'`,`'update_children`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#update_children.spec.xrep section=for_or_after_store full_class_name=$full_class_name\
