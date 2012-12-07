@@ -24,7 +24,7 @@
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
-   get_obj( ).`{`$arg_field`}( `{`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
+   get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_evalue`,`'`'`)`$arg_evalue`,`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_value`}`}
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_apply( );
 `}\
@@ -36,7 +36,7 @@
    {
       get_obj( ).op_update( );
 `}\
-      get_obj( ).`{`$arg_field`}( `{`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
+      get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_evalue`,`'`'`)`$arg_evalue`,`$value`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_value`}`}
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
       get_obj( ).op_apply( );
    }

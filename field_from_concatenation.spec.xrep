@@ -1,6 +1,6 @@
 `{`@eq`(`'to_store`'`,`$section`)\
    // [(start field_from_concatenation)]
-   if( !get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+   if( `{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       string value;
 

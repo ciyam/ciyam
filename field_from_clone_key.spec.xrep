@@ -1,0 +1,13 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_clone_key)]
+   if( field_name == "`{`$arg_ffield`}" )
+      return true;
+   // [(finish field_from_clone_key)]
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_from_clone_key)]
+   if( !is_null( get_obj( ).get_clone_key( ) )`{`@eq`(`$arg_new_only`,`'true`'`) && get_obj( ).get_key( ).empty( )`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
+      get_obj( ).`{`$arg_field`}( get_obj( ).get_clone_key( ) );
+   // [(finish field_from_clone_key)]
+`}
