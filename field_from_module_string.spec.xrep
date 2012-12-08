@@ -4,7 +4,7 @@
       return true;
    // [(finish field_from_module_string)]
 `}
-`{`@eq`(`'to_or_from_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
+`{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_from_module_string)]
 `{`@eq`(`$arg_tfield`,`'`'`)\
    get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
