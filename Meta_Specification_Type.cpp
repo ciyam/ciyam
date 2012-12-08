@@ -2469,7 +2469,8 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          bool in_error = true;
          if( Parent_Class.empty( ) )
          {
-            if( Primitive == c_enum_field_type_numeric || Primitive == c_enum_field_type_int )
+            if( Primitive == c_enum_field_type_numeric
+             || Primitive == c_enum_field_type_int || Primitive == c_enum_field_type_bool )
                in_error = false;
          }
 

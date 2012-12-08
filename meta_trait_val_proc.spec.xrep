@@ -50,7 +50,8 @@
          bool in_error = true;
          if( `{`$arg_parent_arg`}.empty( ) )
          {
-            if( Primitive == c_enum_`{`$enum_name`}_numeric || Primitive == c_enum_`{`$enum_name`}_int )
+            if( Primitive == c_enum_`{`$enum_name`}_numeric
+             || Primitive == c_enum_`{`$enum_name`}_int || Primitive == c_enum_`{`$enum_name`}_bool )
                in_error = false;
          }
 
