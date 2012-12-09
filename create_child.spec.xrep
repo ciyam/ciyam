@@ -1,4 +1,4 @@
-`{`@eq`(`'after_store`'`,`$section`)\
+`{`@eq`(`'after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start create_child)]
 `{`@eq`(`$arg_create_only`,`'`'`)\
 `{`!`@eq`(`$arg_nfield`,`'`'`)\
@@ -8,8 +8,11 @@
 `}
    {
 `{`@eq`(`$arg_key_suffix`,`'`'`)\
+`{`@eq`(`$arg_nfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
       string child_key( get_obj( ).get_key( ) + "_C" );\
 `,\
+      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_nfield`}( ).get_key( ) );\
+`}`,\
       string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );\
 `}
 `{`!`@eq`(`$arg_clone_field`,`'`'`)\
