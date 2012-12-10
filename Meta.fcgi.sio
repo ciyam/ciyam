@@ -6006,8 +6006,24 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_specification_type_allow_other_procedure
+     <field>114208
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_specification_type_needs_other_procedure
      <field>114187
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_specification_type_allow_other_procedure_2
+     <field>114209
      <ftype>bool
      <extra>
      <mandatory>true

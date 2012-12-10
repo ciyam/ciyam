@@ -57,6 +57,7 @@ struct class_base_accessor;
 
 enum cascade_op
 {
+   e_cascade_op_none,
    e_cascade_op_unlink,
    e_cascade_op_destroy,
    e_cascade_op_restrict

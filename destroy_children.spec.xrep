@@ -1,5 +1,6 @@
-`{`@eq`(`'for_store`'`,`$section`)\
+`{`@eq`(`'for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start destroy_children)]
+`{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
    if( !is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
     && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
@@ -10,5 +11,12 @@
          get_obj( ).child_`{`$arg_child`}( ).op_apply( );
       } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
    }
+`,\
+   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
+   {
+      get_obj( ).child_`{`$arg_child`}( ).op_destroy( get_obj( ).get_key( ) + "`{`$arg_separator`}" + get_obj( ).`{`$arg_tfield`}( ).get_key( ) );
+      get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+   }
+`}\
    // [(finish destroy_children)]
 `}

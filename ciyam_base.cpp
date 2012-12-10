@@ -152,6 +152,8 @@ const char* const c_session_variable_module = "@module";
 const char* const c_session_variable_storage = "@storage";
 const char* const c_session_variable_tz_abbr = "@tz_abbr";
 
+const char* const c_session_variable_val_error = "@val_error";
+
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -2352,6 +2354,16 @@ string construct_sql_select(
          if( i > 0 )
             sql += " AND ";
 
+         bool invert = false;
+         string invert_prefix;
+
+         if( field_values.length( ) && field_values[ 0 ] == '!' )
+         {
+            invert = true;
+            invert_prefix = "NOT ";
+            field_values.erase( 0, 1 );
+         }
+
          bool is_sub_select = false;
          string sub_select_sql_prefix, sub_select_sql_suffix;
          class_base* p_instance( &instance );
@@ -2373,7 +2385,7 @@ string construct_sql_select(
             string graph_parent_fk_field( p_instance->get_graph_parent_fk_field( ) );
             get_field_name( *p_instance, graph_parent_fk_field );
 
-            sub_select_sql_prefix = "C_Key_ IN (SELECT C_"
+            sub_select_sql_prefix = "C_Key_ " + invert_prefix + "IN (SELECT C_"
              + graph_parent_fk_field + " FROM T_" + to_string( p_instance->get_module_name( ) )
              + "_" + p_instance->get_class_name( ) + " WHERE ";
 
@@ -2400,7 +2412,7 @@ string construct_sql_select(
                field_values = '%' + field_values + '%';
 
                // NOTE: For end-user convenience LIKE queries are performed case-insensitively.
-               sql += "LOWER(C_" + field_name + ") LIKE " + sql_quote( lower( field_values ) );
+               sql += "LOWER(C_" + field_name + ") " + invert_prefix + "LIKE " + sql_quote( lower( field_values ) );
             }
             else if( field_values[ field_values.length( ) - 1 ] == '*' )
             {
@@ -2410,7 +2422,7 @@ string construct_sql_select(
 
                field_values += '%';
 
-               sql += "C_" + field_name + " LIKE " + sql_quote( field_values );
+               sql += "C_" + field_name + " " + invert_prefix + "LIKE " + sql_quote( field_values );
             }
          }
 
@@ -2419,7 +2431,7 @@ string construct_sql_select(
             string::size_type pos = field_values.find( ".." );
             if( pos != string::npos )
             {
-               sql += "C_" + field_name + " BETWEEN ";
+               sql += "C_" + field_name + invert_prefix + " BETWEEN ";
                if( is_sql_numeric )
                {
                   sql += field_values.substr( 0, pos );
@@ -2441,7 +2453,7 @@ string construct_sql_select(
                   pos = field_values.find( '&' );
                   if( pos == string::npos )
                   {
-                     sql += "C_" + field_name + " = ";
+                     sql += "C_" + field_name + ( invert ? " <> " : " = " );
 
                      sql += is_sql_numeric ? field_values : sql_quote( formatted_value( field_values, field_type ) );
                   }
@@ -2462,7 +2474,7 @@ string construct_sql_select(
                            sql += sub_select_sql_prefix;
                         }
 
-                        sql += "C_" + field_name + " = ";
+                        sql += "C_" + field_name + ( invert ? " <> " : " = " );
 
                         string next_value( field_values.substr( 0, pos ) );
                         sql += is_sql_numeric ? next_value : sql_quote( formatted_value( next_value, field_type ) );
@@ -2477,7 +2489,7 @@ string construct_sql_select(
                }
                else
                {
-                  sql += "C_" + field_name + " IN (";
+                  sql += "C_" + field_name + " " + invert_prefix + "IN (";
                   while( true )
                   {
                      string next_value( field_values.substr( 0, pos ) );
@@ -2495,6 +2507,7 @@ string construct_sql_select(
                }
             }
          }
+
          if( is_sub_select )
             sql += sub_select_sql_suffix;
       }
@@ -2567,6 +2580,9 @@ string construct_sql_select(
          if( query_info.empty( ) && text_search.empty( ) )
             use_index_fields.push_back( "C_" + next_field );
 
+         bool invert = false;
+         string invert_prefix;
+
          // NOTE: If a fixed key value contains one or more "+val" suffixes then these
          // are stripped off to behave as an though they are in IN list (although "ORs"
          // are actually used in the SQL generated here).
@@ -2591,7 +2607,10 @@ string construct_sql_select(
                else
                   next_opt_value = next_value.substr( spos, npos - spos );
 
-               sql += "C_" + next_field + " = " + next_opt_value;
+               if( !next_opt_value.empty( ) && next_opt_value[ 0 ] == '!' )
+                  sql += "C_" + next_field + " <> " + next_opt_value.substr( 1 );
+               else
+                  sql += "C_" + next_field + " = " + next_opt_value;
 
                sql += " OR ";
 
@@ -2602,6 +2621,12 @@ string construct_sql_select(
             }
 
             next_value.erase( pos );
+         }
+         else if( !next_value.empty( ) && next_value[ 0 ] == '!' )
+         {
+            invert = true;
+            invert_prefix = "NOT ";
+            next_value.erase( 0, 1 );
          }
 
          // NOTE: If a fixed key value ends with a '*' then the value preceeding
@@ -2617,11 +2642,11 @@ string construct_sql_select(
             next_value = sql_quote( formatted_value( next_value, field_type ) );
 
          if( next_value == "NULL" )
-            sql += "C_" + next_field + " IS NULL";
+            sql += "C_" + next_field + " " + invert_prefix + " IS NULL";
          else if( !value_is_like_prefix )
-            sql += "C_" + next_field + " = " + next_value;
+            sql += "C_" + next_field + ( invert ? " <> " : " = " ) + next_value;
          else
-            sql += "C_" + next_field + " LIKE " + next_value;
+            sql += "C_" + next_field + " " + invert_prefix + "LIKE " + next_value;
 
          if( has_multiple_values )
             sql += ")";
@@ -6170,7 +6195,11 @@ void validate_object_instance( size_t handle, const string& context )
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    if( !instance.is_valid( false ) )
-      throw runtime_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+   {
+      string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+      set_session_variable( c_session_variable_val_error, validation_error );
+      throw runtime_error( validation_error );
+   }
 }
 
 void destroy_object_instance( size_t handle )
@@ -8770,9 +8799,12 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             }
             else
             {
-               string error_message( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+               string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+
                perform_op_cancel( handler, instance, op );
-               throw runtime_error( error_message );
+               set_session_variable( c_session_variable_val_error, validation_error );
+
+               throw runtime_error( validation_error );
             }
          }
       }
@@ -8802,8 +8834,14 @@ void finish_instance_op( class_base& instance, bool apply_changes,
             // NOTE: As it's possible that "for_store" might inadvertantly have made the record invalid
             // the validation call is repeated now and the first error (if any is found) will be thrown.
             if( !session_skip_validation( ) && !instance.is_valid( internal_operation ) )
-               throw runtime_error(
-                instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+            {
+               string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+
+               perform_op_cancel( handler, instance, op );
+               set_session_variable( c_session_variable_val_error, validation_error );
+
+               throw runtime_error( validation_error );
+            }
          }
 
          vector< string > sql_stmts;
@@ -9157,9 +9195,32 @@ bool perform_instance_iterate( class_base& instance,
          // restricted to those instances that belong to the parent (via a non-primary index).
          if( instance.get_graph_parent( ) && !instance.get_is_singular( ) )
          {
-            order_info.push_back( instance.get_graph_parent_fk_field( ) );
-            fixed_info.push_back(
-             make_pair( instance.get_graph_parent_fk_field( ), instance.get_graph_parent( )->get_key( ) ) );
+            string fk_field = instance.get_graph_parent_fk_field( );
+
+            bool is_transient = instance.is_field_transient( instance.get_field_num( fk_field ) );
+
+            if( !is_transient )
+            {
+               order_info.push_back( fk_field );
+               fixed_info.push_back( make_pair( fk_field, instance.get_graph_parent( )->get_key( ) ) );
+            }
+            else
+            {
+               vector< string > replacements;
+               instance.get_transient_replacement_field_names( fk_field, replacements );
+
+               // NOTE: It is being assumed that if iteration is being performed via a transient child
+               // relationship that any replacement fields provided will be in the way of concatenated
+               // keys (otherwise a normal non-transient relationship should be being used in order to
+               // be generating efficient DB queries).
+               for( size_t i = 0; i < replacements.size( ); i++ )
+               {
+                  row_limit = 0;
+
+                  query_info.push_back( make_pair(
+                   replacements[ i ], "*" + instance.get_graph_parent( )->get_key( ) + "*" ) );
+               }    
+            }
          }
 
          instance_accessor.add_extra_fixed_info( fixed_info );

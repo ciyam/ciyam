@@ -943,6 +943,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 #endif
    string response;
    bool send_okay_response = true;
+   bool possibly_expected_error = false;
 
    tcp_socket& socket( socket_handler.get_socket( ) );
 
@@ -1738,6 +1739,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                destroy_object_instance( handle );
             }
+            catch( exception& )
+            {
+               possibly_expected_error = true;
+               destroy_object_instance( handle );
+               throw;
+            }
             catch( ... )
             {
                destroy_object_instance( handle );
@@ -1903,6 +1910,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                destroy_object_instance( handle );
             }
+            catch( exception& x )
+            {
+               possibly_expected_error = true;
+               destroy_object_instance( handle );
+               throw;
+            }
             catch( ... )
             {
                if( !method_id_or_name.empty( ) )
@@ -1988,6 +2001,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   op_instance_apply( handle, "", false );
 
                destroy_object_instance( handle );
+            }
+            catch( exception& )
+            {
+               possibly_expected_error = true;
+               destroy_object_instance( handle );
+               throw;
             }
             catch( ... )
             {
@@ -2230,6 +2249,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( exception& x )
             {
+               TRACE_LOG( TRACE_SESSIONS, string( "session error: " ) + x.what( ) );
+
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( x.what( ) );
                else
@@ -2251,6 +2272,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
+               TRACE_LOG( TRACE_ANYTHING, "session error: unexpected unknown exception caught" );
+
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( "unexpected unknown exception caught" );
                else
@@ -3254,7 +3277,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    }
    catch( exception& x )
    {
-      TRACE_LOG( TRACE_SESSIONS, string( "session error: " ) + x.what( ) );
+      if( possibly_expected_error )
+         TRACE_LOG( TRACE_SESSIONS, string( "session error: " ) + x.what( ) );
+      else
+         TRACE_LOG( TRACE_ANYTHING, string( "session error: " ) + x.what( ) );
 
       if( socket_handler.is_restoring( ) )
          socket_handler.set_restore_error( x.what( ) );

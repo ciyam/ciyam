@@ -4376,12 +4376,12 @@ uint64_t Meta_Specification::impl::get_state( ) const
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   if( get_obj( ).Specification_Type( ).Needs_Other_Procedure( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Other_Procedure( ) == false )
       state |= c_modifier_Hide_Other_Procedure;
    // [(finish modifier_field_value)]
 
    // [(start modifier_field_value)]
-   if( get_obj( ).Specification_Type( ).Needs_Other_Procedure_2( ) == false )
+   if( get_obj( ).Specification_Type( ).Allow_Other_Procedure_2( ) == false )
       state |= c_modifier_Hide_Other_Procedure_2;
    // [(finish modifier_field_value)]
 

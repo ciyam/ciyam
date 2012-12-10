@@ -4911,6 +4911,7 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_nvalue, null_value ) );
 
    spec_data.data_pairs.push_back( make_pair( "update", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "new_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
    spec_data.data_pairs.push_back( make_pair( "internal_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "include_clones", "" ) );
@@ -5343,6 +5344,7 @@ void field_from_search_replace_specification::add_specification_data( model& m, 
    spec_data.data_pairs.push_back( make_pair( c_data_oleftb, options_left_bracket ) );
    spec_data.data_pairs.push_back( make_pair( c_data_orightb, options_right_bracket ) );
 
+   spec_data.data_pairs.push_back( make_pair( "tfield", "" ) );
    spec_data.data_pairs.push_back( make_pair( "keyrep", "" ) );
    spec_data.data_pairs.push_back( make_pair( "classrep", "" ) );
    spec_data.data_pairs.push_back( make_pair( "top_level", "" ) );
