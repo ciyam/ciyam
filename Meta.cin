@@ -405,6 +405,8 @@ field_add -id=114204 Specification_Type Allow_Procedure_Arg bool mand -def=0
 field_add -id=114205 Specification_Type Allow_Other_Source_Child_2 bool mand -def=0
 field_add -id=114206 Specification_Type Needs_Other_Source_Child_2 bool mand -def=0
 field_add -id=114207 Specification_Type Use_Source_Field_Enum bool mand -def=0
+field_add -id=114208 Specification_Type Allow_Other_Procedure bool mand -def=0
+field_add -id=114209 Specification_Type Allow_Other_Procedure_2 bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -1313,8 +1315,8 @@ specification_add -id=600103 {Specification}_Hide_Procedure modifier_field_value
 specification_add -id=600104 {Specification}_Hide_Procedure_Arg modifier_field_value "Specification Hide_Procedure_Arg {Specification_Type}:Allow_Procedure_Arg false"
 specification_add -id=600104a {Specification}_Hide_Procedure_Arg_2 modifier_field_value "Specification Hide_Procedure_Arg_2 {Specification_Type}:Needs_Procedure_Arg_2 false"
 specification_add -id=600104b {Specification}_Hide_Procedure_Arg_3 modifier_field_value "Specification Hide_Procedure_Arg_3 {Specification_Type}:Needs_Procedure_Arg_3 false"
-specification_add -id=600104c {Specification}_Hide_Other_Procedure modifier_field_value "Specification Hide_Other_Procedure {Specification_Type}:Needs_Other_Procedure false"
-specification_add -id=600104d {Specification}_Hide_Other_Procedure_2 modifier_field_value "Specification Hide_Other_Procedure_2 {Specification_Type}:Needs_Other_Procedure_2 false"
+specification_add -id=600104c {Specification}_Hide_Other_Procedure modifier_field_value "Specification Hide_Other_Procedure {Specification_Type}:Allow_Other_Procedure false"
+specification_add -id=600104d {Specification}_Hide_Other_Procedure_2 modifier_field_value "Specification Hide_Other_Procedure_2 {Specification_Type}:Allow_Other_Procedure_2 false"
 specification_add -id=600105 {Specification}_Hide_Modifier modifier_field_value "Specification Hide_Modifier {Specification_Type}:Allow_Modifier false"
 specification_add -id=600105a {Specification}_Hide_Other_Modifier modifier_field_value "Specification Hide_Other_Modifier {Specification_Type}:Needs_Other_Modifier false"
 specification_add -id=600105b {Specification}_Hide_Other_Modifier_2 modifier_field_value "Specification Hide_Other_Modifier_2 {Specification_Type}:Needs_Other_Modifier_2 false"
@@ -1567,7 +1569,12 @@ specification_add -id=600240 {Specification_Type}_Procedure_Arg_primitive_val me
  Procedure_Arg_primitive Is_Valid_Field_Type Class Parent_Class Primitive Error Test_Value Procedure_Arg_Primitive Procedure_Arg_Type"
 specification_add -id=600250 {Specification_Type}_Procedure_Arg_type_val meta_trait_val_proc "Specification_Type\
  Procedure_Arg_type Is_Valid_Field_Type Class Parent_Class Primitive Error Test_Value Procedure_Arg_Primitive Procedure_Arg_Type"
-specification_add -id=600251 {Specification_Type}_Allow_Procedure_Arg_default default_to_field "Specification_Type Allow_Procedure_Arg Needs_Procedure_Arg"
+specification_add -id=600251 {Specification_Type}_Allow_Procedure_Arg_default default_to_field\
+ "Specification_Type Allow_Procedure_Arg Needs_Procedure_Arg -test=Needs_Procedure_Arg=true"
+specification_add -id=600252 {Specification_Type}_Allow_Other_Procedure_default default_to_field\
+ "Specification_Type Allow_Other_Procedure Needs_Other_Procedure -test=Needs_Other_Procedure=true"
+specification_add -id=600253 {Specification_Type}_Allow_Other_Procedure_2_default default_to_field\
+ "Specification_Type Allow_Other_Procedure_2 Needs_Other_Procedure_2 -test=Needs_Other_Procedure_2=true"
 specification_add -id=600260 {Specification_Field_Action}_Name_from_search_replace field_from_search_replace\
  "Specification_Field_Action Name {Specification_Type}:Specification_Name New_Record_Class:Name={newclass}\
 ,New_Record_FK_Field:Name={newfield} -sep=_ -opt_prefix"
@@ -1812,7 +1819,7 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,Allow_Enum,Needs_Enum,Allow_Enum_Item,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
 ,Allow_Value,Needs_Value,Allow_Test_Field,Needs_Test_Field,Test_Field_type,Allow_Test_Value,Needs_Test_Value\
 ,@tab:Extra_Fields,Allow_Procedure,Needs_Procedure,Allow_Procedure_Arg,Needs_Procedure_Arg,Procedure_Arg_type,Procedure_Arg_primitive\
-,Needs_Procedure_Arg_2,Needs_Procedure_Arg_3,Needs_Other_Procedure,Needs_Other_Procedure_2\
+,Needs_Procedure_Arg_2,Needs_Procedure_Arg_3,Allow_Other_Procedure,Needs_Other_Procedure,Allow_Other_Procedure_2,Needs_Other_Procedure_2\
 ,Allow_Source_Field,Needs_Source_Field,Source_type,Allow_Source_Parent\
 ,Needs_Source_Parent,Source_Parent_type,Allow_Source_Child,Needs_Source_Child,Allow_Other_Source_Child,Needs_Other_Source_Child\
 ,Allow_Other_Source_Child_2,Needs_Other_Source_Child_2,Allow_Source_Grandchild\

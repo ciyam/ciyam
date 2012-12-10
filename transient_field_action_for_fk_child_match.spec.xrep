@@ -1,0 +1,47 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_action_for_fk_child_match)]
+   if( !get_uid( ).empty( ) && !is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
+   {
+      bool found = false;
+
+      if( get_obj( ).child_`{`$arg_children`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            if( get_obj( ).child_`{`$arg_children`}( ).`{`$arg_spcfield`}( ).get_key( ) == get_obj( ).`{`$arg_spfield`}( ).get_key( ) )
+            {
+               found = true;
+               get_obj( ).child_`{`$arg_children`}( ).iterate_stop( );
+
+               break;
+            }
+         } while( get_obj( ).child_`{`$arg_children`}( ).iterate_next( ) );
+      }
+
+      string actions( get_obj( ).`{`$arg_actions`}( ) );
+      if( !actions.empty( ) )
+         actions += ',';
+
+      if( found )
+         actions += c_procedure_id_`{`$arg_procedure`};
+`{`!`@eq`(`$arg_oprocedure`,`'`'`)\
+      else
+         actions += c_procedure_id_`{`$arg_oprocedure`};
+`}\
+
+      get_obj( ).`{`$arg_actions`}( actions );
+   }
+   // [(finish transient_field_action_for_fk_child_match)]
+`}
+`{`@eq`(`'get_required_field_names`'`,`$section`)\
+   // [(start transient_field_action_for_fk_child_match)]
+   if( needs_field_value( "`{`$arg_actions`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_spfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_spfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
+         names.insert( "`{`$arg_spfield`}" );
+   }
+   // [(finish transient_field_action_for_fk_child_match)]
+`}

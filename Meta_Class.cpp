@@ -2030,7 +2030,6 @@ void Meta_Class::impl::impl_Generate( )
          {
             trans_types.insert( get_obj( ).Model( ).Name( ) + '_'
              + get_obj( ).child_Relationship_Parent( ).Child_Class( ).Name( ) );
-            continue;
          }
 
          string sort_name(
@@ -2040,6 +2039,10 @@ void Meta_Class::impl::impl_Generate( )
          string cascade_op;
          switch( get_obj( ).child_Relationship_Parent( ).Cascade_Op( ) )
          {
+            case -1:
+            cascade_op = "none";
+            break;
+
             case 0:
             cascade_op = "restrict";
             break;

@@ -18048,6 +18048,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600252
+      <item>class
+     </specification>
+     <specification/>
+      <id>600253
+      <item>class
+     </specification>
+     <specification/>
       <id>600260
       <item>sclass
      </specification>
@@ -18461,6 +18469,56 @@
        <specification/>
         <id>610102
         <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114208
+      <name>Allow_Other_Procedure
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600104c
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>600252
+        <item>field
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>114209
+      <name>Allow_Other_Procedure_2
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600104d
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>600253
+        <item>field
+       </specification>
+       <specification/>
+        <id>602400
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -19382,12 +19440,16 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600104c
-        <item>pfield
-       </specification>
-       <specification/>
         <id>600133c
         <item>cfield
+       </specification>
+       <specification/>
+        <id>600252
+        <item>src_field
+       </specification>
+       <specification/>
+        <id>600252
+        <item>tfield
        </specification>
        <specification/>
         <id>602400
@@ -19407,12 +19469,16 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600104d
-        <item>pfield
-       </specification>
-       <specification/>
         <id>600133d
         <item>cfield
+       </specification>
+       <specification/>
+        <id>600253
+        <item>src_field
+       </specification>
+       <specification/>
+        <id>600253
+        <item>tfield
        </specification>
        <specification/>
         <id>602400
@@ -19522,6 +19588,10 @@
        <specification/>
         <id>600251
         <item>src_field
+       </specification>
+       <specification/>
+        <id>600251
+        <item>tfield
        </specification>
        <specification/>
         <id>602400
@@ -29865,6 +29935,34 @@
     </data>
    </specification>
    <specification/>
+    <id>600253
+    <name>{Specification_Type}_Allow_Other_Procedure_2_default
+    <type>default_to_field
+    <data/>
+     <class_id>114100
+     <field_id>114209
+     <pclass_id>
+     <pfield_id>
+     <sfield_id>114188
+     <tfield_id>114188
+     <test_value>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600252
+    <name>{Specification_Type}_Allow_Other_Procedure_default
+    <type>default_to_field
+    <data/>
+     <class_id>114100
+     <field_id>114208
+     <pclass_id>
+     <pfield_id>
+     <sfield_id>114187
+     <tfield_id>114187
+     <test_value>true
+    </data>
+   </specification>
+   <specification/>
     <id>600251
     <name>{Specification_Type}_Allow_Procedure_Arg_default
     <type>default_to_field
@@ -29874,6 +29972,8 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>114132
+     <tfield_id>114132
+     <test_value>true
     </data>
    </specification>
    <specification/>
@@ -30002,7 +30102,9 @@
      <field_info>114133;enum=650
      <field_info>114194
      <field_info>114195
+     <field_info>114208
      <field_info>114187
+     <field_info>114209
      <field_info>114188
      <field_info>114128
      <field_info>114113
@@ -30541,7 +30643,7 @@
      <pclass_id>114100
      <modifier_id>500626
      <field_id>301410
-     <pfield_id>114187
+     <pfield_id>114208
      <field_value>false
     </data>
    </specification>
@@ -30554,7 +30656,7 @@
      <pclass_id>114100
      <modifier_id>500627
      <field_id>301410
-     <pfield_id>114188
+     <pfield_id>114209
      <field_value>false
     </data>
    </specification>
