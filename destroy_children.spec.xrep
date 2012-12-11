@@ -18,5 +18,13 @@
       get_obj( ).child_`{`$arg_child`}( ).op_apply( );
    }
 `}\
+`{`!`@eq`(`$arg_output_arg`,`'`'`)`&`@eq`(`'procedure`'`,`$section`)
+`{`!`@eq`(`$arg_output_field`,`'`'`)\
+   `{`$arg_output_arg`} = to_string( get_obj( ).`{`$arg_output_field`}( ) );
+`,\
+   // FUTURE: The return message itself should be a module string.
+   `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
+    + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`}`}\
    // [(finish destroy_children)]
 `}

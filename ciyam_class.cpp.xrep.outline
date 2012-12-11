@@ -784,12 +784,14 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_child=$specification_\\0_child arg_pfield=$specification_\\0_pfield\
  arg_field=$specification_\\0_field arg_value=$specification_\\0_value\
  arg_nfield=$specification_\\0_nfield arg_field_list=$specification_\\0_field_list\
- arg_clone_field=$specification_\\0_clone_field arg_create_only=\
+ arg_clone_field=$specification_\\0_clone_field arg_procedure=$specification_\\0_procedure arg_create_only=\
+ arg_output_arg=$specification_\\0_output_arg arg_output_field=$specification_\\0_output_field\
  arg_key_suffix=$specification_\\0_key_suffix arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix`}\
 `,\
 `@eq`(`'\\1`'`,`'destroy_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#destroy_children.spec.xrep section=procedure class_name=$class_name\
  arg_child=$specification_\\0_child arg_tfield=$specification_\\0_tfield\
+ arg_output_arg=$specification_\\0_output_arg arg_output_field=$specification_\\0_output_field\
  arg_separator=$specification_\\0_separator arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix`}\
 `,\
 `@eq`(`'\\1`'`,`'interest`'`)`&`@eq`(`'\$`'`,`$specification_\\0_calc_procedure`)
@@ -2027,7 +2029,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 `,\
 `@eq`(`'\1`'`,`'destroy_children`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#destroy_children.spec.xrep section=for_store class_name=$class_name\
- arg_child=$specification_\0_child arg_tfield=$specification_\0_tfield\
+ arg_child=$specification_\0_child arg_tfield=$specification_\0_tfield arg_output_arg= arg_output_field=\
  arg_separator=$specification_\0_separator arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix`}\
 `,\
 `@eq`(`'\1`'`,`'field_bool_dtm`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
@@ -2307,7 +2309,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_field=$specification_\0_field arg_value=$specification_\0_value\
  arg_nfield=$specification_\0_nfield arg_field_list=$specification_\0_field_list\
  arg_clone_field=$specification_\0_clone_field arg_create_only=$specification_\0_create_only\
- arg_key_suffix=$specification_\0_key_suffix arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix`}\
+ arg_procedure= arg_output_arg= arg_output_field= arg_key_suffix=$specification_\0_key_suffix\
+ arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix`}\
 `,\
 `@eq`(`'\1`'`,`'create_children_for_fk_children`'`)
 `{`#create_children_for_fk_children.spec.xrep section=after_store full_class_name=$full_class_name\
@@ -2497,6 +2500,8 @@ void `{`$full_class_name`}::impl::get_required_transients( ) const
 
    p_obj->get_required_field_names( required_transients, true, &dependents );
 
+   int iterations = 0;
+
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
@@ -2507,6 +2512,9 @@ void `{`$full_class_name`}::impl::get_required_transients( ) const
       p_obj->get_required_field_names( required_transients, true, &dependents );
       if( required_transients.size( ) == num_required )
          break;
+
+      if( ++iterations > 100 )
+         throw runtime_error( "unexpected excessive get_required_field_names( ) iterations in get_required_transients( )" );
 
       num_required = required_transients.size( );
    }

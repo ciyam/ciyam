@@ -1013,8 +1013,10 @@ void Meta_Package::impl::impl_Install( )
          outc << ".storage_init " << storage_name( ) << "\n";
          outc << ".session_variable @package " << temp_name << "\n";
 
-         if( !get_session_variable( "@attached_file_path" ).empty( ) )
-            outc << ".session_variable @attached_file_path \"" << get_session_variable( "@attached_file_path" ) << "\"\n";
+         string attached_file_path_var( get_special_var_name( e_special_var_attached_file_path ) );
+
+         if( !get_session_variable( attached_file_path_var ).empty( ) )
+            outc << ".session_variable " << attached_file_path_var << " \"" << get_session_variable( attached_file_path_var ) << "\"\n";
 
          outc << "perform_package_import " << get_uid( ) << " @now " << get_obj( ).get_module_name( )
           << " " << type_name << ".package.sio -new_only -s=@Meta_Class.skips.lst -r=@" << list_filename << "\n";
@@ -1204,8 +1206,10 @@ void Meta_Package::impl::impl_Remove( )
                outf << ".storage_trans_start\n";
                outf << "@endif\n";
 
-               if( !get_session_variable( "@attached_file_path" ).empty( ) )
-                  outf << ".session_variable @attached_file_path \"" << get_session_variable( "@attached_file_path" ) << "\"\n";
+               string attached_file_path_var( get_special_var_name( e_special_var_attached_file_path ) );
+
+               if( !get_session_variable( attached_file_path_var ).empty( ) )
+                  outf << ".session_variable " << attached_file_path_var << " \"" << get_session_variable( attached_file_path_var ) << "\"\n";
 
                // NOTE: Packages could contain updates of external artifacts (such as specifications) which
                // need to be "undone" as updates (rather than occurring automatically via cascades) so here
@@ -1986,6 +1990,8 @@ void Meta_Package::impl::get_required_transients( ) const
 
    p_obj->get_required_field_names( required_transients, true, &dependents );
 
+   int iterations = 0;
+
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
@@ -1996,6 +2002,9 @@ void Meta_Package::impl::get_required_transients( ) const
       p_obj->get_required_field_names( required_transients, true, &dependents );
       if( required_transients.size( ) == num_required )
          break;
+
+      if( ++iterations > 100 )
+         throw runtime_error( "unexpected excessive get_required_field_names( ) iterations in get_required_transients( )" );
 
       num_required = required_transients.size( );
    }

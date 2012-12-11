@@ -1826,6 +1826,8 @@ void request_handler::process_request( )
          view_info_const_iterator vici = mod_info.view_info.end( );
          list_info_const_iterator lici = mod_info.list_info.end( );
 
+         bool skip_force_fields = false;
+
          bool is_in_edit = false;
          if( act == c_act_edit || act == c_act_save
           || act == c_act_cont || ( is_new_record && ( act.empty( ) || act == c_act_undo ) ) )
@@ -1965,19 +1967,27 @@ void request_handler::process_request( )
                      if( !is_in_edit && act == c_act_exec && error_message.size( ) > 2
                       && error_message[ 0 ] == '{' && error_message[ error_message.size( ) - 1 ] == '}' )
                      {
-                        data = error_message.substr( 1, error_message.size( ) - 2 );
+                        string s( error_message.substr( 1, error_message.size( ) - 2 ) );
                         error_message.erase( );
 
-                        if( use_url_checksum )
-                        {
-                           string checksum_values( c_cmd_view + data + ident + uselect );
-                           string new_checksum_value = get_checksum( *p_session_info, checksum_values );
-
-                           extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
-                           extra_content_func += "query_update( '" + to_string( c_param_chksum ) + "', '" + new_checksum_value + "', true );\n";
-                        }
+                        // NOTE: The "key" returned can actually instead be a specialised instruction.
+                        if( s == "@no_send" )
+                           skip_force_fields = true;
                         else
-                           extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
+                        {
+                           data = s;
+
+                           if( use_url_checksum )
+                           {
+                              string checksum_values( c_cmd_view + data + ident + uselect );
+                              string new_checksum_value = get_checksum( *p_session_info, checksum_values );
+
+                              extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
+                              extra_content_func += "query_update( '" + to_string( c_param_chksum ) + "', '" + new_checksum_value + "', true );\n";
+                           }
+                           else
+                              extra_content_func += "query_update( '" + to_string( c_param_data ) + "', '" + data + "', true );\n";
+                        }
                      }
                   }
                }
@@ -2250,16 +2260,19 @@ void request_handler::process_request( )
 
                // NOTE: Any "force" fields will always have their user provided values
                // sent to the application server.
-               for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
+               if( !skip_force_fields )
                {
-                  if( userfetch == view.user_force_fields[ i ] )
-                     was_user_force_field = true;
-                  else if( user_field_info.count( view.user_force_fields[ i ] ) )
+                  for( size_t i = 0; i < view.user_force_fields.size( ); i++ )
                   {
-                     if( !set_field_values.empty( ) )
-                        set_field_values += ",";
-                     set_field_values += view.user_force_fields[ i ];
-                     set_field_values += "=" + escaped( escaped( user_field_info[ view.user_force_fields[ i ] ], "," ), ",\"", c_nul, "rn\r\n" );
+                     if( userfetch == view.user_force_fields[ i ] )
+                        was_user_force_field = true;
+                     else if( user_field_info.count( view.user_force_fields[ i ] ) )
+                     {
+                        if( !set_field_values.empty( ) )
+                           set_field_values += ",";
+                        set_field_values += view.user_force_fields[ i ];
+                        set_field_values += "=" + escaped( escaped( user_field_info[ view.user_force_fields[ i ] ], "," ), ",\"", c_nul, "rn\r\n" );
+                     }
                   }
                }
             }

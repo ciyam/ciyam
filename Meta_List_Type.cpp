@@ -770,6 +770,8 @@ void Meta_List_Type::impl::get_required_transients( ) const
 
    p_obj->get_required_field_names( required_transients, true, &dependents );
 
+   int iterations = 0;
+
    // NOTE: It is possible that due to "interdependent" required fields
    // some required fields may not have been added in the first or even
    // later calls to "get_required_field_names" so continue calling the
@@ -780,6 +782,9 @@ void Meta_List_Type::impl::get_required_transients( ) const
       p_obj->get_required_field_names( required_transients, true, &dependents );
       if( required_transients.size( ) == num_required )
          break;
+
+      if( ++iterations > 100 )
+         throw runtime_error( "unexpected excessive get_required_field_names( ) iterations in get_required_transients( )" );
 
       num_required = required_transients.size( );
    }

@@ -2219,6 +2219,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   string next_response( instance_execute( handle, "", next_key, method_name_and_args ) );
 
+                  // NOTE: For simple executes a special object instance variable can be supplied as the
+                  // return value (so a return value is possible even if the procedure does not have any
+                  // output arguments).
+                  if( next_response.empty( ) && all_keys.size( ) == 1 )
+                     next_response = instance_get_variable( handle, "", get_special_var_name( e_special_var_execute_return ) );
+
                   string return_response;
                   // NOTE: Cannot have CR/LF pairs in a response (as the client will get confused) so if
                   // these are found in the initial return string then change them to just LF's.

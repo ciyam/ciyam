@@ -40,6 +40,12 @@ const uint64_t c_state_ignore_uneditable = UINT64_C( 0x10 );
 const uint64_t c_sys_state_flags = UINT64_C( 0x00000000000000ff );
 const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
 
+enum special_var
+{
+   e_special_var_execute_return,
+   e_special_var_attached_file_path
+};
+
 enum compare_op
 {
    e_compare_op_equal,
