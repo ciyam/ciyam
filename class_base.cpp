@@ -130,6 +130,12 @@ mutex g_mutex;
 
 map< string, pair< int, map< string, string > > > g_class_maps;
 
+const string& attached_file_path_var_name( )
+{
+   static string s( get_special_var_name( e_special_var_attached_file_path ) );
+   return s;
+}
+
 void deconstruct_original_identity( class_base& cb, string& module_id, string& class_id )
 {
    string identity( cb.get_original_identity( ) );
@@ -1120,7 +1126,7 @@ string get_app_file( const string& module_name )
 
 string class_base::get_attached_file_path( const string& file_name ) const
 {
-   string path( get_session_variable( "@attached_file_path" ) );
+   string path( get_session_variable( attached_file_path_var_name( ) ) );
 
    if( path.empty( ) )
    {

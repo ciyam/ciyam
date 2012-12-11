@@ -154,6 +154,9 @@ const char* const c_session_variable_tz_abbr = "@tz_abbr";
 
 const char* const c_session_variable_val_error = "@val_error";
 
+const char* const c_special_variable_execute_return = "@return";
+const char* const c_special_variable_attached_file_path = "@attached_file_path";
+
 struct instance_info
 {
    instance_info( class_base* p_class_base, dynamic_library* p_dynamic_library )
@@ -4590,6 +4593,27 @@ bool set_session_variable( const string& name, const string& value, const string
    }
 
    return retval;
+}
+
+string get_special_var_name( special_var var )
+{
+   string s;
+
+   switch( var )
+   {
+      case e_special_var_execute_return:
+      s = string( c_special_variable_execute_return );
+      break;
+
+      case e_special_var_attached_file_path:
+      s = string( c_special_variable_attached_file_path );
+      break;
+
+      default:
+      throw runtime_error( "unexpected special var value #" + to_string( var ) );
+   }
+
+   return s;
 }
 
 void set_default_session_variables( )
@@ -9163,6 +9187,8 @@ bool perform_instance_iterate( class_base& instance,
             set< string > field_dependents;
             instance.get_required_field_names( required_fields, false, &field_dependents );
 
+            int iterations = 0;
+
             // NOTE: It is possible that due to "interdependent" required fields
             // some required fields may not have been added in the first or even
             // later calls to "get_required_field_names" so continue calling the
@@ -9176,6 +9202,9 @@ bool perform_instance_iterate( class_base& instance,
                if( required_fields.size( ) == required_fields_size
                 && field_dependents_size == field_dependents.size( ) )
                   break;
+
+               if( ++iterations > 100 )
+                  throw runtime_error( "unexpected excessive get_required_field_names( ) iterations" );
 
                required_fields_size = required_fields.size( );
                field_dependents_size = field_dependents.size( );
@@ -9209,17 +9238,8 @@ bool perform_instance_iterate( class_base& instance,
                vector< string > replacements;
                instance.get_transient_replacement_field_names( fk_field, replacements );
 
-               // NOTE: It is being assumed that if iteration is being performed via a transient child
-               // relationship that any replacement fields provided will be in the way of concatenated
-               // keys (otherwise a normal non-transient relationship should be being used in order to
-               // be generating efficient DB queries).
                for( size_t i = 0; i < replacements.size( ); i++ )
-               {
-                  row_limit = 0;
-
-                  query_info.push_back( make_pair(
-                   replacements[ i ], "*" + instance.get_graph_parent( )->get_key( ) + "*" ) );
-               }    
+                  fixed_info.push_back( make_pair( replacements[ i ], instance.get_graph_parent( )->get_key( ) ) );
             }
          }
 

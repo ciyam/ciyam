@@ -969,7 +969,7 @@ void output_list_form( ostream& os,
 
                size_t opt_count = 0;
 
-               if( !( source.lici->second )->parents[ i ].mandatory )
+               if( !is_select_child && !( source.lici->second )->parents[ i ].mandatory )
                {
                   ++opt_count;
 
