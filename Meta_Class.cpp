@@ -3256,7 +3256,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       string source( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ext );
 
       bool has_source_file( exists_file( source ) );
-      string name( get_obj( ).get_key( ) + sep + c_field_id_Source_File + ext );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_Source_File + ext + ".txt" );
 
       string dest( get_obj( ).get_attached_file_path( name ) );
 
@@ -3283,7 +3283,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       string source( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ext );
 
       bool has_source_file( exists_file( source ) );
-      string name( get_obj( ).get_key( ) + sep + c_field_id_Header_File + ext );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_Header_File + ext + ".txt" );
 
       string dest( get_obj( ).get_attached_file_path( name ) );
 
@@ -3310,7 +3310,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       string source( get_obj( ).Model( ).Name( ) + "_" + get_obj( ).Name( ) + ext );
 
       bool has_source_file( exists_file( source ) );
-      string name( get_obj( ).get_key( ) + sep + c_field_id_Commands_File + ext );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_Commands_File + ext + ".txt" );
 
       string dest( get_obj( ).get_attached_file_path( name ) );
 

@@ -2115,11 +2115,16 @@ bool output_view_form( ostream& os, const string& act,
 
                string file_name( file_path + "/" + unescaped( cell_data ) );
 
-               string::size_type pos = file_name.find_last_of( "." );
+               string file_full_ext, file_last_ext;
+               string::size_type pos = file_name.find( "." );
 
-               string file_ext;
                if( pos != string::npos )
-                  file_ext = file_name.substr( pos + 1 );
+                  file_full_ext = file_name.substr( pos + 1 );
+
+               pos = file_name.find_last_of( "." );
+
+               if( pos != string::npos )
+                  file_last_ext = file_name.substr( pos + 1 );
 
                if( file_exists( file_name ) )
                {
@@ -2145,7 +2150,7 @@ bool output_view_form( ostream& os, const string& act,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
+                     create_tmp_file_link( tmp_link_path, file_name, file_full_ext, link_file_name );
 
                   bool has_image = false;
                   if( !is_in_edit && !is_printable )
@@ -2157,7 +2162,7 @@ bool output_view_form( ostream& os, const string& act,
                         os << "<p>" << string_message( GDS( c_display_click_here_to_view_file ),
                          make_pair( c_display_click_here_to_view_file_parm_href,
                          "<a href=\"" + tmp_link_path + "\" target=\"_blank\">" ), "</a>",
-                         make_pair( c_display_click_here_to_view_file_parm_ext, escape_markup( file_ext ) ) ) << "</p>";
+                         make_pair( c_display_click_here_to_view_file_parm_ext, escape_markup( file_full_ext ) ) ) << "</p>";
                      }
                      else
                         has_image = true;
@@ -2166,7 +2171,7 @@ bool output_view_form( ostream& os, const string& act,
                   {
                      if( !source.image_fields.count( source_value_id ) )
                         os << "<p>" << string_message( GDS( c_display_has_file ),
-                         make_pair( c_display_has_file_parm_ext, escape_markup( file_ext ) ) ) << "</p>";
+                         make_pair( c_display_has_file_parm_ext, escape_markup( file_full_ext ) ) ) << "</p>";
                      else
                         has_image = true;
                   }
@@ -2184,7 +2189,7 @@ bool output_view_form( ostream& os, const string& act,
                      if( embed_images )
                      {
                         string buffer( buffer_file( file_name ) );
-                        image_src = "data:image/" + file_ext + ";base64," + base64::encode( buffer );
+                        image_src = "data:image/" + file_last_ext + ";base64," + base64::encode( buffer );
                      }
 
                      os << "<img src=\"" << image_src;

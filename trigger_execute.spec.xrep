@@ -1,0 +1,17 @@
+`{`@eq`(`'for_or_after_store`'`,`$section`)\
+   // [(start trigger_execute)]
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
+`}\
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
+   {
+`}\
+`{`$i`}   set_session_variable( "@key", get_obj( ).get_key( ) );
+`{`$i`}   run_script( "`{`$arg_script`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
+`{`$i`}   set_session_variable( "@key", "" );
+`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
+   }
+`}\
+   // [(finish trigger_execute)]
+`}

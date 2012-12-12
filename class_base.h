@@ -935,6 +935,8 @@ std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string&
 
 std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );
+
 size_t CLASS_BASE_DECL_SPEC split_count( const std::string& s, char sep = ',' );
 
 void CLASS_BASE_DECL_SPEC split_string( const std::string& s, std::set< std::string >& c, char sep = ',' );
