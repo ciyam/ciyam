@@ -2555,6 +2555,12 @@ string trim_whitespace( const string& s )
    return trim( s );
 }
 
+string truncate_string( const string& s, int max_length, const char* p_overflow_suffix )
+{
+   string tmp( s );
+   return utf8_truncate( tmp, max_length, p_overflow_suffix );
+}
+
 size_t split_count( const string& s, char sep )
 {
    return split_size( s, sep );

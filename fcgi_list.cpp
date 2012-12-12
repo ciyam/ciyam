@@ -3105,11 +3105,13 @@ void output_list_form( ostream& os,
 
                string file_name( file_path + "/" + unescaped( cell_data ) );
 
-               string::size_type pos = file_name.find_last_of( "." );
+               string file_full_ext, file_last_ext;
+               string::size_type pos = file_name.find( "." );
 
-               string file_ext;
                if( pos != string::npos )
-                  file_ext = file_name.substr( pos + 1 );
+                  file_full_ext = file_name.substr( pos + 1 );
+
+               pos = file_name.find_last_of( "." );
 
                string width( image_width );
                string height( image_height );
@@ -3148,7 +3150,7 @@ void output_list_form( ostream& os,
                      link_file_name = file_name;
                   }
                   else
-                     create_tmp_file_link( tmp_link_path, file_name, file_ext, link_file_name );
+                     create_tmp_file_link( tmp_link_path, file_name, file_full_ext, link_file_name );
 
                   if( !is_href && !is_printable && !embed_images )
                   {
@@ -3157,14 +3159,14 @@ void output_list_form( ostream& os,
                   }
 
                   if( source.file_fields.count( source_value_id ) )
-                     os << file_ext;
+                     os << file_full_ext;
                   else
                   {
                      string image_src( tmp_link_path );
                      if( embed_images )
                      {
                         string buffer( buffer_file( file_name ) );
-                        image_src = "data:image/" + file_ext + ";base64," + base64::encode( buffer );
+                        image_src = "data:image/" + file_last_ext + ";base64," + base64::encode( buffer );
                      }
 
                      os << "<img src=\"" << image_src

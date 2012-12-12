@@ -11,7 +11,7 @@
 `}
 
       bool has_source_file( exists_file( source ) );
-      string name( get_obj( ).get_key( ) + sep + c_field_id_`{`$arg_field`} + ext );
+      string name( get_obj( ).get_key( ) + sep + c_field_id_`{`$arg_field`} + ext`{`!`@eq`(`$arg_append_to_ext`,`'`'`) + "`{`$arg_append_to_ext`}"`} );
 
       string dest( get_obj( ).get_attached_file_path( name ) );
 

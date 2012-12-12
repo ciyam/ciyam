@@ -26211,6 +26211,7 @@
      <field2_id>105101
      <pfield2_id>300600
      <ext>.cms
+     <append_to_ext>.txt
     </data>
    </specification>
    <specification/>
@@ -26239,6 +26240,7 @@
      <field2_id>105101
      <pfield2_id>300600
      <ext>.h
+     <append_to_ext>.txt
     </data>
    </specification>
    <specification/>
@@ -26382,6 +26384,7 @@
      <field2_id>105101
      <pfield2_id>300600
      <ext>.cpp
+     <append_to_ext>.txt
     </data>
    </specification>
    <specification/>
@@ -28518,6 +28521,7 @@
      <field_id>105111
      <field1_id>105101
      <ext>.cms
+     <append_to_ext>.txt
     </data>
    </specification>
    <specification/>
@@ -28625,6 +28629,7 @@
      <field_id>105110
      <field1_id>105101
      <ext>.cpp
+     <append_to_ext>.txt
     </data>
    </specification>
    <specification/>

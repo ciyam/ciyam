@@ -81,9 +81,8 @@ const char* const c_arg_options_prefix = "-options=";
 const char* const c_arg_reverse_prefix = "-reverse=";
 const char* const c_arg_special_prefix = "-special=";
 const char* const c_arg_convertor_prefix = "-convertor=";
-const char* const c_arg_neq_status_prefix = "-neq_status=";
 const char* const c_arg_child_field_prefix = "-child_field=";
-const char* const c_arg_special_extra_prefix = "-special_extra=";
+const char* const c_arg_append_to_ext_prefix = "-append_to_ext=";
 
 const char* const c_attribute_amt = "amt";
 const char* const c_attribute_ext = "ext";
@@ -209,6 +208,7 @@ const char* const c_attribute_tfield_value = "tfield_value";
 const char* const c_attribute_uid_field_id = "uid_field_id";
 const char* const c_attribute_pw_enum_name = "pw_enum_name";
 const char* const c_attribute_ug_enum_name = "ug_enum_name";
+const char* const c_attribute_append_to_ext = "append_to_ext";
 const char* const c_attribute_crgpmfield_id = "crgpmfield_id";
 const char* const c_attribute_link_class_id = "link_class_id";
 const char* const c_attribute_opt_field2_id = "opt_field2_id";
@@ -485,6 +485,7 @@ const char* const c_data_combine_keys = "combine_keys";
 const char* const c_data_grand_parent = "grand_parent";
 const char* const c_data_status_field = "status_field";
 const char* const c_data_status_value = "status_value";
+const char* const c_data_append_to_ext = "append_to_ext";
 const char* const c_data_tfistexttype = "tfistexttype";
 const char* const c_data_fk_from_child = "fk_from_child";
 const char* const c_data_primary_class = "primary_class";
@@ -5517,6 +5518,7 @@ struct file_link_specification : specification
    string pfield2_id;
 
    string ext;
+   string append_to_ext;
 };
 
 void file_link_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
@@ -5531,8 +5533,18 @@ void file_link_specification::add( model& m, const vector< string >& args, vecto
    ext = args[ 3 ];
 
    string arg_field2_info;
-   if( args.size( ) > 4 )
-      arg_field2_info = args[ 4 ];
+
+   for( size_t arg = 4; arg < args.size( ); arg++ )
+   {
+      string next_arg( args[ arg ] );
+
+      if( next_arg.find( c_arg_append_to_ext_prefix ) == 0 )
+         append_to_ext = next_arg.substr( strlen( c_arg_append_to_ext_prefix ) );
+      else if( arg_field2_info.empty( ) )
+         arg_field2_info = next_arg;
+      else
+         throw runtime_error( "unexpected extra argument '" + next_arg + "' for 'file_link' specification" );
+   }
 
    class_id = get_class_id_for_name( m, arg_class_name );
 
@@ -5594,6 +5606,8 @@ void file_link_specification::read_data( sio_reader& reader )
    pfield2_id = reader.read_opt_attribute( c_attribute_pfield2_id );
 
    ext = reader.read_attribute( c_attribute_ext );
+
+   append_to_ext = reader.read_opt_attribute( c_attribute_append_to_ext );
 }
 
 void file_link_specification::write_data( sio_writer& writer ) const
@@ -5608,6 +5622,8 @@ void file_link_specification::write_data( sio_writer& writer ) const
    writer.write_opt_attribute( c_attribute_pfield2_id, pfield2_id );
 
    writer.write_attribute( c_attribute_ext, ext );
+
+   writer.write_opt_attribute( c_attribute_append_to_ext, append_to_ext );
 }
 
 void file_link_specification::add_specification_data( model& m, specification_data& spec_data ) const
@@ -5636,6 +5652,8 @@ void file_link_specification::add_specification_data( model& m, specification_da
    spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_ext, ext ) );
+
+   spec_data.data_pairs.push_back( make_pair( c_data_append_to_ext, append_to_ext ) );
 }
 
 string file_link_specification::static_class_name( ) { return "file_link"; }
