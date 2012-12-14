@@ -1,5 +1,5 @@
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start meta_spec_field_pairs)]
+   // [(start meta_spec_field_pairs)] `{`$arg_id`}
    if( !is_create
     && !get_obj( ).child_`{`$arg_child`}( ).get_is_iterating( )
     && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
@@ -54,5 +54,5 @@
 
       get_obj( ).`{`$arg_field`}( str );
    }
-   // [(finish meta_spec_field_pairs)]
+   // [(finish meta_spec_field_pairs)] `{`$arg_id`}
 `}

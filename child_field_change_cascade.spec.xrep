@@ -1,5 +1,5 @@
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start child_field_change_cascade)]
+   // [(start child_field_change_cascade)] `{`$arg_id`}
    if( !is_create )
    {
       string original_value( to_string(
@@ -31,5 +31,5 @@
          } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
       }
    }
-   // [(finish child_field_change_cascade)]
+   // [(finish child_field_change_cascade)] `{`$arg_id`}
 `}

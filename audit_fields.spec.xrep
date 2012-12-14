@@ -1,12 +1,12 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start audit_fields)]
+   // [(start audit_fields)] `{`$arg_id`}
    if( field_name == "`{`$arg_cusrfield`}" || field_name == "`{`$arg_cdtmfield`}"
     || field_name == "`{`$arg_musrfield`}" || field_name == "`{`$arg_mdtmfield`}" )
       return true;
-   // [(finish audit_fields)]
+   // [(finish audit_fields)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start audit_fields)]
+   // [(start audit_fields)] `{`$arg_id`}
    if( !get_dtm( ).empty( ) && !is_system_uid( ) )
    {
       if( is_create )
@@ -18,5 +18,5 @@
       get_obj( ).`{`$arg_musrfield`}( get_uid( ) );
       get_obj( ).`{`$arg_mdtmfield`}( date_time( get_dtm( ) ) );
    }
-   // [(finish audit_fields)]
+   // [(finish audit_fields)] `{`$arg_id`}
 `}

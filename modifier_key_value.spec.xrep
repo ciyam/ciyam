@@ -2,7 +2,7 @@
 `{`$extra`=`'`'`}\
 `{`@eq`(`$arg_extra`,`'edit`'`)`$extra`=`'c_state_uneditable | `'`}\
 `{`@eq`(`$arg_extra`,`'delete`'`)`$extra`=`'c_state_undeletable | `'`}\
-   // [(start modifier_key_value)]
+   // [(start modifier_key_value)] `{`$arg_id`}
 `{`@eq`(`$arg_value`,`'"@admin"`'`)\
    if( `{`@eq`(`$arg_not_eq`,`'true`'`)!`}is_admin_uid_key( get_obj( ).get_key( ) ) )
 `,`@eq`(`$arg_value`,`'"@uid"`'`)\
@@ -11,5 +11,5 @@
    if( get_obj( ).get_key( ) `{`@eq`(`$arg_not_eq`,`'true`'`)!=`,==`} `{`$arg_value`} )
 `}\
       state |= `{`$extra`}c_modifier_`{`$arg_modifier`};
-   // [(finish modifier_key_value)]
+   // [(finish modifier_key_value)] `{`$arg_id`}
 `}

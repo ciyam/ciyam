@@ -1,5 +1,5 @@
 `{`@eq`(`'get_state`'`,`$section`)\
-   // [(start modifier_permission)]
+   // [(start modifier_permission)] `{`$arg_id`}
 `{`@eq`(`$arg_remove`,`'`'`)\
 `{`@eq`(`$arg_ufield`,`'`'`)\
    if( `{`!`@eq`(`$arg_admin_always`,`'`'`)!is_admin_uid( ) && `}!get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
@@ -29,14 +29,14 @@
 `}\
       state &= ~c_modifier_`{`$arg_modifier`};
 `}`}\
-   // [(finish modifier_permission)]
+   // [(finish modifier_permission)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start modifier_permission)]
+   // [(start modifier_permission)] `{`$arg_id`}
    dependents.insert( "`{`$arg_ufield`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
      || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
       names.insert( "`{`$arg_ufield`}" );
-   // [(start modifier_permission)]
+   // [(finish modifier_permission)] `{`$arg_id`}
 `}

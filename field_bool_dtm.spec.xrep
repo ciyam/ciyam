@@ -5,7 +5,7 @@
 `{`@eq`(`$type`,`'hour`'`)`$type`=`'hours`'`}\
 `{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
 `{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
-   // [(start field_bool_dtm)]
+   // [(start field_bool_dtm)] `{`$arg_id`}
    if( !get_dtm( ).empty( ) )
    {
       date_time dtm( get_dtm( ) );
@@ -20,10 +20,10 @@
       else
          get_obj( ).`{`$arg_field`}( false );
    }
-   // [(finish field_bool_dtm)]
+   // [(finish field_bool_dtm)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_bool_dtm)]
+   // [(start field_bool_dtm)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_sfield`}" );
@@ -32,5 +32,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
    }
-   // [(finish field_bool_dtm)]
+   // [(finish field_bool_dtm)] `{`$arg_id`}
 `}

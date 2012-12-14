@@ -45,9 +45,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] 610084
 #include "Meta_Modifier.h"
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] 610084
 
 // [<start includes>]
 // [<finish includes>]
@@ -777,20 +777,20 @@ uint64_t Meta_Modifier_Affect::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600081
    if( get_obj( ).Scope( ) == 1 ) // i.e. class
       state |= c_modifier_Is_Class;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600081
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600082
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600082
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600083
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600083
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -943,12 +943,12 @@ void Meta_Modifier_Affect::impl::validate( unsigned state, bool is_internal, val
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 600081a
    if( !get_obj( ).Scope( ) && is_null( get_obj( ).Field( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Field,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 600081a
 
    // [<start validate>]
    // [<finish validate>]
@@ -1017,20 +1017,21 @@ void Meta_Modifier_Affect::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600080
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class )
       get_obj( ).Class( get_obj( ).Modifier( ).Class( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600080
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 600084
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( !is_null( get_obj( ).Source_Modifier_Affect( ) ) )
          get_obj( ).Internal( true );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 600084
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1050,7 +1051,7 @@ void Meta_Modifier_Affect::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] 610084
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Modifier( ).child_Modifier_Source( ).iterate_forwards( ) )
@@ -1069,9 +1070,9 @@ void Meta_Modifier_Affect::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).Modifier( ).child_Modifier_Source( ).child_Modifier_Affect( ).op_apply( );
       } while( get_obj( ).Modifier( ).child_Modifier_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] 610084
 
-   // [(start clone_children_for_update)]
+   // [(start clone_children_for_update)] 620084
    if( !is_create && get_obj( ).child_Modifier_Affect_Source( ).iterate_forwards( ) )
    {
       do
@@ -1087,7 +1088,7 @@ void Meta_Modifier_Affect::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Modifier_Affect_Source( ).op_apply( );
       } while( get_obj( ).child_Modifier_Affect_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_update)]
+   // [(finish clone_children_for_update)] 620084
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -1981,29 +1982,29 @@ void Meta_Modifier_Affect::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600081
    dependents.insert( "Scope" ); // (for Is_Class modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Scope ) )
     || ( !use_transients && !is_field_transient( e_field_id_Scope ) ) )
       names.insert( "Scope" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600081
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600082
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600082
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600083
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600083
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

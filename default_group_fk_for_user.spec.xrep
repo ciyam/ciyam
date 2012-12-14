@@ -1,9 +1,9 @@
 `{`@eq`(`'at_create`'`,`$section`)\
-   // [(start default_group_fk_for_user)]
+   // [(start default_group_fk_for_user)] `{`$arg_id`}
    if( !get_uid( ).empty( ) && !is_system_uid( ) && get_obj( ).get_clone_key( ).empty( ) )
    {
       get_obj( ).`{`$arg_ufield`}( ).perform_fetch( get_uid( ) );
       get_obj( ).`{`$arg_pfield`}( get_obj( ).`{`$arg_ufield`}( ).`{`$arg_gfield`}( ).get_key( ) + "_D" );
    }
-   // [(finish default_group_fk_for_user)]
+   // [(finish default_group_fk_for_user)] `{`$arg_id`}
 `}

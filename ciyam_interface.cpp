@@ -1022,6 +1022,14 @@ void request_handler::process_request( )
 #endif
             bool connection_okay = false;
 
+            // NOTE: Before the FCGI interface has ever connected to the server if the "identity.txt"
+            // file was not present then it will have an empty identity string. In production systems
+            // this should never occur, but for a development environment a newly created application
+            // will not have an identity so the very first attempt to "log in" (if the application is
+            // not allowing anonymous access) the user password will have been hashed with an "empty"
+            // identity string (so the original string is being copied here for this very situation).
+            string id_for_login( g_id );
+
             if( g_has_connected )
                connection_okay = true;
             else if( p_session_info->p_socket->okay( ) )
@@ -1168,13 +1176,13 @@ void request_handler::process_request( )
                      // has been repeated then just treat as a standard login if the password is correct.
                      if( user_data[ 0 ] != user_data[ 1 ] )
                      {
-                        if( activate_password == hash_password( g_id + user_data[ 1 ] + user ) )
+                        if( activate_password == hash_password( id_for_login + user_data[ 1 ] + user ) )
                            is_activation = false;
                         else
                            throw runtime_error( GDS( c_display_account_has_already_been_activated ) );
                      }
 
-                     if( activate_password == lower( hash_password( g_id + user_data[ 0 ] + user ) ) )
+                     if( activate_password == lower( hash_password( id_for_login + user_data[ 0 ] + user ) ) )
                      {
                         force_refresh = true;
                         throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
@@ -1198,7 +1206,7 @@ void request_handler::process_request( )
                      p_session_info->user_module = module_name;
                   else
                   {
-                     fetch_user_record( g_id, module_id, module_name, mod_info, *p_session_info,
+                     fetch_user_record( id_for_login, module_id, module_name, mod_info, *p_session_info,
                       is_authorised || !base64_data.empty( ), true, username, password, unique_id );
 
                      clear_unique( input_data );

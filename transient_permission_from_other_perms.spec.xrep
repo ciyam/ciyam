@@ -1,6 +1,6 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
 `{`$op`=`'&&`'`}`{`@eq`(`$arg_op`,`'or`'`)`$op`=`'||`'`}\
-   // [(start transient_permission_from_other_perms)]
+   // [(start transient_permission_from_other_perms)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( ) )
    {
       set< string > perms;
@@ -19,5 +19,5 @@
          get_obj( ).`{`$arg_field`}( value );
       }
    }
-   // [(finish transient_permission_from_other_perms)]
+   // [(finish transient_permission_from_other_perms)] `{`$arg_id`}
 `}

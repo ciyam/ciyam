@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start clone_default_for_group)]
+   // [(start clone_default_for_group)] `{`$arg_id`}
    if( is_create && get_obj( ).get_clone_key( ).empty( ) )
    {
       string key_info( get_obj( ).get_key( ) + "_D" );
@@ -10,5 +10,5 @@
       get_obj( ).child_`{`$arg_cclass`}( ).`{`$arg_gfield`}( get_obj( ).get_key( ) );
       get_obj( ).child_`{`$arg_cclass`}( ).op_apply( );
    }
-   // [(finish clone_default_for_group)]
+   // [(finish clone_default_for_group)] `{`$arg_id`}
 `}

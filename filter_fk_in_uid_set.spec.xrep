@@ -1,5 +1,5 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
-   // [(start filter_fk_in_uid_set)]
+   // [(start filter_fk_in_uid_set)] `{`$arg_id`}
    if( !is_system_uid( ) && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
       string key( get_obj( ).`{`$arg_tfield`}( ) );
@@ -19,10 +19,10 @@
             return true;
       }
    }
-   // [(finish filter_fk_in_uid_set)]
+   // [(finish filter_fk_in_uid_set)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start filter_fk_in_uid_set)]
+   // [(start filter_fk_in_uid_set)] `{`$arg_id`}
    dependents.insert( "`{`$arg_tfield`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
@@ -35,5 +35,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_spfield`} ) ) )
       names.insert( "`{`$arg_spfield`}" );
 `}\
-   // [(finish filter_fk_in_uid_set)]
+   // [(finish filter_fk_in_uid_set)] `{`$arg_id`}
 `}

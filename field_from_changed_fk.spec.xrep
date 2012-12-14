@@ -1,11 +1,11 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] `{`$arg_id`}
    if( field_name == "`{`$arg_dfield`}" )
       return true;
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] `{`$arg_id`}
 `{`@eq`(`$arg_not_create`,`'`'`)\
    if( `{`@eq`(`$arg_new_only`,`'true`'`)get_obj( ).get_key( ).empty( ) && `}\
 `,\
@@ -15,5 +15,5 @@
     && `}`{`@eq`(`$arg_inc_dflt`,`'true`'`)( get_obj( ).get_key( ).empty( ) || `}\
 get_obj( ).`{`$arg_pfield`}( ).has_changed( )`{`@eq`(`$arg_inc_dflt`,`'true`'`) )`} )
       get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_sfield`}( ) );
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] `{`$arg_id`}
 `}

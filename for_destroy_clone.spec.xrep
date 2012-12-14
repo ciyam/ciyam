@@ -1,6 +1,6 @@
 `{`@eq`(`'procedure`'`,`$section`)\
 `{`$suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$suffix`=`$arg_key_suffix`}\
-   // [(start for_destroy_clone)]
+   // [(start for_destroy_clone)] `{`$arg_id`}
    transaction_start( );
    try
    {
@@ -31,5 +31,5 @@
       transaction_rollback( );
       throw;
    }
-   // [(start for_destroy_clone)]
+   // [(finish for_destroy_clone)] `{`$arg_id`}
 `}

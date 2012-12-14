@@ -9,7 +9,7 @@
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
-   // [(start check_compare_op_value)]
+   // [(start check_compare_op_value)] `{`$arg_id`}
 `{`@eq`(`$arg_spfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}!( get_obj( ).`{`$arg_sfield`}( ) `{`$op`} `{`$value`} ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_sfield`},
@@ -24,5 +24,5 @@
        + " " + get_obj( ).`{`$arg_spfield`}( ).get_field_display_name( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_sfield`} ) ) ),
        make_pair( c_str_parm_field_must_be_`{`$arg_op`}_value_value, "`{`$arg_value`}" ) ) ) );
 `}\
-   // [(finish check_compare_op_value)]
+   // [(finish check_compare_op_value)] `{`$arg_id`}
 `}

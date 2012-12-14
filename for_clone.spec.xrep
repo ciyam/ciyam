@@ -1,5 +1,5 @@
 `{`@eq`(`'procedure`'`,`$section`)\
-   // [(start for_clone)]
+   // [(start for_clone)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
 `{`@eq`(`$arg_no_trans`,`'`'`)\
    transaction_start( );
@@ -83,5 +83,5 @@ cp_key_source->get_key( )`,`{`$arg_proc_arg`}`}`} + string( " " ) + get_obj( ).g
       throw;
    }
 `}\
-   // [(finish for_clone)]
+   // [(finish for_clone)] `{`$arg_id`}
 `}

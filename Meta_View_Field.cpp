@@ -1875,7 +1875,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
 void Meta_View_Field::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600370
    transaction_start( );
    try
    {
@@ -1933,7 +1933,7 @@ void Meta_View_Field::impl::impl_Move_Down( const string& Restrict_Fields, const
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600370
 
    // [<start Move_Down_impl>]
    // [<finish Move_Down_impl>]
@@ -1941,7 +1941,7 @@ void Meta_View_Field::impl::impl_Move_Down( const string& Restrict_Fields, const
 
 void Meta_View_Field::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600370
    transaction_start( );
    try
    {
@@ -1999,7 +1999,7 @@ void Meta_View_Field::impl::impl_Move_Up( const string& Restrict_Fields, const s
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600370
 
    // [<start Move_Up_impl>]
    // [<finish Move_Up_impl>]
@@ -2351,55 +2351,55 @@ uint64_t Meta_View_Field::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600351
    if( get_obj( ).View( ).Type_Key( ) == "print" )
       state |= c_modifier_Is_Print_Version;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600351
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600390
    if( get_obj( ).Type( ).Name( ) == "key" )
       state |= c_modifier_Is_Key;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600390
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600391
    if( get_obj( ).Type( ).Name( ) == "tab" )
       state |= c_modifier_Is_Tab;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600391
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600392
    if( get_obj( ).Type( ).Name( ) == "field" )
       state |= c_modifier_Is_Field;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600392
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600393
    if( get_obj( ).Use_Source_Parent( ) == false )
       state |= c_modifier_Hide_FK_Fields;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600393
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600394
    if( get_obj( ).Use_Source_Parent( ) == true )
       state |= c_modifier_Hide_Non_FK_Fields;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600394
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600396
    if( get_obj( ).Use_Source_Parent( ) == 0 && get_obj( ).Source_Field( ).Primitive( ) != 2 ) // i.e. date
       state |= c_modifier_Is_Not_Date;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600396
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600397
    if( get_obj( ).Use_Source_Parent( ) == 1 && get_obj( ).Source_Child( ).Primitive( ) != 2 ) // i.e. date
       state |= c_modifier_Is_Not_Date;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600397
 
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] 600398
    if( is_null( get_obj( ).Source_Field( ).Enum( ) ) )
       state |= c_modifier_Is_Not_Enum;
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] 600398
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610394
    if( get_obj( ).New_Source( ) != 4 ) // i.e. value
       state |= c_modifier_Hide_New_Value;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610394
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -2766,26 +2766,26 @@ void Meta_View_Field::impl::validate( unsigned state, bool is_internal, validati
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Trigger_Option ) ) ) ) );
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 600395
    if( get_obj( ).Use_Source_Parent( ) && is_null( get_obj( ).Source_Parent( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Source_Parent,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Parent ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 600395
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 610395
    if( get_obj( ).Use_Source_Parent( ) && is_null( get_obj( ).Source_Child( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Source_Child,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Child ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 610395
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 620395
    if( get_obj( ).Type( ).Name( ) == "field" && !get_obj( ).Use_Source_Parent( ) && is_null( get_obj( ).Source_Field( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Source_Field,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Source_Field ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 620395
 
    // [<start validate>]
    // [<finish validate>]
@@ -2865,7 +2865,7 @@ void Meta_View_Field::impl::after_fetch( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] 600385
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Name" )
     || required_transients.count( "Name" ) ) )
@@ -2884,7 +2884,7 @@ void Meta_View_Field::impl::after_fetch( )
 
       get_obj( ).set_search_replace_has_opt_prefixing( "Name" );
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] 600385
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -2898,10 +2898,10 @@ void Meta_View_Field::impl::finalise_fetch( )
 
 void Meta_View_Field::impl::at_create( )
 {
-   // [(start fk_default)]
+   // [(start fk_default)] 600350
    if( is_null( get_obj( ).Type( ) ) )
       get_obj( ).Type( "field" );
-   // [(finish fk_default)]
+   // [(finish fk_default)] 600350
 
    // [<start at_create>]
    // [<finish at_create>]
@@ -2924,42 +2924,43 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600355
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class )
       get_obj( ).Class( get_obj( ).View( ).Class( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600355
 
-   // [(start default_from_key)]
+   // [(start default_from_key)] 600360
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
+   // [(finish default_from_key)] 600360
 
-   // [(start field_clear)]
+   // [(start field_clear)] 600375
    if( get_obj( ).Use_Source_Parent( ) )
       get_obj( ).Source_Field( string( ) );
-   // [(finish field_clear)]
+   // [(finish field_clear)] 600375
 
-   // [(start field_clear)]
+   // [(start field_clear)] 600376
    if( !get_obj( ).Use_Source_Parent( ) )
       get_obj( ).Source_Parent( string( ) );
-   // [(finish field_clear)]
+   // [(finish field_clear)] 600376
 
-   // [(start field_clear)]
+   // [(start field_clear)] 600377
    if( !get_obj( ).Use_Source_Parent( ) )
       get_obj( ).Source_Child( string( ) );
-   // [(finish field_clear)]
+   // [(finish field_clear)] 600377
 
-   // [(start field_clear)]
+   // [(start field_clear)] 600378
    if( !get_obj( ).Use_Source_Parent( ) )
       get_obj( ).Source_Edit_Child( string( ) );
-   // [(finish field_clear)]
+   // [(finish field_clear)] 600378
 
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] 630395
    if( get_obj( ).Source_Parent( ).has_changed( ) )
       get_obj( ).Source_Parent_Class( get_obj( ).Source_Parent( ).Parent_Class( ) );
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] 630395
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -5187,7 +5188,7 @@ void Meta_View_Field::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] 600385
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "Tab_Name" );
@@ -5241,7 +5242,7 @@ void Meta_View_Field::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] 600385
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -5254,93 +5255,93 @@ void Meta_View_Field::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600351
    dependents.insert( "View" ); // (for Is_Print_Version modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_View ) )
     || ( !use_transients && !is_field_transient( e_field_id_View ) ) )
       names.insert( "View" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600351
 
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600370
    dependents.insert( "Order" );
 
    if( ( use_transients && is_field_transient( e_field_id_Order ) )
     || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600370
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600390
    dependents.insert( "Type" ); // (for Is_Key modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600390
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600391
    dependents.insert( "Type" ); // (for Is_Tab modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600391
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600392
    dependents.insert( "Type" ); // (for Is_Field modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600392
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600393
    dependents.insert( "Use_Source_Parent" ); // (for Hide_FK_Fields modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Use_Source_Parent ) )
     || ( !use_transients && !is_field_transient( e_field_id_Use_Source_Parent ) ) )
       names.insert( "Use_Source_Parent" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600393
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600394
    dependents.insert( "Use_Source_Parent" ); // (for Hide_Non_FK_Fields modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Use_Source_Parent ) )
     || ( !use_transients && !is_field_transient( e_field_id_Use_Source_Parent ) ) )
       names.insert( "Use_Source_Parent" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600394
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600396
    dependents.insert( "Source_Field" ); // (for Is_Not_Date modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
       names.insert( "Source_Field" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600396
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600397
    dependents.insert( "Source_Child" ); // (for Is_Not_Date modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Source_Child ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Child ) ) )
       names.insert( "Source_Child" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600397
 
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] 600398
    dependents.insert( "Source_Field" ); // (for Is_Not_Enum modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
       names.insert( "Source_Field" );
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] 600398
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610394
    dependents.insert( "New_Source" ); // (for Hide_New_Value modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_New_Source ) )
     || ( !use_transients && !is_field_transient( e_field_id_New_Source ) ) )
       names.insert( "New_Source" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610394
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

@@ -44,9 +44,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] 610074
 #include "Meta_Class.h"
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] 610074
 
 // [<start includes>]
 // [<finish includes>]
@@ -741,7 +741,7 @@ struct Meta_Index::impl : public Meta_Index_command_handler
 
 void Meta_Index::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600071
    transaction_start( );
    try
    {
@@ -799,7 +799,7 @@ void Meta_Index::impl::impl_Move_Down( const string& Restrict_Fields, const stri
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600071
 
    // [<start Move_Down_impl>]
    // [<finish Move_Down_impl>]
@@ -807,7 +807,7 @@ void Meta_Index::impl::impl_Move_Down( const string& Restrict_Fields, const stri
 
 void Meta_Index::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600071
    transaction_start( );
    try
    {
@@ -865,7 +865,7 @@ void Meta_Index::impl::impl_Move_Up( const string& Restrict_Fields, const string
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600071
 
    // [<start Move_Up_impl>]
    // [<finish Move_Up_impl>]
@@ -977,15 +977,15 @@ uint64_t Meta_Index::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600072
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600072
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600073
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600073
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -1160,31 +1160,31 @@ void Meta_Index::impl::validate( unsigned state, bool is_internal, validation_er
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Field_1 ) ) ) ) );
 
-   // [(start check_null_match)]
+   // [(start check_null_match)] 600066
    if( is_null( get_obj( ).Field_2( ) ) && !is_null( get_obj( ).Field_3( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Field_2,
        get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Field_3 ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Field_2 ) ) ) ) );
-   // [(finish check_null_match)]
+   // [(finish check_null_match)] 600066
 
-   // [(start check_null_match)]
+   // [(start check_null_match)] 600067
    if( is_null( get_obj( ).Field_3( ) ) && !is_null( get_obj( ).Field_4( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Field_3,
        get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Field_4 ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Field_3 ) ) ) ) );
-   // [(finish check_null_match)]
+   // [(finish check_null_match)] 600067
 
-   // [(start check_null_match)]
+   // [(start check_null_match)] 600068
    if( is_null( get_obj( ).Field_4( ) ) && !is_null( get_obj( ).Field_5( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Field_4,
        get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Field_5 ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Field_4 ) ) ) ) );
-   // [(finish check_null_match)]
+   // [(finish check_null_match)] 600068
 
-   // [(start check_no_repeats)]
+   // [(start check_no_repeats)] 600069
    {
       size_t old_size = 0;
       set< string > values;
@@ -1243,7 +1243,7 @@ void Meta_Index::impl::validate( unsigned state, bool is_internal, validation_er
 
       }
    }
-   // [(finish check_no_repeats)]
+   // [(finish check_no_repeats)] 600069
 
    // [<start validate>]
    // [<finish validate>]
@@ -1321,18 +1321,18 @@ void Meta_Index::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_from_key)]
+   // [(start default_from_key)] 600070
    if( is_create && is_null( get_obj( ).Order( ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
+   // [(finish default_from_key)] 600070
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 600074
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( !is_null( get_obj( ).Class( ).Source_Class( ) ) )
          get_obj( ).Internal( true );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 600074
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1352,7 +1352,7 @@ void Meta_Index::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] 610074
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ).child_Class_Source( ).iterate_forwards( ) )
@@ -1371,9 +1371,9 @@ void Meta_Index::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).Class( ).child_Class_Source( ).child_Index( ).op_apply( );
       } while( get_obj( ).Class( ).child_Class_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] 610074
 
-   // [(start clone_children_for_update)]
+   // [(start clone_children_for_update)] 620074
    if( !is_create && get_obj( ).child_Index_Source( ).iterate_forwards( ) )
    {
       do
@@ -1389,7 +1389,7 @@ void Meta_Index::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Index_Source( ).op_apply( );
       } while( get_obj( ).child_Index_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_update)]
+   // [(finish clone_children_for_update)] 620074
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -2380,29 +2380,29 @@ void Meta_Index::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600071
    dependents.insert( "Order" );
 
    if( ( use_transients && is_field_transient( e_field_id_Order ) )
     || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600071
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600072
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600072
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600073
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600073
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

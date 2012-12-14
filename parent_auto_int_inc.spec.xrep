@@ -1,11 +1,11 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] `{`$arg_id`}
    if( field_name == "`{`$arg_field`}" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] `{`$arg_id`}
    if( is_create && is_null( get_obj( ).`{`$arg_field`}( ) )`{`@eq`(`$arg_fmandatory`,`'0`'`) && !is_null( get_obj( ).`{`$arg_pfield`}( ) )`} )
    {
 `{`@eq`(`$arg_fmandatory`,`'1`'`)\
@@ -30,5 +30,5 @@
       cp_parent->op_apply( );
 `}\
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] `{`$arg_id`}
 `}

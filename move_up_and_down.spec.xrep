@@ -1,5 +1,5 @@
 `{`@eq`(`'up_procedure`'`,`$section`)\
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] `{`$arg_id`}
    transaction_start( );
    try
    {
@@ -74,10 +74,10 @@
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] `{`$arg_id`}
 `}
 `{`@eq`(`'down_procedure`'`,`$section`)\
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] `{`$arg_id`}
    transaction_start( );
    try
    {
@@ -152,10 +152,10 @@
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] `{`$arg_id`}
    dependents.insert( "`{`$arg_field`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
@@ -168,5 +168,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_update_parent`} ) ) )
       names.insert( "`{`$arg_update_parent`}" );
 `}\
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] `{`$arg_id`}
 `}

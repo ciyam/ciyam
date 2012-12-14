@@ -870,8 +870,25 @@ bool output_view_form( ostream& os, const string& act,
 
       bool has_started_right = false;
 
+      bool has_quick_link = false;
+      for( size_t i = 0; i < sess_info.quick_link_data.size( ); i++ )
+      {
+         string columns( sess_info.quick_link_data[ i ].second );
+
+         vector< string > column_info;
+         raw_split( columns, column_info );
+
+         if( column_info.size( ) > 2
+          && column_info[ 2 ].find( data + source.vici->second->id ) == 0 )
+         {
+            has_quick_link = true;
+            break;
+         }
+      }
+
       // NOTE: If this view supports "quick linking" then create an "add quick link" action.
-      if( !is_in_edit && source.has_quick_link && using_session_cookie && !sess_info.user_id.empty( )
+      if( !is_in_edit && !has_quick_link
+       && source.has_quick_link && using_session_cookie && !sess_info.user_id.empty( )
        && ( mod_info.user_qlink_permission.empty( ) || has_permission( mod_info.user_qlink_permission, sess_info ) ) )
       {
          if( !is_quick_link_view && ( sess_info.quick_link_data.size( ) < sess_info.quick_link_limit ) )

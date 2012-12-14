@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start clone_default_group_children)]
+   // [(start clone_default_group_children)] `{`$arg_id`}
    if( is_create && get_obj( ).get_clone_key( ).empty( ) )
    {
       class_pointer< `{`$module_name`}_`{`$arg_cclass`} > cp_child( e_create_instance );
@@ -19,5 +19,5 @@
          } while( cp_source->child_`{`$arg_child`}( ).iterate_next( ) );
       }
    }
-   // [(finish clone_default_group_children)]
+   // [(finish clone_default_group_children)] `{`$arg_id`}
 `}

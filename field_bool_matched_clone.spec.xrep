@@ -1,7 +1,7 @@
 `{`@eq`(`'for_store`'`,`$section`)\
 `{`$op`=`'==`'`}`{`@eq`(`$arg_not_equal`,`'true`'`)`$op`=`'!=`'`}\
 `{`$key_suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$key_suffix`=`$arg_key_suffix`}\
-   // [(start field_bool_matched_clone)]
+   // [(start field_bool_matched_clone)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       class_pointer< `{`$module_name`}_`{`$class_name`} > cp_source( e_create_instance );
@@ -22,10 +22,10 @@
          get_obj( ).`{`$arg_field`}( get_obj( ).`{`$arg_sfield`}( ) );
 `}\
    }
-   // [(finish field_bool_matched_clone)]
+   // [(finish field_bool_matched_clone)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_bool_matched_clone)]
+   // [(start field_bool_matched_clone)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_tfield`}" );
@@ -34,5 +34,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
          names.insert( "`{`$arg_tfield`}" );
    }
-   // [(finish field_bool_matched_clone)]
+   // [(finish field_bool_matched_clone)] `{`$arg_id`}
 `}

@@ -1,7 +1,7 @@
 `{`@eq`(`'validate`'`,`$section`)\
 `{`$value`=`'1`'`}`{`!`@eq`(`$arg_tvalue`,`'`'`)`$value`=`$arg_tvalue`}\
 `{`$separator`=`',`'`}`{`!`@eq`(`$arg_separator`,`'`'`)`$separator`=`$arg_separator`}\
-   // [(start check_list_size_limit)]
+   // [(start check_list_size_limit)] `{`$arg_id`}
    if( !get_obj( ).`{`$arg_field`}( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       vector< string >::size_type limit = `{`!`@eq`(`$arg_sfield`,`'`'`)get_obj( ).`{`$arg_sfield`}( )`,`$value`};
@@ -18,5 +18,5 @@
              make_pair( c_str_parm_field_must_contain_no_more_limit, to_string( limit ) ) ) ) );
       }
    }
-   // [(finish check_list_size_limit)]
+   // [(finish check_list_size_limit)] `{`$arg_id`}
 `}

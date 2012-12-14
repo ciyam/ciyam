@@ -2451,7 +2451,7 @@ struct Meta_Specification_Type::impl : public Meta_Specification_Type_command_ha
 
 void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Class, string& Error, const string& Parent_Class, int Primitive, int Procedure_Arg_Primitive, int Procedure_Arg_Type, const string& Source_Parent_Class, int Source_Primitive, int Test_Primitive, const string& Test_Value )
 {
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] 600211
    if( get_obj( ).Field_type( ) != c_enum_field_type_Any_Type )
    {
       if( get_obj( ).Field_type( ) == c_enum_field_type_Any_Primitive )
@@ -2547,9 +2547,9 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       else
          throw runtime_error( "unexpected Field_type value " + to_string( get_obj( ).Field_type( ) ) + " in Is_Valid_Field_Type" );
    }
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] 600211
 
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] 600212
    if( Source_Primitive >= 0 && get_obj( ).Source_type( ) != c_enum_source_type_Any_Type )
    {
       if( get_obj( ).Source_type( ) == c_enum_source_type_Any_Text_Type )
@@ -2589,9 +2589,9 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       else
          throw runtime_error( "unexpected Source_type value " + to_string( get_obj( ).Source_type( ) ) + " in Is_Valid_Field_Type" );
    }
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] 600212
 
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] 600220
    if( Test_Primitive >= 0 && get_obj( ).Test_Field_type( ) != c_enum_test_field_type_Any_Type )
    {
       if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Text_Type )
@@ -2651,9 +2651,9 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       else
          throw runtime_error( "unexpected Test_Field_type value " + to_string( get_obj( ).Test_Field_type( ) ) + " in Is_Valid_Field_Type" );
    }
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] 600220
 
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] 600230
    if( get_obj( ).Source_Parent_type( ) != c_enum_source_parent_type_Any_Relationship )
    {
       if( get_obj( ).Source_Parent_type( ) == c_enum_source_parent_type_Self_Relationship )
@@ -2669,9 +2669,9 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       else
          throw runtime_error( "unexpected Source_Parent_type value " + to_string( get_obj( ).Source_Parent_type( ) ) + " in Is_Valid_Field_Type" );
    }
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] 600230
 
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] 600240
    if( get_obj( ).Procedure_Arg_primitive( ) != c_enum_procedure_arg_primitive_Any_Primitive )
    {
       if( Procedure_Arg_Primitive != get_obj( ).Procedure_Arg_primitive( ) )
@@ -2696,9 +2696,9 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          Error = GMS( "field_specification_type_procedure_arg_primitive" ) + " must be a " + primitive_name + " primitive"; // FUTURE: Should be in module_strings...
       }
    }
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] 600240
 
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] 600250
    if( get_obj( ).Procedure_Arg_type( ) != c_enum_procedure_arg_type_Any_Type )
    {
       if( Procedure_Arg_Type != get_obj( ).Procedure_Arg_type( ) )
@@ -2713,7 +2713,7 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
          Error = GMS( "field_specification_type_procedure_arg_type" ) + " must be type " + type_name; // FUTURE: Should be in module_strings...
       }
    }
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] 600250
 
    // [<start Is_Valid_Field_Type_impl>]
    // [<finish Is_Valid_Field_Type_impl>]
@@ -4029,26 +4029,29 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600251
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Allow_Procedure_Arg( ) == gv_default_Allow_Procedure_Arg && get_obj( ).Needs_Procedure_Arg( ) == true )
       get_obj( ).Allow_Procedure_Arg( get_obj( ).Needs_Procedure_Arg( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600251
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600252
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Allow_Other_Procedure( ) == gv_default_Allow_Other_Procedure && get_obj( ).Needs_Other_Procedure( ) == true )
       get_obj( ).Allow_Other_Procedure( get_obj( ).Needs_Other_Procedure( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600252
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600253
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Allow_Other_Procedure_2( ) == gv_default_Allow_Other_Procedure_2 && get_obj( ).Needs_Other_Procedure_2( ) == true )
       get_obj( ).Allow_Other_Procedure_2( get_obj( ).Needs_Other_Procedure_2( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600253
 
    // [<start to_store>]
    // [<finish to_store>]

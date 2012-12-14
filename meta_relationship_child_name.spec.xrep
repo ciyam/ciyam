@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start meta_relationship_child_name)]
+   // [(start meta_relationship_child_name)] `{`$arg_id`}
    if( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) )
    {
@@ -8,10 +8,10 @@
 
       get_obj( ).`{`$arg_field`}( str );
    }
-   // [(start meta_relationship_child_name)]
+   // [(finish meta_relationship_child_name)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start meta_relationship_child_name)]
+   // [(start meta_relationship_child_name)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_sfield`}" );
@@ -38,5 +38,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield2`} ) ) )
          names.insert( "`{`$arg_pfield2`}" );
    }
-   // [(finish meta_relationship_child_name)]
+   // [(finish meta_relationship_child_name)] `{`$arg_id`}
 `}

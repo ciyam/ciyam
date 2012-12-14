@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_action)]
+   // [(start transient_field_action)] `{`$arg_id`}
 `{`$check_not_in_set`=`'false`'`}`{`@eq`(`$arg_check_not_in_set`,`'true`'`)`$check_not_in_set`=`'true`'`}\
 `{`$admin_op`=`'||`'`}`{`@eq`(`$arg_admin_never`,`'true`'`)`$admin_op`=`'&&`'`}\
 `{`$check_iter`=`'`'`}`{`@eq`(`$arg_iterating`,`'true`'`)`$check_iter`=`'true`'`}`{`@eq`(`$arg_not_iterating`,`'true`'`)`$check_iter`=`'true`'`}\
@@ -175,10 +175,10 @@
       }
 `}\
    }
-   // [(start transient_field_action)]
+   // [(finish transient_field_action)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_action)]
+   // [(start transient_field_action)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_actions`}", dependents ) )
    {
 `{`!`@eq`(`$arg_ufield`,`'`'`)\
@@ -205,5 +205,5 @@
          names.insert( "`{`$arg_altfield`}" );
 `}\
    }
-   // [(start transient_field_action)]
+   // [(finish transient_field_action)] `{`$arg_id`}
 `}

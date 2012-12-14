@@ -47,9 +47,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] 610079
 #include "Meta_Class.h"
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] 610079
 
 // [<start includes>]
 // [<finish includes>]
@@ -664,15 +664,15 @@ uint64_t Meta_Modifier::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600076
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600076
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600077
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600077
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -863,13 +863,13 @@ void Meta_Modifier::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 600078
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( !is_null( get_obj( ).Class( ).Source_Class( ) ) )
          get_obj( ).Internal( true );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 600078
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -889,7 +889,7 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600075
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
@@ -903,9 +903,9 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600075
 
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] 600079
    if( is_create && !is_null( get_obj( ).Source_Modifier( ) ) )
    {
       if( get_obj( ).Source_Modifier( ).child_Modifier_Affect( ).iterate_forwards( ) )
@@ -925,9 +925,9 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
          } while( get_obj( ).Source_Modifier( ).child_Modifier_Affect( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] 600079
 
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] 610079
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ).child_Class_Source( ).iterate_forwards( ) )
@@ -946,9 +946,9 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).Class( ).child_Class_Source( ).child_Modifier( ).op_apply( );
       } while( get_obj( ).Class( ).child_Class_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] 610079
 
-   // [(start clone_children_for_update)]
+   // [(start clone_children_for_update)] 620079
    if( !is_create && get_obj( ).child_Modifier_Source( ).iterate_forwards( ) )
    {
       do
@@ -964,7 +964,7 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Modifier_Source( ).op_apply( );
       } while( get_obj( ).child_Modifier_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_update)]
+   // [(finish clone_children_for_update)] 620079
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -1804,21 +1804,21 @@ void Meta_Modifier::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600076
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600076
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600077
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600077
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

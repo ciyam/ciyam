@@ -1,5 +1,5 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
-   // [(start filter_field_value)]
+   // [(start filter_field_value)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_perm`,`'`'`)\
    if( get_obj( ).has_filter( "`{`$arg_id`}" ) // i.e. `{`$arg_name`}
@@ -17,10 +17,10 @@
       if( get_obj( ).`{`$arg_field`}( ) == `{`$arg_value`} )
          return true;
    }
-   // [(finish filter_field_value)]
+   // [(finish filter_field_value)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start filter_field_value)]
+   // [(start filter_field_value)] `{`$arg_id`}
    dependents.insert( "`{`$arg_field`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
@@ -34,5 +34,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
       names.insert( "`{`$arg_tfield`}" );
 `}\
-   // [(finish filter_field_value)]
+   // [(finish filter_field_value)] `{`$arg_id`}
 `}

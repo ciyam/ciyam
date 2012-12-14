@@ -1,5 +1,5 @@
 `{`@eq`(`'get_state`'`,`$section`)\
-   // [(start restrict_protect)]
+   // [(start restrict_protect)] `{`$arg_id`}
    if( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( )\
 `{`!`@eq`(`$arg_admin_always`,`'`'`)
     && !is_admin_uid( )`}\
@@ -19,10 +19,10 @@
       state &= ~c_state_ignore_uneditable;
    }\
 `}
-   // [(finish restrict_protect)]
+   // [(finish restrict_protect)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start restrict_protect)]
+   // [(start restrict_protect)] `{`$arg_id`}
 `{`@eq`(`$arg_pfield`,`'`'`)\
    dependents.insert( "`{`$arg_field`}" );
 
@@ -43,5 +43,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
       names.insert( "`{`$arg_tfield`}" );\
 `}
-   // [(finish restrict_protect)]
+   // [(finish restrict_protect)] `{`$arg_id`}
 `}

@@ -1,8 +1,8 @@
 `{`@eq`(`'procedure`'`,`$section`)\
-   // [(start loop_do_while)]
+   // [(start loop_do_while)] `{`$arg_id`}
    do
    {
       get_obj( ).`{`$arg_oprocedure`}( );
    } while( get_obj( ).`{`$arg_field`}( ) );
-   // [(start loop_do_while)]
+   // [(finish loop_do_while)] `{`$arg_id`}
 `}

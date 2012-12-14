@@ -1,7 +1,7 @@
 `{`@eq`(`'get_state`'`,`$section`)\
 `{`$has_other_conds`=`'`'`}\
 `{`!`@eq`(`$arg_admin_always`,`'`'`)`|`!`@eq`(`$arg_perm`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`$has_other_conds`=`'true`'`}\
-   // [(start restrict_uid_not_equal)]
+   // [(start restrict_uid_not_equal)] `{`$arg_id`}
 `{`@eq`(`$has_other_conds`,`'`'`)\
 `{`@eq`(`$arg_sfield`,`'`'`)\
    if( get_uid( ) != get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
@@ -36,10 +36,10 @@
 `,\
       state |= ( c_state_uneditable | c_state_undeletable`{`@eq`(`$arg_unactionable`,`'true`'`) | c_state_unactionable`} );
 `}\
-   // [(finish restrict_uid_not_equal)]
+   // [(finish restrict_uid_not_equal)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start restrict_uid_not_equal)]
+   // [(start restrict_uid_not_equal)] `{`$arg_id`}
    dependents.insert( "`{`$arg_ufield`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_ufield`} ) )
@@ -58,5 +58,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
       names.insert( "`{`$arg_tfield`}" );
 `}\
-   // [(finish restrict_uid_not_equal)]
+   // [(finish restrict_uid_not_equal)] `{`$arg_id`}
 `}

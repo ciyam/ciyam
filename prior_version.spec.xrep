@@ -1,5 +1,5 @@
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start prior_version)]
+   // [(start prior_version)] `{`$arg_id`}
    if( !is_create`{`!`@eq`(`$arg_test_field`,`'`'`) \
 && get_obj( ).`{`$arg_test_field`}( ).has_changed( ) && to_string( get_obj( ).`{`$arg_test_field`}( ) ) == "`{`$arg_test_value`}"`} )
    {
@@ -47,5 +47,5 @@
 `}
       get_obj( ).child_`{`$arg_pvchild`}( ).op_apply( );
    }
-   // [(finish prior_version)]
+   // [(finish prior_version)] `{`$arg_id`}
 `}

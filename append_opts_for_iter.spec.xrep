@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start append_opts_for_iter)]
+   // [(start append_opts_for_iter)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) ) )
@@ -39,5 +39,5 @@
          get_obj( ).`{`$arg_field`}( str );
       }
    }
-   // [(finish append_opts_for_iter)]
+   // [(finish append_opts_for_iter)] `{`$arg_id`}
 `}

@@ -46,9 +46,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] 610090
 #include "Meta_Class.h"
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] 610090
 
 // [<start includes>]
 // [<finish includes>]
@@ -666,15 +666,15 @@ uint64_t Meta_Procedure::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600086
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600086
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600087
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600087
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -765,10 +765,10 @@ bool Meta_Procedure::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600090
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600090
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -889,13 +889,13 @@ void Meta_Procedure::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 600088
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( !is_null( get_obj( ).Class( ).Source_Class( ) ) )
          get_obj( ).Internal( true );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 600088
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -906,7 +906,7 @@ void Meta_Procedure::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600090
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Class( ) ) )
@@ -919,7 +919,7 @@ void Meta_Procedure::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Class( ).Next_Procedure_Id( auto_int_increment( get_obj( ).Class( ).Next_Procedure_Id( ) ) );
       get_obj( ).Class( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600090
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -930,7 +930,7 @@ void Meta_Procedure::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600085
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
@@ -944,9 +944,9 @@ void Meta_Procedure::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600085
 
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] 600089
    if( is_create && !is_null( get_obj( ).Source_Procedure( ) ) )
    {
       if( get_obj( ).Source_Procedure( ).child_Procedure_Arg( ).iterate_forwards( ) )
@@ -966,9 +966,9 @@ void Meta_Procedure::impl::after_store( bool is_create, bool is_internal )
          } while( get_obj( ).Source_Procedure( ).child_Procedure_Arg( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] 600089
 
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] 610090
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ).child_Class_Source( ).iterate_forwards( ) )
@@ -987,9 +987,9 @@ void Meta_Procedure::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).Class( ).child_Class_Source( ).child_Procedure( ).op_apply( );
       } while( get_obj( ).Class( ).child_Class_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] 610090
 
-   // [(start clone_children_for_update)]
+   // [(start clone_children_for_update)] 620090
    if( !is_create && get_obj( ).child_Procedure_Source( ).iterate_forwards( ) )
    {
       do
@@ -1005,7 +1005,7 @@ void Meta_Procedure::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Procedure_Source( ).op_apply( );
       } while( get_obj( ).child_Procedure_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_update)]
+   // [(finish clone_children_for_update)] 620090
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -1859,21 +1859,21 @@ void Meta_Procedure::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600086
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600086
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600087
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600087
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

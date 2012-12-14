@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start clone_children_for_update)]
+   // [(start clone_children_for_update)] `{`$arg_id`}
    if( !is_create && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( ) )
    {
       do
@@ -20,5 +20,5 @@
          get_obj( ).child_`{`$arg_child`}( ).op_apply( );
       } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_update)]
+   // [(finish clone_children_for_update)] `{`$arg_id`}
 `}

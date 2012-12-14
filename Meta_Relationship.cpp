@@ -46,10 +46,10 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start meta_relationship_field)]
+// [(start meta_relationship_field)] 600095
 #include "Meta_Field.h"
 #include "Meta_Workgroup.h"
-// [(finish meta_relationship_field)]
+// [(finish meta_relationship_field)] 600095
 
 // [<start includes>]
 // [<finish includes>]
@@ -961,20 +961,20 @@ uint64_t Meta_Relationship::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610100
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610100
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 620100
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 620100
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 640100
    if( get_obj( ).Transient( ) == true )
       state |= c_modifier_Is_Transient;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 640100
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -1222,7 +1222,7 @@ void Meta_Relationship::impl::after_fetch( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start meta_relationship_child_name)]
+   // [(start meta_relationship_child_name)] 600096
    if( get_obj( ).needs_field_value( "Child_Name" )
     || required_transients.count( "Child_Name" ) )
    {
@@ -1231,13 +1231,13 @@ void Meta_Relationship::impl::after_fetch( )
 
       get_obj( ).Child_Name( str );
    }
-   // [(start meta_relationship_child_name)]
+   // [(finish meta_relationship_child_name)] 600096
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 610096
    if( get_obj( ).needs_field_value( "Child_Class_Name" )
     || required_transients.count( "Child_Class_Name" ) )
       get_obj( ).Child_Class_Name( get_obj( ).Child_Class( ).Name( ) );
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 610096
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -1272,47 +1272,47 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] 600094
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Parent_Class( ).has_changed( ) )
       get_obj( ).Name( get_obj( ).Parent_Class( ).Name( ) );
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] 600094
 
-   // [(start default_to_global)]
+   // [(start default_to_global)] 600098
    if( is_create
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Parent_Class( ).Type( ) == 1 )
       get_obj( ).Extra( 1 );
-   // [(finish default_to_global)]
+   // [(finish default_to_global)] 600098
 
-   // [(start default_to_global)]
+   // [(start default_to_global)] 600099
    if( is_create
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Parent_Class( ).Type( ) == 2 )
       get_obj( ).Extra( 2 );
-   // [(finish default_to_global)]
+   // [(finish default_to_global)] 600099
 
-   // [(start default_to_global)]
+   // [(start default_to_global)] 600100
    if( is_create
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Parent_Class( ).Type( ) == 3 )
       get_obj( ).Extra( 3 );
-   // [(finish default_to_global)]
+   // [(finish default_to_global)] 600100
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 630100
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( !is_null( get_obj( ).Source_Relationship( ) ) )
          get_obj( ).Internal( true );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 630100
 
-   // [(start modifier_set_field)]
+   // [(start modifier_set_field)] 650100
    if( state & c_modifier_Is_Transient )
       get_obj( ).Cascade_Op( -1 );
-   // [(finish modifier_set_field)]
+   // [(finish modifier_set_field)] 650100
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1323,7 +1323,7 @@ void Meta_Relationship::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start meta_relationship_field)]
+   // [(start meta_relationship_field)] 600095
    if( is_null( get_obj( ).Source_Relationship( ) ) )
    {
       Meta_Field rel_field;
@@ -1349,7 +1349,7 @@ void Meta_Relationship::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Field_Id( rel_field.Id( ) );
       get_obj( ).Field_Key( rel_field.get_key( ) );
    }
-   // [(finish meta_relationship_field)]
+   // [(finish meta_relationship_field)] 600095
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -1360,7 +1360,7 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600097
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Child( ).iterate_forwards( ) )
@@ -1374,7 +1374,7 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Child( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600097
 
    // [<start after_store>]
 //nyi
@@ -1471,7 +1471,7 @@ void Meta_Relationship::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
-   // [(start meta_relationship_field)]
+   // [(start meta_relationship_field)] 600095
    if( !get_obj( ).get_is_being_cascaded( ) && is_null( get_obj( ).Source_Relationship( ) ) )
    {
       Meta_Field rel_field;
@@ -1479,7 +1479,7 @@ void Meta_Relationship::impl::for_destroy( bool is_internal )
       rel_field.op_destroy( get_obj( ).get_key( ) + "_C" );
       rel_field.op_apply( );
    }
-   // [(finish meta_relationship_field)]
+   // [(finish meta_relationship_field)] 600095
 
    // [<start for_destroy>]
    // [<finish for_destroy>]
@@ -2612,7 +2612,7 @@ void Meta_Relationship::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start meta_relationship_child_name)]
+   // [(start meta_relationship_child_name)] 600096
    if( needs_field_value( "Child_Name", dependents ) )
    {
       dependents.insert( "Name" );
@@ -2639,9 +2639,9 @@ void Meta_Relationship::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Parent_Class ) ) )
          names.insert( "Parent_Class" );
    }
-   // [(finish meta_relationship_child_name)]
+   // [(finish meta_relationship_child_name)] 600096
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 610096
    if( needs_field_value( "Child_Class_Name", dependents ) )
    {
       dependents.insert( "Child_Class" );
@@ -2650,7 +2650,7 @@ void Meta_Relationship::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Child_Class ) ) )
          names.insert( "Child_Class" );
    }
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 610096
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -2663,29 +2663,29 @@ void Meta_Relationship::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610100
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610100
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 620100
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 620100
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 640100
    dependents.insert( "Transient" ); // (for Is_Transient modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Transient ) )
     || ( !use_transients && !is_field_transient( e_field_id_Transient ) ) )
       names.insert( "Transient" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 640100
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

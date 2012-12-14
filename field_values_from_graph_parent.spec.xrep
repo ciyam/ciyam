@@ -1,5 +1,5 @@
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start field_values_from_graph_parent)]
+   // [(start field_values_from_graph_parent)] `{`$arg_id`}
    if( get_obj( ).get_graph_parent( ) )
    {
       `{`$module_name`}_`{`$arg_pclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_pclass`}* >( get_obj( ).get_graph_parent( ) );
@@ -10,5 +10,5 @@
 `+\n`]`}
       }
    }
-   // [(finish field_values_from_graph_parent)]
+   // [(finish field_values_from_graph_parent)] `{`$arg_id`}
 `}

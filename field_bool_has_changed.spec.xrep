@@ -1,7 +1,7 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`{`$value`=`'"`{`$arg_value`}"`'`}`}\
-   // [(start field_bool_has_changed)]
+   // [(start field_bool_has_changed)] `{`$arg_id`}
    if( get_obj( ).has_field_changed( c_field_id_`{`$arg_sfield`} )`{`@eq`(`$arg_not_null`,`'true`'`)
     && !is_null( get_obj( ).`{`$arg_sfield`}( ) )`}`{`!`@eq`(`$arg_value`,`'`'`)
     && get_obj( ).`{`$arg_sfield`}( ) == `{`$value`}`} )
@@ -13,10 +13,10 @@
       get_obj( ).set_variable( "`{`$arg_var`}", "true" );
    }
 `}\
-   // [(finish field_bool_has_changed)]
+   // [(finish field_bool_has_changed)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_bool_has_changed)]
+   // [(start field_bool_has_changed)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_sfield`}" );
@@ -25,5 +25,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
          names.insert( "`{`$arg_sfield`}" );
    }
-   // [(finish field_bool_has_changed)]
+   // [(finish field_bool_has_changed)] `{`$arg_id`}
 `}

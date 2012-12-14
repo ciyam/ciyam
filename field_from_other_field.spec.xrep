@@ -1,8 +1,8 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] `{`$arg_id`}
    if( field_name == "`{`$arg_dfield`}" )
       return true;
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$test_field_is_text_type`=`'`'`}\
@@ -24,7 +24,7 @@
 `{`!`@eq`(`$arg_chk_null`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$both_null_and_test`=`'true`'`}\
 `{`$not_null_and_other`=`'`'`}\
 `{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$not_null_and_other`=`'true`'`}\
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] `{`$arg_id`}
 `{`@eq`(`$needs_if_test`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
@@ -68,10 +68,10 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
       get_obj( ).op_apply( );
    }\
 `}`}`}
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
    {
 `{`!`@eq`(`$arg_pfield`,`'`'`)\
@@ -103,5 +103,5 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
          names.insert( "`{`$arg_tfield`}" );
 `}`}\
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] `{`$arg_id`}
 `}

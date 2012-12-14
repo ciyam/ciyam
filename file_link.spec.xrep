@@ -1,5 +1,5 @@
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start file_link)]
+   // [(start file_link)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -28,11 +28,11 @@
          get_obj( ).`{`$arg_field`}( name );
       }
    }
-   // [(finish file_link)]
+   // [(finish file_link)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_destroy`'`,`$section`)\
-   // [(start file_link)]
+   // [(start file_link)] `{`$arg_id`}
    if( !get_obj( ).`{`$arg_field`}( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_field`}( ) ) );
-   // [(finish file_link)]
+   // [(finish file_link)] `{`$arg_id`}
 `}

@@ -1,5 +1,5 @@
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start meta_spec_field_values)]
+   // [(start meta_spec_field_values)] `{`$arg_id`}
    // NOTE: Scope for local variables.
    {
       string str, rstr;
@@ -66,5 +66,5 @@
          get_obj( ).`{`$arg_rfield`}( rstr );
       }
    }
-   // [(finish meta_spec_field_values)]
+   // [(finish meta_spec_field_values)] `{`$arg_id`}
 `}

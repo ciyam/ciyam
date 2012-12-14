@@ -1,10 +1,10 @@
 `{`@eq`(`'includes`'`,`$section`)\
-// [(start check_fk_child_not_found)]
+// [(start check_fk_child_not_found)] `{`$arg_id`}
 #include "`{`$module_name`}_`{`$arg_fk_cclass`}.h"
-// [(finish check_fk_child_not_found)]
+// [(finish check_fk_child_not_found)] `{`$arg_id`}
 `}
 `{`@eq`(`'validate`'`,`$section`)\
-   // [(start check_fk_child_not_found)]
+   // [(start check_fk_child_not_found)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`$i`=`'   `'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
    if( get_obj( ).`{`$arg_tfield`}( ) )
@@ -66,5 +66,5 @@
       }
 `}\
    }
-   // [(finish check_fk_child_not_found)]
+   // [(finish check_fk_child_not_found)] `{`$arg_id`}
 `}

@@ -1,8 +1,8 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start field_to_value)]
+   // [(start field_to_value)] `{`$arg_id`}
    if( field_name == "`{`$arg_field`}" )
       return true;
-   // [(finish field_to_value)]
+   // [(finish field_to_value)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
 `{`$value`=`$arg_value`}\
@@ -19,7 +19,7 @@
 `{`@eq`(`$arg_update_only`,`'true`'`)`$create_update_or_has_test_field`=`'true`'`}\
 `{`@eq`(`$arg_update_only`,`'true`'`)`$create_update_internal_or_has_test_field`=`'true`'`}\
 `{`@eq`(`$arg_internal_only`,`'true`'`)`$create_update_internal_or_has_test_field`=`'true`'`}\
-   // [(start field_to_value)]
+   // [(start field_to_value)] `{`$arg_id`}
 `{`@eq`(`$create_update_internal_or_has_test_field`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
@@ -42,10 +42,10 @@
    }
 `}\
 `}\
-   // [(finish field_to_value)]
+   // [(finish field_to_value)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_to_value)]
+   // [(start field_to_value)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_tfield`}" );
@@ -54,5 +54,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
          names.insert( "`{`$arg_tfield`}" );
    }
-   // [(finish field_to_value)]
+   // [(finish field_to_value)] `{`$arg_id`}
 `}

@@ -1,5 +1,5 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
-   // [(start trigger_execute)]
+   // [(start trigger_execute)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
    if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`} )
@@ -13,5 +13,5 @@
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    }
 `}\
-   // [(finish trigger_execute)]
+   // [(finish trigger_execute)] `{`$arg_id`}
 `}

@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_action_create_from_fk)]
+   // [(start transient_field_action_create_from_fk)] `{`$arg_id`}
 `{`$key_sep`=`'%`'`}`{`!`@eq`(`$arg_key_sep`,`'`'`)`$key_sep`=`$arg_key_sep`}\
    if( get_obj( ).needs_field_value( c_field_name_`{`$arg_actions`} ) && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
    {
@@ -20,10 +20,10 @@
 `}
       get_obj( ).`{`$arg_actions`}( actions );
    }
-   // [(finish transient_field_action_create_from_fk)]
+   // [(finish transient_field_action_create_from_fk)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_action_create_from_fk)]
+   // [(start transient_field_action_create_from_fk)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_actions`}", dependents ) )
    {
       dependents.insert( "`{`$arg_fkfield`}" );
@@ -32,5 +32,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_fkfield`} ) ) )
          names.insert( "`{`$arg_fkfield`}" );
    }
-   // [(finish transient_field_action_create_from_fk)]
+   // [(finish transient_field_action_create_from_fk)] `{`$arg_id`}
 `}

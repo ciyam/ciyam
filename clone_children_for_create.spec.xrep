@@ -1,17 +1,17 @@
 `{`@eq`(`'includes`'`,`$section`)\
 `{`!`@eq`(`$arg_class`,`$arg_cclass`)`|`!`@eq`(`$arg_class`,`$arg_gclass`)\
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] `{`$arg_id`}
 `{`!`@eq`(`$arg_class`,`$arg_cclass`)\
 #include "`{`$module_name`}_`{`$arg_cclass`}.h"
 `}\
 `{`!`@eq`(`$arg_class`,`$arg_gclass`)\
 #include "`{`$module_name`}_`{`$arg_gclass`}.h"
 `}\
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] `{`$arg_id`}
 `}\
 `}
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] `{`$arg_id`}
    if( is_create
 `{`@eq`(`$arg_class`,`$arg_gclass`)\
     && get_obj( ).get_clone_key( ).empty( )
@@ -41,5 +41,5 @@
          get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).child_`{`$arg_gchild`}( ).op_apply( );
       } while( get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] `{`$arg_id`}
 `}

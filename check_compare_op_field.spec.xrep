@@ -6,7 +6,7 @@
 `{`@eq`(`$arg_op`,`'gt`'`)`$op`=`'>`'`}\
 `{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
 `{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
-   // [(start check_compare_op_field)]
+   // [(start check_compare_op_field)] `{`$arg_id`}
 `{`@eq`(`$arg_spfield`,`'`'`)\
 `{`@eq`(`$arg_not_pedit`,`'`'`)\
    if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
@@ -44,5 +44,5 @@
        c_str_parm_field_must_be_`{`$arg_op`}_other_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
        make_pair( c_str_parm_field_must_be_`{`$arg_op`}_other_field2, get_module_string( c_field_display_name_`{`$arg_spfield`} ) ) ) ) );
 `}\
-   // [(finish check_compare_op_field)]
+   // [(finish check_compare_op_field)] `{`$arg_id`}
 `}

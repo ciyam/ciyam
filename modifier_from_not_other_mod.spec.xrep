@@ -1,6 +1,6 @@
 `{`@eq`(`'get_state`'`,`$section`)\
-   // [(start modifier_from_not_other_mod)]
+   // [(start modifier_from_not_other_mod)] `{`$arg_id`}
    if( !( state & c_modifier_`{`$arg_omodifier`} ) )
       state |= c_modifier_`{`$arg_modifier`};
-   // [(finish modifier_from_not_other_mod)]
+   // [(finish modifier_from_not_other_mod)] `{`$arg_id`}
 `}

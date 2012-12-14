@@ -43,9 +43,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start copy_child_links_from_fk)]
+// [(start copy_child_links_from_fk)] 600600
 #include "Meta_Field.h"
-// [(finish copy_child_links_from_fk)]
+// [(finish copy_child_links_from_fk)] 600600
 
 // [<start includes>]
 // [<finish includes>]
@@ -447,7 +447,7 @@ struct Meta_Initial_Record::impl : public Meta_Initial_Record_command_handler
 
 void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600602
    transaction_start( );
    try
    {
@@ -505,7 +505,7 @@ void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, c
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600602
 
    // [<start Move_Down_impl>]
    // [<finish Move_Down_impl>]
@@ -513,7 +513,7 @@ void Meta_Initial_Record::impl::impl_Move_Down( const string& Restrict_Fields, c
 
 void Meta_Initial_Record::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600602
    transaction_start( );
    try
    {
@@ -571,7 +571,7 @@ void Meta_Initial_Record::impl::impl_Move_Up( const string& Restrict_Fields, con
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600602
 
    // [<start Move_Up_impl>]
    // [<finish Move_Up_impl>]
@@ -829,10 +829,10 @@ void Meta_Initial_Record::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_from_key)]
+   // [(start default_from_key)] 600601
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
+   // [(finish default_from_key)] 600601
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -852,7 +852,7 @@ void Meta_Initial_Record::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start copy_child_links_from_fk)]
+   // [(start copy_child_links_from_fk)] 600600
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ).child_Field( ).iterate_forwards( ) )
@@ -873,7 +873,7 @@ void Meta_Initial_Record::impl::after_store( bool is_create, bool is_internal )
 
       } while( get_obj( ).Class( ).child_Field( ).iterate_next( ) );
    }
-   // [(finish copy_child_links_from_fk)]
+   // [(finish copy_child_links_from_fk)] 600600
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -1564,13 +1564,13 @@ void Meta_Initial_Record::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600602
    dependents.insert( "Order" );
 
    if( ( use_transients && is_field_transient( e_field_id_Order ) )
     || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600602
 
    // [<start get_always_required_field_names>]
 

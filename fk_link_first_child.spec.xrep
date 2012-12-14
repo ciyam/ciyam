@@ -1,11 +1,11 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start fk_link_first_child)]
+   // [(start fk_link_first_child)] `{`$arg_id`}
    if( field_name == "`{`$arg_field`}" )
       return true;
-   // [(finish fk_link_first_child)]
+   // [(finish fk_link_first_child)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
-   // [(start fk_link_first_child)]
+   // [(start fk_link_first_child)] `{`$arg_id`}
 `{`@eq`(`$arg_new_only`,`'`'`)`&`@eq`(`$arg_not_create`,`'`'`)`&`@eq`(`$arg_status_field`,`'`'`)\
    // NOTE: Empty code block for scope purposes.
 `,\
@@ -39,5 +39,5 @@
           + " without at least one " + get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}child_`{`$arg_child`}( ).get_display_name( ) + "." );
 `}\
    }
-   // [(finish fk_link_first_child)]
+   // [(finish fk_link_first_child)] `{`$arg_id`}
 `}

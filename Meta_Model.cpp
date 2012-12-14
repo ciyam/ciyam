@@ -6114,10 +6114,10 @@ bool Meta_Model::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600010
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600010
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -6362,7 +6362,7 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600010
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Workgroup( ) ) )
@@ -6375,9 +6375,9 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Workgroup( ).Next_Model_Id( auto_int_increment( get_obj( ).Workgroup( ).Next_Model_Id( ) ) );
       get_obj( ).Workgroup( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600010
 
-   // [(start file_link)]
+   // [(start file_link)] 600011
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -6402,9 +6402,9 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
          get_obj( ).Source_File( name );
       }
    }
-   // [(finish file_link)]
+   // [(finish file_link)] 600011
 
-   // [(start file_link)]
+   // [(start file_link)] 600012
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -6429,35 +6429,39 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
          get_obj( ).Commands_File( name );
       }
    }
-   // [(finish file_link)]
+   // [(finish file_link)] 600012
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 610010
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_Class_Id( ) == gv_default_Next_Class_Id )
       get_obj( ).Next_Class_Id( get_obj( ).Id( ) + "C100" );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 610010
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 620010
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_Specification_Id( ) == gv_default_Next_Specification_Id )
       get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S1000" );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 620010
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 630010
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_List_Id( ) == gv_default_Next_List_Id )
       get_obj( ).Next_List_Id( get_obj( ).Id( ) + "L100" );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 630010
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 640010
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_View_Id( ) == gv_default_Next_View_Id )
       get_obj( ).Next_View_Id( get_obj( ).Id( ) + "V100" );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 640010
 
    // [<start for_store>]
 //nyi
@@ -6552,15 +6556,15 @@ void Meta_Model::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
-   // [(start file_link)]
+   // [(start file_link)] 600011
    if( !get_obj( ).Source_File( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).Source_File( ) ) );
-   // [(finish file_link)]
+   // [(finish file_link)] 600011
 
-   // [(start file_link)]
+   // [(start file_link)] 600012
    if( !get_obj( ).Commands_File( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).Commands_File( ) ) );
-   // [(finish file_link)]
+   // [(finish file_link)] 600012
 
    // [<start for_destroy>]
 //nyi

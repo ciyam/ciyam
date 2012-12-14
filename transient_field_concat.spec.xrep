@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_concat)]
+   // [(start transient_field_concat)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( )
 `{`@eq`(`$arg_top_level`,`'true`'`)\
     && !get_obj( ).get_graph_parent( )
@@ -90,10 +90,10 @@
       }
 `}\
    }
-   // [(finish transient_field_concat)]
+   // [(finish transient_field_concat)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_concat)]
+   // [(start transient_field_concat)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
    {
       dependents.insert( "`{`$arg_field1`}" );
@@ -120,5 +120,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field3`} ) ) )
          names.insert( "`{`$arg_field3`}" );
    }
-   // [(finish transient_field_concat)]
+   // [(finish transient_field_concat)] `{`$arg_id`}
 `}

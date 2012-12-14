@@ -1,14 +1,14 @@
 `{`@eq`(`'includes`'`,`$section`)\
-// [(start trigger_copy_fk_children_below_other_fk)]
+// [(start trigger_copy_fk_children_below_other_fk)] `{`$arg_id`}
 `{`!`@eq`(`$arg_src_fk_key_class`,`'`'`)\
 #include "`{`$module_name`}_`{`$arg_src_fk_key_class`}.h"
 `}\
 #include "`{`$module_name`}_`{`$arg_scclass`}.h"
 #include "`{`$module_name`}_`{`$arg_dcclass`}.h"
-// [(finish trigger_copy_fk_children_below_other_fk)]
+// [(finish trigger_copy_fk_children_below_other_fk)] `{`$arg_id`}
 `}
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start trigger_copy_fk_children_below_other_fk)]
+   // [(start trigger_copy_fk_children_below_other_fk)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
    if( get_obj( ).`{`$arg_tfield`}( ) )
    {
@@ -54,5 +54,5 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
    }
 `}\
-   // [(finish trigger_copy_fk_children_below_other_fk)]
+   // [(finish trigger_copy_fk_children_below_other_fk)] `{`$arg_id`}
 `}

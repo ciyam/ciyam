@@ -1883,6 +1883,7 @@ void Meta_Application::impl::impl_Generate_Upgrade_DDL( )
 void Meta_Application::impl::impl_Test_Proc_1( string& Output )
 {
    // [<start Test_Proc_1_impl>]
+//nyi
    Output = get_obj( ).get_variable( "test_var" );
    Output += " " + get_obj( ).Name( );
    // [<finish Test_Proc_1_impl>]
@@ -1891,6 +1892,7 @@ void Meta_Application::impl::impl_Test_Proc_1( string& Output )
 void Meta_Application::impl::impl_Test_Proc_2( const string& Input, string& Output )
 {
    // [<start Test_Proc_2_impl>]
+//nyi
    Output = get_obj( ).get_variable( "test_var" );
    Output += " " + get_obj( ).Name( );
    Output += " " + Input;
@@ -2180,15 +2182,15 @@ uint64_t Meta_Application::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600500
    if( check_equal( get_obj( ).Actions( ), "" ) )
       state |= ( c_state_undeletable | c_state_is_changing );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600500
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600520
    if( get_obj( ).Generate_Type( ) != 0 )
       state |= c_modifier_Is_Not_Full_Generate;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600520
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -2450,12 +2452,12 @@ void Meta_Application::impl::after_fetch( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start transient_field_from_file)]
+   // [(start transient_field_from_file)] 600510
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Generate_Details" )
     || required_transients.count( "Generate_Details" ) ) )
       get_obj( ).Generate_Details( load_file( get_obj( ).Name( ) + ".generate.log", true ) );
-   // [(finish transient_field_from_file)]
+   // [(finish transient_field_from_file)] 600510
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -4418,21 +4420,21 @@ void Meta_Application::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600500
    dependents.insert( "Actions" );
 
    if( ( use_transients && is_field_transient( e_field_id_Actions ) )
     || ( !use_transients && !is_field_transient( e_field_id_Actions ) ) )
       names.insert( "Actions" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600500
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600520
    dependents.insert( "Generate_Type" ); // (for Is_Not_Full_Generate modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Generate_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Generate_Type ) ) )
       names.insert( "Generate_Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600520
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

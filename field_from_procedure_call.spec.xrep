@@ -1,5 +1,5 @@
 `{`@eq`(`'finalise_fetch`'`,`$section`)\
-   // [(start field_from_procedure_call)]
+   // [(start field_from_procedure_call)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
     || required_transients.count( "`{`$arg_field`}" ) ) )
@@ -12,10 +12,10 @@
 `}
       get_obj( ).`{`$arg_field`}( str );
    }
-   // [(finish field_from_procedure_call)]
+   // [(finish field_from_procedure_call)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start field_from_procedure_call)]
+   // [(start field_from_procedure_call)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       string str;
@@ -26,5 +26,5 @@
 `}
       get_obj( ).`{`$arg_field`}( str );
    }
-   // [(finish field_from_procedure_call)]
+   // [(finish field_from_procedure_call)] `{`$arg_id`}
 `}

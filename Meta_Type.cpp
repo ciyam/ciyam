@@ -1170,65 +1170,65 @@ uint64_t Meta_Type::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600005
    if( get_obj( ).Primitive( ) == 0 ) // i.e. string
       state |= c_modifier_Is_String;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600005
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600006
    if( get_obj( ).Primitive( ) == 1 ) // i.e. datetime
       state |= c_modifier_Is_Datetime;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600006
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600007
    if( get_obj( ).Primitive( ) == 2 ) // i.e. date
       state |= c_modifier_Is_Date;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600007
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600008
    if( get_obj( ).Primitive( ) == 3 ) // i.e. time
       state |= c_modifier_Is_Time;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600008
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600009
    if( get_obj( ).Primitive( ) == 4 ) // i.e. numeric
       state |= c_modifier_Is_Numeric;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610009
    if( get_obj( ).Primitive( ) == 5 ) // i.e. int
       state |= c_modifier_Is_Int;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 620009
    if( get_obj( ).Primitive( ) == 6 ) // i.e. bool
       state |= c_modifier_Is_Bool;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 620009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 630009
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 630009
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 640009
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 640009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 660009
    if( get_obj( ).Int_Type( ) != 0 )
       state |= c_modifier_Is_Not_Normal_Int;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 660009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 670009
    if( get_obj( ).Numeric_Type( ) != 0 )
       state |= c_modifier_Is_Not_Normal_Numeric;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 670009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 680009
    if( get_obj( ).Auto_Round( ) == 0 )
       state |= c_modifier_Is_Not_Auto_Rounded;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 680009
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -1325,10 +1325,10 @@ bool Meta_Type::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 650009
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 650009
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -1726,7 +1726,7 @@ void Meta_Type::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 650009
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Workgroup( ) ) )
@@ -1739,7 +1739,7 @@ void Meta_Type::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Workgroup( ).Next_Type_Id( auto_int_increment( get_obj( ).Workgroup( ).Next_Type_Id( ) ) );
       get_obj( ).Workgroup( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 650009
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -3092,101 +3092,101 @@ void Meta_Type::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600005
    dependents.insert( "Primitive" ); // (for Is_String modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600005
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600006
    dependents.insert( "Primitive" ); // (for Is_Datetime modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600006
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600007
    dependents.insert( "Primitive" ); // (for Is_Date modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600007
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600008
    dependents.insert( "Primitive" ); // (for Is_Time modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600008
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600009
    dependents.insert( "Primitive" ); // (for Is_Numeric modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610009
    dependents.insert( "Primitive" ); // (for Is_Int modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 620009
    dependents.insert( "Primitive" ); // (for Is_Bool modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 620009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 630009
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 630009
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 640009
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 640009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 660009
    dependents.insert( "Int_Type" ); // (for Is_Not_Normal_Int modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Int_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Int_Type ) ) )
       names.insert( "Int_Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 660009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 670009
    dependents.insert( "Numeric_Type" ); // (for Is_Not_Normal_Numeric modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Numeric_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Numeric_Type ) ) )
       names.insert( "Numeric_Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 670009
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 680009
    dependents.insert( "Auto_Round" ); // (for Is_Not_Auto_Rounded modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Auto_Round ) )
     || ( !use_transients && !is_field_transient( e_field_id_Auto_Round ) ) )
       names.insert( "Auto_Round" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 680009
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

@@ -1,16 +1,16 @@
 `{`@eq`(`'value_will_be_provided`'`,`$section`)\
-   // [(start field_from_module_string)]
+   // [(start field_from_module_string)] `{`$arg_id`}
    if( field_name == "`{`$arg_field`}" )
       return true;
-   // [(finish field_from_module_string)]
+   // [(finish field_from_module_string)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
-   // [(start field_from_module_string)]
+   // [(start field_from_module_string)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
 `,\
    if( get_obj( ).`{`$arg_tfield`}( ) )
       get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
 `}\
-   // [(finish field_from_module_string)]
+   // [(finish field_from_module_string)] `{`$arg_id`}
 `}

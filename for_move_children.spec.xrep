@@ -1,6 +1,6 @@
 `{`@eq`(`'procedure`'`,`$section`)\
 `{`$key_suffix`=`'_C`'`}`{`!`@eq`(`$arg_key_suffix`,`'`'`)`$key_suffix`=`$arg_key_suffix`}\
-   // [(start for_move_children)]
+   // [(start for_move_children)] `{`$arg_id`}
 `{`@eq`(`$arg_move_from`,`'true`'`)\
    class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
 
@@ -27,5 +27,5 @@
       } while( get_obj( ).child_`{`$arg_children`}( ).iterate_next( ) );
    }
 `}\
-   // [(start for_move_children)]
+   // [(finish for_move_children)] `{`$arg_id`}
 `}

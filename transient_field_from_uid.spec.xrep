@@ -1,7 +1,7 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_from_uid)]
+   // [(start transient_field_from_uid)] `{`$arg_id`}
    if( required_transients.count( "`{`$arg_field`}" )
     || get_obj( ).needs_field_value( "`{`$arg_field`}" ) )
       get_obj( ).`{`$arg_field`}( get_uid( ) );
-   // [(finish transient_field_from_uid)]
+   // [(finish transient_field_from_uid)] `{`$arg_id`}
 `}

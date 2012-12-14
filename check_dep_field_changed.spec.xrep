@@ -1,5 +1,5 @@
 `{`@eq`(`'validate`'`,`$section`)\
-   // [(start check_dep_field_changed)]
+   // [(start check_dep_field_changed)] `{`$arg_id`}
    if( !is_system_uid( )
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )
     && !get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )
@@ -9,5 +9,5 @@
        c_str_parm_field_dep_must_be_changed_field1, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
        make_pair( c_str_parm_field_dep_must_be_changed_field2, get_module_string( c_field_display_name_`{`$arg_tfield`} ) ) ) ) );
    }
-   // [(finish check_dep_field_changed)]
+   // [(finish check_dep_field_changed)] `{`$arg_id`}
 `}
