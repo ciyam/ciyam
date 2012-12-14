@@ -927,8 +927,16 @@ command_tests[ ] =
 
 int main( int argc, char* argv[ ] )
 {
+   bool is_quiet = false;
+
    try
    {
+      if( argc > 1 && string( argv[ 1 ] ) == "/quiet" )
+      {
+         --argc;
+         is_quiet = true;
+      }   
+
       if( argc > 1 && string( argv[ 1 ] ) == "/test" )
       {
          cout << "performing tests...\n\n";
@@ -998,6 +1006,8 @@ int main( int argc, char* argv[ ] )
       }
       else if( argc == 1 )
       {
+
+
          command_parser p;
          string cmd, next;
          while( cout << "\n> ", getline( cin, next ) )
@@ -1039,6 +1049,12 @@ int main( int argc, char* argv[ ] )
                   continue;
                }
 
+               if( next.size( ) > 2 && next[ 0 ] == '"' && next[ next.size( ) - 1 ] == '"' )
+               {
+                  next.erase( 0, 1 );
+                  next.erase( next.length( ) - 1 );
+               }
+
                p.parse_syntax( next.c_str( ) );
                if( p.okay( ) )
                   cout << "okay" << endl;
@@ -1053,11 +1069,14 @@ int main( int argc, char* argv[ ] )
                if( p.parse_command( arguments, parameters ) )
                {
                   cout << "okay" << endl;
-                  map< string, string >::iterator i;
-                  if( !parameters.empty( ) )
-                     cout << "\n[parameters]\n";
-                  for( i = parameters.begin( ); i != parameters.end( ); ++i )
-                     cout << "parameter: " << i->first << ", value = '" << i->second << "'\n";
+                  if( !is_quiet )
+                  {
+                     map< string, string >::iterator i;
+                     if( !parameters.empty( ) )
+                        cout << "\n[parameters]\n";
+                     for( i = parameters.begin( ); i != parameters.end( ); ++i )
+                        cout << "parameter: " << i->first << ", value = '" << i->second << "'\n";
+                  }
                }
                else
                   cout << "error: invalid command '" << next << "'" << endl;

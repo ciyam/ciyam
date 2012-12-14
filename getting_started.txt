@@ -88,7 +88,7 @@ you will need to stop and restart the application server (if using Windows then 
 
 *************************************************************************************************************
 
-If all went well the you should now be able to access the IDE: http://localhost/Meta
+If all went well the you should now be able to access the IDE: http://localhost/meta
 
 From the login form which should have appeared use the password and user id "guest" (no quotes).
 

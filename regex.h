@@ -21,9 +21,9 @@
 #     include <iosfwd>
 #  endif
 
-const char* const c_regex_html_tag = "<([A-Za-z][A-Za-z0-9]*)([^>]*)>";
+const char* const c_regex_html_tag = "<([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>";
 const char* const c_regex_email_address = "\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}\\b";
-const char* const c_regex_html_paired_tags = "<([A-Za-z][A-Za-z0-9]*)([^>]*)>(.*)</\\1>";
+const char* const c_regex_html_paired_tags = "<([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>(.*)</\\1>";
 const char* const c_regex_floating_point_number = "\\b[-+]?[0-9]+\\.[0-9]+\\b";
 
 // NOTE: This regular expression implementation does not perform backtracking and so will never

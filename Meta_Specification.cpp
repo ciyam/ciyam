@@ -5818,6 +5818,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{fmandatory}", to_rep_string( get_obj( ).Field( ).Mandatory( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ftransient}", to_rep_string( get_obj( ).Field( ).Transient( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fdecimals}", to_rep_string( get_obj( ).Field( ).Numeric_Decimals( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{fisfk}", to_rep_string( get_obj( ).Field( ).Is_Foreign_Key( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fistexttype}", to_rep_string( get_obj( ).Field( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{fpclass}", to_rep_string( get_obj( ).Field( ).Parent_Class_Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{ofield}", to_rep_string( get_obj( ).Other_Field( ).Name( ) ) );
@@ -5840,6 +5841,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{sfield}", to_rep_string( get_obj( ).Source_Field( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{sfield_id}", to_rep_string( get_obj( ).Source_Field( ).Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{sgcfield}", to_rep_string( get_obj( ).Source_Grandchild( ).Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{sfisfk}", to_rep_string( get_obj( ).Source_Field( ).Is_Foreign_Key( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{sfistexttype}", to_rep_string( get_obj( ).Source_Field( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{scfistexttype}", to_rep_string( get_obj( ).Source_Child( ).Is_Text_Type( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{tpfield}", to_rep_string( get_obj( ).Test_Parent( ).Name( ) ) );
@@ -6127,10 +6129,10 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Source_Class( get_obj( ).Class( ) );
    // [(finish default_to_field)]
 
-   // [(start field_clear_on_changed_fk)]
+   // [(start field_clear_on_changed)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Source_Parent( string( ) );
-   // [(finish field_clear_on_changed_fk)]
+   // [(finish field_clear_on_changed)]
 
    // [(start field_clear)]
    if( get_obj( ).Specification_Type( ).Allow_FK_Source_Field_Choice( ) && get_obj( ).Use_Source_Parent( ) )
@@ -6147,10 +6149,10 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Source_Child( string( ) );
    // [(finish field_clear)]
 
-   // [(start field_clear_on_changed_fk)]
+   // [(start field_clear_on_changed)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Child_Relationship( string( ) );
-   // [(finish field_clear_on_changed_fk)]
+   // [(finish field_clear_on_changed)]
 
    // [(start field_from_other_field)]
    get_obj( ).Source_Parent_Class( get_obj( ).Source_Parent( ).Parent_Class( ) );
@@ -6175,20 +6177,20 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
       get_obj( ).Order( get_obj( ).get_key( ) );
    // [(finish default_from_key)]
 
-   // [(start field_clear_on_changed_fk)]
+   // [(start field_clear_on_changed)]
    if( get_obj( ).Specification_Type( ).Use_Field_Enum( ) && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Enum( string( ) );
-   // [(finish field_clear_on_changed_fk)]
+   // [(finish field_clear_on_changed)]
 
-   // [(start field_clear_on_changed_fk)]
+   // [(start field_clear_on_changed)]
    if( get_obj( ).Specification_Type( ).Use_Source_Field_Enum( ) && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Enum( string( ) );
-   // [(finish field_clear_on_changed_fk)]
+   // [(finish field_clear_on_changed)]
 
-   // [(start field_clear_on_changed_fk)]
+   // [(start field_clear_on_changed)]
    if( !is_create && get_obj( ).Class( ).has_changed( ) )
       get_obj( ).Test_Parent( string( ) );
-   // [(finish field_clear_on_changed_fk)]
+   // [(finish field_clear_on_changed)]
 
    // [(start field_from_other_field)]
    get_obj( ).Test_Parent_Class( get_obj( ).Test_Parent( ).Parent_Class( ) );
@@ -11711,6 +11713,15 @@ void Meta_Specification::get_required_field_names(
 
    if( needs_field_value( "Vars", dependents ) )
    {
+      dependents.insert( "Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Field ) ) )
+         names.insert( "Field" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
       dependents.insert( "Other_Field" );
 
       if( ( use_transients && is_field_transient( e_field_id_Other_Field ) )
@@ -11887,6 +11898,15 @@ void Meta_Specification::get_required_field_names(
       if( ( use_transients && is_field_transient( e_field_id_Source_Grandchild ) )
        || ( !use_transients && !is_field_transient( e_field_id_Source_Grandchild ) ) )
          names.insert( "Source_Grandchild" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Source_Field" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Source_Field ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Source_Field ) ) )
+         names.insert( "Source_Field" );
    }
 
    if( needs_field_value( "Vars", dependents ) )

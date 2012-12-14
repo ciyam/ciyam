@@ -2717,6 +2717,14 @@
         <item>dest_field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600465
         <item>tfield
        </specification>
@@ -14898,6 +14906,10 @@
         <item>field
        </specification>
        <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
         <id>600208
         <item>field
        </specification>
@@ -15829,11 +15841,11 @@
        </specification>
        <specification/>
         <id>600161
-        <item>pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600165
-        <item>pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600166a
@@ -15841,15 +15853,15 @@
        </specification>
        <specification/>
         <id>600171
-        <item>pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600171a
-        <item>pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600172
-        <item>pfield
+        <item>sfield
        </specification>
        <specification/>
         <id>600204
@@ -16027,6 +16039,10 @@
        </specification>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -30250,11 +30266,11 @@
    <specification/>
     <id>600165
     <name>{Specification}_Child_Relationship_clear_for_Class
-    <type>field_clear_on_changed_fk
+    <type>field_clear_on_changed
     <data/>
      <class_id>115100
      <field_id>301475
-     <pfield_id>301420
+     <sfield_id>301420
      <not_create>true
     </data>
    </specification>
@@ -31870,11 +31886,11 @@
    <specification/>
     <id>600161
     <name>{Specification}_Source_Parent_clear_for_Class
-    <type>field_clear_on_changed_fk
+    <type>field_clear_on_changed
     <data/>
      <class_id>115100
      <field_id>301480
-     <pfield_id>301420
+     <sfield_id>301420
      <not_create>true
     </data>
    </specification>
@@ -32018,11 +32034,11 @@
    <specification/>
     <id>600172
     <name>{Specification}_Test_Parent_clear_for_Class
-    <type>field_clear_on_changed_fk
+    <type>field_clear_on_changed
     <data/>
      <class_id>115100
      <field_id>301486
-     <pfield_id>301420
+     <sfield_id>301420
      <not_create>true
     </data>
    </specification>
@@ -32182,6 +32198,7 @@
      <field_info>301430:107105;107100={fmandatory}
      <field_info>301430:107112;107100={ftransient}
      <field_info>301430:107114;107100={fdecimals}
+     <field_info>301430:107108;107100={fisfk}
      <field_info>301430:107109;107100={fistexttype}
      <field_info>301430:107113;107100={fpclass}
      <field_info>301435:107101;107100={ofield}
@@ -32204,6 +32221,7 @@
      <field_info>301481:107101;107100={sfield}
      <field_info>301481:107110;107100={sfield_id}
      <field_info>301476:107101;107100={sgcfield}
+     <field_info>301481:107108;107100={sfisfk}
      <field_info>301481:107109;107100={sfistexttype}
      <field_info>301495:107109;107100={scfistexttype}
      <field_info>301486:107101;107100={tpfield}
@@ -32555,12 +32573,12 @@
    <specification/>
     <id>600171
     <name>{Specification}_{Enum}_clear_1
-    <type>field_clear_on_changed_fk
+    <type>field_clear_on_changed
     <data/>
      <class_id>115100
      <tclass_id>114100
      <field_id>301460
-     <pfield_id>301420
+     <sfield_id>301420
      <tfield_id>114162
      <tpfield_id>301410
     </data>
@@ -32568,12 +32586,12 @@
    <specification/>
     <id>600171a
     <name>{Specification}_{Enum}_clear_2
-    <type>field_clear_on_changed_fk
+    <type>field_clear_on_changed
     <data/>
      <class_id>115100
      <tclass_id>114100
      <field_id>301460
-     <pfield_id>301420
+     <sfield_id>301420
      <tfield_id>114207
      <tpfield_id>301410
     </data>

@@ -363,12 +363,15 @@ regex::impl::impl( const string& expr )
             if( is_range )
             {
                had_range = true;
-               next_part.matches.push_back( make_pair( last_ch, ch ) );
+               next_part.matches.push_back( make_pair( last_ch, last_ch ) );
             }
             else if( is_special_set( ch ) )
+            {
                add_special_set( next_part, ch );
+               continue;
+            }
             else
-               next_part.matches.push_back( make_pair( ch, ch ) );
+               next_part.matches.push_back( make_pair( last_ch, last_ch ) );
 
             is_range = false;
          }
@@ -497,7 +500,7 @@ regex::impl::impl( const string& expr )
             if( !is_in_set )
                throw runtime_error( "invalid set finish in: " + expr );
 
-            if( !had_range )
+            if( !had_range && last_ch != '[' )
                next_part.matches.push_back( make_pair( last_ch, last_ch ) );
 
             ch_used = true;
@@ -692,7 +695,6 @@ regex::impl::impl( const string& expr )
             next_part.clear( );
 
             ch_used = true;
-
             had_empty = false;
          }
          else if( ch == '{' )
@@ -914,6 +916,7 @@ string::size_type regex::impl::search(
       return string::npos;
 
 #ifdef DEBUG
+   cout << "text: " << text << endl;
    dump( cout );
 #endif
 
@@ -966,7 +969,7 @@ string::size_type regex::impl::search(
       string::size_type low = 0;
       string::size_type high = start;
 
-      while( low != high )
+      while( true )
       {
          start = do_search( text, high, p_length, p_refs );
          if( start != string::npos && start < high )
@@ -993,6 +996,9 @@ string::size_type regex::impl::search(
             else if( p_refs )
                *p_refs = old_refs;
          }
+
+         if( low == high )
+            break;
 
          ++low;
          --high;
@@ -1031,6 +1037,7 @@ string::size_type regex::impl::do_search(
       size_t ref_starts = 0;
       size_t ref_started = string::npos;
       size_t ref_finished = string::npos;
+      size_t ref_started_by = string::npos;
 
       bool has_matched = false;
 
@@ -1046,7 +1053,7 @@ string::size_type regex::impl::do_search(
 
          start = pos;
 
-         if( prefix_at_boundary && start )
+         if( prefix_at_boundary && start > 0 )
             --start;
       }
 
@@ -1083,7 +1090,7 @@ string::size_type regex::impl::do_search(
                 || match_literal( literal, text, i ) )
                {
 #ifdef DEBUG
-                  cout << "matched literal in part #" << ( j + 1 ) << endl;
+                  cout << "matched literal in part #" << ( j + 1 ) << " for " << literal << " at #" << i << endl;
 #endif
                   if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
                      ++i;
@@ -1097,13 +1104,15 @@ string::size_type regex::impl::do_search(
                   last_found = j;
                   has_matched = true;
 
-                  if( p.start_ref )
+                  if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
                   {
                      if( ref_started != string::npos && ref_finished != string::npos )
                         node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
 
                      ref_starts = j;
                      ref_started = i;
+                     ref_started_by = j;
+
                      ref_finished = string::npos;
                      node_refs[ ref_starts ] = "";
                   }
@@ -1148,7 +1157,7 @@ string::size_type regex::impl::do_search(
                   if( match_set( text, i, p ) )
                   {
 #ifdef DEBUG
-                     cout << "matched set in part #" << ( j + 1 ) << ( p.inverted ? " (inverted)" : "" ) << endl;
+                     cout << "matched set in part #" << ( j + 1 ) << ( p.inverted ? " (inverted)" : "" ) << " for " << text[ i ] << " at #" << i << endl;
 #endif
                      if( !okay )
                         begins = i;
@@ -1161,13 +1170,15 @@ string::size_type regex::impl::do_search(
 
                      int min_matches = max( 1, p.min_matches );
 
-                     if( p.start_ref )
+                     if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
                      {
                         if( ref_started != string::npos && ref_finished != string::npos )
                            node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
 
                         ref_starts = j;
                         ref_started = i;
+                        ref_started_by = j;
+
                         ref_finished = string::npos;
                         node_refs[ ref_starts ] = "";
                      }
@@ -1208,13 +1219,13 @@ string::size_type regex::impl::do_search(
             }
 
             bool force_repeat = false;
-            if( j < parts.size( ) - 1 && parts[ j + 1 ].inverted )
+            if( found && j < parts.size( ) - 1 && parts[ j + 1 ].inverted )
                force_repeat = true;
 
             // NOTE: The approach to repeat matching is to initially try to match
             // the next part of the expression and only if this fails (or this is
-            // the last part of the expression or the next part is inverted) then
-            // then attempt the repeat.
+            // the last part of the expression or it has matched the current part
+            // and the next part is inverted) then attempt the repeat.
             if( okay && ( !found || force_repeat || j == parts.size( ) - 1 ) )
             {
                expand_refs( last_literal );
@@ -1324,8 +1335,13 @@ string::size_type regex::impl::do_search(
             {
                // NOTE: If the finish position is the last character and the last
                // part is just a boundary match character then is still matching.
+               // Also if the last part is both required and inverted then it can
+               // only succeed if it doesn't match.
                if( j != parts.size( ) - 1 || finishes != text.length( ) - 1
-                || parts[ j ].type != e_part_type_lit || parts[ j ].literal != "\b" )
+                || ( parts[ j ].type == e_part_type_lit && parts[ j ].literal != "\b" )
+                || ( parts[ j ].type == e_part_type_set && parts[ j ].inverted
+                && ( text.size( ) < parts[ j ].min_matches
+                || !match_set( text, text.size( ) - parts[ j ].min_matches, parts[ j ] ) ) ) )
                {
                   okay = false;
                   break;
@@ -1389,18 +1405,13 @@ bool regex::impl::match_set( const string& text, size_t off, const part& p )
          if( p.matches[ x ].first == '\0'
           || ( text[ off ] >= p.matches[ x ].first && text[ off ] <= p.matches[ x ].second ) )
          {
-            if( !p.inverted )
-            {
-               okay = true;
-               break;
-            }
-         }
-         else if( p.inverted )
-         {
             okay = true;
             break;
          }
       }
+
+      if( p.inverted )
+         okay = !okay;
 
       if( !okay )
          break;

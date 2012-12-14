@@ -1425,13 +1425,13 @@ specification_add -id=600158 {Specification}_Child_{Specification_Type}_default 
  "Specification Child_{Specification_Type} {Specification_Type}:Child_{Specification_Type}"
 specification_add -id=600159 {Specification}_{Model}_default_2 default_to_field "Specification {Model} {Class}:{Model}"
 specification_add -id=600160 {Specification}_Source_Class_default_2 default_to_field "Specification Source_Class {Class}"
-specification_add -id=600161 {Specification}_Source_Parent_clear_for_Class field_clear_on_changed_fk "Specification {Class} Source_Parent -not_create"
+specification_add -id=600161 {Specification}_Source_Parent_clear_for_Class field_clear_on_changed "Specification {Class} Source_Parent -not_create"
 specification_add -id=600162 {Specification}_Source_Field_clear field_clear "Specification Source_Field {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent"
 specification_add -id=600163 {Specification}_Source_Parent_clear field_clear "Specification Source_Parent {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
 specification_add -id=600164 {Specification}_Source_Child_clear field_clear "Specification Source_Child {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
 specification_add -id=610164 {Specification}_Other_Source_Child_clear field_clear "Specification Other_Source_Child {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
 specification_add -id=620164 {Specification}_Other_Source_Child_2_clear field_clear "Specification Other_Source_Child_2 {Specification_Type}:Allow_FK_Source_Field_Choice Use_Source_Parent -negative"
-specification_add -id=600165 {Specification}_Child_Relationship_clear_for_Class field_clear_on_changed_fk "Specification {Class} Child_Relationship -not_create"
+specification_add -id=600165 {Specification}_Child_Relationship_clear_for_Class field_clear_on_changed "Specification {Class} Child_Relationship -not_create"
 specification_add -id=600166 {Specification}_Source_Parent_Class field_from_other_field "Specification Source_Parent:Parent_Class Source_Parent_Class"
 specification_add -id=600166a {Specification}_Source_Parent_Class_default default_to_field\
  "Specification Source_Parent_Class {Class} -test={Specification_Type}:Use_Class_As_Source_Parent_Class=true"
@@ -1440,9 +1440,9 @@ specification_add -id=600168 {Specification}_Order_default default_from_key "Spe
 specification_add -id=600169 {Specification}_move_up_and_down move_up_and_down "Specification Move_Up Move_Down Restrict_Fields Restrict_Values Order"
 specification_add -id=600170 {Specification}_copy_{Specification_Type}_children copy_child_links_from_fk\
  "Specification Parent_{Specification} Specification_Type Parent_{Specification_Type} Actions-Specification_Actions -self_child"
-specification_add -id=600171 {Specification}_{Enum}_clear_1 field_clear_on_changed_fk "Specification {Class} {Enum} -test={Specification_Type}:Use_Field_Enum"
-specification_add -id=600171a {Specification}_{Enum}_clear_2 field_clear_on_changed_fk "Specification {Class} {Enum} -test={Specification_Type}:Use_Source_Field_Enum"
-specification_add -id=600172 {Specification}_Test_Parent_clear_for_Class field_clear_on_changed_fk "Specification {Class} Test_Parent -not_create"
+specification_add -id=600171 {Specification}_{Enum}_clear_1 field_clear_on_changed "Specification {Class} {Enum} -test={Specification_Type}:Use_Field_Enum"
+specification_add -id=600171a {Specification}_{Enum}_clear_2 field_clear_on_changed "Specification {Class} {Enum} -test={Specification_Type}:Use_Source_Field_Enum"
+specification_add -id=600172 {Specification}_Test_Parent_clear_for_Class field_clear_on_changed "Specification {Class} Test_Parent -not_create"
 specification_add -id=600173 {Specification}_Test_Parent_Class field_from_other_field "Specification Test_Parent:Parent_Class Test_Parent_Class"
 specification_add -id=600174 {Specification}_Test_Field_clear field_clear "Specification Test_Field {Specification_Type}:Allow_FK_Test_Field_Choice Use_Test_Parent_Child"
 specification_add -id=600175 {Specification}_Test_Parent_clear field_clear "Specification Test_Parent {Specification_Type}:Allow_FK_Test_Field_Choice Use_Test_Parent_Child -negative"
@@ -1524,14 +1524,15 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
  {Specification_Type}:Specification_Vars Id={id},{Model}:Name={model},{Model}:Id={model_id}\
 ,{Class}:Name={class},{Class}:Id={class_id},Other_Class:Name={oclass},Other_Class:Id={oclass_id}\
 ,{Field}:Name={field},Field_Class:Name={fclass},{Field}:Id={field_id},{Field}:Mandatory={fmandatory}\
-,{Field}:Transient={ftransient},{Field}:Numeric_Decimals={fdecimals},{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
+,{Field}:Transient={ftransient},{Field}:Numeric_Decimals={fdecimals},{Field}:Is_Foreign_Key={fisfk}\
+,{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
 ,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
 ,{Modifier}:Name={modifier},Other_{Modifier}:Name={omodifier},Other_{Modifier}_2:Name={o2modifier}\
 ,Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield},Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass}\
 ,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Other_Source_Child:Name={oscfield},Other_Source_Child:Id={oscfield_id}\
 ,Other_Source_Child_2:Name={o2scfield},Other_Source_Child_2:Id={o2scfield_id}\
 ,Source_Field:Name={sfield},Source_Field:Id={sfield_id},Source_Grandchild:Name={sgcfield}\
-,Source_Field:Is_Text_Type={sfistexttype},Source_Child:Is_Text_Type={scfistexttype}\
+,Source_Field:Is_Foreign_Key={sfisfk},Source_Field:Is_Text_Type={sfistexttype},Source_Child:Is_Text_Type={scfistexttype}\
 ,Test_Parent:Name={tpfield},Test_Child:Name={tcfield},Test_Child:Is_Text_Type={tcfistexttype},Test_Field:Name={tfield}\
 ,Test_Field:Id={tfield_id},Test_Field:Is_Text_Type={tfistexttype},Test_Field_Class:Name={tfclass},Test_Value={tvalue}\
 ,{Permission}:Name={permission},{Permission}:Id={permission_id},Other_{Permission}:Name={opermission}\
