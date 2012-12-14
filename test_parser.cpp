@@ -935,7 +935,7 @@ int main( int argc, char* argv[ ] )
       {
          --argc;
          is_quiet = true;
-      }   
+      }
 
       if( argc > 1 && string( argv[ 1 ] ) == "/test" )
       {
