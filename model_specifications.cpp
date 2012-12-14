@@ -3849,7 +3849,7 @@ string field_clear_specification::static_class_name( ) { return "field_clear"; }
 
 DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, field_clear_specification, static_class_name );
 
-struct field_clear_on_changed_fk_specification : specification
+struct field_clear_on_changed_specification : specification
 {
    void add( model& m, const vector< string >& args, vector< specification_detail >& details );
 
@@ -3868,7 +3868,7 @@ struct field_clear_on_changed_fk_specification : specification
    string tclass_id;
 
    string field_id;
-   string pfield_id;
+   string sfield_id;
 
    string tfield_id;
    string tpfield_id;
@@ -3878,13 +3878,13 @@ struct field_clear_on_changed_fk_specification : specification
    bool not_default;
 };
 
-void field_clear_on_changed_fk_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
+void field_clear_on_changed_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
 {
    if( args.size( ) < 3 )
-      throw runtime_error( "unexpected number of args < 3 for 'field_clear_on_changed_fk' specification" );
+      throw runtime_error( "unexpected number of args < 3 for 'field_clear_on_changed' specification" );
 
    string arg_class_name( args[ 0 ] );
-   string arg_pfield_name( args[ 1 ] );
+   string arg_sfield_name( args[ 1 ] );
    string arg_dfield_name( args[ 2 ] );
 
    not_create = false;
@@ -3902,21 +3902,21 @@ void field_clear_on_changed_fk_specification::add( model& m, const vector< strin
       else if( next_arg.find( c_arg_test_prefix ) == 0 )
          test_field_info = next_arg.substr( strlen( c_arg_test_prefix ) );
       else
-         throw runtime_error( "unexpected extra argument '" + next_arg + "' for 'field_clear_on_changed_fk' specification" );
+         throw runtime_error( "unexpected extra argument '" + next_arg + "' for 'field_clear_on_changed' specification" );
    }
 
    class_id = get_class_id_for_name( m, arg_class_name );
 
-   string pfield_type;
-   pfield_id = get_field_id_for_name( m, arg_class_name, arg_pfield_name, &pfield_type, true );
+   string sfield_type;
+   sfield_id = get_field_id_for_name( m, arg_class_name, arg_sfield_name, &sfield_type, true );
 
-   if( pfield_id.empty( ) )
-      throw runtime_error( "unknown field '" + arg_pfield_name + "' for class '" + arg_class_name + "'" );
+   if( sfield_id.empty( ) )
+      throw runtime_error( "unknown field '" + arg_sfield_name + "' for class '" + arg_class_name + "'" );
 
-   string pclass_name( get_class_name_from_field_type( m, arg_class_name, arg_pfield_name, pfield_type ) );
+   string spclass_name( get_class_name_from_field_type( m, arg_class_name, arg_sfield_name, sfield_type ) );
 
-   if( pclass_name.empty( ) )
-      throw runtime_error( "unexpected non-parent field '" + arg_pfield_name + "' was provided to field_clear_on_changed_fk" );
+   if( spclass_name.empty( ) )
+      throw runtime_error( "unexpected non-parent field '" + arg_sfield_name + "' was provided to field_clear_on_changed" );
 
    field_id = get_field_id_for_name( m, arg_class_name, arg_dfield_name, 0, true );
    if( field_id.empty( ) )
@@ -3968,7 +3968,7 @@ void field_clear_on_changed_fk_specification::add( model& m, const vector< strin
       details.push_back( specification_detail( tclass_id, "tclass", e_model_element_type_class ) );
 
    details.push_back( specification_detail( field_id, "field", e_model_element_type_field ) );
-   details.push_back( specification_detail( pfield_id, "pfield", e_model_element_type_field ) );
+   details.push_back( specification_detail( sfield_id, "sfield", e_model_element_type_field ) );
 
    if( !tfield_id.empty( ) )
       details.push_back( specification_detail( tfield_id, "tfield", e_model_element_type_field ) );
@@ -3977,13 +3977,13 @@ void field_clear_on_changed_fk_specification::add( model& m, const vector< strin
       details.push_back( specification_detail( tpfield_id, "tpfield", e_model_element_type_field ) );
 }
 
-void field_clear_on_changed_fk_specification::read_data( sio_reader& reader )
+void field_clear_on_changed_specification::read_data( sio_reader& reader )
 {
    class_id = reader.read_attribute( c_attribute_class_id );
    tclass_id = reader.read_opt_attribute( c_attribute_tclass_id );
 
    field_id = reader.read_attribute( c_attribute_field_id );
-   pfield_id = reader.read_attribute( c_attribute_pfield_id );
+   sfield_id = reader.read_attribute( c_attribute_sfield_id );
 
    tfield_id = reader.read_opt_attribute( c_attribute_tfield_id );
    tpfield_id = reader.read_opt_attribute( c_attribute_tpfield_id );
@@ -3993,13 +3993,13 @@ void field_clear_on_changed_fk_specification::read_data( sio_reader& reader )
    not_default = ( reader.read_opt_attribute( c_attribute_not_default ) == c_true );
 }
 
-void field_clear_on_changed_fk_specification::write_data( sio_writer& writer ) const
+void field_clear_on_changed_specification::write_data( sio_writer& writer ) const
 {
    writer.write_attribute( c_attribute_class_id, class_id );
    writer.write_opt_attribute( c_attribute_tclass_id, tclass_id );
 
    writer.write_attribute( c_attribute_field_id, field_id );
-   writer.write_attribute( c_attribute_pfield_id, pfield_id );
+   writer.write_attribute( c_attribute_sfield_id, sfield_id );
 
    writer.write_opt_attribute( c_attribute_tfield_id, tfield_id );
    writer.write_opt_attribute( c_attribute_tpfield_id, tpfield_id );
@@ -4009,13 +4009,13 @@ void field_clear_on_changed_fk_specification::write_data( sio_writer& writer ) c
    writer.write_opt_attribute( c_attribute_not_default, not_default ? c_true : "" );
 }
 
-void field_clear_on_changed_fk_specification::add_specification_data( model& m, specification_data& spec_data ) const
+void field_clear_on_changed_specification::add_specification_data( model& m, specification_data& spec_data ) const
 {
    string class_name = get_class_name_for_id( m, class_id );
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
 
-   string pfield_name = get_field_name_for_id( m, class_name, pfield_id );
-   spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
+   string sfield_name = get_field_name_for_id( m, class_name, sfield_id );
+   spec_data.data_pairs.push_back( make_pair( c_data_sfield, sfield_name ) );
 
    string field_type;
    string field_name = get_field_name_for_id( m, class_name, field_id, &field_type );
@@ -4042,13 +4042,14 @@ void field_clear_on_changed_fk_specification::add_specification_data( model& m, 
    spec_data.data_pairs.push_back( make_pair( c_data_not_dflt, not_default ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_not_create, not_create ? c_true : "" ) );
 
+   spec_data.data_pairs.push_back( make_pair( "sfisfk", "1" ) );
    spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
    spec_data.data_pairs.push_back( make_pair( "set_to_default", "" ) );
 }
 
-string field_clear_on_changed_fk_specification::static_class_name( ) { return "field_clear_on_changed_fk"; }
+string field_clear_on_changed_specification::static_class_name( ) { return "field_clear_on_changed"; }
 
-DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, field_clear_on_changed_fk_specification, static_class_name );
+DEFINE_CLASS_FACTORY_INSTANTIATOR( string, specification, field_clear_on_changed_specification, static_class_name );
 
 struct field_dependency_specification : specification
 {
@@ -4539,7 +4540,7 @@ struct field_from_concatenation_specification : specification
 void field_from_concatenation_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
 {
    if( args.size( ) < 3 )
-      throw runtime_error( "unexpected number of args < 3 for 'field_from_changed_fk' specification" );
+      throw runtime_error( "unexpected number of args < 3 for 'field_from_concatenation' specification" );
 
    string arg_class_name( args[ 0 ] );
    string arg_dest_field_name( args[ 1 ] );
