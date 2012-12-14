@@ -1,19 +1,19 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
-   // [(start filter_security_level)]
+   // [(start filter_security_level)] `{`$arg_id`}
    if( get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
       if( !has_sec_level( get_obj( ).`{`$arg_slevel`}( ) )
        || ( get_uid( ).empty( ) && get_obj( ).`{`$arg_slevel`}( ) != gv_default_`{`$arg_slevel`} ) )
          return true;
    }
-   // [(finish filter_security_level)]
+   // [(finish filter_security_level)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start filter_security_level)]
+   // [(start filter_security_level)] `{`$arg_id`}
    dependents.insert( "`{`$arg_slevel`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_slevel`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_slevel`} ) ) )
       names.insert( "`{`$arg_slevel`}" );
-   // [(finish filter_security_level)]
+   // [(finish filter_security_level)] `{`$arg_id`}
 `}

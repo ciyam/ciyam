@@ -1,19 +1,19 @@
 `{`@eq`(`'is_filtered`'`,`$section`)\
-   // [(start filter_perm_restricted)]
+   // [(start filter_perm_restricted)] `{`$arg_id`}
    if( !get_obj( ).`{`$arg_field`}( ).empty( )
     && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
    {
       if( !get_perms( ).count( get_obj( ).`{`$arg_field`}( ) ) )
          return true;
    }
-   // [(finish filter_perm_restricted)]
+   // [(finish filter_perm_restricted)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start filter_perm_restricted)]
+   // [(start filter_perm_restricted)] `{`$arg_id`}
    dependents.insert( "`{`$arg_field`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );
-   // [(finish filter_perm_restricted)]
+   // [(finish filter_perm_restricted)] `{`$arg_id`}
 `}

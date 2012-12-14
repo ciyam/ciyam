@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_action_for_mod)]
+   // [(start transient_field_action_for_mod)] `{`$arg_id`}
 `{`$check_iter`=`'`'`}`{`@eq`(`$arg_iterating`,`'true`'`)`$check_iter`=`'true`'`}`{`@eq`(`$arg_not_iterating`,`'true`'`)`$check_iter`=`'true`'`}\
 `{`$check_admin`=`'`'`}`{`@eq`(`$arg_admin_always`,`'true`'`)`$check_admin`=`'true`'`}`{`@eq`(`$arg_admin_never`,`'true`'`)`$check_admin`=`'true`'`}\
 `{`@eq`(`$check_admin`,`'`'`)\
@@ -62,10 +62,10 @@ get_obj( ).`{`$arg_tfield`}( ) && `}state & c_modifier_`{`$arg_modifier`}`{`!`@e
       }
 `}\
    }
-   // [(start transient_field_action_for_mod)]
+   // [(finish transient_field_action_for_mod)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_action_for_mod)]
+   // [(start transient_field_action_for_mod)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_actions`}", dependents ) )
    {
       dependents.insert( "`{`$arg_tfield`}" );
@@ -74,5 +74,5 @@ get_obj( ).`{`$arg_tfield`}( ) && `}state & c_modifier_`{`$arg_modifier`}`{`!`@e
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
          names.insert( "`{`$arg_tfield`}" );
    }
-   // [(start transient_field_action_for_mod)]
+   // [(finish transient_field_action_for_mod)] `{`$arg_id`}
 `}

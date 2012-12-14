@@ -587,15 +587,15 @@ uint64_t Meta_Enum::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600015
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600015
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600016
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600016
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -676,10 +676,10 @@ bool Meta_Enum::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 610018
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 610018
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -806,7 +806,7 @@ void Meta_Enum::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 610018
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Workgroup( ) ) )
@@ -819,7 +819,7 @@ void Meta_Enum::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Workgroup( ).Next_Enum_Id( auto_int_increment( get_obj( ).Workgroup( ).Next_Enum_Id( ) ) );
       get_obj( ).Workgroup( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 610018
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -830,7 +830,7 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start clone_children)]
+   // [(start clone_children)] 600017
    if( !get_obj( ).get_clone_key( ).empty( ) )
    {
       class_pointer< Meta_Enum > cp_source( e_create_instance );
@@ -856,9 +856,9 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
 
       cp_source->finish_review( );
    }
-   // [(finish clone_children)]
+   // [(finish clone_children)] 600017
 
-   // [(start update_children)]
+   // [(start update_children)] 600018
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
@@ -872,7 +872,7 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600018
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -1642,21 +1642,21 @@ void Meta_Enum::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600015
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600015
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600016
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600016
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_event_overlap)]
+   // [(start transient_event_overlap)] `{`$arg_id`}
    // NOTE: The graph variable is required to prevent infinite recusion.
    if( get_obj( ).get_variable( "event_overlap" ).empty( )
     && required_transients.count( "`{`$arg_field`}" ) && get_obj( ).`{`$arg_duration`}( ) > 0 )
@@ -56,10 +56,10 @@
          } while( cp_other->iterate_next( ) );
       }
    }
-   // [(finish transient_event_overlap)]
+   // [(finish transient_event_overlap)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_event_overlap)]
+   // [(start transient_event_overlap)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_when`}" );
@@ -92,5 +92,5 @@
          names.insert( "`{`$arg_group`}" );\
 `}
    }
-   // [(finish transient_event_overlap)]
+   // [(finish transient_event_overlap)] `{`$arg_id`}
 `}

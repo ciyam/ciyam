@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start trigger_clone_for_fk_children)]
+   // [(start trigger_clone_for_fk_children)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).iterate_forwards( ) )
 `,\
@@ -22,5 +22,5 @@
 
       } while( get_obj( ).`{`$arg_sparent`}( ).child_`{`$arg_children`}( ).iterate_next( ) );
    }
-   // [(start trigger_clone_for_fk_children)]
+   // [(finish trigger_clone_for_fk_children)] `{`$arg_id`}
 `}

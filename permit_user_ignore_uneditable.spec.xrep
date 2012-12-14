@@ -3,7 +3,7 @@
 `{`@eq`(`$arg_op`,`'neq`'`)`$op`=`'!=`'`}`{`@eq`(`$arg_op`,`'lt`'`)`$op`=`'<`'`}\
 `{`@eq`(`$arg_op`,`'gt`'`)`$op`=`'>`'`}`{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
 `{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
-   // [(start permit_user_ignore_uneditable)]
+   // [(start permit_user_ignore_uneditable)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       bool allow_ignore = true;
@@ -40,14 +40,14 @@
 `}\
          state |= c_state_ignore_uneditable;
    }
-   // [(start permit_user_ignore_uneditable)]
+   // [(finish permit_user_ignore_uneditable)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start permit_user_ignore_uneditable)]
+   // [(start permit_user_ignore_uneditable)] `{`$arg_id`}
    dependents.insert( "`{`$arg_tpfield`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tpfield`} ) )
      || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tpfield`} ) ) )
       names.insert( "`{`$arg_tpfield`}" );
-   // [(start permit_user_ignore_uneditable)]
+   // [(finish permit_user_ignore_uneditable)] `{`$arg_id`}
 `}

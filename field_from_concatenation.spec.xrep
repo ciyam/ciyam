@@ -1,5 +1,5 @@
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start field_from_concatenation)]
+   // [(start field_from_concatenation)] `{`$arg_id`}
    if( `{`@eq`(`$arg_new_only`,`'`'`)!`}get_obj( ).get_key( ).empty( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       string value;
@@ -22,5 +22,5 @@
 
       get_obj( ).`{`$arg_dfield`}( value );
    }   
-   // [(finish field_from_concatenation)]
+   // [(finish field_from_concatenation)] `{`$arg_id`}
 `}

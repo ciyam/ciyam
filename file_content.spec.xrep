@@ -1,5 +1,5 @@
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start file_content)]
+   // [(start file_content)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -26,5 +26,5 @@
 
       get_obj( ).`{`$arg_field`}( filename );
    }
-   // [(finish file_content)]
+   // [(finish file_content)] `{`$arg_id`}
 `}   

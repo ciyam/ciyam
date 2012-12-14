@@ -1,5 +1,5 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
-   // [(start update_children)]
+   // [(start update_children)] `{`$arg_id`}
    if( !is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)`&`!`@eq`(`$arg_tvalue`,`'`'`)\
@@ -18,5 +18,5 @@
          }
       } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] `{`$arg_id`}
 `}

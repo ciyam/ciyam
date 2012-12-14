@@ -4,7 +4,7 @@
 `{`@eq`(`$type`,`'hour`'`)`$type`=`'hours`'`}\
 `{`@eq`(`$type`,`'day`'`)`$type`=`'days`'`}\
 `{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
-   // [(start modifier_date_notification)]
+   // [(start modifier_date_notification)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_field`}( ) ) )
    {
       udate test_date( udate::standard( ) );
@@ -20,14 +20,14 @@
       if( test_date >= date_from && test_date <= date_to )
          state |= c_modifier_`{`$arg_modifier`};
    }
-   // [(finish modifier_date_notification)]
+   // [(finish modifier_date_notification)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start modifier_date_notification)]
+   // [(start modifier_date_notification)] `{`$arg_id`}
    dependents.insert( "`{`$arg_field`}" ); // (for `{`$arg_modifier`} modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field`} ) ) )
       names.insert( "`{`$arg_field`}" );
-   // [(finish modifier_date_notification)]
+   // [(finish modifier_date_notification)] `{`$arg_id`}
 `}

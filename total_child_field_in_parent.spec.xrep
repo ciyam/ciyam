@@ -1,5 +1,5 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
-   // [(start total_child_field_in_parent)]
+   // [(start total_child_field_in_parent)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
     && get_obj( ).`{`$arg_sfield`}( )
@@ -119,10 +119,10 @@
          original.`{`$arg_pfield`}( ).op_apply( );
       }
    }
-   // [(finish total_child_field_in_parent)]
+   // [(finish total_child_field_in_parent)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
-   // [(start total_child_field_in_parent)]
+   // [(start total_child_field_in_parent)] `{`$arg_id`}
    if( !get_obj( ).get_is_being_cascaded( )
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
     && get_obj( ).`{`$arg_sfield`}( )
@@ -143,10 +143,10 @@
 `}\
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
-   // [(finish total_child_field_in_parent)]
+   // [(finish total_child_field_in_parent)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start total_child_field_in_parent)]
+   // [(start total_child_field_in_parent)] `{`$arg_id`}
    dependents.insert( "`{`$arg_pfield`}" );
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
@@ -187,5 +187,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_sfield`} ) ) )
       names.insert( "`{`$arg_sfield`}" );
 `}\
-   // [(finish total_child_field_in_parent)]
+   // [(finish total_child_field_in_parent)] `{`$arg_id`}
 `}

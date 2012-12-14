@@ -440,7 +440,7 @@ struct Meta_Module::impl : public Meta_Module_command_handler
 
 void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600701
    transaction_start( );
    try
    {
@@ -498,7 +498,7 @@ void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const str
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600701
 
    // [<start Move_Down_impl>]
    // [<finish Move_Down_impl>]
@@ -506,7 +506,7 @@ void Meta_Module::impl::impl_Move_Down( const string& Restrict_Fields, const str
 
 void Meta_Module::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600701
    transaction_start( );
    try
    {
@@ -564,7 +564,7 @@ void Meta_Module::impl::impl_Move_Up( const string& Restrict_Fields, const strin
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600701
 
    // [<start Move_Up_impl>]
    // [<finish Move_Up_impl>]
@@ -797,10 +797,10 @@ void Meta_Module::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_from_key)]
+   // [(start default_from_key)] 600700
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
+   // [(finish default_from_key)] 600700
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1454,13 +1454,13 @@ void Meta_Module::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600701
    dependents.insert( "Order" );
 
    if( ( use_transients && is_field_transient( e_field_id_Order ) )
     || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600701
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

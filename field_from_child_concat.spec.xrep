@@ -2,7 +2,7 @@
 `{`$order`=`'`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ctransient`,`'1`'`)`$order`=`$arg_cfield`}`{`!`@eq`(`$arg_ofield`,`'`'`)`$order`=`$arg_ofield`}\
 `{`$fields`=`'"@key"`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`$fields`=`'"`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$arg_ofield`},`}`{`$arg_cfield`}"`'`}\
 `{`!`@eq`(`$arg_xpfield`,`'`'`)`$fields`=`'"`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$arg_ofield`},`}`{`$arg_xpfield`}"`'`}\
-   // [(start field_from_child_concat)]
+   // [(start field_from_child_concat)] `{`$arg_id`}
    if( !is_create && get_obj( ).get_is_editing( ) )
    {
       map< string, string > parts;
@@ -85,10 +85,10 @@
 
       get_obj( ).`{`$arg_field`}( str );
    }
-   // [(finish field_from_child_concat)]
+   // [(finish field_from_child_concat)] `{`$arg_id`}
 `}
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start field_from_child_concat)]
+   // [(start field_from_child_concat)] `{`$arg_id`}
 `{`$has_two`=`'`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ofield`,`'`'`)`$has_two`=`'true`'`}\
 `{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
 `{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$has_two`=`'true`'`}\
@@ -111,11 +111,11 @@
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
-   // [(finish field_from_child_concat)]
+   // [(finish field_from_child_concat)] `{`$arg_id`}
 `}
 `{`@eq`(`'after_destroy`'`,`$section`)\
 `{`$tvalue`=`$arg_tvalue`}`{`@eq`(`$arg_tfistexttype`,`'1`'`)`$tvalue`=`'"`{`$arg_tvalue`}"`'`}\
-   // [(start field_from_child_concat)]
+   // [(start field_from_child_concat)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)`&`@eq`(`$arg_tfistexttype`,`'1`'`)
@@ -128,5 +128,5 @@
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).op_apply( );
    }
-   // [(finish field_from_child_concat)]
+   // [(finish field_from_child_concat)] `{`$arg_id`}
 `}

@@ -4,7 +4,7 @@
 `{`$add_typ`=`$add_typ`/rs`/r`/ds`/d`/es`/e`/ys`/y`/hs`/h`/ks`/k`}\
 `{`!`@eq`(`$add_typ`,`'`'`)`{`$add_typ`^`'s`'`}`}\
 `{`}\
-   // [(start field_inc_in_proc)]
+   // [(start field_inc_in_proc)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       class_pointer< `{`$full_class_name`} > cp_class( e_create_instance );
@@ -18,5 +18,5 @@
 
       cp_class->op_apply( );
    }
-   // [(finish field_inc_in_proc)]
+   // [(finish field_inc_in_proc)] `{`$arg_id`}
 `}

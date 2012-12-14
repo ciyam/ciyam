@@ -1,5 +1,5 @@
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start default_to_global)]
+   // [(start default_to_global)] `{`$arg_id`}
 `{`$cond`=`'`'`}\
 `{`@eq`(`$arg_inc_exist`,`'`'`)`$cond`=`'is_create`'`}\
 `{`!`@eq`(`$arg_dflt_only`,`'`'`)`{`!`@eq`(`$cond`,`'`'`)`$cond`^`'
@@ -17,5 +17,5 @@
 `,\
       get_obj( ).`{`$arg_field`}( get_session_variable( `{`$arg_value`} ) );\
 `}
-   // [(finish default_to_global)]
+   // [(finish default_to_global)] `{`$arg_id`}
 `}

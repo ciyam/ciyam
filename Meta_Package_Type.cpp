@@ -682,15 +682,15 @@ uint64_t Meta_Package_Type::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600802
    if( check_equal( get_obj( ).Installed( ), true ) )
       state |= ( c_state_uneditable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600802
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600804
    if( get_obj( ).Installed( ) == true )
       state |= c_modifier_Is_Installed;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600804
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -852,10 +852,10 @@ void Meta_Package_Type::impl::finalise_fetch( )
 
 void Meta_Package_Type::impl::at_create( )
 {
-   // [(start file_attachment)]
+   // [(start file_attachment)] 600803
    // NOTE: This is being done to ensure that clones won't end up owning another instance's file.
    get_obj( ).File( "" );
-   // [(finish file_attachment)]
+   // [(finish file_attachment)] 600803
 
    // [<start at_create>]
    // [<finish at_create>]
@@ -878,7 +878,7 @@ void Meta_Package_Type::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 600800
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( is_null( get_obj( ).File( ) ) )
@@ -886,12 +886,12 @@ void Meta_Package_Type::impl::to_store( bool is_create, bool is_internal )
       else
          get_obj( ).Actions( "135410" );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 600800
 
-   // [(start field_clear)]
+   // [(start field_clear)] 600801
    if( get_obj( ).Installed( ) )
       get_obj( ).Actions( string( ) );
-   // [(finish field_clear)]
+   // [(finish field_clear)] 600801
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -950,10 +950,10 @@ void Meta_Package_Type::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
-   // [(start file_attachment)]
+   // [(start file_attachment)] 600803
    if( !storage_locked_for_admin( ) && !get_obj( ).File( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).File( ) ) );
-   // [(finish file_attachment)]
+   // [(finish file_attachment)] 600803
 
    // [<start for_destroy>]
    // [<finish for_destroy>]
@@ -1758,21 +1758,21 @@ void Meta_Package_Type::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600802
    dependents.insert( "Installed" );
 
    if( ( use_transients && is_field_transient( e_field_id_Installed ) )
     || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600802
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600804
    dependents.insert( "Installed" ); // (for Is_Installed modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Installed ) )
     || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600804
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

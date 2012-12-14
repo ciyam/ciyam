@@ -1,5 +1,5 @@
 `{`@eq`(`'validate`'`,`$section`)\
-   // [(start check_no_repeats)]
+   // [(start check_no_repeats)] `{`$arg_id`}
    {
       size_t old_size = 0;
       set< string > values;
@@ -30,5 +30,5 @@
 
       }
    }
-   // [(finish check_no_repeats)]
+   // [(finish check_no_repeats)] `{`$arg_id`}
 `}

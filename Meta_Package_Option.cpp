@@ -987,55 +987,55 @@ uint64_t Meta_Package_Option::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600880
    if( check_equal( get_obj( ).Installed( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600880
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600882
    if( get_obj( ).Is_Other_Package( ) == true )
       state |= c_modifier_Is_Other_Package_Option;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600882
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600883
    if( get_obj( ).Is_Other_Package( ) == false )
       state |= c_modifier_Is_Not_Other_Package_Option;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600883
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600884
    if( get_obj( ).Primitive( ) == 0 ) // i.e. string
       state |= c_modifier_Is_String;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600884
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600885
    if( get_obj( ).Primitive( ) == 1 ) // i.e. datetime
       state |= c_modifier_Is_Datetime;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600885
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600886
    if( get_obj( ).Primitive( ) == 2 ) // i.e. date
       state |= c_modifier_Is_Date;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600886
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600887
    if( get_obj( ).Primitive( ) == 3 ) // i.e. time
       state |= c_modifier_Is_Time;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600887
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600888
    if( get_obj( ).Primitive( ) == 4 ) // i.e. numeric
       state |= c_modifier_Is_Numeric;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600888
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600889
    if( get_obj( ).Primitive( ) == 5 ) // i.e. int
       state |= c_modifier_Is_Int;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600889
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600890
    if( get_obj( ).Primitive( ) == 6 ) // i.e. bool
       state |= c_modifier_Is_Bool;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600890
 
    // [<start get_state>]
 //nyi
@@ -1338,12 +1338,13 @@ void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600881
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Model( ) == gv_default_Model )
       get_obj( ).Model( get_obj( ).Package( ).Model( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600881
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -2722,85 +2723,85 @@ void Meta_Package_Option::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600880
    dependents.insert( "Installed" );
 
    if( ( use_transients && is_field_transient( e_field_id_Installed ) )
     || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600880
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600882
    dependents.insert( "Is_Other_Package" ); // (for Is_Other_Package_Option modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Is_Other_Package ) )
     || ( !use_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
       names.insert( "Is_Other_Package" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600882
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600883
    dependents.insert( "Is_Other_Package" ); // (for Is_Not_Other_Package_Option modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Is_Other_Package ) )
     || ( !use_transients && !is_field_transient( e_field_id_Is_Other_Package ) ) )
       names.insert( "Is_Other_Package" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600883
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600884
    dependents.insert( "Primitive" ); // (for Is_String modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600884
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600885
    dependents.insert( "Primitive" ); // (for Is_Datetime modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600885
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600886
    dependents.insert( "Primitive" ); // (for Is_Date modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600886
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600887
    dependents.insert( "Primitive" ); // (for Is_Time modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600887
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600888
    dependents.insert( "Primitive" ); // (for Is_Numeric modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600888
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600889
    dependents.insert( "Primitive" ); // (for Is_Int modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600889
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600890
    dependents.insert( "Primitive" ); // (for Is_Bool modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Primitive ) )
     || ( !use_transients && !is_field_transient( e_field_id_Primitive ) ) )
       names.insert( "Primitive" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600890
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

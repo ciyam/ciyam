@@ -1,5 +1,5 @@
 `{`@eq`(`'procedure`'`,`$section`)\
-   // [(start meta_trait_val_proc)]
+   // [(start meta_trait_val_proc)] `{`$arg_id`}
 `{`$enum_name`=`$arg_field`}`{`$enum_name`=`@lower`(`$enum_name`)`}\
 `{`$field_name`=`$class_name`}`{`$field_name`^`'_`'`}`{`$field_name`^`$arg_field`}`{`$field_name`=`@lower`(`$field_name`)`}\
 `{`@eq`(`$arg_field`,`'Field_type`'`)\
@@ -262,5 +262,5 @@
 `,\
 #error Unexpected field name `{`$arg_field`} for `{`$arg_procedure`}...
 `}\
-   // [(finish meta_trait_val_proc)]
+   // [(finish meta_trait_val_proc)] `{`$arg_id`}
 `}

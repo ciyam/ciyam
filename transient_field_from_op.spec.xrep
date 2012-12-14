@@ -28,7 +28,7 @@
 `{`$value`=`$arg_value`}\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
-   // [(start transient_field_from_op)]
+   // [(start transient_field_from_op)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_check`,`'`'`)\
    if( get_obj( ).needs_field_value( "`{`$arg_field`}" )
@@ -48,10 +48,10 @@
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `{`@eq`(`$arg_ofield`,`'`'`)`$value`,get_obj( ).`{`$arg_ofield`}( )`} );
 `}\
-   // [(finish transient_field_from_op)]
+   // [(finish transient_field_from_op)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_from_op)]
+   // [(start transient_field_from_op)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
 `{`@eq`(`$arg_spfield`,`'`'`)\
@@ -83,5 +83,5 @@
          names.insert( "`{`$arg_tfield`}" );
 `}\
    }
-   // [(finish transient_field_from_op)]
+   // [(finish transient_field_from_op)] `{`$arg_id`}
 `}

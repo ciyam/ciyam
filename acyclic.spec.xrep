@@ -1,5 +1,5 @@
 `{`@eq`(`'validate`'`,`$section`)\
-   // [(start acyclic)]
+   // [(start acyclic)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_field`}( ) ) && get_obj( ).`{`$arg_field`}( ) == get_obj( ).get_key( ) )
       p_validation_errors->insert(
        validation_error_value_type( c_field_name_`{`$arg_field`},
@@ -27,5 +27,5 @@
          p_parent = &p_parent->`{`$arg_field`}( );
       }
    }
-   // [(finish acyclic)]
+   // [(finish acyclic)] `{`$arg_id`}
 `}

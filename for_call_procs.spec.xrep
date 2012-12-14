@@ -1,5 +1,5 @@
 `{`@eq`(`'procedure`'`,`$section`)\
-   // [(start for_call_procs)]
+   // [(start for_call_procs)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
 `{`$proc_arg`=`$arg_output_arg`}`{`!`@eq`(`$arg_message`,`'`'`)`$proc_arg`=`'`'`}\
 `{`@eq`(`$arg_no_trans`,`'`'`)\
@@ -28,5 +28,5 @@
       throw;
    }
 `}\
-   // [(start for_call_procs)]
+   // [(finish for_call_procs)] `{`$arg_id`}
 `}

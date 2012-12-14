@@ -30,7 +30,7 @@
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `}\
-   // [(start field_from_op)]
+   // [(start field_from_op)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_check`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
@@ -65,10 +65,10 @@
       get_obj( ).op_apply( );
    }
 `}`}\
-   // [(finish field_from_op)]
+   // [(finish field_from_op)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_from_op)]
+   // [(start field_from_op)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
 `{`@eq`(`$arg_spfield`,`'`'`)\
@@ -100,5 +100,5 @@
          names.insert( "`{`$arg_tfield`}" );
 `}\
    }
-   // [(finish field_from_op)]
+   // [(finish field_from_op)] `{`$arg_id`}
 `}

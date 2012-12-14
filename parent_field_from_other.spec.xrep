@@ -1,5 +1,5 @@
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start parent_field_from_other)]
+   // [(start parent_field_from_other)] `{`$arg_id`}
    if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)\
  && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}\
 `{`$arg_tfield`}( )`{`!`@eq`(`$arg_test_value`,`'`'`) == `{`$arg_test_value`}`}`} )
@@ -11,5 +11,5 @@
  get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
       cp_parent->op_apply( );
    }
-   // [(finish parent_field_from_other)]
+   // [(finish parent_field_from_other)] `{`$arg_id`}
 `}

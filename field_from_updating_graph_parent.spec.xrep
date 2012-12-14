@@ -1,5 +1,5 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
-   // [(start field_from_updating_graph_parent)]
+   // [(start field_from_updating_graph_parent)] `{`$arg_id`}
    // NOTE: Empty code block for scope purposes.
    {
       `{`$module_name`}_`{`$arg_spclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_spclass`}* >( get_obj( ).get_graph_parent( ) );
@@ -7,5 +7,5 @@
       if( p_parent && p_parent->get_is_updating( )`{`!`@eq`(`$arg_tvalue`,`'`'`) && p_parent->`{`$arg_scfield`}( ) == `{`$arg_tvalue`}`} )
          get_obj( ).`{`$arg_field`}( p_parent->`{`$arg_scfield`}( ) );
    }
-   // [(finish field_from_updating_graph_parent)]
+   // [(finish field_from_updating_graph_parent)] `{`$arg_id`}
 `}

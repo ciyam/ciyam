@@ -1,10 +1,10 @@
 `{`@eq`(`'includes`'`,`$section`)\
-// [(start home_message_top_n)]
+// [(start home_message_top_n)] `{`$arg_id`}
 #include "`{`$model_name`}_`{`$arg_class`}.h"
-// [(finish home_message_top_n)]
+// [(finish home_message_top_n)] `{`$arg_id`}
 `}
 `{`@eq`(`'commands_impl`'`,`$section`)\
-      // [(start home_message_top_n)]
+      // [(start home_message_top_n)] `{`$arg_id`}
       else if( command == c_cmd_`{`$model_name`}_Home_Message )
       {
          string user_info( get_parm_val( parameters, c_cmd_parm_`{`$model_name`}_Home_Message_user_info ) );
@@ -51,5 +51,5 @@
             osstr << "\\\\n\\\\n";
          }
       }
-      // [(finish home_message_top_n)]
+      // [(finish home_message_top_n)] `{`$arg_id`}
 `}

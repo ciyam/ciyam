@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] `{`$arg_id`}
    if( !get_obj( ).get_key( ).empty( )
 `{`@eq`(`$arg_top_level`,`'true`'`)\
     && !get_obj( ).get_graph_parent( )
@@ -60,10 +60,10 @@
       get_obj( ).set_search_replace_has_opt_prefixing( "`{`$arg_dfield`}" );
 `}\
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] `{`$arg_id`}
    if( get_obj( ).get_is_editing( )`{`@eq`(`$arg_top_level`,`'true`'`)
     && !get_obj( ).get_graph_parent( )`}`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).`{`$arg_tfield`}( )`} )
@@ -113,10 +113,10 @@
       get_obj( ).set_search_replace_has_opt_prefixing( "`{`$arg_dfield`}" );
 `}\
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] `{`$arg_id`}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
    if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
    {
@@ -154,5 +154,5 @@
          names.insert( "`{`$arg_tfield`}" );
    }
 `}\
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] `{`$arg_id`}
 `}

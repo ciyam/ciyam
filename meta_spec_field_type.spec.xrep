@@ -1,5 +1,5 @@
 `{`@eq`(`'validate`'`,`$section`)\
-   // [(start meta_spec_field_type)]
+   // [(start meta_spec_field_type)] `{`$arg_id`}
    // NOTE: Scope for local variables.
    {
       string error;
@@ -82,10 +82,10 @@
          p_validation_errors->insert( validation_error_value_type( "", "Test Field is not a valid 'password' field." ) ); // FUTURE: Should be in module_strings...
 `}\
    }
-   // [(finish meta_spec_field_type)]
+   // [(finish meta_spec_field_type)] `{`$arg_id`}
 `}
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start meta_spec_field_type)]
+   // [(start meta_spec_field_type)] `{`$arg_id`}
    if( is_create && get_obj( ).`{`$arg_mfield`}( ).get_key( ) == "`{`$arg_uikey`}"
     && !get_obj( ).`{`$arg_cfield`}( ).get_key( ).empty( ) && is_null( get_obj( ).`{`$arg_spfield`}( ) ) )
    {
@@ -103,5 +103,5 @@
          } while( get_obj( ).`{`$arg_cfield`}( ).child_`{`$arg_field`}( ).iterate_next( ) );
       }
    }
-   // [(finish meta_spec_field_type)]
+   // [(finish meta_spec_field_type)] `{`$arg_id`}
 `}

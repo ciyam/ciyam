@@ -1619,30 +1619,30 @@ uint64_t Meta_View::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600330
    if( get_obj( ).Type( ) == "print" )
       state |= c_modifier_Is_Print_Version;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600330
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600335
    if( get_obj( ).Type( ) != "print" )
       state |= c_modifier_Is_Not_Print_Version;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600335
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600340
    if( get_obj( ).Allow_Printable_Version( ) == false )
       state |= c_modifier_Printing_Disallowed;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600340
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600341
    if( get_obj( ).PDF_View_Type( ) == 0 )
       state |= c_modifier_PDF_View_Is_None;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600341
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600342
    if( get_obj( ).PDF_View_Type( ) == 99 )
       state |= c_modifier_PDF_View_Is_Custom;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600342
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -1777,10 +1777,10 @@ bool Meta_View::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600315
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600315
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -1925,7 +1925,7 @@ void Meta_View::impl::after_fetch( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] 600320
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Name" )
     || required_transients.count( "Name" ) ) )
@@ -1938,7 +1938,7 @@ void Meta_View::impl::after_fetch( )
 
       get_obj( ).set_search_replace_separator( "Name", '_' );
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] 600320
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -1952,10 +1952,10 @@ void Meta_View::impl::finalise_fetch( )
 
 void Meta_View::impl::at_create( )
 {
-   // [(start fk_default)]
+   // [(start fk_default)] 600300
    if( is_null( get_obj( ).Type( ) ) )
       get_obj( ).Type( "normal" );
-   // [(finish fk_default)]
+   // [(finish fk_default)] 600300
 
    // [<start at_create>]
    // [<finish at_create>]
@@ -1978,16 +1978,17 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600310
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Name( ) == gv_default_Name )
       get_obj( ).Name( get_obj( ).Type( ).View_Name( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600310
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600311
    get_obj( ).Type_Key( get_obj( ).Type( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600311
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -1998,7 +1999,7 @@ void Meta_View::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600315
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Model( ) ) )
@@ -2011,7 +2012,7 @@ void Meta_View::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Model( ).Next_View_Id( auto_int_increment( get_obj( ).Model( ).Next_View_Id( ) ) );
       get_obj( ).Model( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600315
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -3368,7 +3369,7 @@ void Meta_View::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600311
    if( needs_field_value( "Type_Key", dependents ) )
    {
       dependents.insert( "Type" );
@@ -3377,9 +3378,9 @@ void Meta_View::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600311
 
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] 600320
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "Class" );
@@ -3397,7 +3398,7 @@ void Meta_View::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] 600320
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -3410,45 +3411,45 @@ void Meta_View::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600330
    dependents.insert( "Type" ); // (for Is_Print_Version modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600330
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600335
    dependents.insert( "Type" ); // (for Is_Not_Print_Version modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600335
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600340
    dependents.insert( "Allow_Printable_Version" ); // (for Printing_Disallowed modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Allow_Printable_Version ) )
     || ( !use_transients && !is_field_transient( e_field_id_Allow_Printable_Version ) ) )
       names.insert( "Allow_Printable_Version" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600340
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600341
    dependents.insert( "PDF_View_Type" ); // (for PDF_View_Is_None modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_PDF_View_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_PDF_View_Type ) ) )
       names.insert( "PDF_View_Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600341
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600342
    dependents.insert( "PDF_View_Type" ); // (for PDF_View_Is_Custom modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_PDF_View_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_PDF_View_Type ) ) )
       names.insert( "PDF_View_Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600342
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

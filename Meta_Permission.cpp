@@ -834,10 +834,10 @@ bool Meta_Permission::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600290
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600290
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -964,7 +964,7 @@ void Meta_Permission::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600290
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Workgroup( ) ) )
@@ -977,7 +977,7 @@ void Meta_Permission::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Workgroup( ).Next_Permission_Id( auto_int_increment( get_obj( ).Workgroup( ).Next_Permission_Id( ) ) );
       get_obj( ).Workgroup( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600290
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -988,7 +988,7 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600298
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
@@ -1002,7 +1002,7 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600298
 
    // [<start after_store>]
    // [<finish after_store>]

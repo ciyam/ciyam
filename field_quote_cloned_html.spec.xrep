@@ -1,5 +1,5 @@
 `{`@eq`(`'to_store`'`,`$section`)\
-   // [(start field_quote_cloned_html)]
+   // [(start field_quote_cloned_html)] `{`$arg_id`}
    if( get_obj( ).get_key( ).empty( ) && !get_obj( ).get_clone_key( ).empty( ) )
    {
       string content( "<p>&nbsp;</p>\\n<div style=\\"margin-left: 8px; margin-right: 8px; border: 1px solid grey;\\">" );
@@ -13,5 +13,5 @@
 
       get_obj( ).`{`$arg_field`}( content );
    }
-   // [(finish field_quote_cloned_html)]
+   // [(finish field_quote_cloned_html)] `{`$arg_id`}
 `}

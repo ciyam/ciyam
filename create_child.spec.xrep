@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
-   // [(start create_child)]
+   // [(start create_child)] `{`$arg_id`}
 `{`@eq`(`$arg_create_only`,`'`'`)\
 `{`!`@eq`(`$arg_nfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_nfield`}( ) ) )\
@@ -39,10 +39,10 @@
        + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
    }
-   // [(finish create_child)]
+   // [(finish create_child)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start create_child)]
+   // [(start create_child)] `{`$arg_id`}
 `{`?`$arg_field_list`[`$arg_field_list`%,`,\
    dependents.insert( "\\1" );
 
@@ -50,5 +50,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_\\1 ) ) )
       names.insert( "\\1" );
 `+\n`]`}\
-   // [(finish create_child)]
+   // [(finish create_child)] `{`$arg_id`}
 `}

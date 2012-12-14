@@ -2783,20 +2783,20 @@ uint64_t Meta_Class::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] 600032
    if( !is_null( get_obj( ).Source_Model( ) ) )
       state |= c_modifier_Is_Alias;
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] 600032
 
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] 600033
    if( is_null( get_obj( ).Source_Model( ) ) )
       state |= c_modifier_Is_Not_Alias;
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] 600033
 
-   // [(start protect_not_equal)]
+   // [(start protect_not_equal)] 600034
    if( check_not_equal( get_obj( ).Source_Model( ), "" ) )
       state |= ( c_state_uneditable );
-   // [(finish protect_not_equal)]
+   // [(finish protect_not_equal)] 600034
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -2918,10 +2918,10 @@ bool Meta_Class::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600037
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600037
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -3010,13 +3010,13 @@ void Meta_Class::impl::validate( unsigned state, bool is_internal, validation_er
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
-   // [(start check_null_match)]
+   // [(start check_null_match)] 600030
    if( is_null( get_obj( ).Source_Class( ) ) && !is_null( get_obj( ).Source_Model( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Source_Class,
        get_string_message( GS( c_str_field_must_be_empty_match ), make_pair(
        c_str_parm_field_must_be_empty_match_field2, get_module_string( c_field_display_name_Source_Model ) ),
        make_pair( c_str_parm_field_must_be_empty_match_field1, get_module_string( c_field_display_name_Source_Class ) ) ) ) );
-   // [(finish check_null_match)]
+   // [(finish check_null_match)] 600030
 
    // [<start validate>]
    // [<finish validate>]
@@ -3123,35 +3123,35 @@ void Meta_Class::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600025
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Name( get_obj( ).Source_Class( ).Name( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600025
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600026
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Plural( get_obj( ).Source_Class( ).Plural( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 610026
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Id( get_obj( ).Source_Class( ).Id( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 610026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 620026
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Type( get_obj( ).Source_Class( ).Type( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 620026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 630026
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Extra( get_obj( ).Source_Class( ).Extra( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 630026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 640026
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Static_Instance_Key( get_obj( ).Source_Class( ).Static_Instance_Key( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 640026
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -3162,7 +3162,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start child_field_change_cascade)]
+   // [(start child_field_change_cascade)] 600029
    if( !is_create )
    {
       string original_value( to_string(
@@ -3190,9 +3190,9 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
          } while( get_obj( ).child_Relationship_Parent( ).iterate_next( ) );
       }
    }
-   // [(finish child_field_change_cascade)]
+   // [(finish child_field_change_cascade)] 600029
 
-   // [(start child_field_cascade)]
+   // [(start child_field_cascade)] 600036
    if( !is_create )
    {
       if( get_obj( ).has_field_changed( c_field_id_Name )
@@ -3217,9 +3217,9 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
          }
       }
    }
-   // [(finish child_field_cascade)]
+   // [(finish child_field_cascade)] 600036
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 600037
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Model( ) ) )
@@ -3232,23 +3232,25 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Model( ).Next_Class_Id( auto_int_increment( get_obj( ).Model( ).Next_Class_Id( ) ) );
       get_obj( ).Model( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 600037
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600038
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_Field_Id( ) == gv_default_Next_Field_Id )
       get_obj( ).Next_Field_Id( get_obj( ).Id( ) + "F100" );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600038
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 610038
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_Procedure_Id( ) == gv_default_Next_Procedure_Id )
       get_obj( ).Next_Procedure_Id( get_obj( ).Id( ) + "P100" );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 610038
 
-   // [(start file_link)]
+   // [(start file_link)] 620038
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -3273,9 +3275,9 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
          get_obj( ).Source_File( name );
       }
    }
-   // [(finish file_link)]
+   // [(finish file_link)] 620038
 
-   // [(start file_link)]
+   // [(start file_link)] 630038
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -3300,9 +3302,9 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
          get_obj( ).Header_File( name );
       }
    }
-   // [(finish file_link)]
+   // [(finish file_link)] 630038
 
-   // [(start file_link)]
+   // [(start file_link)] 640038
    // NOTE: Empty code block for scope purposes.
    {
       string sep( "-" );
@@ -3327,7 +3329,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
          get_obj( ).Commands_File( name );
       }
    }
-   // [(finish file_link)]
+   // [(finish file_link)] 640038
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -3338,7 +3340,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600027
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
@@ -3352,9 +3354,9 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600027
 
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] 600035
    if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
    {
       if( get_obj( ).Source_Class( ).child_Field( ).iterate_forwards( ) )
@@ -3374,9 +3376,9 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
          } while( get_obj( ).Source_Class( ).child_Field( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] 600035
 
-   // [(start update_children)]
+   // [(start update_children)] 610027
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Relationship_Child( ).iterate_forwards( ) )
@@ -3390,9 +3392,9 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Relationship_Child( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 610027
 
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] 610035
    if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
    {
       if( get_obj( ).Source_Class( ).child_Index( ).iterate_forwards( ) )
@@ -3412,9 +3414,9 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
          } while( get_obj( ).Source_Class( ).child_Index( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] 610035
 
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] 620035
    if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
    {
       if( get_obj( ).Source_Class( ).child_Modifier( ).iterate_forwards( ) )
@@ -3434,9 +3436,9 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
          } while( get_obj( ).Source_Class( ).child_Modifier( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] 620035
 
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] 630035
    if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
    {
       if( get_obj( ).Source_Class( ).child_Procedure( ).iterate_forwards( ) )
@@ -3456,7 +3458,7 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
          } while( get_obj( ).Source_Class( ).child_Procedure( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] 630035
 
    // [<start after_store>]
 //nyi
@@ -3568,20 +3570,20 @@ void Meta_Class::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
-   // [(start file_link)]
+   // [(start file_link)] 620038
    if( !get_obj( ).Source_File( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).Source_File( ) ) );
-   // [(finish file_link)]
+   // [(finish file_link)] 620038
 
-   // [(start file_link)]
+   // [(start file_link)] 630038
    if( !get_obj( ).Header_File( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).Header_File( ) ) );
-   // [(finish file_link)]
+   // [(finish file_link)] 630038
 
-   // [(start file_link)]
+   // [(start file_link)] 640038
    if( !get_obj( ).Commands_File( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).Commands_File( ) ) );
-   // [(finish file_link)]
+   // [(finish file_link)] 640038
 
    // [<start for_destroy>]
    // [<finish for_destroy>]
@@ -5436,7 +5438,7 @@ void Meta_Class::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600025
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "Source_Class" );
@@ -5445,9 +5447,9 @@ void Meta_Class::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600025
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600026
    if( needs_field_value( "Plural", dependents ) )
    {
       dependents.insert( "Source_Class" );
@@ -5456,9 +5458,9 @@ void Meta_Class::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 610026
    if( needs_field_value( "Id", dependents ) )
    {
       dependents.insert( "Source_Class" );
@@ -5467,9 +5469,9 @@ void Meta_Class::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 610026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 620026
    if( needs_field_value( "Type", dependents ) )
    {
       dependents.insert( "Source_Class" );
@@ -5478,9 +5480,9 @@ void Meta_Class::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 620026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 630026
    if( needs_field_value( "Extra", dependents ) )
    {
       dependents.insert( "Source_Class" );
@@ -5489,9 +5491,9 @@ void Meta_Class::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 630026
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 640026
    if( needs_field_value( "Static_Instance_Key", dependents ) )
    {
       dependents.insert( "Source_Class" );
@@ -5500,7 +5502,7 @@ void Meta_Class::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Source_Class ) ) )
          names.insert( "Source_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 640026
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -5513,29 +5515,29 @@ void Meta_Class::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] 600032
    dependents.insert( "Source_Model" ); // (for Is_Alias modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Source_Model ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Model ) ) )
       names.insert( "Source_Model" );
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] 600032
 
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] 600033
    dependents.insert( "Source_Model" ); // (for Is_Not_Alias modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Source_Model ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Model ) ) )
       names.insert( "Source_Model" );
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] 600033
 
-   // [(start protect_not_equal)]
+   // [(start protect_not_equal)] 600034
    dependents.insert( "Source_Model" );
 
    if( ( use_transients && is_field_transient( e_field_id_Source_Model ) )
     || ( !use_transients && !is_field_transient( e_field_id_Source_Model ) ) )
       names.insert( "Source_Model" );
-   // [(finish protect_not_equal)]
+   // [(finish protect_not_equal)] 600034
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_bool_has_child_for_uid)]
+   // [(start transient_field_bool_has_child_for_uid)] `{`$arg_id`}
    if( !get_uid( ).empty( )
 `{`@eq`(`$arg_top_level`,`'true`'`)\
     && !get_obj( ).get_graph_parent( )
@@ -23,10 +23,10 @@
          get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
       }
    }
-   // [(finish transient_field_bool_has_child_for_uid)]
+   // [(finish transient_field_bool_has_child_for_uid)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_bool_has_child_for_uid)]
+   // [(start transient_field_bool_has_child_for_uid)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_ufield`}" );
@@ -35,5 +35,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_ufield`} ) ) )
          names.insert( "`{`$arg_ufield`}" );
    }
-   // [(finish transient_field_bool_has_child_for_uid)]
+   // [(finish transient_field_bool_has_child_for_uid)] `{`$arg_id`}
 `}

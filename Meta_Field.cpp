@@ -55,14 +55,14 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] 600064
 #include "Meta_Class.h"
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] 600064
 
-// [(start clone_children_for_create)]
+// [(start clone_children_for_create)] 630065
 #include "Meta_Initial_Record.h"
 #include "Meta_Initial_Record_Value.h"
-// [(finish clone_children_for_create)]
+// [(finish clone_children_for_create)] 630065
 
 // [<start includes>]
 // [<finish includes>]
@@ -2164,45 +2164,45 @@ uint64_t Meta_Field::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600047
    if( get_obj( ).UOM( ) != 999 )
       state |= c_modifier_Is_Non_Custom_UOM;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600047
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600048
    if( get_obj( ).Type( ).Primitive( ) == 5 ) // i.e. int
       state |= c_modifier_Is_Any_Non_Text_Type;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600048
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600049
    if( get_obj( ).Type( ).Primitive( ) == 6 ) // i.e. bool
       state |= c_modifier_Is_Any_Non_Text_Type;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600049
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600050
    if( get_obj( ).Type( ).Primitive( ) == 4 ) // i.e. numeric
       state |= c_modifier_Is_Any_Non_Text_Type;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600050
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600051
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600051
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600052
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600052
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610050
    if( get_obj( ).Transient( ) == true )
       state |= c_modifier_Is_Transient;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610050
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 620050
    if( get_obj( ).Type( ).Primitive( ) == 6 ) // i.e. bool
       state |= c_modifier_Is_Type_bool;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 620050
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -2341,10 +2341,10 @@ bool Meta_Field::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 620065
    if( field_name == "Id" )
       return true;
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 620065
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -2438,12 +2438,12 @@ void Meta_Field::impl::validate( unsigned state, bool is_internal, validation_er
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_UOM ) ) ) ) );
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 600045
    if( get_obj( ).UOM( ) == 999 && get_obj( ).Dummy_1( ) && is_null( get_obj( ).UOM_Name( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_UOM_Name ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 600045
 
    // [<start validate>]
 //nyi
@@ -2573,23 +2573,23 @@ void Meta_Field::impl::after_fetch( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 600053b
    if( get_obj( ).needs_field_value( "Parent_Class_Name" )
     || required_transients.count( "Parent_Class_Name" ) )
       get_obj( ).Parent_Class_Name( get_obj( ).Parent_Class( ).Name( ) );
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 600053b
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 600054a
    if( get_obj( ).needs_field_value( "Def_Value" )
     || required_transients.count( "Def_Value" ) )
       get_obj( ).Def_Value( get_obj( ).Default( ) );
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 600054a
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 640065
    if( get_obj( ).needs_field_value( "Numeric_Decimals" )
     || required_transients.count( "Numeric_Decimals" ) )
       get_obj( ).Numeric_Decimals( get_obj( ).Type( ).Numeric_Decimals( ) );
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 640065
 
    // [<start after_fetch>]
 //nyi
@@ -2645,41 +2645,42 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600053
    get_obj( ).Primitive( get_obj( ).Type( ).Primitive( ) );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600053
 
-   // [(start default_to_field)]
+   // [(start default_to_field)] 600053a
+
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).UOM( ) == gv_default_UOM )
       get_obj( ).UOM( get_obj( ).Type( ).Default_UOM( ) );
-   // [(finish default_to_field)]
+   // [(finish default_to_field)] 600053a
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600054
    if( !is_null( get_obj( ).Parent_Class( ) ) )
       get_obj( ).Is_Foreign_Key( get_obj( ).Parent_Class( ).get_is_singular( ) );
    else
       get_obj( ).Is_Foreign_Key( false );
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600054
 
-   // [(start modifier_set_field)]
+   // [(start modifier_set_field)] 600062
    if( state & c_modifier_Is_Any_Non_Text_Type )
       get_obj( ).Mandatory( true );
-   // [(finish modifier_set_field)]
+   // [(finish modifier_set_field)] 600062
 
-   // [(start field_empty_action)]
+   // [(start field_empty_action)] 600063
    if( !get_obj( ).get_key( ).empty( ) )
    {
       if( !is_null( get_obj( ).Class( ).Source_Class( ) ) )
          get_obj( ).Internal( true );
    }
-   // [(finish field_empty_action)]
+   // [(finish field_empty_action)] 600063
 
-   // [(start modifier_set_field)]
+   // [(start modifier_set_field)] 610065
    if( state & c_modifier_Is_Any_Non_Text_Type )
       get_obj( ).Is_Text_Type( false );
-   // [(finish modifier_set_field)]
+   // [(finish modifier_set_field)] 610065
 
    // [<start to_store>]
 //nyi
@@ -2693,7 +2694,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start parent_auto_int_inc)]
+   // [(start parent_auto_int_inc)] 620065
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       if( is_null( get_obj( ).Class( ) ) )
@@ -2706,7 +2707,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).Class( ).Next_Field_Id( auto_int_increment( get_obj( ).Class( ).Next_Field_Id( ) ) );
       get_obj( ).Class( ).op_apply( );
    }
-   // [(finish parent_auto_int_inc)]
+   // [(finish parent_auto_int_inc)] 620065
 
    // [<start for_store>]
 //nyi
@@ -2754,7 +2755,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600055
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
@@ -2768,9 +2769,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600055
 
-   // [(start update_children)]
+   // [(start update_children)] 600056
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source( ).iterate_forwards( ) )
@@ -2784,9 +2785,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Source( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600056
 
-   // [(start update_children)]
+   // [(start update_children)] 600057
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source_Parent( ).iterate_forwards( ) )
@@ -2800,9 +2801,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Source_Parent( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600057
 
-   // [(start update_children)]
+   // [(start update_children)] 600058
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Source_Child( ).iterate_forwards( ) )
@@ -2816,9 +2817,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Source_Child( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600058
 
-   // [(start update_children)]
+   // [(start update_children)] 600059
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Test( ).iterate_forwards( ) )
@@ -2832,9 +2833,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Test( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600059
 
-   // [(start update_children)]
+   // [(start update_children)] 600060
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Test_Parent( ).iterate_forwards( ) )
@@ -2848,9 +2849,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Test_Parent( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600060
 
-   // [(start update_children)]
+   // [(start update_children)] 600061
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Test_Child( ).iterate_forwards( ) )
@@ -2864,9 +2865,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Test_Child( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600061
 
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] 600064
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ).child_Class_Source( ).iterate_forwards( ) )
@@ -2885,9 +2886,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).Class( ).child_Class_Source( ).child_Field( ).op_apply( );
       } while( get_obj( ).Class( ).child_Class_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] 600064
 
-   // [(start clone_children_for_update)]
+   // [(start clone_children_for_update)] 600065
    if( !is_create && get_obj( ).child_Field_Source( ).iterate_forwards( ) )
    {
       do
@@ -2905,9 +2906,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).child_Field_Source( ).op_apply( );
       } while( get_obj( ).child_Field_Source( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_update)]
+   // [(finish clone_children_for_update)] 600065
 
-   // [(start update_children)]
+   // [(start update_children)] 610058
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Source_Child( ).iterate_forwards( ) )
@@ -2921,9 +2922,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Other_Source_Child( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 610058
 
-   // [(start update_children)]
+   // [(start update_children)] 620058
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
     && get_obj( ).child_Specification_Other_Source_Child_2( ).iterate_forwards( ) )
@@ -2937,9 +2938,9 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification_Other_Source_Child_2( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 620058
 
-   // [(start clone_children_for_create)]
+   // [(start clone_children_for_create)] 630065
    if( is_create
     && get_obj( ).Class( ).child_Initial_Record( ).iterate_forwards( ) )
    {
@@ -2954,7 +2955,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
          get_obj( ).Class( ).child_Initial_Record( ).child_Initial_Record_Value( ).op_apply( );
       } while( get_obj( ).Class( ).child_Initial_Record( ).iterate_next( ) );
    }
-   // [(finish clone_children_for_create)]
+   // [(finish clone_children_for_create)] 630065
 
    // [<start after_store>]
 //nyi
@@ -5171,7 +5172,7 @@ void Meta_Field::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600053
    if( needs_field_value( "Primitive", dependents ) )
    {
       dependents.insert( "Type" );
@@ -5180,9 +5181,9 @@ void Meta_Field::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600053
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 600053b
    if( needs_field_value( "Parent_Class_Name", dependents ) )
    {
       dependents.insert( "Parent_Class" );
@@ -5191,9 +5192,9 @@ void Meta_Field::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Parent_Class ) ) )
          names.insert( "Parent_Class" );
    }
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 600053b
 
-   // [(start field_from_other_field)]
+   // [(start field_from_other_field)] 600054
    if( needs_field_value( "Is_Foreign_Key", dependents ) )
    {
       dependents.insert( "Parent_Class" );
@@ -5202,9 +5203,9 @@ void Meta_Field::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Parent_Class ) ) )
          names.insert( "Parent_Class" );
    }
-   // [(finish field_from_other_field)]
+   // [(finish field_from_other_field)] 600054
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 600054a
    if( needs_field_value( "Def_Value", dependents ) )
    {
       dependents.insert( "Default" );
@@ -5213,9 +5214,9 @@ void Meta_Field::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Default ) ) )
          names.insert( "Default" );
    }
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 600054a
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 640065
    if( needs_field_value( "Numeric_Decimals", dependents ) )
    {
       dependents.insert( "Type" );
@@ -5224,7 +5225,7 @@ void Meta_Field::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
          names.insert( "Type" );
    }
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 640065
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -5237,69 +5238,69 @@ void Meta_Field::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600047
    dependents.insert( "UOM" ); // (for Is_Non_Custom_UOM modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_UOM ) )
     || ( !use_transients && !is_field_transient( e_field_id_UOM ) ) )
       names.insert( "UOM" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600047
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600048
    dependents.insert( "Type" ); // (for Is_Any_Non_Text_Type modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600048
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600049
    dependents.insert( "Type" ); // (for Is_Any_Non_Text_Type modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600049
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600050
    dependents.insert( "Type" ); // (for Is_Any_Non_Text_Type modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600050
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600051
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600051
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600052
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600052
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 610050
    dependents.insert( "Transient" ); // (for Is_Transient modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Transient ) )
     || ( !use_transients && !is_field_transient( e_field_id_Transient ) ) )
       names.insert( "Transient" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 610050
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 620050
    dependents.insert( "Type" ); // (for Is_Type_bool modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 620050
 
    // [<start get_always_required_field_names>]
 //nyi

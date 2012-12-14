@@ -2,7 +2,7 @@
 `{`$op`=`$arg_op`}\
 `{`@eq`(`$op`,`'not`'`)`$op`=`'!`'`}\
 `{`@eq`(`$op`,`'bitnot`'`)`$op`=`'~`'`}\
-   // [(start field_from_unary_op)]
+   // [(start field_from_unary_op)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
@@ -21,10 +21,10 @@
       get_obj( ).op_apply( );
    }
 `}`}\
-   // [(finish field_from_unary_op)]
+   // [(finish field_from_unary_op)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_from_unary_op)]
+   // [(start field_from_unary_op)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_sfield`}" );
@@ -41,5 +41,5 @@
          names.insert( "`{`$arg_tfield`}" );
 `}\
    }
-   // [(finish field_from_unary_op)]
+   // [(finish field_from_unary_op)] `{`$arg_id`}
 `}

@@ -1,5 +1,5 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
-   // [(start field_clear)]
+   // [(start field_clear)] `{`$arg_id`}
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`@eq`(`$arg_is_neg`,`'true`'`)!`}get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) )
@@ -11,5 +11,5 @@
 `}`,\
    get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,gv_default_`{`$arg_field`}`} );\
 `}
-   // [(finish field_clear)]
+   // [(finish field_clear)] `{`$arg_id`}
 `}

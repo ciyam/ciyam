@@ -1,7 +1,7 @@
 `{`@eq`(`'after_fetch_or_for_store`'`,`$section`)\
 `{`@eq`(`$arg_embed_links`,`'`'`)`$arg_ext_field`=`'`'`}\
 `{`!`@eq`(`$arg_ext_field`,`'`'`)`$arg_external`=`'`'`}\
-   // [(start field_from_acyclic_path)]
+   // [(start field_from_acyclic_path)] `{`$arg_id`}
 `{`@eq`(`$arg_ftransient`,`'1`'`)\
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" )
@@ -65,10 +65,10 @@
       get_obj( ).`{`$arg_ext_field`}( es );
 `}\
    }
-   // [(finish field_from_acyclic_path)]
+   // [(finish field_from_acyclic_path)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start field_from_acyclic_path)]
+   // [(start field_from_acyclic_path)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_dest_field`}", dependents ) )
    {
       dependents.insert( "`{`$arg_pfield`}" );
@@ -86,5 +86,5 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_src_field`} ) ) )
          names.insert( "`{`$arg_src_field`}" );
    }
-   // [(finish field_from_acyclic_path)]
+   // [(finish field_from_acyclic_path)] `{`$arg_id`}
 `}

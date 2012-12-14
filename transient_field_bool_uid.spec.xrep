@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_bool_uid)]
+   // [(start transient_field_bool_uid)] `{`$arg_id`}
 `{`!`@eq`(`$arg_admin`,`'`'`)`&`!`@eq`(`$arg_system`,`'`'`)\
    if( is_admin_uid( ) || is_system_uid( ) )
 `,\
@@ -11,5 +11,5 @@
       get_obj( ).`{`$arg_field`}( true );
    else
       get_obj( ).`{`$arg_field`}( false );
-   // [(finish transient_field_bool_uid)]
+   // [(finish transient_field_bool_uid)] `{`$arg_id`}
 `}

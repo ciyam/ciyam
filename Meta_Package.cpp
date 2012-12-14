@@ -1456,20 +1456,20 @@ uint64_t Meta_Package::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600852
    if( check_equal( get_obj( ).Installed( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600852
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600854
    if( check_equal( get_obj( ).Actions( ), "" ) )
       state |= ( c_state_undeletable | c_state_is_changing );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600854
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600857
    if( get_obj( ).Installed( ) == false )
       state |= c_modifier_Is_Not_Installed;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600857
 
    // [<start get_state>]
 //nyi
@@ -1668,18 +1668,18 @@ void Meta_Package::impl::after_fetch( )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 600289
    if( get_obj( ).needs_field_value( "Type_Name" )
     || required_transients.count( "Type_Name" ) )
       get_obj( ).Type_Name( get_obj( ).Package_Type( ).Name( ) );
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 600289
 
-   // [(start transient_field_from_file)]
+   // [(start transient_field_from_file)] 600855
    if( !get_obj( ).get_key( ).empty( )
     && ( get_obj( ).needs_field_value( "Install_Details" )
     || required_transients.count( "Install_Details" ) ) )
       get_obj( ).Install_Details( load_file( get_obj( ).Key( ) + ".install.log", true ) );
-   // [(finish transient_field_from_file)]
+   // [(finish transient_field_from_file)] 600855
 
    // [<start after_fetch>]
    // [<finish after_fetch>]
@@ -1714,20 +1714,20 @@ void Meta_Package::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] 600850
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Package_Type( ).has_changed( ) )
       get_obj( ).Name( get_obj( ).Package_Type( ).Name( ) );
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] 600850
 
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] 600851
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Package_Type( ).has_changed( ) )
       get_obj( ).Plural( get_obj( ).Package_Type( ).Plural( ) );
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] 600851
 
-   // [(start default_from_key)]
+   // [(start default_from_key)] 600856
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Key( ) ) ) )
       get_obj( ).Key( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
+   // [(finish default_from_key)] 600856
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -2924,7 +2924,7 @@ void Meta_Package::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start transient_field_alias)]
+   // [(start transient_field_alias)] 600289
    if( needs_field_value( "Type_Name", dependents ) )
    {
       dependents.insert( "Package_Type" );
@@ -2933,7 +2933,7 @@ void Meta_Package::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Package_Type ) ) )
          names.insert( "Package_Type" );
    }
-   // [(finish transient_field_alias)]
+   // [(finish transient_field_alias)] 600289
 
    // [<start get_required_field_names>]
    // [<finish get_required_field_names>]
@@ -2946,29 +2946,29 @@ void Meta_Package::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600852
    dependents.insert( "Installed" );
 
    if( ( use_transients && is_field_transient( e_field_id_Installed ) )
     || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600852
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600854
    dependents.insert( "Actions" );
 
    if( ( use_transients && is_field_transient( e_field_id_Actions ) )
     || ( !use_transients && !is_field_transient( e_field_id_Actions ) ) )
       names.insert( "Actions" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600854
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600857
    dependents.insert( "Installed" ); // (for Is_Not_Installed modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Installed ) )
     || ( !use_transients && !is_field_transient( e_field_id_Installed ) ) )
       names.insert( "Installed" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600857
 
    // [<start get_always_required_field_names>]
 //nyi

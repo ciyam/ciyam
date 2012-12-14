@@ -999,10 +999,10 @@ uint64_t Meta_Specification_Field_Action::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600265
    if( get_obj( ).Type( ) == 1 ) // i.e. procedure_call
       state |= c_modifier_Hide_Record_Create_Info;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600265
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -1140,19 +1140,19 @@ void Meta_Specification_Field_Action::impl::validate( unsigned state, bool is_in
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Type ) ) ) ) );
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 600270
    if( get_obj( ).Type( ) == 0 && get_obj( ).Specification_Type( ).Allow_Procedure( ) && is_null( get_obj( ).New_Record_Class( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_Class,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_Class ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 600270
 
-   // [(start check_cond_non_null)]
+   // [(start check_cond_non_null)] 600271
    if( get_obj( ).Type( ) == 0 && get_obj( ).Specification_Type( ).Allow_Procedure( ) && is_null( get_obj( ).New_Record_FK_Field( ) ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_FK_Field,
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_New_Record_FK_Field ) ) ) ) );
-   // [(finish check_cond_non_null)]
+   // [(finish check_cond_non_null)] 600271
 
    // [<start validate>]
    // [<finish validate>]
@@ -1229,7 +1229,7 @@ void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_in
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] 600260
    if( get_obj( ).get_is_editing( ) )
    {
       string str( get_obj( ).Specification_Type( ).Specification_Name( ) );
@@ -1243,7 +1243,7 @@ void Meta_Specification_Field_Action::impl::to_store( bool is_create, bool is_in
 
       get_obj( ).set_search_replace_has_opt_prefixing( "Name" );
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] 600260
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -2112,7 +2112,7 @@ void Meta_Specification_Field_Action::get_required_field_names(
 
    get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start field_from_search_replace)]
+   // [(start field_from_search_replace)] 600260
    if( needs_field_value( "Name", dependents ) )
    {
       dependents.insert( "New_Record_Class" );
@@ -2139,7 +2139,7 @@ void Meta_Specification_Field_Action::get_required_field_names(
        || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
          names.insert( "Specification_Type" );
    }
-   // [(finish field_from_search_replace)]
+   // [(finish field_from_search_replace)] 600260
 
    // [<start get_required_field_names>]
 //nyi
@@ -2180,13 +2180,13 @@ void Meta_Specification_Field_Action::get_always_required_field_names(
 {
    parent_class_type::get_always_required_field_names( names, use_transients, dependents );
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600265
    dependents.insert( "Type" ); // (for Hide_Record_Create_Info modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600265
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

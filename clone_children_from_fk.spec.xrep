@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start clone_children_from_fk)]
+   // [(start clone_children_from_fk)] `{`$arg_id`}
    if( is_create && !is_null( get_obj( ).`{`$arg_fkfield`}( ) ) )
    {
       if( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).iterate_forwards( ) )
@@ -21,5 +21,5 @@
          } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkchild`}( ).iterate_next( ) );
       }
    }
-   // [(finish clone_children_from_fk)]
+   // [(finish clone_children_from_fk)] `{`$arg_id`}
 `}

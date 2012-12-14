@@ -1,5 +1,5 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
-   // [(start update_parent)]
+   // [(start update_parent)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )
     && ( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) ) )
@@ -15,14 +15,14 @@
 `}\
       get_obj( ).`{`$arg_spfield`}( ).op_apply( );
    }
-   // [(finish update_parent)]
+   // [(finish update_parent)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
-   // [(start update_parent)]
+   // [(start update_parent)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( )`.`{`$arg_tfield`}( )`} )
    {
       get_obj( ).`{`$arg_spfield`}( ).op_update( );
       get_obj( ).`{`$arg_spfield`}( ).op_apply( );
    }
-   // [(finish update_parent)]
+   // [(finish update_parent)] `{`$arg_id`}
 `}

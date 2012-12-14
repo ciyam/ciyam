@@ -48,9 +48,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start for_auto_code_user)]
+// [(start for_auto_code_user)] 600004
 #include "Meta_Auto_Code.h"
-// [(finish for_auto_code_user)]
+// [(finish for_auto_code_user)] 600004
 
 // [<start includes>]
 // [<finish includes>]
@@ -762,10 +762,10 @@ bool Meta_Workgroup::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start for_auto_code_user)]
+   // [(start for_auto_code_user)] 600004
    if( field_name == "Id" )
       return true;
-   // [(finish for_auto_code_user)]
+   // [(finish for_auto_code_user)] 600004
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -959,7 +959,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start for_auto_code_user)]
+   // [(start for_auto_code_user)] 600004
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       class_pointer< Meta_Auto_Code > cp_auto_code( e_create_instance );
@@ -976,7 +976,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
 
       get_obj( ).Id( next_value );
    }
-   // [(finish for_auto_code_user)]
+   // [(finish for_auto_code_user)] 600004
 
    // [<start for_store>]
    // [<finish for_store>]
@@ -987,7 +987,7 @@ void Meta_Workgroup::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start clone_default_group_children)]
+   // [(start clone_default_group_children)] 600002
    if( is_create && get_obj( ).get_clone_key( ).empty( ) )
    {
       class_pointer< Meta_Type > cp_child( e_create_instance );
@@ -1007,9 +1007,9 @@ void Meta_Workgroup::impl::after_store( bool is_create, bool is_internal )
          } while( cp_source->child_Type( ).iterate_next( ) );
       }
    }
-   // [(finish clone_default_group_children)]
+   // [(finish clone_default_group_children)] 600002
 
-   // [(start clone_default_group_children)]
+   // [(start clone_default_group_children)] 600003
    if( is_create && get_obj( ).get_clone_key( ).empty( ) )
    {
       class_pointer< Meta_Enum > cp_child( e_create_instance );
@@ -1029,7 +1029,7 @@ void Meta_Workgroup::impl::after_store( bool is_create, bool is_internal )
          } while( cp_source->child_Enum( ).iterate_next( ) );
       }
    }
-   // [(finish clone_default_group_children)]
+   // [(finish clone_default_group_children)] 600003
 
    // [<start after_store>]
    // [<finish after_store>]

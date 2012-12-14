@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start trigger_clone_default_user_children)]
+   // [(start trigger_clone_default_user_children)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( is_create`{`!`@eq`(`$arg_skip_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`} && !is_admin_uid_key( get_obj( ).get_key( ) ) )
 `,\
@@ -22,5 +22,5 @@
          } while( cp_empty_user->child_`{`$arg_child`}( ).iterate_next( ) );
       }
    }
-   // [(finish trigger_clone_default_user_children)]
+   // [(finish trigger_clone_default_user_children)] `{`$arg_id`}
 `}   

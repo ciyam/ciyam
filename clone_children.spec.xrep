@@ -1,5 +1,5 @@
 `{`@eq`(`'after_store`'`,`$section`)\
-   // [(start clone_children)]
+   // [(start clone_children)] `{`$arg_id`}
    if( !get_obj( ).get_clone_key( ).empty( ) )
    {
       class_pointer< `{`$full_class_name`} > cp_source( e_create_instance );
@@ -49,5 +49,5 @@
 
       cp_source->finish_review( );
    }
-   // [(finish clone_children)]
+   // [(finish clone_children)] `{`$arg_id`}
 `}

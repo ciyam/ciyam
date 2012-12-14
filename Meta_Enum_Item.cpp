@@ -552,7 +552,7 @@ struct Meta_Enum_Item::impl : public Meta_Enum_Item_command_handler
 
 void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600020
    transaction_start( );
    try
    {
@@ -610,7 +610,7 @@ void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const 
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600020
 
    // [<start Move_Down_impl>]
    // [<finish Move_Down_impl>]
@@ -618,7 +618,7 @@ void Meta_Enum_Item::impl::impl_Move_Down( const string& Restrict_Fields, const 
 
 void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values )
 {
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600020
    transaction_start( );
    try
    {
@@ -676,7 +676,7 @@ void Meta_Enum_Item::impl::impl_Move_Up( const string& Restrict_Fields, const st
       transaction_rollback( );
       throw;
    }
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600020
 
    // [<start Move_Up_impl>]
    // [<finish Move_Up_impl>]
@@ -748,15 +748,15 @@ uint64_t Meta_Enum_Item::impl::get_state( ) const
 {
    uint64_t state = 0;
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600021
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600021
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600023
    if( check_equal( get_obj( ).Internal( ), true ) )
       state |= ( c_state_uneditable | c_state_undeletable );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600023
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -958,15 +958,15 @@ void Meta_Enum_Item::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start default_from_key)]
+   // [(start default_from_key)] 600019
    if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
-   // [(finish default_from_key)]
+   // [(finish default_from_key)] 600019
 
-   // [(start field_from_changed_fk)]
+   // [(start field_from_changed_fk)] 600022
    if( get_obj( ).Enum( ).has_changed( ) )
       get_obj( ).Internal( get_obj( ).Enum( ).Internal( ) );
-   // [(finish field_from_changed_fk)]
+   // [(finish field_from_changed_fk)] 600022
 
    // [<start to_store>]
    // [<finish to_store>]
@@ -986,7 +986,7 @@ void Meta_Enum_Item::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start update_children)]
+   // [(start update_children)] 600024
    if( !is_create
     && get_obj( ).child_Specification( ).iterate_forwards( ) )
    {
@@ -999,7 +999,7 @@ void Meta_Enum_Item::impl::after_store( bool is_create, bool is_internal )
          }
       } while( get_obj( ).child_Specification( ).iterate_next( ) );
    }
-   // [(finish update_children)]
+   // [(finish update_children)] 600024
 
    // [<start after_store>]
    // [<finish after_store>]
@@ -1809,29 +1809,29 @@ void Meta_Enum_Item::get_always_required_field_names(
    ( void )dependents;
    ( void )use_transients;
 
-   // [(start move_up_and_down)]
+   // [(start move_up_and_down)] 600020
    dependents.insert( "Order" );
 
    if( ( use_transients && is_field_transient( e_field_id_Order ) )
     || ( !use_transients && !is_field_transient( e_field_id_Order ) ) )
       names.insert( "Order" );
-   // [(finish move_up_and_down)]
+   // [(finish move_up_and_down)] 600020
 
-   // [(start modifier_field_value)]
+   // [(start modifier_field_value)] 600021
    dependents.insert( "Internal" ); // (for Is_Internal modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish modifier_field_value)]
+   // [(finish modifier_field_value)] 600021
 
-   // [(start protect_equal)]
+   // [(start protect_equal)] 600023
    dependents.insert( "Internal" );
 
    if( ( use_transients && is_field_transient( e_field_id_Internal ) )
     || ( !use_transients && !is_field_transient( e_field_id_Internal ) ) )
       names.insert( "Internal" );
-   // [(finish protect_equal)]
+   // [(finish protect_equal)] 600023
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

@@ -1,11 +1,11 @@
 `{`@eq`(`'at_create`'`,`$section`)\
-   // [(start file_attachment)]
+   // [(start file_attachment)] `{`$arg_id`}
    // NOTE: This is being done to ensure that clones won't end up owning another instance's file.
    get_obj( ).`{`$arg_field`}( "" );
-   // [(finish file_attachment)]
+   // [(finish file_attachment)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_store`'`,`$section`)\
-   // [(start file_attachment)]
+   // [(start file_attachment)] `{`$arg_id`}
    if( get_obj( ).`{`$arg_field`}( ).empty( ) )
       get_obj( ).`{`$arg_sfield`}( 0 );
    else
@@ -21,11 +21,11 @@
       else
          get_obj( ).`{`$arg_sfield`}( size_file( filename ) );
    }
-   // [(start finish_attachment)]
+   // [(finish file_attachment)] `{`$arg_id`}
 `}
 `{`@eq`(`'for_destroy`'`,`$section`)\
-   // [(start file_attachment)]
+   // [(start file_attachment)] `{`$arg_id`}
    if( !storage_locked_for_admin( ) && !get_obj( ).`{`$arg_field`}( ).empty( ) )
       remove_file( get_obj( ).get_attached_file_path( get_obj( ).`{`$arg_field`}( ) ) );
-   // [(finish file_attachment)]
+   // [(finish file_attachment)] `{`$arg_id`}
 `}

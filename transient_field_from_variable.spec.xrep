@@ -1,5 +1,5 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
-   // [(start transient_field_from_variable)]
+   // [(start transient_field_from_variable)] `{`$arg_id`}
    if( !get_obj( ).get_variable( "`{`$arg_variable`}" ).empty( ) )
       get_obj( ).`{`$arg_field`}( from_string< typeof(
        get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}" ) ) );
@@ -7,10 +7,10 @@
    else
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
 `}\
-   // [(finish transient_field_from_variable)]
+   // [(finish transient_field_from_variable)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\
-   // [(start transient_field_from_variable)]
+   // [(start transient_field_from_variable)] `{`$arg_id`}
    if( needs_field_value( "`{`$arg_field`}", dependents ) )
    {
 `{`@eq`(`$arg_spfield`,`'`'`)\
@@ -27,5 +27,5 @@
          names.insert( "`{`$arg_spfield`}" );
 `}\
    }
-   // [(finish transient_field_from_variable)]
+   // [(finish transient_field_from_variable)] `{`$arg_id`}
 `}

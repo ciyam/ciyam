@@ -1,5 +1,5 @@
 `{`@eq`(`'procedure`'`,`$section`)\
-   // [(start field_from_script)]
+   // [(start field_from_script)] `{`$arg_id`}
    if( !storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       string tmp( get_uuid( ) );
@@ -34,5 +34,5 @@
 
       get_obj( ).fetch_updated_instance( );
    }
-   // [(finish field_from_script)]
+   // [(finish field_from_script)] `{`$arg_id`}
 `}

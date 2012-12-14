@@ -729,9 +729,9 @@ void Meta_User::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
-   // [(start field_clear)]
+   // [(start field_clear)] 600001
    get_obj( ).Permissions( string( ) );
-   // [(finish field_clear)]
+   // [(finish field_clear)] 600001
 
    // [<start to_store>]
    // [<finish to_store>]

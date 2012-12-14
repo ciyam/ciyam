@@ -1,5 +1,5 @@
 `{`@eq`(`'for_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
-   // [(start destroy_children)]
+   // [(start destroy_children)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
    if( !is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )`}
@@ -26,5 +26,5 @@
    `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
     + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
-   // [(finish destroy_children)]
+   // [(finish destroy_children)] `{`$arg_id`}
 `}

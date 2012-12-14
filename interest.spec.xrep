@@ -1,5 +1,5 @@
 `{`@eq`(`'calculate`'`,`$section`)\
-   // [(start calculate)]
+   // [(start interest)] `{`$arg_id`}
    if( `{`$arg_calc_finish`} >= get_obj( ).`{`$arg_calc_start`}( )
     && get_obj( ).`{`$arg_balance`}( ) > 0.0 && get_obj( ).`{`$arg_rate`}( ) > 0.0 )
    {
@@ -30,5 +30,5 @@
 
       get_obj( ).`{`$arg_balance`}( get_obj( ).`{`$arg_balance`}( ) + interest );
    }
-   // [(finish calculate)]
+   // [(finish interest)] `{`$arg_id`}
 `}

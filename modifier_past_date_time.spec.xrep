@@ -11,16 +11,16 @@
 `{`$dftypes`=`'1,date_time 2,udate 3,mtime`'`}\
 `{`[`$dftypes`%,`,`{`@eq`(`$arg_dfprim`,`'\\0`'`)`{`$dftype`=`'\\1`'`}`}`]`}\
 `{`}\
-   // [(start modifier_past_date_time)]
+   // [(start modifier_past_date_time)] `{`$arg_id`}
    if(`{`!`@eq`(`$arg_tfield`,`'`'`) get_obj( ).`{`$arg_tfield`}( )\
 `{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} &&`} get_obj( ).`{`$arg_dfield`}( )\
 `{`!`@eq`(`$arg_future`,`'`'`) >`, <`} `{`$dftype`}::standard( )\
 `{`!`@eq`(`$add_amt`,`'`'`) + `{`!`@eq`(`$add_typ`,`'`'`)( `{`$add_typ`} )`}`{`$add_amt`}`} )
       state |= c_modifier_`{`$arg_modifier`};
-   // [(finish modifier_past_date_time)]
+   // [(finish modifier_past_date_time)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start modifier_past_date_time)]
+   // [(start modifier_past_date_time)] `{`$arg_id`}
    dependents.insert( "`{`$arg_dfield`}" ); // (for `{`$arg_modifier`} modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_dfield`} ) )
@@ -33,5 +33,5 @@
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
     || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
       names.insert( "`{`$arg_tfield`}" );`}
-   // [(finish modifier_past_date_time)]
+   // [(finish modifier_past_date_time)] `{`$arg_id`}
 `}

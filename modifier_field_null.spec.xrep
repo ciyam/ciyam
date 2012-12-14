@@ -1,5 +1,5 @@
 `{`@eq`(`'get_state`'`,`$section`)\
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`!`@eq`(`$arg_not_dflt`,`'`'`)!get_obj( ).get_key( ).empty( ) && `}\
 `{`@eq`(`$arg_is_neg`,`'true`'`)!`}is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )\
@@ -10,11 +10,11 @@
 is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_field`}( ) ) )\
 `}
       state |= c_modifier_`{`$arg_modifier`};
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
 `{`$field`=`$arg_pfield`}`{`@eq`(`$field`,`'`'`)`$field`=`$arg_field`}\
-   // [(start modifier_field_null)]
+   // [(start modifier_field_null)] `{`$arg_id`}
    dependents.insert( "`{`$field`}" ); // (for `{`$arg_modifier`} modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$field`} ) )
@@ -28,5 +28,5 @@ is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_
     || ( !use_transients && !is_field_transient( e_field_id_`{`$tfield`} ) ) )
       names.insert( "`{`$tfield`}" );
 `}\
-   // [(finish modifier_field_null)]
+   // [(finish modifier_field_null)] `{`$arg_id`}
 `}

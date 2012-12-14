@@ -3,7 +3,7 @@
 `{`@eq`(`$arg_op`,`'neq`'`)`$op`=`'!=`'`}`{`@eq`(`$arg_op`,`'lt`'`)`$op`=`'<`'`}\
 `{`@eq`(`$arg_op`,`'gt`'`)`$op`=`'>`'`}`{`@eq`(`$arg_op`,`'lteq`'`)`$op`=`'<=`'`}\
 `{`@eq`(`$arg_op`,`'gteq`'`)`$op`=`'>=`'`}\
-   // [(start modifier_field_compare)]
+   // [(start modifier_field_compare)] `{`$arg_id`}
    if( !is_null( get_obj( ).`{`$arg_field`}( ) )
     && !is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ) )
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
@@ -11,10 +11,10 @@
 `}\
     && get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( ) )
       state |= c_modifier_`{`$arg_modifier`};
-   // [(finish modifier_field_compare)]
+   // [(finish modifier_field_compare)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start modifier_field_compare)]
+   // [(start modifier_field_compare)] `{`$arg_id`}
    dependents.insert( "`{`$arg_field`}" ); // (for `{`$arg_modifier`} modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_`{`$arg_field`} ) )
@@ -35,5 +35,5 @@
     || ( !use_transients && !is_field_transient( e_field_id_`{`$tfield`} ) ) )
       names.insert( "`{`$tfield`}" );
 `}\
-   // [(finish modifier_field_compare)]
+   // [(finish modifier_field_compare)] `{`$arg_id`}
 `}

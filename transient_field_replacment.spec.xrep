@@ -1,5 +1,5 @@
 `{`@eq`(`'get_transient_replacement_field_names`'`,`$section`)\
-   // [(start transient_field_replacment)]
+   // [(start transient_field_replacment)] `{`$arg_id`}
    if( name == c_field_id_`{`$arg_field`} || name == c_field_name_`{`$arg_field`} )
 `{`!`@eq`(`$arg_o2field`,`'`'`)\
    {
@@ -9,5 +9,5 @@
       names.push_back( c_field_id_`{`$arg_o2field`} );
    }
 `}\
-   // [(finish transient_field_replacment)]
+   // [(finish transient_field_replacment)] `{`$arg_id`}
 `}
