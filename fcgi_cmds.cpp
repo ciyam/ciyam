@@ -24,8 +24,8 @@
 
 #include "fcgi_cmds.h"
 
-#include "sha1.h"
 #include "format.h"
+#include "sha256.h"
 #include "sockets.h"
 #include "date_time.h"
 #include "utilities.h"
@@ -1965,7 +1965,7 @@ void fetch_user_record(
 
       string final_password( user_password );
       if( !unique_data.empty( ) )
-         final_password = sha1( user_password + unique_data ).get_digest_as_string( );
+         final_password = sha256( user_password + unique_data ).get_digest_as_string( );
 
       if( user_data[ 0 ] != username || ( !is_authorised && password != final_password ) )
          throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );

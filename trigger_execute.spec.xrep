@@ -7,9 +7,10 @@
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    {
 `}\
-`{`$i`}   set_session_variable( "@key", get_obj( ).get_key( ) );
+`{`$i`}   temporary_session_variable tmp_session_key_var( "@key", get_obj( ).get_key( ) );
+`{`$i`}   temporary_session_variable tmp_session_class_var( "@class", get_obj( ).get_class_id( ) );
+
 `{`$i`}   run_script( "`{`$arg_script`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
-`{`$i`}   set_session_variable( "@key", "" );
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    }
 `}\

@@ -791,10 +791,12 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `{`#create_child.spec.xrep section=procedure full_class_name=$full_class_name\
  arg_id=$specification_\\0_id arg_child=$specification_\\0_child arg_pfield=$specification_\\0_pfield\
  arg_field=$specification_\\0_field arg_value=$specification_\\0_value\
- arg_nfield=$specification_\\0_nfield arg_field_list=$specification_\\0_field_list\
+ arg_tfield=$specification_\\0_tfield arg_tfistexttype=$specification_\\0_tfistexttype\
+ arg_field_list=$specification_\\0_field_list arg_cprocedure=$specification_\\0_cprocedure\
  arg_clone_field=$specification_\\0_clone_field arg_procedure=$specification_\\0_procedure arg_create_only=\
  arg_output_arg=$specification_\\0_output_arg arg_output_field=$specification_\\0_output_field\
- arg_key_suffix=$specification_\\0_key_suffix arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix`}\
+ arg_key_suffix=$specification_\\0_key_suffix arg_use_dtm_as_suffix=$specification_\\0_use_dtm_as_suffix\
+ arg_use_test_field_as_suffix=$specification_\\0_use_test_field_as_suffix`}\
 `,\
 `@eq`(`'\\1`'`,`'destroy_children`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#destroy_children.spec.xrep section=procedure class_name=$class_name\
@@ -1366,6 +1368,11 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `{`#check_list_size_limit.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tvalue=$specification_\0_tvalue\
  arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield arg_separator=$specification_\0_separator`}\
+`,\
+`@eq`(`'\1`'`,`'check_matches_regex`'`)
+`{`#check_matches_regex.spec.xrep section=validate class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype\
+ arg_expression=$specification_\0_expression arg_func=$specification_\0_func`}\
 `,\
 `@eq`(`'\1`'`,`'check_parent_fk_match`'`)
 `{`#check_parent_fk_match.spec.xrep section=validate class_name=$class_name\
@@ -2339,11 +2346,11 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `@eq`(`'\1`'`,`'create_child`'`)`&`@eq`(`$specification_\0_procedure`,`'`'`)
 `{`#create_child.spec.xrep section=after_store full_class_name=$full_class_name\
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_pfield=$specification_\0_pfield\
- arg_field=$specification_\0_field arg_value=$specification_\0_value\
- arg_nfield=$specification_\0_nfield arg_field_list=$specification_\0_field_list\
+ arg_field=$specification_\0_field arg_value=$specification_\0_value arg_cprocedure=$specification_\0_cprocedure\
+ arg_tfield=$specification_\0_tfield arg_tfistexttype=$specification_\0_tfistexttype arg_field_list=$specification_\0_field_list\
  arg_clone_field=$specification_\0_clone_field arg_create_only=$specification_\0_create_only\
  arg_procedure= arg_output_arg= arg_output_field= arg_key_suffix=$specification_\0_key_suffix\
- arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix`}\
+ arg_use_dtm_as_suffix=$specification_\0_use_dtm_as_suffix arg_use_test_field_as_suffix=$specification_\0_use_test_field_as_suffix`}\
 `,\
 `@eq`(`'\1`'`,`'create_children_for_fk_children`'`)
 `{`#create_children_for_fk_children.spec.xrep section=after_store full_class_name=$full_class_name\

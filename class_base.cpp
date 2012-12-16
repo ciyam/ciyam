@@ -89,6 +89,8 @@ const char* const c_files_directory = "files";
 
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
+const char* const c_special_regex_for_email_address = "@email_address";
+
 const char* const c_section_timezone = "timezone";
 const char* const c_section_timezones = "timezones";
 const char* const c_section_historical_daylight_saving = "historical_daylight_saving";
@@ -2647,15 +2649,28 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
    return qs;
 }
 
-void check_with_regex( const string& r, const string& s )
+void check_with_regex( const string& r, const string& s, bool* p_rc )
 {
-   regex expr( r );
+   string re( r );
+
+   if( re == c_special_regex_for_email_address )
+      re = "^" + string( c_regex_email_address ) + "$";
+
+   regex expr( re );
+
+   if( p_rc )
+      *p_rc = true;
 
    if( expr.search( s ) == string::npos )
    {
       if( !s.empty( ) )
-         throw runtime_error( s );
-     else
+      {
+         if( p_rc )
+            *p_rc = false;
+         else
+            throw runtime_error( s );
+      }
+      else
          throw runtime_error( "unexpected check for empty string" );
    }
 }

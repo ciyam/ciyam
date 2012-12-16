@@ -2,8 +2,12 @@ if [ $# -lt 1 ]; then
  echo Usage: script [script args file] [[script name]]
 else
  if [ $# -gt 1 ]; then
-  echo $(date) [$2] >>script.log
+  echo $(date) [$2] >>$1.log
  fi
- ./ciyam_client -echo -quiet -no_prompt < $1 >>script.log
+ ./ciyam_client -echo -quiet -no_prompt < $1 >>$1.log
+
+ cat $1.log >>script.log
+
  rm $1
+ rm $1.log
 fi

@@ -197,7 +197,7 @@ a
 
 #sidebar
 {
-   width:210px;
+   width: 210px;
    _height: 100%; /* KLUDGE: for display using IE 6 */
    border: 0px solid #000;
    text-align: left;
@@ -208,7 +208,7 @@ a
    margin: 0px;
    padding: 0px;
    margin-left: 0px;
-   margin-top: 15px;
+   margin-top: 25px;
    border: 0px solid #000;
    width: 185px !important;
    width: 196px;
@@ -247,7 +247,7 @@ a
 {
    text-align: left;
    border: 0px solid #000;
-   width: 735px;
+   width: 755px;
    float: right;
    margin-top: 15px;
    margin-right: 20px;

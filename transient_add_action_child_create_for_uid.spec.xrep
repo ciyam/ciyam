@@ -32,7 +32,7 @@
 
          get_obj( ).`{`$arg_field`}( actions );
       }
-   }   
+   }
    // [(finish transient_add_action_child_create_for_uid)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\

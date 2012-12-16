@@ -916,22 +916,14 @@ void Meta_Package_Type::impl::after_store( bool is_create, bool is_internal )
    if( is_create
     && !is_internal && exists_file( get_obj( ).Name( ) + ".package.bun.gz" ) )
    {
-      try
-      {
-         set_session_variable( "@package_type_path", "." );
-         class_pointer< Meta_Package_Type > cp_other( e_create_instance );
-         cp_other->perform_fetch( get_obj( ).get_key( ) );
+      temporary_session_variable tmp_session_package_type_path( "@package_type_path", "." );
 
-         cp_other->File( get_obj( ).Name( ) + ".package.bun.gz" );
+      class_pointer< Meta_Package_Type > cp_other( e_create_instance );
+      cp_other->perform_fetch( get_obj( ).get_key( ) );
 
-         cp_other->Install( );
-         set_session_variable( "@package_type_path", "" );
-      }
-      catch( ... )
-      {
-         set_session_variable( "@package_type_path", "" );
-         throw;
-      }
+      cp_other->File( get_obj( ).Name( ) + ".package.bun.gz" );
+
+      cp_other->Install( );
    }
    // [<finish after_store>]
 }

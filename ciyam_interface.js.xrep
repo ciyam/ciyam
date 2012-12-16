@@ -472,7 +472,7 @@ function load2( )
 
          while( full_key.length < all_bytes.length )
          {
-            var next = hex_sha1( last_key );
+            var next = hex_sha256( last_key );
 
             full_key += next;
             last_key = next;
@@ -554,7 +554,7 @@ function load_timeout( )
    if( encryptPosts )
    {
       if( sessionStorage.getItem( 'key' ) != null )
-         sessionStorage.setItem( 'key', hex_sha1( sessionStorage.getItem( 'key' ) ) );
+         sessionStorage.setItem( 'key', hex_sha256( sessionStorage.getItem( 'key' ) ) );
    }
 }
 
@@ -601,7 +601,7 @@ function after_force( )
       if( !loggedIn )
          sessionStorage.removeItem( 'key' );
       else if( sessionStorage.getItem( 'key' ) != null )
-         sessionStorage.setItem( 'key', hex_sha1( sessionStorage.getItem( 'key' ) ) );
+         sessionStorage.setItem( 'key', hex_sha256( sessionStorage.getItem( 'key' ) ) );
    }
 
    if( uniqueId != '' )
@@ -680,7 +680,7 @@ function process( )
 
       while( full_key.length < response.length / 2 )
       {
-         var next = hex_sha1( last_key );
+         var next = hex_sha256( last_key );
 
          full_key += next;
          last_key = next;
@@ -935,8 +935,10 @@ function utc_dtm( dt )
 
 function hash_value( s, n )
 {
+   var os = s;
+
    for( var i = 0; i < n; i++ )
-      s = hex_sha1( s ).toLowerCase( );
+      s = hex_sha256( s + os ).toLowerCase( );
 
    return s;
 }
@@ -963,7 +965,7 @@ function hash_password( salt, pwd, skip_id )
    }
 
    if( skip_id != true && uniqueId != '' )
-      retval = hex_sha1( retval + uniqueId ).toLowerCase( );
+      retval = hex_sha256( retval + uniqueId ).toLowerCase( );
 
    return retval;
 }

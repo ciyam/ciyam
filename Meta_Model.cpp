@@ -4097,9 +4097,10 @@ void Meta_Model::impl::impl_Generate( )
                         // handling a "restrict_field" to exist in the index before any sortable column
                         // even if it appears later in the field list. The dummy insert is performed so
                         // that only non-fk columns will be considered for sorting.
-                        column_index_info.insert(
-                         make_pair( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Id( ),
-                         make_pair( false, false ) ) );
+                        if( !get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Transient( ) )
+                           column_index_info.insert(
+                            make_pair( get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Id( ),
+                            make_pair( false, false ) ) );
                      }
                      else
                      {
@@ -4142,8 +4143,9 @@ void Meta_Model::impl::impl_Generate( )
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Int_Type( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Numeric_Type( ) );
 
-                           column_index_info.insert(
-                            make_pair( get_obj( ).child_List( ).child_List_Field( ).get_key( ), make_pair( false, false ) ) );
+                           if( !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Transient( ) )
+                              column_index_info.insert(
+                               make_pair( get_obj( ).child_List( ).child_List_Field( ).get_key( ), make_pair( false, false ) ) );
 
                            column_parent_fields.insert(
                             make_pair( get_obj( ).child_List( ).child_List_Field( ).get_key( ),
@@ -4187,8 +4189,9 @@ void Meta_Model::impl::impl_Generate( )
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Int_Type( ),
                             get_obj( ).child_List( ).child_List_Field( ).Source_Grandchild( ).Type( ).Numeric_Type( ) );
 
-                           column_index_info.insert(
-                            make_pair( get_obj( ).child_List( ).child_List_Field( ).get_key( ), make_pair( false, false ) ) );
+                           if( !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Transient( ) )
+                              column_index_info.insert(
+                               make_pair( get_obj( ).child_List( ).child_List_Field( ).get_key( ), make_pair( false, false ) ) );
 
                            column_parent_fields.insert(
                             make_pair( get_obj( ).child_List( ).child_List_Field( ).get_key( ),
@@ -4770,7 +4773,8 @@ void Meta_Model::impl::impl_Generate( )
                      else if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_field" )
                      {
                         operations = "restricted";
-                        rfield_ids.push_back( p_field->Id( ) );
+                        if( !p_field->Transient( ) )
+                           rfield_ids.push_back( p_field->Id( ) );
                      }
                      else if( get_obj( ).child_List( ).child_List_Field( ).Type( ).get_key( ) == "restrict_search" )
                         operations = "search";

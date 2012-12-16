@@ -1,0 +1,20 @@
+`{`@eq`(`'validate`'`,`$section`)\
+`{`$prefix`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'0`'`)`$prefix`=`'to_string( `'`}\
+`{`$suffix`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'0`'`)`$suffix`=`' )`'`}\
+   // [(start check_matches_regex)] `{`$arg_id`}
+   if( get_obj( ).`{`$arg_field`}( ) != gv_default_`{`$arg_field`} )
+   {
+      bool okay = false;
+`{`@eq`(`$arg_func`,`'`'`)\
+      check_with_regex( "`{`$arg_expression`}", `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`}, &okay );
+`,\
+      check_with_regex( "`{`$arg_expression`}", `{`$arg_func`}( `{`$prefix`}get_obj( ).`{`$arg_field`}( )`{`$suffix`} ), &okay );
+`}
+      if( !okay )
+         p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
+          get_string_message( GS( c_str_invalid_type ), make_pair(
+          c_str_parm_invalid_type_field, get_module_string( c_field_display_name_`{`$arg_field`} ) ),
+          make_pair( c_str_parm_invalid_type_label, get_module_string( "`{`$arg_id`}_label" ) ) ) ) );
+   }
+   // [(finish check_matches_regex)] `{`$arg_id`}
+`}
