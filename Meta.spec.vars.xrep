@@ -3033,7 +3033,7 @@
 `{`$specification_Specification_view_pridx010`=`'false`'`}
 `{`$specification_Specification_view_field011`=`'115102`'`}
 `{`$specification_Specification_view_ftype011`=`'string`'`}
-`{`$specification_Specification_view_extra011`=`'max_size=100`'`}
+`{`$specification_Specification_view_extra011`=`'max_size=200`'`}
 `{`$specification_Specification_view_fmods011`=`'200000000000:relegate`'`}
 `{`$specification_Specification_view_fname011`=`'field_specification_value`'`}
 `{`$specification_Specification_view_fmand011`=`'false`'`}
@@ -3878,7 +3878,7 @@
 `{`$specification_Specification_Field_Action_view_pridx019`=`'false`'`}
 `{`$specification_Specification_Field_Action_view_field020`=`'115102`'`}
 `{`$specification_Specification_Field_Action_view_ftype020`=`'string`'`}
-`{`$specification_Specification_Field_Action_view_extra020`=`'max_size=100`'`}
+`{`$specification_Specification_Field_Action_view_extra020`=`'max_size=200`'`}
 `{`$specification_Specification_Field_Action_view_fmods020`=`'200000000000:relegate`'`}
 `{`$specification_Specification_Field_Action_view_fname020`=`'field_specification_value`'`}
 `{`$specification_Specification_Field_Action_view_fmand020`=`'false`'`}

@@ -3950,7 +3950,7 @@ int exec_system( const string& cmd, bool async )
 
 int run_script( const string& script_name, bool async )
 {
-   int rc;
+   int rc = -1;
 
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
       read_script_info( );

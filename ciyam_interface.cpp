@@ -64,6 +64,7 @@
 #include "config.h"
 #include "format.h"
 #include "ptypes.h"
+#include "sha256.h"
 #include "numeric.h"
 #include "threads.h"
 #include "sockets.h"
@@ -475,7 +476,7 @@ string get_unique( const string& id, const string& ip_addr )
 
    string unique( g_uuid_for_ip_addr[ ip_addr ] );
 
-   return sha1( id + unique ).get_digest_as_string( );
+   return sha256( id + unique ).get_digest_as_string( );
 }
 
 void clear_unique( map< string, string >& input_data )
@@ -509,7 +510,7 @@ void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true 
 
    while( full_key.size( ) < decoded.size( ) )
    {
-      string next( sha1( last_hash ).get_digest_as_string( ) );
+      string next( sha256( last_hash ).get_digest_as_string( ) );
 
       full_key += next;
       last_hash = next;
@@ -4267,7 +4268,7 @@ void request_handler::process_request( )
          crypt_decoded( p_session_info->user_pwd_hash, output, false );
 
          output = base64::encode( output );
-         p_session_info->user_pwd_hash = sha1( p_session_info->user_pwd_hash ).get_digest_as_string( );
+         p_session_info->user_pwd_hash = sha256( p_session_info->user_pwd_hash ).get_digest_as_string( );
       }
    }
 

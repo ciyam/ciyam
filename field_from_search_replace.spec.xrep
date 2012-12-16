@@ -68,7 +68,7 @@
     && !get_obj( ).get_graph_parent( )`}`{`!`@eq`(`$arg_tfield`,`'`'`)
     && get_obj( ).`{`$arg_tfield`}( )`} )
    {
-`{`@eq`(`$arg_cfield`,`'`'`)
+`{`@eq`(`$arg_cfield`,`'`'`)\
       string str( get_obj( ).`{`$arg_sfield`}( ) );\
 `,\
       string str( get_obj( ).`{`$arg_sfield`}( ).`{`$arg_cfield`}( ) );\

@@ -1,17 +1,26 @@
 `{`@eq`(`'after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start create_child)] `{`$arg_id`}
 `{`@eq`(`$arg_create_only`,`'`'`)\
-`{`!`@eq`(`$arg_nfield`,`'`'`)\
-   if( !is_null( get_obj( ).`{`$arg_nfield`}( ) ) )\
-`}`,\
-   if( is_create`{`!`@eq`(`$arg_nfield`,`'`'`) && !is_null( get_obj( ).`{`$arg_nfield`}( ) )`} )\
-`}
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
+   if( get_obj( ).`{`$arg_tfield`}( ) )\
+`,\
+   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )\
+`}`}`,\
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )\
+`,\
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`} )\
+`}`}
    {
 `{`@eq`(`$arg_key_suffix`,`'`'`)\
-`{`@eq`(`$arg_nfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
+`{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
+`{`@eq`(`$arg_use_dtm_as_suffix`,`'`'`)\
       string child_key( get_obj( ).get_key( ) + "_C" );\
 `,\
-      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_nfield`}( ).get_key( ) );\
+      string child_key( get_obj( ).get_key( ) + "_" + get_dtm( ) );\
+`}`,\
+      string child_key( get_obj( ).get_key( ) + "_" + get_obj( ).`{`$arg_tfield`}( ).get_key( ) );\
 `}`,\
       string child_key( construct_key_from_int( get_obj( ).get_key( ), get_obj( ).`{`$arg_key_suffix`}( ) ) );\
 `}
@@ -30,7 +39,9 @@
        get_obj( ).child_`{`$arg_child`}( ).get_key( ), "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
 `]`}
       get_obj( ).child_`{`$arg_child`}( ).op_apply( );
-`{`!`@eq`(`$arg_output_arg`,`'`'`)`&`@eq`(`'procedure`'`,`$section`)
+`{`!`@eq`(`$arg_cprocedure`,`'`'`)
+      get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cprocedure`}( );
+`}`{`!`@eq`(`$arg_output_arg`,`'`'`)`&`@eq`(`'procedure`'`,`$section`)
 `{`!`@eq`(`$arg_output_field`,`'`'`)\
       `{`$arg_output_arg`} = to_string( get_obj( ).`{`$arg_output_field`}( ) );
 `,\

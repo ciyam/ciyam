@@ -21,6 +21,6 @@
 `}
 
       get_obj( ).`{`$arg_dfield`}( value );
-   }   
+   }
    // [(finish field_from_concatenation)] `{`$arg_id`}
 `}

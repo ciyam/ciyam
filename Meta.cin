@@ -420,7 +420,7 @@ procedure_arg_add -id=114419 Specification_Type Is_Valid_Field_Type Procedure_Ar
 procedure_arg_add -id=114420 Specification_Type Is_Valid_Field_Type Procedure_Arg_Primitive int in
 class_add -id=115100 Specification Specifications -x=ordered
 field_add -id=115101 Specification Name str200 mand -x=replace_underbars
-field_add -id=115102 Specification Value str100 opt
+field_add -id=115102 Specification Value str200 opt
 field_add -id=115103 Specification Test_Value str100 opt
 field_add -id=115104 Specification Options str100 opt
 field_add -id=115105 Specification Order string mand -x=order

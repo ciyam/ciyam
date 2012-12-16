@@ -29,6 +29,7 @@ incorrect_numeric_format "must have no more than {@wholes} whole number(s) and n
 incorrect_numeric_fraction_2 "must only have .0 or .5 as a fraction (i.e. round to the nearest half)."
 incorrect_numeric_fraction_4 "must only have .0, .25, .5 or .75 as a fraction (i.e. round to the nearest quarter)."
 exceeded_maximum "has exceeded the maximum size limit of {@limit} characters."
+invalid_type "{@field} is not a valid {@label}."
 invalid_label "is not a valid label ([_0-9a-zA-Z]+)."
 invalid_filename "is not a valid filename (cannot use '"', ':', '?', '*', '<', '>', '|', '/', '\\' or extended ASCII characters)."
 invalid_identifier "is not a valid identifier ([a-zA-Z][_0-9a-zA-Z]*)."

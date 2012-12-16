@@ -46,6 +46,7 @@
 #include "sha1.h"
 #include "regex.h"
 #include "config.h"
+#include "sha256.h"
 #include "threads.h"
 #include "date_time.h"
 #include "fcgi_info.h"
@@ -410,7 +411,7 @@ string hash_password( const string& salted_password )
    string s( salted_password );
 
    for( size_t i = 0; i < c_password_hash_rounds; i++ )
-      s = sha1( s ).get_digest_as_string( );
+      s = sha256( s + salted_password ).get_digest_as_string( );
 
    return s;
 }

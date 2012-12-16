@@ -697,7 +697,7 @@ aggregate_domain< string,
 domain_string_max_size< 200 > g_Name_domain;
 domain_string_max_size< 100 > g_Options_domain;
 domain_string_max_size< 100 > g_Test_Value_domain;
-domain_string_max_size< 100 > g_Value_domain;
+domain_string_max_size< 200 > g_Value_domain;
 
 string g_order_field_name( "Order" );
 
@@ -6025,7 +6025,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish meta_spec_field_type)] 600147
 
    // [(start default_to_field)] 600148
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Model( ) == gv_default_Model && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
@@ -6033,7 +6032,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600148
 
    // [(start default_to_field)] 600149
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Specification_Type( ) == gv_default_Specification_Type && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
@@ -6041,7 +6039,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600149
 
    // [(start default_to_field)] 600150
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Class( ) == true )
@@ -6049,7 +6046,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600150
 
    // [(start default_to_field)] 600151
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent_For_Class( ) == true )
@@ -6057,7 +6053,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600151
 
    // [(start default_to_field)] 600152
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_For_Class( ) == true )
@@ -6065,7 +6060,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600152
 
    // [(start default_to_field)] 600153
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Field_For_Class( ) == true )
@@ -6073,7 +6067,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600153
 
    // [(start default_to_field)] 600153a
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Field_For_Class( ) == true )
@@ -6081,7 +6074,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600153a
 
    // [(start default_to_field)] 600153b
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Other_Class_For_Class( ) == true )
@@ -6089,7 +6081,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600153b
 
    // [(start default_to_field)] 600154
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Source_Parent( ) == gv_default_Source_Parent && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent( ) == true )
@@ -6097,7 +6088,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600154
 
    // [(start default_to_field)] 600155
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Source_Parent( ) == gv_default_Source_Parent && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_As_Source_Parent( ) == true )
@@ -6105,7 +6095,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600155
 
    // [(start default_to_field)] 600156
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Source_Class( ) == gv_default_Source_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Class( ) == true )
@@ -6113,7 +6102,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600156
 
    // [(start default_to_field)] 600157
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Actions( ) == gv_default_Actions )
@@ -6121,7 +6109,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600157
 
    // [(start default_to_field)] 600158
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Child_Specification_Type( ) == gv_default_Child_Specification_Type )
@@ -6129,7 +6116,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600158
 
    // [(start default_to_field)] 600159
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Model( ) == gv_default_Model )
@@ -6137,7 +6123,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600159
 
    // [(start default_to_field)] 600160
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Source_Class( ) == gv_default_Source_Class )
@@ -6174,7 +6159,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600166
 
    // [(start default_to_field)] 600166a
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Source_Parent_Class( ) == gv_default_Source_Parent_Class && get_obj( ).Specification_Type( ).Use_Class_As_Source_Parent_Class( ) == true )
@@ -6182,7 +6166,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600166a
 
    // [(start default_to_field)] 600167
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Name( ) == gv_default_Name )
@@ -6237,7 +6220,6 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_other_field)] 600179
 
    // [(start default_to_field)] 600181
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Procedure( ) == gv_default_Procedure && get_obj( ).Specification_Type( ).Use_Parent_Procedure( ) == true )

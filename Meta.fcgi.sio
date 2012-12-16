@@ -4935,7 +4935,7 @@
      <name>field_specification_value
      <field>115102
      <ftype>string
-     <extra>max_size=100
+     <extra>max_size=200
      <mandatory>false
      <modifiers>200000000000:relegate
     </field>
@@ -5604,7 +5604,7 @@
      <name>field_specification_value
      <field>115102
      <ftype>string
-     <extra>max_size=100
+     <extra>max_size=200
      <mandatory>false
      <modifiers>200000000000:relegate
     </field>
