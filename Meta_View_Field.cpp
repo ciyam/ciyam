@@ -1,16 +1,7 @@
-// Copyright (c) 2008
+// Copyright (c) 2008-2012 CIYAM Open Developers
 //
-// CIYAM Pty. Ltd.
-// ACN 093 704 539
-//
-// ALL RIGHTS RESERVED
-//
-// Permission to use this software for non-commercial purposes is hereby granted. Permission to
-// distribute this software privately is granted provided that the source code is unaltered and
-// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
-// usage of this software is not permitted without first obtaining a license for such a purpose
-// from CIYAM. This software may not be publicly distributed unless written permission to do so
-// has been obtained from CIYAM.
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 #ifdef __BORLANDC__
 #  include "precompile.h"
@@ -2925,7 +2916,6 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_to_field)] 600355
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Class( ) == gv_default_Class )

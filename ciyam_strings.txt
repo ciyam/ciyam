@@ -2,7 +2,7 @@
 true "True"
 false "False"
 total "Total"
-footer "© Copyright 2010 CIYAM Pty. Ltd."
+footer "© Copyright 2012 CIYAM Open Developers"
 records "records"
 subtotal "Subtotal"
 module_is_loaded "Module '{@module}' is already loaded."

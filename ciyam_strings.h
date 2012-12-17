@@ -1,16 +1,8 @@
-// Copyright (c) 2010
+// Copyright (c) 2010-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012 CIYAM Open Developers
 //
-// CIYAM Pty. Ltd.
-// ACN 093 704 539
-//
-// ALL RIGHTS RESERVED
-//
-// Permission to use this software for non-commercial purposes is hereby granted. Permission to
-// distribute this software privately is granted provided that the source code is unaltered and
-// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
-// usage of this software is not permitted without first obtaining a license for such a purpose
-// from CIYAM. This software may not be publicly distributed unless written permission to do so
-// has been obtained from CIYAM.
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 #ifndef CIYAM_STRINGS_H
 #  define CIYAM_STRINGS_H
@@ -19,7 +11,7 @@ const char* const c_str_page = "Page";
 const char* const c_str_true = "True";
 const char* const c_str_false = "False";
 const char* const c_str_total = "Total";
-const char* const c_str_footer = "© Copyright 2010 CIYAM Pty. Ltd.";
+const char* const c_str_footer = "© Copyright 2010 CIYAM Open Developers";
 const char* const c_str_records = "records";
 const char* const c_str_subtotal = "Subtotal";
 const char* const c_str_module_is_loaded = "Module '{@module}' is already loaded.";
