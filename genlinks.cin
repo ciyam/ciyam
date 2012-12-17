@@ -1,3 +1,8 @@
+; Copyright (c) 2012 CIYAM Open Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
 storage_init Meta
 perform_execute 20100101 sys Meta 105100 %1 105435
 .quit

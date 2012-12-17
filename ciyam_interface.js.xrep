@@ -1,3 +1,10 @@
+/*
+** Copyright (c) 2012 CIYAM Open Developers
+**
+** Distributed under the MIT/X11 software license, please refer to the file license.txt
+** in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+*/
+
 `{`#$include @`}
 var isOpera = navigator.userAgent.indexOf( 'Opera' ) > -1;
 var isIE = navigator.userAgent.indexOf( 'MSIE' ) > 1 && !isOpera;
@@ -955,14 +962,11 @@ function hash_password( salt, pwd, skip_id )
    else
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
 
+   if( !skip_id && !loggedIn && encryptPosts )
+      sessionStorage.setItem( 'key', retval );
+
    if( sessionStorage.getItem( 'unique' ) != null )
       uniqueId = sessionStorage.getItem( 'unique' );
-
-   if( encryptPosts )
-   {
-      if( sessionStorage.getItem( 'key' ) == null )
-         sessionStorage.setItem( 'key', retval );
-   }
 
    if( skip_id != true && uniqueId != '' )
       retval = hex_sha256( retval + uniqueId ).toLowerCase( );

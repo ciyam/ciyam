@@ -1,16 +1,7 @@
-// Copyright (c) 2008
+// Copyright (c) 2008-2012 CIYAM Open Developers
 //
-// CIYAM Pty. Ltd.
-// ACN 093 704 539
-//
-// ALL RIGHTS RESERVED
-//
-// Permission to use this software for non-commercial purposes is hereby granted. Permission to
-// distribute this software privately is granted provided that the source code is unaltered and
-// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
-// usage of this software is not permitted without first obtaining a license for such a purpose
-// from CIYAM. This software may not be publicly distributed unless written permission to do so
-// has been obtained from CIYAM.
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 #ifdef __BORLANDC__
 #  include "precompile.h"
@@ -48,9 +39,9 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start for_auto_code_user)] 600004
+// [(start for_auto_code_user)]
 #include "Meta_Auto_Code.h"
-// [(finish for_auto_code_user)] 600004
+// [(finish for_auto_code_user)]
 
 // [<start includes>]
 // [<finish includes>]
@@ -762,10 +753,10 @@ bool Meta_Workgroup::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start for_auto_code_user)] 600004
+   // [(start for_auto_code_user)]
    if( field_name == "Id" )
       return true;
-   // [(finish for_auto_code_user)] 600004
+   // [(finish for_auto_code_user)]
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -959,7 +950,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start for_auto_code_user)] 600004
+   // [(start for_auto_code_user)]
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       class_pointer< Meta_Auto_Code > cp_auto_code( e_create_instance );
@@ -976,7 +967,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
 
       get_obj( ).Id( next_value );
    }
-   // [(finish for_auto_code_user)] 600004
+   // [(finish for_auto_code_user)]
 
    // [<start for_store>]
    // [<finish for_store>]

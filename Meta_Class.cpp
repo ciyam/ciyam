@@ -1,16 +1,7 @@
-// Copyright (c) 2008
+// Copyright (c) 2008-2012 CIYAM Open Developers
 //
-// CIYAM Pty. Ltd.
-// ACN 093 704 539
-//
-// ALL RIGHTS RESERVED
-//
-// Permission to use this software for non-commercial purposes is hereby granted. Permission to
-// distribute this software privately is granted provided that the source code is unaltered and
-// complete or that any alterations and omissions have been first approved by CIYAM. Commercial
-// usage of this software is not permitted without first obtaining a license for such a purpose
-// from CIYAM. This software may not be publicly distributed unless written permission to do so
-// has been obtained from CIYAM.
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 #ifdef __BORLANDC__
 #  include "precompile.h"
@@ -3235,7 +3226,6 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_auto_int_inc)] 600037
 
    // [(start default_to_field)] 600038
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_Field_Id( ) == gv_default_Next_Field_Id )
@@ -3243,7 +3233,6 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600038
 
    // [(start default_to_field)] 610038
-
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
     && get_obj( ).Next_Procedure_Id( ) == gv_default_Next_Procedure_Id )
