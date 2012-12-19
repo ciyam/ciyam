@@ -1,5 +1,6 @@
-`{`$url_opts`=`'`'`}
-`{`$row_limit`=`'20`'`}
+`{`$tz_abbr`=`'GMT`'`}
+`{`$url_opts`=`'use_checksum`'`}
+`{`$row_limit`=`'10`'`}
 `{`$menu_opts`=`'`'`}
 `{`$login_days`=`'0`'`}
 `{`$login_opts`=`'`'`}
@@ -10,10 +11,10 @@
 `{`$print_limit`=`'4000`'`}
 `{`$filesize_limit`=`'0`'`}
 `{`$print_list_ops`=`'`'`}
-`{`$tz_abbr`=`'GMT`'`}
+`{`$checkbox_bools`=`'true`'`}
 `{`$image_width`=`'100`'`}
 `{`$image_height`=`'75`'`}
-`{`$checkbox_bools`=`'true`'`}
+`{`$encrypt_data`=`'true`'`}
 `{`$storage_name`=`'Meta`'`}
 `{`$module_prefix`=`'`'`}
 `{`$modules`=`'Meta`'`}

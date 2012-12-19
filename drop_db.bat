@@ -21,6 +21,6 @@ del ~drop_db>nul
 goto end
 
 :usage
-echo Usage: drop_db [db_name] [[.]|[password]]
+echo Usage: drop_db [db_name] [[.]^|[password]]
 
 :end

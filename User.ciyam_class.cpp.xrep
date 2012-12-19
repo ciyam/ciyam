@@ -30,7 +30,7 @@
 `,\
 `@eq`(`'\1`'`,`'for_user_account`'`)
 `{`#for_user_account.spec.xrep section=value_will_be_provided class_name=$class_name\
- arg_id=$specification_\\0_id arg_ufield=$specification_\0_ufield arg_create_user=$specification_\0_create_user`}\
+ arg_id=$specification_\0_id arg_ufield=$specification_\0_ufield arg_create_user=$specification_\0_create_user`}\
 ### after_fetch
 `,\
 `@eq`(`'\1`'`,`'for_user_account`'`)
