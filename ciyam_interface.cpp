@@ -431,14 +431,56 @@ string get_view_or_list_header( const string& qlink,
    return str;
 }
 
-void output_login_logout( ostream& os, const string& extra_details, const string& msg = "" )
+string get_header_image( const string& module_name )
 {
-   os << "\n<div id=\"login_content\">\n";
+   string header_image_name( module_name );
+   string ext( ".gif" );
 
-   os << "\n<div id=\"nav\">\n";
-   if( file_exists( "login_header.gif" ) )
-      os << "<img src=\"login_header.gif\" alt=\"Login Header\"><br class=\"clear\"/>\n";
+   bool found = false;
+   if( file_exists( header_image_name + ext ) )
+   {
+      found = true;
+      header_image_name += ext;
+   }
+   else
+   {
+      ext = ".png";
+      if( file_exists( header_image_name + ext ) )
+      {
+         found = true;
+         header_image_name += ext;
+      }
+      else
+      {
+         ext = ".jpg";
+         if( file_exists( header_image_name + ext ) )
+         {
+            found = true;
+            header_image_name += ext;
+         }
+      }
+   }
+
+   if( !found )
+      header_image_name.erase( );
+
+   return header_image_name;
+}
+
+void output_login_logout( const string& module_name, ostream& os, const string& extra_details, const string& msg = "" )
+{
+   os << "\n<div id=\"normal_content\">\n";
+
+   os << "\n<div id=\"header\">\n";
+
+   string header_image_name( get_header_image( module_name ) );
+   if( !header_image_name.empty( ) )
+      os << "   <img src=\"" << header_image_name << "\" alt=\"Header\">\n";
+
+   os << "   <div id=\"navband\">\n";
+   os << "   </div>\n";
    os << "</div>\n";
+
 
    if( extra_details.empty( ) )
    {
@@ -891,26 +933,17 @@ void request_handler::process_request( )
             if( cmd != c_cmd_activate )
             {
                is_login_screen = true;
-               output_login_logout( extra_content, login_html );
+               output_login_logout( module_name, extra_content, login_html );
             }
             else
             {
                if( chksum != get_checksum( c_cmd_activate + user + data ) )
                   throw runtime_error( "Invalid URL" );
 
-               extra_content << "\n<div id=\"login_content\">\n";
-
-               extra_content << "\n<div id=\"nav\">\n";
-               if( file_exists( "login_header.gif" ) )
-                  extra_content << "<img src=\"login_header.gif\" alt=\"Login Header\"><br class=\"clear\"/>\n";
-               extra_content << "</div>\n";
-
                string activate_html( g_activate_html );
                str_replace( activate_html, c_user_id, user );
 
-               extra_content << activate_html;
-
-               extra_content << "</div>\n";
+               output_login_logout( module_name, extra_content, activate_html );
             }
          }
          else
@@ -989,7 +1022,7 @@ void request_handler::process_request( )
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-            output_login_logout( extra_content, login_html, osstr.str( ) );
+            output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
 
             if( cookies_permitted )
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
@@ -1001,6 +1034,8 @@ void request_handler::process_request( )
             else
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
          }
+
+         extra_content << g_footer_html;
       }
       else
       {
@@ -2321,6 +2356,14 @@ void request_handler::process_request( )
 
             string user_info( p_session_info->user_key + ":" + p_session_info->user_id );
 
+            if( act == c_act_exec )
+            {
+               if( !set_field_values.empty( ) )
+                  set_field_values += ",";
+
+               set_field_values += "@executed=" + exec;
+            }
+
             if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
              view.field_list, set_field_values, *p_session_info, item_info, 0, 0, 0, 0, 0, &view_extra_vars ) )
                had_send_or_recv_error = true;
@@ -3089,8 +3132,10 @@ void request_handler::process_request( )
                string login_html( !cookies_permitted || !get_storage_info( ).login_days
                 || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-               output_login_logout( extra_content, login_html, osstr.str( ) );
+               output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
             }
+
+            extra_content << g_footer_html;
          }
 
          if( finished_session )
@@ -3133,8 +3178,8 @@ void request_handler::process_request( )
             {
                extra_content << "\n<div id=\"header\">\n";
 
-               string header_image_name( module_name + ".jpg" );
-               if( file_exists( header_image_name.c_str( ) ) )
+               string header_image_name( get_header_image( module_name ) );
+               if( !header_image_name.empty( ) )
                   extra_content << "   <img src=\"" << header_image_name << "\" alt=\"Header\">\n";
 
                extra_content << "   <div id=\"navband\">\n";
@@ -3575,6 +3620,8 @@ void request_handler::process_request( )
                             && ( list_type == c_list_type_child_admin || list_type == c_list_type_child_admin_owner ) )
                               is_okay = true;
                         }
+                        else if( list_type == c_list_type_child_admin )
+                           is_okay = p_session_info->is_admin_user;
                         else if( list_type == c_list_type_child_owner )
                            is_okay = is_owner;
                         else if( list_type == c_list_type_child_admin_owner )
@@ -3591,7 +3638,8 @@ void request_handler::process_request( )
                               is_okay = false;
                         }
 
-                        if( using_anonymous && !child_lists[ i->second ].lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                        if( using_anonymous
+                         && !child_lists[ i->second ].lici->second->extras.count( c_list_type_extra_allow_anonymous ) )
                            is_okay = false;
 
                         if( !is_okay )
@@ -3987,10 +4035,7 @@ void request_handler::process_request( )
             }
 
             if( cmd != c_cmd_pview && cmd != c_cmd_plist )
-            {
-               extra_content << "<br class=\"clear\"/>\n";
                extra_content << g_footer_html;
-            }
 
             extra_content << "</div>\n";
             extra_content << "</div>\n";
@@ -4137,10 +4182,12 @@ void request_handler::process_request( )
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-         output_login_logout( extra_content, login_html, osstr.str( ) );
+         output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
       }
       else
          extra_content << osstr.str( );
+
+      extra_content << g_footer_html;
 
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";

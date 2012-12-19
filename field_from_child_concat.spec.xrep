@@ -74,16 +74,29 @@
          } while( get_obj( ).child_`{`$arg_children`}( ).iterate_next( ) );
       }
 
+`{`@eq`(`$arg_xfield`,`'`'`)\
       string str;
+`,\
+      string xs, str;
+`}\
       for( map< string, string >::iterator i = parts.begin( ); i!= parts.end( ); ++i )
       {
          if( !str.empty( ) )
             str += "`{`$arg_separator`}";
 
+`{`!`@eq`(`$arg_xfield`,`'`'`)\
+         if( !xs.empty( ) )
+            xs += "`{`$arg_separator`}";
+
+         xs += i->first;
+`}\
          str += i->second;
       }
 
       get_obj( ).`{`$arg_field`}( str );
+`{`!`@eq`(`$arg_xfield`,`'`'`)\
+      get_obj( ).`{`$arg_xfield`}( xs );
+`}\
    }
    // [(finish field_from_child_concat)] `{`$arg_id`}
 `}

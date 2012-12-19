@@ -316,7 +316,10 @@ std::string CIYAM_BASE_DECL_SPEC execute_object_command(
  size_t handle, const std::string& context, const std::string& method_name_and_args );
 
 void CIYAM_BASE_DECL_SPEC init_object_instance( size_t handle, const std::string& context, bool for_create = false );
-void CIYAM_BASE_DECL_SPEC prepare_object_instance( size_t handle, const std::string& context, bool for_create = false );
+
+void CIYAM_BASE_DECL_SPEC prepare_object_instance( size_t handle,
+ const std::string& context, bool for_create = false, bool call_to_store = true );
+
 void CIYAM_BASE_DECL_SPEC validate_object_instance( size_t handle, const std::string& context );
 
 void CIYAM_BASE_DECL_SPEC destroy_object_instance( size_t handle );
@@ -421,7 +424,7 @@ void CIYAM_BASE_DECL_SPEC instance_set_parent( size_t handle,
  const std::string& context, const std::string& new_key );
 
 void CIYAM_BASE_DECL_SPEC instance_prepare_execute( size_t handle,
- const std::string& context, const std::string& key, const std::string& ver_info );
+ const std::string& context, const std::string& key, const std::string& ver_info, bool skip_after_fetch = false );
 
 std::string CIYAM_BASE_DECL_SPEC instance_execute( size_t handle,
  const std::string& context, const std::string& key, const std::string& method_name_and_args );

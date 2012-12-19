@@ -1,3 +1,9 @@
+#!/bin/bash
+# Copyright (c) 2012 CIYAM Open Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+
 if [ $# -lt 1 ]; then
  echo Usage: script [script args file] [[script name]]
 else

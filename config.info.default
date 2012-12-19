@@ -2,3 +2,4 @@
 `{`$use_ssl`=`'false`'`}
 `{`$use_zlib`=`'true`'`}
 `{`$use_iconv`=`'true`'`}
+`{`$pwd_rounds`=`'123`'`}

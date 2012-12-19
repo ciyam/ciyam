@@ -1468,7 +1468,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                if( !set_value_items.empty( ) )
-                  instance_set_variable( handle, context, "@skip_after_fetch", "1" );
+                  instance_set_variable( handle, context, get_special_var_name( e_special_var_skip_after_fetch ), "1" );
 
                if( instance_iterate( handle, context,
                 key_info, normal_fields, search_text, search_query, security_info,
@@ -2133,11 +2133,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             size_t handle = create_object_instance( module, mclass,
              0, get_module_class_has_derivations( module, mclass ) );
 
+            bool has_any_set_flds = false;
             for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
             {
                // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                   instance_set_variable( handle, "", i->first, i->second );
+               else
+                  has_any_set_flds = true;
             }
 
             string client_message = instance_get_variable( handle, "", "@message" );
@@ -2194,12 +2197,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         transaction_start( );
                   }
 
-                  instance_prepare_execute( handle, "", next_key, next_ver );
+                  instance_prepare_execute( handle, "", next_key, next_ver, has_any_set_flds );
 
                   for( map< string, string >::iterator j = set_value_items.begin( ), end = set_value_items.end( ); j != end; ++j )
                   {
                      // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
-                     if( !j->first.empty( ) && j->first[ 0 ] != '@' )
+                     if( !j->first.empty( ) && j->first[ 0 ] == '@' )
+                        instance_set_variable( handle, "", j->first, j->second );
+                     else
                      {
                         string method_name_and_args( "set " );
                         method_name_and_args += j->first + " ";
@@ -2208,6 +2213,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         execute_object_command( handle, "", method_name_and_args );
                      }
                   }
+
+                  if( has_any_set_flds )
+                     prepare_object_instance( handle, "", false, false );
 
                   string next_response( instance_execute( handle, "", next_key, method_name_and_args ) );
 
