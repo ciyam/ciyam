@@ -1,0 +1,26 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_each)] `{`$arg_id`}
+   if( !is_null( get_obj( ).`{`$arg_field`}( ) ) )
+   {
+`{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
+`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
+      transaction_start( );
+      try
+      {
+`}\
+`{`$i`}      vector< string > all;
+`{`$i`}      split_string( get_obj( ).`{`$arg_field`}( ), all, "`{`$arg_separator`}" );
+
+`{`$i`}      for( size_t i = 0; i < all.size( ); i++ )
+`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( `{`!`@eq`(`$arg_trim_whitespace`,`'`'`)trim_whitespace( `}all[ i ] `{`!`@eq`(`$arg_trim_whitespace`,`'`'`)) `});
+`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
+      }
+      catch( ... )
+      {
+         transaction_rollback( );
+         throw;
+      }
+`}\
+   }
+   // [(finish for_each)] `{`$arg_id`}
+`}
