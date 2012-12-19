@@ -1,0 +1,99 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start for_send_email_notification)] `{`$arg_id`}
+   try
+   {
+      if( !get_obj( ).`{`$arg_tfield`}( )
+       && !get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ).empty( )
+`{`!`@eq`(`$arg_email_wanted`,`'`'`)\
+       && get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_wanted`}( )
+`}\
+       && get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_failure`}( ).empty( ) )
+      {
+         if( storage_locked_for_admin( ) )
+         {
+            get_obj( ).op_update( );
+            get_obj( ).`{`$arg_tfield`}( true );
+            get_obj( ).op_apply( );
+         }
+         else
+         {
+            string subject( get_module_string( "`{`$arg_id`}_subject" ) );
+            string message( get_module_string( "`{`$arg_id`}_message" ) );
+
+            subject = search_replace( subject, "@subject", get_obj( ).`{`$arg_field`}( ) );
+
+`{`!`@eq`(`$arg_o2field`,`'`'`)`&`!`@eq`(`$arg_user_id`,`'`'`)\
+            message = search_replace( message, "@from", get_obj( ).`{`$arg_o2field`}( ).`{`$arg_user_id`}( ) );
+`}\
+            message = search_replace( message, "@subject", get_obj( ).`{`$arg_field`}( ) );
+            message = search_replace( message, "@no_reply", get_module_string( c_str_no_reply_email_text ) );
+            message = search_replace( message, "@content", get_obj( ).`{`$arg_sfield`}( ) );
+
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$i`=`'   `'`}\
+            if( !get_obj( ).`{`$arg_ofield`}( ) )
+            {
+`}\
+`{`$i`}            get_obj( ).op_update( );
+`{`$i`}            try
+`{`$i`}            {
+`{`$i`}               send_email_message( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ), subject, message, "" );
+
+`{`$i`}               get_obj( ).`{`$arg_tfield`}( true );
+`{`$i`}               get_obj( ).op_apply( );
+`{`$i`}            }
+`{`$i`}            catch( ... )
+`{`$i`}            {
+`{`$i`}               get_obj( ).op_cancel( );
+`{`$i`}               throw;
+`{`$i`}            }
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+            }
+            else
+            {
+               string text_message( convert_html_to_text( message ) );
+
+               string temp_file( "~" + get_uuid( ) + ".html" );
+               {
+                  ofstream outf( temp_file.c_str( ) );
+                  outf << message;
+               }
+
+               get_obj( ).op_update( );
+
+               try
+               {
+                  send_email_message( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_address`}( ), subject, text_message, temp_file );
+
+                  get_obj( ).`{`$arg_tfield`}( true );
+                  get_obj( ).op_apply( );
+
+                  if( !temp_file.empty( ) && exists_file( temp_file ) )
+                     remove_file( temp_file );
+               }
+               catch( ... )
+               {
+                  get_obj( ).op_cancel( );
+
+                  if( !temp_file.empty( ) && exists_file( temp_file ) )
+                     remove_file( temp_file );
+                  throw;
+               }
+            }
+`}\
+         }
+      }
+   }
+   catch( exception& x )
+   {
+      get_obj( ).`{`$arg_spfield`}( ).op_update( );
+      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_failure`}( truncate_string( x.what( ), c_sql_std_char_size ) );
+      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+   }
+   catch( ... )
+   {
+      get_obj( ).`{`$arg_spfield`}( ).op_update( );
+      get_obj( ).`{`$arg_spfield`}( ).`{`$arg_email_failure`}( "unexpected error occurred sending email" );
+      get_obj( ).`{`$arg_spfield`}( ).op_apply( );
+   }
+   // [(finish for_send_email_notification)] `{`$arg_id`}
+`}
