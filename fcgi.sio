@@ -1,5 +1,9 @@
 <sio/>
+ <tz_abbr>GMT
+ <url_opts>use_checksum
  <row_limit>10
+ <embed_images>true
+ <encrypt_data>true
  <checkbox_bools>true
  <storage_name>Meta
  <module_prefix>

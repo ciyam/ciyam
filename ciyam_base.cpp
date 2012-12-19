@@ -1189,8 +1189,10 @@ void perform_storage_op( storage_op op,
    if( name == c_default_storage_name )
       throw runtime_error( "storage name '" + name + "' cannot be used explicitly" );
 
-   if( !lock_for_admin && file_exists( name + ".log.new" ) )
-      throw runtime_error( "storage is under administration" );
+   string new_log_name( name + ".log.new" );
+
+   if( !lock_for_admin && file_exists( new_log_name ) )
+      throw runtime_error( "storage is under administration (i.e. found " + new_log_name + ")" );
 
    if( !gtp_session->instance_registry.empty( ) )
       throw runtime_error( "all object instances must be destroyed before linking to a storage" );
@@ -9350,7 +9352,7 @@ bool perform_instance_iterate( class_base& instance,
                         // filtered.
                         row_limit = 0;
                         instance_accessor.transient_filter_field_values( ).insert( make_pair( next, next_value ) );
-                     }   
+                     }
                   }
                }
 
