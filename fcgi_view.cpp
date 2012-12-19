@@ -878,8 +878,8 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
-      // NOTE: If this view supports "quick linking" then create an "add quick link" action.
-      if( !is_in_edit && !has_quick_link
+      // NOTE: If this view supports "quick linking" (and it is being used) then create an "add quick link" action.
+      if( !is_in_edit && !has_quick_link && !mod_info.user_qlink_class_id.empty( )
        && source.has_quick_link && using_session_cookie && !sess_info.user_id.empty( )
        && ( mod_info.user_qlink_permission.empty( ) || has_permission( mod_info.user_qlink_permission, sess_info ) ) )
       {
@@ -1915,6 +1915,7 @@ bool output_view_form( ostream& os, const string& act,
       else
       {
          bool add_to_field_list = false;
+         bool check_for_link_and_output = false;
 
          if( !is_printable && !cell_data.empty( ) && ( source.url_fields.count( source_value_id )
           || source.href_fields.count( source_value_id ) || source.mailto_fields.count( source_value_id ) ) )
@@ -2538,7 +2539,7 @@ bool output_view_form( ostream& os, const string& act,
                cell_data = format_int_value( atoi( cell_data.c_str( ) ), mask );
             }
 
-            os << data_or_nbsp( cell_data );
+            check_for_link_and_output = true;
          }
          else if( source.numeric_fields.count( source_value_id ) )
          {
@@ -2560,7 +2561,7 @@ bool output_view_form( ostream& os, const string& act,
                cell_data = format_numeric_value( numeric( cell_data.c_str( ) ), mask );
             }
 
-            os << data_or_nbsp( cell_data );
+            check_for_link_and_output = true;
          }
          else if( source.date_fields.count( source_value_id ) )
          {
@@ -2586,7 +2587,7 @@ bool output_view_form( ostream& os, const string& act,
                cell_data = format_date( ud, date_precision.c_str( ) );
             }
 
-            os << data_or_nbsp( cell_data );
+            check_for_link_and_output = true;
          }
          else if( source.time_fields.count( source_value_id ) )
          {
@@ -2612,7 +2613,7 @@ bool output_view_form( ostream& os, const string& act,
                cell_data = format_time( mt, time_precision.c_str( ) );
             }
 
-            os << data_or_nbsp( cell_data );
+            check_for_link_and_output = true;
          }
          else if( source.datetime_fields.count( source_value_id ) )
          {
@@ -2638,12 +2639,10 @@ bool output_view_form( ostream& os, const string& act,
                cell_data = format_date_time( dt, time_precision.c_str( ) );
             }
 
-            os << data_or_nbsp( cell_data );
+            check_for_link_and_output = true;
          }
          else
          {
-            bool is_foreign_key_link = false;
-
             // NOTE: For new "cloned" records make sure that the "creator/modifier" fields are blanked out.
             if( is_new_record
              && ( source_field_id == source.create_user_key_field || source_field_id == source.modify_user_key_field ) )
@@ -2679,6 +2678,13 @@ bool output_view_form( ostream& os, const string& act,
                   }
                }
             }
+
+            check_for_link_and_output = true;
+         }
+
+         if( check_for_link_and_output )
+         {
+            bool is_foreign_key_link = false;
 
             // NOTE: If more than one parent field is found in the view then only provide a hyperlink
             // for the first parent field - also don't provide any hyperlinks for printable versions.

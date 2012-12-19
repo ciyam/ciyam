@@ -135,6 +135,9 @@
       if( !get_obj( ).get_is_iterating( ) )
          actions += '<';
 `}\
+`{`@eq`(`$arg_default`,`'true`'`)\
+      actions += '>';
+`}\
       actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
       actions += "$" + get_obj( ).get_class_id( );
@@ -159,6 +162,9 @@
 `}\
 `{`@eq`(`$arg_back_for_view`,`'true`'`)\
          actions += '<';
+`}\
+`{`@eq`(`$arg_default`,`'true`'`)\
+      actions += '>';
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)

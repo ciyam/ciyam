@@ -747,7 +747,7 @@ void class_base::init( bool for_create )
       original_values.push_back( get_field_value( i ) );
 }
 
-void class_base::prepare( bool for_create )
+void class_base::prepare( bool for_create, bool call_to_store )
 {
    bool is_create( op == e_op_type_create );
 
@@ -763,7 +763,9 @@ void class_base::prepare( bool for_create )
    perform_after_fetch( false, true );
 
    set_iteration_starting( false ); // NOTE: as per above
-   to_store( is_create || for_create, false );
+
+   if( call_to_store )
+      to_store( is_create || for_create, false );
 }
 
 bool class_base::is_valid( bool is_internal, set< string >* p_fields_set )

@@ -206,7 +206,7 @@ class CLASS_BASE_DECL_SPEC class_base
    void op_cancel( bool is_internal = true );
 
    void init( bool for_create );
-   void prepare( bool for_create );
+   void prepare( bool for_create, bool call_to_store = true );
 
    bool is_valid( bool is_internal, std::set< std::string >* p_fields_set = 0 );
    bool has_changed( ) const;
@@ -624,7 +624,7 @@ class CLASS_BASE_DECL_SPEC class_base
 
 #  ifdef __BORLANDC__
 std::string construct_class_identity( const class_base& cb );
-#else
+#  else
 inline std::string construct_class_identity( const class_base& cb )
 {
    std::string identity( cb.get_module_id( ) );
@@ -632,7 +632,28 @@ inline std::string construct_class_identity( const class_base& cb )
    identity += cb.get_class_id( );
    return identity;
 }
-#endif
+#  endif
+
+struct temporary_object_variable
+{
+   temporary_object_variable( class_base& cb, const std::string& name, const std::string& value )
+    :
+    cb( cb ),
+    name( name )
+   {
+      original_value = cb.get_variable( name );
+      cb.set_variable( name, value );
+   }
+
+   ~temporary_object_variable( )
+   {
+      cb.set_variable( name, original_value );
+   }
+
+   class_base& cb;
+   std::string name;
+   std::string original_value;
+};
 
 struct class_base_accessor
 {

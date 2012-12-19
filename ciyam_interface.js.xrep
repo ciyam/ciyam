@@ -6,6 +6,7 @@
 */
 
 `{`#$include @`}
+`{`#config.info @`}
 var isOpera = navigator.userAgent.indexOf( 'Opera' ) > -1;
 var isIE = navigator.userAgent.indexOf( 'MSIE' ) > 1 && !isOpera;
 var isMoz = navigator.userAgent.indexOf( 'Mozilla/5.' ) == 0 && !isOpera;
@@ -47,7 +48,7 @@ var pwdSalt = '';
 var serverId = '';
 var uniqueId = '';
 
-var hashRounds = 100;
+var hashRounds = `{`$pwd_rounds`};
 
 var validation_error = '';
 

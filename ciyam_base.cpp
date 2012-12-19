@@ -147,6 +147,7 @@ const char* const c_session_variable_tz_abbr = "@tz_abbr";
 const char* const c_session_variable_val_error = "@val_error";
 
 const char* const c_special_variable_execute_return = "@return";
+const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
 
 struct instance_info
@@ -1441,7 +1442,13 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
          }
 
          instance_accessor.after_fetch_from_db( );
-         instance_accessor.perform_after_fetch( );
+
+         string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+
+         if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+            ; // i.e. do nothing
+         else
+            instance_accessor.perform_after_fetch( );
       }
    }
 
@@ -1590,7 +1597,13 @@ bool fetch_instance_from_db( class_base& instance,
             }
 
             instance_accessor.after_fetch_from_db( );
-            instance_accessor.perform_after_fetch( is_minimal_fetch );
+
+            string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
+
+            if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+               ; // i.e. do nothing
+            else
+               instance_accessor.perform_after_fetch( is_minimal_fetch );
          }
       }
    }
@@ -2087,6 +2100,13 @@ void split_text_search( const string& text_search, vector< string >& words )
       if( had_escape )
       {
          had_escape = false;
+
+         // NOTE: Backslashes can be used in order to escape quote characters
+         // but if not being used for this purpose then they are instead just
+         // included in the query.
+         if( ch != '"' )
+            next_word += '\\';
+
          next_word += ch;
       }
       else if( ch == '\\' )
@@ -2126,6 +2146,11 @@ void split_text_search( const string& text_search, vector< string >& words )
          }
       }
    }
+
+   // NOTE: If the one and only character provided was a backslash then escape it
+   // so that at least the query won't be empty.
+   if( words.empty( ) && had_escape )
+      next_word = "\\";
 
    if( !next_word.empty( ) )
       words.push_back( next_word );
@@ -4597,6 +4622,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_execute_return );
       break;
 
+      case e_special_var_skip_after_fetch:
+      s = string( c_special_variable_skip_after_fetch );
+      break;
+
       case e_special_var_attached_file_path:
       s = string( c_special_variable_attached_file_path );
       break;
@@ -6199,11 +6228,11 @@ void init_object_instance( size_t handle, const string& context, bool for_create
    instance.init( for_create );
 }
 
-void prepare_object_instance( size_t handle, const string& context, bool for_create )
+void prepare_object_instance( size_t handle, const string& context, bool for_create, bool call_to_store )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
-   instance.prepare( for_create );
+   instance.prepare( for_create, call_to_store );
 }
 
 void validate_object_instance( size_t handle, const string& context )
@@ -8105,7 +8134,8 @@ void instance_set_parent( size_t handle, const string& context, const string& ne
    instance_accessor.set_key( new_key );
 }
 
-void instance_prepare_execute( size_t handle, const string& context, const string& key, const string& ver_info )
+void instance_prepare_execute( size_t handle,
+ const string& context, const string& key, const string& ver_info, bool skip_after_fetch )
 {
    class_base& instance( get_class_base_from_handle( handle, context ) );
    class_base_accessor instance_accessor( instance );
@@ -8116,6 +8146,12 @@ void instance_prepare_execute( size_t handle, const string& context, const strin
       instance_accessor.clear( );
    else
    {
+      auto_ptr< temporary_object_variable > ap_tmp_skip_after_fetch;
+
+      if( skip_after_fetch )
+         ap_tmp_skip_after_fetch.reset( new temporary_object_variable(
+          instance, get_special_var_name( e_special_var_skip_after_fetch ), "1" ) );
+
       instance.perform_fetch( key );
       instance_accessor.set_ver_exp( ver_info );
    }
@@ -9304,15 +9340,17 @@ bool perform_instance_iterate( class_base& instance,
                   {
                      string next_value;
                      if( i < extra_key_values.size( ) )
+                     {
                         next_value = extra_key_values[ i ];
 
-                     // NOTE: If transients have been used as restricts, and no non-transient replacement
-                     // was provided, then tests for record filtering based upon each and every transient
-                     // restriction will need to occur after the record has been fetched from the DB. The
-                     // row limit therefore must be cleared as it is not known which records may later be
-                     // filtered.
-                     row_limit = 0;
-                     instance_accessor.transient_filter_field_values( ).insert( make_pair( next, next_value ) );
+                        // NOTE: If transients have been used as restricts, and no non-transient replacement
+                        // was provided, then tests for record filtering based upon each and every transient
+                        // restriction will need to occur after the record has been fetched from the DB. The
+                        // row limit therefore must be cleared as it is not known which records may later be
+                        // filtered.
+                        row_limit = 0;
+                        instance_accessor.transient_filter_field_values( ).insert( make_pair( next, next_value ) );
+                     }   
                   }
                }
 
@@ -9383,7 +9421,7 @@ bool perform_instance_iterate( class_base& instance,
       }
 
       bool skip_after_fetch = false;
-      string skip_after_fetch_var( instance.get_variable( "@skip_after_fetch" ) );
+      string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
       if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
          skip_after_fetch = true;
@@ -9527,7 +9565,7 @@ bool perform_instance_iterate_next( class_base& instance )
          found = true;
 
          bool skip_after_fetch = false;
-         string skip_after_fetch_var( instance.get_variable( "@skip_after_fetch" ) );
+         string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
          if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
             skip_after_fetch = true;

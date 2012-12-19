@@ -35,6 +35,7 @@ const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
 enum special_var
 {
    e_special_var_execute_return,
+   e_special_var_skip_after_fetch,
    e_special_var_attached_file_path
 };
 
