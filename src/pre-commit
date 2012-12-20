@@ -6,9 +6,9 @@ git diff --cached --name-status | while read st file; do
  if [ "$st" == 'D' ]; then
   continue;
  fi
- if [ -f ./check_source ] || [ -f ./check_source.exe ]; then
+ if [ -f ./src/check_source ] || [ -f ./src/check_source.exe ]; then
   if [ "${file##*.}" = "h" ] || [ "${file##*.}" = "cpp" ]; then
-   ./check_source -q $file
+   ./src/check_source -q src/$file
    if [ $? -ne 0 ]; then
     exit 1
    fi
