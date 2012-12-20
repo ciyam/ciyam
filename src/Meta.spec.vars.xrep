@@ -4963,7 +4963,7 @@
 `{`$specification_User_view_fmand001`=`'true`'`}
 `{`$specification_User_view_field002`=`'100103`'`}
 `{`$specification_User_view_ftype002`=`'string`'`}
-`{`$specification_User_view_extra002`=`'hpassword+max_size=100`'`}
+`{`$specification_User_view_extra002`=`'hpassword+max_size=200`'`}
 `{`$specification_User_view_fmods002`=`'`'`}
 `{`$specification_User_view_fname002`=`'field_user_password`'`}
 `{`$specification_User_view_fmand002`=`'true`'`}

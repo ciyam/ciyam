@@ -123,7 +123,7 @@ const int c_num_transient_fields = 0;
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
 
 domain_string_max_size< 100 > g_Description_domain;
-domain_string_max_size< 100 > g_Password_domain;
+domain_string_max_size< 200 > g_Password_domain;
 domain_string_max_size< 30 > g_User_Id_domain;
 
 string g_order_field_name;

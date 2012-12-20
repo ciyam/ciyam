@@ -22148,7 +22148,7 @@
      <field/>
       <id>100103
       <name>Password
-      <type>1020
+      <type>1025
       <mandatory>true
       <extra>hpassword
       <indexes/>

@@ -1,4 +1,8 @@
 <sio/>
+# Copyright (c) 2012 CIYAM Open Developers
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
  <id>100
  <name>Meta
  <perm>
@@ -6723,7 +6727,7 @@
      <name>field_user_password
      <field>100103
      <ftype>string
-     <extra>hpassword+max_size=100
+     <extra>hpassword+max_size=200
      <mandatory>true
      <modifiers>
     </field>

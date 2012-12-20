@@ -80,9 +80,11 @@ for_*.spec.xrep
 !for_each.spec.xrep
 !for_clone.spec.xrep
 !for_destroy.spec.xrep
+!for_auto_code.spec.xrep
 !for_call_procs.spec.xrep
 !for_destroy_clone.spec.xrep
 !for_move_children.spec.xrep
+!for_auto_code_user.spec.xrep
 !for_send_email_notification.spec.xrep
 
 # Ignore specific installed package files.
