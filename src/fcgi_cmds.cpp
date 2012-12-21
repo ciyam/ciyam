@@ -2416,7 +2416,12 @@ void save_record( const string& module_id,
       }
       else if( view.password_fields.count( value_id )
        || view.encrypted_fields.count( value_id ) || view.hpassword_fields.count( value_id ) )
-         next = password_encrypt( values.at( num++ ), get_server_id( ) );
+      {
+         next = values.at( num++ );
+
+         if( !next.empty( ) )
+            next = password_encrypt( next, get_server_id( ) );
+      }
       else
       {
          // NOTE: If the record is being created under a parent then the parent field
