@@ -17,10 +17,12 @@
          get_obj( ).`{`$arg_pfield`}( ).child_`{`$arg_child`}( ).iterate_stop( );
       }
 
+      string value( to_string( num`{`!`@eq`(`$arg_min_digits`,`'`'`), `{`$arg_min_digits`}`} ) );
+
 `{`@eq`(`$arg_prefix`,`'`'`)\
-      get_obj( ).`{`$arg_field`}( to_string( num ) );
+      get_obj( ).`{`$arg_field`}( value );
 `,\
-      get_obj( ).`{`$arg_field`}( "`{`$arg_prefix`}" + to_string( num ) );
+      get_obj( ).`{`$arg_field`}( "`{`$arg_prefix`}" + value );
 `}\
    }
    // [(finish field_from_child_auto_int_inc)] `{`$arg_id`}
