@@ -39,6 +39,16 @@ template< typename T > inline bool is_valid_str_val( const std::string& ) { retu
 template< > inline bool is_valid_str_val< int >( const std::string& s ) { return is_valid_int( s ); }
 template< > inline bool is_valid_str_val< bool >( const std::string& s ) { return is_valid_bool( s ); }
 
+inline std::string to_string( int num, int min_digits )
+{
+   std::string s( to_string( num ) );
+
+   if( s.length( ) < min_digits )
+      s = std::string( min_digits - s.length( ), '0' ) + s;
+
+   return s;
+}
+
 template< typename T > inline std::string to_comparable_string( const T& t )
 {
    return to_string( t );

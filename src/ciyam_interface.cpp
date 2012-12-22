@@ -3722,9 +3722,13 @@ void request_handler::process_request( )
             }
             else if( cmd == c_cmd_list || cmd == c_cmd_plist )
             {
+               string list_perm( list.perm );
+               if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
+                  list_perm.erase( 0, 1 );
+
                if( !p_session_info->is_admin_user // NOTE: "admin" is always permitted access
-                && ( ( list.type == c_list_type_admin )
-                || ( !list.perm.empty( ) && !p_session_info->user_perms.count( list.perm ) ) ) )
+                && ( ( list.type == c_list_type_admin && list_perm.empty( ) )
+                || ( !list_perm.empty( ) && !p_session_info->user_perms.count( list_perm ) ) ) )
                   extra_content << "<p align=\"center\" class=\"error\">"
                    << GDS( c_display_error ) << ": " << GDS( c_display_permission_denied ) << ".</p>\n";
                else
@@ -3918,7 +3922,11 @@ void request_handler::process_request( )
                for( list_menu_const_iterator
                 lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
                {
-                  bool has_perm( has_permission( lmci->second->perm, *p_session_info ) );
+                  string list_perm( lmci->second->perm );
+                  if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
+                     list_perm.erase( 0, 1 );
+
+                  bool has_perm( has_permission( list_perm, *p_session_info ) );
 
                   if( has_perm && lmci->second->extras.count( c_list_type_extra_show_if_default_other ) )
                   {
@@ -3946,9 +3954,10 @@ void request_handler::process_request( )
 
                   // NOTE: If the user does not have permission or if the list is a
                   // "group" type but the user doesn't belong to a group then omit it.
-                  if( has_perm && lmci->second->type != c_list_type_home && ( is_admin_user
-                   || ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) )
-                   && ( !user_group.empty( ) || lmci->second->type != c_list_type_group ) )
+                  if( has_perm && lmci->second->type != c_list_type_home
+                   && ( !user_group.empty( ) || lmci->second->type != c_list_type_group )
+                   && ( is_admin_user || !lmci->second->perm.empty( )
+                   || ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) ) )
                   {
                      string display_name( get_display_name( lmci->first ) );
 

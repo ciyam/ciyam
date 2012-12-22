@@ -2945,10 +2945,18 @@ void Meta_Model::impl::impl_Generate( )
                   }
                   else if( get_obj( ).child_View( ).child_View_Field( ).Type( ).get_key( ) == "tab" )
                   {
+                     string tab_extras( access_restriction );
+                     if( !get_obj( ).child_View( ).child_View_Field( ).Allow_Anonymous_Access( ) )
+                     {
+                        if( !tab_extras.empty( ) )
+                           tab_extras += '+';
+                        tab_extras += "no_anon";
+                     }
+
                      field_ids.push_back( "@tab" );
                      field_names.push_back( lower( get_obj( ).child_View( ).child_View_Field( ).Name( ) ) );
                      field_types.push_back( "" );
-                     field_extras.push_back( access_restriction );
+                     field_extras.push_back( tab_extras );
                      field_modifiers.push_back( "" );
                      field_mandatory.push_back( "false" );
 

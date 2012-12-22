@@ -2,7 +2,7 @@
    // [(start filter_field_value)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_perm`,`'`'`)\
-   if( get_obj( ).has_filter( "`{`$arg_id`}" ) // i.e. `{`$arg_name`}
+   if( get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
 `,\
    if( !get_perms( ).count( "`{`$arg_perm`}" )
     && get_obj( ).has_filter( "`{`$arg_id`}" ) ) // i.e. `{`$arg_name`}
