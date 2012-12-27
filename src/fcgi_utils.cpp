@@ -1484,7 +1484,9 @@ void output_actions( ostream& os,
 
             string new_checksum_value( get_checksum( sess_info, checksum_values ) );
 
-            os << "var old_checksum = query_value( '" << c_param_chksum << "' ); ";
+            os << "var old_checksum = query_value( '" << c_param_ochksum << "' ); ";
+            os << "if( old_checksum == '' ) old_checksum = query_value( '" << c_param_chksum << "' ); ";
+
             os << "query_update( '" << c_param_chksum << "', '" << new_checksum_value << "', true ); ";
          }
 

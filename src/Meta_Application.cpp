@@ -290,6 +290,7 @@ const char* const c_procedure_id_Test_Proc_1 = "127495";
 const char* const c_procedure_id_Test_Proc_2 = "127497";
 
 const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x100 );
+const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x200 );
 
 domain_string_max_size< 5 > g_Default_Timezone_Abbr_domain;
 aggregate_domain< string,
@@ -2184,6 +2185,10 @@ uint64_t Meta_Application::impl::get_state( ) const
    // [(finish modifier_field_value)] 600520
 
    // [<start get_state>]
+//nyi
+   if( !get_obj( ).get_clone_key( ).empty( )
+    || !get_obj( ).get_variable( get_special_var_name( e_special_var_was_cloned ) ).empty( ) )
+      state |= c_modifier_Was_Cloned;
    // [<finish get_state>]
 
    return state;
@@ -2487,6 +2492,9 @@ void Meta_Application::impl::to_store( bool is_create, bool is_internal )
 //nyi
    if( is_create && get_obj( ).Default_Timezone_Abbr( ).empty( ) )
       get_obj( ).Default_Timezone_Abbr( get_timezone( ) );
+
+   if( is_create && get_obj( ).get_key( ).empty( ) && !get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).Name( get_obj( ).Name( ) + "_copy" );
    // [<finish to_store>]
 }
 
@@ -2533,6 +2541,24 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
             throw runtime_error( output );
 
          get_obj( ).Created_Database( true );
+      }
+   }
+
+   if( is_create && !get_obj( ).get_clone_key( ).empty( ) )
+   {
+      class_pointer< Meta_Application > cp_clone( e_create_instance );
+
+      cp_clone->perform_fetch( get_obj( ).get_clone_key( ) );
+      if( cp_clone->child_Module( ).iterate_forwards( ) )
+      {
+         int n = 0;
+         do
+         {
+            get_obj( ).child_Module( ).op_create( construct_key_from_int( get_obj( ).get_key( ), ++n ) );
+            get_obj( ).child_Module( ).Application( get_obj( ).get_key( ) );
+            get_obj( ).child_Module( ).Model( cp_clone->child_Module( ).Model( ) );
+            get_obj( ).child_Module( ).op_apply( );
+         } while( cp_clone->child_Module( ).iterate_next( ) );
       }
    }
    // [<finish for_store>]

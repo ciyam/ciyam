@@ -1,0 +1,8 @@
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_bool_was_cloned)] `{`$arg_id`}
+   if( !get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).`{`$arg_field`}( true );
+   else
+      get_obj( ).`{`$arg_field`}( false );
+   // [(finish field_bool_was_cloned)] `{`$arg_id`}
+`}

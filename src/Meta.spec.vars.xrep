@@ -124,7 +124,7 @@
 `{`$specification_Application_view_cid`=`'127100`'`}
 `{`$specification_Application_view_name`=`'Application`'`}
 `{`$specification_Application_view_type`=`'standard`'`}
-`{`$specification_Application_view_extra`=`'`'`}
+`{`$specification_Application_view_extra`=`'can_copy`'`}
 `{`$specification_Application_view_mods`=`'`'`}
 `{`$specification_Application_view_binfo`=`'`'`}
 `{`$specification_Application_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032`'`}
@@ -161,7 +161,7 @@
 `{`$specification_Application_view_field005`=`'127128`'`}
 `{`$specification_Application_view_ftype005`=`'bool`'`}
 `{`$specification_Application_view_extra005`=`'new_only`'`}
-`{`$specification_Application_view_fmods005`=`'`'`}
+`{`$specification_Application_view_fmods005`=`'200:relegate`'`}
 `{`$specification_Application_view_fname005`=`'field_application_add_modules_automatically`'`}
 `{`$specification_Application_view_fmand005`=`'true`'`}
 `{`$specification_Application_view_field006`=`'@tab`'`}
@@ -179,7 +179,7 @@
 `{`$specification_Application_view_field008`=`'127106`'`}
 `{`$specification_Application_view_ftype008`=`'string`'`}
 `{`$specification_Application_view_extra008`=`'show+no_edit+notes`'`}
-`{`$specification_Application_view_fmods008`=`'`'`}
+`{`$specification_Application_view_fmods008`=`'200:relegate`'`}
 `{`$specification_Application_view_fname008`=`'field_application_generate_details`'`}
 `{`$specification_Application_view_fmand008`=`'false`'`}
 `{`$specification_Application_view_field009`=`'@tab`'`}

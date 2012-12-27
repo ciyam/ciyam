@@ -2343,7 +2343,7 @@
    <cid>127100
    <name>602910_name
    <type>standard
-   <extra>
+   <extra>can_copy
    <modifiers>
    <class>Application
    <bclass>
@@ -2395,7 +2395,7 @@
      <ftype>bool
      <extra>new_only
      <mandatory>true
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>tab_generate_details
@@ -2419,7 +2419,7 @@
      <ftype>string
      <extra>show+no_edit+notes
      <mandatory>false
-     <modifiers>
+     <modifiers>200:relegate
     </field>
     <field/>
      <name>tab_display_settings

@@ -66,6 +66,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500921
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -361,6 +365,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500921
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -633,6 +641,10 @@
      <modifier/>
       <id>500920
       <name>Is_Not_Full_Generate
+     </modifier>
+     <modifier/>
+      <id>500921
+      <name>Was_Cloned
      </modifier>
     </modifiers>
     <procedures/>
@@ -26166,6 +26178,7 @@
     <data/>
      <name>?
      <type>standard
+     <extra>can_copy
      <class_id>127100
      <field_info>127101;new_edit
      <field_info>127120;always_editable+force+enum=905
