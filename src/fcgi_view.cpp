@@ -1806,6 +1806,7 @@ bool output_view_form( ostream& os, const string& act,
 
                   string new_checksum( get_checksum( sess_info, checksum_values ) );
 
+                  os << "query_update( '" << c_param_ochksum << "', query_value( '" << c_param_chksum << "' ), true ); ";
                   os << "query_update( '" << c_param_chksum << "', '" + new_checksum + "', true ); ";
                }
 
@@ -2322,6 +2323,7 @@ bool output_view_form( ostream& os, const string& act,
 
                      string new_checksum( get_checksum( sess_info, checksum_values ) );
 
+                     os << "query_update( '" << c_param_ochksum << "', query_value( '" << c_param_chksum << "' ), true ); ";
                      os << "query_update( '" << c_param_chksum << "', '" + new_checksum + "', true ); ";
                   }
 
@@ -2473,6 +2475,7 @@ bool output_view_form( ostream& os, const string& act,
 
                      string new_checksum( get_checksum( sess_info, checksum_values ) );
 
+                     os << "query_update( '" << c_param_ochksum << "', query_value( '" << c_param_chksum << "' ), true ); ";
                      os << "query_update( '" << c_param_chksum << "', '" + new_checksum + "', true ); ";
                   }
 

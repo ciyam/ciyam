@@ -146,6 +146,7 @@ const char* const c_session_variable_tz_abbr = "@tz_abbr";
 
 const char* const c_session_variable_val_error = "@val_error";
 
+const char* const c_special_variable_was_cloned = "@cloned";
 const char* const c_special_variable_execute_return = "@return";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
@@ -3972,7 +3973,10 @@ int run_script( const string& script_name, bool async )
    int rc = -1;
 
    if( get_script_reconfig( ) && scripts_file_has_changed( ) )
+   {
       read_script_info( );
+      TRACE_LOG( TRACE_ANYTHING, "[manuscript.sio] updated" );
+   }   
 
    if( !g_scripts.count( script_name ) )
       throw runtime_error( "unknown script '" + script_name + "'" );
@@ -4620,6 +4624,10 @@ string get_special_var_name( special_var var )
 
    switch( var )
    {
+      case e_special_var_was_cloned:
+      s = string( c_special_variable_was_cloned );
+      break;
+
       case e_special_var_execute_return:
       s = string( c_special_variable_execute_return );
       break;

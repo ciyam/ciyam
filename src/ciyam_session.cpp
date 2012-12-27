@@ -1403,6 +1403,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   op_instance_create( handle, context, key_info, false );
                   prepare_object_instance( handle, context, true );
                   op_instance_cancel( handle, context );
+
+                  // NOTE: Set this variable in order for a "new" record to be able to detect (after
+                  // the cancel that is immediately prior to this) that it was cloned.
+                  instance_set_variable( handle, "", get_special_var_name( e_special_var_was_cloned ), "1" );
                }
 
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
