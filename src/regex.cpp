@@ -228,7 +228,7 @@ struct regex::impl
 
    bool match_set( const string& text, size_t off, const part& p );
 
-   void expand_refs( string& literal );
+   string& expand_refs( string& literal );
 
    void dump( ostream& os );
 
@@ -243,6 +243,9 @@ struct regex::impl
 
    bool prefix_at_boundary;
 
+   size_t last_unlimited_part;
+   size_t max_size_from_finish;
+
    vector< part > parts;
    vector< string > refs;
 
@@ -255,7 +258,10 @@ regex::impl::impl( const string& expr )
  min_size( 0 ),
  max_size( 1 ),
  match_at_start( false ),
- match_at_finish( false )
+ match_at_finish( false ),
+ prefix_at_boundary( false ),
+ last_unlimited_part( 0 ),
+ max_size_from_finish( 0 )
 {
    part next_part;
 
@@ -947,6 +953,35 @@ string::size_type regex::impl::search(
       }
    }
 
+   last_unlimited_part = 0;
+   max_size_from_finish = 0;
+
+#ifdef DEBUG
+   bool has_unlimited_parts = false;
+#endif
+   if( match_at_finish )
+   {
+      for( size_t i = 0; i < parts.size( ); i++ )
+      {
+         if( !parts[ i ].max_matches )
+         {
+            last_unlimited_part = i;
+#ifdef DEBUG
+            has_unlimited_parts = true;
+#endif
+
+            max_size_from_finish = 0;
+         }
+         else
+            max_size_from_finish += parts[ i ].max_matches;
+      }
+   }
+
+#ifdef DEBUG
+   if( has_unlimited_parts )
+      cout << "last_unlimited_part = #" << ( last_unlimited_part + 1 ) << endl;
+   cout << "max_size_from_finish = " << max_size_from_finish << '\n' << endl;
+#endif
    string::size_type pos = string::npos;
 
    // NOTE: If the expression needs to match at the end then matching is first
@@ -1049,6 +1084,17 @@ string::size_type regex::impl::do_search(
             --start;
       }
 
+      bool has_last_set_used = false;
+      bool has_last_literal_used = false;
+
+      int remaining_used = 0;
+      string last_literal_used;
+      size_t last_lit_part_used = 0;
+      size_t last_set_part_used = 0;
+      bool last_ref_finish_used = false;
+      bool last_set_inverted_used = false;
+      vector< pair< char, char > > last_set_used;
+
       for( size_t i = start; i < text.size( ); i++ )
       {
          bool has_last_set = false;
@@ -1056,9 +1102,15 @@ string::size_type regex::impl::do_search(
 
          int remaining = 0;
          string last_literal;
+         size_t last_lit_part = 0;
+         size_t last_set_part = 0;
          bool last_ref_finish = false;
          bool last_set_inverted = false;
          vector< pair< char, char > > last_set;
+
+         int matched_last_part = -1;
+
+         size_t old_start_from = start_from;
 
          for( size_t j = start_from; j < parts.size( ); j++ )
          {
@@ -1068,89 +1120,36 @@ string::size_type regex::impl::do_search(
             if( i >= text.size( ) )
                break;
 
-            if( p.type == e_part_type_lit )
-            {
-               string literal( p.literal );
-               for( int x = 1; x < p.min_matches; x++ )
-                  literal += p.literal;
+            size_t li = i;
+            bool already_matched = false;
 
-               expand_refs( literal );
+            bool old_okay = okay;
+            size_t old_finishes( finishes );
 
-               if( ( literal.empty( )
-                && i + p.min_matches <= text.size( )
-                && text.substr( i, p.min_matches ).find( '\n' ) == string::npos )
-                || match_literal( literal, text, i ) )
-               {
-#ifdef DEBUG
-                  cout << "matched literal in part #" << ( j + 1 ) << " for " << literal << " at #" << i << endl;
-#endif
-                  if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
-                     ++i;
-
-                  if( !okay )
-                     begins = i;
-
-                  okay = true;
-                  found = true;
-
-                  last_found = j;
-                  has_matched = true;
-
-                  if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
-                  {
-                     if( ref_started != string::npos && ref_finished != string::npos )
-                        node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
-
-                     ref_starts = j;
-                     ref_started = i;
-                     ref_started_by = j;
-
-                     ref_finished = string::npos;
-                     node_refs[ ref_starts ] = "";
-                  }
-
-                  start_from = j + 1;
-
-                  if( literal.empty( ) )
-                     i += p.min_matches;
-                  else
-                     i += literal_size( literal );
-
-                  if( p.finish_ref )
-                  {
-                     ref_finished = i;
-
-                     if( ref_started != string::npos )
-                        node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
-                  }
-
-                  finishes = i - 1;
-
-                  has_last_set = false;
-
-                  if( p.max_matches != 1 )
-                     has_last_literal = true;
-                  else
-                     has_last_literal = false;
-
-                  last_literal = p.literal;
-                  last_ref_finish = p.finish_ref;
-
-                  if( !p.min_matches )
-                     remaining = p.max_matches - 1;
-                  else
-                     remaining = p.max_matches - p.min_matches;
-               }
-            }
+            if( j == matched_last_part )
+               already_matched = true;
             else
             {
-               for( size_t x = 0; x < p.matches.size( ); x++ )
+               if( p.type == e_part_type_lit )
                {
-                  if( match_set( text, i, p ) )
+                  string literal( p.literal );
+                  for( int x = 1; x < p.min_matches; x++ )
+                     literal += p.literal;
+
+                  expand_refs( literal );
+
+                  if( ( literal.empty( )
+                   && i + p.min_matches <= text.size( )
+                   && text.substr( i, p.min_matches ).find( '\n' ) == string::npos )
+                   || match_literal( literal, text, i ) )
                   {
 #ifdef DEBUG
-                     cout << "matched set in part #" << ( j + 1 ) << ( p.inverted ? " (inverted)" : "" ) << " for " << text[ i ] << " at #" << i << endl;
+                     cout << "matched literal in part #" << ( j + 1 ) << " for " << literal
+                      << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
+                     if( !literal.empty( ) && literal[ 0 ] == '\b' && !is_word_char( text[ i ] ) )
+                        ++i;
+
                      if( !okay )
                         begins = i;
 
@@ -1159,8 +1158,6 @@ string::size_type regex::impl::do_search(
 
                      last_found = j;
                      has_matched = true;
-
-                     int min_matches = max( 1, p.min_matches );
 
                      if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
                      {
@@ -1177,7 +1174,10 @@ string::size_type regex::impl::do_search(
 
                      start_from = j + 1;
 
-                     i += min_matches;
+                     if( literal.empty( ) )
+                        i += p.min_matches;
+                     else
+                        i += literal_size( literal );
 
                      if( p.finish_ref )
                      {
@@ -1189,46 +1189,185 @@ string::size_type regex::impl::do_search(
 
                      finishes = i - 1;
 
+                     has_last_set = false;
+
                      if( p.max_matches != 1 )
-                        has_last_set = true;
+                        has_last_literal = true;
                      else
-                        has_last_set = false;
+                        has_last_literal = false;
 
-                     has_last_literal = false;
+                     last_lit_part = j;
 
-                     last_set = p.matches;
+                     last_literal = p.literal;
                      last_ref_finish = p.finish_ref;
-                     last_set_inverted = p.inverted;
 
                      if( !p.min_matches )
                         remaining = p.max_matches - 1;
                      else
                         remaining = p.max_matches - p.min_matches;
+                  }
+               }
+               else
+               {
+                  for( size_t x = 0; x < p.matches.size( ); x++ )
+                  {
+                     if( match_set( text, i, p ) )
+                     {
+#ifdef DEBUG
+                        cout << "matched set in part #" << ( j + 1 )
+                         << ( p.inverted ? " (inverted)" : "" ) << " for " << text[ i ]
+                         << " at " << i << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
+#endif
+                        if( !okay )
+                           begins = i;
 
-                     break;
+                        okay = true;
+                        found = true;
+
+                        last_found = j;
+                        has_matched = true;
+
+                        int min_matches = max( 1, p.min_matches );
+
+                        if( p.start_ref && ( ref_started == string::npos || j != ref_started_by ) )
+                        {
+                           if( ref_started != string::npos && ref_finished != string::npos )
+                              node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
+
+                           ref_starts = j;
+                           ref_started = i;
+                           ref_started_by = j;
+
+                           ref_finished = string::npos;
+                           node_refs[ ref_starts ] = "";
+                        }
+
+                        start_from = j + 1;
+
+                        i += min_matches;
+
+                        if( p.finish_ref )
+                        {
+                           ref_finished = i;
+
+                           if( ref_started != string::npos )
+                              node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
+                        }
+
+                        finishes = i - 1;
+
+                        if( p.max_matches != 1 )
+                           has_last_set = true;
+                        else
+                           has_last_set = false;
+
+                        has_last_literal = false;
+
+                        last_set_part = j;
+
+                        last_set = p.matches;
+                        last_ref_finish = p.finish_ref;
+                        last_set_inverted = p.inverted;
+
+                        if( !p.min_matches )
+                           remaining = p.max_matches - 1;
+                        else
+                           remaining = p.max_matches - p.min_matches;
+
+                        break;
+                     }
                   }
                }
             }
+
+            bool was_last_part = ( matched_last_part == parts.size( ) - 1 );
+            matched_last_part = -1;
 
             bool force_repeat = false;
             if( found && j < parts.size( ) - 1 && parts[ j + 1 ].inverted )
                force_repeat = true;
 
+            // NOTE: If we need to match at the end and have matched the last unlimited part in
+            // the expression then if the length is less than maximum that can follow prefer to
+            // keep matching rather than skipping ahead to the next part (otherwise a match may
+            // not be found at all).
+            if( ( found || already_matched ) && max_size_from_finish
+             && j >= last_unlimited_part && li + 1 <= text.size( ) - max_size_from_finish )
+               force_repeat = true;
+
+            if( force_repeat )
+            {
+               okay = old_okay;
+               finishes = old_finishes;
+               start_from = old_start_from;
+            }
+
+            // NOTE: If we have matched with the last unlimited part but have reached the point
+            // where the remaining parts could require all the remaining characters then simply
+            // try matching the next part (from the last position) rather than repeating.
+            if( found && !force_repeat && already_matched
+             && max_size_from_finish && j == last_unlimited_part && li + 1 >= text.size( ) - max_size_from_finish )
+            {
+               i = li - 1;
+               continue;
+            }
+
+            if( !found && !force_repeat && !was_last_part && p.min_matches > 0 )
+            {
+               if( ( has_matched || already_matched ) && j > last_found )
+               {
+                  --j;
+                  force_repeat = true;
+               }
+               else if( has_matched )
+                  continue;
+               else
+                  break;
+            }
+
+            if( force_repeat )
+            {
+#ifdef DEBUG
+               cout << "(forcing repeat)" << endl;
+#endif
+               if( ( has_last_set_used && last_set_part_used == last_found - 1 )
+                || ( has_last_literal_used && last_lit_part_used == last_found - 1 ) )
+               {
+                  remaining = remaining_used;
+
+                  has_last_set = has_last_set_used;
+                  has_last_literal = has_last_literal_used;
+
+                  last_literal = last_literal_used;
+                  last_lit_part = last_lit_part_used;
+
+                  last_set = last_set_used;
+                  last_set_part = last_set_part_used;
+                  last_ref_finish = last_ref_finish_used;
+                  last_set_inverted = last_set_inverted_used;
+               }
+            }
+
             // NOTE: The approach to repeat matching is to initially try to match
             // the next part of the expression and only if this fails (or this is
             // the last part of the expression or it has matched the current part
-            // and the next part is inverted) then attempt the repeat.
-            if( okay && ( !found || force_repeat || j == parts.size( ) - 1 ) )
+            // and the next part is inverted) then attempt the repeat. Some other
+            // more esoteric reasons to "force" repeating are documented above.
+            if( okay && ( ( !found && !already_matched ) || force_repeat || j == parts.size( ) - 1 ) )
             {
-               expand_refs( last_literal );
-
                if( has_last_literal && remaining != 0
-                && match_literal( last_literal, text, i ) )
+                && match_literal( expand_refs( last_literal ), text, i ) )
                {
 #ifdef DEBUG
-                  cout << "matched last literal: " << last_literal << endl;
+                  cout << "matched last literal: " << last_literal
+                   << " in part #" << ( last_lit_part + 1 ) << " at " << i
+                   << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
-                  --j;
+                  j = start_from = matched_last_part = last_lit_part;
+
+                  if( j == parts.size( ) - 1 || p.min_matches > 0 )
+                     --j;
+
                   found = true;
 
                   if( last_literal.empty( ) )
@@ -1241,6 +1380,10 @@ string::size_type regex::impl::do_search(
                         ++i;
                   }
 
+                  if( was_last_part && i == text.size( ) )
+                     done = true;
+
+
                   if( last_ref_finish )
                      ref_finished = i;
 
@@ -1251,6 +1394,14 @@ string::size_type regex::impl::do_search(
 
                   if( remaining )
                      --remaining;
+
+                  remaining_used = remaining;
+
+                  has_last_set_used = false;
+                  has_last_literal_used = true;
+
+                  last_literal_used = last_literal;
+                  last_lit_part_used = last_lit_part;
                }
 
                if( has_last_set && remaining != 0 && i < text.size( ) )
@@ -1272,11 +1423,21 @@ string::size_type regex::impl::do_search(
                      {
 #ifdef DEBUG
                         cout << "matched last set: " << last_set[ x ].first
-                         << "-" << last_set[ x ].second << ( last_set_inverted ? "  (inverted)" : "" ) << endl;
+                         << "-" << last_set[ x ].second << ( last_set_inverted ? "  (inverted)" : "" )
+                         << " in part #" << ( last_set_part + 1 ) << " for " << text[ i ] << " at " << i
+                         << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
-                        --j;
-                        found = true;
+                        j = start_from = matched_last_part = last_set_part;
 
+                        if( j == parts.size( ) - 1 || p.min_matches > 0 )
+                        {
+                           --j;
+
+                           if( was_last_part && i == text.size( ) - 1 )
+                              done = true;
+                        }
+
+                        found = true;
                         finishes = i++;
 
                         if( last_ref_finish )
@@ -1288,6 +1449,16 @@ string::size_type regex::impl::do_search(
                         if( remaining )
                            --remaining;
 
+                        remaining_used = remaining;
+
+                        has_last_set_used = true;
+                        has_last_literal_used = false;
+
+                        last_set_used = last_set;
+                        last_set_part_used = last_set_part;
+                        last_ref_finish_used = last_ref_finish;
+                        last_set_inverted_used = last_set_inverted;
+
                         break;
                      }
                   }
@@ -1298,8 +1469,6 @@ string::size_type regex::impl::do_search(
             {
                if( !has_matched || ( j > last_found && p.min_matches ) )
                   okay = false;
-               else if( okay )
-                  done = true;
 
                start_from = 0;
                has_last_set = false;
@@ -1312,14 +1481,20 @@ string::size_type regex::impl::do_search(
          if( match_at_start && ( !okay || begins != 0 ) )
             break;
 
-         if( done || start_from == 0 || start_from >= parts.size( ) )
+         if( done || start_from >= parts.size( ) )
             break;
+
+         if( i > finishes && i < text.size( ) - 1 )
+         {
+            okay = false;
+            break;
+         }
       }
 
       if( ref_started != string::npos && ref_finished != string::npos )
          node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
 
-      if( okay && !done && start_from )
+      if( okay && !done )
       {
          for( size_t j = start_from; j < parts.size( ); j++ )
          {
@@ -1418,7 +1593,7 @@ bool regex::impl::match_set( const string& text, size_t off, const part& p )
    return okay && rounds <= 0;
 }
 
-void regex::impl::expand_refs( string& literal )
+string& regex::impl::expand_refs( string& literal )
 {
    int j = 0;
    for( map< int, string >::iterator i = node_refs.begin( ); i != node_refs.end( ); ++i )
@@ -1426,6 +1601,8 @@ void regex::impl::expand_refs( string& literal )
       string s( "\\" + to_string( ++j ) );
       replace( literal, s, i->second );
    }
+
+   return literal;
 }
 
 void regex::impl::dump( ostream& os )
