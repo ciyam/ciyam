@@ -3273,7 +3273,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_test )
       {
-         // Dummy command for prototyping.
+         string arg_1( get_parm_val( parameters, c_cmd_parm_ciyam_session_test_arg_1 ) );
+         string arg_2( get_parm_val( parameters, c_cmd_parm_ciyam_session_test_arg_2 ) );
+         string arg_3( get_parm_val( parameters, c_cmd_parm_ciyam_session_test_arg_3 ) );
+
+         // NOTE: Dummy command for testing or prototyping.
       }
       else if( command == c_cmd_ciyam_session_quit )
       {

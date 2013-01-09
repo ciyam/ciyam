@@ -65,5 +65,5 @@ checkmail "check for incoming email or process email script calls" [<opt/-script
 runscript "run an external script or program" [<val//script_name>]
 utc_offset "get UTC offset for a timezone" <val//tz_abbr><val//local_time>
 wait "wait for a number of milliseconds" [<val/-u=/uid>]<val//milliseconds>
-test "test command for prototyping"
+test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
 quit "terminate session"
