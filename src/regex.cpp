@@ -1295,7 +1295,12 @@ string::size_type regex::impl::do_search(
              && j >= last_unlimited_part && li + 1 <= text.size( ) - max_size_from_finish )
                force_repeat = true;
 
-            if( force_repeat )
+            bool forcing_previous_repeat = false;
+            if( ( has_last_set_used && last_set_part_used == last_found - 1 )
+             || ( has_last_literal_used && last_lit_part_used == last_found - 1 ) )
+               forcing_previous_repeat = true;
+
+            if( force_repeat && forcing_previous_repeat )
             {
                okay = old_okay;
                finishes = old_finishes;
@@ -1325,27 +1330,23 @@ string::size_type regex::impl::do_search(
                   break;
             }
 
-            if( force_repeat )
+            if( force_repeat && forcing_previous_repeat )
             {
 #ifdef DEBUG
-               cout << "(forcing repeat)" << endl;
+               cout << "(forcing previous repeat)" << endl;
 #endif
-               if( ( has_last_set_used && last_set_part_used == last_found - 1 )
-                || ( has_last_literal_used && last_lit_part_used == last_found - 1 ) )
-               {
-                  remaining = remaining_used;
+               remaining = remaining_used;
 
-                  has_last_set = has_last_set_used;
-                  has_last_literal = has_last_literal_used;
+               has_last_set = has_last_set_used;
+               has_last_literal = has_last_literal_used;
 
-                  last_literal = last_literal_used;
-                  last_lit_part = last_lit_part_used;
+               last_literal = last_literal_used;
+               last_lit_part = last_lit_part_used;
 
-                  last_set = last_set_used;
-                  last_set_part = last_set_part_used;
-                  last_ref_finish = last_ref_finish_used;
-                  last_set_inverted = last_set_inverted_used;
-               }
+               last_set = last_set_used;
+               last_set_part = last_set_part_used;
+               last_ref_finish = last_ref_finish_used;
+               last_set_inverted = last_set_inverted_used;
             }
 
             // NOTE: The approach to repeat matching is to initially try to match
