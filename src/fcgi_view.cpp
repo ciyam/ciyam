@@ -1661,6 +1661,8 @@ bool output_view_form( ostream& os, const string& act,
                if( !is_empty )
                   cell_data = format_date_time( dt, time_precision.c_str( ) );
             }
+            else if( source.hpassword_salt_field == source_field_id )
+               extra = "salt=\"1\" ";
             else if( source.password_fields.count( source_value_id ) )
             {
                type = "password";

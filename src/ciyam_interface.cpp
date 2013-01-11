@@ -4137,8 +4137,6 @@ void request_handler::process_request( )
                extra_content_func += "warn_refresh( );\n";
             }
 
-            extra_content_func += "pwdSalt = '" + hpassword_salt + "';";
-
             if( p_session_info && p_session_info->logged_in )
                extra_content_func += "\nloggedIn = true;";
 
