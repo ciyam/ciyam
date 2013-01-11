@@ -1,6 +1,9 @@
 `{`@eq`(`'validate`'`,`$section`)\
    // [(start check_dep_field_changed)] `{`$arg_id`}
    if( !is_system_uid( )
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+    && ( state & c_modifier_`{`$arg_modifier`} )
+`}\
     && get_obj( ).has_field_changed( c_field_id_`{`$arg_tfield`} )
     && !get_obj( ).has_field_changed( c_field_id_`{`$arg_field`} ) )
    {

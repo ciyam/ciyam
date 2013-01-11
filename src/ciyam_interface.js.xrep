@@ -44,7 +44,6 @@ var hasShownAutoProgress = false;
 var jump_back = false;
 var had_act_error = false;
 
-var pwdSalt = '';
 var serverId = '';
 var uniqueId = '';
 
@@ -1271,6 +1270,7 @@ function get_field_value( name, value )
 function get_all_field_values( form )
 {
    var num = 0;
+   var salt = '';
    var all_values = '';
 
    if( form != null )
@@ -1281,8 +1281,16 @@ function get_all_field_values( form )
          {
             var value = form.elements[ i ].value;
 
+            // NOTE: This approach requires the 'salt' field to be found *before* the 'hash'.
+            if( form.elements[ i ].getAttribute( 'salt' ) == '1' )
+               salt = value;
+
             if( form.elements[ i ].getAttribute( 'hash' ) == '1' )
-               value = hash_password( pwdSalt, value, true );
+            {
+               if( salt == '' )
+                  alert( '*** no salt found possibly bad hash created ***' );
+               value = hash_password( salt, value, true );
+            }
 
             if( num++ > 0 )
                all_values += ',';
