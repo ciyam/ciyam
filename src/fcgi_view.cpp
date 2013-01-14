@@ -911,7 +911,7 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
-      if( !is_in_edit && !is_printable )
+      if( !is_printable )
       {
          if( has_started_right )
             os << "&nbsp;&nbsp;";
