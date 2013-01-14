@@ -6,17 +6,18 @@
 </head>
 
 <body>
-<h1 align="center">`{`$application`} Help</h1>
+<h1 align="center">`{`$application`}</h1>
 
 <h2 align="center">Minimum Requirements</h2>
-<p>
-In order to use `{`$application`} your browser must support Javascript and the Document Object Model (DOM). If you have been
-directed to here then it has been detected that Javascript is not supported.
+<p align="center">
+In order to use `{`$application`} your browser must support Javascript and the Document Object Model (DOM).<br/>
+If you have been directed to here then it has been detected that Javascript is not supported.
 </p>
 
-<p>
-`{`$application`} has been verified to work with Internet Explorer v6+ and Mozilla Firefox v1.5+. If you are using one of these
-browser's and have been redirected here then please check that Javascript has not been disabled before trying again.
+<p align="center">
+`{`$application`} has been verified to work with Internet Explorer v8+ and Mozilla Firefox v10+.<br/>
+If you are using one of these browser's and have been redirected here then please check that Javascript<br/>
+has not been disabled before trying again.
 </p>
 </body>
 
