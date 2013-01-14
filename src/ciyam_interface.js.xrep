@@ -459,7 +459,7 @@ function load2( )
       var post_data = '';
       var key = sessionStorage.getItem( 'key' );
 
-      if( !is_login && has_session && key != null && encryptPosts )
+      if( !is_login && has_session && loggedIn && key != null && encryptPosts )
       {
          var prefix = 'prefix=';
 
