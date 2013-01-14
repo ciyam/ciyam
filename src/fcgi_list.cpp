@@ -2476,7 +2476,7 @@ void output_list_form( ostream& os,
       bool was_odd = false;
 
       for( size_t j = 0; j < print_summary_col_nums.size( ); j++ )
-         ++print_summary_counts[ j ];
+         ++print_summary_counts.at( j );
 
       uint64_t state;
       string type_info;
@@ -2623,9 +2623,9 @@ void output_list_form( ostream& os,
             numeric val( cell_data.c_str( ) );
 
             for( size_t k = 0; k < print_summary_col_nums.size( ); k++ )
-               print_summary_sub_totals[ ( source.print_total_fields.size( ) * k ) + total_column ] += val;
+               print_summary_sub_totals.at( ( source.print_total_fields.size( ) * k ) + total_column ) += val;
 
-            print_total_values[ total_column++ ] += val;
+            print_total_values.at( total_column++ ) += val;
          }
 
          if( j > last_j_val )
@@ -2647,9 +2647,9 @@ void output_list_form( ostream& os,
                   raw_split( source.row_data[ i - 1 ].second, last_columns );
 
                if( i == 0 || i == source.row_data.size( ) - 1
-                || columns[ print_summary_col_nums[ k ] ] != last_columns[ print_summary_col_nums[ k ] ] )
+                || columns.at( print_summary_col_nums[ k ] ) != last_columns.at( print_summary_col_nums[ k ] ) )
                {
-                  string cell_data( columns[ print_summary_col_nums[ k ] ] );
+                  string cell_data( columns.at( print_summary_col_nums[ k ] ) );
 
                   // NOTE: A print summary field could be an enumated type.
                   if( source.enum_fields.count( print_summary_value_ids[ k ] ) )
@@ -2698,7 +2698,7 @@ void output_list_form( ostream& os,
                         --count;
 
                      osxs << "&nbsp;&nbsp;" << count << " " << GDS( c_display_records ) << "</td>\n";
-                     print_summary_counts[ k ] = 1;
+                     print_summary_counts.at( k ) = 1;
 
                      for( int x = 1; x < total_display_cols; x++ )
                      {
@@ -2710,14 +2710,14 @@ void output_list_form( ostream& os,
                         else if( source.force_justify_fields.count( print_total_col_value_ids[ next_total ] ) )
                            class_tag += " justify";
 
-                        numeric total = print_summary_sub_totals[ ( source.print_total_fields.size( ) * k ) + next_total ];
+                        numeric total = print_summary_sub_totals.at( ( source.print_total_fields.size( ) * k ) + next_total );
 
                         string total_string( total.as_string( ) );
 
-                        if( source.pmask_fields.count( print_total_col_value_ids[ next_total ] ) )
+                        if( source.pmask_fields.count( print_total_col_value_ids.at( next_total ) ) )
                            total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
 
-                        if( print_total_col_nums[ next_total ] != x )
+                        if( print_total_col_nums.at( next_total ) != x )
                            osxs << "  <td>&nbsp;</td>\n";
                         else
                         {
@@ -3408,25 +3408,25 @@ void output_list_form( ostream& os,
 
          for( int i = 1; i < total_display_cols; i++ )
          {
-            string class_tag( "list" );
-            if( source.force_right_fields.count( print_total_col_value_ids[ next_total ] ) )
-               class_tag += " right";
-            else if( source.force_center_fields.count( print_total_col_value_ids[ next_total ] ) )
-               class_tag += " center";
-            else if( source.force_justify_fields.count( print_total_col_value_ids[ next_total ] ) )
-               class_tag += " justify";
-
-            numeric total = print_total_values[ next_total ];
-
-            string total_string( total.as_string( ) );
-
-            if( source.pmask_fields.count( print_total_col_value_ids[ next_total ] ) )
-               total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
-
-            if( print_total_col_nums[ next_total ] != i )
+            if( next_total >= print_total_col_nums.size( ) || print_total_col_nums.at( next_total ) != i )
                os << "  <td>&nbsp;</td>\n";
             else
             {
+               string class_tag( "list" );
+               if( source.force_right_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                  class_tag += " right";
+               else if( source.force_center_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                  class_tag += " center";
+               else if( source.force_justify_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                  class_tag += " justify";
+
+               numeric total = print_total_values.at( next_total );
+
+               string total_string( total.as_string( ) );
+
+               if( source.pmask_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                  total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
+
                ++next_total;
                os << "  <td class=\"" << class_tag << "\">" << total_string << "</td>\n";
             }
