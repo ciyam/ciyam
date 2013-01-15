@@ -1,0 +1,10 @@
+ls -1 *.txt >~genhtml.lst
+
+../src/xrep @index.html.xrep docs=@~genhtml.lst>index.html
+../src/xrep @gendocs.xrep prefix=../src/ docs=@~genhtml.lst>~genhtml
+
+chmod a+x ~genhtml
+./~genhtml
+
+rm ~genhtml
+rm ~genhtml.lst
