@@ -1,8 +1,8 @@
 @echo off
 dir /b *.txt >~genhtml.lst
 
-xrep @index.html.xrep docs=@~genhtml.lst>index.html
-xrep @gendocs.bat.xrep docs=@~genhtml.lst>~genhtml.bat
+..\src\xrep @index.html.xrep docs=@~genhtml.lst>index.html
+..\src\xrep @gendocs.xrep prefix=..\src\ docs=@~genhtml.lst>~genhtml.bat
 
 call ~genhtml.bat
 

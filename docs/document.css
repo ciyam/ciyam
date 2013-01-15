@@ -77,7 +77,7 @@ a
    position: relative;
    top: 0px;
    margin: 0px auto;
-   background: url(../src/navbar.png) center repeat-x;
+   background: url(navbar.png) center repeat-x;
 }
 
 #nav
@@ -127,7 +127,7 @@ a
    border: 0px solid red;
    width: 974px;
    margin: 0px auto;
-   background: url(../src/background_header.png) top repeat-y;
+   background: url(background_header.png) top repeat-y;
 }
 
 #remainder
