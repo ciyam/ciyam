@@ -57,7 +57,7 @@ ordered as follows).
 $ - this program is not local (so under Linux will not be run with ./ prefixed)
 
 In certain cases a single program exec might create more than one new test result (test result files are text
-and are named using <group>_<test>_<step>.tst and new test results <group>_<test>_<step>.tst). For these type
+and are named using <group>_<test>_<step>.tst and new test results <group>_<test>_<step>.new). For these type
 of tests subsequent test steps with an empty exec attribute can be used to compare each result separately.
 
 The input attribute must be either "true" or "false" (without quotes). If "true" then a text file is expected

@@ -141,15 +141,19 @@ include_expression            ::= "`#" literal_text
 
 template_expression           ::= "`[" template_value_expression template_item_expression "`]"
 
-template_value_expression     :: value_expression [ "`!" | padding_expression ] [ secondary_split_expression ] [ prefix_expression ]
+template_value_expression     :: value_expression [ "`!" | padding_expression ] [ primary_split_expression ] [ secondary_split_expression ] [ prefix_expression ]
 
 value_expression              ::= variable_identifier [ replacement_expression ]
+                              ::= include_expression [ replacement_expression ]
+
 prefix_expression             ::= "`," | literal_expression
 replacement_expression        ::= "`/" variable_or_literal_text "`/" [ variable_or_literal_text ] [ replacement_expression ]
                               ::= "`:" variable_or_literal_text "`=" [ variable_or_literal_text ] [ replacement_expression ]
 variable_or_literal_text      ::= variable_identifier | literal_text
 
 padding_expression            ::= "`;" number_and_opt_fill_character
+
+primary_split_expression      ::= "`*" literal_text
 
 secondary_split_expression    ::= "`%" literal_text
 
@@ -229,6 +233,7 @@ const char* const c_set_func_name_sort = "sort";
 const char* const c_set_func_name_lower = "lower";
 const char* const c_set_func_name_upper = "upper";
 
+const char* const c_primary_split_value = "*";
 const char* const c_template_prefix_name = "`";
 const char* const c_secondary_split_value = "%";
 const char* const c_original_variable_name = "$";
@@ -1118,6 +1123,7 @@ class value_expression : public expression_base
    public:
    value_expression( expression_base* p_lhs, expression_base* p_rhs = 0 )
     : expression_base( p_lhs, p_rhs ),
+    primary_split_value( " " ),
     do_not_split_into_set_name( false )
    {
    }
@@ -1130,11 +1136,14 @@ class value_expression : public expression_base
 
    static string static_node_type( );
 
+   void set_primary_split_value( const string& value ) { primary_split_value = value; }
+
    void set_secondary_split_value( const string& value ) { secondary_split_value = value; }
 
    void set_do_not_split_into_set_name( ) { do_not_split_into_set_name = true; }
 
    private:
+   string primary_split_value;
    string secondary_split_value;
    bool do_not_split_into_set_name;
 };
@@ -1179,6 +1188,7 @@ cout << "evaluate value_expression" << endl;
    }
 
    xi.set_variable( c_modified_variable_name, retval );
+   xi.set_variable( c_primary_split_value, primary_split_value );
 
    if( !secondary_split_value.empty( ) )
       xi.set_variable( c_secondary_split_value, secondary_split_value );
@@ -1275,8 +1285,10 @@ cout << "evaluate template_expression" << endl;
    }
    else
    {
-      split_set( xi.get_variable( c_original_variable_name ), original_set );
-      split_set( xi.get_variable( c_modified_variable_name ), modified_set );
+      string primary_separator( unescaped( xi.get_variable( c_primary_split_value ), c_special_characters ) );
+
+      split_set( xi.get_variable( c_original_variable_name ), original_set, primary_separator );
+      split_set( xi.get_variable( c_modified_variable_name ), modified_set, primary_separator );
    }
 
    string padding_info;
@@ -1306,7 +1318,7 @@ cout << "evaluate template_expression" << endl;
 
    string secondary_separator;
    if( xi.has_variable( c_secondary_split_value ) )
-      secondary_separator = xi.get_variable( c_secondary_split_value );
+      secondary_separator = unescaped( xi.get_variable( c_secondary_split_value ), c_special_characters );
 
    string retval;
    for( vector< string >::size_type i = 0; i < min( original_set.size( ), modified_set.size( ) ); i++ )
@@ -2763,6 +2775,8 @@ auto_ptr< expression_base > parse_padding_expression( auto_ptr< expression_base 
    return ap_node;
 }
 
+auto_ptr< expression_base > parse_include_expression( xrep_lexer& xl, bool is_opt );
+
 auto_ptr< expression_base > parse_value_expression( xrep_lexer& xl, bool is_opt )
 {
 #ifdef DEBUG
@@ -2775,6 +2789,9 @@ auto_ptr< expression_base > parse_value_expression( xrep_lexer& xl, bool is_opt 
    scoped_lexer_input_holder sli( xl );
 
    ap_lhs_expr = parse_variable_identifier( xl, false, is_opt );
+   if( !ap_lhs_expr.get( ) )
+      ap_lhs_expr = parse_include_expression( xl, is_opt );
+
    if( !ap_lhs_expr.get( ) )
    {
       if( is_opt )
@@ -2831,6 +2848,16 @@ auto_ptr< expression_base > parse_template_value_expression( xrep_lexer& xl, boo
    }
    else
       ap_lhs_node = parse_padding_expression( ap_lhs_node, xl, true );
+
+   if( xl.read_next_token( c_op_mul ) )
+   {
+      value_expression* p_val_expr( dynamic_cast< value_expression* >( ap_lhs_node.get( ) ) );
+      if( !p_val_expr )
+         throw runtime_error( "unexpected dynamic cast< value_expression* > failure" );
+
+      xrep_info dummy_info;
+      p_val_expr->set_primary_split_value( parse_literal_text( xl, false )->evaluate( dummy_info ) );
+   }
 
    if( xl.read_next_token( c_op_mod ) )
    {
@@ -3510,7 +3537,7 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "XREP v0.1p (c) 2005 CIYAM Pty. Ltd.\n";
+               cout << "xrep v0.1q\n";
                cout << "Usage: xrep [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       Each <value> can also be expressed as @<filename> (useful for large values).\n";

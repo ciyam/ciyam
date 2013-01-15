@@ -253,7 +253,8 @@ Next_Child_Specification_Type: for_sample_sinfo
 
 -----------------------------------------------------------------------------------------------------------
 Name: for_sample
-Notes: Field is for "name", Other Field is for "start" and Other Field 2 is for "finish". Source Parent is for "address".
+Notes: Field is for "name", Other Field is for "start" and Other Field 2 is for "finish". Source Parent is
+       for "address".
 
        After saving click "Add Info" to continue.
 Specification_Name: for_{class}
@@ -377,7 +378,8 @@ Using the console client issue a command similar to the following (if package is
 then replace ... with the comma separated key list).
 
 > storage_init Meta
-> perform_package_export Meta Class <class_key>[,...] Sample.package.sio -t=@Meta_Class.tests.lst -x=@Meta_Class.excludes.lst -i=@Meta_Class.includes.lst
+> perform_package_export Meta Class <class_key>[,...] Sample.package.sio -t=@Meta_Class.tests.lst
+ -x=@Meta_Class.excludes.lst -i=@Meta_Class.includes.lst
 
 The initial export file will require a number of changes in order to become a usuable package with the major
 part of this process resulting in the creation of a key mapping file (e.g. Sample.keys.lst) which will later
@@ -418,8 +420,8 @@ case.
 ...
  <class/>
   <name>Relationship
-  <fields>@key,Cascade_Op,Child_Class,Extra,Field_Id,Field_Key,Internal,Mandatory,Model,Name,Parent_Class,Source_Relationship,Transient
-  <record>20120506183822750008,0,20120506055523350008,1,M100C100F101,20120506183822750008_C,0,0,key_model,User,var_user_class,,0
+  <fields>@key,Cascade_Op,Child_Class,Extra,Field_Id,Field_Key,Mandatory,Model,Name
+  <record>20120506183822750008,0,20120506055523350008,1,M100C100F101,20120506183822750008_C,0,key_model,User
  </class>
 ...
 
@@ -553,7 +555,8 @@ file and all of its .spec.xrep files.
 
 The following is the console command required to create the "Sample" package archive.
 
-zip Sample.package.zip package.info Sample.keys.lst Sample.package.sio Sample.ciyam_class.cpp.xrep for_sample.spec.xrep
+zip Sample.package.zip package.info Sample.keys.lst Sample.package.sio Sample.ciyam_class.cpp.xrep
+ for_sample.spec.xrep
 
 At this time a restore of the meta storage backup (i.e. ciyam_restore Meta) should be executed to return the
 Meta system to how it was prior to the development of the specifications for the new package as described in
