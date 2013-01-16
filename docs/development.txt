@@ -1,23 +1,24 @@
 Development Cycle Steps
 -----------------------
 
-1. Sign up for a free GitHub account (https://github.com/signup/free), and set up git and SSH to work with
-GitHub (http://help.github.com/win-set-up-git/).
+1. Sign up for a free GitHub account (https://github.com/signup/free) then install "git" and SSH to work with
+GitHub (for Windows users refer to http://help.github.com/win-set-up-git/).
  
-2. You need a fork of the main source tree. Login to your GitHub account, browse to the ciyam project
-(https://github.com/ciyam/ciyam), then push the small 'Fork' button near the top of the screen.
+2. You'll need a fork of the main source tree. Login to your GitHub account and then browse over to the ciyam
+project (https://github.com/ciyam/ciyam) and click the small 'Fork' button near the top of the screen.
  
-3. Connect that fork at GitHub with source code on your development machine. The easiest way to do that
-is to clone your github fork, using the SSH Read+Write URL github shows you on your fork's page.
+3. Connect that fork at GitHub with source code on your development machine. The easiest way to do that is to
+clone your github fork, using the SSH Read+Write URL github shows you on your fork's page.
  
 git clone git@github.com:your_github_name/ciyam.git
 cd ciyam
 
 4. Add a remote link to the main ciyam "upstream" project.
+
 git remote add upstream git://github.com/ciyam/ciyam.git
 
 -------------------------------------------------------------------------------------------------------------
-                    [these steps are applicable to each task being worked on]
+                          [these steps are applicable to each task being worked on]
 -------------------------------------------------------------------------------------------------------------
 
 5. Make sure you are using your master branch and have merged all remote changes (this step is not applicable
@@ -49,6 +50,7 @@ make all
 git commit -m "Added new features to satisfy specified requirements."
 git push git@github.com:your_github_name/ciyam.git task_branch_name:task_branch_name
  
-10. Finally submit a "pull" request by going to your fork's GitHub page, selecting the branch containing the
-changes you want pulled ("task_branch_name" in the above example), and then pushing the "Pull Request" button.
+10. Finally submit a "pull" request by going to your fork's GitHub page and selecting the branch that has all
+the changes you want pulled ("task_branch_name" in the above example) and finally clicking the "Pull Request"
+button.
 
