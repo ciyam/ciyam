@@ -1,22 +1,24 @@
 Coding Standards
 ----------------
 
-All submitted source is expected to be consistent with the existing coding standards
-and these standards are also expected to apply to code generated from source templates.
+All project source code is expected to be consistent with these coding standards and these standards are also
+expected to apply to code that is generated from source templates (i.e. "specifications").
 
-To assist in identifying non-standard code (for .cpp and .h files) the tool "check_source"
-is used as a git pre-commit trigger. Any 3rd party header files placed in the repository
-should be added to the "check_source_include" file to be excluded from these checks.
+To assist in identifying non-standard code (for .cpp and .h files) the tool "check_source" is being used as a
+git pre-commit trigger. Any 3rd party header files that are added to the repository will also be added to the
+"check_source_ignore" file to be excluded from these checks.
+
 
 Format
 ------
 
 - 3 space indenting, no tabs
 - leading or trailing underscores in generated code only
-- No CAPITAL letters use underscore ( e.g. my_identifier )
-- Use CAPITAL letters only for macros ( e.g. #define MY_MACRO; )
+- no CAPITAL letters use underscore (e.g. my_identifier)
+- use CAPITAL letters only for macros (e.g. #define MY_MACRO)
 
-Type          Prefixes   Example        
+
+Type          Prefixes   Example
 ----          --------   -------
 const         c_         const char c_ch; 
 enum          e_         enum etype e_etype_one; 
@@ -27,6 +29,7 @@ thread 	     gt_        static TLS( session )* gtp_session;
 pointer	     p_         char* p_ch;
 auto pointer  ap_        auto_ptr< char > ap_char; 
  
+
 Operator Space Rules
 --------------------
 
@@ -64,11 +67,13 @@ There must always be a space either side of an operator with the following excep
   < when opening an include ( e.g. #include <header>; )
   # in non-indented macro ( e.g. #ifdef MACRO )
 
+
 Blank Lines
 -----------
 
-Encouraged to aid readability between blocks and statements but never use more than one blank
+These are encouraged to aid with readability between blocks and statements but do not use more than one blank
 between non-blank lines (this applies to generated code also).
+
 
 Block Style
 -----------
@@ -105,6 +110,7 @@ bool function_name( int n )
    return true;
 }
 
+
 Continuation
 ------------
 
@@ -114,8 +120,8 @@ export_data( outs, module, all_field_data[ i ].class_id,
  all_class_ids, excludes, tests, includes, exported_records, exported_children,
  next_pass, will_be_exported, partial_export, rounds, current_round, future_rounds, ts, total );
 
-Lines continuation is encouraged for readability and lines should generally not exceed 110
-characters in length (in generated code lines of up to 200 characters are acceptable).
+Lines continuation is encouraged for readability and lines should usually not exceed 109 characters in length
+(in generated code lines of up to 200 characters are acceptable).
 
 try, to, keep,
 code, aligned, 
@@ -137,14 +143,15 @@ to, slope,
 in this,
 way
 
+
 Comments
 --------
 
-Commenting of the obvious is not desired or appreciated (code should instead be kept
-uncluttered and use easily understandable names for classes and variables).
+Commenting of the obvious is not desired or appreciated (code should instead be kept uncluttered with the use
+of easily understandable names for classes and variables).
 
-Apart from special cases in generated code comments should start with a "comment type"
-label which is one of the following:
+Apart from special cases in generated code comments should start with a "comment type" label (making it clear
+*why* the comment has been added) which must be one of the following:
 
 // NOTE: Something to take note of (such as unusual flow control or empty scope).
 
@@ -160,10 +167,11 @@ The following special comment is available if needed to prevent a check_source e
 double values[ ] = { -2.6, -2.5, -2.4, -1.6, -1.5, -1.4,
  -0.6, -0.5, -0.4, 0.4, 0.5, 0.6, 1.4, 1.5, 1.6, 2.4, 2.5, 2.6 };
 
-The following special comment is used to indicate manual code that should be replaced by generated code
-(in the case of Meta perhaps eventually):
+The following special comment is used to indicate manual code that should be replaced by generated code (this
+is especially used for the code in the Meta module):
 
 //nyi
+
 
 Macros
 ------
@@ -231,6 +239,7 @@ class class_name
 */
 };
 
+
 Constructors
 ------------
 
@@ -244,13 +253,13 @@ class_name::class_name( int x, int y )
       this->x *= 10;
 }
 
+
 SQL
 ---
 
 SQL is formatted so that it stands out from general code. 
 
-Operator space rules for commas and parenthesis are different from 
-the standard ( e.g. (nospace,nospace) )
+Operator space rules for commas and parenthesis are different from the standard (e.g. (nospace,nospace))
 
 Keywods are in uppercase and names use prefixing.
 
