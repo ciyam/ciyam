@@ -1,3 +1,5 @@
+// Copyright (c) 2012 CIYAM Open Developers
+
 #include <cstring>
 #include <cstdlib>
 
