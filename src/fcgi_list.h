@@ -1,5 +1,5 @@
 // Copyright (c) 2011-2012 CIYAM Pty. Ltd. ACN 093 704 539
-// Copyright (c) 2012 CIYAM Open Developers
+// Copyright (c) 2012-2013 CIYAM Open Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
