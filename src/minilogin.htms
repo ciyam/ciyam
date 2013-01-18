@@ -9,12 +9,12 @@
                       @@user_id
                    </td><td>
                       <input class="loginfields" type="text" name="username" tabindex="1"
-                       id="miniusername" maxlength="25" validate="reqd" onkeypress="className = 'loginfields'" />
+                       id="miniusername" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" />
                    </td><td>
                       @@password
                    </td><td>
                       <input class="loginfields" type="password" name="password" tabindex="2"
-                       id="minipassword" maxlength="25" validate="reqd" onkeypress="className = 'loginfields'" />
+                       id="minipassword" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" />
                    </td><td>
                       <input name="Submit" class="button" type="submit" id="minisubmit" tabindex="4" value="@@login" />
                    </td></tr>

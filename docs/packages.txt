@@ -51,7 +51,7 @@ sure a system is secured the password for "admin" must be changed (the default p
 
 Package Options:
 
-@use_demo_data - Use this option to create one or more demo Users.
+@use_demo_data - Use this option to create one or more demo User records.
 
 use_access_level - Use this option to be able to assign users a specific "access" level.
 use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
