@@ -111,11 +111,7 @@ scoped_flusher::~scoped_flusher( )
 
 void init_log( )
 {
-#ifndef DEBUG
-   g_logfile.open( c_log_file, ios::out );
-#else
    g_logfile.open( c_log_file, ios::out | ios::app );
-#endif
 }
 
 void log_trace_message( const string& message )
