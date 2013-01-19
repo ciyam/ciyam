@@ -1,30 +1,33 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start modifier_permission)] `{`$arg_id`}
+`{`$check_admin`=`'`'`}`{`!`@eq`(`$arg_admin_always`,`'`'`)`$check_admin`=`'1`'`}`{`!`@eq`(`$arg_admin_never`,`'`'`)`$check_admin`=`'1`'`}\
 `{`@eq`(`$arg_remove`,`'`'`)\
 `{`@eq`(`$arg_ufield`,`'`'`)\
-   if( `{`!`@eq`(`$arg_admin_always`,`'`'`)!is_admin_uid( ) && `}!get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
+   if( `{`!`@eq`(`$check_admin`,`'`'`)`{`!`@eq`(`$arg_admin_never`,`'`'`)!is_admin_uid( ) &&`,is_admin_uid( ) ||`} `}!get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
       state |= c_modifier_`{`$arg_modifier`};
 `,\
-`{`@eq`(`$arg_admin_always`,`'`'`)\
+`{`@eq`(`$check_admin`,`'`'`)\
    if( !( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
 `,\
-   if( !is_admin_uid( )
-    && ( !( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
+   if( `{`!`@eq`(`$arg_admin_never`,`'`'`)!is_admin_uid( )
+    &&`,is_admin_uid( )
+    ||`} ( !( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     || get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) ) )
 `}\
       state |= c_modifier_`{`$arg_modifier`};
 `}`,\
 `{`@eq`(`$arg_ufield`,`'`'`)\
-   if( `{`!`@eq`(`$arg_admin_always`,`'`'`)is_admin_uid( ) || `}get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
+   if( `{`@eq`(`$check_admin`,`'`'`)`{`!`@eq`(`$arg_admin_never`,`'`'`)!is_admin_uid( ) &&`,is_admin_uid( ) ||`} `}get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
       state &= ~c_modifier_`{`$arg_modifier`};
 `,\
-`{`@eq`(`$arg_admin_always`,`'`'`)\
+`{`@eq`(`$check_admin`,`'`'`)\
    if( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     && get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) )
 `,\
-   if( !is_admin_uid( )
-    || ( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
+   if( `{`!`@eq`(`$arg_admin_never`,`'`'`)!is_admin_uid( )
+    &&`,is_admin_uid( )
+    ||`} ( get_perms( ).count( "`{`$arg_permission_id`}" ) // i.e. `{`$arg_permission`}
     && get_uid( ) == get_obj( ).`{`$arg_ufield`}( ).get_key( ) ) )
 `}\
       state &= ~c_modifier_`{`$arg_modifier`};

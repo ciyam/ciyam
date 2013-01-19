@@ -3603,29 +3603,36 @@ void request_handler::process_request( )
                      for( map< string, int >::iterator i = child_names.begin( ); i != child_names.end( ); ++i )
                      {
                         ++x;
+                        string list_perm( child_lists[ i->second ].perm );
                         string list_type = child_lists[ i->second ].lici->second->type;
 
                         // FUTURE: Currently the only expected format for child list permission is that of
-                        // <child_type>=<perm>. If <child_type>=!<perm> were also expected then the KLUDGE
-                        // that follows would not be required (with the "if..else" statement needing to be
-                        // then completely rewritten).
-                        bool is_okay = has_permission( child_lists[ i->second ].perm, *p_session_info );
-                        if( !is_okay )
+                        // <child_type>=<perm> (which is treated as though it was <child_type>=!<perm> for
+                        // a non-empty <perm>). If <child_type>=!<perm> were to be supported syntactically
+                        // then this logic would need to be reworked accordingly.
+                        bool is_okay = has_permission( list_perm, *p_session_info );
+
+                        if( list_type == c_list_type_child_admin )
                         {
-                           // KLUDGE: It doesn't really make sense to deny "admin" access due to not having a
-                           // permission so is allowing "admin" here despite not having the permission (if it
-                           // is desired to prevent the list appearing below the "admin" user then use pstate
-                           // to achieve this).
-                           if( p_session_info->is_admin_user
-                            && ( list_type == c_list_type_child_admin || list_type == c_list_type_child_admin_owner ) )
+                           if( p_session_info->is_admin_user )
                               is_okay = true;
+                           else if( list_perm.empty( ) )
+                              is_okay = false;
                         }
-                        else if( list_type == c_list_type_child_admin )
-                           is_okay = p_session_info->is_admin_user;
                         else if( list_type == c_list_type_child_owner )
-                           is_okay = is_owner;
+                        {
+                           if( is_owner )
+                              is_okay = true;
+                           else if( list_perm.empty( ) )
+                              is_okay = false;
+                        }
                         else if( list_type == c_list_type_child_admin_owner )
-                           is_okay = ( is_owner || p_session_info->is_admin_user );
+                        {
+                           if( is_owner || p_session_info->is_admin_user )
+                              is_okay = true;
+                           else if( list_perm.empty( ) )
+                              is_okay = false;
+                        }
 
                         if( child_lists[ i->second ].lici->second->extras.count( c_list_type_extra_pstate ) )
                         {
