@@ -1025,7 +1025,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `{`#modifier_permission.spec.xrep section=get_state\
  arg_id=$specification_\0_id arg_modifier=$specification_\0_modifier arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id arg_ufield=$specification_\0_ufield\
- arg_admin_always=$specification_\0_admin_always arg_remove=$specification_\0_remove`}\
+ arg_admin_always=$specification_\0_admin_always arg_admin_never=$specification_\0_admin_never\
+ arg_remove=$specification_\0_remove`}\
 `,\
 `@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)
 `{`#permit_ignore_uneditable.spec.xrep section=get_state\
