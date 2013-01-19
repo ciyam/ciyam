@@ -1,0 +1,28 @@
+#!/bin/bash
+# Copyright (c) 2013 CIYAM Open Developers
+# CIYAM Open Developers Task #T00004
+# a script for CIYAM to easely update the year in each file for copyright reasons
+
+DATEYEAR="" #Replace with the year u want to replace with or leave it empty to derive the year from the date utility
+
+##############################################################################################################################
+#DONT CHANGE ANYTHING BELOW UNLESS U KNOW WHAT U DO!
+
+#some checks to ensure we are inside the ciyam git
+cat .git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
+GITCHECK=$?
+if [ "$GITCHECK" != "0" ]
+then
+	echo 'ERROR: the current directory isnt the ciyam git!'
+	exit 1
+fi
+
+if [ "$DATEYEAR" == "" ]
+then
+	DATEYEAR=`date +%Y`
+fi
+
+find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Open Developers/Copyright (c) \1-${DATEYEAR} CIYAM Open Developers/" "{}"
+find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Open Developers/Copyright (c) \1-${DATEYEAR} CIYAM Open Developers/" "{}"
+
+exit 0
