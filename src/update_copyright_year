@@ -1,12 +1,17 @@
 #!/bin/bash
 # Copyright (c) 2013 CIYAM Open Developers
-# CIYAM Open Developers Task #T00004
-# a script for CIYAM to easely update the year in each file for copyright reasons
+#
+# Distributed under the MIT/X11 software license, please refer to the file license.txt
+# in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+#
+# Task #T00004 - Update copyright dates to 2013
 
-DATEYEAR="" #Replace with the year u want to replace with or leave it empty to derive the year from the date utility
+# NOTE: Replace with the year u want to replace with or leave it empty to derive the year from 'date'.
+DATEYEAR=""
 
-##############################################################################################################################
-#DONT CHANGE ANYTHING BELOW UNLESS U KNOW WHAT U DO!
+#############################################################################################################
+# NOTE: DONT CHANGE ANYTHING BELOW UNLESS U KNOW WHAT U DO!
+#############################################################################################################
 
 #some checks to ensure we are inside the ciyam git
 cat .git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null

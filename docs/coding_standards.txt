@@ -8,7 +8,6 @@ To assist in identifying non-standard code (for .cpp and .h files) the tool "che
 git pre-commit trigger. Any 3rd party header files that are added to the repository will also be added to the
 "check_source_ignore" file to be excluded from these checks.
 
-
 Format
 ------
 
@@ -16,7 +15,6 @@ Format
 - leading or trailing underscores in generated code only
 - no CAPITAL letters use underscore (e.g. my_identifier)
 - use CAPITAL letters only for macros (e.g. #define MY_MACRO)
-
 
 Type          Prefixes   Example
 ----          --------   -------
@@ -29,7 +27,6 @@ thread 	     gt_        static TLS( session )* gtp_session;
 pointer	     p_         char* p_ch;
 auto pointer  ap_        auto_ptr< char > ap_char; 
  
-
 Operator Space Rules
 --------------------
 
@@ -67,13 +64,11 @@ There must always be a space either side of an operator with the following excep
   < when opening an include ( e.g. #include <header>; )
   # in non-indented macro ( e.g. #ifdef MACRO )
 
-
 Blank Lines
 -----------
 
 These are encouraged to aid with readability between blocks and statements but do not use more than one blank
 between non-blank lines (this applies to generated code also).
-
 
 Block Style
 -----------
@@ -110,7 +105,6 @@ bool function_name( int n )
    return true;
 }
 
-
 Continuation
 ------------
 
@@ -143,12 +137,24 @@ to, slope,
 in this,
 way
 
-
 Comments
 --------
 
 Commenting of the obvious is not desired or appreciated (code should instead be kept uncluttered with the use
 of easily understandable names for classes and variables).
+
+At the top of source files, scripts and other files where applicable a copyright notice needs to appear which
+is in the following form using the type of file's applicable single line commenting character(s):
+
+// Copyright (c) 2012-2013 CIYAM Open Developers
+//
+// Distributed under the MIT/X11 software license, please refer to the file license.txt
+// in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+//
+// Task #T99999 - Task Description in CIYAM Open
+
+The last two comment lines are applicable only if new files are created for a task (and please don't put your
+name or initials in any file being committed as commits will not be merged until they have all been removed).
 
 Apart from special cases in generated code comments should start with a "comment type" label (making it clear
 *why* the comment has been added) which must be one of the following:
@@ -171,7 +177,6 @@ The following special comment is used to indicate manual code that should be rep
 is especially used for the code in the Meta module):
 
 //nyi
-
 
 Macros
 ------
@@ -239,7 +244,6 @@ class class_name
 */
 };
 
-
 Constructors
 ------------
 
@@ -252,7 +256,6 @@ class_name::class_name( int x, int y )
    if( x > 100 && y < 100 )
       this->x *= 10;
 }
-
 
 SQL
 ---
