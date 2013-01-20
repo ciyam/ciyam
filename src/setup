@@ -58,6 +58,8 @@ else
   {
    cp ciyam_interface $WEBDIR/$2/ciyam_interface.fcgi
   }
+  ./xrep @footer.htms.xrep >footer.htms
   cat setup_files.lst | xargs -I % cp % $WEBDIR/$2
+  rm footer.htms
  fi
 fi
