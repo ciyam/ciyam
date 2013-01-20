@@ -5,7 +5,7 @@
 <title>CIYAM Open - Documents</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<meta name="copyright" content="Copyright `{`$y`} CIYAM Open Developers"/>
+<meta name="copyright" content="Copyright 2012-`{`$y`} CIYAM Open Developers"/>
 
 <link rel="stylesheet" href="document.css" type="text/css"/>
 </head>
@@ -35,7 +35,7 @@
 
 <br class=\"clear\"/>
 <div id="footer">
-   <p class="footer" align="center">&copy; `{`$y`} CIYAM Open Developers</p>
+   <p class="footer" align="center">&copy; 2012-`{`$y`} CIYAM Open Developers</p>
    <br/>
 </div>
 
