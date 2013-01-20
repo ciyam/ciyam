@@ -59,9 +59,11 @@ if not exist "%install_path%\libeay32.dll" copy libeay32.dll "%install_path%" >n
 if not exist "%install_path%\upload.fcgi" copy upload.exe "%install_path%\upload.fcgi" >nul
 if not exist "%install_path%\ciyam_interface.fcgi" copy ciyam_interface.exe "%install_path%\ciyam_interface.fcgi" >nul
 
+xrep @footer.htms.xrep >footer.htms
 xrep @setup_files.bat.xrep files=@setup_files.lst >~setup.bat
 call ~setup.bat "%install_path%"
 del ~setup.bat
+del footer.htms
 goto end
 
 :error1
