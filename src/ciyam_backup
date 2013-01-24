@@ -26,7 +26,7 @@ else
  if [ ! "$web_path" = "" ]; then
   pushd $web_path
   echo Adding application files to backup...
-  ./bundle -q -y "$backup_path/$CIYAM_STORAGE.backup.bun.gz" -r files/*
+  ./bundle -q -y "$backup_path/$CIYAM_STORAGE.backup" -r files/*
   popd
  fi
 

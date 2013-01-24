@@ -44,14 +44,17 @@
 #  include <sys/stat.h>
 #endif
 
-#include "fcgiapp.h"
+#include <fcgiapp.h>
 
 #ifdef __GNUG__
 #  define _chdir chdir
 #  define _mkdir mkdir
 #endif
 
+#include "ciyam_interface.h"
+
 #include "sha1.h"
+#include "regex.h"
 #include "base64.h"
 #include "config.h"
 #include "format.h"
@@ -70,7 +73,6 @@
 #include "fcgi_parser.h"
 #include "fs_iterator.h"
 #include "crypt_stream.h"
-#include "ciyam_interface.h"
 
 //#define ALLOW_MULTIPLE_RECORD_ENTRY
 
@@ -113,6 +115,7 @@ const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
 
 const char* const c_login_file = "login.htms";
 const char* const c_footer_file = "footer.htms";
+const char* const c_signup_file = "signup.htms";
 const char* const c_activate_file = "activate.htms";
 const char* const c_password_file = "password.htms";
 const char* const c_mini_login_file = "minilogin.htms";
@@ -141,13 +144,26 @@ const char* const c_title = "@@title";
 const char* const c_login = "@@login";
 const char* const c_checked = "@@checked";
 const char* const c_user_id = "@@user_id";
+const char* const c_app_name = "@@app_name";
 const char* const c_password = "@@password";
 const char* const c_persistent = "@@persistent";
+const char* const c_account_type = "@@account_type";
 const char* const c_old_password = "@@old_password";
 const char* const c_new_password = "@@new_password";
+const char* const c_send_request = "@@send_request";
+const char* const c_email_address = "@@email_address";
+const char* const c_error_message = "@@error_message";
+const char* const c_account_type_0 = "@@account_type_0";
+const char* const c_account_type_1 = "@@account_type_1";
+const char* const c_account_type_2 = "@@account_type_2";
+const char* const c_account_type_3 = "@@account_type_3";
+const char* const c_gpg_public_key = "@@gpg_public_key";
 const char* const c_change_password = "@@change_password";
 const char* const c_verify_password = "@@verify_password";
 const char* const c_verify_new_password = "@@verify_new_password";
+const char* const c_sign_up_introduction = "@@sign_up_introduction";
+const char* const c_sign_up_extra_details = "@@sign_up_extra_details";
+const char* const c_sign_up_gpg_expert_tip = "@@sign_up_gpg_expert_tip";
 
 const char* const c_form_content_comment = "<!-- @@form_content -->";
 const char* const c_extra_content_comment = "<!-- @@extra_content -->";
@@ -170,6 +186,7 @@ string g_id;
 
 string g_login_html;
 string g_footer_html;
+string g_signup_html;
 string g_password_html;
 string g_activate_html;
 string g_interface_html;
@@ -180,9 +197,11 @@ string g_password_persistent_html;
 
 string g_display_login_info;
 string g_display_change_password;
+string g_display_sign_up_for_an_account;
 
 size_t g_max_user_limit = 1;
 
+mutex g_join_mutex;
 mutex g_session_mutex;
 
 session_container g_sessions;
@@ -475,7 +494,7 @@ void output_login_logout( const string& module_name, ostream& os, const string& 
 
    string header_image_name( get_header_image( module_name ) );
    if( !header_image_name.empty( ) )
-      os << "   <img src=\"" << header_image_name << "\" alt=\"Header\">\n";
+      os << "   <img src=\"" << header_image_name << "\" alt=\"Header\"/>\n";
 
    os << "   <div id=\"navband\">\n";
    os << "   </div>\n";
@@ -914,7 +933,7 @@ void request_handler::process_request( )
          using_anonymous = true;
       }
 
-      if( cmd == c_cmd_status || using_anonymous )
+      if( using_anonymous || cmd == c_cmd_join || cmd == c_cmd_status )
       {
          temp_session = true;
          session_id = c_new_session;
@@ -1170,7 +1189,7 @@ void request_handler::process_request( )
                if( mod_info.strings.empty( ) )
                   read_module_strings( mod_info, *p_session_info->p_socket );
 
-               if( !mod_info.user_class_name.empty( ) )
+               if( cmd != c_cmd_join && !mod_info.user_class_name.empty( ) )
                {
                   if( is_activation )
                   {
@@ -1450,8 +1469,8 @@ void request_handler::process_request( )
          bool is_checksummed_home = ( cmd == c_cmd_home && username.empty( )
           && ( !uselect.empty( ) || !input_data[ c_param_utcdtm ].empty( ) ) );
 
-         if( use_url_checksum && !cmd.empty( ) && ( is_checksummed_home
-          || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
+         if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join
+          && ( is_checksummed_home || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
           && cmd != c_cmd_status && ( cmd != c_cmd_view || ( act != c_act_cont && act != c_act_undo ) ) ) ) )
          {
             string prefix;
@@ -2101,6 +2120,8 @@ void request_handler::process_request( )
                }
             }
          }
+         else if( cmd == c_cmd_join )
+            server_command.erase( );
 
          if( error_message.length( ) > strlen( c_response_error )
           && error_message.substr( 0, strlen( c_response_error ) ) == c_response_error )
@@ -3180,14 +3201,20 @@ void request_handler::process_request( )
 
                string header_image_name( get_header_image( module_name ) );
                if( !header_image_name.empty( ) )
-                  extra_content << "   <img src=\"" << header_image_name << "\" alt=\"Header\">\n";
+                  extra_content << "   <img src=\"" << header_image_name << "\" alt=\"Header\"/>\n";
 
                extra_content << "   <div id=\"navband\">\n";
                extra_content << "      <div id=\"nav\">\n";
                
                if( using_anonymous )
                {
-                  extra_content << g_mini_login_html;
+                  if( cmd != c_cmd_join )
+                  {
+                     extra_content << g_mini_login_html;
+
+                     extra_content << "<a href=\"" << get_module_page_name( module_ref )
+                      << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Us\" border=\"0\" margin=\"10\"/></a>";
+                  }
                }
                else
                {
@@ -3372,7 +3399,7 @@ void request_handler::process_request( )
                   extra_content << "            </select>\n";
                }
 
-               if( allow_module_switching )
+               if( allow_module_switching && cmd != c_cmd_join )
                {
                   bool had_first = false;
 
@@ -3493,6 +3520,224 @@ void request_handler::process_request( )
                      extra_content << "<p align=\"center\"><b>" << GDS( c_display_password_has_been_changed ) << "</b></p>\n";
                   else
                      extra_content << "<p align=\"center\" class=\"error\">" << error_message << "</p>\n";
+               }
+            }
+            else if( cmd == c_cmd_join )
+            {
+               guard g( g_join_mutex );
+
+               extra_content << "<h2>" << g_display_sign_up_for_an_account << "</h2>";
+
+               bool has_completed = false;
+               bool had_unexpected_error = false;
+               string account_type, req_username, oreq_username, gpg_public_key;
+
+               if( input_data.count( c_param_gpgpubkey ) )
+               {
+                  msleep( 3000 );
+
+                  account_type = input_data[ c_param_accttype ];
+                  req_username = input_data[ c_param_requsername ];
+                  gpg_public_key = input_data[ c_param_gpgpubkey ];
+
+                  oreq_username = req_username;
+
+                  if( req_username != "anon" )
+                  {
+                     string field_list( mod_info.user_uid_field_id );
+                     field_list += "," + mod_info.user_pwd_field_id;
+
+                     string key_info( mod_info.user_uid_field_id );
+                     key_info += " " + req_username;
+
+                     pair< string, string > user_info;
+
+                     if( !fetch_item_info( module_id, mod_info,
+                      mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info ) )
+                        throw runtime_error( "unexpected error occurred checking activation" );
+
+                     vector< string > user_data;
+                     split( user_info.second, user_data );
+
+                     if( user_data.size( ) < 2 )
+                        throw runtime_error( "unexpected missing user information" );
+
+                     if( req_username == user_data[ 0 ] )
+                        error_message = "<p class=\"error\" align=\"center\">Sorry but the User Id '" + req_username + "' has already been taken. Please try another one.</p>";
+                  }
+                  else
+                     req_username += uuid( ).as_string( ).substr( 0, 10 );
+
+                  if( error_message.empty( ) )
+                  {
+                     string key, email_addr;
+                     regex expr( "-----BEGIN PGP PUBLIC KEY BLOCK-----.*-----END PGP PUBLIC KEY BLOCK-----" );
+
+                     string::size_type len;
+                     string::size_type pos = expr.search( gpg_public_key, &len );
+
+                     if( pos == string::npos )
+                        error_message = "<p class=\"error\" align=\"center\">Sorry but the GPG public key is not correctly formatted. Please try again.</p>";
+                     else
+                     {
+                        string pubkey( gpg_public_key.substr( pos, len ) );
+                        write_file( "x.gpg", pubkey );
+
+                        string cmd( "gpg --batch --import " );
+                        cmd += "x.gpg >x.tmp 2>&1";
+
+                        system( cmd.c_str( ) );
+
+                        vector< string > lines;
+                        buffer_file_lines( "x.tmp", lines );
+
+                        if( lines.size( ) < 3 )
+                           had_unexpected_error = true;
+                        else if( lines.size( ) > 3 )
+                        {
+                           if( lines[ 0 ].find( "CRC error" ) )
+                              error_message = "<p class=\"error\" align=\"center\">This GPG public key appears to be corrupt (failed CRC).<br/>Please re-copy and paste your GPG public key before trying again.</p>";
+                           else
+                              error_message = "<p class=\"error\" align=\"center\">There is more than one email address in this GPG public key.<br/>Please ensure that you use a GPG public key that is for a single email address only.</p>";
+                        }
+                        else
+                        {
+                           string result;
+                           string first_line( lines[ 0 ] );
+
+                           regex expr( "\".*\"" );
+
+                           string::size_type len;
+                           string::size_type pos = expr.search( first_line, &len );
+
+                           if( pos == string::npos )
+                              had_unexpected_error = true;
+                           else
+                           {
+                              result = first_line.substr( pos + len + 1 );
+
+                              if( result == "not changed" )
+                                 error_message = "<p class=\"error\" align=\"center\">A GPG encrypted email should have already been sent to you.<br/>Please re-check your email (including all junk/spam folders).</p>";
+                           }
+
+                           if( result == "imported" )
+                           {
+                              pos = first_line.find( " key " );
+                              if( pos == string::npos )
+                                 had_unexpected_error = true;
+                              else
+                              {
+                                 string::size_type epos = first_line.find( ':' );
+                                 if( epos == string::npos )
+                                    had_unexpected_error = true;
+                                 else
+                                 {
+                                    key = first_line.substr( pos + 5, 8 );
+
+                                    pos = first_line.find_last_of( '<' );
+
+                                    if( pos != string::npos )
+                                    {
+                                       regex expr( "<" + string( c_regex_email_address ) + ">" );
+
+                                       if( expr.search( first_line.substr( pos ), &len ) != 0 )
+                                          pos = string::npos;
+                                    }
+
+                                    if( pos == string::npos )
+                                    {
+                                       cmd = "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1";
+                                       if( system( cmd.c_str( ) ) != 0 )
+                                          LOG_TRACE( buffer_file( "x.tmp" ) );
+
+                                       error_message = "<p class=\"error\" align=\"center\">Email address was not found in this GPG public key. Please try again with a valid GPG public key.</p>";
+                                    }
+                                    else
+                                       email_addr = first_line.substr( pos + 1, len - 2 );
+                                 }
+                              }
+                           }
+                           else if( error_message.empty( ) )
+                              had_unexpected_error = true;
+                        }
+
+                        file_remove( "x.tmp" );
+                        file_remove( "x.gpg" );
+                     }
+
+                     if( error_message.empty( ) )
+                     {
+                        //idk - create new user and construct GPG message and saving it to <key>.join.gpg (so
+                        // that if the email fails or the user can't find it then they can still ask by using
+                        // a "help " prefix for this message to be displayed rather than emailed)...
+                        string password( uuid( ).as_string( ).substr( 2 ) );
+                        if( email_addr == "anon@ciyam.org" )
+                        {
+                           string gpg_message( buffer_file( "join.txt" ) );
+
+                           str_replace( gpg_message, c_app_name, module_name );
+                           str_replace( gpg_message, c_user_id, req_username );
+                           str_replace( gpg_message, c_password, password );
+
+                           write_file( "x.tmp", gpg_message );
+
+                           //idk - need decode a password here...
+                           cmd = "gpg --armor --recipient " + key + " --encrypt --sign --trust-model always --batch --local-user support@ciyam.org --passphrase password x.tmp>xx.tmp 2>&1";
+
+                           system( cmd.c_str( ) );
+
+                           if( !file_exists( "x.tmp.asc" ) )
+                           {
+                              gpg_message = buffer_file( "xx.tmp" );
+                              LOG_TRACE( gpg_message );
+
+                              has_completed = false;
+                              had_unexpected_error = true;
+                           }
+                           else
+                           {
+                              has_completed = true;
+                              gpg_message = buffer_file( "x.tmp.asc" );
+
+                              extra_content << "<p><b>" << "Welcome aboard "
+                               << oreq_username << " !<br/><br/>Your GPG encrypted account credentials can now he copied to the clipboard from below ready for you to decode.</b><p>\n"
+                               << "<p align=\"center\"><pre>" << gpg_message << "</pre></p>";
+                           }
+
+                           file_remove( "x.tmp" );
+
+                           if( file_exists( "xx.tmp" ) )
+                              file_remove( "xx.tmp" );
+
+                           if( file_exists( "x.tmp.asc" ) )
+                              file_remove( "x.tmp.asc" );
+                        }
+                        else
+                        {
+                           has_completed = true;
+
+                           extra_content << "<p align=\"center\"><b>" << "Welcome aboard "
+                            << oreq_username << " !<br/><br/>A GPG encrypted email with your account credentials has now been sent.</b></p>\n";
+                        }
+                      }
+                  }
+
+                  if( had_unexpected_error )
+                     error_message = "<p class=\"error\" align=\"center\">Sorry - an unexpected error occurred while processing your GPG public key. Please try again later.</p>";
+               }
+
+               if( !has_completed )
+               {
+                  string signup_html( g_signup_html );
+
+                  str_replace( signup_html, c_error_message, error_message );
+
+                  str_replace( signup_html, c_user_id, oreq_username );
+                  str_replace( signup_html, c_gpg_public_key, gpg_public_key );
+
+                  error_message.erase( );
+
+                  extra_content << signup_html;
                }
             }
             else if( cmd == c_cmd_home )
@@ -3883,7 +4128,7 @@ void request_handler::process_request( )
 
             extra_content << "</div>\n";
 
-            if( cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
+            if( cmd != c_cmd_join && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
             {
                extra_content << "\n<div id=\"sidebar\">\n";
                extra_content << "   <ul>\n";
@@ -4047,6 +4292,23 @@ void request_handler::process_request( )
                }
 
                extra_content << "   </ul>\n";
+               extra_content << "</div>\n";
+            }
+
+            if( cmd == c_cmd_join )
+            {
+               extra_content << "\n<div id=\"sidebar\">\n";
+
+               extra_content << "<ul><li><a href=\""
+                << get_module_page_name( module_ref ) << "\">" << GDS( c_display_home ) << "</a></li></ul>\n";
+
+               extra_content << "<pre>\n";
+               extra_content << "        .--.\n";
+               extra_content << "       /.-. '----------.\n";
+               extra_content << "       \\'-' .--\"--\"\"-\"-'\n";
+               extra_content << "        '--'\n";
+               extra_content << "</pre>\n";
+
                extra_content << "</div>\n";
             }
 
@@ -4395,6 +4657,7 @@ int main( int argc, char* argv[ ] )
 
       g_login_html = buffer_file( c_login_file );
       g_footer_html = buffer_file( c_footer_file );
+      g_signup_html = buffer_file( c_signup_file );
       g_activate_html = buffer_file( c_activate_file );
       g_password_html = buffer_file( c_password_file );
       g_interface_html = buffer_file( c_interface_file );
@@ -4410,6 +4673,19 @@ int main( int argc, char* argv[ ] )
       str_replace( g_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );
       str_replace( g_login_html, c_password, GDS( c_display_password ) );
+
+      str_replace( g_signup_html, c_user_id, GDS( c_display_user_id ) );
+      str_replace( g_signup_html, c_account_type, GDS( c_display_account_type ) );
+      str_replace( g_signup_html, c_send_request, GDS( c_display_send_request ) );
+      str_replace( g_signup_html, c_email_address, GDS( c_display_email_address ) );
+      str_replace( g_signup_html, c_account_type_0, GDS( c_display_account_type_0 ) );
+      str_replace( g_signup_html, c_account_type_1, GDS( c_display_account_type_1 ) );
+      str_replace( g_signup_html, c_account_type_2, GDS( c_display_account_type_2 ) );
+      str_replace( g_signup_html, c_account_type_3, GDS( c_display_account_type_3 ) );
+      str_replace( g_signup_html, c_gpg_public_key, GDS( c_display_gpg_public_key ) );
+      str_replace( g_signup_html, c_sign_up_introduction, GDS( c_display_sign_up_main_form_client_security_introduction ) );
+      str_replace( g_signup_html, c_sign_up_extra_details, GDS( c_display_sign_up_main_form_client_security_extra_details ) );
+      str_replace( g_signup_html, c_sign_up_gpg_expert_tip, GDS( c_display_sign_up_main_form_client_security_gpg_expert_tip ) );
 
       str_replace( g_mini_login_html, c_login, GDS( c_display_login ) );
       str_replace( g_mini_login_html, c_user_id, GDS( c_display_user_id ) );
@@ -4449,6 +4725,7 @@ int main( int argc, char* argv[ ] )
 
       g_display_login_info = GDS( c_display_login_info );
       g_display_change_password = GDS( c_display_change_password );
+      g_display_sign_up_for_an_account = GDS( c_display_sign_up_for_an_account );
 
       DEBUG_TRACE( "[read storage info]" );
 

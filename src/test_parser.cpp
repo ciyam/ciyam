@@ -1086,7 +1086,9 @@ int main( int argc, char* argv[ ] )
             {
                vector< string > arguments;
                map< string, string > parameters;
+
                setup_arguments( next.c_str( ), arguments );
+
                if( p.parse_command( arguments, parameters ) )
                {
                   cout << "okay" << endl;
