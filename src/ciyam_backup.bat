@@ -27,7 +27,7 @@ del ~ciyam_backup.cin
 if '%2' == '' goto next2
 pushd %2
 echo Adding application files to backup...
-bundle "%backup_path%\%1.backup.bun.gz" -r -q files/*
+bundle "%backup_path%\%1.backup" -r -q files/*
 popd
 
 :next2

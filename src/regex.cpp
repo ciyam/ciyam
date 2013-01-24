@@ -1079,7 +1079,6 @@ string::size_type regex::impl::do_search(
             return pos;
 
          start = pos;
-
          if( prefix_at_boundary && start > 0 )
             --start;
       }

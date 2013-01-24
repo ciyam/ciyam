@@ -1,0 +1,18 @@
+Welcome to CIYAM @app_name
+---------------------
+
+User Id: @@user_id
+Password: @@password
+
+Your account is already active and ready for you to use immediately!
+
+Please be sure to change your password immediately after you first login.
+
+---------------------------------------------------------------------------
+If you were not expecting to receive this message at all then please accept
+our apologies and be assured that provided you do not use the account shown
+here then no further email will be sent to you from CIYAM Open (most likely
+someone mistakenly copied and pasted a wrong public key when creating a new
+account).
+---------------------------------------------------------------------------
+
