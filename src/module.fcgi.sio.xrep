@@ -15,7 +15,7 @@
  <perm>`{`$model_perm`}
  <title>`{`$model_title`/_`/ `}
  <user_info>`{`(`?`$specification_user_info_id`)`{`$specification_user_info_cid`},`{`$specification_user_info_class`},\
-`{`$specification_user_info_uid`},`{`$specification_user_info_pwd`}
+`{`$specification_user_info_uid`},`{`$specification_user_info_pwd`}`{`(`?`$specification_user_info_hash`),`{`$specification_user_info_hash`}`}
  <user_perm>`{`$specification_user_info_perm`}
  <user_extra>`{`(`?`$specification_user_info_extra1`&`!`@eq`(`$specification_user_info_extra1`,`'`'`)`)`$specification_user_info_extra1`}\
 `{`(`?`$specification_user_info_extra2`&`!`@eq`(`$specification_user_info_extra2`,`'`'`)`),`{`$specification_user_info_extra2`}`}

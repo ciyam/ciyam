@@ -2683,7 +2683,11 @@ string hash_sha256( const string& s )
 
 string decrypt( const string& s )
 {
-   return password_decrypt( s, get_sid( ) );
+   // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
+   if( s.length( ) < 20 )
+      return s;
+   else
+      return password_decrypt( s, get_sid( ) );
 }
 
 string encrypt( const string& s )

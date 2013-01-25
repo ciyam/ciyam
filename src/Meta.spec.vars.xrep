@@ -4837,6 +4837,7 @@
 `{`$specification_user_info_class`=`'User`'`}
 `{`$specification_user_info_uid`=`'100101`'`}
 `{`$specification_user_info_pwd`=`'100103`'`}
+`{`$specification_user_info_hash`=`'100107`'`}
 `{`$specification_user_info_perm`=`'100106`'`}
 `{`$specification_user_info_group`=`'300100`'`}
 `{`$specification_user_info_other`=`'`'`}

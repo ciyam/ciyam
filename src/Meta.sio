@@ -22055,11 +22055,11 @@
       <default_value>1
       <indexes/>
        <index/>
-        <id>100202
+        <id>100203
         <num>0
        </index>
        <index/>
-        <id>100204
+        <id>100205
         <num>0
        </index>
        <index/>
@@ -22107,11 +22107,11 @@
       <mandatory>true
       <indexes/>
        <index/>
-        <id>100203
+        <id>100204
         <num>0
        </index>
        <index/>
-        <id>100204
+        <id>100205
         <num>1
        </index>
        <index/>
@@ -22179,6 +22179,19 @@
       </specifications>
      </field>
      <field/>
+      <id>100108
+      <name>Password_Hash
+      <type>string
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
       <id>100106
       <name>Permissions
       <type>string
@@ -22199,6 +22212,26 @@
       </specifications>
      </field>
      <field/>
+      <id>100107
+      <name>User_Hash
+      <type>string
+      <mandatory>false
+      <indexes/>
+       <index/>
+        <id>100201
+        <num>0
+       </index>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600999
+        <item>hash
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>100101
       <name>User_Id
       <type>1010
@@ -22206,11 +22239,11 @@
       <extra>hpassword_salt
       <indexes/>
        <index/>
-        <id>100201
+        <id>100202
         <num>0
        </index>
        <index/>
-        <id>100202
+        <id>100203
         <num>1
        </index>
        <index/>
@@ -22288,22 +22321,27 @@
     </fields>
     <indexes/>
      <index/>
-      <id>100204
+      <id>100205
       <name>[Active],[Description]
       <unique>false
      </index>
      <index/>
-      <id>100202
+      <id>100203
       <name>[Active],[User_Id]
       <unique>true
      </index>
      <index/>
-      <id>100203
+      <id>100204
       <name>[Description]
       <unique>false
      </index>
      <index/>
       <id>100201
+      <name>[User_Hash]
+      <unique>true
+     </index>
+     <index/>
+      <id>100202
       <name>[User_Id]
       <unique>true
      </index>
@@ -26118,6 +26156,7 @@
      <class_id>100100
      <uid_field_id>100101
      <pwd_field_id>100103
+     <hash_field_id>100107
      <perm_field_id>100106
      <gfield_id>300100
      <active_id>100102
