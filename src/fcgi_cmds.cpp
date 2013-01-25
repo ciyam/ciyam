@@ -1889,7 +1889,7 @@ void fetch_user_record(
  const string& gid, const string& module_id,
  const string& module_name, const module_info& mod_info,
  session_info& sess_info, bool is_authorised, bool check_password,
- const string& username, const string& password, const string& unique_data )
+ string& username, const string& userhash, const string& password, const string& unique_data )
 {
    string field_list( mod_info.user_uid_field_id );
    field_list += "," + mod_info.user_pwd_field_id;
@@ -1918,8 +1918,17 @@ void fetch_user_record(
    if( !mod_info.user_security_level_id.empty( ) )
       field_list += "," + mod_info.user_security_level_id;
 
-   string key_info( mod_info.user_uid_field_id );
-   key_info += " " + username;
+   string key_info;
+   if( userhash.empty( ) )
+   {
+      key_info = mod_info.user_uid_field_id;
+      key_info += " " + username;
+   }
+   else
+   {
+      key_info = mod_info.user_hash_field_id;
+      key_info += " " + userhash;
+   }
 
    bool login_okay = false;
    pair< string, string > user_info;
@@ -1930,8 +1939,6 @@ void fetch_user_record(
 
    if( user_info.first.empty( ) )
       throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
-
-   sess_info.user_id = username;
 
    string::size_type pos = user_info.first.find( " " );
    sess_info.user_key = user_info.first.substr( 0, pos );
@@ -1945,12 +1952,13 @@ void fetch_user_record(
    if( check_password )
    {
       string user_password( user_data[ 1 ] );
+
       // NOTE: Password fields that are < 20 characters are assumed to have not been
       // either hashed or encrypted.
       if( user_password.length( ) < 20 )
       {
          sess_info.clear_password = user_password;
-         user_password = hash_password( gid + user_data[ 1 ] + username );
+         user_password = hash_password( gid + user_data[ 1 ] + ( userhash.empty( ) ? username : user_data[ 0 ] ) );
       }
       else
          user_password = password_decrypt( user_password, get_server_id( ) );
@@ -1959,11 +1967,16 @@ void fetch_user_record(
       if( !unique_data.empty( ) )
          final_password = sha256( user_password + unique_data ).get_digest_as_string( );
 
-      if( user_data[ 0 ] != username || ( !is_authorised && password != final_password ) )
+      if( ( !username.empty( ) && user_data[ 0 ] != username ) || ( !is_authorised && password != final_password ) )
          throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
+      if( !userhash.empty( ) )
+         username = user_data[ 0 ];
 
       sess_info.user_pwd_hash = user_password;
    }
+
+   sess_info.user_id = username;
 
    size_t offset = 2;
 

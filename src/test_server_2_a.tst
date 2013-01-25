@@ -45,7 +45,9 @@
 100104 Description string
 100105 Email string
 100103 Password string
+100108 Password_Hash string
 100106 Permissions string
+100107 User_Hash string
 100101 User_Id string
 300100 Workgroup 101100:Meta_Workgroup
 

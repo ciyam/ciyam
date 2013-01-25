@@ -2,8 +2,11 @@
    <div id="loginform">
       <form method="POST" name="login" id="login"
        onsubmit="var cd = new Date( );
-       return dyn_load( this, 'username=' + escape( document.login.username.value ) + '&password='
-        + hash_password( document.login.username.value, document.login.password.value ) + '&utcdtm=' + utc_dtm( cd ) + '&tzoffcur=' + escape( cd.getTimezoneOffset( ) ), false )">
+       var pwd_hash = hash_password( document.login.username.value, document.login.password.value );
+       var user_hash = hash_username( document.login.username.value, document.login.password.value, pwd_hash );
+
+       return dyn_load( this, 'userhash=' + user_hash + '&password='
+        + hash_with_unique( pwd_hash ) + '&utcdtm=' + utc_dtm( cd ) + '&tzoffcur=' + escape( cd.getTimezoneOffset( ) ), false )">
           <label for="username">
              <input class="loginfields" type="text" name="username" tabindex="1"
               id="username" size="25" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" />@@user_id

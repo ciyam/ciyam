@@ -129,6 +129,7 @@ const char* const c_param_listinfo = "listinfo";
 const char* const c_param_listsort = "listsort";
 const char* const c_param_listsrch = "listsrch";
 const char* const c_param_tzoffcur = "tzoffcur";
+const char* const c_param_userhash = "userhash";
 const char* const c_param_username = "username";
 const char* const c_param_password = "password";
 const char* const c_param_fieldlist = "fieldlist";

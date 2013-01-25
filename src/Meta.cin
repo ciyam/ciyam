@@ -113,10 +113,13 @@ field_add -id=100103 User Password str200 mand -x=hpassword
 field_add -id=100104 User Description str100 mand
 field_add -id=100105 User Email string opt -x=mailto
 field_add -id=100106 User Permissions string opt
-index_add -id=100201 User User_Id unique
-index_add -id=100202 User Active,User_Id unique
-index_add -id=100203 User Description
-index_add -id=100204 User Active,Description
+field_add -id=100107 User User_Hash string opt
+field_add -id=100108 User Password_Hash string opt -transient
+index_add -id=100201 User User_Hash unique
+index_add -id=100202 User User_Id unique
+index_add -id=100203 User Active,User_Id unique
+index_add -id=100204 User Description
+index_add -id=100205 User Active,Description
 class_add -id=101100 Workgroup Workgroups
 field_add -id=101101 Workgroup Name str100 mand
 field_add -id=101102 Workgroup Id identifier mand
@@ -1751,7 +1754,7 @@ specification_add -id=600887 {Package_Option}_Is_Time modifier_field_value "Pack
 specification_add -id=600888 {Package_Option}_Is_Numeric modifier_field_value "Package_Option Is_Numeric Primitive numeric -enum=primitive"
 specification_add -id=600889 {Package_Option}_Is_Int modifier_field_value "Package_Option Is_Int Primitive int -enum=primitive"
 specification_add -id=600890 {Package_Option}_Is_Bool modifier_field_value "Package_Option Is_Bool Primitive bool -enum=primitive"
-specification_add -id=600999 user_info user_info "User User_Id Password -group={Workgroup} -active=Active -perm=Permissions"
+specification_add -id=600999 user_info user_info "User User_Id Password User_Hash -group={Workgroup} -active=Active -perm=Permissions"
 specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Description,{Workgroup}:Name,Active Active,checked:1"
 specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"
 specification_add -id=601020 {User}_view view "? admin User User_Id,Active,Password,Description,Email,{Workgroup}:Name"

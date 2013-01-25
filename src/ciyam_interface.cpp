@@ -811,6 +811,7 @@ void request_handler::process_request( )
       parse_fcgi_input( p_in, input_data, '&' );
 
       string cmd( input_data[ c_param_cmd ] );
+      string userhash( input_data[ c_param_userhash ] );
       string username( input_data[ c_param_username ] );
 
       session_id = input_data[ c_param_session ];
@@ -908,7 +909,7 @@ void request_handler::process_request( )
 
       bool using_anonymous = false;
       
-      if( mod_info.allows_anonymous_access && ( username.empty( ) && !p_session_info ) )
+      if( mod_info.allows_anonymous_access && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
       {
          is_authorised = true;
          using_anonymous = true;
@@ -925,7 +926,7 @@ void request_handler::process_request( )
 
       if( session_id.empty( ) || session_id == c_new_session )
       {
-         if( !using_anonymous && username.empty( ) && password.empty( ) )
+         if( !using_anonymous && username.empty( ) && userhash.empty( ) && password.empty( ) )
          {
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -1235,7 +1236,7 @@ void request_handler::process_request( )
                   else
                   {
                      fetch_user_record( id_for_login, module_id, module_name, mod_info, *p_session_info,
-                      is_authorised || !base64_data.empty( ), true, username, password, unique_id );
+                      is_authorised || !base64_data.empty( ), true, username, userhash, password, unique_id );
 
                      clear_unique( input_data );
 
@@ -1448,7 +1449,7 @@ void request_handler::process_request( )
          bool use_url_checksum = ( url_opts.count( c_url_opt_use_checksum ) > 0 );
 
          bool is_checksummed_home = ( cmd == c_cmd_home && username.empty( )
-          && ( !uselect.empty( ) || !input_data[ c_param_utcdtm ].empty( ) ) );
+          && userhash.empty( ) && ( !uselect.empty( ) || !input_data[ c_param_utcdtm ].empty( ) ) );
 
          if( use_url_checksum && !cmd.empty( ) && ( is_checksummed_home
           || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
@@ -1661,7 +1662,7 @@ void request_handler::process_request( )
              && ( cmd == c_cmd_home || cmd == c_cmd_pwd || cmd == c_cmd_view
              || cmd == c_cmd_pview || cmd == c_cmd_list || cmd == c_cmd_plist ) )
                fetch_user_record( g_id, module_id, module_name, mod_info,
-                *p_session_info, is_authorised, false, p_session_info->user_id, "", "" );
+                *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
          }
          catch( ... )
          {

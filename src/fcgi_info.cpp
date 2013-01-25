@@ -173,6 +173,7 @@ void module_info::clear( )
 
    user_uid_field_id.erase( );
    user_pwd_field_id.erase( );
+   user_hash_field_id.erase( );
 
    user_perm_field_id.erase( );
    user_group_field_id.erase( );
@@ -534,7 +535,11 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
          info.user_uid_field_id = str.substr( 0, pos );
          str.erase( 0, pos + 1 );
 
+         pos = str.find( ',' );
          info.user_pwd_field_id = str.substr( 0, pos );
+
+         if( pos != string::npos )
+            info.user_hash_field_id = str.substr( pos + 1 );
       }
 
       info.user_perm_field_id = reader.read_opt_attribute( c_attribute_user_perm );

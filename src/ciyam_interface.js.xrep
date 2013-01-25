@@ -954,6 +954,10 @@ function hash_password( salt, pwd, skip_id )
 {
    var retval = '';
 
+   // NOTE: (see NOTE in hash_username below)
+   if( salt.length && salt.charAt( 0 ) == '!' )
+      salt = salt.substring( 1 );
+
    // NOTE: If the password length is >= 40 then it is being
    // assumed that it is already hashed (this will occur for
    // record editing where it has not been changed).
@@ -965,10 +969,32 @@ function hash_password( salt, pwd, skip_id )
    if( !skip_id && !loggedIn && encryptPosts )
       sessionStorage.setItem( 'key', retval );
 
+   return retval;
+}
+
+function hash_username( user, pwd, pwd_hash )
+{
+   // NOTE: In order to be able to use "init" user records the hashing needs to be
+   // made insecure (iff you prefix the "user id" with '!' which means that *real*
+   // usernames must not start with this character). This is because for such init
+   // records the correct hash values are not known (as they are only provided via
+   // the UI which isn't used until after the records have been later edited). For
+   // any *live* system all such init records should have their passwords properly
+   // set via the UI or instead be removed.
+   if( user.length && user.charAt( 0 ) == '!' )
+      return hex_sha256( user.substring( 1 ) + pwd ).toLowerCase( );
+   else
+      return hex_sha256( user + pwd_hash ).toLowerCase( );
+}
+
+function hash_with_unique( pwd_hash )
+{
+   var retval = pwd_hash;
+
    if( sessionStorage.getItem( 'unique' ) != null )
       uniqueId = sessionStorage.getItem( 'unique' );
 
-   if( skip_id != true && uniqueId != '' )
+   if( uniqueId != '' )
       retval = hex_sha256( retval + uniqueId ).toLowerCase( );
 
    return retval;

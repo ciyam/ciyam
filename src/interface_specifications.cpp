@@ -83,6 +83,7 @@ const char* const c_attribute_new_field_id = "new_field_id";
 const char* const c_attribute_new_ext_info = "new_ext_info";
 const char* const c_attribute_dest_enum_id = "dest_enum_id";
 const char* const c_attribute_dest_field_id = "dest_field_id";
+const char* const c_attribute_hash_field_id = "hash_field_id";
 const char* const c_attribute_name_field_id = "name_field_id";
 const char* const c_attribute_perm_field_id = "perm_field_id";
 const char* const c_attribute_restrict_info = "restrict_info";
@@ -100,6 +101,7 @@ const char* const c_data_pwd = "pwd";
 const char* const c_data_uid = "uid";
 const char* const c_data_url = "url";
 const char* const c_data_acts = "acts";
+const char* const c_data_hash = "hash";
 const char* const c_data_mods = "mods";
 const char* const c_data_name = "name";
 const char* const c_data_perm = "perm";
@@ -2222,6 +2224,7 @@ struct user_info_specification : specification
    string class_id;
    string uid_field_id;
    string pwd_field_id;
+   string hash_field_id;
    string perm_field_id;
    string group_field_id;
    string other_field_id;
@@ -2238,17 +2241,18 @@ struct user_info_specification : specification
 
 void user_info_specification::add( model& m, const vector< string >& args, vector< specification_detail >& details )
 {
-   if( args.size( ) < 3 )
-      throw runtime_error( "user_info specification requires 'user class', 'uid field' and 'pwd field'" );
+   if( args.size( ) < 4 )
+      throw runtime_error( "user_info specification requires 'user class', 'uid field', 'pwd field' and 'user_hash field'" );
 
    string arg_class_name( args[ 0 ] );
    string arg_uid_field_name( args[ 1 ] );
    string arg_pwd_field_name( args[ 2 ] );
+   string arg_hash_field_name( args[ 3 ] );
 
    string arg_select_info;
    string arg_perm_field_name, arg_group_field_name, arg_other_field_name, arg_parent_field_name, arg_active_field_name;
 
-   for( size_t arg = 3; arg < args.size( ); arg++ )
+   for( size_t arg = 4; arg < args.size( ); arg++ )
    {
       string next_arg( args[ arg ] );
 
@@ -2315,6 +2319,11 @@ void user_info_specification::add( model& m, const vector< string >& args, vecto
 
    if( pwd_field_id.empty( ) )
       throw runtime_error( "class '" + arg_class_name + "' does not contain the field '" + arg_pwd_field_name + "'" );
+
+   hash_field_id = get_field_id_for_name( all_field_data, arg_hash_field_name );
+
+   if( hash_field_id.empty( ) )
+      throw runtime_error( "class '" + arg_class_name + "' does not contain the field '" + arg_hash_field_name + "'" );
 
    if( !arg_perm_field_name.empty( ) )
    {
@@ -2440,6 +2449,7 @@ void user_info_specification::add( model& m, const vector< string >& args, vecto
    {
       details.push_back( specification_detail( uid_field_id, "uid", e_model_element_type_field ) );
       details.push_back( specification_detail( pwd_field_id, "pwd", e_model_element_type_field ) );
+      details.push_back( specification_detail( hash_field_id, "hash", e_model_element_type_field ) );
 
       if( !perm_field_id.empty( ) )
          details.push_back( specification_detail( perm_field_id, "perm", e_model_element_type_field ) );
@@ -2463,6 +2473,7 @@ void user_info_specification::read_data( sio_reader& reader )
    class_id = reader.read_attribute( c_attribute_class_id );
    uid_field_id = reader.read_attribute( c_attribute_uid_field_id );
    pwd_field_id = reader.read_attribute( c_attribute_pwd_field_id );
+   hash_field_id = reader.read_attribute( c_attribute_hash_field_id );
    perm_field_id = reader.read_opt_attribute( c_attribute_perm_field_id );
    group_field_id = reader.read_opt_attribute( c_attribute_gfield_id );
    other_field_id = reader.read_opt_attribute( c_attribute_ofield_id );
@@ -2482,6 +2493,7 @@ void user_info_specification::write_data( sio_writer& writer ) const
    writer.write_attribute( c_attribute_class_id, class_id );
    writer.write_attribute( c_attribute_uid_field_id, uid_field_id );
    writer.write_attribute( c_attribute_pwd_field_id, pwd_field_id );
+   writer.write_attribute( c_attribute_hash_field_id, hash_field_id );
    writer.write_opt_attribute( c_attribute_perm_field_id, perm_field_id );
    writer.write_opt_attribute( c_attribute_gfield_id, group_field_id );
    writer.write_opt_attribute( c_attribute_ofield_id, other_field_id );
@@ -2504,6 +2516,7 @@ void user_info_specification::add_specification_data( model& m, specification_da
 
    spec_data.data_pairs.push_back( make_pair( c_data_uid, uid_field_id ) );
    spec_data.data_pairs.push_back( make_pair( c_data_pwd, pwd_field_id ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_hash, hash_field_id ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_perm, perm_field_id ) );
 
