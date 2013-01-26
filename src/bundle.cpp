@@ -777,7 +777,7 @@ int main( int argc, char* argv[ ] )
 
       string output_filename( filename );
       if( is_append )
-         output_filename = "~" + output_filename;
+         output_filename = output_filename + ".tmp";
 
       // NOTE: Empty code block for scope purposes.
       {
