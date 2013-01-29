@@ -58,8 +58,10 @@ system_variable "get/set a system variable" <val//var_name>[<oval//new_value>]
 trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
 encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>
+password "retrieve an encrypted system password" <val//name>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_abbr>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 schedule "display autoscript schedule"
+smtpinfo "retrieves the sendmail sender address"
 timezone "display timezone abbreviation"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
 runscript "run an external script or program" [<val//script_name>]

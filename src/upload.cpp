@@ -405,7 +405,7 @@ int main( int /*argc*/, char* argv[ ] )
          if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
 #  endif
          {
-            // Start all but one as separate threads - the main thread runs the final handler.
+            // NOTE: Start all but one as separate threads - the main thread runs the final handler.
             for( size_t i = 1; i < c_num_handlers; i++ )
             {
                request_handler* p_request_handler = new request_handler;

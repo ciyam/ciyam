@@ -242,6 +242,8 @@ int get_pid( );
 
 int vmem_used( );
 
+std::string get_cwd( bool change_backslash_to_forwardslash = false );
+
 bool file_exists( const char* p_name, bool check_link_target = true );
 inline bool file_exists( const std::string& name, bool check_link_target = true ) { return file_exists( name.c_str( ), check_link_target ); }
 

@@ -1,7 +1,10 @@
-Welcome to CIYAM @app_name
----------------------
+
+---------------------------------------------------------------------------
+Welcome to CIYAM @@app_name
+---------------------------------------------------------------------------
 
 User Id: @@user_id
+
 Password: @@password
 
 Your account is already active and ready for you to use immediately!

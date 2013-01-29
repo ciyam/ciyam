@@ -672,10 +672,7 @@ int main( int argc, char* argv[ ] )
 
    try
    {
-      char buf[ PATH_MAX ];
-      getcwd( buf, PATH_MAX );
-
-      g_cwd = string( buf );
+      g_cwd = get_cwd( );
 
 #ifndef _WIN32
       string::size_type pos = g_cwd.find_last_of( "/" );

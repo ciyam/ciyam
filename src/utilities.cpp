@@ -23,16 +23,19 @@
 #  ifdef __GNUG__
 #     include <fcntl.h>
 #     include <unistd.h>
+#     include <sys/stat.h>
 #     include <sys/time.h>
 #  endif
 #  ifdef _WIN32
 #     ifdef __BORLANDC__
+#        include <dir.h>
 #        include <cio>
 #        include <cfcntl>
 #     endif
 #     ifdef _MSC_VER
 #        include <io.h>
 #        include <fcntl.h>
+#        include <direct.h>
 #     endif
 #     ifndef STRICT
 #        define STRICT // Needed for "windows.h" by various Borland headers.
@@ -53,6 +56,8 @@ typedef int mode_t;
 #  define _open open
 #  define _chmod chmod
 #  define _close close
+#  define _getcwd getcwd
+#  define _MAX_PATH PATH_MAX
 #endif
 
 #include "utilities.h"
@@ -211,6 +216,27 @@ int vmem_used( )
 #endif
 
    return size_kb;
+}
+
+string get_cwd( bool change_backslash_to_forwardslash )
+{
+   char buf[ _MAX_PATH ];
+   _getcwd( buf, _MAX_PATH );
+
+#ifndef _WIN32
+   ( void )change_backslash_to_forwardslash;
+#else
+   if( change_backslash_to_forwardslash )
+   {
+      for( size_t i = 0; i < _MAX_PATH; i++ )
+      {
+         if( buf[ i ] == '\\' )
+            buf[ i ] = '/';
+      }
+   }
+#endif
+
+   return buf;
 }
 
 bool file_exists( const char* p_name, bool check_link_target )
@@ -513,12 +539,7 @@ void file_link( const char* p_src, const char* p_name, const wchar_t* p_wsrc, co
    // for existence in order to remove before re-creating.
    string::size_type pos = source.find( '/' );
    if( pos == string::npos )
-   {
-      char buf[ PATH_MAX ];
-      getcwd( buf, PATH_MAX );
-
-      source = string( buf ) + "/" + source;
-   }
+      source = get_cwd( ) + "/" + source;
 
    if( symlink( source.c_str( ), name.c_str( ) ) != 0 )
       throw runtime_error( "failed to create link (errno = " + to_string( errno ) + ")" );

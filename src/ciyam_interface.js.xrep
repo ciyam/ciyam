@@ -21,6 +21,7 @@ var qsFurther = '';
 
 var secureOnly = false;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
+var useHashUserid = true;
 var usePageFading = false;
 var useAutoProgress = true;
 var useLoadProgress = true;

@@ -31,6 +31,7 @@
 #include "ciyam_session.h"
 
 #include "sio.h"
+#include "config.h"
 #include "format.h"
 #include "pdf_gen.h"
 #include "threads.h"
@@ -63,8 +64,6 @@ mutex g_mutex;
 #include "ciyam_session.cmh"
 
 const int c_pdf_default_limit = 5000;
-
-const char* const c_protocol_version = "0.1";
 
 const char* const c_response_okay = "(okay)";
 const char* const c_response_okay_more = "(okay more)";
@@ -3197,6 +3196,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          response = encrypt_password( password, no_ssl, no_salt );
       }
+      else if( command == c_cmd_ciyam_session_password )
+      {
+         string name( get_parm_val( parameters, c_cmd_parm_ciyam_session_password_name ) );
+
+         if( name == "gpg" )
+            response = get_encrypted_gpg_password( );
+         else if( name == "pem" )
+            response = get_encrypted_pem_password( );
+         else if( name == "sql" )
+            response = get_encrypted_sql_password( );
+         else if( name == "pop3" )
+            response = get_encrypted_pop3_password( );
+         else if( name == "smtp" )
+            response = get_encrypted_smtp_password( );
+         else
+            throw runtime_error( "unknown system password name '" + name + "'" );
+      }
       else if( command == c_cmd_ciyam_session_sendmail )
       {
          string to( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_to ) );
@@ -3233,6 +3249,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          output_schedule( osstr );
          output_response_lines( socket, osstr.str( ) );
       }
+      else if( command == c_cmd_ciyam_session_smtpinfo )
+         response = get_smtp_username( ) + "@" + get_smtp_suffix( );
       else if( command == c_cmd_ciyam_session_timezone )
          response = get_timezone( );
       else if( command == c_cmd_ciyam_session_checkmail )
