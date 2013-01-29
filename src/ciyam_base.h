@@ -170,6 +170,12 @@ bool CIYAM_BASE_DECL_SPEC get_script_reconfig( );
 std::string CIYAM_BASE_DECL_SPEC get_pem_password( );
 std::string CIYAM_BASE_DECL_SPEC get_sql_password( );
 
+std::string CIYAM_BASE_DECL_SPEC get_encrypted_gpg_password( );
+std::string CIYAM_BASE_DECL_SPEC get_encrypted_pem_password( );
+std::string CIYAM_BASE_DECL_SPEC get_encrypted_sql_password( );
+std::string CIYAM_BASE_DECL_SPEC get_encrypted_pop3_password( );
+std::string CIYAM_BASE_DECL_SPEC get_encrypted_smtp_password( );
+
 std::string CIYAM_BASE_DECL_SPEC get_default_storage( );
 void CIYAM_BASE_DECL_SPEC set_default_storage( const std::string& name );
 

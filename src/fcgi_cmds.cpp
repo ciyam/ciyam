@@ -2069,6 +2069,50 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
       sess_info.quick_link_data.pop_back( );
 }
 
+void add_user( const string& user_id,
+ const string& password, string& error_message, const module_info& mod_info, session_info& sess_info )
+{
+   bool okay = true;
+   string new_user_cmd( "perform_create" );
+
+   new_user_cmd += " sys " + date_time::standard( ).as_string( )
+    + " " + mod_info.id + " " + mod_info.user_class_id + " \"\"";
+
+   string uid( escaped( user_id, "," ) );
+   string pwd( escaped( password, "," ) );
+
+   new_user_cmd += " \"" + mod_info.user_uid_field_id + "=" + escaped( uid, ",\"" );
+   new_user_cmd += "," + mod_info.user_pwd_field_id + "=" + escaped( pwd, ",\"" );
+   new_user_cmd += "\"";
+
+   if( sess_info.p_socket->write_line( new_user_cmd ) <= 0 )
+      okay = false;
+   else
+   {
+      string response;
+      if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
+         okay = false;
+      else if( response != c_response_okay )
+      {
+         string extra_response;
+
+         if( !response.empty( ) && response[ 0 ] != '('
+          && ( sess_info.p_socket->read_line( extra_response, c_subsequent_response_timeout ) <= 0 ) )
+            okay = false;
+         else
+         {
+            if( extra_response != c_response_okay )
+               error_message = escape_markup( response + extra_response );
+         }
+      }
+      else
+         okay = false;
+   }
+
+   if( !okay )
+      throw runtime_error( "unexpected okay response creating user" );
+}
+
 void add_quick_link( const string& module_ref,
  const string& cmd, const string& data, const string& extra,
  const string& listsrch, const string& listsort, const string& oident,

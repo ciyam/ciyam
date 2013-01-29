@@ -53,7 +53,9 @@
 
 #include "ciyam_interface.h"
 
+#include "salt.h"
 #include "sha1.h"
+#include "smtp.h"
 #include "regex.h"
 #include "base64.h"
 #include "config.h"
@@ -126,12 +128,15 @@ const char* const c_password_persistent_file = "password_persistent.htms";
 const char* const c_printlist_file = "printlist.htms";
 const char* const c_printview_file = "printview.htms";
 
+const char* const c_sign_up_testers_file = "sign_up_testers.lst";
+
 const char* const c_dummy_param_prefix = "dummy=";
 
 const char* const c_http_param_ssl = "HTTPS";
 const char* const c_http_param_host = "HTTP_HOST";
-const char* const c_http_param_rhost = "REMOTE_HOST";
 const char* const c_http_param_raddr = "REMOTE_ADDR";
+const char* const c_http_param_rhost = "REMOTE_HOST";
+const char* const c_http_param_ruser = "REMOTE_USER";
 const char* const c_http_param_query = "QUERY_STRING";
 const char* const c_http_param_cookie = "HTTP_COOKIE";
 const char* const c_http_param_uagent = "HTTP_USER_AGENT";
@@ -775,8 +780,9 @@ void request_handler::process_request( )
    {
       const char* p_ssl = FCGX_GetParam( c_http_param_ssl, *p_env );
       const char* p_host = FCGX_GetParam( c_http_param_host, *p_env );
-      const char* p_rhost = FCGX_GetParam( c_http_param_rhost, *p_env );
       const char* p_raddr = FCGX_GetParam( c_http_param_raddr, *p_env );
+      const char* p_rhost = FCGX_GetParam( c_http_param_rhost, *p_env );
+      const char* p_ruser = FCGX_GetParam( c_http_param_ruser, *p_env );
       const char* p_uagent = FCGX_GetParam( c_http_param_uagent, *p_env );
 
       map< string, string > input_data;
@@ -795,11 +801,14 @@ void request_handler::process_request( )
       if( p_host )
          input_data.insert( make_pair( c_http_param_host, p_host ) );
 
+      if( p_raddr )
+         input_data.insert( make_pair( c_http_param_raddr, p_raddr ) );
+
       if( p_rhost )
          input_data.insert( make_pair( c_http_param_rhost, p_rhost ) );
 
-      if( p_raddr )
-         input_data.insert( make_pair( c_http_param_raddr, p_raddr ) );
+      if( p_ruser )
+         input_data.insert( make_pair( c_http_param_ruser, p_ruser ) );
 
       if( p_uagent )
          input_data.insert( make_pair( c_http_param_uagent, p_uagent ) );
@@ -3213,8 +3222,23 @@ void request_handler::process_request( )
                   {
                      extra_content << g_mini_login_html;
 
-                     extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                      << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Us\" border=\"0\" margin=\"10\"/></a>";
+                     // NOTE: To limit "sign ups" to specific IP addresses simply add them
+                     // as lines to the list of "sign up testers" file (to open tall *all*
+                     // simply remove the file).
+                     set< string > testers;
+                     if( file_exists( c_sign_up_testers_file ) )
+                     {
+                        testers.insert( "10.0.0.1" );
+                        testers.insert( "127.0.0.1" );
+
+                        buffer_file_lines( c_sign_up_testers_file, testers );
+                     }
+
+                     if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
+                     {
+                        extra_content << "<a href=\"" << get_module_page_name( module_ref )
+                         << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Us\" border=\"0\" margin=\"10\"/></a>";
+                     }
                   }
                }
                else
@@ -3535,11 +3559,19 @@ void request_handler::process_request( )
 
                if( input_data.count( c_param_gpgpubkey ) )
                {
-                  msleep( 3000 );
+                  msleep( 2000 );
 
                   account_type = input_data[ c_param_accttype ];
                   req_username = input_data[ c_param_requsername ];
                   gpg_public_key = input_data[ c_param_gpgpubkey ];
+
+                  bool is_help_request = false;
+                  string::size_type pos = req_username.find( "help " );
+                  if( pos == 0 )
+                  {
+                     is_help_request = true;
+                     req_username.erase( 0, 5 );
+                  }
 
                   oreq_username = req_username;
 
@@ -3564,7 +3596,9 @@ void request_handler::process_request( )
                         throw runtime_error( "unexpected missing user information" );
 
                      if( req_username == user_data[ 0 ] )
-                        error_message = "<p class=\"error\" align=\"center\">Sorry but the User Id '" + req_username + "' has already been taken. Please try another one.</p>";
+                        error_message = "<p class=\"error\" align=\"center\">"
+                         + string_message( GDS( c_display_user_id_has_already_been_taken ),
+                         make_pair( c_display_user_id_has_already_been_taken_parm_id, req_username ) ) + "</p>";
                   }
                   else
                      req_username += uuid( ).as_string( ).substr( 0, 10 );
@@ -3578,7 +3612,7 @@ void request_handler::process_request( )
                      string::size_type pos = expr.search( gpg_public_key, &len );
 
                      if( pos == string::npos )
-                        error_message = "<p class=\"error\" align=\"center\">Sorry but the GPG public key is not correctly formatted. Please try again.</p>";
+                        error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_gpg_public_key_is_not_correctly_formatted ) + "</p>";
                      else
                      {
                         string pubkey( gpg_public_key.substr( pos, len ) );
@@ -3597,9 +3631,13 @@ void request_handler::process_request( )
                         else if( lines.size( ) > 3 )
                         {
                            if( lines[ 0 ].find( "CRC error" ) )
-                              error_message = "<p class=\"error\" align=\"center\">This GPG public key appears to be corrupt (failed CRC).<br/>Please re-copy and paste your GPG public key before trying again.</p>";
+                              error_message = "<p class=\"error\" align=\"center\">"
+                               + GDS( c_display_gpg_public_key_appears_to_be_corrupt )
+                               + "<br/>" + GDS( c_display_re_copy_and_paste_your_gpg_public_key ) + "</p>";
                            else
-                              error_message = "<p class=\"error\" align=\"center\">There is more than one email address in this GPG public key.<br/>Please ensure that you use a GPG public key that is for a single email address only.</p>";
+                              error_message = "<p class=\"error\" align=\"center\">"
+                               + GDS( c_display_more_than_one_email_address_in_gpg_key )
+                               + "<br/>" + GDS( c_display_need_gpg_public_for_single_email_address ) + "</p>";
                         }
                         else
                         {
@@ -3617,11 +3655,19 @@ void request_handler::process_request( )
                            {
                               result = first_line.substr( pos + len + 1 );
 
-                              if( result == "not changed" )
-                                 error_message = "<p class=\"error\" align=\"center\">A GPG encrypted email should have already been sent to you.<br/>Please re-check your email (including all junk/spam folders).</p>";
+                              if( result == "not changed" && !is_help_request )
+                              {
+                                 error_message = "<p class=\"error\" align=\"center\">"
+                                  + GDS( c_display_gpg_encrypted_email_should_have_already_been_sent )
+                                  + "<br/>" + GDS( c_display_please_re_check_your_email ) + "</p>";
+
+                                 error_message += "<p>" + string_message(
+                                  GDS( c_display_to_instead_see_your_gpg_encrypted_information_here ), make_pair(
+                                  c_display_to_instead_see_your_gpg_encrypted_information_here_parm_id, oreq_username ) ) + "</p>";
+                              }
                            }
 
-                           if( result == "imported" )
+                           if( result == "imported" || ( result == "not changed" && is_help_request ) )
                            {
                               pos = first_line.find( " key " );
                               if( pos == string::npos )
@@ -3651,7 +3697,7 @@ void request_handler::process_request( )
                                        if( system( cmd.c_str( ) ) != 0 )
                                           LOG_TRACE( buffer_file( "x.tmp" ) );
 
-                                       error_message = "<p class=\"error\" align=\"center\">Email address was not found in this GPG public key. Please try again with a valid GPG public key.</p>";
+                                       error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_email_not_found_in_gpg_public_key ) + "</p>";
                                     }
                                     else
                                        email_addr = first_line.substr( pos + 1, len - 2 );
@@ -3666,65 +3712,98 @@ void request_handler::process_request( )
                         file_remove( "x.gpg" );
                      }
 
-                     if( error_message.empty( ) )
+                     if( error_message.empty( ) && !had_unexpected_error )
                      {
-                        //idk - create new user and construct GPG message and saving it to <key>.join.gpg (so
-                        // that if the email fails or the user can't find it then they can still ask by using
-                        // a "help " prefix for this message to be displayed rather than emailed)...
                         string password( uuid( ).as_string( ).substr( 2 ) );
-                        if( email_addr == "anon@ciyam.org" )
+
+                        string gpg_message( buffer_file( "join.txt" ) );
+
+                        str_replace( gpg_message, c_app_name, module_name );
+                        str_replace( gpg_message, c_user_id, req_username );
+                        str_replace( gpg_message, c_password, password );
+
+                        write_file( key, gpg_message );
+
+                        string gpg_password;
+                        if( !simple_command( *p_session_info, "password gpg", &gpg_password ) )
+                           throw runtime_error( "unable to access GPG password" );
+
+                        gpg_password = password_decrypt( gpg_password, get_server_id( ) + c_salt_value );
+
+                        string smtp_sender;
+                        if( !simple_command( *p_session_info, "smtpinfo", &smtp_sender ) )
+                           throw runtime_error( "unable to access SMTP info" );
+
+                        cmd = "gpg --armor --recipient " + key
+                         + " --encrypt --sign --trust-model always --batch --local-user "
+                         + smtp_sender + " --passphrase " + gpg_password + " " + key + ">" + key + ".tmp 2>&1";
+
+                        system( cmd.c_str( ) );
+
+                        if( !file_exists( key + ".asc" ) )
                         {
-                           string gpg_message( buffer_file( "join.txt" ) );
+                           gpg_message = buffer_file( key + ".tmp" );
+                           LOG_TRACE( "error: " + gpg_message );
 
-                           str_replace( gpg_message, c_app_name, module_name );
-                           str_replace( gpg_message, c_user_id, req_username );
-                           str_replace( gpg_message, c_password, password );
-
-                           write_file( "x.tmp", gpg_message );
-
-                           //idk - need decode a password here...
-                           cmd = "gpg --armor --recipient " + key + " --encrypt --sign --trust-model always --batch --local-user support@ciyam.org --passphrase password x.tmp>xx.tmp 2>&1";
-
-                           system( cmd.c_str( ) );
-
-                           if( !file_exists( "x.tmp.asc" ) )
-                           {
-                              gpg_message = buffer_file( "xx.tmp" );
-                              LOG_TRACE( gpg_message );
-
-                              has_completed = false;
-                              had_unexpected_error = true;
-                           }
-                           else
-                           {
-                              has_completed = true;
-                              gpg_message = buffer_file( "x.tmp.asc" );
-
-                              extra_content << "<p><b>" << "Welcome aboard "
-                               << oreq_username << " !<br/><br/>Your GPG encrypted account credentials can now he copied to the clipboard from below ready for you to decode.</b><p>\n"
-                               << "<p align=\"center\"><pre>" << gpg_message << "</pre></p>";
-                           }
-
-                           file_remove( "x.tmp" );
-
-                           if( file_exists( "xx.tmp" ) )
-                              file_remove( "xx.tmp" );
-
-                           if( file_exists( "x.tmp.asc" ) )
-                              file_remove( "x.tmp.asc" );
+                           has_completed = false;
+                           had_unexpected_error = true;
                         }
                         else
                         {
+                           password = hash_password( g_id + password + req_username );
+                           password = password_encrypt( password, get_server_id( ) );
+
+                           if( !is_help_request )
+                           {
+                              add_user( req_username, password, error_message, mod_info, *p_session_info );
+
+                              if( !error_message.empty( ) )
+                                 throw runtime_error( error_message );
+                           }
+
+                           if( is_help_request || email_addr == "anon@ciyam.org" )
+                           {
+                              has_completed = true;
+                              gpg_message = buffer_file( key + ".asc" );
+
+                              if( !is_help_request )
+                                 extra_content << "<p><b>"
+                                  << GDS( c_display_welcome_aboard ) << " " << oreq_username << " !<br/><br/>";
+
+                              extra_content << GDS( c_display_your_gpg_encrypted_account_credentials )
+                               << "</b><p>\n" << "<p align=\"center\"><pre>" << gpg_message << "</pre></p>";
+                           }
+                           else
+                           {
+                              string msg_file( "message?" + get_cwd( true ) + "/" + key + ".asc" );
+
+                              string smtp_result;
+                              simple_command( *p_session_info, "sendmail "
+                               + email_addr + " \"" + GDS( c_display_welcome_aboard ) + "!\" \""
+                               + GDS( c_display_see_attachment_for_details ) + "\" -attach=" + msg_file, &smtp_result );
+
+                              if( !smtp_result.empty( ) )
+                                 throw runtime_error( smtp_result );
+                           }
+                        }
+
+                        file_remove( key );
+
+                        if( file_exists( key + ".tmp" ) )
+                           file_remove( key + ".tmp" );
+
+                        if( !has_completed && !had_unexpected_error )
+                        {
                            has_completed = true;
 
-                           extra_content << "<p align=\"center\"><b>" << "Welcome aboard "
-                            << oreq_username << " !<br/><br/>A GPG encrypted email with your account credentials has now been sent.</b></p>\n";
+                           extra_content << "<p align=\"center\"><b>" << GDS( c_display_welcome_aboard ) << " "
+                            << oreq_username << " !<br/><br/>" << GDS( c_display_a_gpg_encrypted_email_with_your_credentials ) << "</b></p>\n";
                         }
-                      }
+                     }
                   }
 
                   if( had_unexpected_error )
-                     error_message = "<p class=\"error\" align=\"center\">Sorry - an unexpected error occurred while processing your GPG public key. Please try again later.</p>";
+                     error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_sorry_unexpected_error_processing_gpg ) + "</p>";
                }
 
                if( !has_completed )
@@ -4753,7 +4832,7 @@ int main( int argc, char* argv[ ] )
          if( has_environment_variable( "_FCGI_MUTEX_" ) ) // i.e. this var is only found in mod_fastcgi
 #  endif
          {
-            // Start all but one as separate threads - the main thread runs the final handler.
+            // NOTE: Start all but one as separate threads - the main thread runs the final handler.
             for( size_t i = 1; i < c_num_handlers; i++ )
             {
                request_handler* p_request_handler = new request_handler;

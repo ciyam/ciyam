@@ -9,7 +9,8 @@
  <timezone>GMT
  <web_root>$WEBDIR
  <set_trace>1000
-# <use_https>true
+# <use_https>false
+# <gpg_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
 # <pem_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
 # <sql_password>l2k34u1QZzr9oWKTqlQuaZ3nx0a=
 # <default_storage>test

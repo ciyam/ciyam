@@ -110,6 +110,7 @@ const char* const c_attribute_web_root = "web_root";
 const char* const c_attribute_web_type = "web_type";
 const char* const c_attribute_set_trace = "set_trace";
 const char* const c_attribute_use_https = "use_https";
+const char* const c_attribute_gpg_password = "gpg_password";
 const char* const c_attribute_max_sessions = "max_sessions";
 const char* const c_attribute_pem_password = "pem_password";
 const char* const c_attribute_sql_password = "sql_password";
@@ -2902,6 +2903,7 @@ bool g_using_ssl = false;
 
 int g_max_user_limit = 1;
 
+string g_gpg_password;
 string g_pem_password;
 string g_sql_password;
 
@@ -3044,6 +3046,7 @@ void read_server_configuration( )
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
 
+      g_gpg_password = reader.read_opt_attribute( c_attribute_gpg_password );
       g_pem_password = reader.read_opt_attribute( c_attribute_pem_password );
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
 
@@ -3923,7 +3926,7 @@ string encrypt_password( const string& password, bool no_ssl, bool no_salt )
 {
    string salt;
    if( !no_salt )
-      salt = g_sid + c_salt_value;
+      salt = sid_hash( ) + c_salt_value;
 
    return password_encrypt( password, salt, !no_ssl );
 }
@@ -3932,7 +3935,7 @@ string decrypt_password( const string& password, bool no_ssl, bool no_salt )
 {
    string salt;
    if( !no_salt )
-      salt = g_sid + c_salt_value;
+      salt = sid_hash( ) + c_salt_value;
 
    return password_decrypt( password, salt, !no_ssl );
 }
@@ -4499,6 +4502,41 @@ string get_sql_password( )
    }
 
    return pwd;
+}
+
+string get_encrypted_gpg_password( )
+{
+   guard g( g_mutex );
+
+   return g_gpg_password;
+}
+
+string get_encrypted_pem_password( )
+{
+   guard g( g_mutex );
+
+   return g_pem_password;
+}
+
+string get_encrypted_sql_password( )
+{
+   guard g( g_mutex );
+
+   return g_sql_password;
+}
+
+string get_encrypted_pop3_password( )
+{
+   guard g( g_mutex );
+
+   return g_pop3_password;
+}
+
+string get_encrypted_smtp_password( )
+{
+   guard g( g_mutex );
+
+   return g_smtp_password;
 }
 
 string get_default_storage( )
