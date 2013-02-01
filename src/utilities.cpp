@@ -1498,6 +1498,37 @@ void buffer_file_lines( const string& file_name, set< string >& lines, bool stri
       throw runtime_error( "unexpected error occurred whilst reading '" + file_name + "' for input" );
 }
 
+void buffer_file_items( const string& file_name,
+ map< string, string >& items, char separator, bool strip_extra_crs )
+{
+   ifstream inpf( file_name.c_str( ) );
+   if( !inpf )
+      throw runtime_error( "unable to open file '" + file_name + "' for input" );
+
+   string next;
+   size_t line_num = 0;
+   while( getline( inpf, next ) )
+   {
+      ++line_num;
+
+      if( strip_extra_crs )
+         remove_trailing_cr_from_text_file_line( next, line_num == 1 );
+
+      if( !next.empty( ) )
+      {
+         string::size_type pos = next.find( separator );
+         if( pos == string::npos )
+            throw runtime_error( "unexpected missing separator '"
+             + to_string( separator ) + "' in '" + file_name + "' at line #" + to_string( line_num ) );
+
+         items.insert( make_pair( next.substr( 0, pos ), next.substr( pos + 1 ) ) );
+      }
+   }
+
+   if( !inpf.eof( ) )
+      throw runtime_error( "unexpected error occurred whilst reading '" + file_name + "' for input" );
+}
+
 bool absolute_path( const string& relative_path, string& absolute_path )
 {
    bool found;

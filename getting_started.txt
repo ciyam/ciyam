@@ -9,7 +9,7 @@ to test that all core functionality is working:
 make all
 ./dotests
 
-(Windows users need to omit the ./ prefixes)
+(Windows users need to omit the ./ prefixes so just "config" and "dotests")
 
 The next step is to make sure that MySQL is installed and operating. The following steps will create a DB for
 testing the system, populate this DB with tables and data and check that all is functioning as expected:
@@ -22,7 +22,7 @@ testing the system, populate this DB with tables and data and check that all is 
 The "ciyam" DB should only be used for regression test purposes (by repeating the above steps) so now another
 DB needs to be created for the IDE itself:
 
-(NOTE: in order for this second init to work the user must have rwx permissions for each directory in WEBROOT)
+NOTE: In order for this second init to work the user must have rwx permissions for each directory in WEBROOT.
 
 ./create_db Meta
 ./init Meta Meta
@@ -90,7 +90,12 @@ you will need to stop and restart the application server (if using Windows then 
 
 If all went well the you should now be able to access the IDE: http://localhost/meta
 
-From the login form which should have appeared use the password and user id "guest" (no quotes).
+From the login form which should have appeared use the user id "!guest" with password "guest" (no quotes). If
+you are wondering why the ! prefix it is due to the fact that users which are created as initial data for the
+application do not have "hashed passwords". After you login if you change password then at the next time that
+you login the ! must *not* be prepended (i.e. just "guest"). Thus for security purposes all such initial data
+User records should have their passwords changed or be either removed or have their Active status switched to
+off/false.
 
 Creating an Application
 -----------------------
@@ -130,9 +135,9 @@ then finally followed by the DB construction and population with initial data).
 
 If no errors have occurred during application generation then you should now be ready to test your first ever
 CIYAM application. This should be as simple as typing "localhost/sample" into your browser (in another window
-than that used for "Meta"). If you use the name and password "guest" you should be presented with a "Welcome"
-message (as only the "Standard" and "User" packages were installed there is not much that the "guest" user is
-able to do other than change their password).
+than that used for "Meta"). If you use the user id "!guest" and password "guest" you should be presented with
+a "Welcome" message (and as only the "Standard" and "User" packages were installed there is not much that the
+"guest" user is able to do other than change their password).
 
 Installing Package Types
 ------------------------
@@ -143,8 +148,8 @@ that users can be given login credentials and security permissions). Although vi
 types are not so interesting (as seen in the sample application created initially).
 
 In order to be able to create a more interesting application it is recommended to install one or more package
-types that are not automatically included in "Meta". To do this you need to login to "Meta" with the username
-"admin" and password "nimda" (logout first if still logged in as "guest" from before).
+types that are not automatically included in "Meta". To do this you'll need to login to "Meta" using the user
+id "!admin" and password "nimda" (logout first if still logged in as "guest" from before).
 
 The navigation sidebar will look very different when you are logged in as "admin" as this special user is not
 intended to perform standard activities but instead to perform "system configuration" and "user maintenance".

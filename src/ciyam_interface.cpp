@@ -128,6 +128,7 @@ const char* const c_password_persistent_file = "password_persistent.htms";
 const char* const c_printlist_file = "printlist.htms";
 const char* const c_printview_file = "printview.htms";
 
+const char* const c_sign_up_types_map = "sign_up_types.map";
 const char* const c_sign_up_testers_file = "sign_up_testers.lst";
 
 const char* const c_dummy_param_prefix = "dummy=";
@@ -3559,8 +3560,6 @@ void request_handler::process_request( )
 
                if( input_data.count( c_param_gpgpubkey ) )
                {
-                  msleep( 2000 );
-
                   account_type = input_data[ c_param_accttype ];
                   req_username = input_data[ c_param_requsername ];
                   gpg_public_key = input_data[ c_param_gpgpubkey ];
@@ -3601,7 +3600,10 @@ void request_handler::process_request( )
                          make_pair( c_display_user_id_has_already_been_taken_parm_id, req_username ) ) + "</p>";
                   }
                   else
-                     req_username += uuid( ).as_string( ).substr( 0, 10 );
+                  {
+                     msleep( 2000 );
+                     req_username += uuid( ).as_string( ).substr( 0, 10 );\
+                  }
 
                   if( error_message.empty( ) )
                   {
@@ -3753,9 +3755,18 @@ void request_handler::process_request( )
                            password = hash_password( g_id + password + req_username );
                            password = password_encrypt( password, get_server_id( ) );
 
+                           string clone_key;
+                           map< string, string > sign_up_types_map;
+                           if( file_exists( c_sign_up_types_map ) )
+                           {
+                              buffer_file_items( c_sign_up_types_map, sign_up_types_map );
+                              clone_key = sign_up_types_map[ account_type ];
+                           }
+
                            if( !is_help_request )
                            {
-                              add_user( req_username, password, error_message, mod_info, *p_session_info );
+                              add_user( req_username, req_username,
+                               clone_key, password, error_message, mod_info, *p_session_info );
 
                               if( !error_message.empty( ) )
                                  throw runtime_error( error_message );
@@ -3782,7 +3793,7 @@ void request_handler::process_request( )
                                + email_addr + " \"" + GDS( c_display_welcome_aboard ) + "!\" \""
                                + GDS( c_display_see_attachment_for_details ) + "\" -attach=" + msg_file, &smtp_result );
 
-                              if( !smtp_result.empty( ) )
+                              if( !smtp_result.empty( ) && smtp_result != c_response_okay )
                                  throw runtime_error( smtp_result );
                            }
                         }
@@ -4380,7 +4391,8 @@ void request_handler::process_request( )
                extra_content << "\n<div id=\"sidebar\">\n";
 
                extra_content << "<ul><li><a href=\""
-                << get_module_page_name( module_ref ) << "\">" << GDS( c_display_home ) << "</a></li></ul>\n";
+                << get_module_page_name( module_ref ) << "?cmd="
+                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li></ul>\n";
 
                extra_content << "<pre>\n";
                extra_content << "        .--.\n";
@@ -4399,7 +4411,7 @@ void request_handler::process_request( )
             extra_content << "</div>\n";
 
             if( performed_file_attach_or_detach )
-               extra_content_func += "refresh( false );\n"; //KLUDGE: Refresh so current version is viewed (otherwise actions will fail).
+               extra_content_func += "refresh( false );\n"; // KLUDGE: Refresh so current version is viewed (otherwise actions will fail).
 
             // NOTE: Erase any existing cookie value first.
             if( created_session && cookies_permitted )
