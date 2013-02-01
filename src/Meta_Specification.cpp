@@ -6018,77 +6018,88 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600148
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Model( ) == gv_default_Model && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
+    && get_obj( ).Model( ) == gv_default_Model
+    && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
       get_obj( ).Model( get_obj( ).Parent_Specification( ).Model( ) );
    // [(finish default_to_field)] 600148
 
    // [(start default_to_field)] 600149
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Specification_Type( ) == gv_default_Specification_Type && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
+    && get_obj( ).Specification_Type( ) == gv_default_Specification_Type
+    && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
       get_obj( ).Specification_Type( get_obj( ).Parent_Specification( ).Child_Specification_Type( ) );
    // [(finish default_to_field)] 600149
 
    // [(start default_to_field)] 600150
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Class( ) == true )
+    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Class( ) );
    // [(finish default_to_field)] 600150
 
    // [(start default_to_field)] 600151
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent_For_Class( ) == true )
+    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Source_Parent_Class( ) );
    // [(finish default_to_field)] 600151
 
    // [(start default_to_field)] 600152
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_For_Class( ) == true )
+    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Child_Rel_Child_Class( ) );
    // [(finish default_to_field)] 600152
 
    // [(start default_to_field)] 600153
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Field_For_Class( ) == true )
+    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Field_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Field_Class( ) );
    // [(finish default_to_field)] 600153
 
    // [(start default_to_field)] 600153a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Field_For_Class( ) == true )
+    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Source_Field_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Source_Field_Class( ) );
    // [(finish default_to_field)] 600153a
 
    // [(start default_to_field)] 600153b
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class && get_obj( ).Specification_Type( ).Use_Parent_Other_Class_For_Class( ) == true )
+    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Other_Class_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Other_Class( ) );
    // [(finish default_to_field)] 600153b
 
    // [(start default_to_field)] 600154
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent( ) == true )
+    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent
+    && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent( ) == true )
       get_obj( ).Source_Parent( get_obj( ).Parent_Specification( ).Source_Parent( ) );
    // [(finish default_to_field)] 600154
 
    // [(start default_to_field)] 600155
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_As_Source_Parent( ) == true )
+    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent
+    && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_As_Source_Parent( ) == true )
       get_obj( ).Source_Parent( get_obj( ).Parent_Specification( ).Child_Rel_Field_Key( ) );
    // [(finish default_to_field)] 600155
 
    // [(start default_to_field)] 600156
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Class( ) == gv_default_Source_Class && get_obj( ).Specification_Type( ).Use_Parent_Source_Class( ) == true )
+    && get_obj( ).Source_Class( ) == gv_default_Source_Class
+    && get_obj( ).Specification_Type( ).Use_Parent_Source_Class( ) == true )
       get_obj( ).Source_Class( get_obj( ).Parent_Specification( ).Source_Class( ) );
    // [(finish default_to_field)] 600156
 
@@ -6152,7 +6163,8 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600166a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Parent_Class( ) == gv_default_Source_Parent_Class && get_obj( ).Specification_Type( ).Use_Class_As_Source_Parent_Class( ) == true )
+    && get_obj( ).Source_Parent_Class( ) == gv_default_Source_Parent_Class
+    && get_obj( ).Specification_Type( ).Use_Class_As_Source_Parent_Class( ) == true )
       get_obj( ).Source_Parent_Class( get_obj( ).Class( ) );
    // [(finish default_to_field)] 600166a
 
@@ -6213,7 +6225,8 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600181
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Procedure( ) == gv_default_Procedure && get_obj( ).Specification_Type( ).Use_Parent_Procedure( ) == true )
+    && get_obj( ).Procedure( ) == gv_default_Procedure
+    && get_obj( ).Specification_Type( ).Use_Parent_Procedure( ) == true )
       get_obj( ).Procedure( get_obj( ).Parent_Specification( ).Procedure( ) );
    // [(finish default_to_field)] 600181
 

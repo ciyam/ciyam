@@ -2069,20 +2069,22 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
       sess_info.quick_link_data.pop_back( );
 }
 
-void add_user( const string& user_id,
+void add_user( const string& user_id, const string& user_name, const string& clone_key,
  const string& password, string& error_message, const module_info& mod_info, session_info& sess_info )
 {
    bool okay = true;
    string new_user_cmd( "perform_create" );
 
    new_user_cmd += " sys " + date_time::standard( ).as_string( )
-    + " " + mod_info.id + " " + mod_info.user_class_id + " \"\"";
+    + " " + mod_info.id + " " + mod_info.user_class_id + " \" " + clone_key + "\"";
 
    string uid( escaped( user_id, "," ) );
    string pwd( escaped( password, "," ) );
+   string name( escaped( user_name, "," ) );
 
    new_user_cmd += " \"" + mod_info.user_uid_field_id + "=" + escaped( uid, ",\"" );
    new_user_cmd += "," + mod_info.user_pwd_field_id + "=" + escaped( pwd, ",\"" );
+   new_user_cmd += "," + mod_info.user_name_field_id + "=" + escaped( name, ",\"" );
    new_user_cmd += "\"";
 
    if( sess_info.p_socket->write_line( new_user_cmd ) <= 0 )

@@ -708,6 +708,9 @@ void buffer_file_lines( const std::string& file_name,
 void buffer_file_lines( const std::string& file_name,
  std::set< std::string >& lines, bool strip_extra_crs = true );
 
+void buffer_file_items( const std::string& file_name,
+ std::map< std::string, std::string >& items, char separator = '=', bool strip_extra_crs = true );
+
 bool absolute_path( const std::string& relative_path, std::string& absolute_path );
 
 time_t last_modification_time( const std::string& filename );

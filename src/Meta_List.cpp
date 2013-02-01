@@ -3493,7 +3493,8 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600429a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Anonymous_Access( ) == gv_default_Allow_Anonymous_Access && get_obj( ).Type( ).Is_Not_Anonymous( ) == true )
+    && get_obj( ).Allow_Anonymous_Access( ) == gv_default_Allow_Anonymous_Access
+    && get_obj( ).Type( ).Is_Not_Anonymous( ) == true )
       get_obj( ).Allow_Anonymous_Access( get_obj( ).Type( ).Dummy_0( ) );
    // [(finish default_to_field)] 600429a
 
