@@ -209,7 +209,9 @@ void create_all_directories( deque< string >& create_directories,
 #ifdef _WIN32
          int rc = _mkdir( full_path.c_str( ) );
 #else
+         int um = umask( 755 );
          int rc = _mkdir( full_path.c_str( ), S_IRWXU );
+         umask( um );
 #endif
 
          if( rc < 0 && errno != EEXIST )
@@ -317,7 +319,7 @@ int main( int argc, char* argv[ ] )
    }
 
 #ifdef __GNUG__
-   umask( 0 );
+   umask( DEFAULT_UMASK );
 #endif
 
    try

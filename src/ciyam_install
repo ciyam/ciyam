@@ -16,6 +16,7 @@ ps ax | grep ciyamd | awk '{print $1}' | xargs kill 2>/dev/null
 
 cat ../.git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
 GITCHECK=$?
+
 if [ "$GITCHECK" != "0" ]
 then
 	echo 'ERROR: the current directory isnt the ciyam git! cd into the src folder of ciyam.'
@@ -23,9 +24,11 @@ then
 fi
 
 DESTPATH="/usr/local/src/ciyam"
+
 mkdir -p "${DESTPATH}"
 cp -R ../src/ "${DESTPATH}"
-ln -s "${DESTPATH}/ciyam/ciyamd" "/usr/local/bin/"
+
+ln -s "${DESTPATH}/ciyam/ciyam_server" "/usr/local/bin/"
 ln -s "${DESTPATH}/ciyam/ciyam_base.so" "/usr/local/lib/"
 
 exit 0
