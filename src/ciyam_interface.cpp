@@ -1418,7 +1418,7 @@ void request_handler::process_request( )
                      throw runtime_error( "unable to create '" + path + "' directory" );
 
 #ifndef _WIN32
-                  umask( um )
+                  umask( um );
 #endif
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;

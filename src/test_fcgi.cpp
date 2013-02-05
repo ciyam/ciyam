@@ -19,15 +19,19 @@ int main( )
    {
       FCGX_FPrintF( out, "Content-type: text/html\n" );
 
-      const char* p_param = FCGX_GetParam( "HTTP_COOKIE", envp );
+      const char* p_cparam = FCGX_GetParam( "HTTP_COOKIE", envp );
+      const char* p_uparam = FCGX_GetParam( "REMOTE_USER", envp );
 
-      if( !p_param )
+      if( !p_cparam )
          FCGX_FPrintF( out, "Set-Cookie: TEST=TEST_COOKIE\n" );
 
       FCGX_FPrintF( out, "\r\n\r\n<html>\n<head>\n   <title>Sample FCGI Post</title>\n</head>\n<body>\n" );
 
-      if( p_param )
-         FCGX_FPrintF( out, "<p>Found HTTP_COOKIE: %s</p>\n", p_param );
+      if( p_cparam )
+         FCGX_FPrintF( out, "<p>Found HTTP_COOKIE: %s</p>\n", p_cparam );
+
+      if( p_uparam )
+         FCGX_FPrintF( out, "<p>Found REMOTE_USER: %s</p>\n", p_uparam );
 
       const char* p_query = FCGX_GetParam( "QUERY_STRING", envp );
       if( p_query && strlen( p_query ) )

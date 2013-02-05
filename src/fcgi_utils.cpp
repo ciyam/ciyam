@@ -951,7 +951,7 @@ void setup_directories( )
 #else
       int um = umask( 755 );
       _mkdir( c_files_directory, c_default_directory_perms );
-      umask( um )
+      umask( um );
 #endif 
 
       if( _chdir( c_files_directory ) != 0 )
@@ -967,7 +967,7 @@ void setup_directories( )
 #else
       int um = umask( 755 );
       _mkdir( c_tmp_directory, c_default_directory_perms );
-      umask( um )
+      umask( um );
 #endif
 
       if( _chdir( c_tmp_directory ) != 0 )
