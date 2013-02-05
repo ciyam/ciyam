@@ -81,6 +81,7 @@
 #ifdef _WIN32
 #  define USE_MOD_FASTCGI_KLUDGE
 #endif
+
 #define USE_MULTIPLE_REQUEST_HANDLERS
 
 using namespace std;
@@ -1411,11 +1412,14 @@ void request_handler::process_request( )
 #ifdef _WIN32
                   if( _mkdir( path.c_str( ) ) != 0 )
 #else
-
+                  int um = umask( 755 );
                   if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
 #endif
                      throw runtime_error( "unable to create '" + path + "' directory" );
 
+#ifndef _WIN32
+                  umask( um )
+#endif
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;
 
@@ -3109,6 +3113,10 @@ void request_handler::process_request( )
                 &list.pdf_spec_name, &link_name, &pdf_list_file_name );
             }
          }
+#ifdef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+         else
+            server_command.erase( );
+#endif
 
          bool has_any_changing_records = false;
 
@@ -3238,7 +3246,11 @@ void request_handler::process_request( )
                      if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
                      {
                         extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                         << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Us\" border=\"0\" margin=\"10\"/></a>";
+                         << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Key\" border=\"0\" margin=\"10\"/></a>";
+
+                        extra_content
+                         << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
+                         << "/openid\"><img src=\"open.png\" alt=\"Join Open\" border=\"0\" margin=\"10\"/></a>";
                      }
                   }
                }
@@ -4721,7 +4733,7 @@ int main( int argc, char* argv[ ] )
    try
    {
 #ifndef _WIN32
-      umask( 0 );
+      umask( DEFAULT_UMASK );
 #endif
       string exe_path = string( argv[ 0 ] );
 

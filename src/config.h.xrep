@@ -8,6 +8,8 @@
 #ifndef CONFIG_H
 #  define CONFIG_H
 
+#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+
 `{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)//`}#  define SSL_SUPPORT
 `{`!`(`?`$use_zlib`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_zlib`,`'false`'`)//`}#  define ZLIB_SUPPORT
 `{`!`(`?`$use_iconv`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_iconv`,`'false`'`)//`}#  define ICONV_SUPPORT
@@ -22,6 +24,10 @@ const int c_protocol_minor_version = 1;
 const char* const c_protocol_version = "0.1";
 
 const size_t c_password_hash_rounds = `{`$pwd_rounds`};
+
+#  ifndef _WIN32
+#     define DEFAULT_UMASK 0
+#  endif
 
 #endif
 

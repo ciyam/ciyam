@@ -437,7 +437,7 @@ int main( int argc, char* argv[ ] )
          if( pid > 0 )
             exit( EXIT_SUCCESS );
 
-         umask( 0 );
+         umask( DEFAULT_UMASK );
 
          // FUTURE: Log file(s) should be opened here and a chdir to "/" is
          // generally advised (as the current directory could be anything).
@@ -452,7 +452,7 @@ int main( int argc, char* argv[ ] )
          // close( STDERR_FILENO );
       }
       else
-         umask( 0 );
+         umask( DEFAULT_UMASK );
 
       // NOTE: For a non-windows multi-threaded application need to create a thread to wait on the signal.
       pthread_t tid;

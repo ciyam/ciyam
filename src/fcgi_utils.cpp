@@ -947,11 +947,12 @@ void setup_directories( )
    if( _chdir( c_files_directory ) != 0 )
    {
 #ifdef _WIN32
-      if( _mkdir( c_files_directory ) != 0 )
+      _mkdir( c_files_directory );
 #else
-      if( _mkdir( c_files_directory, c_default_directory_perms ) != 0 )
+      int um = umask( 755 );
+      _mkdir( c_files_directory, c_default_directory_perms );
+      umask( um )
 #endif 
-         throw runtime_error( "unable to create '" + string( c_files_directory ) + "' directory" );
 
       if( _chdir( c_files_directory ) != 0 )
          throw runtime_error( "unable to _chdir to '" + string( c_files_directory ) + "'" );
@@ -962,11 +963,12 @@ void setup_directories( )
    if( _chdir( c_tmp_directory ) != 0 )
    {
 #ifdef _WIN32
-      if( _mkdir( c_tmp_directory ) != 0 )
+      _mkdir( c_tmp_directory );
 #else
-      if( _mkdir( c_tmp_directory, c_default_directory_perms ) != 0 )
+      int um = umask( 755 );
+      _mkdir( c_tmp_directory, c_default_directory_perms );
+      umask( um )
 #endif
-         throw runtime_error( "unable to create '" + string( c_tmp_directory ) + "' directory" );
 
       if( _chdir( c_tmp_directory ) != 0 )
          throw runtime_error( "unable to _chdir to '" + string( c_tmp_directory ) + "'" );
@@ -1030,7 +1032,9 @@ void setup_directories( )
 #ifdef _WIN32
          _mkdir( name.c_str( ) );
 #else
+         int um = umask( 755 );
          _mkdir( name.c_str( ), c_default_directory_perms );
+         umask( um );
 #endif
          if( _chdir( name.c_str( ) ) != 0 )
             throw runtime_error( "unable to _chdir to '" + name + "'" );
@@ -1056,7 +1060,9 @@ void setup_directories( )
 #ifdef _WIN32
             _mkdir( name.c_str( ) );
 #else
+            int um = umask( 755 );
             _mkdir( name.c_str( ), c_default_directory_perms );
+            umask( um );
 #endif
 
             if( _chdir( name.c_str( ) ) != 0 )

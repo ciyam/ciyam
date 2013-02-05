@@ -40,6 +40,7 @@
 #  define _chdir chdir
 #endif
 
+#include "config.h"
 #include "threads.h"
 #include "utilities.h"
 
@@ -369,7 +370,7 @@ int main( int /*argc*/, char* argv[ ] )
    try
    {
 #ifndef _WIN32
-      umask( 0 );
+      umask( DEFAULT_UMASK );
 #endif
       g_exe_path = string( argv[ 0 ] );
 
