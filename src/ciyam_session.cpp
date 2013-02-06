@@ -764,7 +764,7 @@ void read_log_transformation_info( const string& file_name, map< string, string 
 
                if( is_op_instance_change_field || operation == c_log_transformation_op_change_field_value )
                {
-                  pos = next_line.find( '=' );
+                  pos = next_line.find_last_of( '=' );
                   if( pos == string::npos )
                      throw runtime_error( "unexpected field transformation format '" + next_line + "'" );
 

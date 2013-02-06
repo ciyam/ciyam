@@ -1,6 +1,7 @@
 `{`@eq`(`'validate`'`,`$section`)\
    // [(start check_dep_field_changed)] `{`$arg_id`}
    if( !is_system_uid( )
+    && !storage_locked_for_admin( )
 `{`!`@eq`(`$arg_modifier`,`'`'`)\
     && ( state & c_modifier_`{`$arg_modifier`} )
 `}\
