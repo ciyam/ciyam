@@ -113,7 +113,7 @@ const char* const c_kill_script = "ciyam_interface.kill.bat";
 #endif
 
 #ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRXO;
+const int c_default_directory_perms = S_IRWXU | S_IRWXG;
 #endif
 
 const char* const c_login_file = "login.htms";
