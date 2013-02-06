@@ -113,7 +113,7 @@ const char* const c_kill_script = "ciyam_interface.kill.bat";
 #endif
 
 #ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
+const int c_default_directory_perms = S_IRWXU | S_IRWXG | S_IRXO;
 #endif
 
 const char* const c_login_file = "login.htms";
@@ -690,7 +690,7 @@ void timeout_handler::on_start( )
          outf << "kill -9 " << get_pid( ) << '\n';
          outf.close( );
 
-         file_perms( c_kill_script, "rwxrwxrwx" );
+         file_perms( c_kill_script, "rwxrwx---" );
 #endif
       }
    }
@@ -3113,7 +3113,7 @@ void request_handler::process_request( )
                 &list.pdf_spec_name, &link_name, &pdf_list_file_name );
             }
          }
-#ifdef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+#ifndef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
          else if( cmd != c_cmd_quit )
             server_command.erase( );
 #endif
