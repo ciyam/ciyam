@@ -22,7 +22,7 @@ testing the system, populate this DB with tables and data and check that all is 
 The "ciyam" DB should only be used for regression test purposes (by repeating the above steps) so now another
 DB needs to be created for the IDE itself:
 
-NOTE: In order for this second init to work the user must have rwx permissions for each directory in WEBROOT.
+NOTE: In order for this second init to work the user must have rwx permissions for the WEBROOT directory.
 
 ./create_db Meta
 ./init Meta Meta

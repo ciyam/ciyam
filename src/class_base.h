@@ -943,7 +943,7 @@ std::string CLASS_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );
 
 void CLASS_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 
-void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name, bool allow_all_rwx = false );
+void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name );
 std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );

@@ -338,7 +338,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
 
 void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
 {
-   // [(start for_auto_code)] 600295
+   // [(start for_auto_code)]
    get_obj( ).op_update( );
    if( !get_obj( ).Exhausted( ) )
    {
@@ -410,7 +410,7 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
    }
    else
       get_obj( ).op_cancel( );
-   // [(finish for_auto_code)] 600295
+   // [(finish for_auto_code)]
 
    // [<start Increment_impl>]
    // [<finish Increment_impl>]
@@ -568,7 +568,7 @@ void Meta_Auto_Code::impl::validate( unsigned state, bool is_internal, validatio
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
        get_module_string( c_field_display_name_Next ) + " " + error_message ) );
 
-   // [(start for_auto_code)] 600295
+   // [(start for_auto_code)]
    if( !get_obj( ).Next( ).empty( ) )
    {
       bool okay = true;
@@ -609,7 +609,7 @@ void Meta_Auto_Code::impl::validate( unsigned state, bool is_internal, validatio
           c_str_parm_field_mismatch_field, get_module_string( c_field_display_name_Next ) ),
           make_pair( c_str_parm_field_mismatch_field2, get_module_string( c_field_display_name_Mask ) ) ) ) );
    }
-   // [(finish for_auto_code)] 600295
+   // [(finish for_auto_code)]
 
    // [<start validate>]
    // [<finish validate>]
