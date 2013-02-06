@@ -2488,6 +2488,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          backup_storage( handler, ( truncate_log ? &truncation_count : 0 ) );
          term_storage( handler );
 
+         bool has_ltf = false;
          bool has_dead_keys = false;
          bool has_autoscript = false;
          bool has_manuscript = false;
@@ -2539,6 +2540,23 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             copy_stream( logf, sav_logf );
             copy_stream( sidf, sav_sidf );
             copy_stream( siof, sav_siof );
+
+            string ltf_name( name + ".ltf" );
+            if( file_exists( ltf_name ) )
+            {
+               ifstream ltff( ltf_name.c_str( ), ios::in | ios::binary );
+               if( !ltff )
+                  throw runtime_error( "unable to open '" + ltf_name + "' for input" );
+
+               string sav_ltf_name( ltf_name + ".sav" );
+
+               ofstream sav_ltff( sav_ltf_name.c_str( ), ios::out | ios::binary );
+               if( !sav_ltff )
+                  throw runtime_error( "unable to open '" + sav_ltf_name + "' for output" );
+
+               copy_stream( ltff, sav_ltff );
+               has_ltf = true;
+            }
 
             string key_name( name + ".dead_keys.lst" );
             if( file_exists( key_name ) )
@@ -2600,6 +2618,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          file_names += " " + name + ".hdr.sav";
          file_names += " " + name + ".log.sav";
          file_names += " ciyam_server.sid.sav ciyam_server.sio.sav";
+
+         if( has_ltf )
+            file_names += " " + name + ".ltf.sav";
 
          if( has_dead_keys )
             file_names += " " + name + ".dead_keys.lst.sav";
@@ -2682,6 +2703,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string idx_name( name + ".idx" );
          string hdr_name( name + ".hdr" );
          string log_name( name + ".log" );
+         string ltf_name( name + ".ltf" );
          string key_name( name + ".dead_keys.lst" );
 
          string sav_sql_name( sql_name + ".sav" );
@@ -2689,6 +2711,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string sav_idx_name( idx_name + ".sav" );
          string sav_hdr_name( hdr_name + ".sav" );
          string sav_log_name( log_name + ".sav" );
+         string sav_ltf_name( ltf_name + ".sav" );
          string sav_key_name( key_name + ".sav" );
 
          string backup_sql_name( name + ".backup.sql" );
@@ -2715,6 +2738,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( !file_exists( log_name ) )
                file_names += " " + sav_log_name;
+
+            if( !file_exists( ltf_name ) )
+               file_names += " " + sav_ltf_name;
 
             if( !file_exists( key_name ) )
                file_names += " " + sav_key_name;
@@ -2779,6 +2805,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( !file_exists( log_name ) && file_exists( sav_log_name ) )
                copy_file( sav_log_name, log_name );
+
+            if( !file_exists( ltf_name ) && file_exists( sav_ltf_name ) )
+               copy_file( sav_ltf_name, ltf_name );
 
             if( !file_exists( key_name ) && file_exists( sav_key_name ) )
                copy_file( sav_key_name, key_name );
@@ -3058,6 +3087,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( file_exists( sav_log_name ) )
                   remove_file( sav_log_name );
+
+               if( file_exists( sav_ltf_name ) )
+                  remove_file( sav_ltf_name );
 
                if( file_exists( sav_key_name ) )
                   remove_file( sav_key_name );
