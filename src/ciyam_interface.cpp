@@ -3114,7 +3114,7 @@ void request_handler::process_request( )
             }
          }
 #ifdef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
-         else
+         else if( cmd != c_cmd_quit )
             server_command.erase( );
 #endif
 
