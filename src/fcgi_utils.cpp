@@ -949,7 +949,7 @@ void setup_directories( )
 #ifdef _WIN32
       _mkdir( c_files_directory );
 #else
-      int um = umask( 755 );
+      int um = umask( 0 );
       _mkdir( c_files_directory, c_default_directory_perms );
       umask( um );
 #endif 
@@ -965,7 +965,7 @@ void setup_directories( )
 #ifdef _WIN32
       _mkdir( c_tmp_directory );
 #else
-      int um = umask( 755 );
+      int um = umask( 0 );
       _mkdir( c_tmp_directory, c_default_directory_perms );
       umask( um );
 #endif
@@ -1032,7 +1032,7 @@ void setup_directories( )
 #ifdef _WIN32
          _mkdir( name.c_str( ) );
 #else
-         int um = umask( 755 );
+         int um = umask( 0 );
          _mkdir( name.c_str( ), c_default_directory_perms );
          umask( um );
 #endif
@@ -1060,7 +1060,7 @@ void setup_directories( )
 #ifdef _WIN32
             _mkdir( name.c_str( ) );
 #else
-            int um = umask( 755 );
+            int um = umask( 0 );
             _mkdir( name.c_str( ), c_default_directory_perms );
             umask( um );
 #endif
