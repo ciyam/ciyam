@@ -3254,7 +3254,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       if( exists_file( dest, false ) )
          remove_file( dest );
       else if( has_source_file )
-         create_directories_for_file_name( dest, true );
+         create_directories_for_file_name( dest );
 
       if( !has_source_file )
          get_obj( ).Source_File( "" );
@@ -3281,7 +3281,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       if( exists_file( dest, false ) )
          remove_file( dest );
       else if( has_source_file )
-         create_directories_for_file_name( dest, true );
+         create_directories_for_file_name( dest );
 
       if( !has_source_file )
          get_obj( ).Header_File( "" );
@@ -3308,7 +3308,7 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
       if( exists_file( dest, false ) )
          remove_file( dest );
       else if( has_source_file )
-         create_directories_for_file_name( dest, true );
+         create_directories_for_file_name( dest );
 
       if( !has_source_file )
          get_obj( ).Commands_File( "" );

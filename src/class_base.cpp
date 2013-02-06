@@ -2470,7 +2470,7 @@ void delete_directory_tree( const string& path )
    delete_directory_files( path, true );
 }
 
-void create_directories_for_file_name( const string& file_name, bool allow_all_rwx )
+void create_directories_for_file_name( const string& file_name )
 {
    string::size_type pos = file_name.find_last_of( "/\\" );
 
@@ -2517,10 +2517,9 @@ void create_directories_for_file_name( const string& file_name, bool allow_all_r
          if( _chdir( sub_directories[ i ].c_str( ) ) != 0 )
          {
 #ifdef _WIN32
-            ( void )allow_all_rwx;
             if( _mkdir( sub_directories[ i ].c_str( ) ) != 0 )
 #else
-            if( _mkdir( sub_directories[ i ].c_str( ), allow_all_rwx ? S_IRWXU | S_IRWXG | S_IRWXO : S_IRWXU ) != 0 )
+            if( _mkdir( sub_directories[ i ].c_str( ), S_IRWXU | S_IRWXG | S_IRWXO ) != 0 )
 #endif
                throw runtime_error( "unable to create '" + sub_directories[ i ] + "' directory" );
 

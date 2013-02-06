@@ -9,7 +9,7 @@
 
       if( !storage_locked_for_admin( ) )
       {
-         create_directories_for_file_name( full_path, true );
+         create_directories_for_file_name( full_path );
          remove_file( full_path );
       }
 

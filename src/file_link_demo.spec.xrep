@@ -23,7 +23,7 @@
             if( exists_file( dest ) )
                remove_file( dest );
             else
-               create_directories_for_file_name( dest, true );
+               create_directories_for_file_name( dest );
 
             link_file( src, dest );
             get_obj( ).`{`$arg_field`}( name );

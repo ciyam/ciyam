@@ -1,5 +1,5 @@
 // Copyright (c) 2012 CIYAM Pty. Ltd. ACN 093 704 539
-// Copyright (c) 2012-2013 CIYAM Open Developers
+// Copyright (c) 2012-`{`$y`} CIYAM Open Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -8,7 +8,7 @@
 #ifndef CONFIG_H
 #  define CONFIG_H
 
-#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+`{`!`@eq`(`$port`,`'12345`'`)//`}#  define REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
 
 `{`!`(`?`$use_ssl`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_ssl`,`'false`'`)//`}#  define SSL_SUPPORT
 `{`!`(`?`$use_zlib`)`|`@eq`(`$use_ssl`,`'0`'`)`|`@eq`(`$use_zlib`,`'false`'`)//`}#  define ZLIB_SUPPORT
@@ -26,7 +26,7 @@ const char* const c_protocol_version = "0.1";
 const size_t c_password_hash_rounds = `{`$pwd_rounds`};
 
 #  ifndef _WIN32
-#     define DEFAULT_UMASK 0
+#     define DEFAULT_UMASK `{`@eq`(`$port`,`'12345`'`)0`,007`}
 #  endif
 
 #endif

@@ -1801,14 +1801,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_change_field_value );
 
          if( !socket_handler.get_transformations( ).empty( ) )
+         {
             perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, field_value_items );
+            if( !check_values.empty( ) )
+               perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, check_value_items );
+         }
 
          ltf_key = string( c_log_transformation_scope_create_update_only );
          ltf_key += " " + module + " " + mclass
           + " " + string( c_log_transformation_op_instance_change_field_value ) + " " + key;
 
          if( !socket_handler.get_transformations( ).empty( ) )
+         {
             perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, field_value_items );
+            if( !check_values.empty( ) )
+               perform_field_value_transformations( socket_handler.get_transformations( ), ltf_key, check_value_items );
+         }
 
          bool skip_update = false;
 
