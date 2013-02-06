@@ -209,7 +209,7 @@ void create_all_directories( deque< string >& create_directories,
 #ifdef _WIN32
          int rc = _mkdir( full_path.c_str( ) );
 #else
-         int um = umask( 755 );
+         int um = umask( 0 );
          int rc = _mkdir( full_path.c_str( ), S_IRWXU );
          umask( um );
 #endif

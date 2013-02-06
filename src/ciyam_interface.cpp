@@ -1412,7 +1412,7 @@ void request_handler::process_request( )
 #ifdef _WIN32
                   if( _mkdir( path.c_str( ) ) != 0 )
 #else
-                  int um = umask( 755 );
+                  int um = umask( 0 );
                   if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
 #endif
                      throw runtime_error( "unable to create '" + path + "' directory" );
