@@ -17,7 +17,7 @@ else
   {
    echo Creating $WEBDIR/$2...
    mkdir $WEBDIR/$2
-   chmod a+rwx $WEBDIR/$2
+   chmod 775 $WEBDIR/$2
   }
   [ -f $WEBDIR/$2/.htaccess ] ||
   {
@@ -61,5 +61,6 @@ else
   ./xrep @footer.htms.xrep >footer.htms
   cat setup_files.lst | xargs -I % cp % $WEBDIR/$2
   rm footer.htms
+  chmod -R g+w $WEBDIR/$2/*
  fi
 fi
