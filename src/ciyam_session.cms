@@ -1,5 +1,5 @@
 version "display protocol version"
-identity "display identity information"
+identity "get/set identity information" [<val//sid>]
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>

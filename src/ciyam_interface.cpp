@@ -1070,6 +1070,8 @@ void request_handler::process_request( )
       }
       else
       {
+         guard g( g_session_mutex );
+
          if( !p_session_info->p_socket )
          {
 #ifndef USE_MULTIPLE_REQUEST_HANDLERS
@@ -1137,17 +1139,20 @@ void request_handler::process_request( )
 
                      string server_id( identity_info.substr( 0, pos ) );
 
-                     pos = server_id.find( '-' );
-                     if( pos != string::npos )
-                        server_id.erase( pos );
+                     string::size_type npos = server_id.find( '-' );
+                     if( npos != string::npos )
+                        server_id.erase( npos );
 
                      if( get_server_id( ) != server_id )
                      {
                         set_server_id( server_id );
                         g_id = get_id_from_server_id( );
 
-                        ofstream outf( c_identity_file );
-                        outf << get_server_id( );
+                        if( !file_exists( c_identity_file ) )
+                        {
+                           ofstream outf( c_identity_file );
+                           outf << get_server_id( );
+                        }
 
                         // NOTE: As the original "g_id" value was empty any URL link or attempt to login
                         // could fail so force the page to refresh using the now corrected "g_id" value.

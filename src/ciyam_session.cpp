@@ -956,7 +956,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       if( command == c_cmd_ciyam_session_version )
          response = c_protocol_version;
       else if( command == c_cmd_ciyam_session_identity )
+      {
+         string sid( get_parm_val( parameters, c_cmd_parm_ciyam_session_identity_sid ) );
+
+         if( !sid.empty( ) )
+            set_sid( sid );
+
          response = get_identity( true, true );
+      }
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );

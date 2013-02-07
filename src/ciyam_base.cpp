@@ -69,6 +69,10 @@ const char c_module_prefix_separator = '_';
 
 const int c_identity_burn = 100;
 
+// NOTE: This limit is supplied (along with the identity information) to
+// client interfaces and is not the max # of concurrent server sessions.
+const int c_default_max_user_limit = 1000;
+
 const size_t c_default_cache_limit = 1000;
 
 const size_t c_iteration_row_cache_limit = 100;
@@ -2901,7 +2905,7 @@ string g_set_trace;
 bool g_use_https = false;
 bool g_using_ssl = false;
 
-int g_max_user_limit = 1;
+int g_max_user_limit = c_default_max_user_limit;
 
 string g_gpg_password;
 string g_pem_password;
@@ -2936,6 +2940,8 @@ int64_t g_smtp_max_attached_data = INT64_C( 0 );
 // NOTE: For added security this function should be customised.
 string sid_hash( )
 {
+   guard g( g_mutex );
+
    sha256 hash1( c_salt_value + g_sid );
 
    sha1 hash2( hash1.get_digest_as_string( ) );
@@ -3755,11 +3761,15 @@ string get_string_message( const string& string_message,
 
 int get_max_user_limit( )
 {
+   guard g( g_mutex );
+
    return g_max_user_limit;
 }
 
 void set_max_user_limit( int new_limit )
 {
+   guard g( g_mutex );
+
    g_max_user_limit = new_limit;
 }
 
@@ -3791,8 +3801,17 @@ string get_sid( )
    return sid_hash( );
 }
 
+void set_sid( const string& sid )
+{
+   guard g( g_mutex );
+
+   g_sid = sid;
+}
+
 string get_identity( bool prepend_sid, bool append_max_user_limit )
 {
+   guard g( g_mutex );
+
    if( !prepend_sid && !append_max_user_limit )
       return g_reg_key;
 
@@ -3809,6 +3828,8 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
 
 string get_checksum( const string& data, bool use_reg_key )
 {
+   guard g( g_mutex );
+
    string prefix( !use_reg_key ? g_sid : g_reg_key );
 
    sha1 hash( prefix + data );
