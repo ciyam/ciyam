@@ -673,7 +673,7 @@ bool output_view_form( ostream& os, const string& act,
 
             string all_actions( source.actions_value );
 
-            if( view_extras.count( c_view_type_extra_can_copy ) )
+            if( view_extras.count( c_view_type_extra_can_copy ) && !( source.state & c_state_is_changing ) )
             {
                if( !all_actions.empty( ) )
                   all_actions = "," + all_actions;
