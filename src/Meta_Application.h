@@ -58,12 +58,13 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Name = 24,
       e_field_id_Print_Lists_With_Check_Boxes = 25,
       e_field_id_Print_Lists_With_Row_Numbers = 26,
-      e_field_id_Show_Inaccessible_Modules = 27,
-      e_field_id_Use_Check_Boxes_for_Bools = 28,
-      e_field_id_Use_Embedded_Images = 29,
-      e_field_id_Use_URL_Checksum = 30,
-      e_field_id_Version = 31,
-      e_field_id_Workgroup = 32
+      e_field_id_Registration_Key = 27,
+      e_field_id_Show_Inaccessible_Modules = 28,
+      e_field_id_Use_Check_Boxes_for_Bools = 29,
+      e_field_id_Use_Embedded_Images = 30,
+      e_field_id_Use_URL_Checksum = 31,
+      e_field_id_Version = 32,
+      e_field_id_Workgroup = 33
    };
 
    Meta_Application( );
@@ -146,6 +147,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    bool Print_Lists_With_Row_Numbers( ) const;
    void Print_Lists_With_Row_Numbers( bool Print_Lists_With_Row_Numbers );
+
+   const std::string& Registration_Key( ) const;
+   void Registration_Key( const std::string& Registration_Key );
 
    bool Show_Inaccessible_Modules( ) const;
    void Show_Inaccessible_Modules( bool Show_Inaccessible_Modules );

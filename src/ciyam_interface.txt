@@ -92,6 +92,7 @@ please_re_check_your_email "Please re-check your email (including all junk/spam 
 unknown_or_invalid_user_id "Unknown or invalid user credentials."
 see_attachment_for_details "(see attachment for details)"
 upload_max_length_exceeded "Maximum upload size ({@size}) exceeded."
+system_is_under_maintenance "Sorry - the system is currently under maintenance. Please try again later."
 you_are_currently_logged_in "You are already currently logged in."
 application_server_unavailable "Application server is not currently available."
 max_concurrent_users_logged_in "Maximum concurrent users already logged in. Please try again later."

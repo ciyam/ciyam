@@ -1139,9 +1139,16 @@ void request_handler::process_request( )
 
                      string server_id( identity_info.substr( 0, pos ) );
 
+                     string reg_key;
                      string::size_type npos = server_id.find( '-' );
                      if( npos != string::npos )
+                     {
+                        reg_key = server_id.substr( npos + 1, pos - npos );
                         server_id.erase( npos );
+                     }
+
+                     if( reg_key != get_storage_info( ).reg_key )
+                        throw runtime_error( GDS( c_display_system_is_under_maintenance ) );
 
                      if( get_server_id( ) != server_id )
                      {

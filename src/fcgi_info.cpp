@@ -96,6 +96,7 @@ const char* const c_attribute_unique = "unique";
 const char* const c_attribute_actions = "actions";
 const char* const c_attribute_filters = "filters";
 const char* const c_attribute_indexed = "indexed";
+const char* const c_attribute_reg_key = "reg_key";
 const char* const c_attribute_tz_abbr = "tz_abbr";
 const char* const c_attribute_pdf_spec = "pdf_spec";
 const char* const c_attribute_url_opts = "url_opts";
@@ -374,6 +375,8 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       info.clear( );
 
       sio_reader reader( inpf );
+
+      info.reg_key = reader.read_opt_attribute( c_attribute_reg_key );
 
       info.tz_abbr = reader.read_opt_attribute( c_attribute_tz_abbr );
 

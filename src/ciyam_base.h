@@ -90,6 +90,7 @@ std::string CIYAM_BASE_DECL_SPEC get_sid( );
 void CIYAM_BASE_DECL_SPEC set_sid( const std::string& sid );
 
 std::string CIYAM_BASE_DECL_SPEC get_identity( bool prepend_sid = false, bool append_max_user_limit = false );
+void CIYAM_BASE_DECL_SPEC set_identity( const std::string& identity_info );
 
 std::string CIYAM_BASE_DECL_SPEC get_checksum( const std::string& data, bool use_reg_key = false );
 

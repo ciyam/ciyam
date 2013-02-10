@@ -3826,6 +3826,19 @@ string get_identity( bool prepend_sid, bool append_max_user_limit )
    return s;
 }
 
+void set_identity( const string& identity_info )
+{
+   guard g( g_mutex );
+
+   string::size_type pos = identity_info.find( '-' );
+   if( pos == string::npos )
+      g_reg_key.erase( );
+   else
+      g_reg_key = identity_info.substr( pos + 1 );
+
+   g_sid = identity_info.substr( 0, pos );
+}
+
 string get_checksum( const string& data, bool use_reg_key )
 {
    guard g( g_mutex );

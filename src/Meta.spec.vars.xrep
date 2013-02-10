@@ -127,7 +127,7 @@
 `{`$specification_Application_view_extra`=`'can_copy`'`}
 `{`$specification_Application_view_mods`=`'`'`}
 `{`$specification_Application_view_binfo`=`'`'`}
-`{`$specification_Application_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032`'`}
+`{`$specification_Application_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033`'`}
 `{`$specification_Application_view_field000`=`'127101`'`}
 `{`$specification_Application_view_ftype000`=`'string`'`}
 `{`$specification_Application_view_extra000`=`'new_edit+max_size=30`'`}
@@ -320,12 +320,18 @@
 `{`$specification_Application_view_fmods031`=`'`'`}
 `{`$specification_Application_view_fname031`=`'field_application_allow_duplicate_logins`'`}
 `{`$specification_Application_view_fmand031`=`'true`'`}
-`{`$specification_Application_view_field032`=`'127104`'`}
+`{`$specification_Application_view_field032`=`'127132`'`}
 `{`$specification_Application_view_ftype032`=`'string`'`}
-`{`$specification_Application_view_extra032`=`'actions`'`}
+`{`$specification_Application_view_extra032`=`'max_size=100`'`}
 `{`$specification_Application_view_fmods032`=`'`'`}
-`{`$specification_Application_view_fname032`=`'field_application_actions`'`}
+`{`$specification_Application_view_fname032`=`'field_application_registration_key`'`}
 `{`$specification_Application_view_fmand032`=`'false`'`}
+`{`$specification_Application_view_field033`=`'127104`'`}
+`{`$specification_Application_view_ftype033`=`'string`'`}
+`{`$specification_Application_view_extra033`=`'actions`'`}
+`{`$specification_Application_view_fmods033`=`'`'`}
+`{`$specification_Application_view_fname033`=`'field_application_actions`'`}
+`{`$specification_Application_view_fmand033`=`'false`'`}
 `{`}
 `{`$specification_Class_view_id`=`'601610`'`}
 `{`$specification_Class_view_cid`=`'106100`'`}
