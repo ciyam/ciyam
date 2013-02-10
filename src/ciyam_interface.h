@@ -547,6 +547,7 @@ const char* const c_display_unknown_or_invalid_user_id = "Unknown or invalid use
 const char* const c_display_see_attachment_for_details = "(see attachment for details)";
 const char* const c_display_upload_max_length_exceeded = "Maximum upload size ({@size}) exceeded.";
 const char* const c_display_upload_max_length_exceeded_parm_size = "{@size}";
+const char* const c_display_system_is_under_maintenance = "Sorry - the system is currently under maintenance. Please try again later.";
 const char* const c_display_you_are_currently_logged_in = "You are already currently logged in.";
 const char* const c_display_application_server_unavailable = "Application server is not currently available.";
 const char* const c_display_max_concurrent_users_logged_in = "Maximum concurrent users already logged in. Please try again later.";

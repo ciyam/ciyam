@@ -101,6 +101,7 @@ const char* const c_field_id_Module_Prefix = "127103";
 const char* const c_field_id_Name = "127101";
 const char* const c_field_id_Print_Lists_With_Check_Boxes = "127111";
 const char* const c_field_id_Print_Lists_With_Row_Numbers = "127112";
+const char* const c_field_id_Registration_Key = "127132";
 const char* const c_field_id_Show_Inaccessible_Modules = "127110";
 const char* const c_field_id_Use_Check_Boxes_for_Bools = "127121";
 const char* const c_field_id_Use_Embedded_Images = "127131";
@@ -134,6 +135,7 @@ const char* const c_field_name_Module_Prefix = "Module_Prefix";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Print_Lists_With_Check_Boxes = "Print_Lists_With_Check_Boxes";
 const char* const c_field_name_Print_Lists_With_Row_Numbers = "Print_Lists_With_Row_Numbers";
+const char* const c_field_name_Registration_Key = "Registration_Key";
 const char* const c_field_name_Show_Inaccessible_Modules = "Show_Inaccessible_Modules";
 const char* const c_field_name_Use_Check_Boxes_for_Bools = "Use_Check_Boxes_for_Bools";
 const char* const c_field_name_Use_Embedded_Images = "Use_Embedded_Images";
@@ -167,6 +169,7 @@ const char* const c_field_display_name_Module_Prefix = "field_application_module
 const char* const c_field_display_name_Name = "field_application_name";
 const char* const c_field_display_name_Print_Lists_With_Check_Boxes = "field_application_print_lists_with_check_boxes";
 const char* const c_field_display_name_Print_Lists_With_Row_Numbers = "field_application_print_lists_with_row_numbers";
+const char* const c_field_display_name_Registration_Key = "field_application_registration_key";
 const char* const c_field_display_name_Show_Inaccessible_Modules = "field_application_show_inaccessible_modules";
 const char* const c_field_display_name_Use_Check_Boxes_for_Bools = "field_application_use_check_boxes_for_bools";
 const char* const c_field_display_name_Use_Embedded_Images = "field_application_use_embedded_images";
@@ -174,7 +177,7 @@ const char* const c_field_display_name_Use_URL_Checksum = "field_application_use
 const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
 
-const int c_num_fields = 32;
+const int c_num_fields = 33;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -209,6 +212,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127129",
    "127130",
    "127131",
+   "127132",
    "302220"
 };
 
@@ -240,6 +244,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Name",
    "Print_Lists_With_Check_Boxes",
    "Print_Lists_With_Row_Numbers",
+   "Registration_Key",
    "Show_Inaccessible_Modules",
    "Use_Check_Boxes_for_Bools",
    "Use_Embedded_Images",
@@ -299,6 +304,7 @@ aggregate_domain< string,
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Name_domain;
+domain_string_max_size< 100 > g_Registration_Key_domain;
 domain_string_max_size< 5 > g_Version_domain;
 
 string g_order_field_name;
@@ -343,6 +349,7 @@ string gv_default_Module_Prefix = string( );
 string gv_default_Name = string( );
 bool gv_default_Print_Lists_With_Check_Boxes = bool( 0 );
 bool gv_default_Print_Lists_With_Row_Numbers = bool( 0 );
+string gv_default_Registration_Key = string( );
 bool gv_default_Show_Inaccessible_Modules = bool( 0 );
 bool gv_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool gv_default_Use_Embedded_Images = bool( 1 );
@@ -763,6 +770,8 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< bool >( cmd_handler.p_Meta_Application->Print_Lists_With_Check_Boxes( ), cmd_handler.retval );
       else if( field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
          string_getter< bool >( cmd_handler.p_Meta_Application->Print_Lists_With_Row_Numbers( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+         string_getter< string >( cmd_handler.p_Meta_Application->Registration_Key( ), cmd_handler.retval );
       else if( field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
          string_getter< bool >( cmd_handler.p_Meta_Application->Show_Inaccessible_Modules( ), cmd_handler.retval );
       else if( field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
@@ -863,6 +872,9 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       else if( field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Print_Lists_With_Row_Numbers, field_value );
+      else if( field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+         func_string_setter< Meta_Application, string >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Registration_Key, field_value );
       else if( field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Show_Inaccessible_Modules, field_value );
@@ -1040,6 +1052,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool impl_Print_Lists_With_Row_Numbers( ) const { return lazy_fetch( p_obj ), v_Print_Lists_With_Row_Numbers; }
    void impl_Print_Lists_With_Row_Numbers( bool Print_Lists_With_Row_Numbers ) { v_Print_Lists_With_Row_Numbers = Print_Lists_With_Row_Numbers; }
 
+   const string& impl_Registration_Key( ) const { return lazy_fetch( p_obj ), v_Registration_Key; }
+   void impl_Registration_Key( const string& Registration_Key ) { v_Registration_Key = Registration_Key; }
+
    bool impl_Show_Inaccessible_Modules( ) const { return lazy_fetch( p_obj ), v_Show_Inaccessible_Modules; }
    void impl_Show_Inaccessible_Modules( bool Show_Inaccessible_Modules ) { v_Show_Inaccessible_Modules = Show_Inaccessible_Modules; }
 
@@ -1200,6 +1215,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    string v_Name;
    bool v_Print_Lists_With_Check_Boxes;
    bool v_Print_Lists_With_Row_Numbers;
+   string v_Registration_Key;
    bool v_Show_Inaccessible_Modules;
    bool v_Use_Check_Boxes_for_Bools;
    bool v_Use_Embedded_Images;
@@ -1377,6 +1393,8 @@ void Meta_Application::impl::impl_Generate( )
          print_list_ops += "show_numbers";
       }
       outv << "\x60{\x60$print_list_ops\x60=\x60'" << print_list_ops << "\x60'\x60}\n";
+
+      outv << "\x60{\x60$reg_key\x60=\x60'" << get_obj( ).Registration_Key( ) << "\x60'\x60}\n";
 
       outv << "\x60{\x60$tz_abbr\x60=\x60'" << get_obj( ).Default_Timezone_Abbr( ) << "\x60'\x60}\n";
 
@@ -2003,26 +2021,30 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 26:
-      retval = to_string( impl_Show_Inaccessible_Modules( ) );
+      retval = to_string( impl_Registration_Key( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
+      retval = to_string( impl_Show_Inaccessible_Modules( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Use_Embedded_Images( ) );
+      retval = to_string( impl_Use_Check_Boxes_for_Bools( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Use_URL_Checksum( ) );
+      retval = to_string( impl_Use_Embedded_Images( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_URL_Checksum( ) );
       break;
 
       case 31:
+      retval = to_string( impl_Version( ) );
+      break;
+
+      case 32:
       retval = to_string( impl_Workgroup( ) );
       break;
 
@@ -2142,26 +2164,30 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 26:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Show_Inaccessible_Modules, value );
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Registration_Key, value );
       break;
 
       case 27:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Show_Inaccessible_Modules, value );
       break;
 
       case 28:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Embedded_Images, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Check_Boxes_for_Bools, value );
       break;
 
       case 29:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Embedded_Images, value );
       break;
 
       case 30:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
       break;
 
       case 31:
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      break;
+
+      case 32:
       func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
       break;
 
@@ -2279,6 +2305,7 @@ void Meta_Application::impl::clear( )
    v_Name = gv_default_Name;
    v_Print_Lists_With_Check_Boxes = gv_default_Print_Lists_With_Check_Boxes;
    v_Print_Lists_With_Row_Numbers = gv_default_Print_Lists_With_Row_Numbers;
+   v_Registration_Key = gv_default_Registration_Key;
    v_Show_Inaccessible_Modules = gv_default_Show_Inaccessible_Modules;
    v_Use_Check_Boxes_for_Bools = gv_default_Use_Check_Boxes_for_Bools;
    v_Use_Embedded_Images = gv_default_Use_Embedded_Images;
@@ -2349,6 +2376,13 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Registration_Key )
+    && ( v_Registration_Key != gv_default_Registration_Key
+    || !value_will_be_provided( c_field_name_Registration_Key ) )
+    && !g_Registration_Key_domain.is_valid( v_Registration_Key, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Registration_Key,
+       get_module_string( c_field_display_name_Registration_Key ) + " " + error_message ) );
 
    if( !is_null( v_Version )
     && ( v_Version != gv_default_Version
@@ -2427,6 +2461,12 @@ void Meta_Application::impl::validate_set_fields( set< string >& fields_set, val
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
+
+   if( !is_null( v_Registration_Key )
+    && ( fields_set.count( c_field_id_Registration_Key ) || fields_set.count( c_field_name_Registration_Key ) )
+    && !g_Registration_Key_domain.is_valid( v_Registration_Key, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Registration_Key,
+       get_module_string( c_field_display_name_Registration_Key ) + " " + error_message ) );
 
    if( !is_null( v_Version )
     && ( fields_set.count( c_field_id_Version ) || fields_set.count( c_field_name_Version ) )
@@ -2991,6 +3031,16 @@ void Meta_Application::Print_Lists_With_Row_Numbers( bool Print_Lists_With_Row_N
    p_impl->impl_Print_Lists_With_Row_Numbers( Print_Lists_With_Row_Numbers );
 }
 
+const string& Meta_Application::Registration_Key( ) const
+{
+   return p_impl->impl_Registration_Key( );
+}
+
+void Meta_Application::Registration_Key( const string& Registration_Key )
+{
+   p_impl->impl_Registration_Key( Registration_Key );
+}
+
 bool Meta_Application::Show_Inaccessible_Modules( ) const
 {
    return p_impl->impl_Show_Inaccessible_Modules( );
@@ -3487,6 +3537,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Registration_Key )
+   {
+      p_id = c_field_id_Registration_Key;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Show_Inaccessible_Modules )
    {
       p_id = c_field_id_Show_Inaccessible_Modules;
@@ -3818,6 +3878,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Registration_Key )
+   {
+      p_name = c_field_name_Registration_Key;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Show_Inaccessible_Modules )
    {
       p_name = c_field_name_Show_Inaccessible_Modules;
@@ -4037,6 +4107,11 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Print_Lists_With_Row_Numbers );
       get_module_string( c_field_display_name_Print_Lists_With_Row_Numbers, &next );
    }
+   else if( id_or_name == c_field_id_Registration_Key || id_or_name == c_field_name_Registration_Key )
+   {
+      name = string( c_field_display_name_Registration_Key );
+      get_module_string( c_field_display_name_Registration_Key, &next );
+   }
    else if( id_or_name == c_field_id_Show_Inaccessible_Modules || id_or_name == c_field_name_Show_Inaccessible_Modules )
    {
       name = string( c_field_display_name_Show_Inaccessible_Modules );
@@ -4134,6 +4209,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Print_Lists_With_Check_Boxes );
    else if( id_or_name == c_field_id_Print_Lists_With_Row_Numbers || id_or_name == c_field_name_Print_Lists_With_Row_Numbers )
       display_name = get_module_string( c_field_display_name_Print_Lists_With_Row_Numbers );
+   else if( id_or_name == c_field_id_Registration_Key || id_or_name == c_field_name_Registration_Key )
+      display_name = get_module_string( c_field_display_name_Registration_Key );
    else if( id_or_name == c_field_id_Show_Inaccessible_Modules || id_or_name == c_field_name_Show_Inaccessible_Modules )
       display_name = get_module_string( c_field_display_name_Show_Inaccessible_Modules );
    else if( id_or_name == c_field_id_Use_Check_Boxes_for_Bools || id_or_name == c_field_name_Use_Check_Boxes_for_Bools )
@@ -4367,6 +4444,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Name" );
    names.push_back( "C_Print_Lists_With_Check_Boxes" );
    names.push_back( "C_Print_Lists_With_Row_Numbers" );
+   names.push_back( "C_Registration_Key" );
    names.push_back( "C_Show_Inaccessible_Modules" );
    names.push_back( "C_Use_Check_Boxes_for_Bools" );
    names.push_back( "C_Use_Embedded_Images" );
@@ -4407,6 +4485,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( to_string( Print_Lists_With_Check_Boxes( ) ) );
    values.push_back( to_string( Print_Lists_With_Row_Numbers( ) ) );
+   values.push_back( sql_quote( to_string( Registration_Key( ) ) ) );
    values.push_back( to_string( Show_Inaccessible_Modules( ) ) );
    values.push_back( to_string( Use_Check_Boxes_for_Bools( ) ) );
    values.push_back( to_string( Use_Embedded_Images( ) ) );
@@ -4530,6 +4609,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127101", "Name", "string", false ) );
    all_field_info.push_back( field_info( "127111", "Print_Lists_With_Check_Boxes", "bool", false ) );
    all_field_info.push_back( field_info( "127112", "Print_Lists_With_Row_Numbers", "bool", false ) );
+   all_field_info.push_back( field_info( "127132", "Registration_Key", "string", false ) );
    all_field_info.push_back( field_info( "127110", "Show_Inaccessible_Modules", "bool", false ) );
    all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false ) );
    all_field_info.push_back( field_info( "127131", "Use_Embedded_Images", "bool", false ) );
@@ -4669,26 +4749,30 @@ const char* Meta_Application::static_get_field_id( field_id id )
       break;
 
       case 27:
-      p_id = "127110";
+      p_id = "127132";
       break;
 
       case 28:
-      p_id = "127121";
+      p_id = "127110";
       break;
 
       case 29:
-      p_id = "127131";
+      p_id = "127121";
       break;
 
       case 30:
-      p_id = "127107";
+      p_id = "127131";
       break;
 
       case 31:
-      p_id = "127102";
+      p_id = "127107";
       break;
 
       case 32:
+      p_id = "127102";
+      break;
+
+      case 33:
       p_id = "302220";
       break;
    }
@@ -4810,26 +4894,30 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 27:
-      p_id = "Show_Inaccessible_Modules";
+      p_id = "Registration_Key";
       break;
 
       case 28:
-      p_id = "Use_Check_Boxes_for_Bools";
+      p_id = "Show_Inaccessible_Modules";
       break;
 
       case 29:
-      p_id = "Use_Embedded_Images";
+      p_id = "Use_Check_Boxes_for_Bools";
       break;
 
       case 30:
-      p_id = "Use_URL_Checksum";
+      p_id = "Use_Embedded_Images";
       break;
 
       case 31:
-      p_id = "Version";
+      p_id = "Use_URL_Checksum";
       break;
 
       case 32:
+      p_id = "Version";
+      break;
+
+      case 33:
       p_id = "Workgroup";
       break;
    }
@@ -4898,18 +4986,20 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 25;
    else if( field == c_field_id_Print_Lists_With_Row_Numbers || field == c_field_name_Print_Lists_With_Row_Numbers )
       rc += 26;
-   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
+   else if( field == c_field_id_Registration_Key || field == c_field_name_Registration_Key )
       rc += 27;
-   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
+   else if( field == c_field_id_Show_Inaccessible_Modules || field == c_field_name_Show_Inaccessible_Modules )
       rc += 28;
-   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
+   else if( field == c_field_id_Use_Check_Boxes_for_Bools || field == c_field_name_Use_Check_Boxes_for_Bools )
       rc += 29;
-   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
+   else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
       rc += 30;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
       rc += 31;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 32;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 33;
 
    return rc - 1;
 }
@@ -4965,6 +5055,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Print_Lists_With_Check_Boxes INTEGER NOT NULL,"
     "C_Print_Lists_With_Row_Numbers INTEGER NOT NULL,"
+    "C_Registration_Key VARCHAR(200) NOT NULL,"
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_Embedded_Images INTEGER NOT NULL,"

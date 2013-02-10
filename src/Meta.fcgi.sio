@@ -2606,6 +2606,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_registration_key
+     <field>127132
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>false
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_actions
      <field>127104
      <ftype>string

@@ -523,6 +523,22 @@
       </specifications>
      </field>
      <field/>
+      <id>127132
+      <name>Registration_Key
+      <type>1020
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>127110
       <name>Show_Inaccessible_Modules
       <type>bool
@@ -26251,6 +26267,7 @@
      <field_info>127130
      <field_info>127124;enum=906
      <field_info>127108
+     <field_info>127132
      <field_info>127104
     </data>
    </specification>
