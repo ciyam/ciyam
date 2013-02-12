@@ -86,8 +86,7 @@ std::string CIYAM_BASE_DECL_SPEC get_domain( );
 
 std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
 
-std::string CIYAM_BASE_DECL_SPEC get_sid( );
-void CIYAM_BASE_DECL_SPEC set_sid( const std::string& sid );
+std::string CIYAM_BASE_DECL_SPEC get_sid_hash( );
 
 std::string CIYAM_BASE_DECL_SPEC get_identity( bool prepend_sid = false, bool append_max_user_limit = false );
 void CIYAM_BASE_DECL_SPEC set_identity( const std::string& identity_info );

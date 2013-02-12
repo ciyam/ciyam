@@ -64,4 +64,5 @@ goto end
 echo Usage: remove_module [[-rdbms]] [module_name]
 
 :end
+endlocal
 

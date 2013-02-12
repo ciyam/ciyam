@@ -276,7 +276,8 @@ int64_t file_size( const char* p_name )
 #ifdef _WIN32
    HANDLE hFile = ::CreateFile( p_name,
     GENERIC_READ, FILE_SHARE_READ, 0, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0 );
-   if( !hFile )
+
+   if( hFile == INVALID_HANDLE_VALUE )
       throw runtime_error( "unable to open file '" + string( p_name ) + "' for input" );
 
    LARGE_INTEGER pos, npos;

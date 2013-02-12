@@ -53,11 +53,13 @@ using namespace std;
 namespace
 {
 
-ofstream g_logfile;
-
 mutex g_mutex;
 
-string g_server_id;
+string g_sid;
+
+#include "sid.enc"
+
+ofstream g_logfile;
 
 set< string > g_non_persistent;
 
@@ -123,12 +125,12 @@ void log_trace_message( const string& message )
 
 const string& get_server_id( )
 {
-   return g_server_id;
+   return get_sid( );
 }
 
-void set_server_id( const string& id )
+void set_server_id( string& id )
 {
-   g_server_id = id;
+   set_sid( id );
 }
 
 string get_id_from_server_id( )
@@ -285,7 +287,7 @@ string get_hash( const string& values )
 
 string get_user_hash( const string& user_id )
 {
-   sha1 hash( g_server_id + user_id );
+   sha1 hash( get_sid( ) + user_id );
 
    vector< string > sha1_quads;
    split( hash.get_digest_as_string( ',' ), sha1_quads );
@@ -300,7 +302,7 @@ string get_checksum( const string& values )
 {
    DEBUG_TRACE( "(checksum) values = " + values );
 
-   sha1 hash( g_server_id + values );
+   sha1 hash( get_sid( ) + values );
 
    vector< string > sha1_quads;
    split( hash.get_digest_as_string( ',' ), sha1_quads );
