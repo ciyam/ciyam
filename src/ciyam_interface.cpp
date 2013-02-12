@@ -4781,7 +4781,8 @@ int main( int argc, char* argv[ ] )
 
       if( file_exists( c_identity_file ) )
       {
-         set_server_id( buffer_file( c_identity_file ) );
+         string identity( buffer_file( c_identity_file ) );
+         set_server_id( identity );
 
          g_id = get_id_from_server_id( );
       }
