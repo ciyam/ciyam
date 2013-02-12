@@ -2937,12 +2937,14 @@ string g_smtp_security;
 int g_smtp_max_send_attempts = 1;
 int64_t g_smtp_max_attached_data = INT64_C( 0 );
 
+#include "sid.enc"
+
 // NOTE: For added security this function should be customised.
 string sid_hash( )
 {
    guard g( g_mutex );
 
-   sha256 hash1( c_salt_value + g_sid );
+   sha256 hash1( c_salt_value + get_sid( ) );
 
    sha1 hash2( hash1.get_digest_as_string( ) );
 
@@ -3796,16 +3798,9 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-string get_sid( )
+string get_sid_hash( )
 {
    return sid_hash( );
-}
-
-void set_sid( const string& sid )
-{
-   guard g( g_mutex );
-
-   g_sid = sid;
 }
 
 string get_identity( bool prepend_sid, bool append_max_user_limit )
@@ -3836,14 +3831,15 @@ void set_identity( const string& identity_info )
    else
       g_reg_key = identity_info.substr( pos + 1 );
 
-   g_sid = identity_info.substr( 0, pos );
+   string s( identity_info.substr( 0, pos ) );
+   set_sid( s );
 }
 
 string get_checksum( const string& data, bool use_reg_key )
 {
    guard g( g_mutex );
 
-   string prefix( !use_reg_key ? g_sid : g_reg_key );
+   string prefix( !use_reg_key ? get_sid( ) : g_reg_key );
 
    sha1 hash( prefix + data );
 

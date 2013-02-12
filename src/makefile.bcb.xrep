@@ -210,7 +210,17 @@ make_usage:
 
 `{`[`$libs`,\
 $(TARGET_\^:.lib=.compile):
- @echo $(CPP_NORMAL) %* >compile.bat
+`{`@eq`(`'\$`'`,`'ciyam_base`'`)\
+ @echo if not exist "sid.enc.chk" goto skip >compile.bat
+ @echo call touch.bat sid.enc.flg >>compile.bat
+ @echo crypt -t sid.enc >>compile.bat
+ @echo :skip >>compile.bat
+ @echo $(CPP_NORMAL) %* >>compile.bat
+ @echo if not exist sid.enc.flg goto end >>compile.bat
+ @echo crypt -c -t sid.enc >>compile.bat
+ @echo del sid.enc.flg >>compile.bat
+ @echo :end >>compile.bat`,
+ @echo $(CPP_NORMAL) %* >compile.bat`}
 
 $(TARGET_\^):: $(TARGET_\^:.lib=.compile)
 
@@ -246,7 +256,17 @@ $(TARGET_\^):: $(TARGET_\^_OBJECTS)\
 `]`}
 `{`[`$executables`,\
 $(TARGET_\^:.exe=.compile):
- @echo $(CPP_NORMAL) %* >compile.bat
+`{`@eq`(`'\$`'`,`'ciyam_interface`'`)\
+ @echo if not exist "sid.enc.chk" goto skip >compile.bat
+ @echo call touch.bat sid.enc.flg >>compile.bat
+ @echo crypt -t sid.enc >>compile.bat
+ @echo :skip >>compile.bat
+ @echo $(CPP_NORMAL) %* >>compile.bat
+ @echo if not exist sid.enc.flg goto end >>compile.bat
+ @echo crypt -c -t sid.enc >>compile.bat
+ @echo del sid.enc.flg >>compile.bat
+ @echo :end >>compile.bat`,
+ @echo $(CPP_NORMAL) %* >compile.bat`}
 
 $(TARGET_\^)::\
 `{`?`$\$_libs`[`$\$_libs`, $(TARGET_\\^)`]`}\
