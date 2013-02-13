@@ -635,7 +635,9 @@ function force_update( )
    var t = document.createTextNode( 'dummy' );
 
    setTimeout( "after_force( )", 0 );
-   document.appendChild( t );
+   // KLUDGE: document.appendChild( t ) fails in Chrome & Safari
+   var e = document.getElementsByTagName( "body" )[0] || document.documentElement;
+   e.parentNode.insertBefore( t, e );
 
    // NOTE: For some reason certain browsers (particularly on mobile devices) will stop
    // executing code when "appendChild" is called so the "after_force" function is used
