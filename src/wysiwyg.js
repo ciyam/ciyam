@@ -111,15 +111,15 @@ var buttonName = new Array();
 var buttonName2 = new Array();
   buttonName2[0]  = "forecolor";
 //	buttonName2[1]  = "backcolor";
-	buttonName2[2]  = "seperator";
-	buttonName2[3]  = "cut";
-	buttonName2[4]  = "copy";
-	buttonName2[5]  = "paste";
-	buttonName2[6]  = "seperator";
+  buttonName2[2]  = "seperator";
+//	buttonName2[3]  = "cut";
+//	buttonName2[4]  = "copy";
+//	buttonName2[5]  = "paste";
+  buttonName2[6]  = "seperator";
   buttonName2[7]  = "undo";
-	buttonName2[8]  = "redo";
+  buttonName2[8]  = "redo";
   buttonName2[9]  = "seperator";
-	buttonName2[10]  = "inserttable";
+  buttonName2[10]  = "inserttable";
   buttonName2[11]  = "insertimage";
   buttonName2[12]  = "createlink";
 //	buttonName2[13]  = "seperator";
@@ -144,9 +144,9 @@ var ToolbarList = {
 	"orderedlist":    ['InsertOrderedList',    'InsertOrderedList',  imagesDir + 'list_ordered.gif',       imagesDir + 'list_ordered_on.gif'],
 	"outdent":        ['Outdent',              'Outdent',            imagesDir + 'indent_left.gif',        imagesDir + 'indent_left_on.gif'],
 	"indent":         ['Indent',               'Indent',             imagesDir + 'indent_right.gif',       imagesDir + 'indent_right_on.gif'],
-	"cut":            ['Cut',                  'Cut',                imagesDir + 'cut.gif',                imagesDir + 'cut_on.gif'],
-	"copy":           ['Copy',                 'Copy',               imagesDir + 'copy.gif',               imagesDir + 'copy_on.gif'],
-  "paste":          ['Paste',                'Paste',              imagesDir + 'paste.gif',              imagesDir + 'paste_on.gif'],
+//	"cut":            ['Cut',                  'Cut',                imagesDir + 'cut.gif',                imagesDir + 'cut_on.gif'],
+//	"copy":           ['Copy',                 'Copy',               imagesDir + 'copy.gif',               imagesDir + 'copy_on.gif'],
+//  "paste":          ['Paste',                'Paste',              imagesDir + 'paste.gif',              imagesDir + 'paste_on.gif'],
 	"forecolor":      ['ForeColor',            'ForeColor',          imagesDir + 'forecolor.gif',          imagesDir + 'forecolor_on.gif'],
 	"backcolor":      ['BackColor',            'BackColor',          imagesDir + 'backcolor.gif',          imagesDir + 'backcolor_on.gif'],
 	"undo":           ['Undo',                 'Undo',               imagesDir + 'undo.gif',               imagesDir + 'undo_on.gif'],
@@ -170,7 +170,7 @@ var ToolbarList = {
 								Netscape 6/Mozilla
   Notes       : by Thor Larholm me@jscript.dk
 \* ---------------------------------------------------------------------- */
-if(typeof HTMLElement!="undefined" && !HTMLElement.prototype.insertAdjacentElement){
+if(typeof HTMLElement!="undefined" && (!HTMLElement.prototype.insertAdjacentElement || !HTMLElement.prototype.insertAdjacentHTML )){
   HTMLElement.prototype.insertAdjacentElement = function
   (where,parsedNode)
 	{
