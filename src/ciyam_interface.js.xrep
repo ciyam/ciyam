@@ -471,7 +471,8 @@ function load2( )
    {
       if( sessionStorage.getItem( 'key' ) == null && localStorage.getItem( 'key' ) != null )
       {
-         full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true&session=new_session';
+         if( !has_session )
+            full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true&session=new_session';
          sessionStorage.setItem( 'key', localStorage.getItem( 'key' ) );
       }
       else if( !loggedIn && encryptPosts && sessionStorage.getItem( 'key' ) == null )
