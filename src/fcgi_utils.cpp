@@ -123,7 +123,7 @@ void log_trace_message( const string& message )
    g_logfile << message;
 }
 
-const string& get_server_id( )
+const char* get_server_id( )
 {
    return get_sid( );
 }
@@ -135,11 +135,14 @@ void set_server_id( string& id )
 
 string get_id_from_server_id( )
 {
-   string key( get_server_id( ).substr( 0, 10 ) );
+   string key( get_server_id( ) );
 
    MD5 md5;
    md5.update( ( unsigned char* )key.c_str( ), key.length( ) );
    md5.finalize( );
+
+   for( size_t i = 0; i < key.size( ); i++ )
+      key[ i ] = '\0';
 
    auto_ptr< char > ap_digest( md5.hex_digest( ) );
 
@@ -335,8 +338,7 @@ string get_cookie_value( const string& session_id,
 
    if( !get_storage_info( ).login_days )
    {
-      cookie = "session=" + session_id + ",user=" + user_id
-       + ",hash=" + get_user_hash( user_id ) + ",keep=,dtmoff=,gmtoff=";
+      cookie = "session=" + session_id + ",keep=,dtmoff=,gmtoff=";
 
       if( user_id == c_anon_user_key )
          cookie += "; Expires=Thu, 01-Jan-1970 00:00:01 UTC; path=/";
@@ -348,8 +350,6 @@ string get_cookie_value( const string& session_id,
       else
          cookie = "session=" + session_id + ",";
 
-      cookie += "user=" + user_id + ",hash=" + get_user_hash( user_id );
-
       // NOTE: The "dtm_offset" is the difference between what the client originally reported
       // as UTC at the time of the initial login and the UTC found on the server at that time.
       date_time dt( date_time::standard( ) + ( seconds )dtm_offset );
@@ -359,11 +359,11 @@ string get_cookie_value( const string& session_id,
       if( session_id.empty( ) || ( session_id == c_new_session ) || g_non_persistent.count( session_id ) )
       {
          dt += s;
-         cookie += ",keep=";
+         cookie += "keep=";
       }
       else
       {
-         cookie += ",keep=true";
+         cookie += "keep=true";
          dt += ( days )get_storage_info( ).login_days;
       }
 

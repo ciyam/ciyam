@@ -129,7 +129,7 @@ int main( int argc, char* argv[ ] )
     || ( argc == 4 && ( argv[ 1 ] != string( c_quiet_opt )
     && argv[ 1 ] != string( c_min_opt ) && argv[ 1 ] != string( c_rcs_opt ) ) ) )
    {
-      cout << "DIFF v0.1f (c) 2002 CIYAM Pty. Ltd.\n";
+      cout << "diff v0.1g\n";
 
       cout << "Usage: diff [" << c_quiet_opt
        << "] [" << c_min_opt << "] [" << c_rcs_opt << "] <file1> <file2 or path>" << endl;
@@ -246,8 +246,8 @@ int main( int argc, char* argv[ ] )
       {
          int lcs = ( a.size( ) + b.size( ) - ed ) / 2;
          if( lcs != len )
-            cerr << "\n*** lcs was not found (path length is "
-             << len << " but if is lcs should be " << lcs << ") ***\n";
+            cerr << "\n*** LCS was not found (path length is "
+             << len << " but if is LCS should be " << lcs << ") ***\n";
       }
    }
    catch( exception& e )

@@ -289,13 +289,15 @@ template< typename C > int diff< C >::edit_distance( )
       {
          int prev = path_items[ i ].link;
          path_items[ i ].link = next;
+
          next = i;
          i = prev;
       }
+
       next_path_item = final_path_item = next;
    }
 
-   return delta + 2 * p;
+   return ( p == 0 ) ? 0 : delta + 2 * p;
 }
 
 #endif // DIFF_H

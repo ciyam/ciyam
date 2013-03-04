@@ -34,7 +34,7 @@ if errorlevel 1 goto error5
 goto end
 
 :usage
-echo Usage: MERGE [base file] [first variation] [second variation]
+echo Usage: merge [base file] [first variation] [second variation]
 goto end
 
 :error1

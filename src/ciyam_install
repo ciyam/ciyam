@@ -8,8 +8,8 @@
 
 if [ `whoami` != "root" ]
 then
-	echo "Run this script as root."
-	exit 1
+ echo "Run this script as root."
+ exit 1
 fi
 
 ps ax | grep ciyamd | awk '{print $1}' | xargs kill 2>/dev/null
@@ -19,8 +19,8 @@ GITCHECK=$?
 
 if [ "$GITCHECK" != "0" ]
 then
-	echo 'ERROR: the current directory isnt the ciyam git! cd into the src folder of ciyam.'
-	exit 1
+ echo 'ERROR: the current directory isnt the ciyam git! cd into the src folder of ciyam.'
+ exit 1
 fi
 
 DESTPATH="/usr/local/src/ciyam"

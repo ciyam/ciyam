@@ -36,7 +36,7 @@
 using namespace std;
 
 const int c_buffer_size = 1024;
-const char* const c_title = "CRYPT v0.1g";
+const char* const c_title = "crypt v0.1g";
 
 void create_checksum_test_file( fstream& fs, const string& test_file_name )
 {

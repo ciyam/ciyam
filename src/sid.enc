@@ -3,11 +3,11 @@
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-const string& get_sid( )
+const char* get_sid( )
 {
    guard g( g_mutex );
 
-   return g_sid;
+   return g_sid.c_str( );
 }
 
 void set_sid( string& sid )

@@ -2944,7 +2944,7 @@ string sid_hash( )
 {
    guard g( g_mutex );
 
-   sha256 hash1( c_salt_value + get_sid( ) );
+   sha256 hash1( string( c_salt_value ) + get_sid( ) );
 
    sha1 hash2( hash1.get_digest_as_string( ) );
 
@@ -3798,11 +3798,6 @@ string get_app_url( const string& suffix )
    return url;
 }
 
-string get_sid_hash( )
-{
-   return sid_hash( );
-}
-
 string get_identity( bool prepend_sid, bool append_max_user_limit )
 {
    guard g( g_mutex );
@@ -3839,7 +3834,7 @@ string get_checksum( const string& data, bool use_reg_key )
 {
    guard g( g_mutex );
 
-   string prefix( !use_reg_key ? get_sid( ) : g_reg_key );
+   string prefix( !use_reg_key ? get_sid( ) : g_reg_key.c_str( ) );
 
    sha1 hash( prefix + data );
 
@@ -3952,20 +3947,20 @@ int64_t get_smtp_max_attached_data( )
    return g_smtp_max_attached_data;
 }
 
-string encrypt_password( const string& password, bool no_ssl, bool no_salt )
+string encrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )
 {
    string salt;
    if( !no_salt )
-      salt = sid_hash( ) + c_salt_value;
+      salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
    return password_encrypt( password, salt, !no_ssl );
 }
 
-string decrypt_password( const string& password, bool no_ssl, bool no_salt )
+string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )
 {
    string salt;
    if( !no_salt )
-      salt = sid_hash( ) + c_salt_value;
+      salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
    return password_decrypt( password, salt, !no_ssl );
 }
