@@ -340,6 +340,27 @@ bool has_user_session_info( const string& user_id, const char* p_module = 0 )
    return false;
 }
 
+void destroy_user_session_info( const string& user_id, const char* p_module = 0 )
+{
+   guard g( g_session_mutex );
+
+   session_iterator si, end;
+   for( si = g_sessions.begin( ), end = g_sessions.end( ); si != end; ++si )
+   {
+      if( p_module && string( p_module ) != ( si->second )->user_module )
+         continue;
+
+      if( user_id == ( si->second )->user_id )
+         break;
+   }
+
+   if( si != g_sessions.end( ) )
+   {
+      delete si->second;
+      g_sessions.erase( si );
+   }
+}
+
 session_info* get_session_info( const string& session_id, bool lock_session = true )
 {
    guard g( g_session_mutex );
@@ -1213,6 +1234,8 @@ void request_handler::process_request( )
                if( mod_info.strings.empty( ) )
                   read_module_strings( mod_info, *p_session_info->p_socket );
 
+               bool is_replacement_session = false;
+
                if( cmd != c_cmd_join && !mod_info.user_class_name.empty( ) )
                {
                   if( is_activation )
@@ -1278,9 +1301,7 @@ void request_handler::process_request( )
                   else
                   {
                      fetch_user_record( id_for_login, module_id, module_name, mod_info, *p_session_info,
-                      is_authorised || !base64_data.empty( ), true, username, userhash, password, unique_id );
-
-                     clear_unique( input_data );
+                      is_authorised || persistent == c_true || !base64_data.empty( ), true, username, userhash, password, unique_id );
 
                      pwd_hash = p_session_info->user_pwd_hash;
                   }
@@ -1317,7 +1338,20 @@ void request_handler::process_request( )
                    && ( ( permit_module_switching && has_user_session_info( p_session_info->user_id ) )
                    || ( !permit_module_switching
                    && has_user_session_info( p_session_info->user_id, p_session_info->user_module.c_str( ) ) ) ) )
-                     throw runtime_error( GDS( c_display_you_are_currently_logged_in ) );
+                  {
+                     // NOTE: If a new persistent session has started but an old one still exists then remove
+                     // the old one (i.e. assume that the user's browser either was closed or had crashed).
+                     if( created_session && persistent == c_true )
+                     {
+                        is_replacement_session = true;
+                        destroy_user_session_info( p_session_info->user_id, permit_module_switching ? 0 : p_session_info->user_module.c_str( ) );
+                     }
+                     else
+                        throw runtime_error( GDS( c_display_you_are_currently_logged_in ) );
+                  }
+
+                  if( !using_anonymous )
+                     clear_unique( input_data );
 
                   if( !mod_info.user_select_field.empty( ) )
                   {
@@ -1435,9 +1469,12 @@ void request_handler::process_request( )
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;
 
-                  LOG_TRACE( "[login: " + p_session_info->user_id
-                   + " at " + date_time::local( ).as_string( true, false )
-                   + " from " + p_session_info->ip_addr + "]" );
+                  if( !is_replacement_session )
+                  {
+                     LOG_TRACE( "[login: " + p_session_info->user_id
+                      + " at " + date_time::local( ).as_string( true, false )
+                      + " from " + p_session_info->ip_addr + "]" );
+                  }
                }
             }
          }
@@ -1572,7 +1609,12 @@ void request_handler::process_request( )
                for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
                   DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
-               throw runtime_error( "Invalid URL" );
+               // NOTE: If a session has just been created then assume the invalid URL was
+               // actually due to an already timeout session.
+               if( created_session )
+                  throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
+               else
+                  throw runtime_error( "Invalid URL" );
             }
          }
 
@@ -1671,8 +1713,8 @@ void request_handler::process_request( )
             DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
 
-         // NOTE: When logging after having previously logged out the initial URL will still
-         // be the "quit" command so very that the session being logged out matches the same
+         // NOTE: When logging in after having previously logged out the initial URL will actually
+         // be the "quit" command so now verify that the session being logged out matches the same
          // one that the quit was issued from (via "extra").
          if( cmd == c_cmd_quit && extra != session_id )
          {
@@ -3241,7 +3283,8 @@ void request_handler::process_request( )
                {
                   if( cmd != c_cmd_join )
                   {
-                     extra_content << g_mini_login_html;
+                     if( !is_ssl )
+                        extra_content << g_mini_login_html;
 
                      // NOTE: To limit "sign ups" to specific IP addresses simply add them
                      // as lines to the list of "sign up testers" file (to open tall *all*
@@ -3257,8 +3300,9 @@ void request_handler::process_request( )
 
                      if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
                      {
-                        extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                         << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Key\" border=\"0\" margin=\"10\"/></a>";
+                        if( !is_ssl )
+                           extra_content << "<a href=\"" << get_module_page_name( module_ref )
+                            << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Key\" border=\"0\" margin=\"10\"/></a>";
 
                         extra_content
                          << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
@@ -3560,7 +3604,7 @@ void request_handler::process_request( )
                   if( pos != string::npos )
                      str_replace( password_html, c_checked, p_session_info->is_persistent ? "checked" : "" );
 
-                  str_replace( password_html, c_user_id, user );
+                  str_replace( password_html, c_user_id, p_session_info->user_id );
 
                   extra_content << password_html;
                }
@@ -3754,7 +3798,7 @@ void request_handler::process_request( )
                         if( !simple_command( *p_session_info, "password gpg", &gpg_password ) )
                            throw runtime_error( "unable to access GPG password" );
 
-                        gpg_password = password_decrypt( gpg_password, get_server_id( ) + c_salt_value );
+                        gpg_password = password_decrypt( gpg_password, get_server_id( ) + string( c_salt_value ) );
 
                         string smtp_sender;
                         if( !simple_command( *p_session_info, "smtpinfo", &smtp_sender ) )
@@ -4574,6 +4618,14 @@ void request_handler::process_request( )
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
+         if( created_session )
+         {
+            login_html = "<p>" + string_message( GDS( c_display_click_here_to_login ),
+             make_pair( c_display_click_here_to_login_parm_href,
+             "<a href=\"" + get_module_page_name( module_ref, true )
+             + "?cmd=" + string( c_cmd_login ) + "\">" ), "</a>" ) + "</p>";
+         }
+
          output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
       }
       else
@@ -4699,7 +4751,6 @@ void request_handler::process_request( )
          crypt_decoded( p_session_info->user_pwd_hash, output, false );
 
          output = base64::encode( output );
-         p_session_info->user_pwd_hash = sha256( p_session_info->user_pwd_hash ).get_digest_as_string( );
       }
    }
 

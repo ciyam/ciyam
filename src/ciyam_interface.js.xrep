@@ -325,8 +325,13 @@ function trim( str )
 
 function load( )
 {
-   if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
-      document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
+   if( typeof sessionStorage == 'object' )
+   {
+      if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
+         document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
+   }
+   else if( source[ 0 ] != 'https' )
+      window.location.replace( 'https:' + source[ 1 ] );
 
    if( usePageFading )
       fade_out( 100 );
@@ -370,12 +375,6 @@ function load2( )
       }
    }
 
-   if( !has_session )
-   {
-      session_id = 'new_session';
-      document.cookie = 'session=new_session';
-   }
-
    var qs_both = qsContext;
    var persistent = '';
 
@@ -389,12 +388,22 @@ function load2( )
    var qvars = qs_both.split( '&' );
    for( var i = 0; i < qvars.length; i++ )
    {
+      var uhash = 'userhash=';
+      if( qvars[ i ].indexOf( uhash ) == 0 )
+      {
+         is_login = true;
+
+         if( typeof localStorage == 'object' )
+            localStorage.setItem( 'hash', qvars[ i ].substring( uhash.length ) );
+      }
+
       var uname = 'username=';
       if( qvars[ i ].indexOf( uname ) == 0 )
       {
          is_login = true;
-         document.cookie = 'user=' + qvars[ i ].substring( uname.length );
-         localStorage.setItem( 'user', qvars[ i ].substring( uname.length ) );
+
+         if( typeof localStorage == 'object' )
+            localStorage.setItem( 'user', qvars[ i ].substring( uname.length ) );
       }
 
       var pname = 'persistent=true';
@@ -402,16 +411,26 @@ function load2( )
       {
          persistent = 'true';
 
-         if( is_login )
-            localStorage.setItem( 'fkey', sessionStorage.getItem( 'key' ) );
+         if( typeof localStorage == 'object' )
+            localStorage.setItem( 'key', sessionStorage.getItem( 'key' ) );
       }
 
       var sname = 'session=';
       if( qvars[ i ].indexOf( sname ) == 0 )
       {
          non_cookie = true;
+         has_session = true;
          session_id = qvars[ i ].substring( sname.length );;
       }
+   }
+
+   if( !has_session )
+   {
+      session_id = 'new_session';
+      document.cookie = 'session=new_session';
+
+      if( typeof localStorage == 'object' )
+         localStorage.removeItem( 'key' );
    }
 
    var full_context = module;
@@ -448,8 +467,16 @@ function load2( )
       full_context += '&';
    full_context += 'suffix=';
 
-   if( sessionStorage.getItem( 'key' ) == null && localStorage.getItem( 'fkey' ) != null )
-      sessionStorage.setItem( 'key', localStorage.getItem( 'fkey' ) );
+   if( typeof localStorage == 'object' )
+   {
+      if( sessionStorage.getItem( 'key' ) == null && localStorage.getItem( 'key' ) != null )
+      {
+         full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true&session=new_session';
+         sessionStorage.setItem( 'key', localStorage.getItem( 'key' ) );
+      }
+      else if( !loggedIn && encryptPosts && sessionStorage.getItem( 'key' ) == null )
+         full_context += '&session=new_session';
+   }
 
    xmlReq.open( 'POST', ServerApp, true );
 
@@ -558,12 +585,6 @@ function load_timeout( )
    hide_load_progress( );
 
    alert( displayTimeout );
-
-   if( encryptPosts )
-   {
-      if( sessionStorage.getItem( 'key' ) != null )
-         sessionStorage.setItem( 'key', hex_sha256( sessionStorage.getItem( 'key' ) ) );
-   }
 }
 
 function fade_in( n )
@@ -604,15 +625,10 @@ function after_force( )
    if( document.getElementById( 'extra_content_func' ) != null )
       eval( document.getElementById( 'extra_content_func' ).value );
 
-   if( encryptPosts )
-   {
-      if( !loggedIn )
-         sessionStorage.removeItem( 'key' );
-      else if( sessionStorage.getItem( 'key' ) != null )
-         sessionStorage.setItem( 'key', hex_sha256( sessionStorage.getItem( 'key' ) ) );
-   }
+   if( !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
+      sessionStorage.removeItem( 'key' );
 
-   if( uniqueId != '' )
+   if( uniqueId != '' && typeof sessionStorage == 'object' )
       sessionStorage.setItem( 'unique', uniqueId );
 
    if( jump_back && !had_act_error )
@@ -712,7 +728,6 @@ function process( )
 
       if( debugDynamicContent )
       {
-
          str = str.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
          str = "<div id='debug'><pre>\n" + str + "\n</pre></div>\n";
          str = utf8_decode( decrypted ) + str;
@@ -721,7 +736,8 @@ function process( )
       document.getElementById( 'content' ).innerHTML = str;
    }
 
-   sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
+   if( typeof sessionStorage == 'object' )
+      sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
 
    force_update( );
 }
@@ -969,8 +985,11 @@ function hash_password( salt, pwd, skip_id )
    else
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
 
-   if( !skip_id && !loggedIn && encryptPosts )
+   if( !skip_id && !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
+   {
       sessionStorage.setItem( 'key', retval );
+      sessionStorage.setItem( 'key', retval );
+   }
 
    return retval;
 }
@@ -994,8 +1013,11 @@ function hash_with_unique( pwd_hash )
 {
    var retval = pwd_hash;
 
-   if( sessionStorage.getItem( 'unique' ) != null )
-      uniqueId = sessionStorage.getItem( 'unique' );
+   if( typeof sessionStorage == 'object' )
+   {
+      if( sessionStorage.getItem( 'unique' ) != null )
+         uniqueId = sessionStorage.getItem( 'unique' );
+   }
 
    if( uniqueId != '' )
       retval = hex_sha256( retval + uniqueId ).toLowerCase( );

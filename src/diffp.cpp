@@ -199,7 +199,7 @@ int main( int argc, char* argv[ ] )
 
    if( argc < 3 || argc > first_arg + 3 )
    {
-      cout << "DIFFP v0.1h (c) 2003 CIYAM Pty. Ltd.\n";
+      cout << "diffp v0.1i\n";
       cout << "Usage: diffp [" << c_opt_quiet << "] <file> <rcs diff>" << endl;
       cout << "   or: diffp [" << c_opt_quiet << "] [" << c_opt_minimise << "] <file> <rcs diff1> <rcs diff2>" << endl;
       return 0;

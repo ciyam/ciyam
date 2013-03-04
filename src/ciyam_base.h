@@ -86,8 +86,6 @@ std::string CIYAM_BASE_DECL_SPEC get_domain( );
 
 std::string CIYAM_BASE_DECL_SPEC get_app_url( const std::string& suffix );
 
-std::string CIYAM_BASE_DECL_SPEC get_sid_hash( );
-
 std::string CIYAM_BASE_DECL_SPEC get_identity( bool prepend_sid = false, bool append_max_user_limit = false );
 void CIYAM_BASE_DECL_SPEC set_identity( const std::string& identity_info );
 
@@ -118,8 +116,11 @@ std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
 int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
 int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
 
-std::string CIYAM_BASE_DECL_SPEC encrypt_password( const std::string& password, bool no_ssl = false, bool no_salt = false );
-std::string CIYAM_BASE_DECL_SPEC decrypt_password( const std::string& password, bool no_ssl = false, bool no_salt = false );
+std::string CIYAM_BASE_DECL_SPEC encrypt_password(
+ const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
+
+std::string CIYAM_BASE_DECL_SPEC decrypt_password(
+ const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
 int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false );
 

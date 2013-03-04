@@ -2686,12 +2686,12 @@ string decrypt( const string& s )
    if( s.length( ) < 20 )
       return s;
    else
-      return password_decrypt( s, get_sid_hash( ) );
+      return decrypt_password( s, false, false, true );
 }
 
 string encrypt( const string& s )
 {
-   return password_encrypt( s, get_sid_hash( ) );
+   return encrypt_password( s, false, false, true );
 }
 
 string valid_utf8_filename( const string& str )
