@@ -38,10 +38,6 @@ else
    mkdir $WEBDIR/$2/scripts
    ./unbundle -qq scripts -d $WEBDIR/$2/scripts
   }
-  [ -f $WEBDIR/$2/requirements.html ] ||
-  {
-   ./xrep @requirements.html.xrep application=$1>$WEBDIR/$2/requirements.html
-  }
   [ -f $WEBDIR/$2/ciyam_interface.js ] ||
   {
    ./xrep @ciyam_interface.js.xrep include=$1.app.vars.xrep>$WEBDIR/$2/ciyam_interface.js
