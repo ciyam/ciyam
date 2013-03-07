@@ -41,10 +41,6 @@ mkdir "%install_path%\scripts"
 unbundle -qq scripts -d "%install_path%\scripts"
 
 :skip_scripts
-if exist "%install_path%\requirements.html" goto skip_requirements_html
-xrep @requirements.html.xrep application=%1 >"%install_path%\requirements.html"
-
-:skip_requirements_html
 if exist "%install_path%\ciyam_interface.js" goto skip_interface_javascript
 xrep @ciyam_interface.js.xrep include=%1.app.vars.xrep >"%install_path%\ciyam_interface.js"
 

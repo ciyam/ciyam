@@ -15,6 +15,13 @@ body
    background: #ccc;
 }
 
+.noscript
+{
+   width: 100%;
+   font-size: 14px;
+   text-align: center;
+}
+
 #auto_progress
 {
    float: center;

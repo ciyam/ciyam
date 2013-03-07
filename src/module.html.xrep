@@ -32,7 +32,12 @@
 </head>
 
 <body onload="load( )">
-<noscript><meta http-equiv="refresh" content="0; requirements.html"/></noscript>
+<noscript>
+   <div class="noscript">
+       <p><strong>JavaScript seem to be disabled in your browser.</strong></p>
+       <p>You must have JavaScript enabled in your browser in order to use this website.</p>
+   </div>
+</noscript>
 
 <div id="content">
 </div>
