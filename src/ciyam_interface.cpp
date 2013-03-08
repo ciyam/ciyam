@@ -4339,6 +4339,12 @@ void request_handler::process_request( )
 
                   bool has_perm( has_permission( list_perm, *p_session_info ) );
 
+                  // FUTURE: Currently logic that requires a permission for an "admin" list is not supported
+                  // (i.e. either the user is "admin" OR has the "perm"). If this is to be changed then this
+                  // code would need to be changed.
+                  if( !has_perm && p_session_info->is_admin_user && lmci->second->type == c_list_type_admin )
+                     has_perm = true;
+
                   if( has_perm && lmci->second->extras.count( c_list_type_extra_show_if_default_other ) )
                   {
                      // NOTE: If both of the "if default other" options are present then do not
