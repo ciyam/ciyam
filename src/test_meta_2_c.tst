@@ -1,11 +1,11 @@
 
 > storage_init ciyam
 
-> perform_fetch Meta Class "" Name,Plural,Id -min
+> perform_fetch Meta Class "Id " Name,Plural,Id -min
 System_Information,System_Information,M001C100
 User,User,M001C101
 
-> perform_fetch Meta Field "" Name,Id -min
+> perform_fetch Meta Field "Id " Name,Id -min
 Name,M001C100F100
 Vendor,M001C100F101
 Reference,M001C100F102
@@ -31,7 +31,9 @@ Is_Self_Or_Admin,M001C101F116
 Key,M001C101F117
 Dummy_Self,M001C101F118
 
-> perform_fetch Meta Enum "" Name,Id -min
+> perform_fetch Meta Enum "Id " Name,Id -min
+primitive,E000
+primitive,E000
 Day_Type,E100
 Customary_Event,E101
 Month,E102
@@ -42,10 +44,24 @@ Date_Cycle,E106
 Day_Of_Week,E107
 Occurrence,E108
 Orientation,E109
-primitive,E000
-primitive,E000
 
-> perform_fetch Meta Type "" Name,Id -min
+> perform_fetch Meta Type "Id " Name,Id -min
+string,T000
+string,T000
+datetime,T001
+datetime,T001
+date,T002
+date,T002
+time,T003
+time,T003
+numeric,T004
+numeric,T004
+int,T005
+int,T005
+bool,T006
+bool,T006
+foreign_key,T007
+foreign_key,T007
 bytes,T100
 str010,T101
 str030,T102
@@ -56,26 +72,10 @@ duration,T106
 filename,T107
 0..100,T108
 std_date,T109
-std_datetime,T111
 std_time,T110
+std_datetime,T111
 std_timestamp,T112
 std_numeric,T113
 std_percentage,T114
-bool,T006
-date,T002
-datetime,T001
-foreign_key,T007
-bool,T006
-date,T002
-datetime,T001
-foreign_key,T007
-int,T005
-numeric,T004
-string,T000
-time,T003
-int,T005
-numeric,T004
-string,T000
-time,T003
 
 > 
