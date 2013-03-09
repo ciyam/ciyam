@@ -2,7 +2,7 @@
 > storage_init ciyam
 
 > perform_fetch Meta Class "" Name,Plural,Id -min
-System,System,M001C100
+System_Information,System_Information,M001C100
 User,User,M001C101
 
 > perform_fetch Meta Field "" Name,Id -min

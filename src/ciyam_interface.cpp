@@ -4329,6 +4329,7 @@ void request_handler::process_request( )
                }
 
                bool has_selected_list = false;
+               map< string, vector< string > > menu_items;
 
                for( list_menu_const_iterator
                 lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
@@ -4378,6 +4379,16 @@ void request_handler::process_request( )
                   {
                      string display_name( get_display_name( lmci->first ) );
 
+                     string::size_type pos = display_name.find( ' ' );
+                     string menu_name = display_name.substr( 0, pos );
+
+                     string item_name( menu_name );
+                     if( pos != string::npos )
+                        item_name = display_name.substr( pos + 1 );
+
+                     item_name += '!' + lmci->second->id;
+                     menu_items[ menu_name ].push_back( item_name );
+
                      if( qlink.empty( ) && cmd == c_cmd_list && oident == lmci->second->id )
                      {
                         has_selected_list = true;
@@ -4403,6 +4414,23 @@ void request_handler::process_request( )
 
                         extra_content << "\">" << display_name << "</a></li>\n";
                      }
+                  }
+               }
+
+               // FUTURE: It should be optional whether to use a "sidebar" or a "menubar". To simplify things
+               // a top-level menu is constructed from the first common "prefix" of each menu item (and there
+               // is no nesting).
+               for( map< string, vector< string > >::iterator i = menu_items.begin( ); i != menu_items.end( ); ++i )
+               {
+                  for( size_t j = 0; j < i->second.size( ); j++ )
+                  {
+                     string::size_type pos = i->second[ j ].find( '!' );
+
+                     string id, item_name( i->second[ j ].substr( 0, pos ) );
+                     if( pos != string::npos )
+                        id = i->second[ j ].substr( pos + 1 );
+
+                     // FUTURE: Code to output each "menu item" for the "menubar"...
                   }
                }
 
