@@ -2069,8 +2069,9 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
       sess_info.quick_link_data.pop_back( );
 }
 
-void add_user( const string& user_id, const string& user_name, const string& clone_key,
- const string& password, string& error_message, const module_info& mod_info, session_info& sess_info )
+void add_user( const string& user_id, const string& user_name,
+ const string& email, const string& clone_key, const string& password,
+ string& error_message, const module_info& mod_info, session_info& sess_info )
 {
    bool okay = true;
    string new_user_cmd( "perform_create" );
@@ -2085,6 +2086,10 @@ void add_user( const string& user_id, const string& user_name, const string& clo
    new_user_cmd += " \"" + mod_info.user_uid_field_id + "=" + escaped( uid, ",\"" );
    new_user_cmd += "," + mod_info.user_pwd_field_id + "=" + escaped( pwd, ",\"" );
    new_user_cmd += "," + mod_info.user_name_field_id + "=" + escaped( name, ",\"" );
+
+   if( !email.empty( ) && !mod_info.user_email_field_id.empty( ) )
+      new_user_cmd += "," + mod_info.user_email_field_id + "=" + escaped( email, ",\"" );
+
    new_user_cmd += "\"";
 
    if( sess_info.p_socket->write_line( new_user_cmd ) <= 0 )

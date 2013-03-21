@@ -6589,7 +6589,7 @@ string get_field_values( size_t handle,
       else if( field != c_ignore_field )
          next_value = execute_object_command( handle, context, "get " + field );
 
-      if( p_package_map )
+      if( p_package_map && !next_value.empty( ) )
       {
          for( map< string, string >::const_iterator ci = p_package_map->begin( ); ci != p_package_map->end( ); ++ci )
          {
@@ -6600,6 +6600,11 @@ string get_field_values( size_t handle,
                   break;
 
                next_value.replace( pos, ci->first.length( ), ci->second );
+
+               // NOTE: If the replacement string contains the key then must
+               // continue to avoid infinite expansion of the output string.
+               if( ci->second.find( ci->first ) != string::npos )
+                  break;
             }
          }
       }
