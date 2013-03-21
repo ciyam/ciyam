@@ -346,6 +346,7 @@ struct module_info
    std::string user_pwd_field_id;
    std::string user_hash_field_id;
    std::string user_name_field_id;
+   std::string user_email_field_id;
 
    std::string user_perm_field_id;
    std::string user_group_field_id;

@@ -3831,16 +3831,28 @@ void request_handler::process_request( )
                               clone_key = sign_up_types_map[ account_type ];
                            }
 
+                           bool is_anon_email_addr = false;
+                           string::size_type pos = email_addr.find( "@" );
+                           if( pos != string::npos )
+                           {
+                              if( email_addr.substr( 0, pos ) == c_anon_user_key )
+                                 is_anon_email_addr = true;
+                           }
+
                            if( !is_help_request )
                            {
-                              add_user( req_username, req_username,
+                              string email;
+                              if( !is_anon_email_addr )
+                                 email = password_encrypt( email_addr, get_server_id( ) );
+
+                              add_user( req_username, req_username, email,
                                clone_key, password, error_message, mod_info, *p_session_info );
 
                               if( !error_message.empty( ) )
                                  throw runtime_error( error_message );
                            }
 
-                           if( is_help_request || email_addr == "anon@ciyam.org" )
+                           if( is_help_request || is_anon_email_addr )
                            {
                               has_completed = true;
                               gpg_message = buffer_file( key + ".asc" );

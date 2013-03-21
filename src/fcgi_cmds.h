@@ -77,8 +77,9 @@ void fetch_user_record( const std::string& gid,
 
 void fetch_user_quick_links( const module_info& mod_info, session_info& sess_info );
 
-void add_user( const std::string& user_id, const std::string& user_name, const std::string& clone_key,
- const std::string& password, std::string& error_message, const module_info& mod_info, session_info& sess_info );
+void add_user( const std::string& user_id, const std::string& user_name,
+ const std::string& email, const std::string& clone_key, const std::string& password,
+ std::string& error_message, const module_info& mod_info, session_info& sess_info );
 
 void add_quick_link( const std::string& module_ref,
  const std::string& cmd, const std::string& data, const std::string& extra,
