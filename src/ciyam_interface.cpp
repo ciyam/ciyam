@@ -3849,32 +3849,40 @@ void request_handler::process_request( )
                                clone_key, password, error_message, mod_info, *p_session_info );
 
                               if( !error_message.empty( ) )
-                                 throw runtime_error( error_message );
+                              {
+                                 if( error_message.find( c_response_error ) == 0 )
+                                    error_message.erase( 0, strlen( c_response_error ) );
+
+                                 error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
+                              }
                            }
 
-                           if( is_help_request || is_anon_email_addr )
+                           if( error_message.empty( ) )
                            {
-                              has_completed = true;
-                              gpg_message = buffer_file( key + ".asc" );
+                              if( is_help_request || is_anon_email_addr )
+                              {
+                                 has_completed = true;
+                                 gpg_message = buffer_file( key + ".asc" );
 
-                              if( !is_help_request )
-                                 extra_content << "<p><b>"
-                                  << GDS( c_display_welcome_aboard ) << " " << oreq_username << " !<br/><br/>";
+                                 if( !is_help_request )
+                                    extra_content << "<p><b>"
+                                     << GDS( c_display_welcome_aboard ) << " " << oreq_username << " !<br/><br/>";
 
-                              extra_content << GDS( c_display_your_gpg_encrypted_account_credentials )
-                               << "</b><p>\n" << "<p align=\"center\"><pre>" << gpg_message << "</pre></p>";
-                           }
-                           else
-                           {
-                              string msg_file( "message?" + get_cwd( true ) + "/" + key + ".asc" );
+                                 extra_content << GDS( c_display_your_gpg_encrypted_account_credentials )
+                                  << "</b><p>\n" << "<p align=\"center\"><pre>" << gpg_message << "</pre></p>";
+                              }
+                              else
+                              {
+                                 string msg_file( "message?" + get_cwd( true ) + "/" + key + ".asc" );
 
-                              string smtp_result;
-                              simple_command( *p_session_info, "sendmail "
-                               + email_addr + " \"" + GDS( c_display_welcome_aboard ) + "!\" \""
-                               + GDS( c_display_see_attachment_for_details ) + "\" -attach=" + msg_file, &smtp_result );
+                                 string smtp_result;
+                                 simple_command( *p_session_info, "sendmail "
+                                  + email_addr + " \"" + GDS( c_display_welcome_aboard ) + "!\" \""
+                                  + GDS( c_display_see_attachment_for_details ) + "\" -attach=" + msg_file, &smtp_result );
 
-                              if( !smtp_result.empty( ) && smtp_result != c_response_okay )
-                                 throw runtime_error( smtp_result );
+                                 if( !smtp_result.empty( ) && smtp_result != c_response_okay )
+                                    error_message = "<p class=\"error\" align=\"center\">" + smtp_result + "</p>";
+                              }
                            }
                         }
 
@@ -3883,7 +3891,7 @@ void request_handler::process_request( )
                         if( file_exists( key + ".tmp" ) )
                            file_remove( key + ".tmp" );
 
-                        if( !has_completed && !had_unexpected_error )
+                        if( !has_completed && !had_unexpected_error && error_message.empty( ) )
                         {
                            has_completed = true;
 
