@@ -13,6 +13,7 @@
 #     include <iosfwd>
 #  endif
 
+const char* const c_regex_label = "[A-Za-z0-9_]+";
 const char* const c_regex_html_tag = "<([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>";
 const char* const c_regex_email_address = "[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,4}";
 const char* const c_regex_html_paired_tags = "<([A-Za-z][A-Za-z0-9]*)[\\s]*([^>]*)>(.*)</\\1>";
