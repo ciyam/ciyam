@@ -1919,10 +1919,8 @@ void output_list_form( ostream& os,
                os << "<option value=\"\">&lt;" << GDS( c_display_any ) << "&gt;&nbsp;&nbsp;</option>\n";
 
                string selected_value;
-               bool has_selected_value = false;
                if( list_selections.count( sel_id ) )
                {
-                  has_selected_value = true;
                   selected_value = list_selections.find( sel_id )->second;
 
                   if( !new_record_fields.empty( ) )
@@ -1937,8 +1935,8 @@ void output_list_form( ostream& os,
 
                if( !( source.lici->second )->parents[ i ].mandatory )
                {
-                  os << "<option value=\"\"";
-                  if( has_selected_value && selected_value.empty( ) )
+                  os << "<option value=\"~\"";
+                  if( selected_value == "~" )
                      os << " selected";
                   os << ">&lt;" << GDS( c_display_none ) << "&gt;&nbsp;&nbsp;</option>\n";
                }
