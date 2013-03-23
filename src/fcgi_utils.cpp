@@ -1638,9 +1638,14 @@ void determine_fixed_query_info( string& fixed_fields,
                fixed_fields += ",";
             fixed_fields += ( list.lici->second )->parents[ i ].field;
 
+            // NOTE: For optional selects "~" is being used to indicate null.
+            string key_value( list_selections.find( name )->second );
+            if( key_value == "~" )
+               key_value.erase( );
+
             if( num_fixed_key_values > 1 )
                fixed_key_values += ",";
-            fixed_key_values += list_selections.find( name )->second + suffix;
+            fixed_key_values += key_value + suffix;
          }
       }
       else if( ( list.lici->second )->parents[ i ].operations.count( c_operation_checked ) )
