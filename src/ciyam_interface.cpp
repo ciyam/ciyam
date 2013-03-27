@@ -118,11 +118,12 @@ const int c_default_directory_perms = S_IRWXU | S_IRWXG;
 
 const char* const c_login_file = "login.htms";
 const char* const c_footer_file = "footer.htms";
+const char* const c_openup_file = "openup.htms";
 const char* const c_signup_file = "signup.htms";
 const char* const c_activate_file = "activate.htms";
 const char* const c_password_file = "password.htms";
-const char* const c_mini_login_file = "minilogin.htms";
-const char* const c_interface_file = "ciyam_interface.htms";
+const char* const c_minilogin_file = "minilogin.htms";
+const char* const c_ciyam_interface_file = "ciyam_interface.htms";
 const char* const c_login_persistent_file = "login_persistent.htms";
 const char* const c_password_persistent_file = "password_persistent.htms";
 
@@ -143,6 +144,9 @@ const char* const c_http_param_query = "QUERY_STRING";
 const char* const c_http_param_cookie = "HTTP_COOKIE";
 const char* const c_http_param_uagent = "HTTP_USER_AGENT";
 
+const char* const c_openid_ext_email = "openid.ext1.value.email";
+const char* const c_openid_username = "openid_username";
+
 const char* const c_nbsp = "&nbsp;";
 
 string g_nbsp( c_nbsp );
@@ -153,6 +157,7 @@ const char* const c_checked = "@@checked";
 const char* const c_user_id = "@@user_id";
 const char* const c_app_name = "@@app_name";
 const char* const c_password = "@@password";
+const char* const c_user_name = "@@user_name";
 const char* const c_persistent = "@@persistent";
 const char* const c_account_type = "@@account_type";
 const char* const c_old_password = "@@old_password";
@@ -168,6 +173,7 @@ const char* const c_gpg_public_key = "@@gpg_public_key";
 const char* const c_change_password = "@@change_password";
 const char* const c_verify_password = "@@verify_password";
 const char* const c_verify_new_password = "@@verify_new_password";
+const char* const c_open_up_introduction = "@@open_up_introduction";
 const char* const c_sign_up_introduction = "@@sign_up_introduction";
 const char* const c_sign_up_extra_details = "@@sign_up_extra_details";
 const char* const c_sign_up_gpg_expert_tip = "@@sign_up_gpg_expert_tip";
@@ -193,12 +199,12 @@ string g_id;
 
 string g_login_html;
 string g_footer_html;
+string g_openup_html;
 string g_signup_html;
 string g_password_html;
 string g_activate_html;
-string g_interface_html;
-string g_mini_login_html;
-
+string g_minilogin_html;
+string g_ciyam_interface_html;
 string g_login_persistent_html;
 string g_password_persistent_html;
 
@@ -643,9 +649,10 @@ void timeout_handler::on_start( )
          if( tm_now - ( si->second )->tm_last_request > c_timeout_seconds )
          {
             LOG_TRACE( "session timeout" );
-            LOG_TRACE( "[logout: " + si->second->user_id
-             + " at " + date_time::local( ).as_string( true, false )
-             + " from " + si->second->ip_addr + "]" );
+
+            LOG_TRACE( "[logout: "
+             + ( si->second->user_name.empty( ) ? si->second->user_id : si->second->user_name )
+             + " at " + date_time::local( ).as_string( true, false ) + " from " + si->second->ip_addr + "]" );
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -972,11 +979,24 @@ void request_handler::process_request( )
          session_id = c_new_session;
       }
 
+      if( !is_ssl && cmd == c_cmd_open )
+         cmd = c_cmd_home;
+
       if( cmd != c_cmd_status )
          unique_id = get_unique( g_id, input_data[ c_http_param_raddr ] );
 
       if( session_id.empty( ) || session_id == c_new_session )
       {
+         if( cmd == c_cmd_open )
+         {
+            string user_id = input_data[ c_http_param_ruser ];
+            if( !user_id.empty( ) )
+            {
+               is_authorised = true;
+               userhash = sha256( user_id ).get_digest_as_string( );
+            }
+         }
+
          if( !using_anonymous && username.empty( ) && userhash.empty( ) && password.empty( ) )
          {
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
@@ -1052,7 +1072,12 @@ void request_handler::process_request( )
          p_session_info = get_session_info( session_id );
 
          if( p_session_info )
+         {
+            if( cmd == c_cmd_open )
+               cmd = c_cmd_home;
+
             p_session_info->tm_last_request = time( 0 );
+         }
       }
 
       string extra_content_func;
@@ -1229,6 +1254,20 @@ void request_handler::process_request( )
                   throw runtime_error( "unable to open socket" );
             }
 
+            bool was_openid = false;
+            if( connection_okay && cmd == c_cmd_open )
+            {
+               if( fetch_user_record( id_for_login, module_id, module_name,
+                mod_info, *p_session_info, true, true, username, userhash, password, unique_id ) )
+               {
+                  cmd = c_cmd_home;
+                  was_openid = true;
+                  temp_session = false;
+                  using_anonymous = false;
+                  p_session_info->user_id.erase( );
+               }
+            }
+
             if( connection_okay && p_session_info->user_id.empty( ) )
             {
                if( mod_info.strings.empty( ) )
@@ -1282,18 +1321,15 @@ void request_handler::process_request( )
                         throw runtime_error( GDS( c_display_password_must_not_be_the_same_as_your_user_id ) );
                      }
 
-                     if( is_activation )
-                     {
-                        vector< pair< string, string > > field_value_pairs;
+                     vector< pair< string, string > > field_value_pairs;
 
-                        activate_password = password_encrypt( activate_password, get_server_id( ) );
+                     activate_password = password_encrypt( activate_password, get_server_id( ) );
 
-                        field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, activate_password ) );
-                        field_value_pairs.push_back( make_pair( mod_info.user_active_field_id, "1" ) );
+                     field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, activate_password ) );
+                     field_value_pairs.push_back( make_pair( mod_info.user_active_field_id, "1" ) );
 
-                        if( !perform_update( module_id, mod_info.user_class_id, data, field_value_pairs, *p_session_info ) )
-                           throw runtime_error( "unexpected error occurred processing activation" );
-                     }
+                     if( !perform_update( module_id, mod_info.user_class_id, data, field_value_pairs, *p_session_info ) )
+                        throw runtime_error( "unexpected error occurred processing activation" );
                   }
 
                   if( using_anonymous )
@@ -1451,6 +1487,8 @@ void request_handler::process_request( )
                   has_just_logged_in = true;
                   p_session_info->logged_in = true;
 
+                  p_session_info->is_openid = was_openid;
+
                   string path( c_files_directory );
                   path += "/" + string( c_tmp_directory );
                   path += "/" + session_id;
@@ -1471,10 +1509,13 @@ void request_handler::process_request( )
 
                   if( !is_replacement_session )
                   {
-                     LOG_TRACE( "[login: " + p_session_info->user_id
-                      + " at " + date_time::local( ).as_string( true, false )
-                      + " from " + p_session_info->ip_addr + "]" );
+                     LOG_TRACE( "[login: "
+                      + ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name )
+                      + " at " + date_time::local( ).as_string( true, false ) + " from " + p_session_info->ip_addr + "]" );
                   }
+
+                  if( cmd == c_cmd_open )
+                     cmd = c_cmd_home;
                }
             }
          }
@@ -1533,7 +1574,7 @@ void request_handler::process_request( )
          bool is_checksummed_home = ( cmd == c_cmd_home && username.empty( )
           && userhash.empty( ) && ( !uselect.empty( ) || !input_data[ c_param_utcdtm ].empty( ) ) );
 
-         if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join
+         if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join && cmd != c_cmd_open
           && ( is_checksummed_home || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
           && cmd != c_cmd_status && ( cmd != c_cmd_view || ( act != c_act_cont && act != c_act_undo ) ) ) ) )
          {
@@ -2189,7 +2230,7 @@ void request_handler::process_request( )
                }
             }
          }
-         else if( cmd == c_cmd_join )
+         else if( cmd == c_cmd_join || cmd == c_cmd_open )
             server_command.erase( );
 
          if( error_message.length( ) > strlen( c_response_error )
@@ -3193,7 +3234,7 @@ void request_handler::process_request( )
             ostringstream osstr;
             if( had_send_or_recv_error || !mod_info.allows_anonymous_access )
             {
-               if( g_interface_html.find( c_form_content_comment ) == string::npos )
+               if( g_ciyam_interface_html.find( c_form_content_comment ) == string::npos )
                {
                   if( !had_send_or_recv_error )
                      osstr << "<p align=\"center\"><strong>"
@@ -3236,9 +3277,9 @@ void request_handler::process_request( )
          {
             remove_non_persistent( session_id );
 
-            LOG_TRACE( "[logout: " + p_session_info->user_id
-             + " at " + date_time::local( ).as_string( true, false )
-             + " from " + p_session_info->ip_addr + "]" );
+            LOG_TRACE( "[logout: "
+             + ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name )
+             + " at " + date_time::local( ).as_string( true, false ) + " from " + p_session_info->ip_addr + "]" );
 
             // FUTURE: If this module allows anonymous access and a logout has just occurred
             // then currently a page refresh is being forced to occur in order to reload the
@@ -3281,10 +3322,10 @@ void request_handler::process_request( )
                
                if( using_anonymous )
                {
-                  if( cmd != c_cmd_join )
+                  if( cmd != c_cmd_join && cmd != c_cmd_open )
                   {
                      if( !is_ssl )
-                        extra_content << g_mini_login_html;
+                        extra_content << g_minilogin_html;
 
                      // NOTE: To limit "sign ups" to specific IP addresses simply add them
                      // as lines to the list of "sign up testers" file (to open tall *all*
@@ -3367,7 +3408,7 @@ void request_handler::process_request( )
                         }
                      }
 
-                     extra_content << p_session_info->user_id;
+                     extra_content << p_session_info->user_name;
 
                      if( has_user_link )
                         extra_content << "</a>";
@@ -3375,8 +3416,7 @@ void request_handler::process_request( )
                   else
                      extra_content << GDS( c_display_logged_in_as ) << " " << p_session_info->user_id;
 
-
-                  if( !mod_info.user_pwd_field_id.empty( ) )
+                  if( !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
                   {
                      if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
                         extra_content << " | " << pwd_display_name << "";
@@ -3919,6 +3959,59 @@ void request_handler::process_request( )
                   extra_content << signup_html;
                }
             }
+            else if( cmd == c_cmd_open )
+            {
+               bool has_completed = false;
+               string account_type( input_data[ c_param_accttype ] );
+               string req_username( input_data[ c_param_requsername ] );
+
+               if( !req_username.empty( ) )
+               {
+                  string clone_key;
+                  map< string, string > sign_up_types_map;
+                  if( file_exists( c_sign_up_types_map ) )
+                  {
+                     buffer_file_items( c_sign_up_types_map, sign_up_types_map );
+                     clone_key = sign_up_types_map[ account_type ];
+                  }
+
+                  add_user( userhash, req_username, input_data[ c_openid_ext_email ],
+                   clone_key, "", error_message, mod_info, *p_session_info );
+
+                  if( !error_message.empty( ) )
+                  {
+                     if( error_message.find( c_response_error ) == 0 )
+                        error_message.erase( 0, strlen( c_response_error ) );
+
+                     error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
+                  }
+                  else
+                  {
+                     has_completed = true;
+
+                     extra_content << "<p align=\"center\"><b>"
+                      << GDS( c_display_welcome_aboard ) << " " << req_username << " !</p>\n";
+
+                     extra_content_func += "auto_refresh_seconds = 3;\nauto_refresh( );";
+                  }
+               }
+
+               if( !has_completed )
+               {
+                  extra_content << "<h2>" << g_display_sign_up_for_an_account << "</h2>";
+
+                  string openup_html( g_openup_html );
+
+                  str_replace( openup_html, c_error_message, error_message );
+
+                  if( req_username.empty( ) )
+                     req_username = input_data[ c_openid_username ];
+
+                  str_replace( openup_html, c_user_name, req_username );
+
+                  extra_content << openup_html;
+               }
+            }
             else if( cmd == c_cmd_home )
             {
                extra_content << "<h2>" << GDS( c_display_welcome_to ) << " " << title << "</h2>\n";
@@ -4290,7 +4383,7 @@ void request_handler::process_request( )
                extra_content_func += "auto_refresh_seconds = " + seconds + ";\nauto_refresh( );";
             }
 
-            if( g_interface_html.find( c_form_content_comment ) != string::npos )
+            if( g_ciyam_interface_html.find( c_form_content_comment ) != string::npos )
             {
                if( created_session )
                   extra_content << "<p>Created session " << session_id << ".</p>\n";
@@ -4742,7 +4835,7 @@ void request_handler::process_request( )
 
    string interface_html;
    if( interface_file.empty( ) )
-      interface_html = g_interface_html;
+      interface_html = g_ciyam_interface_html;
    else
       interface_html = buffer_file( interface_file );
 
@@ -4878,11 +4971,13 @@ int main( int argc, char* argv[ ] )
 
       g_login_html = buffer_file( c_login_file );
       g_footer_html = buffer_file( c_footer_file );
+      g_openup_html = buffer_file( c_openup_file );
       g_signup_html = buffer_file( c_signup_file );
       g_activate_html = buffer_file( c_activate_file );
       g_password_html = buffer_file( c_password_file );
-      g_interface_html = buffer_file( c_interface_file );
-      g_mini_login_html = buffer_file( c_mini_login_file );
+      g_minilogin_html = buffer_file( c_minilogin_file );
+
+      g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
       if( file_exists( c_identity_file ) )
       {
@@ -4896,10 +4991,18 @@ int main( int argc, char* argv[ ] )
       str_replace( g_login_html, c_user_id, GDS( c_display_user_id ) );
       str_replace( g_login_html, c_password, GDS( c_display_password ) );
 
+      str_replace( g_openup_html, c_user_name, GDS( c_display_user_name ) );
+      str_replace( g_openup_html, c_account_type, GDS( c_display_account_type ) );
+      str_replace( g_openup_html, c_send_request, GDS( c_display_send_request ) );
+      str_replace( g_openup_html, c_account_type_0, GDS( c_display_account_type_0 ) );
+      str_replace( g_openup_html, c_account_type_1, GDS( c_display_account_type_1 ) );
+      str_replace( g_openup_html, c_account_type_2, GDS( c_display_account_type_2 ) );
+      str_replace( g_openup_html, c_account_type_3, GDS( c_display_account_type_3 ) );
+      str_replace( g_openup_html, c_open_up_introduction, GDS( c_display_open_up_openid_account_introduction ) );
+
       str_replace( g_signup_html, c_user_id, GDS( c_display_user_id ) );
       str_replace( g_signup_html, c_account_type, GDS( c_display_account_type ) );
       str_replace( g_signup_html, c_send_request, GDS( c_display_send_request ) );
-      str_replace( g_signup_html, c_email_address, GDS( c_display_email_address ) );
       str_replace( g_signup_html, c_account_type_0, GDS( c_display_account_type_0 ) );
       str_replace( g_signup_html, c_account_type_1, GDS( c_display_account_type_1 ) );
       str_replace( g_signup_html, c_account_type_2, GDS( c_display_account_type_2 ) );
@@ -4909,9 +5012,9 @@ int main( int argc, char* argv[ ] )
       str_replace( g_signup_html, c_sign_up_extra_details, GDS( c_display_sign_up_main_form_client_security_extra_details ) );
       str_replace( g_signup_html, c_sign_up_gpg_expert_tip, GDS( c_display_sign_up_main_form_client_security_gpg_expert_tip ) );
 
-      str_replace( g_mini_login_html, c_login, GDS( c_display_login ) );
-      str_replace( g_mini_login_html, c_user_id, GDS( c_display_user_id ) );
-      str_replace( g_mini_login_html, c_password, GDS( c_display_password ) );
+      str_replace( g_minilogin_html, c_login, GDS( c_display_login ) );
+      str_replace( g_minilogin_html, c_user_id, GDS( c_display_user_id ) );
+      str_replace( g_minilogin_html, c_password, GDS( c_display_password ) );
 
       str_replace( g_activate_html, c_login, GDS( c_display_login ) );
       str_replace( g_activate_html, c_password, GDS( c_display_password ) );

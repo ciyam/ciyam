@@ -46,11 +46,12 @@ Description,M001C101F110
 Email,M001C101F111
 Email_Failure,M001C101F112
 Email_Address,M001C101F113
-Hide_Email_Address,M001C101F114
-Permissions,M001C101F115
-Is_Self_Or_Admin,M001C101F116
-Key,M001C101F117
-Dummy_Self,M001C101F118
+Has_Password,M001C101F114
+Hide_Email_Address,M001C101F115
+Permissions,M001C101F116
+Is_Self_Or_Admin,M001C101F117
+Key,M001C101F118
+Dummy_Self,M001C101F119
 
 > perform_fetch Meta Enum "Id " Name,Id -min
 primitive,E000

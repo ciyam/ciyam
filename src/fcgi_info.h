@@ -487,6 +487,7 @@ struct session_info
 
    std::string user_id;
    std::string user_key;
+   std::string user_name;
    std::string user_group;
    std::string user_other;
    std::string user_extra1;
@@ -516,6 +517,8 @@ struct session_info
    std::map< std::string, std::string > user_perms;
    std::map< std::string, std::string > other_aliases;
    std::map< std::string, std::string > other_slevels;
+
+   bool is_openid;
 
    bool is_admin_user;
    bool is_persistent;
