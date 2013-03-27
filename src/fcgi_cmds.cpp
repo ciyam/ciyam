@@ -46,7 +46,10 @@ string get_uid_info( const session_info& sess_info )
       if( !sess_info.user_slevel.empty( ) )
          uid_info += "!" + sess_info.user_slevel;
 
-      uid_info += ":" + sess_info.user_id;
+      if( sess_info.user_name.empty( ) )
+         uid_info += ":" + sess_info.user_id;
+      else
+         uid_info += ":" + sess_info.user_name;
    }
 
    return uid_info;
@@ -1885,7 +1888,7 @@ bool populate_list_info( list_source& list,
    return okay;
 }
 
-void fetch_user_record(
+bool fetch_user_record(
  const string& gid, const string& module_id,
  const string& module_name, const module_info& mod_info,
  session_info& sess_info, bool is_authorised, bool check_password,
@@ -1893,6 +1896,12 @@ void fetch_user_record(
 {
    string field_list( mod_info.user_uid_field_id );
    field_list += "," + mod_info.user_pwd_field_id;
+
+   if( !mod_info.user_hash_field_id.empty( ) )
+      field_list += "," + mod_info.user_hash_field_id;
+
+   if( !mod_info.user_name_field_id.empty( ) )
+      field_list += "," + mod_info.user_name_field_id;
 
    if( !mod_info.user_perm_field_id.empty( ) )
       field_list += "," + mod_info.user_perm_field_id;
@@ -1976,9 +1985,19 @@ void fetch_user_record(
       sess_info.user_pwd_hash = user_password;
    }
 
+   size_t offset = 2;
+   if( !mod_info.user_hash_field_id.empty( ) )
+   {
+      string hash = user_data[ offset++ ];
+
+      if( !userhash.empty( ) && hash != userhash )
+         return false;
+   }
+
    sess_info.user_id = username;
 
-   size_t offset = 2;
+   if( !mod_info.user_name_field_id.empty( ) )
+      sess_info.user_name = user_data[ offset++ ];
 
    sess_info.user_perms.clear( );
    if( !mod_info.user_perm_field_id.empty( ) )
@@ -2038,6 +2057,8 @@ void fetch_user_record(
 
    if( !mod_info.user_security_level_id.empty( ) )
       sess_info.user_slevel = user_data[ offset++ ];
+
+   return true;
 }
 
 void fetch_user_quick_links( const module_info& mod_info, session_info& sess_info )
@@ -2085,6 +2106,8 @@ void add_user( const string& user_id, const string& user_name,
 
    new_user_cmd += " \"" + mod_info.user_uid_field_id + "=" + escaped( uid, ",\"" );
    new_user_cmd += "," + mod_info.user_pwd_field_id + "=" + escaped( pwd, ",\"" );
+   if( password.empty( ) )
+      new_user_cmd += "," + mod_info.user_hash_field_id + "=" + escaped( uid, ",\"" );
    new_user_cmd += "," + mod_info.user_name_field_id + "=" + escaped( name, ",\"" );
 
    if( !email.empty( ) && !mod_info.user_email_field_id.empty( ) )

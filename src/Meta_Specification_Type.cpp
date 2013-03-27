@@ -2604,13 +2604,11 @@ void Meta_Specification_Type::impl::impl_Is_Valid_Field_Type( const string& Clas
       else if( get_obj( ).Test_Field_type( ) == c_enum_test_field_type_Any_Scalar_Type )
       {
          bool in_error = true;
-         if( Parent_Class.empty( ) )
-         {
-            if( Primitive == c_enum_test_field_type_datetime
-             || Primitive == c_enum_test_field_type_date || Primitive == c_enum_test_field_type_time
-             || Primitive == c_enum_test_field_type_numeric || Primitive == c_enum_test_field_type_int || Primitive == c_enum_test_field_type_bool )
-               in_error = false;
-         }
+
+         if( Test_Primitive == c_enum_test_field_type_datetime
+          || Test_Primitive == c_enum_test_field_type_date || Test_Primitive == c_enum_test_field_type_time
+          || Test_Primitive == c_enum_test_field_type_numeric || Test_Primitive == c_enum_test_field_type_int || Test_Primitive == c_enum_test_field_type_bool )
+            in_error = false;
 
          if( in_error )
             Error = GMS( "field_specification_type_test_field_type" ) + " must be a scalar type"; // FUTURE: Should be in module_strings...

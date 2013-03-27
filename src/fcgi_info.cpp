@@ -322,6 +322,7 @@ session_info::session_info( storage_info& si )
  locked( false ),
  logged_in( false ),
  checksum_serial( 0 ),
+ is_openid( false ),
  is_admin_user( false ),
  is_persistent( false ),
  has_set_offsets( false ),

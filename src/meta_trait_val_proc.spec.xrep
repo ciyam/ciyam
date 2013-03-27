@@ -162,13 +162,11 @@
       else if( get_obj( ).`{`$arg_field`}( ) == c_enum_`{`$enum_name`}_Any_Scalar_Type )
       {
          bool in_error = true;
-         if( `{`$arg_parent_arg`}.empty( ) )
-         {
-            if( Primitive == c_enum_`{`$enum_name`}_datetime
-             || Primitive == c_enum_`{`$enum_name`}_date || Primitive == c_enum_`{`$enum_name`}_time
-             || Primitive == c_enum_`{`$enum_name`}_numeric || Primitive == c_enum_`{`$enum_name`}_int || Primitive == c_enum_`{`$enum_name`}_bool )
-               in_error = false;
-         }
+
+         if( `{`$arg_primitive_arg`} == c_enum_`{`$enum_name`}_datetime
+          || `{`$arg_primitive_arg`} == c_enum_`{`$enum_name`}_date || `{`$arg_primitive_arg`} == c_enum_`{`$enum_name`}_time
+          || `{`$arg_primitive_arg`} == c_enum_`{`$enum_name`}_numeric || `{`$arg_primitive_arg`} == c_enum_`{`$enum_name`}_int || `{`$arg_primitive_arg`} == c_enum_`{`$enum_name`}_bool )
+            in_error = false;
 
          if( in_error )
             `{`$arg_error_arg`} = GMS( "field_`{`@lower`(`$class_name`)`}_`{`@lower`(`$arg_field`)`}" ) + " must be a scalar type"; // FUTURE: Should be in module_strings...

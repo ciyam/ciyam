@@ -1,0 +1,35 @@
+<div align="center">
+<div align="left">
+<p>
+@@open_up_introduction
+</p>
+<p>
+@@error_message
+</p>
+   <form method="POST" name="open_up" id="open_up"
+    onsubmit="return dyn_load( this,
+     'requsername=' + escape( document.open_up.username.value )
+     + '&accttype=' + document.open_up.account_type.value, false );">
+       <label for="username">@@user_name<br/>
+          <input type="text" name="username" tabindex="1"
+           id="username" size="20" maxlength="30" validate="reqd" value="@@user_name" />
+       </label>
+       <br/>
+       <br/>
+       <label for="account_type">@@account_type<br/>
+          <select name="account_type" id="account_type">
+             <option value="0">@@account_type_0</option>
+             <option value="1">@@account_type_1</option>
+             <option value="2">@@account_type_2</option>
+             <option value="3">@@account_type_3</option>
+          </select>
+       </label>
+       <br/>
+       <br/>
+       <label for="submit" id="submit">
+          <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@send_request" />
+       </label>
+   </form>
+</div>
+</div>
+
