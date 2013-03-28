@@ -1458,10 +1458,6 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_ofield=$specification_\0_ofield arg_cfield=$specification_\0_cfield arg_separator=$specification_\0_separator\
  arg_embed_links=$specification_\0_embed_links`}\
 `,\
-`@eq`(`'\1`'`,`'default_for_clone`'`)
-`{`#default_for_clone.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
-`,\
 `@eq`(`'\1`'`,`'default_to_string`'`)`&`@eq`(`$specification_\0_ftransient`,`'1`'`)
 `{`#default_to_string.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_label_str=$specification_\0_label_str`}\
@@ -1669,7 +1665,11 @@ void `{`$full_class_name`}::impl::finalise_fetch( )
 void `{`$full_class_name`}::impl::at_create( )
 {
 `{`?`$all_at_create_specifications`[`$all_at_create_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'default_group_fk_for_user`'`)\
+`{`@eq`(`'\1`'`,`'default_for_clone`'`)\
+`{`#default_for_clone.spec.xrep section=at_create class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field`}
+`,\
+`@eq`(`'\1`'`,`'default_group_fk_for_user`'`)\
 `{`#default_group_fk_for_user.spec.xrep section=at_create class_name=$class_name\
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_ufield=$specification_\0_ufield arg_gfield=$specification_\0_gfield`}
 `,\

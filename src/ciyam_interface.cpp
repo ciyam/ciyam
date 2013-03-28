@@ -979,8 +979,8 @@ void request_handler::process_request( )
          session_id = c_new_session;
       }
 
-      if( !is_ssl && cmd == c_cmd_open )
-         cmd = c_cmd_home;
+      if( is_ssl && cmd.empty( ) )
+         cmd = c_cmd_open;
 
       if( cmd != c_cmd_status )
          unique_id = get_unique( g_id, input_data[ c_http_param_raddr ] );
@@ -3408,7 +3408,10 @@ void request_handler::process_request( )
                         }
                      }
 
-                     extra_content << p_session_info->user_name;
+                     if( p_session_info->user_name.empty( ) )
+                        extra_content << p_session_info->user_id;
+                     else
+                        extra_content << p_session_info->user_name;
 
                      if( has_user_link )
                         extra_content << "</a>";
