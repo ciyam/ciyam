@@ -1,4 +1,4 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'at_create`'`,`$section`)\
    // [(start default_for_clone)] `{`$arg_id`}
    if( !get_obj( ).get_clone_key( ).empty( ) )
       get_obj( ).`{`$arg_field`}( gv_default_`{`$arg_field`} );
