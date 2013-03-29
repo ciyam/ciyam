@@ -629,6 +629,10 @@ function after_force( )
    if( !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
       sessionStorage.removeItem( 'key' );
 
+   if( loggedIn && encryptPosts && source[ 0 ] == 'https'
+    && typeof sessionStorage == 'object' && sessionStorage.getItem( 'key ' ) == null )
+      sessionStorage.setItem( 'key', 'dummy' );
+
    if( uniqueId != '' && typeof sessionStorage == 'object' )
       sessionStorage.setItem( 'unique', uniqueId );
 
