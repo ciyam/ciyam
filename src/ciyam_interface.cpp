@@ -144,8 +144,8 @@ const char* const c_http_param_query = "QUERY_STRING";
 const char* const c_http_param_cookie = "HTTP_COOKIE";
 const char* const c_http_param_uagent = "HTTP_USER_AGENT";
 
-const char* const c_openid_ext_email = "openid.ext1.value.email";
 const char* const c_openid_username = "openid_username";
+const char* const c_openid_ext_email = "openid.ext1.value.email";
 
 const char* const c_nbsp = "&nbsp;";
 
@@ -992,6 +992,7 @@ void request_handler::process_request( )
             string user_id = input_data[ c_http_param_ruser ];
             if( !user_id.empty( ) )
             {
+               temp_session = false;
                is_authorised = true;
                userhash = sha256( user_id ).get_digest_as_string( );
             }
@@ -1050,7 +1051,7 @@ void request_handler::process_request( )
             else
                session_id = p_session_info->session_id = uuid( ).as_string( );
 
-            if( !temp_session && ( is_authorised || persistent == c_true ) )
+            if( !temp_session && cmd != c_cmd_open && ( is_authorised || persistent == c_true ) )
             {
                string dtmoff( input_data[ c_param_dtmoff ] );
                if( !dtmoff.empty( ) )
@@ -1209,7 +1210,8 @@ void request_handler::process_request( )
 
                         // NOTE: As the original "g_id" value was empty any URL link or attempt to login
                         // could fail so force the page to refresh using the now corrected "g_id" value.
-                        extra_content_func += "refresh( false );\n";
+                        if( cmd != c_cmd_open )
+                           extra_content_func += "refresh( false );\n";
                      }
 
                      g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
@@ -1268,11 +1270,11 @@ void request_handler::process_request( )
                }
             }
 
-            if( connection_okay && p_session_info->user_id.empty( ) )
-            {
-               if( mod_info.strings.empty( ) )
-                  read_module_strings( mod_info, *p_session_info->p_socket );
+            if( connection_okay && mod_info.strings.empty( ) )
+               read_module_strings( mod_info, *p_session_info->p_socket );
 
+            if( connection_okay && cmd != c_cmd_open && p_session_info->user_id.empty( ) )
+            {
                bool is_replacement_session = false;
 
                if( cmd != c_cmd_join && !mod_info.user_class_name.empty( ) )
@@ -4008,7 +4010,17 @@ void request_handler::process_request( )
                   str_replace( openup_html, c_error_message, error_message );
 
                   if( req_username.empty( ) )
+                  {
                      req_username = input_data[ c_openid_username ];
+
+                     if( req_username.empty( ) )
+                     {
+                        req_username = input_data[ c_openid_ext_email ];
+                        string::size_type pos = req_username.find( '@' );
+                        if( pos != string::npos )
+                           req_username.erase( pos );
+                     }
+                  }
 
                   str_replace( openup_html, c_user_name, req_username );
 
@@ -4403,7 +4415,8 @@ void request_handler::process_request( )
 
             extra_content << "</div>\n";
 
-            if( cmd != c_cmd_join && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
+            if( cmd != c_cmd_join && cmd != c_cmd_open
+             && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
             {
                extra_content << "\n<div id=\"sidebar\">\n";
                extra_content << "   <ul>\n";
@@ -4618,6 +4631,17 @@ void request_handler::process_request( )
                extra_content << "       \\'-' .--\"--\"\"-\"-'\n";
                extra_content << "        '--'\n";
                extra_content << "</pre>\n";
+
+               extra_content << "</div>\n";
+            }
+
+            if( cmd == c_cmd_open )
+            {
+               extra_content << "\n<div id=\"sidebar\">\n";
+
+               extra_content << "<ul><li><a href=\""
+                << get_module_page_name( module_ref ) << "?cmd="
+                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li></ul>\n";
 
                extra_content << "</div>\n";
             }
