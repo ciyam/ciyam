@@ -138,9 +138,10 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 #endif
          socket.write_line( str );
 
+#ifdef SSL_SUPPORT
          if( str == "starttls" && !socket.is_secure( ) )
             socket.ssl_connect( );
-
+#endif
          if( str == "quit" )
          {
             str.erase( );
