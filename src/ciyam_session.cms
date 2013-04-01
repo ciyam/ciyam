@@ -62,6 +62,7 @@ password "retrieve an encrypted system password" <val//name>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_abbr>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 schedule "display autoscript schedule"
 smtpinfo "retrieves the sendmail sender address"
+starttls "start TLS session"
 timezone "display timezone abbreviation"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
 runscript "run an external script or program" [<val//script_name>]

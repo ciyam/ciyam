@@ -11,13 +11,22 @@
 #     include <string>
 #  endif
 
+#  include "config.h"
 #  include "sockets.h"
 #  include "threads.h"
+#  ifdef SSL_SUPPORT
+#     include "ssl_socket.h"
+#  endif
 
 class ciyam_session : public thread
 {
    public:
+#  ifdef SSL_SUPPORT
+   ciyam_session( std::auto_ptr< ssl_socket >& ap_socket );
+#  else
    ciyam_session( std::auto_ptr< tcp_socket >& ap_socket );
+#endif
+
    ~ciyam_session( );
 
    void on_start( );
@@ -26,7 +35,11 @@ class ciyam_session : public thread
    static void decrement_session_count( );
 
    private:
+#  ifdef SSL_SUPPORT
+   std::auto_ptr< ssl_socket > ap_socket;
+#  else
    std::auto_ptr< tcp_socket > ap_socket;
+#  endif
 };
 
 #endif
