@@ -3318,7 +3318,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
 #ifdef SSL_SUPPORT
          if( socket.is_secure( ) )
-            throw runtime_error( "SSL is already active" );
+            throw runtime_error( "TLS is already active" );
 
          if( !get_using_ssl( ) )
             throw runtime_error( "SSL has not been initialised" );

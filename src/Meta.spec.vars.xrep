@@ -4755,7 +4755,7 @@
 `{`$specification_Type_view_field011`=`'102118`'`}
 `{`$specification_Type_view_ftype011`=`'bool`'`}
 `{`$specification_Type_view_extra011`=`'force`'`}
-`{`$specification_Type_view_fmods011`=`'20000:relegate,400:relegate,200:relegate,40000:relegate,100:relegate,4000:relegate,8000:relegate`'`}
+`{`$specification_Type_view_fmods011`=`'20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate,4000:relegate,8000:relegate`'`}
 `{`$specification_Type_view_fname011`=`'field_type_auto_round`'`}
 `{`$specification_Type_view_fmand011`=`'true`'`}
 `{`$specification_Type_view_field012`=`'102119`'`}

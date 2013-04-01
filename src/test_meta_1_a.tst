@@ -92,12 +92,13 @@ str200,T104
 year,T105
 duration,T106
 filename,T107
-0..100,T108
-std_date,T109
-std_time,T110
-std_datetime,T111
-std_timestamp,T112
-std_numeric,T113
-std_percentage,T114
+0..10,T108
+0..100,T109
+std_date,T110
+std_time,T111
+std_datetime,T112
+std_timestamp,T113
+std_numeric,T114
+std_percentage,T115
 
 > 
