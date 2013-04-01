@@ -6644,7 +6644,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,100:relegate,4000:relegate,8000:relegate
+     <modifiers>20000:relegate,400:relegate,200:relegate,40000:relegate,800:relegate,100:relegate,4000:relegate,8000:relegate
     </field>
     <field/>
      <name>field_type_rounding_method
