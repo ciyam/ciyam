@@ -31,6 +31,10 @@
 #include "sockets.h"
 #include "console.h"
 #include "utilities.h"
+#ifdef SSL_SUPPORT
+#  include "ssl_socket.h"
+#  include <openssl/applink.c>
+#endif
 #include "command_parser.h"
 #include "console_commands.h"
 
@@ -82,7 +86,11 @@ string application_title( app_info_request request )
 class ciyam_console_command_handler : public console_command_handler
 {
    public:
+#ifdef SSL_SUPPORT
+   ciyam_console_command_handler( ssl_socket& socket )
+#else
    ciyam_console_command_handler( tcp_socket& socket )
+#endif
     :
     port( c_default_ciyam_port ),
     host( c_default_ciyam_host ),
@@ -98,7 +106,11 @@ class ciyam_console_command_handler : public console_command_handler
    int port;
    string host;
 
+#ifdef SSL_SUPPORT
+   ssl_socket& socket;
+#else
    tcp_socket& socket;
+#endif
 
    string preprocess_command_and_args( const string& cmd_and_args );
 
@@ -125,6 +137,9 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          cout << "sending command: " << str << endl;
 #endif
          socket.write_line( str );
+
+         if( str == "starttls" && !socket.is_secure( ) )
+            socket.ssl_connect( );
 
          if( str == "quit" )
          {
@@ -201,6 +216,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
                      response.erase( );
                      is_in_progress = true;
                   }
+
                }
 #ifdef DEBUG
                else
@@ -245,7 +261,17 @@ int main( int argc, char* argv[ ] )
    winsock_init wsi;
 #endif   
 
+#ifdef SSL_SUPPORT
+   if( file_exists( "ciyam_client.pem" ) )
+      init_ssl( "ciyam_client.pem", "password" );
+#endif
+
+#ifdef SSL_SUPPORT
+   ssl_socket socket;
+#else
    tcp_socket socket;
+#endif
+
    ciyam_console_command_handler cmd_handler( socket );
 
    try
@@ -268,7 +294,7 @@ int main( int argc, char* argv[ ] )
             is_default = true;
 
 #ifdef _WIN32
-         if( socket.connect( address, is_default ? 2500 : c_greeting_timeout ) )
+         if( socket.connect( address, is_default ? 1000 : c_greeting_timeout ) )
 #else
          // NOTE: If the server was started asynchronously in a script immediately prior
          // to the client then wait for half a second and then try again just to be sure.
@@ -324,5 +350,9 @@ int main( int argc, char* argv[ ] )
    {
       cerr << "error: " << x.what( ) << endl;
    }
+
+#ifdef SSL_SUPPORT
+   term_ssl( );
+#endif
 }
 

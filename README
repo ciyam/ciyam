@@ -134,5 +134,6 @@ For VC++ the INCLUDE environment variable will need this added:
 C:\OpenSSL-Win32\include
 e.g. set INCLUDE=C:\OpenSSL-Win32\include;%INCLUDE%
 
-Note that "ciyam_server.pem" is a test public/private key pair encrypted with the password "password".
+Note that "ciyam_server.pem" and "ciyam_client.pem" are identical public/private test only SSL keys encrypted
+with the password "password".
 

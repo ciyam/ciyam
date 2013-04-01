@@ -11,14 +11,17 @@
 
 #  include <openssl/ssl.h>
 
-void init_ssl( const char* p_keyfile, const char* p_password = 0, const char* p_CA_List = 0 );
+void init_ssl( const char* p_keyfile,
+ const char* p_password = 0, const char* p_CA_List = 0, bool multi_threaded = false );
+
 void term_ssl( );
 
 struct ssl_init
 {
-   ssl_init( const char* p_keyfile, const char* p_password = 0, const char* p_CA_List = 0 )
+   ssl_init( const char* p_keyfile,
+    const char* p_password = 0, const char* p_CA_List = 0, bool multi_threaded = false )
    {
-      init_ssl( p_keyfile, p_password, p_CA_List );
+      init_ssl( p_keyfile, p_password, p_CA_List, multi_threaded );
    }
 
    ~ssl_init( ) { term_ssl( ); }
@@ -32,6 +35,7 @@ class ssl_socket : public tcp_socket
 
    virtual ~ssl_socket( );
 
+   void ssl_accept( );
    void ssl_connect( );
 
    bool is_secure( ) const { return secure; }

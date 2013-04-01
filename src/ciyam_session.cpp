@@ -788,7 +788,11 @@ void read_log_transformation_info( const string& file_name, map< string, string 
 class socket_command_handler : public command_handler
 {
    public:
+#ifdef SSL_SUPPORT
+   socket_command_handler( ssl_socket& socket )
+#else
    socket_command_handler( tcp_socket& socket )
+#endif
     :
     socket( socket ),
     restoring( false )
@@ -798,7 +802,11 @@ class socket_command_handler : public command_handler
    size_t get_sess_id( ) const { return sess_id; }
    void set_sess_id( size_t new_sess_id ) { sess_id = new_sess_id; }
 
+#ifdef SSL_SUPPORT
+   ssl_socket& get_socket( ) { return socket; }
+#else
    tcp_socket& get_socket( ) { return socket; }
+#endif
 
    const string& get_next_command( ) { return next_command; }
 
@@ -834,7 +842,11 @@ class socket_command_handler : public command_handler
    void handle_command_response( const string& response, bool is_special );
 
    size_t sess_id;
+#ifdef SSL_SUPPORT
+   ssl_socket& socket;
+#else
    tcp_socket& socket;
+#endif
 
    bool restoring;
 
@@ -936,7 +948,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    bool send_okay_response = true;
    bool possibly_expected_error = false;
 
+#ifdef SSL_SUPPORT
+   ssl_socket& socket( socket_handler.get_socket( ) );
+#else
    tcp_socket& socket( socket_handler.get_socket( ) );
+#endif
 
    if( command != c_cmd_ciyam_session_quit && !socket_handler.is_restoring( ) && !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
@@ -3298,6 +3314,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_smtpinfo )
          response = get_smtp_username( ) + "@" + get_smtp_suffix( );
+      else if( command == c_cmd_ciyam_session_starttls )
+      {
+#ifdef SSL_SUPPORT
+         if( socket.is_secure( ) )
+            throw runtime_error( "SSL is already active" );
+
+         if( !get_using_ssl( ) )
+            throw runtime_error( "SSL has not been initialised" );
+
+         socket.ssl_accept( );
+#else
+         throw runtime_error( "SSL support not available" );
+#endif
+      }
       else if( command == c_cmd_ciyam_session_timezone )
          response = get_timezone( );
       else if( command == c_cmd_ciyam_session_checkmail )
@@ -3474,7 +3504,11 @@ void socket_command_processor::output_command_usage( const string& wildcard_matc
 
 }
 
+#ifdef SSL_SUPPORT
+ciyam_session::ciyam_session( auto_ptr< ssl_socket >& ap_socket )
+#else
 ciyam_session::ciyam_session( auto_ptr< tcp_socket >& ap_socket )
+#endif
  :
  ap_socket( ap_socket )
 {

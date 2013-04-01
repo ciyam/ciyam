@@ -22,6 +22,8 @@
 #  endif
 #endif
 
+#include <openssl/crypto.h>
+
 using namespace std;
 
 namespace
@@ -87,23 +89,98 @@ void print_cert_info( SSL* p_ssl )
 
 static int g_server_session_id_context = 1;
 
-void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_List )
+#ifdef _WIN32
+#  define MUTEX_TYPE HANDLE
+#  define MUTEX_SETUP( x ) ( x ) = CreateMutex( 0, false, 0 )
+#  define MUTEX_CLEANUP( x ) CloseHandle( x )
+#  define MUTEX_LOCK( x ) WaitForSingleObject( ( x ), INFINITE )
+#  define MUTEX_UNLOCK( x ) ReleaseMutex( x )
+#  define THREAD_ID GetCurrentThreadId( )
+#else
+#  define MUTEX_TYPE pthread_mutex_t
+#  define MUTEX_SETUP( x ) pthread_mutex_init( &( x ), 0 )
+#  define MUTEX_CLEANUP( x ) pthread_mutex_destroy( &( x ) )
+#  define MUTEX_LOCK( x ) pthread_mutex_lock( &( x ) )
+#  define MUTEX_UNLOCK( x ) pthread_mutex_unlock( &( x ) )
+#  define THREAD_ID pthread_self( )
+#endif
+
+static MUTEX_TYPE* gp_mutex_buf = 0;
+
+static void locking_function( int mode, int n, const char* p_file, int line )
+{
+   ( void )p_file;
+   ( void )line;
+
+   if( mode & CRYPTO_LOCK )
+      MUTEX_LOCK( gp_mutex_buf[ n ] );
+   else
+      MUTEX_UNLOCK( gp_mutex_buf[ n ] );
+}
+
+static unsigned long id_function( )
+{
+   return ( unsigned long )THREAD_ID;
+}
+
+bool thread_setup( )
+{
+   gp_mutex_buf = ( MUTEX_TYPE * )malloc( CRYPTO_num_locks( ) * sizeof( MUTEX_TYPE ) );
+
+   if( !gp_mutex_buf )
+      return false;
+
+   for( int i = 0; i < CRYPTO_num_locks( ); i++ )
+      MUTEX_SETUP( gp_mutex_buf[ i ] );
+
+   CRYPTO_set_id_callback( id_function );
+   CRYPTO_set_locking_callback( locking_function );
+
+   return true;
+}
+
+bool thread_cleanup( )
+{
+   if( !gp_mutex_buf )
+      return false;
+
+   CRYPTO_set_id_callback( 0 );
+   CRYPTO_set_locking_callback( 0 );
+
+   for( int i = 0; i < CRYPTO_num_locks( ); i++ )
+      MUTEX_CLEANUP( gp_mutex_buf[ i ] );
+
+   free( gp_mutex_buf );
+   gp_mutex_buf = 0;
+
+   return true;
+}
+
+void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_List, bool multi_threaded )
 {
    if( p_ctx )
       throw runtime_error( "init_ssl has already been called" );
 
-   SSL_library_init( );
+   bool okay = true;
+
+   if( multi_threaded )
+      okay = thread_setup( );
+
+   if( okay )
+      okay = SSL_library_init( );
+
+   if( !okay )
+      throw runtime_error( "OpenSSL initialisation failed" );
+
    SSL_load_error_strings( );
 
 #ifdef __GNUG__
    signal( SIGPIPE, sigpipe_handle );
 #endif
 
-   /* Create our context*/
    const SSL_METHOD* p_meth( SSLv23_method( ) );
    p_ctx = SSL_CTX_new( p_meth );
 
-   /* Load our keys and certificates*/
    if( !( SSL_CTX_use_certificate_chain_file( p_ctx, p_keyfile ) ) )
       throw runtime_error( "init_ssl: can't read certificate file" );
 
@@ -113,7 +190,6 @@ void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_L
    if( !( SSL_CTX_use_PrivateKey_file( p_ctx, p_keyfile, SSL_FILETYPE_PEM ) ) )
       throw runtime_error( "init_ssl: can't read key file" );
 
-   /* Load the CAs we trust*/
    if( p_CA_List && !( SSL_CTX_load_verify_locations( p_ctx, p_CA_List, 0 ) ) )
       throw runtime_error( "init_ssl: can't read CA list" );
 
@@ -127,6 +203,9 @@ void init_ssl( const char* p_keyfile, const char* p_password, const char* p_CA_L
 
 void term_ssl( )
 {
+   if( gp_mutex_buf )
+      thread_cleanup( );
+
    SSL_CTX_free( p_ctx );
 }
 
@@ -152,10 +231,23 @@ ssl_socket::~ssl_socket( )
       SSL_free( p_ssl );
 }
 
+void ssl_socket::ssl_accept( )
+{
+   if( secure )
+      throw runtime_error( "SSL handshake has already been performed" );
+
+   SSL_set_fd( p_ssl, get_socket( ) );
+
+   if( SSL_accept( p_ssl ) <= 0 )
+      throw runtime_error( "SSL accept failure" );
+
+   secure = true;
+}
+
 void ssl_socket::ssl_connect( )
 {
    if( secure )
-      throw runtime_error( "SSL connect has already performed" );
+      throw runtime_error( "SSL handshake has already been performed" );
 
    SSL_set_fd( p_ssl, get_socket( ) );
 

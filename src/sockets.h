@@ -101,16 +101,16 @@ class tcp_socket
 
    SOCKET socket;
 
-   // FUTURE: Need to add a member in order to detect the "would block" status before allowing these to be public.
-   bool set_blocking( );
-   bool set_non_blocking( );
-
    tcp_socket( const tcp_socket& );
    tcp_socket& operator =( const tcp_socket& );
 
    protected:
    bool timed_out;
    SOCKET get_socket( ) const { return socket; }
+
+   // FUTURE: Need to add a member in order to detect the "would block" status before allowing these to be public.
+   bool set_blocking( );
+   bool set_non_blocking( );
 };
 
 #endif

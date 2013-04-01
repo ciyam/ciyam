@@ -21,10 +21,10 @@
 
 #include "config.h"
 #include "sockets.h"
+#include "utilities.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #endif
-#include "utilities.h"
 
 //#define DEBUG
 #define USE_NO_DELAY

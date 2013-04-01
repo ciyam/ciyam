@@ -58,6 +58,9 @@
 #include "utilities.h"
 #include "ciyam_base.h"
 #include "auto_script.h"
+#ifdef SSL_SUPPORT
+#  include "ssl_socket.h"
+#endif
 #include "ciyam_session.h"
 #include "console_commands.h"
 
@@ -542,7 +545,11 @@ int main( int argc, char* argv[ ] )
                }
 
                // NOTE: Check for accepts and create new sessions.
+#ifdef SSL_SUPPORT
+               auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
+#else
                auto_ptr< tcp_socket > ap_socket( new tcp_socket( s.accept( address, c_accept_timeout ) ) );
+#endif
                if( !g_server_shutdown && *ap_socket && get_is_accepted_ip_addr( address.get_addr_string( ) ) )
                {
                   ciyam_session* p_session = new ciyam_session( ap_socket );

@@ -3665,7 +3665,7 @@ void init_globals( )
       if( !g_pem_password.empty( ) )
          password = get_pem_password( );
 
-      init_ssl( "ciyam_server.pem", password.c_str( ) );
+      init_ssl( "ciyam_server.pem", password.c_str( ), 0, true );
       g_using_ssl = true;
    }
 #endif
