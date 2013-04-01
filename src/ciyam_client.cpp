@@ -33,7 +33,9 @@
 #include "utilities.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
-#  include <openssl/applink.c>
+#  ifdef _WIN32
+#     include <openssl/applink.c>
+#  endif
 #endif
 #include "command_parser.h"
 #include "console_commands.h"
