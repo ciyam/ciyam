@@ -1314,7 +1314,9 @@ void perform_storage_op( storage_op op,
          g_storage_handlers[ slot ] = p_new_handler;
          g_storage_handler_index.insert( make_pair( name, slot ) );
 
+         // NOTE: The ODS instance now belongs to the storage handler (and not to this session).
          ap_ods.release( );
+         ods::instance( 0, true );
       }
       catch( ods_error& err )
       {
@@ -1371,20 +1373,22 @@ void perform_storage_op( storage_op op,
             gtp_session->storage_controlled_modules.pop_back( );
          }
 
-         p_new_handler->release_bulk_write( );
-         p_new_handler->release_ods( );
-
          if( created_ods_instance )
          {
             delete ods::instance( );
             ods::instance( 0, true );
          }
 
-         g_storage_handler_index.erase( p_new_handler->get_name( ) );
-         g_storage_handlers[ p_new_handler->get_slot( ) ] = 0;
-
          if( was_constructed )
+         {
+            p_new_handler->release_bulk_write( );
+            p_new_handler->release_ods( );
+
+            g_storage_handler_index.erase( p_new_handler->get_name( ) );
+            g_storage_handlers[ p_new_handler->get_slot( ) ] = 0;
+
             delete p_new_handler;
+         }
 
          gtp_session->p_storage_handler = p_old_handler;
 
