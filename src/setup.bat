@@ -31,6 +31,11 @@ mkdir "%install_path%\images"
 unbundle -qq images -d "%install_path%\images"
 
 :skip_images
+if exisr "%install_path%\css" goto skip_images
+mkdir "%install_path%\css"
+unbundle -qq images -d "%install_path%\css"
+
+:skip_css
 if exist "%install_path%\popups" goto skip_popups
 mkdir "%install_path%\popups"
 unbundle -qq popups -d "%install_path%\popups"

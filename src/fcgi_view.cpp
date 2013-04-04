@@ -1737,14 +1737,30 @@ bool output_view_form( ostream& os, const string& act,
                   if( pos == string::npos )
                      throw runtime_error( "unexpected range format" );
 
-                  range_extra = ", '" + extra_data[ c_field_extra_range ].substr( 0, pos ) + "'";
-                  range_extra += ", '" + extra_data[ c_field_extra_range ].substr( pos + 2 ) + "'";
+                  range_extra = ", minDate: new Date('" + extra_data[ c_field_extra_range ].substr( 0, pos ) + "')";
+                  range_extra += ", maxDate: new Date('" + extra_data[ c_field_extra_range ].substr( pos + 2 ) + "')";
                }
 
-               os << "&nbsp;<a href=\"javascript:NewCal( '" << name
-                << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">";
-               os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
-                << GDS( c_display_pick_a_date ) << "\"></a>";
+               //Date & Time picker (Pikaday)
+               os << "&nbsp;<input type=\"button\" id=\"search_" << name
+                << "img\" class=\"pikaday_button\""
+                << GDS( c_display_pick_a_date ) << "\">";
+             
+               extra_content_func += "var pika" + name + " = new Pikaday("
+                + "{"
+                   + "field: document.getElementById( 'search_" + name + "' ),"
+                   + "calbutton: document.getElementById( 'search_" + name + "img' ),"
+                   + "yearRange: 10,"
+                   + "formatPreset: 1,"
+                   + "confirm: true,"
+                   + "useTime: true,"
+                   + "useSecs: true"
+                + "});";
+               //Pikaday
+               //os << "&nbsp;<a href=\"javascript:NewCal( '" << name
+               // << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">";
+               //os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
+               // << GDS( c_display_pick_a_date ) << "\"></a>";
             }
             else if( is_password )
             {
