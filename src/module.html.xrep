@@ -21,11 +21,9 @@
 <script language="javascript" type="text/javascript">var module = 'module=`{`$model_name`}';</script>
 
 <link rel="stylesheet" href="ciyam_interface.css" type="text/css"/>
+<link rel="stylesheet" href="css/pikaday.css" type="text/css"/>
 <script language="javascript" type="text/javascript" src="ciyam_interface.js"></script>
-<script language="javascript" type="text/javascript" src="datetimepicker.js">
-//Date Time Picker script- by TengYong Ng of http://www.rainforestnet.com
-//Script featured on JavaScript Kit (http://www.javascriptkit.com)
-//For this script, visit http://www.javascriptkit.com 
+<script language="javascript" type="text/javascript" src="pikaday.js">
 </script>
 <script language="javascript" type="text/javascript" src="scripts/wysiwyg.js"></script>
 <script language="javascript" type="text/javascript" src="scripts/wysiwyg-settings.js"></script>
