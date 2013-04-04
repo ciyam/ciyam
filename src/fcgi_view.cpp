@@ -1453,7 +1453,7 @@ bool output_view_form( ostream& os, const string& act,
 
             int max_length = 100;
 
-            string extra, extra_keys, validate, dt_extra( "false" );
+            string extra, extra_keys, validate, use_time( "false" ), use_secs( "false" );
             bool is_password = false;
             bool is_datetime = false;
 
@@ -1622,7 +1622,7 @@ bool output_view_form( ostream& os, const string& act,
                extra = "size=\"21\" ";
                validate = "datetime";
                max_length = 19;
-               dt_extra = "true";
+               use_time = "true";
                is_datetime = true;
 
                bool is_empty( cell_data.empty( ) );
@@ -1656,6 +1656,7 @@ bool output_view_form( ostream& os, const string& act,
                {
                   extra = "size=\"18\" ";
                   max_length = 16;
+                  use_secs = "false";
                }
 
                if( !is_empty )
@@ -1741,26 +1742,14 @@ bool output_view_form( ostream& os, const string& act,
                   range_extra += ", maxDate: new Date('" + extra_data[ c_field_extra_range ].substr( pos + 2 ) + "')";
                }
 
-               //Date & Time picker (Pikaday)
-               os << "&nbsp;<input type=\"button\" id=\"search_" << name
-                << "img\" class=\"pikaday_button\""
-                << GDS( c_display_pick_a_date ) << "\">";
+               os << "&nbsp;<input type=\"button\" id=\"" << name
+                << "_img\" class=\"pikaday_button\"" << GDS( c_display_pick_a_date ) << "\">";
              
-               extra_content_func += "var pika" + name + " = new Pikaday("
-                + "{"
-                   + "field: document.getElementById( 'search_" + name + "' ),"
-                   + "calbutton: document.getElementById( 'search_" + name + "img' ),"
-                   + "yearRange: 10,"
-                   + "formatPreset: 1,"
-                   + "confirm: true,"
-                   + "useTime: true,"
-                   + "useSecs: true"
-                + "});";
-               //Pikaday
-               //os << "&nbsp;<a href=\"javascript:NewCal( '" << name
-               // << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">";
-               //os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
-               // << GDS( c_display_pick_a_date ) << "\"></a>";
+               extra_content_func += "var pika" + name + " = new Pikaday( "
+                + "{ field: document.getElementById( '" + name + "' ),"
+                + " calbutton: document.getElementById( '" + name + "_img' ),"
+                + " yearRange: 10, formatPreset: 1, confirm: true, useTime: "
+                + use_time + ", useSecs: " + use_secs + " } );\n";
             }
             else if( is_password )
             {

@@ -1212,7 +1212,7 @@ void output_list_form( ostream& os,
                   int input_size = 25;
                   int max_length = 100;
                   bool is_datetime = false;
-                  string extra, validate, dt_extra( "false" );
+                  string extra, validate, use_time( "false" ), use_secs( "true" );
 
                   string range_min, range_max, range_extra;
                   if( field_extras.count( c_field_extra_range ) )
@@ -1282,9 +1282,9 @@ void output_list_form( ostream& os,
                   {
                      input_size = 21;
                      max_length = 19;
-                     is_datetime = true;
                      validate = "datetime";
-                     dt_extra = "true";
+                     use_time = "true";
+                     is_datetime = true;
 
                      string time_precision;
                      if( field_extras.count( c_field_extra_time_precision ) )
@@ -1294,6 +1294,7 @@ void output_list_form( ostream& os,
                      {
                         input_size = 18;
                         max_length = 16;
+                        use_secs = "false";
                      }
 
                      if( !value.empty( ) )
@@ -1329,37 +1330,13 @@ void output_list_form( ostream& os,
 
                   if( is_datetime )
                   {
-                     // Date & Time picker (Pikaday)
-
                      os << "&nbsp;<input type=\"button\" id=\"search_" << svname
-                      << "img\" class=\"pikaday_button\""
-                      << GDS( c_display_pick_a_date ) << "\">";
+                      << "img\" class=\"pikaday_button\"" << GDS( c_display_pick_a_date ) << "\">";
                      
                      extra_content_func += "var pika" + svname + " = new Pikaday("
-                      + "{"
-                         + "field: document.getElementById( 'search_" + svname + "' ),"
-                         + "calbutton: document.getElementById( 'search_" + svname + "img' ),"
-                         + "yearRange: 10,"
-                         + "formatPreset: 1,"
-                         + "confirm: true,"
-                         + "useTime: true,"
-                         + "useSecs: true"
-                      + "});";
-                     
-                     /*var timeSecondsConfirm = new Pikaday(
-                     {
-                         field: document.getElementById('timeSecondsConfirm'),
-                         calbutton: document.getElementById('timeSecondsConfirmImg'),
-                         firstDay: 0,
-                         minDate: new Date('2000-01-01'),
-                         maxDate: new Date('2020-12-31'),
-                         yearRange: [2000,2020],
-                         formatPreset: 1,
-                         useTime: true,
-                         useSecs: true,
-                         confirm: true
-                     });*/
-                     
+                      + "{ field: document.getElementById( 'search_" + svname + "' ),"
+                      + " calbutton: document.getElementById( 'search_" + svname + "img' ),"
+                      + " yearRange: 10, formatPreset: 1, confirm: true, useTime: true, useSecs: false } );";
                   }
 
                   if( field_extras.count( c_field_extra_range )
@@ -1430,23 +1407,15 @@ void output_list_form( ostream& os,
 
                      if( is_datetime )
                      {
-                        
-                        // Date & Time picker (Pikaday)
-
                         os << "&nbsp;<input type=\"button\" id=\"search_" << svname
-                         << "img\" class=\"pikaday_button\""
+                         << "_img\" class=\"pikaday_button\""
                          << GDS( c_display_pick_a_date ) << "\">";
                      
                         extra_content_func += "var pika" + svname + " = new Pikaday("
-                         + "{"
-                            + "field: document.getElementById( 'search_" + svname + "' ),"
-                            + "calbutton: document.getElementById( 'search_" + svname + "img' ),"
-                            + "yearRange: 10,"
-                            + "formatPreset: 1,"
-                            + "confirm: true,"
-                            + "useTime: true,"
-                            + "useSecs: true"
-                         + "});";
+                         + "{ field: document.getElementById( 'search_" + svname + "' ),"
+                         + " calbutton: document.getElementById( 'search_" + svname + "_img' ),"
+                         + " yearRange: 10, formatPreset: 1, confirm: true, useTime: "
+                         + use_time + ", useSecs: " + use_secs + " } );";
                      }
                   }
                }
