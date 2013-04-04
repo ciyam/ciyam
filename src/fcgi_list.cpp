@@ -1329,20 +1329,22 @@ void output_list_form( ostream& os,
 
                   if( is_datetime )
                   {
-                     //Pikaday
-                     //os << "&nbsp;<a href=\"javascript:NewCal( 'search_" << svname
-                     // << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">hello</a>";
-                     //os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
-                     // << GDS( c_display_pick_a_date ) << "\"></a>";
+                     // Date & Time picker (Pikaday)
 
-                     os << "&nbsp;<input onclick=\"\" src=\"cal.gif\" type=\"image\" id=\"search_" << svname << "img\" width=\"16\" height=\"16\" border=\"0\" alt=\""
+                     os << "&nbsp;<input type=\"button\" id=\"search_" << svname
+                      << "img\" class=\"pikaday_button\""
                       << GDS( c_display_pick_a_date ) << "\">";
                      
-                     extra_content_func += "createPikaday( '" + svname + "' );\n";
-                     
-                     
-                     //os << "<script> console.log('Hello'); var search_" << svname << "Picker = new Pikaday( { field: document.getElementById( 'search_" << svname
-                     // <<"' ), calbutton: document.getElementById( 'search_" << svname << "img' ), yearRange: 10, formatPreset: 1, confirm: true } ); </script>"; 
+                     extra_content_func += "var pika" + svname + " = new Pikaday("
+                      + "{"
+                         + "field: document.getElementById( 'search_" + svname + "' ),"
+                         + "calbutton: document.getElementById( 'search_" + svname + "img' ),"
+                         + "yearRange: 10,"
+                         + "formatPreset: 1,"
+                         + "confirm: true,"
+                         + "useTime: true,"
+                         + "useSecs: true"
+                      + "});";
                      
                      /*var timeSecondsConfirm = new Pikaday(
                      {
@@ -1428,14 +1430,23 @@ void output_list_form( ostream& os,
 
                      if( is_datetime )
                      {
-                        //Pikaday
-                        os << "&nbsp;<a href=\"javascript:NewCal( 'search_" << svname
-                         << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">hello</a>";
-                        //os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
-                        // << GDS( c_display_pick_a_date ) << "\"></a>";
                         
-                        os << "&nbsp;<img src=\"cal.gif\" id=\"search_" << svname << "img\" width=\"16\" height=\"16\" border=\"0\" alt=\""
+                        // Date & Time picker (Pikaday)
+
+                        os << "&nbsp;<input type=\"button\" id=\"search_" << svname
+                         << "img\" class=\"pikaday_button\""
                          << GDS( c_display_pick_a_date ) << "\">";
+                     
+                        extra_content_func += "var pika" + svname + " = new Pikaday("
+                         + "{"
+                            + "field: document.getElementById( 'search_" + svname + "' ),"
+                            + "calbutton: document.getElementById( 'search_" + svname + "img' ),"
+                            + "yearRange: 10,"
+                            + "formatPreset: 1,"
+                            + "confirm: true,"
+                            + "useTime: true,"
+                            + "useSecs: true"
+                         + "});";
                      }
                   }
                }

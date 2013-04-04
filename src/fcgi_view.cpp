@@ -1740,7 +1740,22 @@ bool output_view_form( ostream& os, const string& act,
                   range_extra = ", minDate: new Date('" + extra_data[ c_field_extra_range ].substr( 0, pos ) + "')";
                   range_extra += ", maxDate: new Date('" + extra_data[ c_field_extra_range ].substr( pos + 2 ) + "')";
                }
-                
+
+               //Date & Time picker (Pikaday)
+               os << "&nbsp;<input type=\"button\" id=\"search_" << name
+                << "img\" class=\"pikaday_button\""
+                << GDS( c_display_pick_a_date ) << "\">";
+             
+               extra_content_func += "var pika" + name + " = new Pikaday("
+                + "{"
+                   + "field: document.getElementById( 'search_" + name + "' ),"
+                   + "calbutton: document.getElementById( 'search_" + name + "img' ),"
+                   + "yearRange: 10,"
+                   + "formatPreset: 1,"
+                   + "confirm: true,"
+                   + "useTime: true,"
+                   + "useSecs: true"
+                + "});";
                //Pikaday
                //os << "&nbsp;<a href=\"javascript:NewCal( '" << name
                // << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">";
