@@ -29,7 +29,7 @@ void output_list_form( std::ostream& os,
  bool is_parent_edit, const std::map< std::string, std::string >& list_selections,
  const std::map< std::string, std::string >& list_search_text, const std::map< std::string, std::string >& list_search_values,
  uint64_t parent_state, bool is_child_list, const std::string& parent_key, bool keep_checks,
- const std::string& pident, const std::string& oident, const session_info& sess_info,
+ const std::string& pident, const std::string& oident, const session_info& sess_info, std::string& extra_content_func,
  const std::set< std::string >& specials, bool use_url_checksum, const std::string& qlink,
  const std::string& findinfo_and_listsrch, const std::set< std::string >& selected_records, bool embed_images,
  bool has_hashval, bool has_owner_parent, bool& has_any_changing, int back_count, const std::string* p_pdf_file_name = 0 );
