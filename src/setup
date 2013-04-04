@@ -23,15 +23,15 @@ else
   {
    cp .htaccess $WEBDIR/$2
   }
-  [ -d $WEBDIR/$2/images ] ||
-  {
-   mkdir $WEBDIR/$2/images
-   ./unbundle -qq images -d $WEBDIR/$2/images
-  }
   [ -d $WEBDIR/$2/css ] ||
   {
    mkdir $WEBDIR/$2/css
    ./unbundle -qq css -d $WEBDIR/$2/css
+  }
+  [ -d $WEBDIR/$2/images ] ||
+  {
+   mkdir $WEBDIR/$2/images
+   ./unbundle -qq images -d $WEBDIR/$2/images
   }
   [ -d $WEBDIR/$2/popups ] ||
   {
