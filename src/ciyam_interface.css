@@ -569,6 +569,16 @@ td.list
    height: 28px;
 }
 
+input.pikaday_button
+{
+   background: url(cal.gif) no-repeat;
+   cursor: pointer;
+   border: none;
+   padding: 0px;
+   height: 16px;
+   width: 16px;
+}
+
 /*LOGIN*/
 #loginbox
 {

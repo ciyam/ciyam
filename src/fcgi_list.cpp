@@ -529,7 +529,7 @@ void output_list_form( ostream& os,
  bool is_parent_edit, const map< string, string >& list_selections,
  const map< string, string >& list_search_text, const map< string, string >& list_search_values,
  uint64_t parent_state, bool is_child_list, const string& parent_key, bool keep_checks,
- const string& pident, const string& oident, const session_info& sess_info,
+ const string& pident, const string& oident, const session_info& sess_info, string& extra_content_func,
  const set< string >& specials, bool use_url_checksum, const string& qlink,
  const string& findinfo_and_listsrch, const set< string >& selected_records, bool embed_images,
  bool has_hashval, bool has_owner_parent, bool& has_any_changing, int back_count, const string* p_pdf_file_name )
@@ -1224,7 +1224,7 @@ void output_list_form( ostream& os,
                      range_min = field_extras[ c_field_extra_range ].substr( 0, pos );
                      range_max = field_extras[ c_field_extra_range ].substr( pos + 2 );
 
-                     range_extra = ", '" + range_min + "', '" + range_max + "'";
+                     range_extra = ", minDate: new Date('" + range_min + "'), maxDate: new Date('" + range_max + "')";
                   }
 
                   if( field_type == c_field_type_date || field_type == c_field_type_tdate || field_type == c_field_type_udate )
@@ -1329,10 +1329,37 @@ void output_list_form( ostream& os,
 
                   if( is_datetime )
                   {
-                     os << "&nbsp;<a href=\"javascript:NewCal( 'search_" << svname
-                      << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">";
-                     os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
-                      << GDS( c_display_pick_a_date ) << "\"></a>";
+                     // Date & Time picker (Pikaday)
+
+                     os << "&nbsp;<input type=\"button\" id=\"search_" << svname
+                      << "img\" class=\"pikaday_button\""
+                      << GDS( c_display_pick_a_date ) << "\">";
+                     
+                     extra_content_func += "var pika" + svname + " = new Pikaday("
+                      + "{"
+                         + "field: document.getElementById( 'search_" + svname + "' ),"
+                         + "calbutton: document.getElementById( 'search_" + svname + "img' ),"
+                         + "yearRange: 10,"
+                         + "formatPreset: 1,"
+                         + "confirm: true,"
+                         + "useTime: true,"
+                         + "useSecs: true"
+                      + "});";
+                     
+                     /*var timeSecondsConfirm = new Pikaday(
+                     {
+                         field: document.getElementById('timeSecondsConfirm'),
+                         calbutton: document.getElementById('timeSecondsConfirmImg'),
+                         firstDay: 0,
+                         minDate: new Date('2000-01-01'),
+                         maxDate: new Date('2020-12-31'),
+                         yearRange: [2000,2020],
+                         formatPreset: 1,
+                         useTime: true,
+                         useSecs: true,
+                         confirm: true
+                     });*/
+                     
                   }
 
                   if( field_extras.count( c_field_extra_range )
@@ -1403,10 +1430,23 @@ void output_list_form( ostream& os,
 
                      if( is_datetime )
                      {
-                        os << "&nbsp;<a href=\"javascript:NewCal( 'search_" << svname
-                         << "', 'yyyymmdd', " << dt_extra << ", 24" << range_extra << " );\">";
-                        os << "<img src=\"cal.gif\" width=\"16\" height=\"16\" border=\"0\" alt=\""
-                         << GDS( c_display_pick_a_date ) << "\"></a>";
+                        
+                        // Date & Time picker (Pikaday)
+
+                        os << "&nbsp;<input type=\"button\" id=\"search_" << svname
+                         << "img\" class=\"pikaday_button\""
+                         << GDS( c_display_pick_a_date ) << "\">";
+                     
+                        extra_content_func += "var pika" + svname + " = new Pikaday("
+                         + "{"
+                            + "field: document.getElementById( 'search_" + svname + "' ),"
+                            + "calbutton: document.getElementById( 'search_" + svname + "img' ),"
+                            + "yearRange: 10,"
+                            + "formatPreset: 1,"
+                            + "confirm: true,"
+                            + "useTime: true,"
+                            + "useSecs: true"
+                         + "});";
                      }
                   }
                }

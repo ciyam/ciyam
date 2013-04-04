@@ -4054,7 +4054,7 @@ void request_handler::process_request( )
                       i->second, session_id, uselect, "", false,
                       cookies_permitted, true, false, list_selections, list_search_text,
                       list_search_values, 0, false, "", false, "", i->second.lici->second->id, *p_session_info,
-                      specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
+                      extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
                       embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
                   }
                }
@@ -4243,7 +4243,7 @@ void request_handler::process_request( )
                         output_list_form( extra_content, child_lists[ i->second ],
                          session_id, uselect, "", ( cmd == c_cmd_pview ), cookies_permitted,
                          true, ( act == c_act_edit ), list_selections, list_search_text, list_search_values,
-                         state, true, data, keep_checks, ident, "", *p_session_info, specials, use_url_checksum, "",
+                         state, true, data, keep_checks, ident, "", *p_session_info, extra_content_func, specials, use_url_checksum, "",
                          findinfo + listsrch, selected_records, embed_images, !hashval.empty( ), is_owner, has_any_changing_records, back_count );
                      }
 
@@ -4350,7 +4350,7 @@ void request_handler::process_request( )
                   output_list_form( extra_content, list, session_id, uselect, error_message,
                    ( cmd == c_cmd_plist ), cookies_permitted, true, false, list_selections,
                    list_search_text, list_search_values, 0, false, "", keep_checks, "", oident,
-                   *p_session_info, specials, use_url_checksum, qlink, findinfo + listsrch,
+                   *p_session_info, extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch,
                    selected_records, embed_images, !hashval.empty( ), false, has_any_changing_records, back_count, &pdf_list_file_name );
 
                   if( cmd != c_cmd_plist )
