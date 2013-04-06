@@ -1336,7 +1336,8 @@ void output_list_form( ostream& os,
                      extra_content_func += "var pika" + svname + " = new Pikaday("
                       + "{ field: document.getElementById( 'search_" + svname + "' ),"
                       + " calbutton: document.getElementById( 'search_" + svname + "img' ),"
-                      + " yearRange: 10, formatPreset: 1, confirm: true, useTime: true, useSecs: false } );";
+                      + " yearRange: 10, formatPreset: 1, confirm: true, useTime: "
+                      + use_time + ", useSecs: " + use_secs + " } );";
                   }
 
                   if( field_extras.count( c_field_extra_range )
