@@ -106,9 +106,7 @@ const char* const c_local_ip_addr = "127.0.0.1";
 
 const char* const c_identity_file = "identity.txt";
 
-#ifndef _WIN32
-const char* const c_kill_script = "ciyam_interface.kill.sh";
-#else
+#ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
 #endif
 
@@ -628,9 +626,10 @@ class timeout_handler : public thread
 
 void timeout_handler::on_start( )
 {
+#ifdef _WIN32
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );
-
+#endif
    while( true )
    {
       msleep( 1000 );
@@ -709,18 +708,13 @@ void timeout_handler::on_start( )
          }
       }
 
+#ifdef _WIN32
       if( !file_exists( c_kill_script ) )
       {
          ofstream outf( c_kill_script );
-#ifdef _WIN32
          outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
-#else
-         outf << "kill -9 " << get_pid( ) << '\n';
-         outf.close( );
-
-         file_perms( c_kill_script, "rwxrwx---" );
-#endif
       }
+#endif
    }
 }
 
@@ -5133,9 +5127,10 @@ int main( int argc, char* argv[ ] )
       rc = 2;
    }
 
+#ifdef _WIN32
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );
-
+#endif
    return rc;
 }
 

@@ -22,14 +22,6 @@ else
    echo Error: File \'$directory/fcgi.sio\' does not exist.
   else
   {
-   if [ -f $directory/$1.kill.sh ]; then
-    rm $directory/$1.kill.sh
-    sleep 2
-     if [ -f $directory/$1.kill.sh ]; then
-      $directory/$1.kill.sh
-     fi
-   fi
-
    shift
    shift
 
