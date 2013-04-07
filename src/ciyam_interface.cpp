@@ -1648,7 +1648,7 @@ void request_handler::process_request( )
 #endif
                // NOTE: If a session has just been created then assume the invalid URL was
                // actually due to an already timeout session.
-               if( created_session )
+               if( created_session && !using_anonymous )
                   throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
                else
                   throw runtime_error( "Invalid URL" );
@@ -4786,15 +4786,17 @@ void request_handler::process_request( )
          string login_html( !cookies_permitted || !get_storage_info( ).login_days
           || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
 
-         if( created_session )
+         if( created_session && p_session_info->logged_in )
          {
             login_html = "<p>" + string_message( GDS( c_display_click_here_to_login ),
              make_pair( c_display_click_here_to_login_parm_href,
              "<a href=\"" + get_module_page_name( module_ref, true )
              + "?cmd=" + string( c_cmd_login ) + "\">" ), "</a>" ) + "</p>";
-         }
 
-         output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
+            output_login_logout( module_name, extra_content, osstr.str( ), login_html );
+         }
+         else
+            output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
       }
       else
          extra_content << osstr.str( );

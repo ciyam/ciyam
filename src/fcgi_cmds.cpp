@@ -1991,7 +1991,13 @@ bool fetch_user_record(
       string hash = user_data[ offset++ ];
 
       if( !userhash.empty( ) && hash != userhash )
-         return false;
+      {
+         // NOTE: If password is empty then assume is a new OpenID account.
+         if( password.empty( ) )
+            return false;
+         else
+            throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+      }
    }
 
    sess_info.user_id = username;
