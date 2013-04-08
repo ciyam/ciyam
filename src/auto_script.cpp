@@ -95,6 +95,8 @@ struct script_info
 
 mutex g_mutex;
 
+bool g_has_read = false;
+
 time_t g_scripts_mod = 0;
 
 vector< script_info > g_scripts;
@@ -107,6 +109,14 @@ script_schedule_container g_script_schedule;
 void read_script_info( )
 {
    guard g( g_mutex );
+
+   if( !g_has_read )
+      g_has_read = true;
+   else
+   {
+      // NOTE: If is not the first read then log the re-read.
+      TRACE_LOG( TRACE_ANYTHING, "[autoscript.sio] updated" );
+   }
 
    g_scripts.clear( );
    g_script_schedule.clear( );
