@@ -14,6 +14,8 @@
 `{`$i`}      for( size_t i = 0; i < all.size( ); i++ )
 `{`$i`}         get_obj( ).`{`$arg_oprocedure`}( `{`!`@eq`(`$arg_trim_whitespace`,`'`'`)trim_whitespace( `}all[ i ] `{`!`@eq`(`$arg_trim_whitespace`,`'`'`)) `});
 `{`!`@eq`(`$arg_no_trans`,`'true`'`)\
+
+         transaction_commit( );
       }
       catch( ... )
       {
