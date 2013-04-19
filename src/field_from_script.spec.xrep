@@ -20,19 +20,23 @@
       check_with_regex( "`{`$arg_tvalue`}", s );
 `}\
 
-      set_session_variable( "@storage", storage_name( ) );
-      set_session_variable( "@key", get_obj( ).get_key( ) );
+      if( get_obj( ).get_variable( "@check_if_changed" ).empty( )
+       || from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( s ) != get_obj( ).`{`$arg_field`}( ) )
+      {
+         set_session_variable( "@storage", storage_name( ) );
+         set_session_variable( "@key", get_obj( ).get_key( ) );
 
-      string fields_and_values( string( c_field_id_`{`$arg_field`} ) + "=" + s );
+         string fields_and_values( string( c_field_id_`{`$arg_field`} ) + "=" + s );
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
-      fields_and_values += "," + string( c_field_id_`{`$arg_sfield`} ) + "=U" + get_dtm( );
+         fields_and_values += "," + string( c_field_id_`{`$arg_sfield`} ) + "=U" + get_dtm( );
 `}\
 
-      set_session_variable( "@fields_and_values", fields_and_values );
+         set_session_variable( "@fields_and_values", fields_and_values );
 
-      run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_field`}", false );
+         run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_field`}", false );
 
-      get_obj( ).fetch_updated_instance( );
+         get_obj( ).fetch_updated_instance( );
+      }
    }
    // [(finish field_from_script)] `{`$arg_id`}
 `}
