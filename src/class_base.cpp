@@ -25,9 +25,13 @@
 #  ifdef _MSC_VER
 #     include <direct.h>
 #  endif
+#  ifdef _WIN32
+#     include <ctime>
+#  endif
 #  ifdef __GNUG__
 #     include <unistd.h>
 #     include <sys/stat.h>
+#     include <sys/time.h>
 #  endif
 #endif
 
@@ -139,26 +143,6 @@ void deconstruct_original_identity( class_base& cb, string& module_id, string& c
 
    module_id = identity.substr( 0, pos );
    class_id = identity.substr( pos + 1 );
-}
-
-string construct_foreign_key_index_name( const foreign_key_info_value_type& fk_info_value_type, bool include_module )
-{
-   string module_and_class_id( fk_info_value_type.second.first );
-   string::size_type pos = module_and_class_id.find( '.' );
-
-   if( pos == string::npos )
-      throw runtime_error( "unexpected module and class id format '" + module_and_class_id + "'" );
-
-   string module_name( module_and_class_id.substr( 0, pos ) );
-   string fk_class_id( module_and_class_id.substr( pos + 1 ) );
-
-   string index_name;
-   if( include_module )
-      index_name += module_name + "!";
-
-   index_name += fk_info_value_type.first + ":" + fk_class_id;
-
-   return index_name;
 }
 
 void remove_suffix( string& str, const string& suffix, const string& separator )
@@ -1987,6 +1971,38 @@ string construct_class_identity( const class_base& cb )
    return identity;
 }
 #endif
+
+struct procedure_progress::impl
+{
+   impl( )
+   {
+      ts = time_t( 0 );
+   }
+
+   time_t ts;
+   size_t seconds;
+};
+
+procedure_progress::procedure_progress( size_t seconds )
+{
+   p_impl = new impl;
+   p_impl->seconds = seconds;
+}
+
+procedure_progress::~procedure_progress( )
+{
+   delete p_impl;
+}
+
+void procedure_progress::check_progress( size_t amount )
+{
+   if( time( 0 ) - p_impl->ts >= p_impl->seconds )
+   {
+      p_impl->ts = time( 0 );
+      // FUTURE: This message should be handled as a server string message.
+      output_progress_message( "Processed " + to_string( amount ) + " records..." );
+   }
+}
 
 class_base_filter::class_base_filter( class_base& cb, const string& filter_ids )
  :

@@ -611,6 +611,7 @@ string valid_file_name( const string& str, bool* p_has_utf8_chars )
    return s;
 }
 
+// NOTE: This Boyer-Moore implementation was taken from that published by Eduard Igushev.
 boyer_moore::boyer_moore( const string& pattern )
  :
  pattern( pattern ),
@@ -648,13 +649,7 @@ boyer_moore::boyer_moore( const string& pattern )
    int curr_match = matches[ 0 ];
    for( int i = 0; i < psize; ++i )
    {
-      jump[ i ] = min( jump[ i ], psize + curr_match - i );
-
-      if( jump[ i ] > psize )
-      {
-         jump[ i ] -= psize;
-         jump[ i ] *= 2;
-      }
+      jump[ i ] = min( jump[ i ], psize + curr_match - i - 1 );
 
       if( curr_match == i )
          curr_match = matches[ curr_match ];

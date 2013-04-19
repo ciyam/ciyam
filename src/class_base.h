@@ -655,6 +655,17 @@ struct temporary_object_variable
    std::string original_value;
 };
 
+struct CLASS_BASE_DECL_SPEC procedure_progress
+{
+   procedure_progress( size_t seconds = 10 );
+   ~procedure_progress( );
+
+   void check_progress( size_t amount );
+
+   struct impl;
+   impl* p_impl;
+};
+
 struct class_base_accessor
 {
    class_base_accessor( class_base& cb ) : cb( cb ) { }
