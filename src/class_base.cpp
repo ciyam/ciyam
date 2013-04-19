@@ -1986,6 +1986,8 @@ struct procedure_progress::impl
 procedure_progress::procedure_progress( size_t seconds )
 {
    p_impl = new impl;
+
+   p_impl->ts = time( 0 );
    p_impl->seconds = seconds;
 }
 

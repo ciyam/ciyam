@@ -8,7 +8,9 @@
 `}\
 `{`$i`}   size_t total( 0 );
 `{`$i`}   procedure_progress progress;
-
+`{`!`@eq`(`$arg_var`,`'`'`)
+`{`$i`}   get_obj( ).set_variable( "`{`$arg_var`}", "true" );
+`}
 `{`@eq`(`$arg_rfield`,`'`'`)
 `{`$i`}   if( get_obj( ).iterate_forwards( ) )
 `{`$i`}   {
