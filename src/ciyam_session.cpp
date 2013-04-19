@@ -2289,7 +2289,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( exception& x )
             {
-               TRACE_LOG( TRACE_SESSIONS, string( "session error: " ) + x.what( ) );
+               TRACE_LOG( ( is_auto_uid( ) ? TRACE_ANYTHING : TRACE_SESSIONS ),
+                string( "session error: " ) + x.what( ) + " [" + method_id + "]" );
 
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( x.what( ) );
@@ -2312,7 +2313,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
-               TRACE_LOG( TRACE_ANYTHING, "session error: unexpected unknown exception caught" );
+               TRACE_LOG( TRACE_ANYTHING, "session error: unexpected unknown exception caught [" + method_id + "]" );
 
                if( socket_handler.is_restoring( ) )
                   socket_handler.set_restore_error( "unexpected unknown exception caught" );
