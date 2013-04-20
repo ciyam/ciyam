@@ -151,6 +151,7 @@ const char* const c_session_variable_tz_abbr = "@tz_abbr";
 
 const char* const c_session_variable_val_error = "@val_error";
 
+const char* const c_special_variable_is_quiet = "@quiet";
 const char* const c_special_variable_was_cloned = "@cloned";
 const char* const c_special_variable_execute_return = "@return";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
@@ -3982,8 +3983,10 @@ int exec_system( const string& cmd, bool async )
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
       throw runtime_error( "invalid exec_system: " + cmd );
 
+   string async_var( get_session_variable( "@allow_async" ) );
+
    // NOTE: The session variable @allow_async can be used to force non-async execution.
-   if( get_session_variable( "@allow_async" ) == "0" || get_session_variable( "@allow_async" ) == "false" )
+   if( async_var == "0" || async_var == "false" )
       async = false;
 
    if( async )
@@ -4033,7 +4036,13 @@ int run_script( const string& script_name, bool async )
       outf << "<" << arguments << endl;
       outf.close( );
 
-      script_args += " " + script_name;
+      string is_quiet( get_session_variable( c_special_variable_is_quiet ) );
+
+      // NOTE: For cases where one script may end up calling numerous others (i.e.
+      // such as a scan across records) this special session variable is available
+      // to prevent excess log entries appearing in the script log file.
+      if( is_quiet != "1" && is_quiet != "true" )
+         script_args += " " + script_name;
 
 #ifdef _WIN32
       rc = exec_system( "script " + script_args, async );
@@ -4691,6 +4700,10 @@ string get_special_var_name( special_var var )
 
    switch( var )
    {
+      case e_special_var_is_quiet:
+      s = string( c_special_variable_is_quiet );
+      break;
+
       case e_special_var_was_cloned:
       s = string( c_special_variable_was_cloned );
       break;
