@@ -2265,6 +2265,15 @@ bool output_view_form( ostream& os, const string& act,
                   upload_info += ":" + get_module_id_for_attached_file( source ) + "/" + ( source.vici->second )->cid;
                   upload_info += ";" + data + "-" + source_field_id + "?" + to_string( sinfo.filesize_limit );
 
+#ifndef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+                  // NOTE: In order to prevent any "arbitrary" upload from being able to take place
+                  // a verification file must contain the same information as the "name" attribute.
+                  string verification_file( string( c_files_directory ) + "/"
+                   + string( c_tmp_directory ) + "/" + sess_info.session_id + "/" + data + "-" + source_field_id );
+
+                  ofstream outf( verification_file.c_str( ), ios::out | ios::binary );
+                  outf << upload_info;
+#endif
                   os << "\n<input type=\"" << "file\" name=\"" << upload_info << "\"/>\n";
                   os << "<input type=\"submit\" class=\"button\" value=\"" << GDS( c_display_attach ) << "\"/>";
                }
