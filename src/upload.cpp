@@ -42,6 +42,7 @@
 
 #include "config.h"
 #include "threads.h"
+#include "date_time.h"
 #include "utilities.h"
 
 #ifdef _WIN32
@@ -239,6 +240,7 @@ void request_handler::process_request( )
       string session_id;
 
       string path( g_exe_path + "/files" );
+
       pos = info.find( ':' );
       if( pos != string::npos )
       {
@@ -265,6 +267,18 @@ void request_handler::process_request( )
 
       file_id = info;
       file_name = path + sub_path + "/" + file_id + ext;
+
+#ifndef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+      // NOTE: In order to prevent any "arbitrary" upload from being able to take place
+      // a verification file must contain the same information as the "name" attribute.
+      string verification_file( path + "/tmp/" + session_id + "/" + file_id );
+
+      if( !file_exists( verification_file ) || ( buffer_file( verification_file ) != name ) )
+      {
+         session_id.erase( );
+         file_name = path + "/" + date_time::standard( ).as_string( );
+      }
+#endif
 
       FCGX_GetLine( buf, c_chunk_size, p_in );
       string content_type( buf );
