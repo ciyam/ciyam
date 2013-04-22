@@ -155,7 +155,8 @@ void request_handler::process_request( )
 {
    FCGX_FPrintF( p_out, "Content-type: text/html\n" );
 
-   char* p_param = FCGX_GetParam( "CONTENT_LENGTH", *p_env );
+   const char* p_param = FCGX_GetParam( "CONTENT_LENGTH", *p_env );
+   const char* p_raddr = FCGX_GetParam( "REMOTE_ADDR", *p_env );
 
    FCGX_FPrintF( p_out, "\r\n\r\n<html>\n<head>\n   <title>FCGI File Upload</title>\n" );
 
@@ -275,6 +276,7 @@ void request_handler::process_request( )
 
       if( !file_exists( verification_file ) || ( buffer_file( verification_file ) != name ) )
       {
+         max_size = 4096;
          session_id.erase( );
          file_name = path + "/" + date_time::standard( ).as_string( );
       }
@@ -296,6 +298,14 @@ void request_handler::process_request( )
 
       if( !outf )
          FCGX_FPrintF( p_out, "<p>*** unable to open file '%s' for output ***</p>", file_name.c_str( ) );
+
+#ifndef REMOVE_OR_COMMENT_THIS_OUT_IN_CONFIG_H
+      if( outf && session_id.empty( ) )
+      {
+         outf << "Unauthorised upload from: " << string( p_raddr ) << '\n';
+         outf << "(uploaded content follows)\n\n";
+      }
+#endif
 
       size_t written = 0;
       bool max_size_exceeded = false;

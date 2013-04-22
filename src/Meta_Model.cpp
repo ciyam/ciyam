@@ -5495,10 +5495,10 @@ void Meta_Model::impl::impl_Generate_File_Links( )
    if( storage_locked_for_admin( ) )
       return;
 
-   // NOTE: If the call here was directly issued (rather than via
-   // an Application parent) then generate a new manuscript file.
+   // NOTE: If the call here was direct (rather than being issued via an
+   // Application parent) then generate new autoscript/manuscript files.
    if( !get_obj( ).get_graph_parent( ) )
-      generate_new_manuscript_sio( );
+      generate_new_script_sio_files( );
 
    string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
    set_system_variable( model_key, "Generating file links..." ); // FUTURE: Should be a module string...
@@ -5821,7 +5821,17 @@ void Meta_Model::impl::impl_Remove_Module( )
          } while( get_obj( ).child_Class( ).iterate_next( ) );
       }
 
-      generate_new_manuscript_sio( );
+      generate_new_script_sio_files( );
+
+      if( exists_file( "autoscript.sio.new" ) )
+      {
+#ifdef _WIN32
+         exec_system( "update autoscript.sio autoscript.sio.new >nul" );
+#else
+         exec_system( "./update autoscript.sio autoscript.sio.new >/dev/null" );
+#endif
+      }
+
       if( exists_file( "manuscript.sio.new" ) )
       {
 #ifdef _WIN32
@@ -6575,7 +6585,17 @@ void Meta_Model::impl::for_destroy( bool is_internal )
       exec_system( "./remove_module -rdbms " + get_obj( ).Name( ) + " >/dev/null" );
 #endif
 
-      generate_new_manuscript_sio( );
+      generate_new_script_sio_files( );
+
+      if( exists_file( "autoscript.sio.new" ) )
+      {
+#ifdef _WIN32
+         exec_system( "update autoscript.sio autoscript.sio.new >nul" );
+#else
+         exec_system( "./update autoscript.sio autoscript.sio.new >/dev/null" );
+#endif
+      }
+
       if( exists_file( "manuscript.sio.new" ) )
       {
 #ifdef _WIN32

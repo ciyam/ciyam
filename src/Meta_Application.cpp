@@ -1659,6 +1659,7 @@ void Meta_Application::impl::impl_Generate( )
             outs << "if exist " << get_obj( ).Name( ) << ".dead_keys.lst del " << get_obj( ).Name( ) << ".dead_keys.lst\n";
          }
          outs << "if not exist " << get_obj( ).Name( ) << ".log copy app.log " << get_obj( ).Name( ) << ".log >nul\n";
+         outs << "if exist autoscript.sio.new call update autoscript.sio autoscript.sio.new >>" << generate_log_file << "\n";
          outs << "if exist manuscript.sio.new call update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
          outs << "\nciyam_client -quiet -no_prompt < " << get_obj( ).Name( ) << ".generate.4.cin\n";
 #else
@@ -1781,7 +1782,7 @@ void Meta_Application::impl::impl_Generate_File_Links( )
    if( storage_locked_for_admin( ) )
       return;
 
-   generate_new_manuscript_sio( );
+   generate_new_script_sio_files( );
 
    if( get_obj( ).child_Module( ).iterate_forwards( ) )
    {

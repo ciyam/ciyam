@@ -128,7 +128,7 @@ int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name, bool async 
 
 std::string CIYAM_BASE_DECL_SPEC process_script_args( const std::string& raw_args, bool is_script_arg = true );
 
-void CIYAM_BASE_DECL_SPEC generate_new_manuscript_sio( );
+void CIYAM_BASE_DECL_SPEC generate_new_script_sio_files( );
 
 size_t CIYAM_BASE_DECL_SPEC init_session( command_handler& cmd_handler );
 void CIYAM_BASE_DECL_SPEC term_session( );
