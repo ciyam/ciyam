@@ -83,6 +83,7 @@ const int c_lock_attempt_sleep_time = 100;
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 
+const char* const c_autoscript_file = "autoscript.sio";
 const char* const c_manuscript_file = "manuscript.sio";
 
 const char* const c_section_class = "class";
@@ -4103,13 +4104,16 @@ string process_script_args( const string& raw_args, bool is_script_arg )
    return retval;
 }
 
-void generate_new_manuscript_sio( )
+void generate_new_script_sio( bool for_autoscript )
 {
-   if( file_exists( c_manuscript_file ) )
+   string file_name( for_autoscript ? c_autoscript_file : c_manuscript_file );
+
+   if( file_exists( file_name ) )
    {
       vector< string > new_lines;
       vector< string > original_lines;
-      buffer_file_lines( c_manuscript_file, original_lines );
+
+      buffer_file_lines( file_name, original_lines );
 
       bool found_start = false;
       size_t finish_line = 0;
@@ -4146,7 +4150,7 @@ void generate_new_manuscript_sio( )
                   vector< string > script_lines;
                   buffer_file_lines( lines[ i ], script_lines );
 
-                  bool is_manuscript = false;
+                  bool is_script = false;
                   for( size_t j = 0; j < script_lines.size( ); j++ )
                   {
                      string next( script_lines[ j ] );
@@ -4159,15 +4163,23 @@ void generate_new_manuscript_sio( )
 
                      if( next.empty( ) || next[ 0 ] != ';' )
                      {
-                        if( is_manuscript )
+                        if( is_script )
                            break;
                      }
-                     else if( is_manuscript )
-                        new_lines.push_back( next.substr( 1 ) );
+                     else if( is_script )
+                     {
+                        // FUTURE: New autoscript entries are currenly left
+                        // "commented out" as they will need manual editing
+                        // before being enabled (for schedule information).
+                        if( for_autoscript )
+                           new_lines.push_back( next );
+                        else
+                           new_lines.push_back( next.substr( 1 ) );
+                     }
                      else if( next.find( "; NOTE: " ) == 0 )
                      {
-                        if( next.find( "'" + string( c_manuscript_file ) + "'" ) != string::npos )
-                           is_manuscript = true;
+                        if( next.find( "'" + file_name + "'" ) != string::npos )
+                           is_script = true;
                      }
                   }
                }
@@ -4181,10 +4193,16 @@ void generate_new_manuscript_sio( )
             new_lines.push_back( original_lines[ finish_line++ ] );
       }
 
-      ofstream outf( ( string( c_manuscript_file ) + ".new" ).c_str( ) );
+      ofstream outf( ( file_name + ".new" ).c_str( ) );
       for( size_t i = 0; i < new_lines.size( ); i++ )
          outf << new_lines[ i ] << '\n';
    }
+}
+
+void generate_new_script_sio_files( )
+{
+   generate_new_script_sio( true );
+   generate_new_script_sio( false );
 }
 
 size_t init_session( command_handler& cmd_handler )
