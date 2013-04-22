@@ -1676,6 +1676,9 @@ void Meta_Application::impl::impl_Generate( )
          outs << " if [ ! -f " << get_obj( ).Name( ) << ".log ]; then\n";
          outs << "  cp app.log " << get_obj( ).Name( ) << ".log\n";
          outs << " fi\n";
+         outs << " if [ -f autoscript.sio.new ]; then\n";
+         outs << "  ./update autoscript.sio autoscript.sio.new >>" << generate_log_file << "\n";
+         outs << " fi\n";
          outs << " if [ -f manuscript.sio.new ]; then\n";
          outs << "  ./update manuscript.sio manuscript.sio.new >>" << generate_log_file << "\n";
          outs << " fi\n";
