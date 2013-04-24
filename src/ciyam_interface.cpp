@@ -520,7 +520,7 @@ string get_header_image( const string& module_name )
 
 void output_login_logout( const string& module_name, ostream& os, const string& extra_details, const string& msg = "" )
 {
-   os << "\n<div id=\"normal_content\">\n";
+   os << "\n<div id=\"normal_content\" class=\"menubar_background\">\n";
 
    os << "\n<div id=\"header\">\n";
 
@@ -3295,8 +3295,15 @@ void request_handler::process_request( )
             else
                pwd_display_name = g_display_change_password;
 
+            bool use_menubar = menu_opts.count( c_menu_opt_use_menubar_not_sidebar );
+
             if( cmd != c_cmd_pview && cmd != c_cmd_plist )
-               extra_content << "\n<div id=\"normal_content\">\n";
+            {
+               if( use_menubar )
+                  extra_content << "\n<div id=\"normal_content\" class=\"menubar_background\">\n";
+               else
+                  extra_content << "\n<div id=\"normal_content\" class=\"sidebar_background\">\n";
+            }
             else
                extra_content << "\n<div id=\"print_content\">\n";
 
@@ -3606,7 +3613,348 @@ void request_handler::process_request( )
                extra_content << "</div>\n";
             }
 
-            extra_content << "\n<div id=\"main\">\n";
+            map< string, vector< string > > menu_items;
+
+            if( cmd != c_cmd_join && cmd != c_cmd_open
+             && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
+            {
+               if( use_menubar )
+               {
+                  extra_content << "\n<div id=\"menuband\">\n";
+                  extra_content << "   <ul id=\"menubar\">\n";
+               }
+               else
+               {
+                  extra_content << "\n<div id=\"sidebar\">\n";
+                  extra_content << "   <ul>\n";
+               }
+
+               if( cmd == c_cmd_home )
+               {
+                  if( !use_menubar )
+                     extra_content << "     <li class=\"sidebar_selected\">" << GDS( c_display_home ) << "</li>\n";
+                  else
+                     extra_content << "     <li class=\"\"><a href=\"#\">" << GDS( c_display_home ) << "</a></li>\n";
+               }
+               else
+               {
+                  if( !use_menubar )
+                     extra_content << "     <li>";
+                  else
+                     extra_content << "     <li class =\"\">";
+
+                  extra_content << "<a href=\""
+                   << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_home;
+
+                  if( !uselect.empty( ) )
+                  {
+                     extra_content << "&" << c_param_uselect << "=" << uselect;
+                     extra_content << "&" << c_param_uselextra << "=" << uselect;
+                  }
+
+                  if( !cookies_permitted )
+                     extra_content << "&session=" << session_id;
+
+                  if( use_url_checksum )
+                     extra_content << "&chksum=" << get_checksum( *p_session_info, session_id + uselect );
+
+                  extra_content << "\">" << GDS( c_display_home ) << "</a></li>\n";
+               }
+
+               string user_group;
+               bool is_admin_user;
+
+               if( using_anonymous )
+               {
+                  user_group = "guests";
+                  is_admin_user = false;
+               }
+               else
+               {
+                  user_group = p_session_info->user_group;
+                  is_admin_user = p_session_info->is_admin_user;
+               }
+
+               bool has_selected_list = false;
+
+               for( list_menu_const_iterator
+                lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
+               {
+                  string list_perm( lmci->second->perm );
+                  if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
+                     list_perm.erase( 0, 1 );
+
+                  bool has_perm( has_permission( list_perm, *p_session_info ) );
+
+                  // FUTURE: Currently logic that requires a permission for an "admin" list is not supported
+                  // (i.e. either the user is "admin" OR has the "perm"). If this is to be changed then this
+                  // code would need to be changed.
+                  if( !has_perm && p_session_info->is_admin_user && lmci->second->type == c_list_type_admin )
+                     has_perm = true;
+
+                  if( has_perm && lmci->second->extras.count( c_list_type_extra_show_if_default_other ) )
+                  {
+                     // NOTE: If both of the "if default other" options are present then do not
+                     // display for an "admin" user.
+                     if( p_session_info->is_admin_user
+                      && lmci->second->extras.count( c_list_type_extra_new_if_default_other ) )
+                        has_perm = false;
+                     else
+                        has_perm = p_session_info->is_default_other( );
+                  }
+
+                  // NOTE: For the "admin" user only display lists specifically targeted for "admin"
+                  // (to reduce unnecessary clutter as "admin" is not intended for "standard" usage).
+                  if( p_session_info->is_admin_user && lmci->second->type != c_list_type_admin
+                   && lmci->second->type != c_list_type_child_admin && lmci->second->type != c_list_type_child_admin_owner )
+                     has_perm = false;
+
+                  if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
+                     has_perm = false;
+
+                  // NOTE: If the list type has been identified as "no access" then it will not be displayed.
+                  if( lmci->second->type == c_list_type_no_access )
+                     has_perm = false;
+
+                  // NOTE: If the user does not have permission or if the list is a
+                  // "group" type but the user doesn't belong to a group then omit it.
+                  if( has_perm && lmci->second->type != c_list_type_home
+                   && ( !user_group.empty( ) || lmci->second->type != c_list_type_group )
+                   && ( is_admin_user || !lmci->second->perm.empty( )
+                   || ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) ) )
+                  {
+                     string display_name( get_display_name( lmci->first ) );
+
+                     string::size_type pos = display_name.find( ' ' );
+                     string menu_name = display_name.substr( 0, pos );
+
+                     string item_name( menu_name );
+                     if( pos != string::npos )
+                        item_name = display_name.substr( pos + 1 );
+
+                     item_name += '!' + lmci->second->id;
+                     menu_items[ menu_name ].push_back( item_name );
+
+                     if( !use_menubar )
+                     {
+                        if( qlink.empty( ) && cmd == c_cmd_list && oident == lmci->second->id )
+                        {
+                           has_selected_list = true;
+                           extra_content << "     <li class=\"sidebar_selected\">" << display_name << "</li>\n";
+                        }
+                        else
+                        {
+                           extra_content << "     <li><a href=\""
+                            << get_module_page_name( module_ref )
+                            << "?cmd=" << c_cmd_list << "&ident=" << lmci->second->id;
+
+                           if( !uselect.empty( ) )
+                              extra_content << "&" << c_param_uselect << "=" << uselect;
+
+                           if( !cookies_permitted )
+                              extra_content << "&session=" << session_id;
+
+                           if( use_url_checksum )
+                           {
+                              string checksum_values( string( c_cmd_list ) + lmci->second->id + uselect );
+                              extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                           }
+
+                           extra_content << "\">" << display_name << "</a></li>\n";
+                        }
+                     }
+                  }
+               }
+
+               if( use_menubar )
+               {
+                  for( map< string, vector< string > >::iterator i = menu_items.begin( ); i != menu_items.end( ); ++i )
+                  {
+                     extra_content << "     <li class=\"\"><a href=\"#\">" << i->first << "</a>\n";
+
+                     if( i->second.size( ) )
+                     {
+                        extra_content << "      <ul>\n";
+
+                        for( size_t j = 0; j < i->second.size( ); j++ )
+                        {
+                           string::size_type pos = i->second[ j ].find( '!' );
+
+                           string id, item_name( i->second[ j ].substr( 0, pos ) );
+                           if( pos != string::npos )
+                              id = i->second[ j ].substr( pos + 1 );
+
+                           extra_content << "         <li class=\"\"><a href=\""
+                            << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_list << "&ident=" << id;
+
+                           if( !uselect.empty( ) )
+                              extra_content << "&" << c_param_uselect << "=" << uselect;
+
+                           if( !cookies_permitted )
+                              extra_content << "&session=" << session_id;
+
+                           if( use_url_checksum )
+                           {
+                              string checksum_values( string( c_cmd_list ) + id + uselect );
+                              extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                           }
+
+                           extra_content << "\">" << item_name << "</a></li>\n";
+                        }
+
+                        extra_content << "      </ul>\n";
+                     }
+
+                     extra_content << "     </li>\n";
+                  }
+               }
+
+               // NOTE: If the selected list has become inaccessible (to due a uselect change)
+               // then force a jump back to "home".
+               if( !has_selected_list && qlink.empty( ) && cmd == c_cmd_list && !uselect.empty( ) )
+                  cmd.erase( );
+
+               if( use_menubar && p_session_info->quick_link_data.size( ) )
+               {
+                  extra_content << "     <li class=\"\"><a href=\"#\">"
+                   << get_display_name( mod_info.get_string( mod_info.user_qlink_list_id + "_name" ) ) << "</a>\n";
+                  extra_content << "      <ul>\n";
+               }
+
+               for( size_t i = 0; i < p_session_info->quick_link_data.size( ); i++ )
+               {
+                  string columns( p_session_info->quick_link_data[ i ].second );
+
+                  vector< string > column_info;
+                  raw_split( columns, column_info );
+
+                  if( column_info.size( ) != 3 )
+                     throw runtime_error( "unexpected incorrect # columns for quick link info" );
+
+                  // FUTURE: To make quick link menu items look different italics are being hard-coded here.
+                  // This should instead be implemented as a style (only applicable if using the "sidebar").
+                  if( !qlink.empty( ) && i == atoi( qlink.c_str( ) ) )
+                  {
+                     if( use_menubar )
+                        extra_content << "     <li class=\"\"><a href=\"#\">" << column_info[ 1 ] << "</a></li>\n";
+                     else
+                        extra_content << "     <li class=\"sidebar_selected\"><i>" << column_info[ 1 ] << "</i></li>\n";
+                  }
+                  else
+                  {
+                     if( !use_menubar )
+                        extra_content << "     <li>";
+                     else
+                        extra_content << "     <li class=\"\">";
+
+                     extra_content << "<a href=\"" << column_info[ 0 ];
+                     extra_content << "&" << c_param_qlink << "=" << to_string( i );
+
+                     if( use_url_checksum )
+                     {
+                        if( column_info[ 0 ].find( "?cmd=list" ) == string::npos )
+                        {
+                           string checksum_values( string( c_cmd_view ) + column_info[ 2 ] + uselect );
+                           extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+                        }
+                        else
+                        {
+                           string::size_type pos = column_info[ 2 ].find( '+' );
+                           if( pos == string::npos )
+                              throw runtime_error( "unexpected quick link data format" );
+
+                           string checksum_values( string( c_cmd_list ) + column_info[ 2 ].substr( 0, pos ) + uselect );
+                           extra_content << "&" << c_param_chksum << "="
+                            << get_checksum( *p_session_info, checksum_values + c_hash_suffix );
+
+                           extra_content << "&" << c_param_hashval
+                            << "=" << get_hash( p_session_info->hashval_prefix + column_info[ 2 ].substr( pos + 1 ) );
+                        }
+                     }
+
+                     if( use_menubar )
+                        extra_content << "\">" << column_info[ 1 ] << "</a></li>\n";
+                     else
+                        extra_content << "\"><i>" << column_info[ 1 ] << "</i></a></li>\n";
+                  }
+               }
+
+               if( use_menubar && p_session_info->quick_link_data.size( ) )
+                  extra_content << "      </ul>\n";
+
+               extra_content << "   </ul>\n";
+               extra_content << "</div>\n";
+            }
+
+            if( cmd == c_cmd_join )
+            {
+               if( use_menubar )
+               {
+                  extra_content << "\n<div id=\"menuband\">\n";
+                  extra_content << "   <ul id=\"menubar\">\n";
+               }
+               else
+               {
+                  extra_content << "\n<div id=\"sidebar\">\n";
+                  extra_content << "   <ul>";
+               }
+
+               if( !use_menubar )
+                  extra_content << "     <li>";
+               else
+                  extra_content << "     <li class =\"\">";
+
+               extra_content << "<a href=\""
+                << get_module_page_name( module_ref ) << "?cmd="
+                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li>\n";
+
+               extra_content << "   </ul>\n";
+
+               if( !use_menubar )
+               {
+                  extra_content << "<pre>\n";
+                  extra_content << "        .--.\n";
+                  extra_content << "       /.-. '----------.\n";
+                  extra_content << "       \\'-' .--\"--\"\"-\"-'\n";
+                  extra_content << "        '--'\n";
+                  extra_content << "</pre>\n";
+               }
+
+               extra_content << "</div>\n";
+            }
+
+            if( cmd == c_cmd_open )
+            {
+               if( use_menubar )
+               {
+                  extra_content << "\n<div id=\"menuband\">\n";
+                  extra_content << "   <ul id=\"menubar\">\n";
+               }
+               else
+               {
+                  extra_content << "\n<div id=\"sidebar\">\n";
+                  extra_content << "   <ul>";
+               }
+
+               if( !use_menubar )
+                  extra_content << "     <li>";
+               else
+                  extra_content << "     <li class =\"\">";
+
+               extra_content << "<a href=\""
+                << get_module_page_name( module_ref ) << "?cmd="
+                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li>\n";
+
+               extra_content << "   </ul>\n";
+
+               extra_content << "</div>\n";
+            }
+
+
+            if( use_menubar )
+               extra_content << "\n<div id=\"main\" class=\"menubar_width\">\n";
+            else
+               extra_content << "\n<div id=\"main\" class=\"sidebar_width\">\n";
 
             if( module_access_denied )
             {
@@ -4407,238 +4755,7 @@ void request_handler::process_request( )
                extra_content << "<p>Total number of sessions = " << g_sessions.size( ) << ".</p>\n";
             }
 
-            extra_content << "</div>\n";
-
-            if( cmd != c_cmd_join && cmd != c_cmd_open
-             && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
-            {
-               extra_content << "\n<div id=\"sidebar\">\n";
-               extra_content << "   <ul>\n";
-
-               if( cmd == c_cmd_home )
-                  extra_content << "     <li class=\"sidebar_selected\">" << GDS( c_display_home ) << "</li>\n";
-               else
-               {
-                  extra_content << "     <li><a href=\""
-                   << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_home;
-
-                  if( !uselect.empty( ) )
-                  {
-                     extra_content << "&" << c_param_uselect << "=" << uselect;
-                     extra_content << "&" << c_param_uselextra << "=" << uselect;
-                  }
-
-                  if( !cookies_permitted )
-                     extra_content << "&session=" << session_id;
-
-                  if( use_url_checksum )
-                     extra_content << "&chksum=" << get_checksum( *p_session_info, session_id + uselect );
-
-                  extra_content << "\">" << GDS( c_display_home ) << "</a></li>\n";
-               }
-
-               string user_group;
-               bool is_admin_user;
-
-               if( using_anonymous )
-               {
-                  user_group = "guests";
-                  is_admin_user = false;
-               }
-               else
-               {
-                  user_group = p_session_info->user_group;
-                  is_admin_user = p_session_info->is_admin_user;
-               }
-
-               bool has_selected_list = false;
-               map< string, vector< string > > menu_items;
-
-               for( list_menu_const_iterator
-                lmci = mod_info.list_menus.begin( ), end = mod_info.list_menus.end( ); lmci != end; ++lmci )
-               {
-                  string list_perm( lmci->second->perm );
-                  if( !list_perm.empty( ) && list_perm[ 0 ] == '!' )
-                     list_perm.erase( 0, 1 );
-
-                  bool has_perm( has_permission( list_perm, *p_session_info ) );
-
-                  // FUTURE: Currently logic that requires a permission for an "admin" list is not supported
-                  // (i.e. either the user is "admin" OR has the "perm"). If this is to be changed then this
-                  // code would need to be changed.
-                  if( !has_perm && p_session_info->is_admin_user && lmci->second->type == c_list_type_admin )
-                     has_perm = true;
-
-                  if( has_perm && lmci->second->extras.count( c_list_type_extra_show_if_default_other ) )
-                  {
-                     // NOTE: If both of the "if default other" options are present then do not
-                     // display for an "admin" user.
-                     if( p_session_info->is_admin_user
-                      && lmci->second->extras.count( c_list_type_extra_new_if_default_other ) )
-                        has_perm = false;
-                     else
-                        has_perm = p_session_info->is_default_other( );
-                  }
-
-                  // NOTE: For the "admin" user only display lists specifically targeted for "admin"
-                  // (to reduce unnecessary clutter as "admin" is not intended for "standard" usage).
-                  if( p_session_info->is_admin_user && lmci->second->type != c_list_type_admin
-                   && lmci->second->type != c_list_type_child_admin && lmci->second->type != c_list_type_child_admin_owner )
-                     has_perm = false;
-
-                  if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
-                     has_perm = false;
-
-                  // NOTE: If the list type has been identified as "no access" then it will not be displayed.
-                  if( lmci->second->type == c_list_type_no_access )
-                     has_perm = false;
-
-                  // NOTE: If the user does not have permission or if the list is a
-                  // "group" type but the user doesn't belong to a group then omit it.
-                  if( has_perm && lmci->second->type != c_list_type_home
-                   && ( !user_group.empty( ) || lmci->second->type != c_list_type_group )
-                   && ( is_admin_user || !lmci->second->perm.empty( )
-                   || ( lmci->second->type != c_list_type_admin && lmci->second->type != c_list_type_child_admin ) ) )
-                  {
-                     string display_name( get_display_name( lmci->first ) );
-
-                     string::size_type pos = display_name.find( ' ' );
-                     string menu_name = display_name.substr( 0, pos );
-
-                     string item_name( menu_name );
-                     if( pos != string::npos )
-                        item_name = display_name.substr( pos + 1 );
-
-                     item_name += '!' + lmci->second->id;
-                     menu_items[ menu_name ].push_back( item_name );
-
-                     if( qlink.empty( ) && cmd == c_cmd_list && oident == lmci->second->id )
-                     {
-                        has_selected_list = true;
-                        extra_content << "     <li class=\"sidebar_selected\">" << display_name << "</li>\n";
-                     }
-                     else
-                     {
-                        extra_content << "     <li><a href=\""
-                         << get_module_page_name( module_ref )
-                         << "?cmd=" << c_cmd_list << "&ident=" << lmci->second->id;
-
-                        if( !uselect.empty( ) )
-                           extra_content << "&" << c_param_uselect << "=" << uselect;
-
-                        if( !cookies_permitted )
-                           extra_content << "&session=" << session_id;
-
-                        if( use_url_checksum )
-                        {
-                           string checksum_values( string( c_cmd_list ) + lmci->second->id + uselect );
-                           extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                        }
-
-                        extra_content << "\">" << display_name << "</a></li>\n";
-                     }
-                  }
-               }
-
-               // FUTURE: It should be optional whether to use a "sidebar" or a "menubar". To simplify things
-               // a top-level menu is constructed from the first common "prefix" of each menu item (and there
-               // is no nesting).
-               for( map< string, vector< string > >::iterator i = menu_items.begin( ); i != menu_items.end( ); ++i )
-               {
-                  for( size_t j = 0; j < i->second.size( ); j++ )
-                  {
-                     string::size_type pos = i->second[ j ].find( '!' );
-
-                     string id, item_name( i->second[ j ].substr( 0, pos ) );
-                     if( pos != string::npos )
-                        id = i->second[ j ].substr( pos + 1 );
-
-                     // FUTURE: Code to output each "menu item" for the "menubar"...
-                  }
-               }
-
-               // NOTE: If the selected list has become inaccessible (to due a uselect change)
-               // then force a jump back to "home".
-               if( !has_selected_list && qlink.empty( ) && cmd == c_cmd_list && !uselect.empty( ) )
-                  cmd.erase( );
-
-               for( size_t i = 0; i < p_session_info->quick_link_data.size( ); i++ )
-               {
-                  string columns( p_session_info->quick_link_data[ i ].second );
-
-                  vector< string > column_info;
-                  raw_split( columns, column_info );
-
-                  if( column_info.size( ) != 3 )
-                     throw runtime_error( "unexpected incorrect # columns for quick link info" );
-
-                  // FUTURE: To make quick link menu items look different italics are being hard-coded here.
-                  // This should instead be implemented as a style.
-                  if( !qlink.empty( ) && i == atoi( qlink.c_str( ) ) )
-                     extra_content << "     <li class=\"sidebar_selected\"><i>" << column_info[ 1 ] << "</i></li>\n";
-                  else
-                  {
-                     extra_content << "     <li><a href=\"" << column_info[ 0 ];
-                     extra_content << "&" << c_param_qlink << "=" << to_string( i );
-
-                     if( use_url_checksum )
-                     {
-                        if( column_info[ 0 ].find( "?cmd=list" ) == string::npos )
-                        {
-                           string checksum_values( string( c_cmd_view ) + column_info[ 2 ] + uselect );
-                           extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                        }
-                        else
-                        {
-                           string::size_type pos = column_info[ 2 ].find( '+' );
-                           if( pos == string::npos )
-                              throw runtime_error( "unexpected quick link data format" );
-
-                           string checksum_values( string( c_cmd_list ) + column_info[ 2 ].substr( 0, pos ) + uselect );
-                           extra_content << "&" << c_param_chksum << "="
-                            << get_checksum( *p_session_info, checksum_values + c_hash_suffix );
-
-                           extra_content << "&" << c_param_hashval
-                            << "=" << get_hash( p_session_info->hashval_prefix + column_info[ 2 ].substr( pos + 1 ) );
-                        }
-                     }
-
-                     extra_content << "\"><i>" << column_info[ 1 ] << "</i></a></li>\n";
-                  }
-               }
-
-               extra_content << "   </ul>\n";
-               extra_content << "</div>\n";
-            }
-
-            if( cmd == c_cmd_join )
-            {
-               extra_content << "\n<div id=\"sidebar\">\n";
-
-               extra_content << "<ul><li><a href=\""
-                << get_module_page_name( module_ref ) << "?cmd="
-                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li></ul>\n";
-
-               extra_content << "<pre>\n";
-               extra_content << "        .--.\n";
-               extra_content << "       /.-. '----------.\n";
-               extra_content << "       \\'-' .--\"--\"\"-\"-'\n";
-               extra_content << "        '--'\n";
-               extra_content << "</pre>\n";
-
-               extra_content << "</div>\n";
-            }
-
-            if( cmd == c_cmd_open )
-            {
-               extra_content << "\n<div id=\"sidebar\">\n";
-
-               extra_content << "<ul><li><a href=\""
-                << get_module_page_name( module_ref ) << "?cmd="
-                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li></ul>\n";
-
-               extra_content << "</div>\n";
-            }
+            extra_content << "</div>\n\n";
 
             if( cmd != c_cmd_pview && cmd != c_cmd_plist )
                extra_content << g_footer_html;

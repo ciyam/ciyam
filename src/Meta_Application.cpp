@@ -105,6 +105,7 @@ const char* const c_field_id_Registration_Key = "127132";
 const char* const c_field_id_Show_Inaccessible_Modules = "127110";
 const char* const c_field_id_Use_Check_Boxes_for_Bools = "127121";
 const char* const c_field_id_Use_Embedded_Images = "127131";
+const char* const c_field_id_Use_Menubar_Not_Sidebar = "127133";
 const char* const c_field_id_Use_URL_Checksum = "127107";
 const char* const c_field_id_Version = "127102";
 const char* const c_field_id_Workgroup = "302220";
@@ -139,6 +140,7 @@ const char* const c_field_name_Registration_Key = "Registration_Key";
 const char* const c_field_name_Show_Inaccessible_Modules = "Show_Inaccessible_Modules";
 const char* const c_field_name_Use_Check_Boxes_for_Bools = "Use_Check_Boxes_for_Bools";
 const char* const c_field_name_Use_Embedded_Images = "Use_Embedded_Images";
+const char* const c_field_name_Use_Menubar_Not_Sidebar = "Use_Menubar_Not_Sidebar";
 const char* const c_field_name_Use_URL_Checksum = "Use_URL_Checksum";
 const char* const c_field_name_Version = "Version";
 const char* const c_field_name_Workgroup = "Workgroup";
@@ -173,11 +175,12 @@ const char* const c_field_display_name_Registration_Key = "field_application_reg
 const char* const c_field_display_name_Show_Inaccessible_Modules = "field_application_show_inaccessible_modules";
 const char* const c_field_display_name_Use_Check_Boxes_for_Bools = "field_application_use_check_boxes_for_bools";
 const char* const c_field_display_name_Use_Embedded_Images = "field_application_use_embedded_images";
+const char* const c_field_display_name_Use_Menubar_Not_Sidebar = "field_application_use_menubar_not_sidebar";
 const char* const c_field_display_name_Use_URL_Checksum = "field_application_use_url_checksum";
 const char* const c_field_display_name_Version = "field_application_version";
 const char* const c_field_display_name_Workgroup = "field_application_workgroup";
 
-const int c_num_fields = 33;
+const int c_num_fields = 34;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -213,6 +216,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "127130",
    "127131",
    "127132",
+   "127133",
    "302220"
 };
 
@@ -248,6 +252,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Show_Inaccessible_Modules",
    "Use_Check_Boxes_for_Bools",
    "Use_Embedded_Images",
+   "Use_Menubar_Not_Sidebar",
    "Use_URL_Checksum",
    "Version",
    "Workgroup"
@@ -353,6 +358,7 @@ string gv_default_Registration_Key = string( );
 bool gv_default_Show_Inaccessible_Modules = bool( 0 );
 bool gv_default_Use_Check_Boxes_for_Bools = bool( 1 );
 bool gv_default_Use_Embedded_Images = bool( 1 );
+bool gv_default_Use_Menubar_Not_Sidebar = bool( 0 );
 bool gv_default_Use_URL_Checksum = bool( 1 );
 string gv_default_Version = string( "0.1" );
 string gv_default_Workgroup = string( );
@@ -778,6 +784,8 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Check_Boxes_for_Bools( ), cmd_handler.retval );
       else if( field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Embedded_Images( ), cmd_handler.retval );
+      else if( field_name == c_field_id_Use_Menubar_Not_Sidebar || field_name == c_field_name_Use_Menubar_Not_Sidebar )
+         string_getter< bool >( cmd_handler.p_Meta_Application->Use_Menubar_Not_Sidebar( ), cmd_handler.retval );
       else if( field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_URL_Checksum( ), cmd_handler.retval );
       else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
@@ -884,6 +892,9 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       else if( field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Embedded_Images, field_value );
+      else if( field_name == c_field_id_Use_Menubar_Not_Sidebar || field_name == c_field_name_Use_Menubar_Not_Sidebar )
+         func_string_setter< Meta_Application, bool >(
+          *cmd_handler.p_Meta_Application, &Meta_Application::Use_Menubar_Not_Sidebar, field_value );
       else if( field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_URL_Checksum, field_value );
@@ -1064,6 +1075,9 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool impl_Use_Embedded_Images( ) const { return lazy_fetch( p_obj ), v_Use_Embedded_Images; }
    void impl_Use_Embedded_Images( bool Use_Embedded_Images ) { v_Use_Embedded_Images = Use_Embedded_Images; }
 
+   bool impl_Use_Menubar_Not_Sidebar( ) const { return lazy_fetch( p_obj ), v_Use_Menubar_Not_Sidebar; }
+   void impl_Use_Menubar_Not_Sidebar( bool Use_Menubar_Not_Sidebar ) { v_Use_Menubar_Not_Sidebar = Use_Menubar_Not_Sidebar; }
+
    bool impl_Use_URL_Checksum( ) const { return lazy_fetch( p_obj ), v_Use_URL_Checksum; }
    void impl_Use_URL_Checksum( bool Use_URL_Checksum ) { v_Use_URL_Checksum = Use_URL_Checksum; }
 
@@ -1219,6 +1233,7 @@ struct Meta_Application::impl : public Meta_Application_command_handler
    bool v_Show_Inaccessible_Modules;
    bool v_Use_Check_Boxes_for_Bools;
    bool v_Use_Embedded_Images;
+   bool v_Use_Menubar_Not_Sidebar;
    bool v_Use_URL_Checksum;
    string v_Version;
 
@@ -1343,8 +1358,16 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$row_limit\x60=\x60'" << get_obj( ).Default_List_Row_Limit( ) << "\x60'\x60}\n";
 
       string menu_opts;
+      if( get_obj( ).Use_Menubar_Not_Sidebar( ) )
+         menu_opts = "use_menubar_not_sidebar";
+
       if( get_obj( ).Show_Inaccessible_Modules( ) )
+      {
+         if( !menu_opts.empty( ) )
+            menu_opts += '+';
          menu_opts = "show_inaccessible_modules";
+      }
+
       outv << "\x60{\x60$menu_opts\x60=\x60'" << menu_opts << "\x60'\x60}\n";
 
       outv << "\x60{\x60$login_days\x60=\x60'" << get_obj( ).Auto_Login_Days( ) << "\x60'\x60}\n";
@@ -2041,14 +2064,18 @@ string Meta_Application::impl::get_field_value( int field ) const
       break;
 
       case 30:
-      retval = to_string( impl_Use_URL_Checksum( ) );
+      retval = to_string( impl_Use_Menubar_Not_Sidebar( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_URL_Checksum( ) );
       break;
 
       case 32:
+      retval = to_string( impl_Version( ) );
+      break;
+
+      case 33:
       retval = to_string( impl_Workgroup( ) );
       break;
 
@@ -2184,14 +2211,18 @@ void Meta_Application::impl::set_field_value( int field, const string& value )
       break;
 
       case 30:
-      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_Menubar_Not_Sidebar, value );
       break;
 
       case 31:
-      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      func_string_setter< Meta_Application::impl, bool >( *this, &Meta_Application::impl::impl_Use_URL_Checksum, value );
       break;
 
       case 32:
+      func_string_setter< Meta_Application::impl, string >( *this, &Meta_Application::impl::impl_Version, value );
+      break;
+
+      case 33:
       func_string_setter< Meta_Application::impl, Meta_Workgroup >( *this, &Meta_Application::impl::impl_Workgroup, value );
       break;
 
@@ -2313,6 +2344,7 @@ void Meta_Application::impl::clear( )
    v_Show_Inaccessible_Modules = gv_default_Show_Inaccessible_Modules;
    v_Use_Check_Boxes_for_Bools = gv_default_Use_Check_Boxes_for_Bools;
    v_Use_Embedded_Images = gv_default_Use_Embedded_Images;
+   v_Use_Menubar_Not_Sidebar = gv_default_Use_Menubar_Not_Sidebar;
    v_Use_URL_Checksum = gv_default_Use_URL_Checksum;
    v_Version = gv_default_Version;
 
@@ -3075,6 +3107,16 @@ void Meta_Application::Use_Embedded_Images( bool Use_Embedded_Images )
    p_impl->impl_Use_Embedded_Images( Use_Embedded_Images );
 }
 
+bool Meta_Application::Use_Menubar_Not_Sidebar( ) const
+{
+   return p_impl->impl_Use_Menubar_Not_Sidebar( );
+}
+
+void Meta_Application::Use_Menubar_Not_Sidebar( bool Use_Menubar_Not_Sidebar )
+{
+   p_impl->impl_Use_Menubar_Not_Sidebar( Use_Menubar_Not_Sidebar );
+}
+
 bool Meta_Application::Use_URL_Checksum( ) const
 {
    return p_impl->impl_Use_URL_Checksum( );
@@ -3581,6 +3623,16 @@ const char* Meta_Application::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Use_Menubar_Not_Sidebar )
+   {
+      p_id = c_field_id_Use_Menubar_Not_Sidebar;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Use_URL_Checksum )
    {
       p_id = c_field_id_Use_URL_Checksum;
@@ -3922,6 +3974,16 @@ const char* Meta_Application::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Use_Menubar_Not_Sidebar )
+   {
+      p_name = c_field_name_Use_Menubar_Not_Sidebar;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Use_URL_Checksum )
    {
       p_name = c_field_name_Use_URL_Checksum;
@@ -4131,6 +4193,11 @@ string Meta_Application::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Use_Embedded_Images );
       get_module_string( c_field_display_name_Use_Embedded_Images, &next );
    }
+   else if( id_or_name == c_field_id_Use_Menubar_Not_Sidebar || id_or_name == c_field_name_Use_Menubar_Not_Sidebar )
+   {
+      name = string( c_field_display_name_Use_Menubar_Not_Sidebar );
+      get_module_string( c_field_display_name_Use_Menubar_Not_Sidebar, &next );
+   }
    else if( id_or_name == c_field_id_Use_URL_Checksum || id_or_name == c_field_name_Use_URL_Checksum )
    {
       name = string( c_field_display_name_Use_URL_Checksum );
@@ -4221,6 +4288,8 @@ string Meta_Application::get_field_display_name( const string& id_or_name ) cons
       display_name = get_module_string( c_field_display_name_Use_Check_Boxes_for_Bools );
    else if( id_or_name == c_field_id_Use_Embedded_Images || id_or_name == c_field_name_Use_Embedded_Images )
       display_name = get_module_string( c_field_display_name_Use_Embedded_Images );
+   else if( id_or_name == c_field_id_Use_Menubar_Not_Sidebar || id_or_name == c_field_name_Use_Menubar_Not_Sidebar )
+      display_name = get_module_string( c_field_display_name_Use_Menubar_Not_Sidebar );
    else if( id_or_name == c_field_id_Use_URL_Checksum || id_or_name == c_field_name_Use_URL_Checksum )
       display_name = get_module_string( c_field_display_name_Use_URL_Checksum );
    else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
@@ -4452,6 +4521,7 @@ void Meta_Application::get_sql_column_names(
    names.push_back( "C_Show_Inaccessible_Modules" );
    names.push_back( "C_Use_Check_Boxes_for_Bools" );
    names.push_back( "C_Use_Embedded_Images" );
+   names.push_back( "C_Use_Menubar_Not_Sidebar" );
    names.push_back( "C_Use_URL_Checksum" );
    names.push_back( "C_Version" );
    names.push_back( "C_Workgroup" );
@@ -4493,6 +4563,7 @@ void Meta_Application::get_sql_column_values(
    values.push_back( to_string( Show_Inaccessible_Modules( ) ) );
    values.push_back( to_string( Use_Check_Boxes_for_Bools( ) ) );
    values.push_back( to_string( Use_Embedded_Images( ) ) );
+   values.push_back( to_string( Use_Menubar_Not_Sidebar( ) ) );
    values.push_back( to_string( Use_URL_Checksum( ) ) );
    values.push_back( sql_quote( to_string( Version( ) ) ) );
    values.push_back( sql_quote( to_string( Workgroup( ) ) ) );
@@ -4617,6 +4688,7 @@ void Meta_Application::static_get_field_info( field_info_container& all_field_in
    all_field_info.push_back( field_info( "127110", "Show_Inaccessible_Modules", "bool", false ) );
    all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false ) );
    all_field_info.push_back( field_info( "127131", "Use_Embedded_Images", "bool", false ) );
+   all_field_info.push_back( field_info( "127133", "Use_Menubar_Not_Sidebar", "bool", false ) );
    all_field_info.push_back( field_info( "127107", "Use_URL_Checksum", "bool", false ) );
    all_field_info.push_back( field_info( "127102", "Version", "string", false ) );
    all_field_info.push_back( field_info( "302220", "Workgroup", "Meta_Workgroup", true ) );
@@ -4769,14 +4841,18 @@ const char* Meta_Application::static_get_field_id( field_id id )
       break;
 
       case 31:
-      p_id = "127107";
+      p_id = "127133";
       break;
 
       case 32:
-      p_id = "127102";
+      p_id = "127107";
       break;
 
       case 33:
+      p_id = "127102";
+      break;
+
+      case 34:
       p_id = "302220";
       break;
    }
@@ -4914,14 +4990,18 @@ const char* Meta_Application::static_get_field_name( field_id id )
       break;
 
       case 31:
-      p_id = "Use_URL_Checksum";
+      p_id = "Use_Menubar_Not_Sidebar";
       break;
 
       case 32:
-      p_id = "Version";
+      p_id = "Use_URL_Checksum";
       break;
 
       case 33:
+      p_id = "Version";
+      break;
+
+      case 34:
       p_id = "Workgroup";
       break;
    }
@@ -4998,12 +5078,14 @@ int Meta_Application::static_get_field_num( const string& field )
       rc += 29;
    else if( field == c_field_id_Use_Embedded_Images || field == c_field_name_Use_Embedded_Images )
       rc += 30;
-   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
+   else if( field == c_field_id_Use_Menubar_Not_Sidebar || field == c_field_name_Use_Menubar_Not_Sidebar )
       rc += 31;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_URL_Checksum || field == c_field_name_Use_URL_Checksum )
       rc += 32;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 33;
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+      rc += 34;
 
    return rc - 1;
 }
@@ -5063,6 +5145,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Show_Inaccessible_Modules INTEGER NOT NULL,"
     "C_Use_Check_Boxes_for_Bools INTEGER NOT NULL,"
     "C_Use_Embedded_Images INTEGER NOT NULL,"
+    "C_Use_Menubar_Not_Sidebar INTEGER NOT NULL,"
     "C_Use_URL_Checksum INTEGER NOT NULL,"
     "C_Version VARCHAR(200) NOT NULL,"
     "C_Workgroup VARCHAR(64) NOT NULL,"

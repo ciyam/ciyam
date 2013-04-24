@@ -707,6 +707,7 @@ field_add -id=127129 Application Keep_Existing_Data bool mand -def=1
 field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=1
 field_add -id=127131 Application Use_Embedded_Images bool mand -def=1
 field_add -id=127132 Application Registration_Key str100 opt
+field_add -id=127133 Application Use_Menubar_Not_Sidebar bool mand -def=0
 procedure_add -id=127410 Application Generate
 procedure_add -id=127420 Application Generate_Modules
 procedure_add -id=127430 Application Generate_File_Links
@@ -1942,7 +1943,7 @@ specification_add -id=602910 {Application}_view view "? standard:can_copy Applic
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
 ,@tab:Generate_Details,Version,Generate_Details;show+no_edit\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
-,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers,Default_Timezone_Abbr\
+,Use_Menubar_Not_Sidebar,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers,Default_Timezone_Abbr\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
 ,@tab:Other_Settings,Module_Prefix,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content,Auto_Login_Days,Allow_Duplicate_Logins,Registration_Key\

@@ -369,6 +369,7 @@ struct module_info
    bool user_select_is_strict;
    bool allows_anonymous_access;
 
+   std::string user_qlink_list_id;
    std::string user_qlink_class_id;
    std::string user_qlink_pfield_id;
    std::string user_qlink_url_field_id;
@@ -377,6 +378,7 @@ struct module_info
    std::string user_qlink_test_field_val;
    std::string user_qlink_order_field_id;
    std::string user_qlink_checksum_field_id;
+
    std::string user_qlink_permission;
 
    view_container views;

@@ -590,6 +590,23 @@
       </specifications>
      </field>
      <field/>
+      <id>127133
+      <name>Use_Menubar_Not_Sidebar
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>127107
       <name>Use_URL_Checksum
       <type>bool
@@ -26251,6 +26268,7 @@
      <field_info>@tab:Display_Settings
      <field_info>127109
      <field_info>127110
+     <field_info>127133
      <field_info>127121
      <field_info>127111
      <field_info>127112

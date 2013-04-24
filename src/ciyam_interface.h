@@ -436,6 +436,7 @@ const char* const c_view_field_extra_trigger_relegated = "trigger_relegated";
 
 const char* const c_url_opt_use_checksum = "use_checksum";
 
+const char* const c_menu_opt_use_menubar_not_sidebar = "use_menubar_not_sidebar";
 const char* const c_menu_opt_show_inaccessible_modules = "show_inaccessible_modules";
 
 const char* const c_list_print_opt_show_checks = "show_checks";

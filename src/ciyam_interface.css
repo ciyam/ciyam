@@ -77,7 +77,6 @@ a
 
 #normal_content
 {
-   background-image: url(background.png);
    background-repeat: repeat-y;
    background-position: center;
    position: absolute;
@@ -92,7 +91,6 @@ a
    left: 0px;
 }
 
-/* NAVBAR */
 #navband
 {
    width: 973px;
@@ -146,7 +144,6 @@ a
 {
    color: #fff;
 }
-/* END NAVBAR */
 
 #header
 {
@@ -175,8 +172,107 @@ a
    width: 80%;
 }
 
+#menuband
+{
+   width: 973px;
+   height: 32px;
+   background-color: #018611;
+   border-top: 1px solid #666;
+   border-bottom: 1px solid #666;
+   left: 0px;
+   position: relative;
+   top: 0px;
+   margin: 0px auto;
+   background: url(menubar.png) center repeat-x;
+}
+
+#menubar
+{
+   list-style: none;
+   margin: 0;
+   padding: 0;
+   font-size: 1.2em;
+   float: left;
+   position: relative
+}
+
+#menubar li { float: left; position: relative; }
+
+#menubar li a
+{
+   float: left;
+   display: block;
+   padding: 8px;
+   text-decoration: none;
+   color: #666;
+   margin-left: 6px;
+   min-width: 120px;
+}
+
+#menubar li:hover a,
+#menubar li a:hover
+{
+   background: #999;
+   color: #fff;
+}
+
+#menubar ul { display: none; }
+
+#menubar li:hover ul { display: block; }
+
+#menubar ul
+{
+   float: none;
+   position: absolute;
+   list-style: none;
+   margin: 0;
+   padding: 0;
+   padding-top: 6px;
+   top: 1.8em;
+   left: 0;
+}
+
+#menubar ul li
+{
+   float: none;
+   clear: none;
+   margin: 0;
+   padding: 0;
+   width: auto;
+   background: #999;
+   color: #fff;
+   margin-left: 4px;
+}
+
+#menubar li:hover ul li a,
+#menubar ul li a
+{
+   line-height: 200%;
+   display: block;
+   float: none;
+   background: none;
+}
+
+#menubar li:hover ul li a:hover,
+#menubar ul li a:hover
+{
+   background: none;
+   color: #000;
+}
+
+.menubar_width
+{
+   width: 953px;
+}
+
+.menubar_background
+{
+   background-image: url(background_menubar.png);
+}
+
 #sidebar
 {
+   float: left;
    width: 210px;
    _height: 100%; /* KLUDGE: for display using IE 6 */
    border: 0px solid #000;
@@ -218,6 +314,16 @@ a
    font-size: 12px;
 }
 
+.sidebar_width
+{
+   width: 755px;
+}
+
+.sidebar_background
+{
+   background-image: url(background_sidebar.png);
+}
+
 .clear
 {
    clear: both;
@@ -227,7 +333,6 @@ a
 {
    text-align: left;
    border: 0px solid #000;
-   width: 755px;
    float: right;
    margin-top: 15px;
    margin-right: 20px;
@@ -579,7 +684,6 @@ input.pikaday_button
    width: 16px;
 }
 
-/*LOGIN*/
 #loginbox
 {
    padding: 0px;
@@ -629,10 +733,6 @@ input.pikaday_button
    text-align: center;
 }
 
-/*END LOGIN*/
-
-/* MINI LOGIN */
-
 #minilogin
 {
    height: 100%;
@@ -669,8 +769,6 @@ input.pikaday_button
   height: 20px;
 }
 
-/*END MINI LOGIN*/
-
 #footer
 {
    left: 0px;
@@ -694,7 +792,6 @@ input.pikaday_button
    _position: relative; /* KLUDGE: for display using IE 6 */
 }
 
-/* SCREEN  */
 @media screen
 {
    tr.invisible
@@ -1233,9 +1330,7 @@ input.pikaday_button
       background: #c9ceda;
    }
 }
-/* END SCREEN */
 
-/*  PRINT */
 @media print
 {
    body
@@ -1325,11 +1420,6 @@ input.pikaday_button
       color: #fff;
       height: 35px;
    }
-      
-   #main
-   {
-      float: none;
-   }
 }
 
 #print_remainder
@@ -1344,4 +1434,4 @@ input.pikaday_button
 {
    float: none;
 }
-/* END PRINT */
+
