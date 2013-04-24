@@ -197,6 +197,7 @@ void module_info::clear( )
    user_select_is_strict = false;
    allows_anonymous_access = false;
 
+   user_qlink_list_id.erase( );
    user_qlink_class_id.erase( );
    user_qlink_pfield_id.erase( );
    user_qlink_url_field_id.erase( );
@@ -868,6 +869,9 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             list.pid = reader.read_opt_attribute( c_attribute_pid );
             list.name = reader.read_attribute( c_attribute_name );
             list.type = reader.read_attribute( c_attribute_type );
+
+            if( list.cid == info.user_qlink_class_id )
+               info.user_qlink_list_id = list.id;
 
             string::size_type pos = list.type.find( '=' );
             if( pos != string::npos )

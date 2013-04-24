@@ -1,7 +1,8 @@
 auto_progress.gif
 activate.htms
-background.png
 background_header.png
+background_menubar.png
+background_sidebar.png
 backward.png
 backward_fast.png
 base64.js
@@ -20,6 +21,7 @@ load_progress.gif
 login.htms
 login_box.gif
 login_persistent.htms
+menubar.png
 minilogin.htms
 navbar.png
 open.png

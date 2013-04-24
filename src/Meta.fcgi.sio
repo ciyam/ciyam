@@ -2446,6 +2446,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_use_menubar_not_sidebar
+     <field>127133
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_use_check_boxes_for_bools
      <field>127121
      <ftype>bool
