@@ -2394,9 +2394,9 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_pfield=$specification_\0_pfield arg_pnfield=$specification_\0_pnfield arg_pn2field=$specification_\0_pn2field\
  arg_pn3field=$specification_\0_pn3field arg_tfield=$specification_\0_tfield arg_sfield=$specification_\0_sfield`}\
 `,\
-`@eq`(`'\1`'`,`'trigger_clone_default_user_children`'`)
-`{`#trigger_clone_default_user_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
- arg_id=$specification_\0_id arg_child=$specification_\0_child arg_ufield=$specification_\0_ufield arg_skip_clones=$specification_\0_skip_clones\
+`@eq`(`'\1`'`,`'trigger_clone_default_children`'`)
+`{`#trigger_clone_default_children.spec.xrep section=after_store module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\0_id arg_child=$specification_\0_child arg_pfield=$specification_\0_pfield arg_skip_clones=$specification_\0_skip_clones\
  arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue`}\
 `,\
 `@eq`(`'\1`'`,`'trigger_clone_for_fk_children`'`)
