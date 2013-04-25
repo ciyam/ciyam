@@ -2166,8 +2166,13 @@ void request_handler::process_request( )
                   had_send_or_recv_error = true;
 
                // NOTE: Handle an error/response (is stored as the first record in "row_errors").
+               // Also if no message was returned for a non-instance procedure call then output
+               // a "success" message so it is clear something has occurred.
                if( app.empty( ) && list.row_errors.size( ) )
                   error_message = escape_markup( list.row_errors.begin( )->second );
+
+               if( app.empty( ) && error_message.empty( ) )
+                  error_message = GDS( c_display_completed_successfully );
             }
 
             // NOTE: Any action that performed on the "quick link" class will result in
