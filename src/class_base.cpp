@@ -729,6 +729,9 @@ void class_base::init( bool for_create )
    int num_fields = get_num_fields( );
    for( size_t i = 0; i < num_fields; i++ )
       original_values.push_back( get_field_value( i ) );
+
+   p_impl->foreign_key_values.clear( );
+   get_foreign_key_values( p_impl->foreign_key_values );
 }
 
 void class_base::prepare( bool for_create, bool call_to_store )
@@ -780,11 +783,13 @@ bool class_base::has_changed( ) const
    if( !p_graph_parent || graph_parent_fk_field.empty( ) )
    {
       int num_fields = get_num_fields( );
+
       for( size_t i = 0; i < num_fields; i++ )
       {
          if( has_field_changed( i ) )
             return true;
       }
+
       return false;
    }
 
