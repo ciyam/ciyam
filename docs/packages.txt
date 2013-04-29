@@ -5,8 +5,9 @@ The following notes detail the available packages and their usage. Package names
 to their name are Package Type's that are installed by default. Package Types not installed by default can be
 used after being installed from their package (refer to "Installing Package Types" in "getting_started.txt").
 
+-------------------------------------------------------------------------------------------------------------
 Auto_Code (default)
--------------------
+-------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
 
@@ -40,102 +41,57 @@ AC####  ==>  AC0000,AC0001,AC0002,...,AC9999
 ??####  ==>  AA0000,AA0001,AA0002,...,ZZ9999
 XYZ#??  ==>  XYZ0AA,XYZ0AB,XYZ0AC,...,XYZ9ZZ
 
-User (default)
---------------
-
-Other Package Dependencies: Standard
-
-This package provides the User class which is required for an application to support "logging in". To be able
-to create the User instances an "admin" user is automatically created when an application is generated. To be
-sure a system is secured the password for "admin" must be changed (the default password is "admin").
-
-Package Options:
-
-@use_demo_data - Use this option to create one or more demo User records.
-
-use_access_level - Use this option to be able to assign users a specific "access" level.
-use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
-
-use_account - Use this option to allow users to create accounts** that are aliases for other users.
-use_account_invitation - Use this option to enable emailing of invitations to accounts for new users.
-
-use_ignore_users - Use this option to support the maintenance of a set of users to be ignored. Other packages
-(such as the Forum package) will utilise this list for the purposes of "hiding" records.
-
-use_personalisation - Use this option to add additional personal information (such as photo and signature).
-
-use_quick_link - Use this option to allow the user to maintain quick link*** records.
-use_quick_link_active - Use this option to allow quick link records to have an "active" status.
-
-use_reputation - Use this option to allow other packages to award or subtract reputation ratings.
-
-use_templates - Use this option to support the creation of users from a user template (this is most useful if
-the application has a need for different user "types" that have different permissions).
-
-** An "account" is effectively an alias that one user can give to another user. The purpose of creating these
-accounts is for a user to be able to provide restricted access to their personal information to another user.
-These accounts can be tied with the usage of other packages (such as the Photo package) which can be used for
-the construction of "social network" type applications.
-
-*** A "quick link" is a method for extending the standard menu for an application to include menu items which
-are either links to a specific record or to a specific record search.
-
-Group (default)
----------------
+-------------------------------------------------------------------------------------------------------------
+Blog
+-------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
 
-This package provides a Workgroup class and implements the Relationship between a User and its Workgroup. The
-Relationship is optional although typically only the "admin" or "guest" user would not belong to a Workgroup.
-
-The Workgroup (or renamed as Department if preferred) is used as a simple means of slicing DB records between
-different users. Various other Packages will accept the Group Package as an option where it can make sense to
-be dividing records between different Workgroups.
+This package provides a Blog implementation that supports multiple blogs that each contain multiple blog
+entries that are ordered by date. A blog entry remains private until it is published. After publication
+a blog entry can be removed or republished.
 
 Package Options:
 
-@use_demo_data - Use this option to create demo Workgroups (and demo Users belonging to them).
+@use_demo_data - Use this option to create demo blogs and blog entries.
+@use_home_list - Use this option to display the last published blog entry as a "home" list.
 
-Photo
------
+group_for_home - If using the "group" package then this will determine the group to use for the "home" list.
+group_package - Optional "group" package to divide blogs between workgroups.
+
+use_comments - Use this option to allow other users to leave comments.
+use_comments_publishing - Use this option to only display comments the author chooses to publish.
+
+use_tags - Use this option to add "tags" to blog entries useful for searching.
+
+use_user_access_level* - Use this to apply the user access level to blogs and blog entries.
+use_user_ignore_users* - Use this option to filter blog and blog entries from users in the ignore set.
+
+* It should be noted that these options will have no effect if the relevant options were not set for the User
+package before it was installed.
+
+-------------------------------------------------------------------------------------------------------------
+Event
+-------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard
 
-This package provides a Photo Album implementation that can be used to easily create and publish photos from
-a CIYAM application.
+This package provides an Event implementation in which each record has a date and time (as well as optionally
+a duration) and a status. Such records can be treated like a list of public events, but also could be handled
+more like private appointments, reminders or tasks and as such can be generated from a Schedule.
 
-In order to be able to view "published" Photo Album web pages the open source application Galleria must first
-be installed. A script to install Galleria (and a copy of Galleria itself) is included in the repository - so
-to install it simply run the following:
+@use_demo_data - Use this option to create demo events.
 
-./setup_galleria
+group_package - Optional "group" package to divide events between workgroups.
 
-If the User package is not linked to the Photo package (via the "user_package" option) then Photo Albums will
-be accessible to all users and will be published to the "webroot" directory. If the User package is linked in
-then Photo Albums and Photos are only visible to the user that "owns" them, however, if "use_user_account" is
-selected (and User Accounts were installed with the User package) then other users that the Photo Album owner
-has added User Accounts for will also be able to view their Photos (assuming they have been given high enough
-access). Only those Photo Albums with "public" visibility (and Photos likewise) are able to be "published" as
-the published Photo Albums will be visible to anyone having access to the website.
+use_duration - Use this option to give an event a duration (and to allow overlap detection).
+use_tz_abbr - Use this option to be able to tie a timezone abbreviation to an event.
 
-Package Options:
+user_package - Optional "user" package to tie events to specific users.
 
-@use_demo_data - Use this option to create one or more demo Photo Albums (depends upon User demo data).
-
-user_package - This needs to be linked to an installed User package in order to use the other "user" options.
-
-use_user_account - Use this option if Photo Albums are intended to be shared between user accounts.
-use_user_account_mark_as_seen - This option allows the account owners to mark a Photo Album as being seen.
-
-use_user_id_path - Use this option to publish Photo Albums below a directory that is the same as the User Id.
-
-use_user_permissions - Use this option to add permissions for being able to access/modify Photo Albums.
-use_user_tags - Use this option in order to be able to add/remove "tags" to/from individual Photos.
-
-user_image_directory - This is the name of the directory in which the Photos will be stored.
-
+-------------------------------------------------------------------------------------------------------------
 Forum
------
+-------------------------------------------------------------------------------------------------------------
 
 Other Package Dependencies: Standard User
 
@@ -180,4 +136,129 @@ very_hot_topic_posts - As per the hot_topic_posts option.
 
 * It should be noted that these options will have no effect if the relevant options were not set for the User
 package before it was installed.
+
+-------------------------------------------------------------------------------------------------------------
+Group (default)
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard User
+
+This package provides a Workgroup class and implements the Relationship between a User and its Workgroup. The
+Relationship is optional although typically only the "admin" or "guest" user would not belong to a Workgroup.
+
+The Workgroup (or renamed as Department if preferred) is used as a simple means of slicing DB records between
+different users. Various other Packages will accept the Group Package as an option where it can make sense to
+be dividing records between different Workgroups.
+
+Package Options:
+
+@use_demo_data - Use this option to create demo Workgroups (and demo Users belonging to them).
+
+-------------------------------------------------------------------------------------------------------------
+Photo
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides a Photo Album implementation that can be used to easily create and publish photos from
+a CIYAM application.
+
+In order to be able to view "published" Photo Album web pages the open source application Galleria must first
+be installed. A script to install Galleria (and a copy of Galleria itself) is included in the repository - so
+to install it simply run the following:
+
+./setup_galleria
+
+If the User package is not linked to the Photo package (via the "user_package" option) then Photo Albums will
+be accessible to all users and will be published to the "webroot" directory. If the User package is linked in
+then Photo Albums and Photos are only visible to the user that "owns" them, however, if "use_user_account" is
+selected (and User Accounts were installed with the User package) then other users that the Photo Album owner
+has added User Accounts for will also be able to view their Photos (assuming they have been given high enough
+access). Only those Photo Albums with "public" visibility (and Photos likewise) are able to be "published" as
+the published Photo Albums will be visible to anyone having access to the website.
+
+Package Options:
+
+@use_demo_data - Use this option to create one or more demo Photo Albums (depends upon User demo data).
+
+user_package - This needs to be linked to an installed User package in order to use the other "user" options.
+
+use_user_account - Use this option if Photo Albums are intended to be shared between user accounts.
+use_user_account_mark_as_seen - This option allows the account owners to mark a Photo Album as being seen.
+
+use_user_id_path - Use this option to publish Photo Albums below a directory that is the same as the User Id.
+
+use_user_permissions - Use this option to add permissions for being able to access/modify Photo Albums.
+use_user_tags - Use this option in order to be able to add/remove "tags" to/from individual Photos.
+
+user_image_directory - This is the name of the directory in which the Photos will be stored.
+
+-------------------------------------------------------------------------------------------------------------
+Schedule
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard Event
+
+This package allows for the scheduling of events in advance for a cycle (weekly, monthly or annually). Within
+the schedule one creates separate schedule items which will be used to create the specific events. The design
+is intended for scheduling meetings or regular tasks.
+
+@use_demo_data - Use this option to create a demo schedule.
+
+event_package - This needs to be linked to an installed "event" package.
+group_package - Optional "group" package to divide schedules between workgroups.
+
+timezone_package - Optional "timezone" package to be able to tie a timezone to a schedule.
+user_package - Optional "user" package to be able to tie schedules to specific users.
+
+-------------------------------------------------------------------------------------------------------------
+Timezone
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides the ability to create records for different timezones that can include daylight savings
+adjustments and historical changes for such. The "timezones.sio" file used by the application server can also
+be generated from the timezone records.
+
+-------------------------------------------------------------------------------------------------------------
+User (default)
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides the User class which is required for an application to support "logging in". To be able
+to create the User instances an "admin" user is automatically created when an application is generated. To be
+sure a system is secured the password for "admin" must be changed (the default password is "admin").
+
+Package Options:
+
+@use_demo_data - Use this option to create one or more demo User records.
+
+use_access_level - Use this option to be able to assign users a specific "access" level.
+use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
+
+use_account - Use this option to allow users to create accounts** that are aliases for other users.
+use_account_invitation - Use this option to enable emailing of invitations to accounts for new users.
+
+use_ignore_users - Use this option to support the maintenance of a set of users to be ignored. Other packages
+(such as the Forum package) will utilise this list for the purposes of "hiding" records.
+
+use_personalisation - Use this option to add additional personal information (such as photo and signature).
+
+use_quick_link - Use this option to allow the user to maintain quick link*** records.
+use_quick_link_active - Use this option to allow quick link records to have an "active" status.
+
+use_reputation - Use this option to allow other packages to award or subtract reputation ratings.
+
+use_templates - Use this option to support the creation of users from a user template (this is most useful if
+the application has a need for different user "types" that have different permissions).
+
+** An "account" is effectively an alias that one user can give to another user. The purpose of creating these
+accounts is for a user to be able to provide restricted access to their personal information to another user.
+These accounts can be tied with the usage of other packages (such as the Photo package) which can be used for
+the construction of "social network" type applications.
+
+*** A "quick link" is a method for extending the standard menu for an application to include menu items which
+are either links to a specific record or to a specific record search.
 
