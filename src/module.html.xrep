@@ -1,32 +1,31 @@
 `{`#$model_vars @`}
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
 <title>`{`$model_title`/_`/ `}</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<meta name="copyright" content="Copyright `{`$y`} CIYAM Open Developers"/>
+<meta name="author" content="Copyright `{`$y`} CIYAM Open Developers"/>
 
 <meta http-equiv="Expires" content="0"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Cache-Control" content="no-cache"/>
 <meta http-equiv="Cache-Control" content="no-store"/>
 
-<script language="JavaScript" type="text/javascript" src="sha1.js"></script>
-<script language="JavaScript" type="text/javascript" src="sha2.js"></script>
-<script language="JavaScript" type="text/javascript" src="base64.js"></script>
+<script type="text/javascript" src="sha1.js"></script>
+<script type="text/javascript" src="sha2.js"></script>
+<script type="text/javascript" src="base64.js"></script>
 
-<script language="javascript" type="text/javascript">var module = 'module=`{`$model_name`}';</script>
+<script type="text/javascript">var module = 'module=`{`$model_name`}';</script>
 
 <link rel="stylesheet" href="ciyam_interface.css" type="text/css"/>
 <link rel="stylesheet" href="css/pikaday.css" type="text/css"/>
-<script language="javascript" type="text/javascript" src="ciyam_interface.js"></script>
-<script language="javascript" type="text/javascript" src="pikaday.js">
+<script type="text/javascript" src="ciyam_interface.js"></script>
+<script type="text/javascript" src="pikaday.js">
 </script>
-<script language="javascript" type="text/javascript" src="scripts/wysiwyg.js"></script>
-<script language="javascript" type="text/javascript" src="scripts/wysiwyg-settings.js"></script>
+<script type="text/javascript" src="scripts/wysiwyg.js"></script>
+<script type="text/javascript" src="scripts/wysiwyg-settings.js"></script>
 </head>
 
 <body onload="load( )">
@@ -43,7 +42,8 @@
 <div id="auto_progress" class="invisible"><img src="auto_progress.gif" alt="auto_progress"/></div>
 <div id="load_progress" class="invisible"><img src="load_progress.gif" alt="load_progress"/></div>
 
-<iframe src="javascript:false;" name="hidden_frame" frameborder="0" width="1" height="1" marginheight="0" marginwidth="0">
+<iframe src="javascript:false;"
+ name="hidden_frame" frameborder="0" width="1" height="1" marginheight="0" marginwidth="0">
 </iframe>
 
 </body>
