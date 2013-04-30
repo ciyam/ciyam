@@ -733,6 +733,9 @@ void read_strings( const std::string& filename,
  string_container& strings, const char* p_prefix = 0,
  bool unescape_data = true, char esc = c_esc, const char* p_specials = c_special_characters );
 
+void write_strings( const std::string& filename, const string_container& strings,
+ bool escape_data = true, char esc = c_esc, const char* p_specials = c_special_characters );
+
 std::string extract_text_from_html( const std::string& html );
 
 #endif
