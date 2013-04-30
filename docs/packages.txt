@@ -155,6 +155,21 @@ Package Options:
 @use_demo_data - Use this option to create demo Workgroups (and demo Users belonging to them).
 
 -------------------------------------------------------------------------------------------------------------
+Itinerary
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard User Event
+
+This package provides a simple Itinerary imlementation that allows users to generate a "day by day" itinerary
+of events for a specified date range.
+
+Package Options:
+
+@use_demo_data - Use this option to create a demo Itinerary.
+
+use_permission - Use this option to require a permission to access Itineraries.
+
+-------------------------------------------------------------------------------------------------------------
 Photo
 -------------------------------------------------------------------------------------------------------------
 

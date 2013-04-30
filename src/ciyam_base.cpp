@@ -3043,6 +3043,9 @@ void read_server_configuration( )
             const char* p_env = getenv( g_web_root.substr( 1, g_web_root.size( ) - 2 ).c_str( ) );
             g_web_root = string( p_env ? p_env : "" );
          }
+#ifdef _WIN32
+         replace( g_web_root, "\\", "/" );
+#endif
       }
 
       g_set_trace = reader.read_opt_attribute( c_attribute_set_trace );

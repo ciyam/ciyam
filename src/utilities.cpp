@@ -1788,6 +1788,28 @@ void read_strings( const string& filename, map< string, string >& strings,
       throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
 }
 
+void write_strings( const std::string& filename,
+ const string_container& strings, bool escape_data, char esc, const char* p_specials )
+{
+   ofstream outf( filename.c_str( ) );
+   if( !outf )
+      throw runtime_error( "unable to open file '" + filename + "' for output" );
+
+   for( string_const_iterator i = strings.begin( ); i != strings.end( ); ++i )
+   {
+      string data( i->second );
+      if( escape_data )
+         escape( data, 0, esc, p_specials );
+
+      outf << i->first << ' ' << '"' << data << '"' << '\n';
+   }
+
+   outf.flush( );
+
+   if( !outf.good( ) )
+      throw runtime_error( "output stream is bad for '" + filename + "'" );
+}
+
 string extract_text_from_html( const string& html )
 {
    string text;
