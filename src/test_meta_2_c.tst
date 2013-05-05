@@ -43,8 +43,9 @@ Day_Number,E104
 Day_Set,E105
 Date_Cycle,E106
 Day_Of_Week,E107
-Occurrence,E108
-Orientation,E109
+Minutes,E108
+Occurrence,E109
+Orientation,E110
 
 > perform_fetch Meta Type "Id " Name,Id -min
 string,T000
