@@ -83,6 +83,7 @@ more like private appointments, reminders or tasks and as such can be generated 
 @use_demo_data - Use this option to create demo events.
 
 group_package - Optional "group" package to divide events between workgroups.
+message_package - Optional "message" package to provide support for event notifications and automatic closing.
 
 use_duration - Use this option to give an event a duration (and to allow overlap detection).
 use_tz_abbr - Use this option to be able to tie a timezone abbreviation to an event.

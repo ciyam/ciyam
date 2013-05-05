@@ -14,43 +14,65 @@
 `{`$i`}   get_obj( ).set_variable( "`{`$arg_var`}", "true" );
 `}
 `{`@eq`(`$arg_rfield`,`'`'`)
-`{`$i`}   if( get_obj( ).iterate_forwards( ) )
+`{`@eq`(`$arg_ofield`,`'`'`)
+`{`$i`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( ) )
+`,\
+`{`$i`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
+`{`$i`}   key_info += " ";
+
+`{`$i`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( key_info ) )
+`}\
 `{`$i`}   {
 `{`$i`}      do
 `{`$i`}      {
 `{`$i`}         ++total;
-
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`$i`}         get_obj( ).`{`$arg_oprocedure`}( );
 `,\
+
 `{`$i`}         if( get_obj( ).`{`$arg_tfield`}( ) )
 `{`$i`}            get_obj( ).`{`$arg_oprocedure`}( );
+`{`@eq`(`$arg_else_break`,`'true`'`)\
+`{`$i`}         else
+`{`$i`}         {
+`{`$i`}            get_obj( ).iterate_stop( );
+`{`$i`}            break;
+`{`$i`}         }
+`}`}\
 
 `{`$i`}         progress.check_progress( total );
 
-`}\
 `{`$i`}      } while( get_obj( ).iterate_next( ) );
 `{`$i`}   }
 `,\
 `{`$i`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_rfield`} ) );
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+`{`$i`}   key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
+`}\
 `{`$i`}   key_info += "#1 ";
-`{`$i`}   key_info += "`{`$arg_rvalue`}";
+`{`$i`}   key_info += "`{`!`@eq`(`$arg_value`,`'`'`)`$arg_value`,`$arg_rvalue`}";
 
-`{`$i`}   if( get_obj( ).iterate_forwards( key_info ) )
+`{`$i`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( key_info ) )
 `{`$i`}   {
 `{`$i`}      do
 `{`$i`}      {
 `{`$i`}         ++total;
-
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`$i`}         get_obj( ).`{`$arg_oprocedure`}( );
 `,\
+
 `{`$i`}         if( get_obj( ).`{`$arg_tfield`}( ) )
 `{`$i`}            get_obj( ).`{`$arg_oprocedure`}( );
+`{`@eq`(`$arg_else_break`,`'true`'`)\
+`{`$i`}         else
+`{`$i`}         {
+`{`$i`}            get_obj( ).iterate_stop( );
+`{`$i`}            break;
+`{`$i`}         }
+`}`}\
 
 `{`$i`}         progress.check_progress( total );
 
-`}\
 `{`$i`}      } while( get_obj( ).iterate_next( ) );
 `{`$i`}   }
 `}`{`!`@eq`(`$arg_no_trans`,`'true`'`)\

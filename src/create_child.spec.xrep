@@ -33,8 +33,7 @@
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
 `{`!`@eq`(`$arg_field`,`'`'`)\
       get_obj( ).child_`{`$arg_child`}( ).`{`$arg_field`}( `{`$arg_value`} );
-`}
-`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+`}`{`?`$arg_field_list`[`$arg_field_list`%,`,
       copy_field_or_file_and_field( get_obj( ).child_`{`$arg_child`}( ),
        get_obj( ).child_`{`$arg_child`}( ).get_key( ), "\\0", get_obj( ), "\\1", storage_locked_for_admin( ) );
 `]`}

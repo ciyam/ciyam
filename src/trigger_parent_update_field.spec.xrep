@@ -1,12 +1,12 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)\
    // [(start trigger_parent_update_field)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
-   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
     && !is_update_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) )
     && ( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) ) )
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )
-    && !is_null( get_obj( ).`{`$arg_spfield`}( ) )
+    && `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
     && !is_update_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) )
     && ( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) ) )
 `}\

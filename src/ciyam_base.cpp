@@ -2672,13 +2672,39 @@ string construct_sql_select(
             next_value[ next_value.length( ) - 1 ] = '%';
          }
 
-         if( !is_sql_numeric )
+         string lhs, rhs;
+         bool is_between = false;
+         if( !value_is_like_prefix )
+         {
+            string::size_type pos = next_value.find( ".." );
+            if( pos != string::npos )
+            {
+               is_between = true;
+               if( is_sql_numeric )
+               {
+                  lhs = next_value.substr( 0, pos );
+                  rhs = next_value.substr( pos + 2 );
+               }
+               else
+               {
+                  lhs = sql_quote( formatted_value( next_value.substr( 0, pos ), field_type ) );
+                  rhs = sql_quote( formatted_value( next_value.substr( pos + 2 ), field_type ) );
+               }
+            }
+         }
+
+         if( !is_between && !is_sql_numeric )
             next_value = sql_quote( formatted_value( next_value, field_type ) );
 
          if( next_value == "NULL" )
             sql += "C_" + next_field + " " + invert_prefix + " IS NULL";
          else if( !value_is_like_prefix )
-            sql += "C_" + next_field + ( invert ? " <> " : " = " ) + next_value;
+         {
+            if( !is_between )
+               sql += "C_" + next_field + ( invert ? " <> " : " = " ) + next_value;
+            else
+               sql += "C_" + next_field + " " + invert_prefix + "BETWEEN " + lhs + " AND " + rhs;
+         }
          else
             sql += "C_" + next_field + " " + invert_prefix + "LIKE " + next_value;
 
