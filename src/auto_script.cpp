@@ -54,6 +54,8 @@ const char* const c_attribute_exclude = "exclude";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_arguments = "arguments";
 
+const int c_min_cycle_seconds_for_logging = 3600;
+
 // NOTE: This figure will allow an event that recurs every minute to be able to be skipped for max. 10 days.
 // FUTURE: This value should probably be allowed to be overidden by a configuration option.
 const size_t c_max_reschedule_attempts = 15000;
@@ -383,7 +385,9 @@ void autoscript_session::on_start( )
                      outf << "<" << arguments << endl;
                      outf.close( );
 
-                     script_args += " " + g_scripts[ j->second ].name;
+                     // NOTE: Skip logging for any scripts that cycle too frequently.
+                     if( g_scripts[ j->second ].cycle_seconds >= c_min_cycle_seconds_for_logging )
+                        script_args += " " + g_scripts[ j->second ].name;
 
 #ifdef _WIN32
                      // KLUDGE: For some reason under Windows if multiple scripts need to be run in
