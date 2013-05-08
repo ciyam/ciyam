@@ -23,6 +23,7 @@
 
 #include "pop3.h"
 #include "threads.h"
+#include "progress.h"
 #include "utilities.h"
 #include "ciyam_base.h"
 
@@ -54,6 +55,8 @@ void unlock_mbox( const string& mbox )
    if( mboxes.count( mbox ) )
       mboxes.erase( mbox );
 }
+
+#include "trace_progress.cpp"
 
 }
 
@@ -334,7 +337,9 @@ struct pop3_source::impl
 
    string username;
    string password;
+
    auto_ptr< pop3 > ap_pop;
+   auto_ptr< progress > ap_progress;
 };
 
 pop3_source::impl::impl( )
@@ -356,7 +361,7 @@ pop3_source::impl::impl( )
    password = get_pop3_password( );
 
    string suffix( get_pop3_suffix( ) );
-   if( !suffix.empty( ) )
+   if( !suffix.empty( ) && username.find( '@' ) == string::npos )
       username += "@" + suffix;
 
    pop3_ctype ctype = e_pop3_ctype_insecure;
@@ -376,7 +381,10 @@ pop3_source::impl::impl( )
          ctype = e_pop3_ctype_tls;
    }
 
-   ap_pop.reset( new pop3( host, port, ctype ) );
+   if( get_trace_flags( ) & TRACE_MAIL_OPS )
+      ap_progress.reset( new trace_progress( TRACE_MAIL_OPS ) );
+
+   ap_pop.reset( new pop3( host, port, ctype, ap_progress.get( ) ) );
 }
 
 pop3_source::impl::impl( const string& username, const string& password )
@@ -414,7 +422,10 @@ pop3_source::impl::impl( const string& username, const string& password )
          ctype = e_pop3_ctype_tls;
    }
 
-   ap_pop.reset( new pop3( host, port, ctype ) );
+   if( get_trace_flags( ) & TRACE_MAIL_OPS )
+      ap_progress.reset( new trace_progress( TRACE_MAIL_OPS ) );
+
+   ap_pop.reset( new pop3( host, port, ctype, ap_progress.get( ) ) );
 }
 
 void pop3_source::impl::start_processing( )

@@ -143,7 +143,6 @@ const char* const c_system_variable_storage = "@storage";
 
 const char* const c_session_variable_dtm = "@dtm";
 const char* const c_session_variable_sec = "@sec";
-const char* const c_session_variable_uid = "@uid";
 const char* const c_session_variable_none = "@none";
 const char* const c_session_variable_class = "@class";
 const char* const c_session_variable_module = "@module";
@@ -152,6 +151,7 @@ const char* const c_session_variable_tz_abbr = "@tz_abbr";
 
 const char* const c_session_variable_val_error = "@val_error";
 
+const char* const c_special_variable_uid = "@uid";
 const char* const c_special_variable_is_quiet = "@quiet";
 const char* const c_special_variable_was_cloned = "@cloned";
 const char* const c_special_variable_execute_return = "@return";
@@ -3591,6 +3591,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "lock_ops" ); // TRACE_LOCK_OPS
    flag_names.push_back( "ctr_dtrs" ); // TRACE_CTR_DTRS
    flag_names.push_back( "sessions" ); // TRACE_SESSIONS
+   flag_names.push_back( "mail_ops" ); // TRACE_MAIL_OPS
 }
 
 void log_trace_message( int flag, const string& message )
@@ -3640,6 +3641,10 @@ void log_trace_message( int flag, const string& message )
 
       case TRACE_SESSIONS:
       type = "session";
+      break;
+
+      case TRACE_MAIL_OPS:
+      type = "mail_op";
       break;
 
       case TRACE_ANYTHING:
@@ -4747,6 +4752,10 @@ string get_special_var_name( special_var var )
 
    switch( var )
    {
+      case e_special_var_uid:
+      s = string( c_special_variable_uid );
+      break;
+
       case e_special_var_is_quiet:
       s = string( c_special_variable_is_quiet );
       break;
@@ -5781,7 +5790,9 @@ void set_uid( const string& uid )
    }
 
    gtp_session->uid = s;
-   set_session_variable( c_session_variable_uid, s );
+
+   pos = s.find( ':' );
+   set_session_variable( c_special_variable_uid, s.substr( 0, pos ) );
 }
 
 bool is_sys_uid( )

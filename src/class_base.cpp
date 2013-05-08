@@ -409,6 +409,8 @@ void decode_mime( mime_decoder& decoder, string& message,
       decode_mime( decoder.get_child( ), message, html_message, attachments );
 }
 
+#include "trace_progress.cpp"
+
 }
 
 struct class_cascade::impl
@@ -3218,7 +3220,7 @@ void send_email_message(
    account.password = get_smtp_password( );
 
    string suffix( get_smtp_suffix( ) );
-   if( !suffix.empty( ) )
+   if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
       account.username += "@" + suffix;
 
    vector< string > recipients;
@@ -3246,7 +3248,7 @@ void send_email_message(
    account.password = get_smtp_password( );
 
    string suffix( get_smtp_suffix( ) );
-   if( !suffix.empty( ) )
+   if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
       account.username += "@" + suffix;
 
    send_email_message( account, recipients, subject, message,
@@ -3278,10 +3280,6 @@ void send_email_message( const user_account& account,
    string charset( "utf-8" );
 
    string password( account.password );
-
-   // NOTE: If password length > 20 then assume it has been encrypted.
-   if( password.length( ) > 20 )
-       password = decrypt_password( password );
 
    smtp_user_info user_info( account.sender,
     account.username, password, &dt, utc_offset, &tz_abbr, &charset );
@@ -3337,13 +3335,19 @@ void send_email_message( const user_account& account,
    if( !html_source.empty( ) )
       html = buffer_file( html_source );
 
+   progress* p_progress = 0;
+   trace_progress progress( TRACE_MAIL_OPS );
+
+   if( get_trace_flags( ) & TRACE_MAIL_OPS )
+      p_progress = &progress;
+
    int attempt = 0;
    while( true )
    {
       try
       {
          send_smtp_message( get_smtp_server( ), user_info, recipients, subject,
-          message, html, p_extra_headers, p_file_names, p_image_names, p_image_path_prefix );
+          message, html, p_extra_headers, p_file_names, p_image_names, p_image_path_prefix, p_progress );
 
          break;
       }
@@ -3463,10 +3467,6 @@ void fetch_email_messages( const user_account& account,
 
    string password( account.password );
 
-   // NOTE: If password length > 20 then assume it has been encrypted.
-   if( password.length( ) > 20 )
-       password = decrypt_password( password );
-
    if( !get_mbox_path( ).empty( ) && ( pos == string::npos
     || account.username.substr( pos + 1 ) == get_domain( ) ) )
       ap_mail_source.reset( new mbox_source( account.username ) );
@@ -3532,7 +3532,7 @@ void fetch_email_messages( const string& file_name_prefix, bool skip_scripts )
       account.password = get_pop3_password( );
 
       string suffix( get_pop3_suffix( ) );
-      if( !suffix.empty( ) )
+      if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
          account.username += "@" + suffix;
    }
 
@@ -3551,7 +3551,7 @@ void fetch_email_messages( vector< pair< bool, string > >& messages, bool skip_s
       account.password = get_pop3_password( );
 
       string suffix( get_pop3_suffix( ) );
-      if( !suffix.empty( ) )
+      if( !suffix.empty( ) && account.username.find( '@' ) == string::npos )
          account.username += "@" + suffix;
    }
 

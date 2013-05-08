@@ -21,12 +21,12 @@
 
 #include "config.h"
 #include "sockets.h"
+#include "progress.h"
 #include "utilities.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #endif
 
-//#define DEBUG
 #define USE_NO_DELAY
 
 using namespace std;
@@ -83,19 +83,25 @@ const char* const c_mime_header = "MIME-Version:";
 
 const char* const c_response_multi_terminator = ".";
 
-void send_simple_request( tcp_socket& socket, const string& request )
+void send_simple_request( tcp_socket& socket, const string& request, progress* p_progress = 0 )
 {
    if( socket.write_line( request ) <= 0 )
       throw runtime_error( "send failure for request..." );
+
+   if( p_progress && !request.empty( ) )
+      p_progress->output_progress( request );
 }
 
-string get_simple_response( tcp_socket& socket )
+string get_simple_response( tcp_socket& socket, progress* p_progress = 0 )
 {
    string response_line;
    size_t timeout = c_initial_timeout;
 
    if( socket.read_line( response_line, timeout ) <= 0 )
       throw runtime_error( "recv failure for simple response" );
+
+   if( p_progress && !response_line.empty( ) )
+      p_progress->output_progress( response_line );
 
    string::size_type pos = response_line.find( c_prefix_err );
    if( pos != string::npos )
@@ -108,7 +114,7 @@ string get_simple_response( tcp_socket& socket )
    return response_line;
 }
 
-void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 0 )
+void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 0, progress* p_progress = 0 )
 {
    string next_response_line;
    size_t timeout = c_initial_timeout;
@@ -126,9 +132,6 @@ void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 
          {
             finished_headers = true;
             os << '\n';
-#ifdef DEBUG
-      cout << "\n";
-#endif
             continue;
          }
 
@@ -141,9 +144,9 @@ void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 
             *p_is_mime = true;
       }
 
-#ifdef DEBUG
-      cout << next_response_line << "\n";
-#endif
+      if( p_progress )
+         p_progress->output_progress( next_response_line );
+
       if( timeout == c_initial_timeout
        && next_response_line.size( ) >= strlen( c_prefix_ok )
        && next_response_line.substr( 0, strlen( c_prefix_ok ) ) == c_prefix_ok )
@@ -168,7 +171,8 @@ void get_multi_line_reponse( tcp_socket& socket, ostream& os, bool* p_is_mime = 
    }
 }
 
-void get_multi_line_reponse( tcp_socket& socket, vector< string >& response_lines, bool* p_is_mime = 0 )
+void get_multi_line_reponse( tcp_socket& socket,
+ vector< string >& response_lines, bool* p_is_mime = 0, progress* p_progress = 0 )
 {
    string next_response_line;
    size_t timeout = c_initial_timeout;
@@ -186,9 +190,6 @@ void get_multi_line_reponse( tcp_socket& socket, vector< string >& response_line
          {
             finished_headers = true;
             response_lines.push_back( "" );
-#ifdef DEBUG
-      cout << "\n";
-#endif
             continue;
          }
          throw runtime_error( "recv failure for multi-line response" );
@@ -200,9 +201,9 @@ void get_multi_line_reponse( tcp_socket& socket, vector< string >& response_line
             *p_is_mime = true;
       }
 
-#ifdef DEBUG
-      cout << next_response_line << "\n";
-#endif
+      if( p_progress )
+         p_progress->output_progress( next_response_line );
+
       if( timeout == c_initial_timeout
        && next_response_line.size( ) >= strlen( c_prefix_ok )
        && next_response_line.substr( 0, strlen( c_prefix_ok ) ) == c_prefix_ok )
@@ -321,6 +322,8 @@ struct pop3::impl
       host = "localhost";
       ctype = e_pop3_ctype_insecure;
 
+      p_progress = 0;
+
       is_open = false;
 
       messages = 0;
@@ -331,6 +334,7 @@ struct pop3::impl
    string host;
    bool is_open;
    pop3_ctype ctype;
+   progress* p_progress;
 
    int messages;
    long total_size;
@@ -351,11 +355,11 @@ pop3::pop3( )
    init( "localhost" );
 }
 
-pop3::pop3( const string& host, int port, pop3_ctype ctype )
+pop3::pop3( const string& host, int port, pop3_ctype ctype, progress* p_progress )
 {
    p_impl = new impl;
 
-   init( host, port, ctype );
+   init( host, port, ctype, p_progress );
 }
 
 pop3::~pop3( )
@@ -364,7 +368,7 @@ pop3::~pop3( )
    p_impl = 0;
 }
 
-void pop3::init( const string& host, int port, pop3_ctype ctype )
+void pop3::init( const string& host, int port, pop3_ctype ctype, progress* p_progress )
 {
 #ifndef SSL_SUPPORT
    if( ctype != e_pop3_ctype_insecure )
@@ -373,6 +377,8 @@ void pop3::init( const string& host, int port, pop3_ctype ctype )
    p_impl->host = host;
    p_impl->port = port;
    p_impl->ctype = ctype;
+
+   p_impl->p_progress = p_progress;
 
    if( p_impl->is_open )
    {
@@ -398,12 +404,7 @@ void pop3::login( const string& user, const string& password )
       if( p_impl->socket.connect( address ) )
       {
 #ifdef USE_NO_DELAY
-#  ifndef DEBUG
          p_impl->socket.set_no_delay( );
-#  else
-         if( !p_impl->socket.set_no_delay( ) )
-            cout << "warning: set_no_delay failed..." << endl;
-#  endif
 #endif
 #ifdef SSL_SUPPORT
          // NOTE: For SSL all protocol is secure (unlike STARTTLS).
@@ -413,19 +414,12 @@ void pop3::login( const string& user, const string& password )
             p_impl->socket.ssl_connect( );
 
          // NOTE: Get server greeting...
-         response = get_simple_response( p_impl->socket );
-         cout << '\n';
-#ifdef DEBUG
-         cout << response << '\n';
-#endif
+         response = get_simple_response( p_impl->socket, p_impl->p_progress );
 
          if( p_impl->ctype == e_pop3_ctype_tls )
          {
-            send_simple_request( p_impl->socket, c_request_stls );
-            response = get_simple_response( p_impl->socket );
-#  ifdef DEBUG
-            cout << response << '\n';
-#  endif
+            send_simple_request( p_impl->socket, c_request_stls, p_impl->p_progress );
+            response = get_simple_response( p_impl->socket, p_impl->p_progress );
 
             // FUTURE: After a successful SSL connection the server certificate should
             // be checked (at the very least make sure that it is the host requested).
@@ -435,26 +429,19 @@ void pop3::login( const string& user, const string& password )
          string user_req( c_request_user );
          user_req += ' ' + user;
 
-         send_simple_request( p_impl->socket, user_req );
-         response = get_simple_response( p_impl->socket );
-#ifdef DEBUG
-         cout << response << '\n';
-#endif
+         send_simple_request( p_impl->socket, user_req, p_impl->p_progress );
+         response = get_simple_response( p_impl->socket, p_impl->p_progress );
 
          string pass_req( c_request_pass );
          pass_req += ' ' + password;
 
+         // NOTE: Don't allow progress tracking to see the password.
          send_simple_request( p_impl->socket, pass_req );
-         response = get_simple_response( p_impl->socket );
-#ifdef DEBUG
-         cout << response << '\n';
-#endif
+         response = get_simple_response( p_impl->socket, p_impl->p_progress );
 
-         send_simple_request( p_impl->socket, c_request_stat );
-         response = get_simple_response( p_impl->socket );
-#ifdef DEBUG
-         cout << response << '\n';
-#endif
+         send_simple_request( p_impl->socket, c_request_stat, p_impl->p_progress );
+         response = get_simple_response( p_impl->socket, p_impl->p_progress );
+
          p_impl->messages = parse_stat_response( response, &p_impl->total_size );
 
          p_impl->message_list.clear( );
@@ -495,10 +482,10 @@ long pop3::get_total_messages_size( ) const
 
 void pop3::get_message_list( vector< pair< int, long > >& message_list )
 {
-   send_simple_request( p_impl->socket, c_request_list );
+   send_simple_request( p_impl->socket, c_request_list, p_impl->p_progress );
 
    vector< string > response_lines;
-   get_multi_line_reponse( p_impl->socket, response_lines );
+   get_multi_line_reponse( p_impl->socket, response_lines, 0, p_impl->p_progress );
 
    parse_list_response( response_lines, message_list );
 }
@@ -508,8 +495,8 @@ void pop3::get_message( int message_num, ostream& os, bool* p_is_mime )
    string request( c_request_retr );
    request += ' ' + to_string( message_num );
 
-   send_simple_request( p_impl->socket, request );
-   get_multi_line_reponse( p_impl->socket, os, p_is_mime );
+   send_simple_request( p_impl->socket, request, p_impl->p_progress );
+   get_multi_line_reponse( p_impl->socket, os, p_is_mime, p_impl->p_progress );
 }
 
 void pop3::get_message_headers( int message_num, vector< string >& headers )
@@ -532,10 +519,10 @@ void pop3::get_message_headers( int message_num, vector< string >& headers )
    top_request += to_string( message_num );
    top_request += " 0";
 
-   send_simple_request( p_impl->socket, top_request );
+   send_simple_request( p_impl->socket, top_request, p_impl->p_progress );
 
    vector< string > response_lines;
-   get_multi_line_reponse( p_impl->socket, response_lines );
+   get_multi_line_reponse( p_impl->socket, response_lines, 0, p_impl->p_progress );
 
    parse_top_response( response_lines, headers );
 }
@@ -558,27 +545,22 @@ void pop3::delete_message( int message_num )
    string dele_request( c_request_dele );
    dele_request += ' ' + to_string( message_num );
 
-   send_simple_request( p_impl->socket, dele_request );
-   string response = get_simple_response( p_impl->socket );
-#ifdef DEBUG
-   cout << response << '\n';
-#endif
+   send_simple_request( p_impl->socket, dele_request, p_impl->p_progress );
+   string response = get_simple_response( p_impl->socket, p_impl->p_progress );
 }
 
 void pop3::disconnect( )
 {
    if( p_impl->is_open )
    {
-      send_simple_request( p_impl->socket, c_request_quit );
+      send_simple_request( p_impl->socket, c_request_quit, p_impl->p_progress );
 
       string response;
       size_t timeout( c_final_response_timeout );
       p_impl->socket.read_line( response, timeout );
 
-#ifdef DEBUG
-      if( !response.empty( ) )
-         cout << response << '\n';
-#endif
+      if( p_impl->p_progress && !response.empty( ) )
+         p_impl->p_progress->output_progress( response );
 
       p_impl->socket.close( );
       p_impl->is_open = false;
