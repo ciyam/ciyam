@@ -13,6 +13,8 @@
 #     include <iosfwd>
 #  endif
 
+struct progress;
+
 enum pop3_ctype
 {
    e_pop3_ctype_tls,
@@ -24,11 +26,14 @@ class pop3
 {
    public:
    pop3( );
-   pop3( const std::string& host, int port = 110, pop3_ctype ctype = e_pop3_ctype_insecure );
+
+   pop3( const std::string& host, int port = 110,
+    pop3_ctype ctype = e_pop3_ctype_insecure, progress* p_progress = 0 );
 
    ~pop3( );
 
-   void init( const std::string& host, int port = 110, pop3_ctype ctype = e_pop3_ctype_insecure );
+   void init( const std::string& host, int port = 110,
+    pop3_ctype ctype = e_pop3_ctype_insecure, progress* p_progress = 0 );
 
    void login( const std::string& user, const std::string& password );
 

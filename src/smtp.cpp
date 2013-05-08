@@ -23,13 +23,13 @@
 #include "base64.h"
 #include "config.h"
 #include "sockets.h"
+#include "progress.h"
 #include "date_time.h"
 #include "utilities.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #endif
 
-//#define DEBUG
 #define USE_NO_DELAY
 
 using namespace std;
@@ -111,17 +111,22 @@ const char* const c_smtp_prefix_data = "354";
 
 const char* c_response_multi_terminator = ".";
 
-const size_t c_initial_timeout = 5000;
-const size_t c_subsequent_timeout = 500;
+const size_t c_initial_timeout = 25000;
+const size_t c_subsequent_timeout = 5000;
+const size_t c_final_response_timeout = 500;
 
 const size_t c_max_chars_per_line = 510;
 
 const unsigned char ipad = 0x36;
 const unsigned char opad = 0x5c;
 
-bool get_response( string& text, tcp_socket& socket, size_t timeout = c_initial_timeout )
+bool get_response( string& text, tcp_socket& socket,
+ size_t timeout = c_initial_timeout, progress* p_progress = 0 )
 {
    string response;
+
+   if( p_progress && !text.empty( ) )
+      p_progress->output_progress( text );
 
    text.erase( );
    bool okay = true;
@@ -161,6 +166,9 @@ bool get_response( string& text, tcp_socket& socket, size_t timeout = c_initial_
             okay = false;
       }
    }
+
+   if( p_progress && !text.empty( ) )
+      p_progress->output_progress( text );
 
    return okay;
 }
@@ -299,7 +307,7 @@ void send_message( const string& host_and_port,
  const smtp_user_info& user_info, const vector< string >& recipients,
  const string& subject, const string* p_message = 0, const vector< string >* p_extra_headers = 0,
  const vector< string >* p_file_names = 0, const string* p_html = 0, const vector< string >* p_image_names = 0,
- const string* p_image_path_prefix = 0 )
+ const string* p_image_path_prefix = 0, progress* p_progress = 0 )
 {
    int port = c_smtp_default_port;
 
@@ -311,10 +319,9 @@ void send_message( const string& host_and_port,
       port = atoi( host.substr( pos + 1 ).c_str( ) );
       host.erase( pos );
    }
-#ifdef DEBUG
-   cout << "host ==> " << host << endl;
-   cout << "port ==> " << port << endl;
-#endif
+
+   if( p_progress )
+      p_progress->output_progress( "host = " + host + ", port = " + to_string( port ) );
 
    if( p_file_names )
    {
@@ -334,9 +341,9 @@ void send_message( const string& host_and_port,
          num_bytes += file_size( next_file );
       }
 
-#ifdef DEBUG
-      cout << "total attached file data: " << num_bytes << endl;
-#endif
+      if( p_progress )
+         p_progress->output_progress( "total attached file data: " + to_string( num_bytes ) );
+
       if( user_info.max_attachment_bytes && num_bytes > user_info.max_attachment_bytes )
          throw runtime_error( "maximum allowed attached file data exceeded" );
    }
@@ -350,18 +357,14 @@ void send_message( const string& host_and_port,
    if( okay )
    {
       ip_address address( host.c_str( ), port );
-#ifdef DEBUG
-      cout << "connecting..." << endl;
-#endif
+
+      if( p_progress )
+         p_progress->output_progress( "connecting..." );
+
       if( socket.connect( address ) )
       {
 #ifdef USE_NO_DELAY
-#  ifdef DEBUG
-         if( !socket.set_no_delay( ) )
-            cout << "warning: set_no_delay failed..." << endl;
-#  else
          socket.set_no_delay( );
-#  endif
 #endif
 #ifdef SSL_SUPPORT
          // NOTE: For SSL all protocol is secure (unlike STARTTLS).
@@ -370,45 +373,29 @@ void send_message( const string& host_and_port,
          if( user_info.use_ssl )
             socket.ssl_connect( );
 #endif
-         string str;
-#ifdef DEBUG
-         cout << "(connected now reading greeting)" << endl;
-#endif
+         string str( "(connected now reading greeting)" );
+
          // NOTE: Read (and ignore) the connection message...
-         if( !get_response( str, socket ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
             throw runtime_error( str );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
 
          if( user_info.auth_type == e_smtp_auth_type_none )
          {
             str = string( "HELO " );
             str += user_info.domain;
             socket.write_line( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
 
-            if( !get_response( str, socket ) )
+            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                throw runtime_error( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
          }
          else
          {
             str = string( "EHLO " );
             str += user_info.domain;
             socket.write_line( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
-            if( !get_response( str, socket ) )
+
+            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                throw runtime_error( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
 
 #ifdef SSL_SUPPORT
             // NOTE: For STARTTLS the initial EHLO is unsecure (enabling it to be
@@ -418,14 +405,10 @@ void send_message( const string& host_and_port,
             {
                str = "STARTTLS";
                socket.write_line( str );
-#  ifdef DEBUG
-               cout << str << endl;
-#  endif
-               if( !get_response( str, socket ) )
+
+               if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                   throw runtime_error( str );
-#  ifdef DEBUG
-               cout << str << endl;
-#  endif
+
                // FUTURE: After a successful SSL connection the server certificate should
                // be checked (at the very least make sure that it is the host requested).
                socket.ssl_connect( );
@@ -433,14 +416,9 @@ void send_message( const string& host_and_port,
                str = string( "EHLO " );
                str += user_info.domain;
                socket.write_line( str );
-#  ifdef DEBUG
-               cout << str << endl;
-#  endif
-               if( !get_response( str, socket ) )
+
+               if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                   throw runtime_error( str );
-#  ifdef DEBUG
-               cout << str << endl;
-#  endif
             }
 #endif
             if( user_info.auth_type == e_smtp_auth_type_plain )
@@ -463,14 +441,12 @@ void send_message( const string& host_and_port,
                throw runtime_error( "unexpected smtp_auth_type in send_message" );
 
             socket.write_line( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
-            if( !get_response( str, socket ) )
+
+            // NOTE: Don't allow progress tracking to see the password.
+            str.erase( );
+
+            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                throw runtime_error( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
 
             if( user_info.auth_type != e_smtp_auth_type_plain )
             {
@@ -478,38 +454,29 @@ void send_message( const string& host_and_port,
                {
                   str = base64::encode( user_info.username );
                   socket.write_line( str );
-#ifdef DEBUG
-                  cout << str << endl;
-#endif
-                  if( !get_response( str, socket ) )
+
+                  if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                      throw runtime_error( str );
-#ifdef DEBUG
-                  cout << str << endl;
-#endif
 
                   str = base64::encode( user_info.password );
                   socket.write_line( str );
-#ifdef DEBUG
-                  cout << str << endl;
-#endif
-                  if( !get_response( str, socket ) )
+
+                  // NOTE: Don't allow progress tracking to see the password.
+                  str.erase( );
+
+                  if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                      throw runtime_error( str );
-#ifdef DEBUG
-                  cout << str << endl;
-#endif
                }
                else if( user_info.auth_type == e_smtp_auth_type_cram_md5 )
                {
                   str = determine_challenge_response( str, user_info.username, user_info.password );
                   socket.write_line( str );
-#ifdef DEBUG
-                  cout << str << endl;
-#endif
-                  if( !get_response( str, socket ) )
+
+                  // NOTE: Don't allow progress tracking to see the password.
+                  str.erase( );
+
+                  if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                      throw runtime_error( str );
-#ifdef DEBUG
-                  cout << str << endl;
-#endif
                }
             }
          }
@@ -524,17 +491,11 @@ void send_message( const string& host_and_port,
             str += user_info.address.substr( pos ) + "\r\n";
 
          socket.write_line( str );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
 
          from_header += user_info.address;
 
-         if( !get_response( str, socket ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
             throw runtime_error( str );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
 
          string to_header, cc_header;
 
@@ -566,14 +527,9 @@ void send_message( const string& host_and_port,
                str += recipients[ i ].substr( pos ) + "\r\n";
 
             socket.write_line( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
-            if( !get_response( str, socket ) )
+
+            if( !get_response( str, socket, c_initial_timeout, p_progress ) )
                throw runtime_error( str );
-#ifdef DEBUG
-            cout << str << endl;
-#endif
 
             if( is_to )
             {
@@ -598,11 +554,8 @@ void send_message( const string& host_and_port,
          str = string( "DATA\r\n" );
          socket.write_line( str );
 
-         if( !get_response( str, socket ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
             throw runtime_error( str );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
 
          string subject_header( "Subject: " );
          subject_header += subject;
@@ -759,24 +712,15 @@ void send_message( const string& host_and_port,
 
          str += string( ".\r\n" );
          socket.write_line( str );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
 
-         if( !get_response( str, socket ) )
+         if( !get_response( str, socket, c_initial_timeout, p_progress ) )
             throw runtime_error( str );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
 
          str = "QUIT\r\n";
          socket.write_line( str );
 
          // NOTE: Read (and ignore) the disconnection message...
-         get_response( str, socket, c_subsequent_timeout );
-#ifdef DEBUG
-         cout << str << endl;
-#endif
+         get_response( str, socket, c_final_response_timeout, p_progress );
       }
       else
          throw runtime_error( "unable to connect to '" + host + "' on port #" + to_string( port ) );
@@ -813,9 +757,9 @@ void send_smtp_message( const string& host, const smtp_user_info& user_info,
 void send_smtp_message( const string& host, const smtp_user_info& user_info,
  const vector< string >& recipients, const string& subject, const string& message,
  const string& html, const vector< string >* p_extra_headers, const vector< string >* p_file_names,
- const vector< string >* p_image_names, const string* p_image_path_prefix )
+ const vector< string >* p_image_names, const string* p_image_path_prefix, progress* p_progress )
 {
    send_message( host, user_info, recipients, subject,
-    &message, p_extra_headers, p_file_names, &html, p_image_names, p_image_path_prefix );
+    &message, p_extra_headers, p_file_names, &html, p_image_names, p_image_path_prefix, p_progress );
 }
 

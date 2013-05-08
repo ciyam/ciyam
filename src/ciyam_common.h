@@ -34,6 +34,7 @@ const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
 
 enum special_var
 {
+   e_special_var_uid,
    e_special_var_is_quiet,
    e_special_var_was_cloned,
    e_special_var_execute_return,
