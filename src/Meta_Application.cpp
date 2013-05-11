@@ -1486,8 +1486,8 @@ void Meta_Application::impl::impl_Generate( )
       if( !module_packages.empty( ) )
       {
 #ifdef _WIN32
-         outs << "if exist " << web_dir_var << "\\" << app_dir
-          << "\\extkeys.txt del " << web_dir_var << "\\" << app_dir << "\\extkeys.txt >nul\n";
+         outs << "if exist \"" << web_dir_var << "\\" << app_dir
+          << "\\extkeys.txt\" del \"" << web_dir_var << "\\" << app_dir << "\\extkeys.txt\" >nul\n";
 #else
          outs << "if [ -f " << web_dir_var << "/" << app_dir << "/extkeys.txt ]; then\n"
           << " rm " << web_dir_var << "/" << app_dir << "/extkeys.txt"
