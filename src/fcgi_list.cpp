@@ -2421,7 +2421,9 @@ void output_list_form( ostream& os,
 
             symbol = get_display_string( name_key + "_(" + symbol.substr( strlen( c_uom_prefix ) ) + ")" );
          }
-         os << " (" << symbol << ")";
+
+         if( !symbol.empty( ) )
+            os << " (" << symbol << ")";
       }
 
       if( !is_printable && list_type != c_list_type_home )

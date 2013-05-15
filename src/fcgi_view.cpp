@@ -1352,7 +1352,9 @@ bool output_view_form( ostream& os, const string& act,
 
                symbol = get_display_string( name_key + "_(" + symbol.substr( strlen( c_uom_prefix ) ) + ")" );
             }
-            os << " (" << symbol << ")";
+
+            if( !symbol.empty( ) )
+               os << " (" << symbol << ")";
          }
 
          os << "</" << td_type << ">\n";

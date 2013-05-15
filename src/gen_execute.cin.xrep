@@ -14,9 +14,11 @@
 ; NOTE: The following needs to be included in 'autoscript.sio':
 ; <script/>
 ;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
-;  <time>06:00
-;  <cycle>1d*
-;  <exclude>weekends
+;  <time>`{`!`@eq`(`$time`,`'`'`)`$time`,06:00`}
+;  <cycle>`{`!`@eq`(`$cycle`,`'`'`)`$cycle`,1d`}`{`!`@eq`(`$start`,`'`'`)
+;  <start>`{`$start`}`}`{`!`@eq`(`$finish`,`'`'`)
+;  <finish>`{`$finish`}`}`{`!`@eq`(`$exclude`,`'`'`)
+;  <exclude>`{`$exclude`}`}
 ;  <filename>*script*
 ;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage `{`$model_id`} `{`$class_id`} auto @none `{`$procedure_id`}
 ; </script>\
