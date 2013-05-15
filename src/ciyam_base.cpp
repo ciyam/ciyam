@@ -4201,15 +4201,7 @@ void generate_new_script_sio( bool for_autoscript )
                            break;
                      }
                      else if( is_script )
-                     {
-                        // FUTURE: New autoscript entries are currenly left
-                        // "commented out" as they will need manual editing
-                        // before being enabled (for schedule information).
-                        if( !for_autoscript )
-                           new_lines.push_back( next.substr( 1 ) );
-                        else
-                           new_lines.push_back( '#' + next.substr( 1 ) );
-                     }
+                        new_lines.push_back( next.substr( 1 ) );
                      else if( next.find( "; NOTE: " ) == 0 )
                      {
                         if( next.find( "'" + file_name + "'" ) != string::npos )
