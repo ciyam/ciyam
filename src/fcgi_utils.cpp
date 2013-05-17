@@ -59,8 +59,6 @@ string g_sid;
 
 #include "sid.enc"
 
-ofstream g_logfile;
-
 set< string > g_non_persistent;
 
 map< string, string > g_strings;
@@ -88,39 +86,14 @@ inline const string& data_or_nbsp( const string& input )
       return g_nbsp;
 }
 
-struct scoped_flusher
-{
-   scoped_flusher( ostream& os );
-   ~scoped_flusher( );
-
-   ostream& os;
-   guard* p_guard;
-};
-
-scoped_flusher::scoped_flusher( ostream& os )
- : os( os )
-{
-   p_guard = new guard( g_mutex );
-}
-
-scoped_flusher::~scoped_flusher( )
-{
-   os << endl;
-   delete p_guard;
-}
-
-}
-
-void init_log( )
-{
-   g_logfile.open( c_log_file, ios::out | ios::app );
 }
 
 void log_trace_message( const string& message )
 {
-   scoped_flusher sf( g_logfile );
+   guard g( g_mutex );
 
-   g_logfile << message;
+   ofstream outf( c_log_file, ios::out | ios::app );
+   outf << message;
 }
 
 const char* get_server_id( )

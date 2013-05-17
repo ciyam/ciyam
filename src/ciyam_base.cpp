@@ -3600,10 +3600,6 @@ void log_trace_message( int flag, const string& message )
 
    guard g( g_trace_mutex );
 
-   ofstream outf( "trace.log", is_first ? ios::out | ios::trunc : ios::out | ios::app );
-
-   is_first = false;
-
    string type( "unknown" );
    switch( flag )
    {
@@ -3652,8 +3648,23 @@ void log_trace_message( int flag, const string& message )
       break;
    }
 
-   outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
-    << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+   if( flag == TRACE_ANYTHING )
+   {
+      ofstream outf( "ciyam_server.log", ios::out | ios::app );
+
+      outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
+       << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+   }
+
+   if( get_trace_flags( ) )
+   {
+      ofstream outf( "trace.log", is_first ? ios::out | ios::trunc : ios::out | ios::app );
+
+      is_first = false;
+
+      outf << '[' << date_time::local( ).as_string( true, false ) << "] [" << setw( 6 )
+       << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
+   }
 }
 
 void init_globals( )

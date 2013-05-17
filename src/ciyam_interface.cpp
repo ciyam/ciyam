@@ -5105,8 +5105,6 @@ int main( int argc, char* argv[ ] )
       if( !exe_path.empty( ) )
          _chdir( exe_path.c_str( ) );
 
-      init_log( );
-
       LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
 
       DEBUG_TRACE( "[read strings]" );
