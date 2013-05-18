@@ -236,20 +236,20 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-int gv_default_Cascade_Op = int( 0 );
-string gv_default_Child_Class = string( );
-string gv_default_Child_Class_Name = string( );
-string gv_default_Child_Name = string( );
-int gv_default_Extra = int( 0 );
-string gv_default_Field_Id = string( );
-string gv_default_Field_Key = string( );
-bool gv_default_Internal = bool( 0 );
-bool gv_default_Mandatory = bool( 1 );
-string gv_default_Model = string( );
-string gv_default_Name = string( );
-string gv_default_Parent_Class = string( );
-string gv_default_Source_Relationship = string( );
-bool gv_default_Transient = bool( 0 );
+int g_default_Cascade_Op = int( 0 );
+string g_default_Child_Class = string( );
+string g_default_Child_Class_Name = string( );
+string g_default_Child_Name = string( );
+int g_default_Extra = int( 0 );
+string g_default_Field_Id = string( );
+string g_default_Field_Key = string( );
+bool g_default_Internal = bool( 0 );
+bool g_default_Mandatory = bool( 1 );
+string g_default_Model = string( );
+string g_default_Name = string( );
+string g_default_Parent_Class = string( );
+string g_default_Source_Relationship = string( );
+bool g_default_Transient = bool( 0 );
 
 set< int > g_cascade_op_enum;
 set< int > g_relationship_extra_enum;
@@ -1053,16 +1053,16 @@ void Meta_Relationship::impl::add_extra_paging_info( vector< pair< string, strin
 
 void Meta_Relationship::impl::clear( )
 {
-   v_Cascade_Op = gv_default_Cascade_Op;
-   v_Child_Class_Name = gv_default_Child_Class_Name;
-   v_Child_Name = gv_default_Child_Name;
-   v_Extra = gv_default_Extra;
-   v_Field_Id = gv_default_Field_Id;
-   v_Field_Key = gv_default_Field_Key;
-   v_Internal = gv_default_Internal;
-   v_Mandatory = gv_default_Mandatory;
-   v_Name = gv_default_Name;
-   v_Transient = gv_default_Transient;
+   v_Cascade_Op = g_default_Cascade_Op;
+   v_Child_Class_Name = g_default_Child_Class_Name;
+   v_Child_Name = g_default_Child_Name;
+   v_Extra = g_default_Extra;
+   v_Field_Id = g_default_Field_Id;
+   v_Field_Key = g_default_Field_Key;
+   v_Internal = g_default_Internal;
+   v_Mandatory = g_default_Mandatory;
+   v_Name = g_default_Name;
+   v_Transient = g_default_Transient;
 
    v_Child_Class = string( );
    if( cp_Child_Class )
@@ -1116,28 +1116,28 @@ void Meta_Relationship::impl::validate( unsigned state, bool is_internal, valida
 
    string error_message;
    if( !is_null( v_Child_Class_Name )
-    && ( v_Child_Class_Name != gv_default_Child_Class_Name
+    && ( v_Child_Class_Name != g_default_Child_Class_Name
     || !value_will_be_provided( c_field_name_Child_Class_Name ) )
     && !g_Child_Class_Name_domain.is_valid( v_Child_Class_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Class_Name,
        get_module_string( c_field_display_name_Child_Class_Name ) + " " + error_message ) );
 
    if( !is_null( v_Child_Name )
-    && ( v_Child_Name != gv_default_Child_Name
+    && ( v_Child_Name != g_default_Child_Name
     || !value_will_be_provided( c_field_name_Child_Name ) )
     && !g_Child_Name_domain.is_valid( v_Child_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Name,
        get_module_string( c_field_display_name_Child_Name ) + " " + error_message ) );
 
    if( !is_null( v_Field_Id )
-    && ( v_Field_Id != gv_default_Field_Id
+    && ( v_Field_Id != g_default_Field_Id
     || !value_will_be_provided( c_field_name_Field_Id ) )
     && !g_Field_Id_domain.is_valid( v_Field_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Field_Id,
        get_module_string( c_field_display_name_Field_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

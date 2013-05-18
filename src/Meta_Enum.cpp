@@ -140,11 +140,11 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Id = string( );
-bool gv_default_Internal = bool( 0 );
-string gv_default_Name = string( );
-int gv_default_Primitive = int( 5 );
-string gv_default_Workgroup = string( );
+string g_default_Id = string( );
+bool g_default_Internal = bool( 0 );
+string g_default_Name = string( );
+int g_default_Primitive = int( 5 );
+string g_default_Workgroup = string( );
 
 set< int > g_primitive_enum;
 
@@ -653,10 +653,10 @@ void Meta_Enum::impl::add_extra_paging_info( vector< pair< string, string > >& p
 
 void Meta_Enum::impl::clear( )
 {
-   v_Id = gv_default_Id;
-   v_Internal = gv_default_Internal;
-   v_Name = gv_default_Name;
-   v_Primitive = gv_default_Primitive;
+   v_Id = g_default_Id;
+   v_Internal = g_default_Internal;
+   v_Name = g_default_Name;
+   v_Primitive = g_default_Primitive;
 
    v_Workgroup = string( );
    if( cp_Workgroup )
@@ -698,14 +698,14 @@ void Meta_Enum::impl::validate( unsigned state, bool is_internal, validation_err
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

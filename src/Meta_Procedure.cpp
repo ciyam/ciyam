@@ -155,11 +155,11 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Class = string( );
-string gv_default_Id = string( );
-bool gv_default_Internal = bool( 0 );
-string gv_default_Name = string( );
-string gv_default_Source_Procedure = string( );
+string g_default_Class = string( );
+string g_default_Id = string( );
+bool g_default_Internal = bool( 0 );
+string g_default_Name = string( );
+string g_default_Source_Procedure = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -739,9 +739,9 @@ void Meta_Procedure::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_Procedure::impl::clear( )
 {
-   v_Id = gv_default_Id;
-   v_Internal = gv_default_Internal;
-   v_Name = gv_default_Name;
+   v_Id = g_default_Id;
+   v_Internal = g_default_Internal;
+   v_Name = g_default_Name;
 
    v_Class = string( );
    if( cp_Class )
@@ -792,14 +792,14 @@ void Meta_Procedure::impl::validate( unsigned state, bool is_internal, validatio
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

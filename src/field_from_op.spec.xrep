@@ -42,7 +42,7 @@
    get_obj( ).op_apply( );
 `}`,\
    if( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( )\
- `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`} )
+ `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`} )
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    {
       get_obj( ).op_update( );
@@ -54,7 +54,7 @@
    }
 `}`}`,\
    if( `{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( )\
- `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} gv_default_`{`$arg_sfield`}`} )
+ `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_sfield`}`} )
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    {
       get_obj( ).op_update( );

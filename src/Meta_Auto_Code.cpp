@@ -111,9 +111,9 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-bool gv_default_Exhausted = bool( 0 );
-string gv_default_Mask = string( );
-string gv_default_Next = string( );
+bool g_default_Exhausted = bool( 0 );
+string g_default_Mask = string( );
+string g_default_Next = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -525,9 +525,9 @@ void Meta_Auto_Code::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_Auto_Code::impl::clear( )
 {
-   v_Exhausted = gv_default_Exhausted;
-   v_Mask = gv_default_Mask;
-   v_Next = gv_default_Next;
+   v_Exhausted = g_default_Exhausted;
+   v_Mask = g_default_Mask;
+   v_Next = g_default_Next;
 }
 
 bool Meta_Auto_Code::impl::value_will_be_provided( const string& field_name )
@@ -555,14 +555,14 @@ void Meta_Auto_Code::impl::validate( unsigned state, bool is_internal, validatio
 
    string error_message;
    if( !is_null( v_Mask )
-    && ( v_Mask != gv_default_Mask
+    && ( v_Mask != g_default_Mask
     || !value_will_be_provided( c_field_name_Mask ) )
     && !g_Mask_domain.is_valid( v_Mask, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Mask,
        get_module_string( c_field_display_name_Mask ) + " " + error_message ) );
 
    if( !is_null( v_Next )
-    && ( v_Next != gv_default_Next
+    && ( v_Next != g_default_Next
     || !value_will_be_provided( c_field_name_Next ) )
     && !g_Next_domain.is_valid( v_Next, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next,

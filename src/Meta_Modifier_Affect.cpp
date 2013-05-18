@@ -183,14 +183,14 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Class = string( );
-int gv_default_Extra = int( 0 );
-string gv_default_Field = string( );
-bool gv_default_Internal = bool( 0 );
-string gv_default_Modifier = string( );
-int gv_default_Scope = int( 0 );
-string gv_default_Source_Modifier_Affect = string( );
-int gv_default_Type = int( 0 );
+string g_default_Class = string( );
+int g_default_Extra = int( 0 );
+string g_default_Field = string( );
+bool g_default_Internal = bool( 0 );
+string g_default_Modifier = string( );
+int g_default_Scope = int( 0 );
+string g_default_Source_Modifier_Affect = string( );
+int g_default_Type = int( 0 );
 
 set< int > g_modifier_affect_extra_enum;
 set< int > g_modifier_affect_scope_enum;
@@ -869,10 +869,10 @@ void Meta_Modifier_Affect::impl::add_extra_paging_info( vector< pair< string, st
 
 void Meta_Modifier_Affect::impl::clear( )
 {
-   v_Extra = gv_default_Extra;
-   v_Internal = gv_default_Internal;
-   v_Scope = gv_default_Scope;
-   v_Type = gv_default_Type;
+   v_Extra = g_default_Extra;
+   v_Internal = g_default_Internal;
+   v_Scope = g_default_Scope;
+   v_Type = g_default_Type;
 
    v_Class = string( );
    if( cp_Class )
@@ -1011,7 +1011,7 @@ void Meta_Modifier_Affect::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600080
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class )
+    && get_obj( ).Class( ) == g_default_Class )
       get_obj( ).Class( get_obj( ).Modifier( ).Class( ) );
    // [(finish default_to_field)] 600080
 

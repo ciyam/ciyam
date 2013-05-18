@@ -397,46 +397,46 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Access_Permission = string( );
-int gv_default_Access_Restriction = int( 0 );
-int gv_default_Access_Scope = int( 0 );
-bool gv_default_Allow_Anonymous_Access = bool( 1 );
-string gv_default_Change_Permission = string( );
-int gv_default_Change_Restriction = int( 0 );
-int gv_default_Change_Scope = int( 0 );
-int gv_default_Child_List_Extra_Option = int( 0 );
-string gv_default_Class = string( );
-int gv_default_Date_Precision_Option = int( 0 );
-int gv_default_Enum_Finishes_At = int( 0 );
-int gv_default_Enum_Starts_At = int( 0 );
-int gv_default_FK_Trigger_Behaviour = int( 0 );
-int gv_default_FK_Trigger_Option = int( 0 );
-int gv_default_Font_Size = int( 0 );
-bool gv_default_Ignore_Manual_Links = bool( 0 );
-bool gv_default_Label_Without_Prefix = bool( 0 );
-string gv_default_Link_Permission = string( );
-int gv_default_Link_Restriction = int( 4 );
-int gv_default_Mandatory_Option = int( 0 );
-string gv_default_Name = string( );
-int gv_default_New_Source = int( 0 );
-string gv_default_New_Value = string( );
-string gv_default_Order = string( );
-string gv_default_Restriction_Spec = string( );
-bool gv_default_Show_Hide_Start_Point = bool( 0 );
-bool gv_default_Sort_Manually = bool( 0 );
-string gv_default_Source_Child = string( );
-string gv_default_Source_Edit_Child = string( );
-string gv_default_Source_Field = string( );
-string gv_default_Source_Parent = string( );
-string gv_default_Source_Parent_Class = string( );
-string gv_default_Tab_Name = string( );
-int gv_default_Trigger_Behaviour = int( 0 );
-int gv_default_Trigger_For_State = int( 0 );
-int gv_default_Trigger_Option = int( 0 );
-string gv_default_Type = string( );
-bool gv_default_Use_Full_Width = bool( 0 );
-bool gv_default_Use_Source_Parent = bool( 0 );
-string gv_default_View = string( );
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+int g_default_Access_Scope = int( 0 );
+bool g_default_Allow_Anonymous_Access = bool( 1 );
+string g_default_Change_Permission = string( );
+int g_default_Change_Restriction = int( 0 );
+int g_default_Change_Scope = int( 0 );
+int g_default_Child_List_Extra_Option = int( 0 );
+string g_default_Class = string( );
+int g_default_Date_Precision_Option = int( 0 );
+int g_default_Enum_Finishes_At = int( 0 );
+int g_default_Enum_Starts_At = int( 0 );
+int g_default_FK_Trigger_Behaviour = int( 0 );
+int g_default_FK_Trigger_Option = int( 0 );
+int g_default_Font_Size = int( 0 );
+bool g_default_Ignore_Manual_Links = bool( 0 );
+bool g_default_Label_Without_Prefix = bool( 0 );
+string g_default_Link_Permission = string( );
+int g_default_Link_Restriction = int( 4 );
+int g_default_Mandatory_Option = int( 0 );
+string g_default_Name = string( );
+int g_default_New_Source = int( 0 );
+string g_default_New_Value = string( );
+string g_default_Order = string( );
+string g_default_Restriction_Spec = string( );
+bool g_default_Show_Hide_Start_Point = bool( 0 );
+bool g_default_Sort_Manually = bool( 0 );
+string g_default_Source_Child = string( );
+string g_default_Source_Edit_Child = string( );
+string g_default_Source_Field = string( );
+string g_default_Source_Parent = string( );
+string g_default_Source_Parent_Class = string( );
+string g_default_Tab_Name = string( );
+int g_default_Trigger_Behaviour = int( 0 );
+int g_default_Trigger_For_State = int( 0 );
+int g_default_Trigger_Option = int( 0 );
+string g_default_Type = string( );
+bool g_default_Use_Full_Width = bool( 0 );
+bool g_default_Use_Source_Parent = bool( 0 );
+string g_default_View = string( );
 
 set< int > g_view_field_restrict_enum;
 set< int > g_view_field_access_scope_enum;
@@ -2534,34 +2534,34 @@ void Meta_View_Field::impl::add_extra_paging_info( vector< pair< string, string 
 
 void Meta_View_Field::impl::clear( )
 {
-   v_Access_Restriction = gv_default_Access_Restriction;
-   v_Access_Scope = gv_default_Access_Scope;
-   v_Allow_Anonymous_Access = gv_default_Allow_Anonymous_Access;
-   v_Change_Restriction = gv_default_Change_Restriction;
-   v_Change_Scope = gv_default_Change_Scope;
-   v_Child_List_Extra_Option = gv_default_Child_List_Extra_Option;
-   v_Date_Precision_Option = gv_default_Date_Precision_Option;
-   v_Enum_Finishes_At = gv_default_Enum_Finishes_At;
-   v_Enum_Starts_At = gv_default_Enum_Starts_At;
-   v_FK_Trigger_Behaviour = gv_default_FK_Trigger_Behaviour;
-   v_FK_Trigger_Option = gv_default_FK_Trigger_Option;
-   v_Font_Size = gv_default_Font_Size;
-   v_Ignore_Manual_Links = gv_default_Ignore_Manual_Links;
-   v_Label_Without_Prefix = gv_default_Label_Without_Prefix;
-   v_Link_Restriction = gv_default_Link_Restriction;
-   v_Mandatory_Option = gv_default_Mandatory_Option;
-   v_Name = gv_default_Name;
-   v_New_Source = gv_default_New_Source;
-   v_New_Value = gv_default_New_Value;
-   v_Order = gv_default_Order;
-   v_Show_Hide_Start_Point = gv_default_Show_Hide_Start_Point;
-   v_Sort_Manually = gv_default_Sort_Manually;
-   v_Tab_Name = gv_default_Tab_Name;
-   v_Trigger_Behaviour = gv_default_Trigger_Behaviour;
-   v_Trigger_For_State = gv_default_Trigger_For_State;
-   v_Trigger_Option = gv_default_Trigger_Option;
-   v_Use_Full_Width = gv_default_Use_Full_Width;
-   v_Use_Source_Parent = gv_default_Use_Source_Parent;
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Access_Scope = g_default_Access_Scope;
+   v_Allow_Anonymous_Access = g_default_Allow_Anonymous_Access;
+   v_Change_Restriction = g_default_Change_Restriction;
+   v_Change_Scope = g_default_Change_Scope;
+   v_Child_List_Extra_Option = g_default_Child_List_Extra_Option;
+   v_Date_Precision_Option = g_default_Date_Precision_Option;
+   v_Enum_Finishes_At = g_default_Enum_Finishes_At;
+   v_Enum_Starts_At = g_default_Enum_Starts_At;
+   v_FK_Trigger_Behaviour = g_default_FK_Trigger_Behaviour;
+   v_FK_Trigger_Option = g_default_FK_Trigger_Option;
+   v_Font_Size = g_default_Font_Size;
+   v_Ignore_Manual_Links = g_default_Ignore_Manual_Links;
+   v_Label_Without_Prefix = g_default_Label_Without_Prefix;
+   v_Link_Restriction = g_default_Link_Restriction;
+   v_Mandatory_Option = g_default_Mandatory_Option;
+   v_Name = g_default_Name;
+   v_New_Source = g_default_New_Source;
+   v_New_Value = g_default_New_Value;
+   v_Order = g_default_Order;
+   v_Show_Hide_Start_Point = g_default_Show_Hide_Start_Point;
+   v_Sort_Manually = g_default_Sort_Manually;
+   v_Tab_Name = g_default_Tab_Name;
+   v_Trigger_Behaviour = g_default_Trigger_Behaviour;
+   v_Trigger_For_State = g_default_Trigger_For_State;
+   v_Trigger_Option = g_default_Trigger_Option;
+   v_Use_Full_Width = g_default_Use_Full_Width;
+   v_Use_Source_Parent = g_default_Use_Source_Parent;
 
    v_Access_Permission = string( );
    if( cp_Access_Permission )
@@ -2652,21 +2652,21 @@ void Meta_View_Field::impl::validate( unsigned state, bool is_internal, validati
 
    string error_message;
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_New_Value )
-    && ( v_New_Value != gv_default_New_Value
+    && ( v_New_Value != g_default_New_Value
     || !value_will_be_provided( c_field_name_New_Value ) )
     && !g_New_Value_domain.is_valid( v_New_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_New_Value,
        get_module_string( c_field_display_name_New_Value ) + " " + error_message ) );
 
    if( !is_null( v_Tab_Name )
-    && ( v_Tab_Name != gv_default_Tab_Name
+    && ( v_Tab_Name != g_default_Tab_Name
     || !value_will_be_provided( c_field_name_Tab_Name ) )
     && !g_Tab_Name_domain.is_valid( v_Tab_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Tab_Name,
@@ -2918,7 +2918,7 @@ void Meta_View_Field::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600355
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class )
+    && get_obj( ).Class( ) == g_default_Class )
       get_obj( ).Class( get_obj( ).View( ).Class( ) );
    // [(finish default_to_field)] 600355
 

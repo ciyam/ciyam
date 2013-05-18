@@ -406,9 +406,9 @@ external_aliases_lookup_container g_external_aliases_lookup;
 
 `{`?`$all_fields`[`$all_fields`%,`,\
 `{`?`$standard_fields`&`@in`(`'\0`'`,`$standard_fields`)\
-\1 gv_default_\0 = \1(`{`(`?`$field_default_\0`) `{`$field_default_\0`}`} );
+\1 g_default_\0 = \1(`{`(`?`$field_default_\0`) `{`$field_default_\0`}`} );
 `,`?`$parent_fields`&`@in`(`'\0`'`,`$parent_fields`)\
-string gv_default_\0 = string( );
+string g_default_\0 = string( );
 `}`]`}
 `{`(`?`$all_enums`)`[`$all_enums`%,`,\
 set< \1 > g_\0_enum;
@@ -1195,7 +1195,7 @@ void `{`$full_class_name`}::impl::add_extra_paging_info( vector< pair< string, s
 void `{`$full_class_name`}::impl::clear( )
 {`{`?`$all_fields`[`$all_fields`%,`,\
 `{`?`$standard_fields`&`@in`(`'\0`'`,`$standard_fields`)
-   v_\0 = gv_default_\0;\
+   v_\0 = g_default_\0;\
 `}`]`}
 `{`?`$parent_fields`[`$parent_fields`,
    v_\$ = string( );
@@ -1303,7 +1303,7 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `}
 `{`?`$domain_fields`[`$domain_fields`,\
    if( !is_null( v_\$ )
-    && ( v_\$ != gv_default_\$
+    && ( v_\$ != g_default_\$
     || !value_will_be_provided( c_field_name_\$ ) )
     && !g_\$_domain.is_valid( v_\$, error_message = "`{`(`?`$domain_mask_\$`)`$domain_mask_\$`}" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_\$,

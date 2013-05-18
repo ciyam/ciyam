@@ -10,7 +10,7 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
 `}\
-    && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )
+    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
       get_obj( ).`{`$arg_field`}( date_time( get_dtm( ) ) );
    // [(finish default_to_dtm)] `{`$arg_id`}
 `}

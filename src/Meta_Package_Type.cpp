@@ -144,14 +144,14 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Actions = string( );
-string gv_default_Dependencies = string( );
-string gv_default_File = string( );
-bool gv_default_Installed = bool( 0 );
-bool gv_default_Multi = bool( 0 );
-string gv_default_Name = string( "New_Package_Type" );
-string gv_default_Plural = string( "New_Package_Type" );
-int gv_default_Version = int( 0 );
+string g_default_Actions = string( );
+string g_default_Dependencies = string( );
+string g_default_File = string( );
+bool g_default_Installed = bool( 0 );
+bool g_default_Multi = bool( 0 );
+string g_default_Name = string( "New_Package_Type" );
+string g_default_Plural = string( "New_Package_Type" );
+int g_default_Version = int( 0 );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -742,14 +742,14 @@ void Meta_Package_Type::impl::add_extra_paging_info( vector< pair< string, strin
 
 void Meta_Package_Type::impl::clear( )
 {
-   v_Actions = gv_default_Actions;
-   v_Dependencies = gv_default_Dependencies;
-   v_File = gv_default_File;
-   v_Installed = gv_default_Installed;
-   v_Multi = gv_default_Multi;
-   v_Name = gv_default_Name;
-   v_Plural = gv_default_Plural;
-   v_Version = gv_default_Version;
+   v_Actions = g_default_Actions;
+   v_Dependencies = g_default_Dependencies;
+   v_File = g_default_File;
+   v_Installed = g_default_Installed;
+   v_Multi = g_default_Multi;
+   v_Name = g_default_Name;
+   v_Plural = g_default_Plural;
+   v_Version = g_default_Version;
 }
 
 bool Meta_Package_Type::impl::value_will_be_provided( const string& field_name )
@@ -782,14 +782,14 @@ void Meta_Package_Type::impl::validate( unsigned state, bool is_internal, valida
 
    string error_message;
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Plural )
-    && ( v_Plural != gv_default_Plural
+    && ( v_Plural != g_default_Plural
     || !value_will_be_provided( c_field_name_Plural ) )
     && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,

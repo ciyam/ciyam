@@ -315,29 +315,29 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Class = string( );
-string gv_default_Def_Value = string( );
-string gv_default_Default = string( );
-bool gv_default_Dummy_1 = bool( 1 );
-string gv_default_Enum = string( );
-int gv_default_Extra = int( 0 );
-string gv_default_Id = string( );
-bool gv_default_Internal = bool( 0 );
-bool gv_default_Is_Foreign_Key = bool( 0 );
-bool gv_default_Is_Text_Type = bool( 1 );
-bool gv_default_Mandatory = bool( 1 );
-string gv_default_Name = string( );
-numeric gv_default_Numeric_Decimals = numeric( 0 );
-string gv_default_Parent_Class = string( );
-string gv_default_Parent_Class_Name = string( );
-int gv_default_Primitive = int( 0 );
-string gv_default_Source_Field = string( );
-bool gv_default_Transient = bool( 0 );
-string gv_default_Type = string( );
-int gv_default_UOM = int( 0 );
-string gv_default_UOM_Name = string( );
-string gv_default_UOM_Symbol = string( );
-bool gv_default_Use_In_Text_Search = bool( 0 );
+string g_default_Class = string( );
+string g_default_Def_Value = string( );
+string g_default_Default = string( );
+bool g_default_Dummy_1 = bool( 1 );
+string g_default_Enum = string( );
+int g_default_Extra = int( 0 );
+string g_default_Id = string( );
+bool g_default_Internal = bool( 0 );
+bool g_default_Is_Foreign_Key = bool( 0 );
+bool g_default_Is_Text_Type = bool( 1 );
+bool g_default_Mandatory = bool( 1 );
+string g_default_Name = string( );
+numeric g_default_Numeric_Decimals = numeric( 0 );
+string g_default_Parent_Class = string( );
+string g_default_Parent_Class_Name = string( );
+int g_default_Primitive = int( 0 );
+string g_default_Source_Field = string( );
+bool g_default_Transient = bool( 0 );
+string g_default_Type = string( );
+int g_default_UOM = int( 0 );
+string g_default_UOM_Name = string( );
+string g_default_UOM_Symbol = string( );
+bool g_default_Use_In_Text_Search = bool( 0 );
 
 set< int > g_field_extra_enum;
 set< int > g_primitive_enum;
@@ -2288,24 +2288,24 @@ void Meta_Field::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Field::impl::clear( )
 {
-   v_Def_Value = gv_default_Def_Value;
-   v_Default = gv_default_Default;
-   v_Dummy_1 = gv_default_Dummy_1;
-   v_Extra = gv_default_Extra;
-   v_Id = gv_default_Id;
-   v_Internal = gv_default_Internal;
-   v_Is_Foreign_Key = gv_default_Is_Foreign_Key;
-   v_Is_Text_Type = gv_default_Is_Text_Type;
-   v_Mandatory = gv_default_Mandatory;
-   v_Name = gv_default_Name;
-   v_Numeric_Decimals = gv_default_Numeric_Decimals;
-   v_Parent_Class_Name = gv_default_Parent_Class_Name;
-   v_Primitive = gv_default_Primitive;
-   v_Transient = gv_default_Transient;
-   v_UOM = gv_default_UOM;
-   v_UOM_Name = gv_default_UOM_Name;
-   v_UOM_Symbol = gv_default_UOM_Symbol;
-   v_Use_In_Text_Search = gv_default_Use_In_Text_Search;
+   v_Def_Value = g_default_Def_Value;
+   v_Default = g_default_Default;
+   v_Dummy_1 = g_default_Dummy_1;
+   v_Extra = g_default_Extra;
+   v_Id = g_default_Id;
+   v_Internal = g_default_Internal;
+   v_Is_Foreign_Key = g_default_Is_Foreign_Key;
+   v_Is_Text_Type = g_default_Is_Text_Type;
+   v_Mandatory = g_default_Mandatory;
+   v_Name = g_default_Name;
+   v_Numeric_Decimals = g_default_Numeric_Decimals;
+   v_Parent_Class_Name = g_default_Parent_Class_Name;
+   v_Primitive = g_default_Primitive;
+   v_Transient = g_default_Transient;
+   v_UOM = g_default_UOM;
+   v_UOM_Name = g_default_UOM_Name;
+   v_UOM_Symbol = g_default_UOM_Symbol;
+   v_Use_In_Text_Search = g_default_Use_In_Text_Search;
 
    v_Class = string( );
    if( cp_Class )
@@ -2373,42 +2373,42 @@ void Meta_Field::impl::validate( unsigned state, bool is_internal, validation_er
 
    string error_message;
    if( !is_null( v_Default )
-    && ( v_Default != gv_default_Default
+    && ( v_Default != g_default_Default
     || !value_will_be_provided( c_field_name_Default ) )
     && !g_Default_domain.is_valid( v_Default, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Default,
        get_module_string( c_field_display_name_Default ) + " " + error_message ) );
 
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Parent_Class_Name )
-    && ( v_Parent_Class_Name != gv_default_Parent_Class_Name
+    && ( v_Parent_Class_Name != g_default_Parent_Class_Name
     || !value_will_be_provided( c_field_name_Parent_Class_Name ) )
     && !g_Parent_Class_Name_domain.is_valid( v_Parent_Class_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Parent_Class_Name,
        get_module_string( c_field_display_name_Parent_Class_Name ) + " " + error_message ) );
 
    if( !is_null( v_UOM_Name )
-    && ( v_UOM_Name != gv_default_UOM_Name
+    && ( v_UOM_Name != g_default_UOM_Name
     || !value_will_be_provided( c_field_name_UOM_Name ) )
     && !g_UOM_Name_domain.is_valid( v_UOM_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Name,
        get_module_string( c_field_display_name_UOM_Name ) + " " + error_message ) );
 
    if( !is_null( v_UOM_Symbol )
-    && ( v_UOM_Symbol != gv_default_UOM_Symbol
+    && ( v_UOM_Symbol != g_default_UOM_Symbol
     || !value_will_be_provided( c_field_name_UOM_Symbol ) )
     && !g_UOM_Symbol_domain.is_valid( v_UOM_Symbol, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Symbol,
@@ -2643,7 +2643,7 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600053a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).UOM( ) == gv_default_UOM )
+    && get_obj( ).UOM( ) == g_default_UOM )
       get_obj( ).UOM( get_obj( ).Type( ).Default_UOM( ) );
    // [(finish default_to_field)] 600053a
 

@@ -149,13 +149,13 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-bool gv_default_Dummy_0 = bool( 0 );
-bool gv_default_Is_Admin = bool( 0 );
-bool gv_default_Is_Child = bool( 0 );
-bool gv_default_Is_Home = bool( 0 );
-bool gv_default_Is_Not_Anonymous = bool( 0 );
-string gv_default_List_Name = string( );
-string gv_default_Name = string( );
+bool g_default_Dummy_0 = bool( 0 );
+bool g_default_Is_Admin = bool( 0 );
+bool g_default_Is_Child = bool( 0 );
+bool g_default_Is_Home = bool( 0 );
+bool g_default_Is_Not_Anonymous = bool( 0 );
+string g_default_List_Name = string( );
+string g_default_Name = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -569,13 +569,13 @@ void Meta_List_Type::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_List_Type::impl::clear( )
 {
-   v_Dummy_0 = gv_default_Dummy_0;
-   v_Is_Admin = gv_default_Is_Admin;
-   v_Is_Child = gv_default_Is_Child;
-   v_Is_Home = gv_default_Is_Home;
-   v_Is_Not_Anonymous = gv_default_Is_Not_Anonymous;
-   v_List_Name = gv_default_List_Name;
-   v_Name = gv_default_Name;
+   v_Dummy_0 = g_default_Dummy_0;
+   v_Is_Admin = g_default_Is_Admin;
+   v_Is_Child = g_default_Is_Child;
+   v_Is_Home = g_default_Is_Home;
+   v_Is_Not_Anonymous = g_default_Is_Not_Anonymous;
+   v_List_Name = g_default_List_Name;
+   v_Name = g_default_Name;
 }
 
 bool Meta_List_Type::impl::value_will_be_provided( const string& field_name )
@@ -608,14 +608,14 @@ void Meta_List_Type::impl::validate( unsigned state, bool is_internal, validatio
 
    string error_message;
    if( !is_null( v_List_Name )
-    && ( v_List_Name != gv_default_List_Name
+    && ( v_List_Name != g_default_List_Name
     || !value_will_be_provided( c_field_name_List_Name ) )
     && !g_List_Name_domain.is_valid( v_List_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_List_Name,
        get_module_string( c_field_display_name_List_Name ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

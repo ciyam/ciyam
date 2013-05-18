@@ -268,25 +268,25 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Access_Permission = string( );
-int gv_default_Access_Restriction = int( 0 );
-bool gv_default_Allow_Copy_Action = bool( 0 );
-bool gv_default_Allow_Printable_Version = bool( 0 );
-bool gv_default_Auto_Back_After_Save = bool( 0 );
-string gv_default_Change_Permission = string( );
-int gv_default_Change_Restriction = int( 0 );
-string gv_default_Class = string( );
-string gv_default_Id = string( );
-bool gv_default_Ignore_Unactionable_Records = bool( 0 );
-string gv_default_Model = string( );
-string gv_default_Name = string( );
-int gv_default_PDF_Font_Type = int( 0 );
-int gv_default_PDF_View_Type = int( 0 );
-bool gv_default_Print_Without_Highlight = bool( 0 );
-string gv_default_Title = string( "?" );
-string gv_default_Type = string( );
-string gv_default_Type_Key = string( );
-bool gv_default_Use_First_Row_As_Header = bool( 0 );
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+bool g_default_Allow_Copy_Action = bool( 0 );
+bool g_default_Allow_Printable_Version = bool( 0 );
+bool g_default_Auto_Back_After_Save = bool( 0 );
+string g_default_Change_Permission = string( );
+int g_default_Change_Restriction = int( 0 );
+string g_default_Class = string( );
+string g_default_Id = string( );
+bool g_default_Ignore_Unactionable_Records = bool( 0 );
+string g_default_Model = string( );
+string g_default_Name = string( );
+int g_default_PDF_Font_Type = int( 0 );
+int g_default_PDF_View_Type = int( 0 );
+bool g_default_Print_Without_Highlight = bool( 0 );
+string g_default_Title = string( "?" );
+string g_default_Type = string( );
+string g_default_Type_Key = string( );
+bool g_default_Use_First_Row_As_Header = bool( 0 );
 
 set< int > g_view_access_restrict_enum;
 set< int > g_view_change_restrict_enum;
@@ -1728,20 +1728,20 @@ void Meta_View::impl::add_extra_paging_info( vector< pair< string, string > >& p
 
 void Meta_View::impl::clear( )
 {
-   v_Access_Restriction = gv_default_Access_Restriction;
-   v_Allow_Copy_Action = gv_default_Allow_Copy_Action;
-   v_Allow_Printable_Version = gv_default_Allow_Printable_Version;
-   v_Auto_Back_After_Save = gv_default_Auto_Back_After_Save;
-   v_Change_Restriction = gv_default_Change_Restriction;
-   v_Id = gv_default_Id;
-   v_Ignore_Unactionable_Records = gv_default_Ignore_Unactionable_Records;
-   v_Name = gv_default_Name;
-   v_PDF_Font_Type = gv_default_PDF_Font_Type;
-   v_PDF_View_Type = gv_default_PDF_View_Type;
-   v_Print_Without_Highlight = gv_default_Print_Without_Highlight;
-   v_Title = gv_default_Title;
-   v_Type_Key = gv_default_Type_Key;
-   v_Use_First_Row_As_Header = gv_default_Use_First_Row_As_Header;
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Allow_Copy_Action = g_default_Allow_Copy_Action;
+   v_Allow_Printable_Version = g_default_Allow_Printable_Version;
+   v_Auto_Back_After_Save = g_default_Auto_Back_After_Save;
+   v_Change_Restriction = g_default_Change_Restriction;
+   v_Id = g_default_Id;
+   v_Ignore_Unactionable_Records = g_default_Ignore_Unactionable_Records;
+   v_Name = g_default_Name;
+   v_PDF_Font_Type = g_default_PDF_Font_Type;
+   v_PDF_View_Type = g_default_PDF_View_Type;
+   v_Print_Without_Highlight = g_default_Print_Without_Highlight;
+   v_Title = g_default_Title;
+   v_Type_Key = g_default_Type_Key;
+   v_Use_First_Row_As_Header = g_default_Use_First_Row_As_Header;
 
    v_Access_Permission = string( );
    if( cp_Access_Permission )
@@ -1819,21 +1819,21 @@ void Meta_View::impl::validate( unsigned state, bool is_internal, validation_err
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Title )
-    && ( v_Title != gv_default_Title
+    && ( v_Title != g_default_Title
     || !value_will_be_provided( c_field_name_Title ) )
     && !g_Title_domain.is_valid( v_Title, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Title,
@@ -1972,7 +1972,7 @@ void Meta_View::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600310
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Name( ) == gv_default_Name )
+    && get_obj( ).Name( ) == g_default_Name )
       get_obj( ).Name( get_obj( ).Type( ).View_Name( ) );
    // [(finish default_to_field)] 600310
 

@@ -706,81 +706,81 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Actions = string( );
-string gv_default_All_Strings = string( );
-string gv_default_All_Vars = string( );
-string gv_default_Child_Rel_Child_Class = string( );
-string gv_default_Child_Rel_Field_Key = string( );
-string gv_default_Child_Relationship = string( );
-string gv_default_Child_Specification_Type = string( );
-string gv_default_Class = string( );
-string gv_default_Comments = string( );
-string gv_default_Enum = string( );
-string gv_default_Enum_Item = string( );
-string gv_default_Enum_Item_2 = string( );
-string gv_default_Enum_Item_3 = string( );
-string gv_default_Enum_Item_4 = string( );
-string gv_default_Enum_Item_5 = string( );
-string gv_default_Field = string( );
-string gv_default_Field_Class = string( );
-string gv_default_Field_Pairs = string( );
-string gv_default_Field_Values = string( );
-string gv_default_Fields = string( );
-string gv_default_Id = string( );
-bool gv_default_Is_Required_For_UI_Gen = bool( 0 );
-string gv_default_Model = string( );
-string gv_default_Modifier = string( );
-string gv_default_Name = string( );
-string gv_default_Options = string( );
-string gv_default_Order = string( );
-string gv_default_Other_Class = string( );
-string gv_default_Other_Field = string( );
-string gv_default_Other_Field_2 = string( );
-string gv_default_Other_Modifier = string( );
-string gv_default_Other_Modifier_2 = string( );
-string gv_default_Other_Permission = string( );
-string gv_default_Other_Permission_2 = string( );
-string gv_default_Other_Procedure = string( );
-string gv_default_Other_Procedure_2 = string( );
-string gv_default_Other_Source_Child = string( );
-string gv_default_Other_Source_Child_2 = string( );
-string gv_default_Parent_Specification = string( );
-string gv_default_Permission = string( );
-string gv_default_Procedure = string( );
-string gv_default_Procedure_Arg = string( );
-string gv_default_Procedure_Arg_2 = string( );
-string gv_default_Procedure_Arg_3 = string( );
-bool gv_default_Protect_Child_Rel = bool( 0 );
-bool gv_default_Protect_Procedure = bool( 0 );
-bool gv_default_Protect_Source_Parent = bool( 0 );
-string gv_default_Restrict_Values = string( );
-string gv_default_Source_Child = string( );
-string gv_default_Source_Child_Class = string( );
-string gv_default_Source_Class = string( );
-string gv_default_Source_Field = string( );
-string gv_default_Source_Field_Class = string( );
-string gv_default_Source_Grandchild = string( );
-string gv_default_Source_Parent = string( );
-string gv_default_Source_Parent_Class = string( );
-string gv_default_Specification_Type = string( );
-string gv_default_Strings = string( );
-string gv_default_Test_Child = string( );
-string gv_default_Test_Field = string( );
-string gv_default_Test_Field_Class = string( );
-string gv_default_Test_Parent = string( );
-string gv_default_Test_Parent_Class = string( );
-string gv_default_Test_Value = string( );
-string gv_default_Test_Value_Label = string( );
-bool gv_default_Use_Source_Parent = bool( 0 );
-bool gv_default_Use_Test_Parent_Child = bool( 0 );
-string gv_default_Value = string( );
-string gv_default_Value_Label = string( );
-string gv_default_Value_Left_Part = string( );
-string gv_default_Value_Literal = string( );
-string gv_default_Value_Numeric_String = string( );
-string gv_default_Value_Right_Part = string( );
-string gv_default_Value_String = string( );
-string gv_default_Vars = string( );
+string g_default_Actions = string( );
+string g_default_All_Strings = string( );
+string g_default_All_Vars = string( );
+string g_default_Child_Rel_Child_Class = string( );
+string g_default_Child_Rel_Field_Key = string( );
+string g_default_Child_Relationship = string( );
+string g_default_Child_Specification_Type = string( );
+string g_default_Class = string( );
+string g_default_Comments = string( );
+string g_default_Enum = string( );
+string g_default_Enum_Item = string( );
+string g_default_Enum_Item_2 = string( );
+string g_default_Enum_Item_3 = string( );
+string g_default_Enum_Item_4 = string( );
+string g_default_Enum_Item_5 = string( );
+string g_default_Field = string( );
+string g_default_Field_Class = string( );
+string g_default_Field_Pairs = string( );
+string g_default_Field_Values = string( );
+string g_default_Fields = string( );
+string g_default_Id = string( );
+bool g_default_Is_Required_For_UI_Gen = bool( 0 );
+string g_default_Model = string( );
+string g_default_Modifier = string( );
+string g_default_Name = string( );
+string g_default_Options = string( );
+string g_default_Order = string( );
+string g_default_Other_Class = string( );
+string g_default_Other_Field = string( );
+string g_default_Other_Field_2 = string( );
+string g_default_Other_Modifier = string( );
+string g_default_Other_Modifier_2 = string( );
+string g_default_Other_Permission = string( );
+string g_default_Other_Permission_2 = string( );
+string g_default_Other_Procedure = string( );
+string g_default_Other_Procedure_2 = string( );
+string g_default_Other_Source_Child = string( );
+string g_default_Other_Source_Child_2 = string( );
+string g_default_Parent_Specification = string( );
+string g_default_Permission = string( );
+string g_default_Procedure = string( );
+string g_default_Procedure_Arg = string( );
+string g_default_Procedure_Arg_2 = string( );
+string g_default_Procedure_Arg_3 = string( );
+bool g_default_Protect_Child_Rel = bool( 0 );
+bool g_default_Protect_Procedure = bool( 0 );
+bool g_default_Protect_Source_Parent = bool( 0 );
+string g_default_Restrict_Values = string( );
+string g_default_Source_Child = string( );
+string g_default_Source_Child_Class = string( );
+string g_default_Source_Class = string( );
+string g_default_Source_Field = string( );
+string g_default_Source_Field_Class = string( );
+string g_default_Source_Grandchild = string( );
+string g_default_Source_Parent = string( );
+string g_default_Source_Parent_Class = string( );
+string g_default_Specification_Type = string( );
+string g_default_Strings = string( );
+string g_default_Test_Child = string( );
+string g_default_Test_Field = string( );
+string g_default_Test_Field_Class = string( );
+string g_default_Test_Parent = string( );
+string g_default_Test_Parent_Class = string( );
+string g_default_Test_Value = string( );
+string g_default_Test_Value_Label = string( );
+bool g_default_Use_Source_Parent = bool( 0 );
+bool g_default_Use_Test_Parent_Child = bool( 0 );
+string g_default_Value = string( );
+string g_default_Value_Label = string( );
+string g_default_Value_Left_Part = string( );
+string g_default_Value_Literal = string( );
+string g_default_Value_Numeric_String = string( );
+string g_default_Value_Right_Part = string( );
+string g_default_Value_String = string( );
+string g_default_Vars = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -4979,36 +4979,36 @@ void Meta_Specification::impl::add_extra_paging_info( vector< pair< string, stri
 
 void Meta_Specification::impl::clear( )
 {
-   v_Actions = gv_default_Actions;
-   v_All_Strings = gv_default_All_Strings;
-   v_All_Vars = gv_default_All_Vars;
-   v_Child_Rel_Field_Key = gv_default_Child_Rel_Field_Key;
-   v_Comments = gv_default_Comments;
-   v_Field_Pairs = gv_default_Field_Pairs;
-   v_Field_Values = gv_default_Field_Values;
-   v_Fields = gv_default_Fields;
-   v_Id = gv_default_Id;
-   v_Is_Required_For_UI_Gen = gv_default_Is_Required_For_UI_Gen;
-   v_Name = gv_default_Name;
-   v_Options = gv_default_Options;
-   v_Order = gv_default_Order;
-   v_Protect_Child_Rel = gv_default_Protect_Child_Rel;
-   v_Protect_Procedure = gv_default_Protect_Procedure;
-   v_Protect_Source_Parent = gv_default_Protect_Source_Parent;
-   v_Restrict_Values = gv_default_Restrict_Values;
-   v_Strings = gv_default_Strings;
-   v_Test_Value = gv_default_Test_Value;
-   v_Test_Value_Label = gv_default_Test_Value_Label;
-   v_Use_Source_Parent = gv_default_Use_Source_Parent;
-   v_Use_Test_Parent_Child = gv_default_Use_Test_Parent_Child;
-   v_Value = gv_default_Value;
-   v_Value_Label = gv_default_Value_Label;
-   v_Value_Left_Part = gv_default_Value_Left_Part;
-   v_Value_Literal = gv_default_Value_Literal;
-   v_Value_Numeric_String = gv_default_Value_Numeric_String;
-   v_Value_Right_Part = gv_default_Value_Right_Part;
-   v_Value_String = gv_default_Value_String;
-   v_Vars = gv_default_Vars;
+   v_Actions = g_default_Actions;
+   v_All_Strings = g_default_All_Strings;
+   v_All_Vars = g_default_All_Vars;
+   v_Child_Rel_Field_Key = g_default_Child_Rel_Field_Key;
+   v_Comments = g_default_Comments;
+   v_Field_Pairs = g_default_Field_Pairs;
+   v_Field_Values = g_default_Field_Values;
+   v_Fields = g_default_Fields;
+   v_Id = g_default_Id;
+   v_Is_Required_For_UI_Gen = g_default_Is_Required_For_UI_Gen;
+   v_Name = g_default_Name;
+   v_Options = g_default_Options;
+   v_Order = g_default_Order;
+   v_Protect_Child_Rel = g_default_Protect_Child_Rel;
+   v_Protect_Procedure = g_default_Protect_Procedure;
+   v_Protect_Source_Parent = g_default_Protect_Source_Parent;
+   v_Restrict_Values = g_default_Restrict_Values;
+   v_Strings = g_default_Strings;
+   v_Test_Value = g_default_Test_Value;
+   v_Test_Value_Label = g_default_Test_Value_Label;
+   v_Use_Source_Parent = g_default_Use_Source_Parent;
+   v_Use_Test_Parent_Child = g_default_Use_Test_Parent_Child;
+   v_Value = g_default_Value;
+   v_Value_Label = g_default_Value_Label;
+   v_Value_Left_Part = g_default_Value_Left_Part;
+   v_Value_Literal = g_default_Value_Literal;
+   v_Value_Numeric_String = g_default_Value_Numeric_String;
+   v_Value_Right_Part = g_default_Value_Right_Part;
+   v_Value_String = g_default_Value_String;
+   v_Vars = g_default_Vars;
 
    v_Child_Rel_Child_Class = string( );
    if( cp_Child_Rel_Child_Class )
@@ -5246,42 +5246,42 @@ void Meta_Specification::impl::validate( unsigned state, bool is_internal, valid
 
    string error_message;
    if( !is_null( v_Comments )
-    && ( v_Comments != gv_default_Comments
+    && ( v_Comments != g_default_Comments
     || !value_will_be_provided( c_field_name_Comments ) )
     && !g_Comments_domain.is_valid( v_Comments, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Comments,
        get_module_string( c_field_display_name_Comments ) + " " + error_message ) );
 
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Options )
-    && ( v_Options != gv_default_Options
+    && ( v_Options != g_default_Options
     || !value_will_be_provided( c_field_name_Options ) )
     && !g_Options_domain.is_valid( v_Options, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Options,
        get_module_string( c_field_display_name_Options ) + " " + error_message ) );
 
    if( !is_null( v_Test_Value )
-    && ( v_Test_Value != gv_default_Test_Value
+    && ( v_Test_Value != g_default_Test_Value
     || !value_will_be_provided( c_field_name_Test_Value ) )
     && !g_Test_Value_domain.is_valid( v_Test_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Test_Value,
        get_module_string( c_field_display_name_Test_Value ) + " " + error_message ) );
 
    if( !is_null( v_Value )
-    && ( v_Value != gv_default_Value
+    && ( v_Value != g_default_Value
     || !value_will_be_provided( c_field_name_Value ) )
     && !g_Value_domain.is_valid( v_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Value,
@@ -6018,7 +6018,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600148
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Model( ) == gv_default_Model
+    && get_obj( ).Model( ) == g_default_Model
     && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
       get_obj( ).Model( get_obj( ).Parent_Specification( ).Model( ) );
    // [(finish default_to_field)] 600148
@@ -6026,7 +6026,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600149
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Specification_Type( ) == gv_default_Specification_Type
+    && get_obj( ).Specification_Type( ) == g_default_Specification_Type
     && !to_string( get_obj( ).Parent_Specification( ) ).empty( ) )
       get_obj( ).Specification_Type( get_obj( ).Parent_Specification( ).Child_Specification_Type( ) );
    // [(finish default_to_field)] 600149
@@ -6034,7 +6034,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600150
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Class( ) == g_default_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Class( ) );
    // [(finish default_to_field)] 600150
@@ -6042,7 +6042,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600151
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Class( ) == g_default_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Source_Parent_Class( ) );
    // [(finish default_to_field)] 600151
@@ -6050,7 +6050,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600152
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Class( ) == g_default_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Child_Rel_Child_Class( ) );
    // [(finish default_to_field)] 600152
@@ -6058,7 +6058,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600153
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Class( ) == g_default_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Field_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Field_Class( ) );
    // [(finish default_to_field)] 600153
@@ -6066,7 +6066,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600153a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Class( ) == g_default_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Source_Field_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Source_Field_Class( ) );
    // [(finish default_to_field)] 600153a
@@ -6074,7 +6074,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600153b
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class
+    && get_obj( ).Class( ) == g_default_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Other_Class_For_Class( ) == true )
       get_obj( ).Class( get_obj( ).Parent_Specification( ).Other_Class( ) );
    // [(finish default_to_field)] 600153b
@@ -6082,7 +6082,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600154
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent
+    && get_obj( ).Source_Parent( ) == g_default_Source_Parent
     && get_obj( ).Specification_Type( ).Use_Parent_Source_Parent( ) == true )
       get_obj( ).Source_Parent( get_obj( ).Parent_Specification( ).Source_Parent( ) );
    // [(finish default_to_field)] 600154
@@ -6090,7 +6090,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600155
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Parent( ) == gv_default_Source_Parent
+    && get_obj( ).Source_Parent( ) == g_default_Source_Parent
     && get_obj( ).Specification_Type( ).Use_Parent_Child_Rel_As_Source_Parent( ) == true )
       get_obj( ).Source_Parent( get_obj( ).Parent_Specification( ).Child_Rel_Field_Key( ) );
    // [(finish default_to_field)] 600155
@@ -6098,7 +6098,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600156
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Class( ) == gv_default_Source_Class
+    && get_obj( ).Source_Class( ) == g_default_Source_Class
     && get_obj( ).Specification_Type( ).Use_Parent_Source_Class( ) == true )
       get_obj( ).Source_Class( get_obj( ).Parent_Specification( ).Source_Class( ) );
    // [(finish default_to_field)] 600156
@@ -6106,28 +6106,28 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600157
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Actions( ) == gv_default_Actions )
+    && get_obj( ).Actions( ) == g_default_Actions )
       get_obj( ).Actions( get_obj( ).Specification_Type( ).Specification_Actions( ) );
    // [(finish default_to_field)] 600157
 
    // [(start default_to_field)] 600158
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Child_Specification_Type( ) == gv_default_Child_Specification_Type )
+    && get_obj( ).Child_Specification_Type( ) == g_default_Child_Specification_Type )
       get_obj( ).Child_Specification_Type( get_obj( ).Specification_Type( ).Child_Specification_Type( ) );
    // [(finish default_to_field)] 600158
 
    // [(start default_to_field)] 600159
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Model( ) == gv_default_Model )
+    && get_obj( ).Model( ) == g_default_Model )
       get_obj( ).Model( get_obj( ).Class( ).Model( ) );
    // [(finish default_to_field)] 600159
 
    // [(start default_to_field)] 600160
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Class( ) == gv_default_Source_Class )
+    && get_obj( ).Source_Class( ) == g_default_Source_Class )
       get_obj( ).Source_Class( get_obj( ).Class( ) );
    // [(finish default_to_field)] 600160
 
@@ -6163,7 +6163,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600166a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Source_Parent_Class( ) == gv_default_Source_Parent_Class
+    && get_obj( ).Source_Parent_Class( ) == g_default_Source_Parent_Class
     && get_obj( ).Specification_Type( ).Use_Class_As_Source_Parent_Class( ) == true )
       get_obj( ).Source_Parent_Class( get_obj( ).Class( ) );
    // [(finish default_to_field)] 600166a
@@ -6171,7 +6171,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600167
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Name( ) == gv_default_Name )
+    && get_obj( ).Name( ) == g_default_Name )
       get_obj( ).Name( get_obj( ).Specification_Type( ).Specification_Name( ) );
    // [(finish default_to_field)] 600167
 
@@ -6225,7 +6225,7 @@ void Meta_Specification::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600181
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Procedure( ) == gv_default_Procedure
+    && get_obj( ).Procedure( ) == g_default_Procedure
     && get_obj( ).Specification_Type( ).Use_Parent_Procedure( ) == true )
       get_obj( ).Procedure( get_obj( ).Parent_Specification( ).Procedure( ) );
    // [(finish default_to_field)] 600181

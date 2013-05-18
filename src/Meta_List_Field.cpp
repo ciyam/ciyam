@@ -510,59 +510,59 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Access_Parent_Modifier = string( );
-string gv_default_Access_Permission = string( );
-int gv_default_Access_Restriction = int( 0 );
-int gv_default_Alignment = int( 0 );
-bool gv_default_Allow_Anonymous_Access = bool( 1 );
-string gv_default_Child_Rel_Child_Class = string( );
-string gv_default_Child_Rel_Source_Child = string( );
-string gv_default_Child_Rel_Source_Field = string( );
-string gv_default_Child_Rel_Source_Parent = string( );
-string gv_default_Child_Rel_Source_Parent_Class = string( );
-string gv_default_Child_Relationship = string( );
-string gv_default_Class = string( );
-bool gv_default_Exact_Match_Only = bool( 0 );
-bool gv_default_Exclude_In_Use_FK = bool( 0 );
-int gv_default_Font_Size = int( 0 );
-string gv_default_Include_Key_Additions = string( );
-int gv_default_Label_Class = int( 0 );
-int gv_default_Label_Source = int( 0 );
-bool gv_default_Label_Without_Prefix = bool( 0 );
-int gv_default_Link_Empty_Restriction = int( 0 );
-string gv_default_Link_Permission = string( );
-int gv_default_Link_Restriction = int( 0 );
-int gv_default_Link_Type = int( 0 );
-string gv_default_List = string( );
-string gv_default_Name = string( );
-bool gv_default_Non_Instance_Procedure = bool( 0 );
-int gv_default_Notes_Truncation = int( 0 );
-bool gv_default_Omit_Versions = bool( 0 );
-string gv_default_Order = string( );
-string gv_default_Parent_Class = string( );
-int gv_default_Print_Type = int( 0 );
-string gv_default_Procedure = string( );
-string gv_default_Procedure_Args = string( );
-string gv_default_Restriction_Field = string( );
-string gv_default_Restriction_Spec = string( );
-string gv_default_Restriction_Value = string( );
-bool gv_default_Retain_Selected_Rows = bool( 1 );
-bool gv_default_Reverse_Order = bool( 0 );
-int gv_default_Search_Option_Limit = int( 0 );
-string gv_default_Select_Key_Exclusions = string( );
-string gv_default_Source_Child = string( );
-string gv_default_Source_Child_Class = string( );
-string gv_default_Source_Field = string( );
-string gv_default_Source_Grandchild = string( );
-string gv_default_Source_Parent = string( );
-string gv_default_Source_Parent_Class = string( );
-int gv_default_Switch_Type = int( 0 );
-int gv_default_Trigger_Option = int( 0 );
-string gv_default_Type = string( );
-bool gv_default_Use_Child_Rel_Source_Parent = bool( 0 );
-bool gv_default_Use_In_Text_Search_Title = bool( 0 );
-bool gv_default_Use_Source_Parent = bool( 0 );
-int gv_default_View_Parent_Extra = int( 0 );
+string g_default_Access_Parent_Modifier = string( );
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+int g_default_Alignment = int( 0 );
+bool g_default_Allow_Anonymous_Access = bool( 1 );
+string g_default_Child_Rel_Child_Class = string( );
+string g_default_Child_Rel_Source_Child = string( );
+string g_default_Child_Rel_Source_Field = string( );
+string g_default_Child_Rel_Source_Parent = string( );
+string g_default_Child_Rel_Source_Parent_Class = string( );
+string g_default_Child_Relationship = string( );
+string g_default_Class = string( );
+bool g_default_Exact_Match_Only = bool( 0 );
+bool g_default_Exclude_In_Use_FK = bool( 0 );
+int g_default_Font_Size = int( 0 );
+string g_default_Include_Key_Additions = string( );
+int g_default_Label_Class = int( 0 );
+int g_default_Label_Source = int( 0 );
+bool g_default_Label_Without_Prefix = bool( 0 );
+int g_default_Link_Empty_Restriction = int( 0 );
+string g_default_Link_Permission = string( );
+int g_default_Link_Restriction = int( 0 );
+int g_default_Link_Type = int( 0 );
+string g_default_List = string( );
+string g_default_Name = string( );
+bool g_default_Non_Instance_Procedure = bool( 0 );
+int g_default_Notes_Truncation = int( 0 );
+bool g_default_Omit_Versions = bool( 0 );
+string g_default_Order = string( );
+string g_default_Parent_Class = string( );
+int g_default_Print_Type = int( 0 );
+string g_default_Procedure = string( );
+string g_default_Procedure_Args = string( );
+string g_default_Restriction_Field = string( );
+string g_default_Restriction_Spec = string( );
+string g_default_Restriction_Value = string( );
+bool g_default_Retain_Selected_Rows = bool( 1 );
+bool g_default_Reverse_Order = bool( 0 );
+int g_default_Search_Option_Limit = int( 0 );
+string g_default_Select_Key_Exclusions = string( );
+string g_default_Source_Child = string( );
+string g_default_Source_Child_Class = string( );
+string g_default_Source_Field = string( );
+string g_default_Source_Grandchild = string( );
+string g_default_Source_Parent = string( );
+string g_default_Source_Parent_Class = string( );
+int g_default_Switch_Type = int( 0 );
+int g_default_Trigger_Option = int( 0 );
+string g_default_Type = string( );
+bool g_default_Use_Child_Rel_Source_Parent = bool( 0 );
+bool g_default_Use_In_Text_Search_Title = bool( 0 );
+bool g_default_Use_Source_Parent = bool( 0 );
+int g_default_View_Parent_Extra = int( 0 );
 
 set< int > g_list_field_restrict_enum;
 set< int > g_list_field_alignment_enum;
@@ -3259,37 +3259,37 @@ void Meta_List_Field::impl::add_extra_paging_info( vector< pair< string, string 
 
 void Meta_List_Field::impl::clear( )
 {
-   v_Access_Restriction = gv_default_Access_Restriction;
-   v_Alignment = gv_default_Alignment;
-   v_Allow_Anonymous_Access = gv_default_Allow_Anonymous_Access;
-   v_Exact_Match_Only = gv_default_Exact_Match_Only;
-   v_Exclude_In_Use_FK = gv_default_Exclude_In_Use_FK;
-   v_Font_Size = gv_default_Font_Size;
-   v_Include_Key_Additions = gv_default_Include_Key_Additions;
-   v_Label_Class = gv_default_Label_Class;
-   v_Label_Source = gv_default_Label_Source;
-   v_Label_Without_Prefix = gv_default_Label_Without_Prefix;
-   v_Link_Empty_Restriction = gv_default_Link_Empty_Restriction;
-   v_Link_Restriction = gv_default_Link_Restriction;
-   v_Link_Type = gv_default_Link_Type;
-   v_Name = gv_default_Name;
-   v_Non_Instance_Procedure = gv_default_Non_Instance_Procedure;
-   v_Notes_Truncation = gv_default_Notes_Truncation;
-   v_Omit_Versions = gv_default_Omit_Versions;
-   v_Order = gv_default_Order;
-   v_Print_Type = gv_default_Print_Type;
-   v_Procedure_Args = gv_default_Procedure_Args;
-   v_Restriction_Value = gv_default_Restriction_Value;
-   v_Retain_Selected_Rows = gv_default_Retain_Selected_Rows;
-   v_Reverse_Order = gv_default_Reverse_Order;
-   v_Search_Option_Limit = gv_default_Search_Option_Limit;
-   v_Select_Key_Exclusions = gv_default_Select_Key_Exclusions;
-   v_Switch_Type = gv_default_Switch_Type;
-   v_Trigger_Option = gv_default_Trigger_Option;
-   v_Use_Child_Rel_Source_Parent = gv_default_Use_Child_Rel_Source_Parent;
-   v_Use_In_Text_Search_Title = gv_default_Use_In_Text_Search_Title;
-   v_Use_Source_Parent = gv_default_Use_Source_Parent;
-   v_View_Parent_Extra = gv_default_View_Parent_Extra;
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Alignment = g_default_Alignment;
+   v_Allow_Anonymous_Access = g_default_Allow_Anonymous_Access;
+   v_Exact_Match_Only = g_default_Exact_Match_Only;
+   v_Exclude_In_Use_FK = g_default_Exclude_In_Use_FK;
+   v_Font_Size = g_default_Font_Size;
+   v_Include_Key_Additions = g_default_Include_Key_Additions;
+   v_Label_Class = g_default_Label_Class;
+   v_Label_Source = g_default_Label_Source;
+   v_Label_Without_Prefix = g_default_Label_Without_Prefix;
+   v_Link_Empty_Restriction = g_default_Link_Empty_Restriction;
+   v_Link_Restriction = g_default_Link_Restriction;
+   v_Link_Type = g_default_Link_Type;
+   v_Name = g_default_Name;
+   v_Non_Instance_Procedure = g_default_Non_Instance_Procedure;
+   v_Notes_Truncation = g_default_Notes_Truncation;
+   v_Omit_Versions = g_default_Omit_Versions;
+   v_Order = g_default_Order;
+   v_Print_Type = g_default_Print_Type;
+   v_Procedure_Args = g_default_Procedure_Args;
+   v_Restriction_Value = g_default_Restriction_Value;
+   v_Retain_Selected_Rows = g_default_Retain_Selected_Rows;
+   v_Reverse_Order = g_default_Reverse_Order;
+   v_Search_Option_Limit = g_default_Search_Option_Limit;
+   v_Select_Key_Exclusions = g_default_Select_Key_Exclusions;
+   v_Switch_Type = g_default_Switch_Type;
+   v_Trigger_Option = g_default_Trigger_Option;
+   v_Use_Child_Rel_Source_Parent = g_default_Use_Child_Rel_Source_Parent;
+   v_Use_In_Text_Search_Title = g_default_Use_In_Text_Search_Title;
+   v_Use_Source_Parent = g_default_Use_Source_Parent;
+   v_View_Parent_Extra = g_default_View_Parent_Extra;
 
    v_Access_Parent_Modifier = string( );
    if( cp_Access_Parent_Modifier )
@@ -3420,35 +3420,35 @@ void Meta_List_Field::impl::validate( unsigned state, bool is_internal, validati
 
    string error_message;
    if( !is_null( v_Include_Key_Additions )
-    && ( v_Include_Key_Additions != gv_default_Include_Key_Additions
+    && ( v_Include_Key_Additions != g_default_Include_Key_Additions
     || !value_will_be_provided( c_field_name_Include_Key_Additions ) )
     && !g_Include_Key_Additions_domain.is_valid( v_Include_Key_Additions, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Include_Key_Additions,
        get_module_string( c_field_display_name_Include_Key_Additions ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Procedure_Args )
-    && ( v_Procedure_Args != gv_default_Procedure_Args
+    && ( v_Procedure_Args != g_default_Procedure_Args
     || !value_will_be_provided( c_field_name_Procedure_Args ) )
     && !g_Procedure_Args_domain.is_valid( v_Procedure_Args, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Procedure_Args,
        get_module_string( c_field_display_name_Procedure_Args ) + " " + error_message ) );
 
    if( !is_null( v_Restriction_Value )
-    && ( v_Restriction_Value != gv_default_Restriction_Value
+    && ( v_Restriction_Value != g_default_Restriction_Value
     || !value_will_be_provided( c_field_name_Restriction_Value ) )
     && !g_Restriction_Value_domain.is_valid( v_Restriction_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Restriction_Value,
        get_module_string( c_field_display_name_Restriction_Value ) + " " + error_message ) );
 
    if( !is_null( v_Select_Key_Exclusions )
-    && ( v_Select_Key_Exclusions != gv_default_Select_Key_Exclusions
+    && ( v_Select_Key_Exclusions != g_default_Select_Key_Exclusions
     || !value_will_be_provided( c_field_name_Select_Key_Exclusions ) )
     && !g_Select_Key_Exclusions_domain.is_valid( v_Select_Key_Exclusions, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Select_Key_Exclusions,
@@ -3767,7 +3767,7 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600446
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Class( ) == gv_default_Class )
+    && get_obj( ).Class( ) == g_default_Class )
       get_obj( ).Class( get_obj( ).List( ).Class( ) );
    // [(finish default_to_field)] 600446
 

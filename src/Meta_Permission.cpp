@@ -129,9 +129,9 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Id = string( );
-string gv_default_Name = string( );
-string gv_default_Workgroup = string( );
+string g_default_Id = string( );
+string g_default_Name = string( );
+string g_default_Workgroup = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -813,8 +813,8 @@ void Meta_Permission::impl::add_extra_paging_info( vector< pair< string, string 
 
 void Meta_Permission::impl::clear( )
 {
-   v_Id = gv_default_Id;
-   v_Name = gv_default_Name;
+   v_Id = g_default_Id;
+   v_Name = g_default_Name;
 
    v_Workgroup = string( );
    if( cp_Workgroup )
@@ -861,14 +861,14 @@ void Meta_Permission::impl::validate( unsigned state, bool is_internal, validati
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

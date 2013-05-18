@@ -5,6 +5,6 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )\
 `{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} && `}`{`@eq`(`$arg_sfisfk`,`'1`'`)get_obj( ).`{`$arg_sfield`}( ).has_changed( )`,\
 get_obj( ).has_field_changed( c_field_id_`{`$arg_sfield`} )`} )
-      get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,gv_default_`{`$arg_field`}`} );
+      get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_set_to_default`,`'`'`)`{`@eq`(`$arg_fistexttype`,`'1`'`)string( )`,0`}`,g_default_`{`$arg_field`}`} );
    // [(finish field_clear_on_changed)] `{`$arg_id`}
 `}

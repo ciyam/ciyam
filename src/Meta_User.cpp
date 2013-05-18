@@ -170,15 +170,15 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-bool gv_default_Active = bool( 1 );
-string gv_default_Description = string( );
-string gv_default_Email = string( );
-string gv_default_Password = string( );
-string gv_default_Password_Hash = string( );
-string gv_default_Permissions = string( );
-string gv_default_User_Hash = string( );
-string gv_default_User_Id = string( );
-string gv_default_Workgroup = string( );
+bool g_default_Active = bool( 1 );
+string g_default_Description = string( );
+string g_default_Email = string( );
+string g_default_Password = string( );
+string g_default_Password_Hash = string( );
+string g_default_Permissions = string( );
+string g_default_User_Hash = string( );
+string g_default_User_Id = string( );
+string g_default_Workgroup = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -639,14 +639,14 @@ void Meta_User::impl::add_extra_paging_info( vector< pair< string, string > >& p
 
 void Meta_User::impl::clear( )
 {
-   v_Active = gv_default_Active;
-   v_Description = gv_default_Description;
-   v_Email = gv_default_Email;
-   v_Password = gv_default_Password;
-   v_Password_Hash = gv_default_Password_Hash;
-   v_Permissions = gv_default_Permissions;
-   v_User_Hash = gv_default_User_Hash;
-   v_User_Id = gv_default_User_Id;
+   v_Active = g_default_Active;
+   v_Description = g_default_Description;
+   v_Email = g_default_Email;
+   v_Password = g_default_Password;
+   v_Password_Hash = g_default_Password_Hash;
+   v_Permissions = g_default_Permissions;
+   v_User_Hash = g_default_User_Hash;
+   v_User_Id = g_default_User_Id;
 
    v_Workgroup = string( );
    if( cp_Workgroup )
@@ -688,21 +688,21 @@ void Meta_User::impl::validate( unsigned state, bool is_internal, validation_err
 
    string error_message;
    if( !is_null( v_Description )
-    && ( v_Description != gv_default_Description
+    && ( v_Description != g_default_Description
     || !value_will_be_provided( c_field_name_Description ) )
     && !g_Description_domain.is_valid( v_Description, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Description,
        get_module_string( c_field_display_name_Description ) + " " + error_message ) );
 
    if( !is_null( v_Password )
-    && ( v_Password != gv_default_Password
+    && ( v_Password != g_default_Password
     || !value_will_be_provided( c_field_name_Password ) )
     && !g_Password_domain.is_valid( v_Password, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Password,
        get_module_string( c_field_display_name_Password ) + " " + error_message ) );
 
    if( !is_null( v_User_Id )
-    && ( v_User_Id != gv_default_User_Id
+    && ( v_User_Id != g_default_User_Id
     || !value_will_be_provided( c_field_name_User_Id ) )
     && !g_User_Id_domain.is_valid( v_User_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_User_Id,
