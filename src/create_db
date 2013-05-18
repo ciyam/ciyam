@@ -20,7 +20,7 @@ else
  echo DROP DATABASE IF EXISTS $db_name\;>~create_db
 
  # NOTE: UTF-8 is not being used for 32 bit systems due to index length issues with older MySQL versions.
- if [ ! -d /usr/lib64 ]; then
+ if [ ! -d /usr/lib32 ] && [ ! -d /usr/lib64 ]; then
   echo CREATE DATABASE $db_name\;>>~create_db
  else
   echo CREATE DATABASE $db_name CHARACTER SET utf8 COLLATE utf8_bin\;>>~create_db
