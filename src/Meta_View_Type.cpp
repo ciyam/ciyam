@@ -106,8 +106,8 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Name = string( );
-string gv_default_View_Name = string( );
+string g_default_Name = string( );
+string g_default_View_Name = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -436,8 +436,8 @@ void Meta_View_Type::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_View_Type::impl::clear( )
 {
-   v_Name = gv_default_Name;
-   v_View_Name = gv_default_View_Name;
+   v_Name = g_default_Name;
+   v_View_Name = g_default_View_Name;
 }
 
 bool Meta_View_Type::impl::value_will_be_provided( const string& field_name )
@@ -470,14 +470,14 @@ void Meta_View_Type::impl::validate( unsigned state, bool is_internal, validatio
 
    string error_message;
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_View_Name )
-    && ( v_View_Name != gv_default_View_Name
+    && ( v_View_Name != g_default_View_Name
     || !value_will_be_provided( c_field_name_View_Name ) )
     && !g_View_Name_domain.is_valid( v_View_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_View_Name,

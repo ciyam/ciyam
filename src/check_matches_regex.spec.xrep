@@ -2,7 +2,7 @@
 `{`$prefix`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'0`'`)`$prefix`=`'to_string( `'`}\
 `{`$suffix`=`'`'`}`{`@eq`(`$arg_fistexttype`,`'0`'`)`$suffix`=`' )`'`}\
    // [(start check_matches_regex)] `{`$arg_id`}
-   if( get_obj( ).`{`$arg_field`}( ) != gv_default_`{`$arg_field`} )
+   if( get_obj( ).`{`$arg_field`}( ) != g_default_`{`$arg_field`} )
    {
       bool okay = false;
 `{`@eq`(`$arg_func`,`'`'`)\

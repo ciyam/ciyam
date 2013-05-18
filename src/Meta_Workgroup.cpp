@@ -165,13 +165,13 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Id = string( );
-string gv_default_Name = string( );
-string gv_default_Next_Enum_Id = string( "E100" );
-string gv_default_Next_Model_Id = string( "M100" );
-string gv_default_Next_Permission_Id = string( "P100" );
-string gv_default_Next_Type_Id = string( "T100" );
-string gv_default_Standard_Package = string( );
+string g_default_Id = string( );
+string g_default_Name = string( );
+string g_default_Next_Enum_Id = string( "E100" );
+string g_default_Next_Model_Id = string( "M100" );
+string g_default_Next_Permission_Id = string( "P100" );
+string g_default_Next_Type_Id = string( "T100" );
+string g_default_Standard_Package = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -737,12 +737,12 @@ void Meta_Workgroup::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_Workgroup::impl::clear( )
 {
-   v_Id = gv_default_Id;
-   v_Name = gv_default_Name;
-   v_Next_Enum_Id = gv_default_Next_Enum_Id;
-   v_Next_Model_Id = gv_default_Next_Model_Id;
-   v_Next_Permission_Id = gv_default_Next_Permission_Id;
-   v_Next_Type_Id = gv_default_Next_Type_Id;
+   v_Id = g_default_Id;
+   v_Name = g_default_Name;
+   v_Next_Enum_Id = g_default_Next_Enum_Id;
+   v_Next_Model_Id = g_default_Next_Model_Id;
+   v_Next_Permission_Id = g_default_Next_Permission_Id;
+   v_Next_Type_Id = g_default_Next_Type_Id;
 
    v_Standard_Package = string( );
    if( cp_Standard_Package )
@@ -804,42 +804,42 @@ void Meta_Workgroup::impl::validate( unsigned state, bool is_internal, validatio
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Next_Enum_Id )
-    && ( v_Next_Enum_Id != gv_default_Next_Enum_Id
+    && ( v_Next_Enum_Id != g_default_Next_Enum_Id
     || !value_will_be_provided( c_field_name_Next_Enum_Id ) )
     && !g_Next_Enum_Id_domain.is_valid( v_Next_Enum_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Enum_Id,
        get_module_string( c_field_display_name_Next_Enum_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Model_Id )
-    && ( v_Next_Model_Id != gv_default_Next_Model_Id
+    && ( v_Next_Model_Id != g_default_Next_Model_Id
     || !value_will_be_provided( c_field_name_Next_Model_Id ) )
     && !g_Next_Model_Id_domain.is_valid( v_Next_Model_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Model_Id,
        get_module_string( c_field_display_name_Next_Model_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Permission_Id )
-    && ( v_Next_Permission_Id != gv_default_Next_Permission_Id
+    && ( v_Next_Permission_Id != g_default_Next_Permission_Id
     || !value_will_be_provided( c_field_name_Next_Permission_Id ) )
     && !g_Next_Permission_Id_domain.is_valid( v_Next_Permission_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Permission_Id,
        get_module_string( c_field_display_name_Next_Permission_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Type_Id )
-    && ( v_Next_Type_Id != gv_default_Next_Type_Id
+    && ( v_Next_Type_Id != g_default_Next_Type_Id
     || !value_will_be_provided( c_field_name_Next_Type_Id ) )
     && !g_Next_Type_Id_domain.is_valid( v_Next_Type_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Type_Id,

@@ -247,22 +247,22 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Commands_File = string( );
-bool gv_default_Delay_Initial_Records = bool( 0 );
-int gv_default_Extra = int( 0 );
-string gv_default_Header_File = string( );
-string gv_default_Id = string( );
-string gv_default_Model = string( );
-string gv_default_Name = string( );
-string gv_default_Next_Field_Id = string( );
-string gv_default_Next_Procedure_Id = string( );
-string gv_default_Plural = string( );
-string gv_default_Quick_Link_Field = string( );
-string gv_default_Source_Class = string( );
-string gv_default_Source_File = string( );
-string gv_default_Source_Model = string( );
-string gv_default_Static_Instance_Key = string( );
-int gv_default_Type = int( 0 );
+string g_default_Commands_File = string( );
+bool g_default_Delay_Initial_Records = bool( 0 );
+int g_default_Extra = int( 0 );
+string g_default_Header_File = string( );
+string g_default_Id = string( );
+string g_default_Model = string( );
+string g_default_Name = string( );
+string g_default_Next_Field_Id = string( );
+string g_default_Next_Procedure_Id = string( );
+string g_default_Plural = string( );
+string g_default_Quick_Link_Field = string( );
+string g_default_Source_Class = string( );
+string g_default_Source_File = string( );
+string g_default_Source_Model = string( );
+string g_default_Static_Instance_Key = string( );
+int g_default_Type = int( 0 );
 
 set< int > g_class_extra_enum;
 set< int > g_class_type_enum;
@@ -2875,18 +2875,18 @@ void Meta_Class::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Class::impl::clear( )
 {
-   v_Commands_File = gv_default_Commands_File;
-   v_Delay_Initial_Records = gv_default_Delay_Initial_Records;
-   v_Extra = gv_default_Extra;
-   v_Header_File = gv_default_Header_File;
-   v_Id = gv_default_Id;
-   v_Name = gv_default_Name;
-   v_Next_Field_Id = gv_default_Next_Field_Id;
-   v_Next_Procedure_Id = gv_default_Next_Procedure_Id;
-   v_Plural = gv_default_Plural;
-   v_Source_File = gv_default_Source_File;
-   v_Static_Instance_Key = gv_default_Static_Instance_Key;
-   v_Type = gv_default_Type;
+   v_Commands_File = g_default_Commands_File;
+   v_Delay_Initial_Records = g_default_Delay_Initial_Records;
+   v_Extra = g_default_Extra;
+   v_Header_File = g_default_Header_File;
+   v_Id = g_default_Id;
+   v_Name = g_default_Name;
+   v_Next_Field_Id = g_default_Next_Field_Id;
+   v_Next_Procedure_Id = g_default_Next_Procedure_Id;
+   v_Plural = g_default_Plural;
+   v_Source_File = g_default_Source_File;
+   v_Static_Instance_Key = g_default_Static_Instance_Key;
+   v_Type = g_default_Type;
 
    v_Model = string( );
    if( cp_Model )
@@ -2950,42 +2950,42 @@ void Meta_Class::impl::validate( unsigned state, bool is_internal, validation_er
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Next_Field_Id )
-    && ( v_Next_Field_Id != gv_default_Next_Field_Id
+    && ( v_Next_Field_Id != g_default_Next_Field_Id
     || !value_will_be_provided( c_field_name_Next_Field_Id ) )
     && !g_Next_Field_Id_domain.is_valid( v_Next_Field_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Field_Id,
        get_module_string( c_field_display_name_Next_Field_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Procedure_Id )
-    && ( v_Next_Procedure_Id != gv_default_Next_Procedure_Id
+    && ( v_Next_Procedure_Id != g_default_Next_Procedure_Id
     || !value_will_be_provided( c_field_name_Next_Procedure_Id ) )
     && !g_Next_Procedure_Id_domain.is_valid( v_Next_Procedure_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Procedure_Id,
        get_module_string( c_field_display_name_Next_Procedure_Id ) + " " + error_message ) );
 
    if( !is_null( v_Plural )
-    && ( v_Plural != gv_default_Plural
+    && ( v_Plural != g_default_Plural
     || !value_will_be_provided( c_field_name_Plural ) )
     && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
        get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
 
    if( !is_null( v_Static_Instance_Key )
-    && ( v_Static_Instance_Key != gv_default_Static_Instance_Key
+    && ( v_Static_Instance_Key != g_default_Static_Instance_Key
     || !value_will_be_provided( c_field_name_Static_Instance_Key ) )
     && !g_Static_Instance_Key_domain.is_valid( v_Static_Instance_Key, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Static_Instance_Key,
@@ -3228,14 +3228,14 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600038
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Field_Id( ) == gv_default_Next_Field_Id )
+    && get_obj( ).Next_Field_Id( ) == g_default_Next_Field_Id )
       get_obj( ).Next_Field_Id( get_obj( ).Id( ) + "F100" );
    // [(finish default_to_field)] 600038
 
    // [(start default_to_field)] 610038
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Procedure_Id( ) == gv_default_Next_Procedure_Id )
+    && get_obj( ).Next_Procedure_Id( ) == g_default_Next_Procedure_Id )
       get_obj( ).Next_Procedure_Id( get_obj( ).Id( ) + "P100" );
    // [(finish default_to_field)] 610038
 

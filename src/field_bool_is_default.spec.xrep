@@ -1,6 +1,6 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_bool_is_default)] `{`$arg_id`}
-   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} gv_default_`{`$arg_sfield`} )
+   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )
       get_obj( ).`{`$arg_field`}( true );
    else
       get_obj( ).`{`$arg_field`}( false );

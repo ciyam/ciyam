@@ -132,9 +132,9 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Application = string( );
-string gv_default_Model = string( );
-string gv_default_Order = string( );
+string g_default_Application = string( );
+string g_default_Model = string( );
+string g_default_Order = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -683,7 +683,7 @@ void Meta_Module::impl::add_extra_paging_info( vector< pair< string, string > >&
 
 void Meta_Module::impl::clear( )
 {
-   v_Order = gv_default_Order;
+   v_Order = g_default_Order;
 
    v_Application = string( );
    if( cp_Application )

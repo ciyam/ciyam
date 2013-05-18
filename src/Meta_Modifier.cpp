@@ -148,10 +148,10 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Class = string( );
-bool gv_default_Internal = bool( 0 );
-string gv_default_Name = string( );
-string gv_default_Source_Modifier = string( );
+string g_default_Class = string( );
+bool g_default_Internal = bool( 0 );
+string g_default_Name = string( );
+string g_default_Source_Modifier = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -737,8 +737,8 @@ void Meta_Modifier::impl::add_extra_paging_info( vector< pair< string, string > 
 
 void Meta_Modifier::impl::clear( )
 {
-   v_Internal = gv_default_Internal;
-   v_Name = gv_default_Name;
+   v_Internal = g_default_Internal;
+   v_Name = g_default_Name;
 
    v_Class = string( );
    if( cp_Class )
@@ -779,7 +779,7 @@ void Meta_Modifier::impl::validate( unsigned state, bool is_internal, validation
 
    string error_message;
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

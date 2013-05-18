@@ -286,24 +286,24 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Actions = string( );
-int gv_default_Add_Packages = int( 2 );
-bool gv_default_Allow_Anonymous_Access = bool( 0 );
-string gv_default_Commands_File = string( );
-bool gv_default_Created = bool( 0 );
-string gv_default_Id = string( );
-string gv_default_Name = string( );
-string gv_default_Next_Class_Id = string( );
-string gv_default_Next_List_Id = string( );
-string gv_default_Next_Specification_Id = string( );
-string gv_default_Next_View_Id = string( );
-string gv_default_Permission = string( );
-string gv_default_Source_File = string( );
-string gv_default_Status = string( );
-bool gv_default_Use_Package_Demo_Data = bool( 0 );
-string gv_default_Version = string( "0.1" );
-string gv_default_Workgroup = string( );
-int gv_default_Year_Created = int( );
+string g_default_Actions = string( );
+int g_default_Add_Packages = int( 2 );
+bool g_default_Allow_Anonymous_Access = bool( 0 );
+string g_default_Commands_File = string( );
+bool g_default_Created = bool( 0 );
+string g_default_Id = string( );
+string g_default_Name = string( );
+string g_default_Next_Class_Id = string( );
+string g_default_Next_List_Id = string( );
+string g_default_Next_Specification_Id = string( );
+string g_default_Next_View_Id = string( );
+string g_default_Permission = string( );
+string g_default_Source_File = string( );
+string g_default_Status = string( );
+bool g_default_Use_Package_Demo_Data = bool( 0 );
+string g_default_Version = string( "0.1" );
+string g_default_Workgroup = string( );
+int g_default_Year_Created = int( );
 
 set< int > g_add_packages_enum;
 
@@ -6097,22 +6097,22 @@ void Meta_Model::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Model::impl::clear( )
 {
-   v_Actions = gv_default_Actions;
-   v_Add_Packages = gv_default_Add_Packages;
-   v_Allow_Anonymous_Access = gv_default_Allow_Anonymous_Access;
-   v_Commands_File = gv_default_Commands_File;
-   v_Created = gv_default_Created;
-   v_Id = gv_default_Id;
-   v_Name = gv_default_Name;
-   v_Next_Class_Id = gv_default_Next_Class_Id;
-   v_Next_List_Id = gv_default_Next_List_Id;
-   v_Next_Specification_Id = gv_default_Next_Specification_Id;
-   v_Next_View_Id = gv_default_Next_View_Id;
-   v_Source_File = gv_default_Source_File;
-   v_Status = gv_default_Status;
-   v_Use_Package_Demo_Data = gv_default_Use_Package_Demo_Data;
-   v_Version = gv_default_Version;
-   v_Year_Created = gv_default_Year_Created;
+   v_Actions = g_default_Actions;
+   v_Add_Packages = g_default_Add_Packages;
+   v_Allow_Anonymous_Access = g_default_Allow_Anonymous_Access;
+   v_Commands_File = g_default_Commands_File;
+   v_Created = g_default_Created;
+   v_Id = g_default_Id;
+   v_Name = g_default_Name;
+   v_Next_Class_Id = g_default_Next_Class_Id;
+   v_Next_List_Id = g_default_Next_List_Id;
+   v_Next_Specification_Id = g_default_Next_Specification_Id;
+   v_Next_View_Id = g_default_Next_View_Id;
+   v_Source_File = g_default_Source_File;
+   v_Status = g_default_Status;
+   v_Use_Package_Demo_Data = g_default_Use_Package_Demo_Data;
+   v_Version = g_default_Version;
+   v_Year_Created = g_default_Year_Created;
 
    v_Permission = string( );
    if( cp_Permission )
@@ -6168,56 +6168,56 @@ void Meta_Model::impl::validate( unsigned state, bool is_internal, validation_er
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Next_Class_Id )
-    && ( v_Next_Class_Id != gv_default_Next_Class_Id
+    && ( v_Next_Class_Id != g_default_Next_Class_Id
     || !value_will_be_provided( c_field_name_Next_Class_Id ) )
     && !g_Next_Class_Id_domain.is_valid( v_Next_Class_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Class_Id,
        get_module_string( c_field_display_name_Next_Class_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_List_Id )
-    && ( v_Next_List_Id != gv_default_Next_List_Id
+    && ( v_Next_List_Id != g_default_Next_List_Id
     || !value_will_be_provided( c_field_name_Next_List_Id ) )
     && !g_Next_List_Id_domain.is_valid( v_Next_List_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_List_Id,
        get_module_string( c_field_display_name_Next_List_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_Specification_Id )
-    && ( v_Next_Specification_Id != gv_default_Next_Specification_Id
+    && ( v_Next_Specification_Id != g_default_Next_Specification_Id
     || !value_will_be_provided( c_field_name_Next_Specification_Id ) )
     && !g_Next_Specification_Id_domain.is_valid( v_Next_Specification_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_Specification_Id,
        get_module_string( c_field_display_name_Next_Specification_Id ) + " " + error_message ) );
 
    if( !is_null( v_Next_View_Id )
-    && ( v_Next_View_Id != gv_default_Next_View_Id
+    && ( v_Next_View_Id != g_default_Next_View_Id
     || !value_will_be_provided( c_field_name_Next_View_Id ) )
     && !g_Next_View_Id_domain.is_valid( v_Next_View_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next_View_Id,
        get_module_string( c_field_display_name_Next_View_Id ) + " " + error_message ) );
 
    if( !is_null( v_Version )
-    && ( v_Version != gv_default_Version
+    && ( v_Version != g_default_Version
     || !value_will_be_provided( c_field_name_Version ) )
     && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Version,
        get_module_string( c_field_display_name_Version ) + " " + error_message ) );
 
    if( !is_null( v_Year_Created )
-    && ( v_Year_Created != gv_default_Year_Created
+    && ( v_Year_Created != g_default_Year_Created
     || !value_will_be_provided( c_field_name_Year_Created ) )
     && !g_Year_Created_domain.is_valid( v_Year_Created, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Year_Created,
@@ -6447,28 +6447,28 @@ void Meta_Model::impl::for_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 610010
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Class_Id( ) == gv_default_Next_Class_Id )
+    && get_obj( ).Next_Class_Id( ) == g_default_Next_Class_Id )
       get_obj( ).Next_Class_Id( get_obj( ).Id( ) + "C100" );
    // [(finish default_to_field)] 610010
 
    // [(start default_to_field)] 620010
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_Specification_Id( ) == gv_default_Next_Specification_Id )
+    && get_obj( ).Next_Specification_Id( ) == g_default_Next_Specification_Id )
       get_obj( ).Next_Specification_Id( get_obj( ).Id( ) + "S1000" );
    // [(finish default_to_field)] 620010
 
    // [(start default_to_field)] 630010
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_List_Id( ) == gv_default_Next_List_Id )
+    && get_obj( ).Next_List_Id( ) == g_default_Next_List_Id )
       get_obj( ).Next_List_Id( get_obj( ).Id( ) + "L100" );
    // [(finish default_to_field)] 630010
 
    // [(start default_to_field)] 640010
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Next_View_Id( ) == gv_default_Next_View_Id )
+    && get_obj( ).Next_View_Id( ) == g_default_Next_View_Id )
       get_obj( ).Next_View_Id( get_obj( ).Id( ) + "V100" );
    // [(finish default_to_field)] 640010
 

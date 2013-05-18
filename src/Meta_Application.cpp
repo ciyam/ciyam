@@ -328,40 +328,40 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Actions = string( "127410" );
-bool gv_default_Add_Modules_Automatically = bool( 1 );
-bool gv_default_Allow_Duplicate_Logins = bool( 0 );
-bool gv_default_Allow_Module_Switching = bool( 1 );
-int gv_default_Auto_Login_Days = int( 0 );
-bool gv_default_Create_Database = bool( 1 );
-bool gv_default_Created_Database = bool( 0 );
-int gv_default_Default_Image_Height = int( 75 );
-int gv_default_Default_Image_Width = int( 100 );
-int gv_default_Default_List_Print_Row_Limit = int( 4000 );
-int gv_default_Default_List_Row_Limit = int( 20 );
-int gv_default_Default_Max_Attached_File_Size = int( 0 );
-int gv_default_Default_Multiline_Max_Rows = int( 50 );
-int gv_default_Default_Multiline_Min_Rows = int( 10 );
-int gv_default_Default_Multiline_Text_Limit = int( 2000 );
-int gv_default_Default_Multiline_Text_Trunc = int( 50 );
-string gv_default_Default_Timezone_Abbr = string( );
-bool gv_default_Encrypt_Dynamic_Content = bool( 1 );
-string gv_default_Generate_Details = string( );
-string gv_default_Generate_Status = string( );
-int gv_default_Generate_Type = int( 0 );
-bool gv_default_Keep_Existing_Data = bool( 1 );
-string gv_default_Module_Prefix = string( );
-string gv_default_Name = string( );
-bool gv_default_Print_Lists_With_Check_Boxes = bool( 0 );
-bool gv_default_Print_Lists_With_Row_Numbers = bool( 0 );
-string gv_default_Registration_Key = string( );
-bool gv_default_Show_Inaccessible_Modules = bool( 0 );
-bool gv_default_Use_Check_Boxes_for_Bools = bool( 1 );
-bool gv_default_Use_Embedded_Images = bool( 1 );
-bool gv_default_Use_Menubar_Not_Sidebar = bool( 0 );
-bool gv_default_Use_URL_Checksum = bool( 1 );
-string gv_default_Version = string( "0.1" );
-string gv_default_Workgroup = string( );
+string g_default_Actions = string( "127410" );
+bool g_default_Add_Modules_Automatically = bool( 1 );
+bool g_default_Allow_Duplicate_Logins = bool( 0 );
+bool g_default_Allow_Module_Switching = bool( 1 );
+int g_default_Auto_Login_Days = int( 0 );
+bool g_default_Create_Database = bool( 1 );
+bool g_default_Created_Database = bool( 0 );
+int g_default_Default_Image_Height = int( 75 );
+int g_default_Default_Image_Width = int( 100 );
+int g_default_Default_List_Print_Row_Limit = int( 4000 );
+int g_default_Default_List_Row_Limit = int( 20 );
+int g_default_Default_Max_Attached_File_Size = int( 0 );
+int g_default_Default_Multiline_Max_Rows = int( 50 );
+int g_default_Default_Multiline_Min_Rows = int( 10 );
+int g_default_Default_Multiline_Text_Limit = int( 2000 );
+int g_default_Default_Multiline_Text_Trunc = int( 50 );
+string g_default_Default_Timezone_Abbr = string( );
+bool g_default_Encrypt_Dynamic_Content = bool( 1 );
+string g_default_Generate_Details = string( );
+string g_default_Generate_Status = string( );
+int g_default_Generate_Type = int( 0 );
+bool g_default_Keep_Existing_Data = bool( 1 );
+string g_default_Module_Prefix = string( );
+string g_default_Name = string( );
+bool g_default_Print_Lists_With_Check_Boxes = bool( 0 );
+bool g_default_Print_Lists_With_Row_Numbers = bool( 0 );
+string g_default_Registration_Key = string( );
+bool g_default_Show_Inaccessible_Modules = bool( 0 );
+bool g_default_Use_Check_Boxes_for_Bools = bool( 1 );
+bool g_default_Use_Embedded_Images = bool( 1 );
+bool g_default_Use_Menubar_Not_Sidebar = bool( 0 );
+bool g_default_Use_URL_Checksum = bool( 1 );
+string g_default_Version = string( "0.1" );
+string g_default_Workgroup = string( );
 
 set< int > g_app_auto_days_enum;
 set< int > g_app_print_row_limit_enum;
@@ -2314,39 +2314,39 @@ void Meta_Application::impl::add_extra_paging_info( vector< pair< string, string
 
 void Meta_Application::impl::clear( )
 {
-   v_Actions = gv_default_Actions;
-   v_Add_Modules_Automatically = gv_default_Add_Modules_Automatically;
-   v_Allow_Duplicate_Logins = gv_default_Allow_Duplicate_Logins;
-   v_Allow_Module_Switching = gv_default_Allow_Module_Switching;
-   v_Auto_Login_Days = gv_default_Auto_Login_Days;
-   v_Create_Database = gv_default_Create_Database;
-   v_Created_Database = gv_default_Created_Database;
-   v_Default_Image_Height = gv_default_Default_Image_Height;
-   v_Default_Image_Width = gv_default_Default_Image_Width;
-   v_Default_List_Print_Row_Limit = gv_default_Default_List_Print_Row_Limit;
-   v_Default_List_Row_Limit = gv_default_Default_List_Row_Limit;
-   v_Default_Max_Attached_File_Size = gv_default_Default_Max_Attached_File_Size;
-   v_Default_Multiline_Max_Rows = gv_default_Default_Multiline_Max_Rows;
-   v_Default_Multiline_Min_Rows = gv_default_Default_Multiline_Min_Rows;
-   v_Default_Multiline_Text_Limit = gv_default_Default_Multiline_Text_Limit;
-   v_Default_Multiline_Text_Trunc = gv_default_Default_Multiline_Text_Trunc;
-   v_Default_Timezone_Abbr = gv_default_Default_Timezone_Abbr;
-   v_Encrypt_Dynamic_Content = gv_default_Encrypt_Dynamic_Content;
-   v_Generate_Details = gv_default_Generate_Details;
-   v_Generate_Status = gv_default_Generate_Status;
-   v_Generate_Type = gv_default_Generate_Type;
-   v_Keep_Existing_Data = gv_default_Keep_Existing_Data;
-   v_Module_Prefix = gv_default_Module_Prefix;
-   v_Name = gv_default_Name;
-   v_Print_Lists_With_Check_Boxes = gv_default_Print_Lists_With_Check_Boxes;
-   v_Print_Lists_With_Row_Numbers = gv_default_Print_Lists_With_Row_Numbers;
-   v_Registration_Key = gv_default_Registration_Key;
-   v_Show_Inaccessible_Modules = gv_default_Show_Inaccessible_Modules;
-   v_Use_Check_Boxes_for_Bools = gv_default_Use_Check_Boxes_for_Bools;
-   v_Use_Embedded_Images = gv_default_Use_Embedded_Images;
-   v_Use_Menubar_Not_Sidebar = gv_default_Use_Menubar_Not_Sidebar;
-   v_Use_URL_Checksum = gv_default_Use_URL_Checksum;
-   v_Version = gv_default_Version;
+   v_Actions = g_default_Actions;
+   v_Add_Modules_Automatically = g_default_Add_Modules_Automatically;
+   v_Allow_Duplicate_Logins = g_default_Allow_Duplicate_Logins;
+   v_Allow_Module_Switching = g_default_Allow_Module_Switching;
+   v_Auto_Login_Days = g_default_Auto_Login_Days;
+   v_Create_Database = g_default_Create_Database;
+   v_Created_Database = g_default_Created_Database;
+   v_Default_Image_Height = g_default_Default_Image_Height;
+   v_Default_Image_Width = g_default_Default_Image_Width;
+   v_Default_List_Print_Row_Limit = g_default_Default_List_Print_Row_Limit;
+   v_Default_List_Row_Limit = g_default_Default_List_Row_Limit;
+   v_Default_Max_Attached_File_Size = g_default_Default_Max_Attached_File_Size;
+   v_Default_Multiline_Max_Rows = g_default_Default_Multiline_Max_Rows;
+   v_Default_Multiline_Min_Rows = g_default_Default_Multiline_Min_Rows;
+   v_Default_Multiline_Text_Limit = g_default_Default_Multiline_Text_Limit;
+   v_Default_Multiline_Text_Trunc = g_default_Default_Multiline_Text_Trunc;
+   v_Default_Timezone_Abbr = g_default_Default_Timezone_Abbr;
+   v_Encrypt_Dynamic_Content = g_default_Encrypt_Dynamic_Content;
+   v_Generate_Details = g_default_Generate_Details;
+   v_Generate_Status = g_default_Generate_Status;
+   v_Generate_Type = g_default_Generate_Type;
+   v_Keep_Existing_Data = g_default_Keep_Existing_Data;
+   v_Module_Prefix = g_default_Module_Prefix;
+   v_Name = g_default_Name;
+   v_Print_Lists_With_Check_Boxes = g_default_Print_Lists_With_Check_Boxes;
+   v_Print_Lists_With_Row_Numbers = g_default_Print_Lists_With_Row_Numbers;
+   v_Registration_Key = g_default_Registration_Key;
+   v_Show_Inaccessible_Modules = g_default_Show_Inaccessible_Modules;
+   v_Use_Check_Boxes_for_Bools = g_default_Use_Check_Boxes_for_Bools;
+   v_Use_Embedded_Images = g_default_Use_Embedded_Images;
+   v_Use_Menubar_Not_Sidebar = g_default_Use_Menubar_Not_Sidebar;
+   v_Use_URL_Checksum = g_default_Use_URL_Checksum;
+   v_Version = g_default_Version;
 
    v_Workgroup = string( );
    if( cp_Workgroup )
@@ -2393,35 +2393,35 @@ void Meta_Application::impl::validate( unsigned state, bool is_internal, validat
 
    string error_message;
    if( !is_null( v_Default_Timezone_Abbr )
-    && ( v_Default_Timezone_Abbr != gv_default_Default_Timezone_Abbr
+    && ( v_Default_Timezone_Abbr != g_default_Default_Timezone_Abbr
     || !value_will_be_provided( c_field_name_Default_Timezone_Abbr ) )
     && !g_Default_Timezone_Abbr_domain.is_valid( v_Default_Timezone_Abbr, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Default_Timezone_Abbr,
        get_module_string( c_field_display_name_Default_Timezone_Abbr ) + " " + error_message ) );
 
    if( !is_null( v_Module_Prefix )
-    && ( v_Module_Prefix != gv_default_Module_Prefix
+    && ( v_Module_Prefix != g_default_Module_Prefix
     || !value_will_be_provided( c_field_name_Module_Prefix ) )
     && !g_Module_Prefix_domain.is_valid( v_Module_Prefix, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Module_Prefix,
        get_module_string( c_field_display_name_Module_Prefix ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Registration_Key )
-    && ( v_Registration_Key != gv_default_Registration_Key
+    && ( v_Registration_Key != g_default_Registration_Key
     || !value_will_be_provided( c_field_name_Registration_Key ) )
     && !g_Registration_Key_domain.is_valid( v_Registration_Key, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Registration_Key,
        get_module_string( c_field_display_name_Registration_Key ) + " " + error_message ) );
 
    if( !is_null( v_Version )
-    && ( v_Version != gv_default_Version
+    && ( v_Version != g_default_Version
     || !value_will_be_provided( c_field_name_Version ) )
     && !g_Version_domain.is_valid( v_Version, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Version,

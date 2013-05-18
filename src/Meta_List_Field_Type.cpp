@@ -201,27 +201,27 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-bool gv_default_Allow_Child_Rel_Select_Specifics = bool( 0 );
-bool gv_default_Allow_Exclude_In_Use_FK = bool( 0 );
-bool gv_default_Allow_Link_Empty_Restriction = bool( 0 );
-bool gv_default_Allow_Link_Permission = bool( 0 );
-bool gv_default_Allow_Link_Specifics = bool( 0 );
-bool gv_default_Allow_Link_Type = bool( 0 );
-bool gv_default_Allow_Procedure = bool( 0 );
-bool gv_default_Allow_Restriction_Field = bool( 0 );
-bool gv_default_Allow_Restriction_Spec = bool( 0 );
-bool gv_default_Allow_Restriction_Value = bool( 0 );
-bool gv_default_Allow_Search_Option_Limit = bool( 0 );
-bool gv_default_Allow_Select_Specifics = bool( 0 );
-bool gv_default_Allow_View_Parent_Extra = bool( 0 );
-bool gv_default_Is_Restrict_Search = bool( 0 );
-string gv_default_List_Field_Name = string( );
-string gv_default_Name = string( );
-bool gv_default_Needs_Restriction_Field = bool( 0 );
-bool gv_default_Needs_Source = bool( 0 );
-bool gv_default_Needs_Switch_Type = bool( 0 );
-bool gv_default_Non_Simple_Field = bool( 0 );
-bool gv_default_Trivial_Field_Only = bool( 0 );
+bool g_default_Allow_Child_Rel_Select_Specifics = bool( 0 );
+bool g_default_Allow_Exclude_In_Use_FK = bool( 0 );
+bool g_default_Allow_Link_Empty_Restriction = bool( 0 );
+bool g_default_Allow_Link_Permission = bool( 0 );
+bool g_default_Allow_Link_Specifics = bool( 0 );
+bool g_default_Allow_Link_Type = bool( 0 );
+bool g_default_Allow_Procedure = bool( 0 );
+bool g_default_Allow_Restriction_Field = bool( 0 );
+bool g_default_Allow_Restriction_Spec = bool( 0 );
+bool g_default_Allow_Restriction_Value = bool( 0 );
+bool g_default_Allow_Search_Option_Limit = bool( 0 );
+bool g_default_Allow_Select_Specifics = bool( 0 );
+bool g_default_Allow_View_Parent_Extra = bool( 0 );
+bool g_default_Is_Restrict_Search = bool( 0 );
+string g_default_List_Field_Name = string( );
+string g_default_Name = string( );
+bool g_default_Needs_Restriction_Field = bool( 0 );
+bool g_default_Needs_Source = bool( 0 );
+bool g_default_Needs_Switch_Type = bool( 0 );
+bool g_default_Non_Simple_Field = bool( 0 );
+bool g_default_Trivial_Field_Only = bool( 0 );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -873,27 +873,27 @@ void Meta_List_Field_Type::impl::add_extra_paging_info( vector< pair< string, st
 
 void Meta_List_Field_Type::impl::clear( )
 {
-   v_Allow_Child_Rel_Select_Specifics = gv_default_Allow_Child_Rel_Select_Specifics;
-   v_Allow_Exclude_In_Use_FK = gv_default_Allow_Exclude_In_Use_FK;
-   v_Allow_Link_Empty_Restriction = gv_default_Allow_Link_Empty_Restriction;
-   v_Allow_Link_Permission = gv_default_Allow_Link_Permission;
-   v_Allow_Link_Specifics = gv_default_Allow_Link_Specifics;
-   v_Allow_Link_Type = gv_default_Allow_Link_Type;
-   v_Allow_Procedure = gv_default_Allow_Procedure;
-   v_Allow_Restriction_Field = gv_default_Allow_Restriction_Field;
-   v_Allow_Restriction_Spec = gv_default_Allow_Restriction_Spec;
-   v_Allow_Restriction_Value = gv_default_Allow_Restriction_Value;
-   v_Allow_Search_Option_Limit = gv_default_Allow_Search_Option_Limit;
-   v_Allow_Select_Specifics = gv_default_Allow_Select_Specifics;
-   v_Allow_View_Parent_Extra = gv_default_Allow_View_Parent_Extra;
-   v_Is_Restrict_Search = gv_default_Is_Restrict_Search;
-   v_List_Field_Name = gv_default_List_Field_Name;
-   v_Name = gv_default_Name;
-   v_Needs_Restriction_Field = gv_default_Needs_Restriction_Field;
-   v_Needs_Source = gv_default_Needs_Source;
-   v_Needs_Switch_Type = gv_default_Needs_Switch_Type;
-   v_Non_Simple_Field = gv_default_Non_Simple_Field;
-   v_Trivial_Field_Only = gv_default_Trivial_Field_Only;
+   v_Allow_Child_Rel_Select_Specifics = g_default_Allow_Child_Rel_Select_Specifics;
+   v_Allow_Exclude_In_Use_FK = g_default_Allow_Exclude_In_Use_FK;
+   v_Allow_Link_Empty_Restriction = g_default_Allow_Link_Empty_Restriction;
+   v_Allow_Link_Permission = g_default_Allow_Link_Permission;
+   v_Allow_Link_Specifics = g_default_Allow_Link_Specifics;
+   v_Allow_Link_Type = g_default_Allow_Link_Type;
+   v_Allow_Procedure = g_default_Allow_Procedure;
+   v_Allow_Restriction_Field = g_default_Allow_Restriction_Field;
+   v_Allow_Restriction_Spec = g_default_Allow_Restriction_Spec;
+   v_Allow_Restriction_Value = g_default_Allow_Restriction_Value;
+   v_Allow_Search_Option_Limit = g_default_Allow_Search_Option_Limit;
+   v_Allow_Select_Specifics = g_default_Allow_Select_Specifics;
+   v_Allow_View_Parent_Extra = g_default_Allow_View_Parent_Extra;
+   v_Is_Restrict_Search = g_default_Is_Restrict_Search;
+   v_List_Field_Name = g_default_List_Field_Name;
+   v_Name = g_default_Name;
+   v_Needs_Restriction_Field = g_default_Needs_Restriction_Field;
+   v_Needs_Source = g_default_Needs_Source;
+   v_Needs_Switch_Type = g_default_Needs_Switch_Type;
+   v_Non_Simple_Field = g_default_Non_Simple_Field;
+   v_Trivial_Field_Only = g_default_Trivial_Field_Only;
 }
 
 bool Meta_List_Field_Type::impl::value_will_be_provided( const string& field_name )
@@ -926,14 +926,14 @@ void Meta_List_Field_Type::impl::validate( unsigned state, bool is_internal, val
 
    string error_message;
    if( !is_null( v_List_Field_Name )
-    && ( v_List_Field_Name != gv_default_List_Field_Name
+    && ( v_List_Field_Name != g_default_List_Field_Name
     || !value_will_be_provided( c_field_name_List_Field_Name ) )
     && !g_List_Field_Name_domain.is_valid( v_List_Field_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_List_Field_Name,
        get_module_string( c_field_display_name_List_Field_Name ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,

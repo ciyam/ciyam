@@ -440,13 +440,13 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-int gv_default_Access_Restriction = int( 0 );
-string gv_default_Clone_Key = string( );
-int gv_default_Create_Type = int( 0 );
-string gv_default_New_Record_Class = string( );
-string gv_default_New_Record_FK_Field = string( );
-string gv_default_New_Record_FK_Value = string( );
-int gv_default_Type = int( 0 );
+int g_default_Access_Restriction = int( 0 );
+string g_default_Clone_Key = string( );
+int g_default_Create_Type = int( 0 );
+string g_default_New_Record_Class = string( );
+string g_default_New_Record_FK_Field = string( );
+string g_default_New_Record_FK_Value = string( );
+int g_default_Type = int( 0 );
 
 set< int > g_field_action_create_access_restriction_enum;
 set< int > g_field_action_create_type_enum;
@@ -1068,11 +1068,11 @@ void Meta_Specification_Field_Action::impl::add_extra_paging_info( vector< pair<
 
 void Meta_Specification_Field_Action::impl::clear( )
 {
-   v_Access_Restriction = gv_default_Access_Restriction;
-   v_Clone_Key = gv_default_Clone_Key;
-   v_Create_Type = gv_default_Create_Type;
-   v_New_Record_FK_Value = gv_default_New_Record_FK_Value;
-   v_Type = gv_default_Type;
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Clone_Key = g_default_Clone_Key;
+   v_Create_Type = g_default_Create_Type;
+   v_New_Record_FK_Value = g_default_New_Record_FK_Value;
+   v_Type = g_default_Type;
 
    v_New_Record_Class = string( );
    if( cp_New_Record_Class )
@@ -1103,14 +1103,14 @@ void Meta_Specification_Field_Action::impl::validate( unsigned state, bool is_in
 
    string error_message;
    if( !is_null( v_Clone_Key )
-    && ( v_Clone_Key != gv_default_Clone_Key
+    && ( v_Clone_Key != g_default_Clone_Key
     || !value_will_be_provided( c_field_name_Clone_Key ) )
     && !g_Clone_Key_domain.is_valid( v_Clone_Key, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Clone_Key,
        get_module_string( c_field_display_name_Clone_Key ) + " " + error_message ) );
 
    if( !is_null( v_New_Record_FK_Value )
-    && ( v_New_Record_FK_Value != gv_default_New_Record_FK_Value
+    && ( v_New_Record_FK_Value != g_default_New_Record_FK_Value
     || !value_will_be_provided( c_field_name_New_Record_FK_Value ) )
     && !g_New_Record_FK_Value_domain.is_valid( v_New_Record_FK_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_New_Record_FK_Value,

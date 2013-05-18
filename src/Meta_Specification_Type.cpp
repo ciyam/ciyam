@@ -667,117 +667,117 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-bool gv_default_Allow_Child_Relationship = bool( 0 );
-bool gv_default_Allow_Enum = bool( 0 );
-bool gv_default_Allow_Enum_Item = bool( 0 );
-bool gv_default_Allow_FK_Source_Field_Choice = bool( 0 );
-bool gv_default_Allow_FK_Test_Field_Choice = bool( 0 );
-bool gv_default_Allow_Field = bool( 0 );
-bool gv_default_Allow_Modifier = bool( 0 );
-bool gv_default_Allow_Options = bool( 0 );
-bool gv_default_Allow_Other_Class = bool( 0 );
-bool gv_default_Allow_Other_Field = bool( 0 );
-bool gv_default_Allow_Other_Field_2 = bool( 0 );
-bool gv_default_Allow_Other_Procedure = bool( 0 );
-bool gv_default_Allow_Other_Procedure_2 = bool( 0 );
-bool gv_default_Allow_Other_Source_Child = bool( 0 );
-bool gv_default_Allow_Other_Source_Child_2 = bool( 0 );
-bool gv_default_Allow_Permission = bool( 0 );
-bool gv_default_Allow_Procedure = bool( 0 );
-bool gv_default_Allow_Procedure_Arg = bool( 0 );
-bool gv_default_Allow_Source_Child = bool( 0 );
-bool gv_default_Allow_Source_Class = bool( 0 );
-bool gv_default_Allow_Source_Field = bool( 0 );
-bool gv_default_Allow_Source_Grandchild = bool( 0 );
-bool gv_default_Allow_Source_Parent = bool( 0 );
-bool gv_default_Allow_Test_Field = bool( 0 );
-bool gv_default_Allow_Test_Value = bool( 0 );
-bool gv_default_Allow_Value = bool( 0 );
-string gv_default_Child_Prefix = string( );
-bool gv_default_Child_Rel_Grandparent_Match = bool( 0 );
-bool gv_default_Child_Rel_Parent_Match = bool( 0 );
-bool gv_default_Child_Relationship_Class_Match = bool( 0 );
-string gv_default_Child_Specification_Type = string( );
-string gv_default_Default_Child_Vars = string( );
-int gv_default_Field_type = int( 99 );
-bool gv_default_Has_Next_Specification_Info = bool( 0 );
-bool gv_default_Is_Child_Only = bool( 0 );
-bool gv_default_Is_Required_For_UI_Gen = bool( 0 );
-bool gv_default_Is_System = bool( 0 );
-string gv_default_Name = string( );
-bool gv_default_Needs_Child_Relationship = bool( 0 );
-bool gv_default_Needs_Class = bool( 0 );
-bool gv_default_Needs_Enum = bool( 0 );
-bool gv_default_Needs_Enum_Item = bool( 0 );
-bool gv_default_Needs_Enum_Item_2 = bool( 0 );
-bool gv_default_Needs_Enum_Item_3 = bool( 0 );
-bool gv_default_Needs_Enum_Item_4 = bool( 0 );
-bool gv_default_Needs_Enum_Item_5 = bool( 0 );
-bool gv_default_Needs_Field = bool( 0 );
-bool gv_default_Needs_Modifier = bool( 0 );
-bool gv_default_Needs_Other_Class = bool( 0 );
-bool gv_default_Needs_Other_Field = bool( 0 );
-bool gv_default_Needs_Other_Field_2 = bool( 0 );
-bool gv_default_Needs_Other_Modifier = bool( 0 );
-bool gv_default_Needs_Other_Modifier_2 = bool( 0 );
-bool gv_default_Needs_Other_Permission = bool( 0 );
-bool gv_default_Needs_Other_Permission_2 = bool( 0 );
-bool gv_default_Needs_Other_Procedure = bool( 0 );
-bool gv_default_Needs_Other_Procedure_2 = bool( 0 );
-bool gv_default_Needs_Other_Source_Child = bool( 0 );
-bool gv_default_Needs_Other_Source_Child_2 = bool( 0 );
-bool gv_default_Needs_Permission = bool( 0 );
-bool gv_default_Needs_Procedure = bool( 0 );
-bool gv_default_Needs_Procedure_Arg = bool( 0 );
-bool gv_default_Needs_Procedure_Arg_2 = bool( 0 );
-bool gv_default_Needs_Procedure_Arg_3 = bool( 0 );
-bool gv_default_Needs_Source_Child = bool( 0 );
-bool gv_default_Needs_Source_Field = bool( 0 );
-bool gv_default_Needs_Source_Field_Or_Child = bool( 0 );
-bool gv_default_Needs_Source_Parent = bool( 0 );
-bool gv_default_Needs_Test_Field = bool( 0 );
-bool gv_default_Needs_Test_Value = bool( 0 );
-bool gv_default_Needs_Value = bool( 0 );
-string gv_default_Next_Child_Specification_Type = string( );
-bool gv_default_Next_Protect_Child_Rel = bool( 0 );
-bool gv_default_Next_Protect_Procedure = bool( 0 );
-bool gv_default_Next_Protect_Source_Parent = bool( 0 );
-string gv_default_Next_Specification_Actions = string( );
-string gv_default_Notes = string( );
-string gv_default_Parent_Specification_Type = string( );
-int gv_default_Procedure_Arg_primitive = int( 99 );
-int gv_default_Procedure_Arg_type = int( 99 );
-bool gv_default_Protect_Child_Rel_From_Update = bool( 0 );
-bool gv_default_Protect_Class_From_Edit = bool( 0 );
-bool gv_default_Protect_Class_From_Update = bool( 1 );
-bool gv_default_Protect_Procedure_From_Edit = bool( 0 );
-bool gv_default_Protect_Source_Parent = bool( 0 );
-bool gv_default_Set_Field_To_Source_Field_Or_Child = bool( 0 );
-bool gv_default_Source_Field_Needs_Test_Field = bool( 0 );
-bool gv_default_Source_Field_Type_Match = bool( 0 );
-int gv_default_Source_Parent_type = int( 50 );
-int gv_default_Source_type = int( 99 );
-string gv_default_Specification_Actions = string( );
-string gv_default_Specification_Name = string( );
-string gv_default_Specification_Object = string( );
-string gv_default_Specification_Strings = string( );
-string gv_default_Specification_Vars = string( );
-bool gv_default_Test_Field_Type_Match = bool( 0 );
-int gv_default_Test_Field_type = int( 99 );
-bool gv_default_Use_Class_As_Source_Parent_Class = bool( 0 );
-bool gv_default_Use_Field_Enum = bool( 0 );
-bool gv_default_Use_Parent_Child_Rel_As_Source_Parent = bool( 0 );
-bool gv_default_Use_Parent_Child_Rel_For_Class = bool( 0 );
-bool gv_default_Use_Parent_Class = bool( 0 );
-bool gv_default_Use_Parent_Field_For_Class = bool( 0 );
-bool gv_default_Use_Parent_Other_Class_For_Class = bool( 0 );
-bool gv_default_Use_Parent_Procedure = bool( 0 );
-bool gv_default_Use_Parent_Source_Class = bool( 0 );
-bool gv_default_Use_Parent_Source_Field_For_Class = bool( 0 );
-bool gv_default_Use_Parent_Source_Parent = bool( 0 );
-bool gv_default_Use_Parent_Source_Parent_For_Class = bool( 0 );
-bool gv_default_Use_Source_Field_Enum = bool( 0 );
-string gv_default_View_Id = string( );
+bool g_default_Allow_Child_Relationship = bool( 0 );
+bool g_default_Allow_Enum = bool( 0 );
+bool g_default_Allow_Enum_Item = bool( 0 );
+bool g_default_Allow_FK_Source_Field_Choice = bool( 0 );
+bool g_default_Allow_FK_Test_Field_Choice = bool( 0 );
+bool g_default_Allow_Field = bool( 0 );
+bool g_default_Allow_Modifier = bool( 0 );
+bool g_default_Allow_Options = bool( 0 );
+bool g_default_Allow_Other_Class = bool( 0 );
+bool g_default_Allow_Other_Field = bool( 0 );
+bool g_default_Allow_Other_Field_2 = bool( 0 );
+bool g_default_Allow_Other_Procedure = bool( 0 );
+bool g_default_Allow_Other_Procedure_2 = bool( 0 );
+bool g_default_Allow_Other_Source_Child = bool( 0 );
+bool g_default_Allow_Other_Source_Child_2 = bool( 0 );
+bool g_default_Allow_Permission = bool( 0 );
+bool g_default_Allow_Procedure = bool( 0 );
+bool g_default_Allow_Procedure_Arg = bool( 0 );
+bool g_default_Allow_Source_Child = bool( 0 );
+bool g_default_Allow_Source_Class = bool( 0 );
+bool g_default_Allow_Source_Field = bool( 0 );
+bool g_default_Allow_Source_Grandchild = bool( 0 );
+bool g_default_Allow_Source_Parent = bool( 0 );
+bool g_default_Allow_Test_Field = bool( 0 );
+bool g_default_Allow_Test_Value = bool( 0 );
+bool g_default_Allow_Value = bool( 0 );
+string g_default_Child_Prefix = string( );
+bool g_default_Child_Rel_Grandparent_Match = bool( 0 );
+bool g_default_Child_Rel_Parent_Match = bool( 0 );
+bool g_default_Child_Relationship_Class_Match = bool( 0 );
+string g_default_Child_Specification_Type = string( );
+string g_default_Default_Child_Vars = string( );
+int g_default_Field_type = int( 99 );
+bool g_default_Has_Next_Specification_Info = bool( 0 );
+bool g_default_Is_Child_Only = bool( 0 );
+bool g_default_Is_Required_For_UI_Gen = bool( 0 );
+bool g_default_Is_System = bool( 0 );
+string g_default_Name = string( );
+bool g_default_Needs_Child_Relationship = bool( 0 );
+bool g_default_Needs_Class = bool( 0 );
+bool g_default_Needs_Enum = bool( 0 );
+bool g_default_Needs_Enum_Item = bool( 0 );
+bool g_default_Needs_Enum_Item_2 = bool( 0 );
+bool g_default_Needs_Enum_Item_3 = bool( 0 );
+bool g_default_Needs_Enum_Item_4 = bool( 0 );
+bool g_default_Needs_Enum_Item_5 = bool( 0 );
+bool g_default_Needs_Field = bool( 0 );
+bool g_default_Needs_Modifier = bool( 0 );
+bool g_default_Needs_Other_Class = bool( 0 );
+bool g_default_Needs_Other_Field = bool( 0 );
+bool g_default_Needs_Other_Field_2 = bool( 0 );
+bool g_default_Needs_Other_Modifier = bool( 0 );
+bool g_default_Needs_Other_Modifier_2 = bool( 0 );
+bool g_default_Needs_Other_Permission = bool( 0 );
+bool g_default_Needs_Other_Permission_2 = bool( 0 );
+bool g_default_Needs_Other_Procedure = bool( 0 );
+bool g_default_Needs_Other_Procedure_2 = bool( 0 );
+bool g_default_Needs_Other_Source_Child = bool( 0 );
+bool g_default_Needs_Other_Source_Child_2 = bool( 0 );
+bool g_default_Needs_Permission = bool( 0 );
+bool g_default_Needs_Procedure = bool( 0 );
+bool g_default_Needs_Procedure_Arg = bool( 0 );
+bool g_default_Needs_Procedure_Arg_2 = bool( 0 );
+bool g_default_Needs_Procedure_Arg_3 = bool( 0 );
+bool g_default_Needs_Source_Child = bool( 0 );
+bool g_default_Needs_Source_Field = bool( 0 );
+bool g_default_Needs_Source_Field_Or_Child = bool( 0 );
+bool g_default_Needs_Source_Parent = bool( 0 );
+bool g_default_Needs_Test_Field = bool( 0 );
+bool g_default_Needs_Test_Value = bool( 0 );
+bool g_default_Needs_Value = bool( 0 );
+string g_default_Next_Child_Specification_Type = string( );
+bool g_default_Next_Protect_Child_Rel = bool( 0 );
+bool g_default_Next_Protect_Procedure = bool( 0 );
+bool g_default_Next_Protect_Source_Parent = bool( 0 );
+string g_default_Next_Specification_Actions = string( );
+string g_default_Notes = string( );
+string g_default_Parent_Specification_Type = string( );
+int g_default_Procedure_Arg_primitive = int( 99 );
+int g_default_Procedure_Arg_type = int( 99 );
+bool g_default_Protect_Child_Rel_From_Update = bool( 0 );
+bool g_default_Protect_Class_From_Edit = bool( 0 );
+bool g_default_Protect_Class_From_Update = bool( 1 );
+bool g_default_Protect_Procedure_From_Edit = bool( 0 );
+bool g_default_Protect_Source_Parent = bool( 0 );
+bool g_default_Set_Field_To_Source_Field_Or_Child = bool( 0 );
+bool g_default_Source_Field_Needs_Test_Field = bool( 0 );
+bool g_default_Source_Field_Type_Match = bool( 0 );
+int g_default_Source_Parent_type = int( 50 );
+int g_default_Source_type = int( 99 );
+string g_default_Specification_Actions = string( );
+string g_default_Specification_Name = string( );
+string g_default_Specification_Object = string( );
+string g_default_Specification_Strings = string( );
+string g_default_Specification_Vars = string( );
+bool g_default_Test_Field_Type_Match = bool( 0 );
+int g_default_Test_Field_type = int( 99 );
+bool g_default_Use_Class_As_Source_Parent_Class = bool( 0 );
+bool g_default_Use_Field_Enum = bool( 0 );
+bool g_default_Use_Parent_Child_Rel_As_Source_Parent = bool( 0 );
+bool g_default_Use_Parent_Child_Rel_For_Class = bool( 0 );
+bool g_default_Use_Parent_Class = bool( 0 );
+bool g_default_Use_Parent_Field_For_Class = bool( 0 );
+bool g_default_Use_Parent_Other_Class_For_Class = bool( 0 );
+bool g_default_Use_Parent_Procedure = bool( 0 );
+bool g_default_Use_Parent_Source_Class = bool( 0 );
+bool g_default_Use_Parent_Source_Field_For_Class = bool( 0 );
+bool g_default_Use_Parent_Source_Parent = bool( 0 );
+bool g_default_Use_Parent_Source_Parent_For_Class = bool( 0 );
+bool g_default_Use_Source_Field_Enum = bool( 0 );
+string g_default_View_Id = string( );
 
 set< int > g_field_type_enum;
 set< int > g_procedure_arg_primitive_enum;
@@ -3701,114 +3701,114 @@ void Meta_Specification_Type::impl::add_extra_paging_info( vector< pair< string,
 
 void Meta_Specification_Type::impl::clear( )
 {
-   v_Allow_Child_Relationship = gv_default_Allow_Child_Relationship;
-   v_Allow_Enum = gv_default_Allow_Enum;
-   v_Allow_Enum_Item = gv_default_Allow_Enum_Item;
-   v_Allow_FK_Source_Field_Choice = gv_default_Allow_FK_Source_Field_Choice;
-   v_Allow_FK_Test_Field_Choice = gv_default_Allow_FK_Test_Field_Choice;
-   v_Allow_Field = gv_default_Allow_Field;
-   v_Allow_Modifier = gv_default_Allow_Modifier;
-   v_Allow_Options = gv_default_Allow_Options;
-   v_Allow_Other_Class = gv_default_Allow_Other_Class;
-   v_Allow_Other_Field = gv_default_Allow_Other_Field;
-   v_Allow_Other_Field_2 = gv_default_Allow_Other_Field_2;
-   v_Allow_Other_Procedure = gv_default_Allow_Other_Procedure;
-   v_Allow_Other_Procedure_2 = gv_default_Allow_Other_Procedure_2;
-   v_Allow_Other_Source_Child = gv_default_Allow_Other_Source_Child;
-   v_Allow_Other_Source_Child_2 = gv_default_Allow_Other_Source_Child_2;
-   v_Allow_Permission = gv_default_Allow_Permission;
-   v_Allow_Procedure = gv_default_Allow_Procedure;
-   v_Allow_Procedure_Arg = gv_default_Allow_Procedure_Arg;
-   v_Allow_Source_Child = gv_default_Allow_Source_Child;
-   v_Allow_Source_Class = gv_default_Allow_Source_Class;
-   v_Allow_Source_Field = gv_default_Allow_Source_Field;
-   v_Allow_Source_Grandchild = gv_default_Allow_Source_Grandchild;
-   v_Allow_Source_Parent = gv_default_Allow_Source_Parent;
-   v_Allow_Test_Field = gv_default_Allow_Test_Field;
-   v_Allow_Test_Value = gv_default_Allow_Test_Value;
-   v_Allow_Value = gv_default_Allow_Value;
-   v_Child_Prefix = gv_default_Child_Prefix;
-   v_Child_Rel_Grandparent_Match = gv_default_Child_Rel_Grandparent_Match;
-   v_Child_Rel_Parent_Match = gv_default_Child_Rel_Parent_Match;
-   v_Child_Relationship_Class_Match = gv_default_Child_Relationship_Class_Match;
-   v_Default_Child_Vars = gv_default_Default_Child_Vars;
-   v_Field_type = gv_default_Field_type;
-   v_Has_Next_Specification_Info = gv_default_Has_Next_Specification_Info;
-   v_Is_Child_Only = gv_default_Is_Child_Only;
-   v_Is_Required_For_UI_Gen = gv_default_Is_Required_For_UI_Gen;
-   v_Is_System = gv_default_Is_System;
-   v_Name = gv_default_Name;
-   v_Needs_Child_Relationship = gv_default_Needs_Child_Relationship;
-   v_Needs_Class = gv_default_Needs_Class;
-   v_Needs_Enum = gv_default_Needs_Enum;
-   v_Needs_Enum_Item = gv_default_Needs_Enum_Item;
-   v_Needs_Enum_Item_2 = gv_default_Needs_Enum_Item_2;
-   v_Needs_Enum_Item_3 = gv_default_Needs_Enum_Item_3;
-   v_Needs_Enum_Item_4 = gv_default_Needs_Enum_Item_4;
-   v_Needs_Enum_Item_5 = gv_default_Needs_Enum_Item_5;
-   v_Needs_Field = gv_default_Needs_Field;
-   v_Needs_Modifier = gv_default_Needs_Modifier;
-   v_Needs_Other_Class = gv_default_Needs_Other_Class;
-   v_Needs_Other_Field = gv_default_Needs_Other_Field;
-   v_Needs_Other_Field_2 = gv_default_Needs_Other_Field_2;
-   v_Needs_Other_Modifier = gv_default_Needs_Other_Modifier;
-   v_Needs_Other_Modifier_2 = gv_default_Needs_Other_Modifier_2;
-   v_Needs_Other_Permission = gv_default_Needs_Other_Permission;
-   v_Needs_Other_Permission_2 = gv_default_Needs_Other_Permission_2;
-   v_Needs_Other_Procedure = gv_default_Needs_Other_Procedure;
-   v_Needs_Other_Procedure_2 = gv_default_Needs_Other_Procedure_2;
-   v_Needs_Other_Source_Child = gv_default_Needs_Other_Source_Child;
-   v_Needs_Other_Source_Child_2 = gv_default_Needs_Other_Source_Child_2;
-   v_Needs_Permission = gv_default_Needs_Permission;
-   v_Needs_Procedure = gv_default_Needs_Procedure;
-   v_Needs_Procedure_Arg = gv_default_Needs_Procedure_Arg;
-   v_Needs_Procedure_Arg_2 = gv_default_Needs_Procedure_Arg_2;
-   v_Needs_Procedure_Arg_3 = gv_default_Needs_Procedure_Arg_3;
-   v_Needs_Source_Child = gv_default_Needs_Source_Child;
-   v_Needs_Source_Field = gv_default_Needs_Source_Field;
-   v_Needs_Source_Field_Or_Child = gv_default_Needs_Source_Field_Or_Child;
-   v_Needs_Source_Parent = gv_default_Needs_Source_Parent;
-   v_Needs_Test_Field = gv_default_Needs_Test_Field;
-   v_Needs_Test_Value = gv_default_Needs_Test_Value;
-   v_Needs_Value = gv_default_Needs_Value;
-   v_Next_Protect_Child_Rel = gv_default_Next_Protect_Child_Rel;
-   v_Next_Protect_Procedure = gv_default_Next_Protect_Procedure;
-   v_Next_Protect_Source_Parent = gv_default_Next_Protect_Source_Parent;
-   v_Next_Specification_Actions = gv_default_Next_Specification_Actions;
-   v_Notes = gv_default_Notes;
-   v_Procedure_Arg_primitive = gv_default_Procedure_Arg_primitive;
-   v_Procedure_Arg_type = gv_default_Procedure_Arg_type;
-   v_Protect_Child_Rel_From_Update = gv_default_Protect_Child_Rel_From_Update;
-   v_Protect_Class_From_Edit = gv_default_Protect_Class_From_Edit;
-   v_Protect_Class_From_Update = gv_default_Protect_Class_From_Update;
-   v_Protect_Procedure_From_Edit = gv_default_Protect_Procedure_From_Edit;
-   v_Protect_Source_Parent = gv_default_Protect_Source_Parent;
-   v_Set_Field_To_Source_Field_Or_Child = gv_default_Set_Field_To_Source_Field_Or_Child;
-   v_Source_Field_Needs_Test_Field = gv_default_Source_Field_Needs_Test_Field;
-   v_Source_Field_Type_Match = gv_default_Source_Field_Type_Match;
-   v_Source_Parent_type = gv_default_Source_Parent_type;
-   v_Source_type = gv_default_Source_type;
-   v_Specification_Actions = gv_default_Specification_Actions;
-   v_Specification_Name = gv_default_Specification_Name;
-   v_Specification_Object = gv_default_Specification_Object;
-   v_Specification_Strings = gv_default_Specification_Strings;
-   v_Specification_Vars = gv_default_Specification_Vars;
-   v_Test_Field_Type_Match = gv_default_Test_Field_Type_Match;
-   v_Test_Field_type = gv_default_Test_Field_type;
-   v_Use_Class_As_Source_Parent_Class = gv_default_Use_Class_As_Source_Parent_Class;
-   v_Use_Field_Enum = gv_default_Use_Field_Enum;
-   v_Use_Parent_Child_Rel_As_Source_Parent = gv_default_Use_Parent_Child_Rel_As_Source_Parent;
-   v_Use_Parent_Child_Rel_For_Class = gv_default_Use_Parent_Child_Rel_For_Class;
-   v_Use_Parent_Class = gv_default_Use_Parent_Class;
-   v_Use_Parent_Field_For_Class = gv_default_Use_Parent_Field_For_Class;
-   v_Use_Parent_Other_Class_For_Class = gv_default_Use_Parent_Other_Class_For_Class;
-   v_Use_Parent_Procedure = gv_default_Use_Parent_Procedure;
-   v_Use_Parent_Source_Class = gv_default_Use_Parent_Source_Class;
-   v_Use_Parent_Source_Field_For_Class = gv_default_Use_Parent_Source_Field_For_Class;
-   v_Use_Parent_Source_Parent = gv_default_Use_Parent_Source_Parent;
-   v_Use_Parent_Source_Parent_For_Class = gv_default_Use_Parent_Source_Parent_For_Class;
-   v_Use_Source_Field_Enum = gv_default_Use_Source_Field_Enum;
-   v_View_Id = gv_default_View_Id;
+   v_Allow_Child_Relationship = g_default_Allow_Child_Relationship;
+   v_Allow_Enum = g_default_Allow_Enum;
+   v_Allow_Enum_Item = g_default_Allow_Enum_Item;
+   v_Allow_FK_Source_Field_Choice = g_default_Allow_FK_Source_Field_Choice;
+   v_Allow_FK_Test_Field_Choice = g_default_Allow_FK_Test_Field_Choice;
+   v_Allow_Field = g_default_Allow_Field;
+   v_Allow_Modifier = g_default_Allow_Modifier;
+   v_Allow_Options = g_default_Allow_Options;
+   v_Allow_Other_Class = g_default_Allow_Other_Class;
+   v_Allow_Other_Field = g_default_Allow_Other_Field;
+   v_Allow_Other_Field_2 = g_default_Allow_Other_Field_2;
+   v_Allow_Other_Procedure = g_default_Allow_Other_Procedure;
+   v_Allow_Other_Procedure_2 = g_default_Allow_Other_Procedure_2;
+   v_Allow_Other_Source_Child = g_default_Allow_Other_Source_Child;
+   v_Allow_Other_Source_Child_2 = g_default_Allow_Other_Source_Child_2;
+   v_Allow_Permission = g_default_Allow_Permission;
+   v_Allow_Procedure = g_default_Allow_Procedure;
+   v_Allow_Procedure_Arg = g_default_Allow_Procedure_Arg;
+   v_Allow_Source_Child = g_default_Allow_Source_Child;
+   v_Allow_Source_Class = g_default_Allow_Source_Class;
+   v_Allow_Source_Field = g_default_Allow_Source_Field;
+   v_Allow_Source_Grandchild = g_default_Allow_Source_Grandchild;
+   v_Allow_Source_Parent = g_default_Allow_Source_Parent;
+   v_Allow_Test_Field = g_default_Allow_Test_Field;
+   v_Allow_Test_Value = g_default_Allow_Test_Value;
+   v_Allow_Value = g_default_Allow_Value;
+   v_Child_Prefix = g_default_Child_Prefix;
+   v_Child_Rel_Grandparent_Match = g_default_Child_Rel_Grandparent_Match;
+   v_Child_Rel_Parent_Match = g_default_Child_Rel_Parent_Match;
+   v_Child_Relationship_Class_Match = g_default_Child_Relationship_Class_Match;
+   v_Default_Child_Vars = g_default_Default_Child_Vars;
+   v_Field_type = g_default_Field_type;
+   v_Has_Next_Specification_Info = g_default_Has_Next_Specification_Info;
+   v_Is_Child_Only = g_default_Is_Child_Only;
+   v_Is_Required_For_UI_Gen = g_default_Is_Required_For_UI_Gen;
+   v_Is_System = g_default_Is_System;
+   v_Name = g_default_Name;
+   v_Needs_Child_Relationship = g_default_Needs_Child_Relationship;
+   v_Needs_Class = g_default_Needs_Class;
+   v_Needs_Enum = g_default_Needs_Enum;
+   v_Needs_Enum_Item = g_default_Needs_Enum_Item;
+   v_Needs_Enum_Item_2 = g_default_Needs_Enum_Item_2;
+   v_Needs_Enum_Item_3 = g_default_Needs_Enum_Item_3;
+   v_Needs_Enum_Item_4 = g_default_Needs_Enum_Item_4;
+   v_Needs_Enum_Item_5 = g_default_Needs_Enum_Item_5;
+   v_Needs_Field = g_default_Needs_Field;
+   v_Needs_Modifier = g_default_Needs_Modifier;
+   v_Needs_Other_Class = g_default_Needs_Other_Class;
+   v_Needs_Other_Field = g_default_Needs_Other_Field;
+   v_Needs_Other_Field_2 = g_default_Needs_Other_Field_2;
+   v_Needs_Other_Modifier = g_default_Needs_Other_Modifier;
+   v_Needs_Other_Modifier_2 = g_default_Needs_Other_Modifier_2;
+   v_Needs_Other_Permission = g_default_Needs_Other_Permission;
+   v_Needs_Other_Permission_2 = g_default_Needs_Other_Permission_2;
+   v_Needs_Other_Procedure = g_default_Needs_Other_Procedure;
+   v_Needs_Other_Procedure_2 = g_default_Needs_Other_Procedure_2;
+   v_Needs_Other_Source_Child = g_default_Needs_Other_Source_Child;
+   v_Needs_Other_Source_Child_2 = g_default_Needs_Other_Source_Child_2;
+   v_Needs_Permission = g_default_Needs_Permission;
+   v_Needs_Procedure = g_default_Needs_Procedure;
+   v_Needs_Procedure_Arg = g_default_Needs_Procedure_Arg;
+   v_Needs_Procedure_Arg_2 = g_default_Needs_Procedure_Arg_2;
+   v_Needs_Procedure_Arg_3 = g_default_Needs_Procedure_Arg_3;
+   v_Needs_Source_Child = g_default_Needs_Source_Child;
+   v_Needs_Source_Field = g_default_Needs_Source_Field;
+   v_Needs_Source_Field_Or_Child = g_default_Needs_Source_Field_Or_Child;
+   v_Needs_Source_Parent = g_default_Needs_Source_Parent;
+   v_Needs_Test_Field = g_default_Needs_Test_Field;
+   v_Needs_Test_Value = g_default_Needs_Test_Value;
+   v_Needs_Value = g_default_Needs_Value;
+   v_Next_Protect_Child_Rel = g_default_Next_Protect_Child_Rel;
+   v_Next_Protect_Procedure = g_default_Next_Protect_Procedure;
+   v_Next_Protect_Source_Parent = g_default_Next_Protect_Source_Parent;
+   v_Next_Specification_Actions = g_default_Next_Specification_Actions;
+   v_Notes = g_default_Notes;
+   v_Procedure_Arg_primitive = g_default_Procedure_Arg_primitive;
+   v_Procedure_Arg_type = g_default_Procedure_Arg_type;
+   v_Protect_Child_Rel_From_Update = g_default_Protect_Child_Rel_From_Update;
+   v_Protect_Class_From_Edit = g_default_Protect_Class_From_Edit;
+   v_Protect_Class_From_Update = g_default_Protect_Class_From_Update;
+   v_Protect_Procedure_From_Edit = g_default_Protect_Procedure_From_Edit;
+   v_Protect_Source_Parent = g_default_Protect_Source_Parent;
+   v_Set_Field_To_Source_Field_Or_Child = g_default_Set_Field_To_Source_Field_Or_Child;
+   v_Source_Field_Needs_Test_Field = g_default_Source_Field_Needs_Test_Field;
+   v_Source_Field_Type_Match = g_default_Source_Field_Type_Match;
+   v_Source_Parent_type = g_default_Source_Parent_type;
+   v_Source_type = g_default_Source_type;
+   v_Specification_Actions = g_default_Specification_Actions;
+   v_Specification_Name = g_default_Specification_Name;
+   v_Specification_Object = g_default_Specification_Object;
+   v_Specification_Strings = g_default_Specification_Strings;
+   v_Specification_Vars = g_default_Specification_Vars;
+   v_Test_Field_Type_Match = g_default_Test_Field_Type_Match;
+   v_Test_Field_type = g_default_Test_Field_type;
+   v_Use_Class_As_Source_Parent_Class = g_default_Use_Class_As_Source_Parent_Class;
+   v_Use_Field_Enum = g_default_Use_Field_Enum;
+   v_Use_Parent_Child_Rel_As_Source_Parent = g_default_Use_Parent_Child_Rel_As_Source_Parent;
+   v_Use_Parent_Child_Rel_For_Class = g_default_Use_Parent_Child_Rel_For_Class;
+   v_Use_Parent_Class = g_default_Use_Parent_Class;
+   v_Use_Parent_Field_For_Class = g_default_Use_Parent_Field_For_Class;
+   v_Use_Parent_Other_Class_For_Class = g_default_Use_Parent_Other_Class_For_Class;
+   v_Use_Parent_Procedure = g_default_Use_Parent_Procedure;
+   v_Use_Parent_Source_Class = g_default_Use_Parent_Source_Class;
+   v_Use_Parent_Source_Field_For_Class = g_default_Use_Parent_Source_Field_For_Class;
+   v_Use_Parent_Source_Parent = g_default_Use_Parent_Source_Parent;
+   v_Use_Parent_Source_Parent_For_Class = g_default_Use_Parent_Source_Parent_For_Class;
+   v_Use_Source_Field_Enum = g_default_Use_Source_Field_Enum;
+   v_View_Id = g_default_View_Id;
 
    v_Child_Specification_Type = string( );
    if( cp_Child_Specification_Type )
@@ -3858,35 +3858,35 @@ void Meta_Specification_Type::impl::validate( unsigned state, bool is_internal, 
 
    string error_message;
    if( !is_null( v_Child_Prefix )
-    && ( v_Child_Prefix != gv_default_Child_Prefix
+    && ( v_Child_Prefix != g_default_Child_Prefix
     || !value_will_be_provided( c_field_name_Child_Prefix ) )
     && !g_Child_Prefix_domain.is_valid( v_Child_Prefix, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Child_Prefix,
        get_module_string( c_field_display_name_Child_Prefix ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Specification_Name )
-    && ( v_Specification_Name != gv_default_Specification_Name
+    && ( v_Specification_Name != g_default_Specification_Name
     || !value_will_be_provided( c_field_name_Specification_Name ) )
     && !g_Specification_Name_domain.is_valid( v_Specification_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Specification_Name,
        get_module_string( c_field_display_name_Specification_Name ) + " " + error_message ) );
 
    if( !is_null( v_Specification_Object )
-    && ( v_Specification_Object != gv_default_Specification_Object
+    && ( v_Specification_Object != g_default_Specification_Object
     || !value_will_be_provided( c_field_name_Specification_Object ) )
     && !g_Specification_Object_domain.is_valid( v_Specification_Object, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Specification_Object,
        get_module_string( c_field_display_name_Specification_Object ) + " " + error_message ) );
 
    if( !is_null( v_View_Id )
-    && ( v_View_Id != gv_default_View_Id
+    && ( v_View_Id != g_default_View_Id
     || !value_will_be_provided( c_field_name_View_Id ) )
     && !g_View_Id_domain.is_valid( v_View_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_View_Id,
@@ -4021,7 +4021,7 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600251
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Procedure_Arg( ) == gv_default_Allow_Procedure_Arg
+    && get_obj( ).Allow_Procedure_Arg( ) == g_default_Allow_Procedure_Arg
     && get_obj( ).Needs_Procedure_Arg( ) == true )
       get_obj( ).Allow_Procedure_Arg( get_obj( ).Needs_Procedure_Arg( ) );
    // [(finish default_to_field)] 600251
@@ -4029,7 +4029,7 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600252
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Other_Procedure( ) == gv_default_Allow_Other_Procedure
+    && get_obj( ).Allow_Other_Procedure( ) == g_default_Allow_Other_Procedure
     && get_obj( ).Needs_Other_Procedure( ) == true )
       get_obj( ).Allow_Other_Procedure( get_obj( ).Needs_Other_Procedure( ) );
    // [(finish default_to_field)] 600252
@@ -4037,7 +4037,7 @@ void Meta_Specification_Type::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600253
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Other_Procedure_2( ) == gv_default_Allow_Other_Procedure_2
+    && get_obj( ).Allow_Other_Procedure_2( ) == g_default_Allow_Other_Procedure_2
     && get_obj( ).Needs_Other_Procedure_2( ) == true )
       get_obj( ).Allow_Other_Procedure_2( get_obj( ).Needs_Other_Procedure_2( ) );
    // [(finish default_to_field)] 600253

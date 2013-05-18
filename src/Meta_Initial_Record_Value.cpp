@@ -131,9 +131,9 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Field = string( );
-string gv_default_Initial_Record = string( );
-string gv_default_Value = string( );
+string g_default_Field = string( );
+string g_default_Initial_Record = string( );
+string g_default_Value = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -530,7 +530,7 @@ void Meta_Initial_Record_Value::impl::add_extra_paging_info( vector< pair< strin
 
 void Meta_Initial_Record_Value::impl::clear( )
 {
-   v_Value = gv_default_Value;
+   v_Value = g_default_Value;
 
    v_Field = string( );
    if( cp_Field )

@@ -136,10 +136,10 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Class = string( );
-string gv_default_Comments = string( );
-string gv_default_Key = string( );
-string gv_default_Order = string( );
+string g_default_Class = string( );
+string g_default_Comments = string( );
+string g_default_Key = string( );
+string g_default_Order = string( );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -691,9 +691,9 @@ void Meta_Initial_Record::impl::add_extra_paging_info( vector< pair< string, str
 
 void Meta_Initial_Record::impl::clear( )
 {
-   v_Comments = gv_default_Comments;
-   v_Key = gv_default_Key;
-   v_Order = gv_default_Order;
+   v_Comments = g_default_Comments;
+   v_Key = g_default_Key;
+   v_Order = g_default_Order;
 
    v_Class = string( );
    if( cp_Class )
@@ -735,14 +735,14 @@ void Meta_Initial_Record::impl::validate( unsigned state, bool is_internal, vali
 
    string error_message;
    if( !is_null( v_Comments )
-    && ( v_Comments != gv_default_Comments
+    && ( v_Comments != g_default_Comments
     || !value_will_be_provided( c_field_name_Comments ) )
     && !g_Comments_domain.is_valid( v_Comments, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Comments,
        get_module_string( c_field_display_name_Comments ) + " " + error_message ) );
 
    if( !is_null( v_Key )
-    && ( v_Key != gv_default_Key
+    && ( v_Key != g_default_Key
     || !value_will_be_provided( c_field_name_Key ) )
     && !g_Key_domain.is_valid( v_Key, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Key,

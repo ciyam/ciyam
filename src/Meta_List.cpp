@@ -433,52 +433,52 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Access_Parent_Modifier = string( );
-string gv_default_Access_Permission = string( );
-int gv_default_Access_Restriction = int( 0 );
-bool gv_default_Allow_Anonymous_Access = bool( 0 );
-bool gv_default_Allow_Quick_Link = bool( 0 );
-bool gv_default_Allow_Text_Search = bool( 0 );
-string gv_default_Class = string( );
-bool gv_default_Create_Only_If_Default_Other = bool( 0 );
-string gv_default_Create_Permission = string( );
-int gv_default_Create_Restriction = int( 0 );
-bool gv_default_Destroy_Only_If_Default_Other = bool( 0 );
-string gv_default_Destroy_Permission = string( );
-int gv_default_Destroy_Restriction = int( 0 );
-int gv_default_Direction = int( 0 );
-bool gv_default_Display_Only_If_Default_Other = bool( 0 );
-int gv_default_Display_Row_Limit = int( 0 );
-bool gv_default_Display_Security_Level = bool( 0 );
-string gv_default_Id = string( );
-bool gv_default_Ignore_Implicit_Ordering = bool( 0 );
-bool gv_default_Ignore_State_For_Display = bool( 0 );
-bool gv_default_Ignore_Unactionable_Records = bool( 0 );
-bool gv_default_Ignore_Uneditable_Parent = bool( 0 );
-bool gv_default_Ignore_User_Id_Filter = bool( 0 );
-bool gv_default_Is_Admin = bool( 0 );
-bool gv_default_Is_Child = bool( 0 );
-bool gv_default_Is_Home = bool( 0 );
-bool gv_default_Is_Not_Anonymous = bool( 0 );
-bool gv_default_Is_Variation = bool( 0 );
-bool gv_default_Limit_Scroll_And_New = bool( 0 );
-string gv_default_Model = string( );
-bool gv_default_Multiline_Truncate_For_Print = bool( 1 );
-string gv_default_Name = string( );
-bool gv_default_Number_Multiple_Pages = bool( 1 );
-int gv_default_PDF_Font_Type = int( 0 );
-int gv_default_PDF_List_Type = int( 0 );
-string gv_default_Parent_Class = string( );
-string gv_default_Parent_Field = string( );
-int gv_default_Print_Restriction = int( 0 );
-bool gv_default_Print_Without_Highlight = bool( 0 );
-int gv_default_Search_Option_Limit = int( 0 );
-bool gv_default_Sort_Rows_In_UI = bool( 0 );
-int gv_default_Style = int( 0 );
-int gv_default_Text_Match_Highlight = int( 0 );
-string gv_default_Title = string( "*" );
-string gv_default_Type = string( );
-string gv_default_Variation_Name = string( );
+string g_default_Access_Parent_Modifier = string( );
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+bool g_default_Allow_Anonymous_Access = bool( 0 );
+bool g_default_Allow_Quick_Link = bool( 0 );
+bool g_default_Allow_Text_Search = bool( 0 );
+string g_default_Class = string( );
+bool g_default_Create_Only_If_Default_Other = bool( 0 );
+string g_default_Create_Permission = string( );
+int g_default_Create_Restriction = int( 0 );
+bool g_default_Destroy_Only_If_Default_Other = bool( 0 );
+string g_default_Destroy_Permission = string( );
+int g_default_Destroy_Restriction = int( 0 );
+int g_default_Direction = int( 0 );
+bool g_default_Display_Only_If_Default_Other = bool( 0 );
+int g_default_Display_Row_Limit = int( 0 );
+bool g_default_Display_Security_Level = bool( 0 );
+string g_default_Id = string( );
+bool g_default_Ignore_Implicit_Ordering = bool( 0 );
+bool g_default_Ignore_State_For_Display = bool( 0 );
+bool g_default_Ignore_Unactionable_Records = bool( 0 );
+bool g_default_Ignore_Uneditable_Parent = bool( 0 );
+bool g_default_Ignore_User_Id_Filter = bool( 0 );
+bool g_default_Is_Admin = bool( 0 );
+bool g_default_Is_Child = bool( 0 );
+bool g_default_Is_Home = bool( 0 );
+bool g_default_Is_Not_Anonymous = bool( 0 );
+bool g_default_Is_Variation = bool( 0 );
+bool g_default_Limit_Scroll_And_New = bool( 0 );
+string g_default_Model = string( );
+bool g_default_Multiline_Truncate_For_Print = bool( 1 );
+string g_default_Name = string( );
+bool g_default_Number_Multiple_Pages = bool( 1 );
+int g_default_PDF_Font_Type = int( 0 );
+int g_default_PDF_List_Type = int( 0 );
+string g_default_Parent_Class = string( );
+string g_default_Parent_Field = string( );
+int g_default_Print_Restriction = int( 0 );
+bool g_default_Print_Without_Highlight = bool( 0 );
+int g_default_Search_Option_Limit = int( 0 );
+bool g_default_Sort_Rows_In_UI = bool( 0 );
+int g_default_Style = int( 0 );
+int g_default_Text_Match_Highlight = int( 0 );
+string g_default_Title = string( "*" );
+string g_default_Type = string( );
+string g_default_Variation_Name = string( );
 
 set< int > g_list_restrict_enum;
 set< int > g_list_direction_enum;
@@ -3119,43 +3119,43 @@ void Meta_List::impl::add_extra_paging_info( vector< pair< string, string > >& p
 
 void Meta_List::impl::clear( )
 {
-   v_Access_Restriction = gv_default_Access_Restriction;
-   v_Allow_Anonymous_Access = gv_default_Allow_Anonymous_Access;
-   v_Allow_Quick_Link = gv_default_Allow_Quick_Link;
-   v_Allow_Text_Search = gv_default_Allow_Text_Search;
-   v_Create_Only_If_Default_Other = gv_default_Create_Only_If_Default_Other;
-   v_Create_Restriction = gv_default_Create_Restriction;
-   v_Destroy_Only_If_Default_Other = gv_default_Destroy_Only_If_Default_Other;
-   v_Destroy_Restriction = gv_default_Destroy_Restriction;
-   v_Direction = gv_default_Direction;
-   v_Display_Only_If_Default_Other = gv_default_Display_Only_If_Default_Other;
-   v_Display_Row_Limit = gv_default_Display_Row_Limit;
-   v_Display_Security_Level = gv_default_Display_Security_Level;
-   v_Id = gv_default_Id;
-   v_Ignore_Implicit_Ordering = gv_default_Ignore_Implicit_Ordering;
-   v_Ignore_State_For_Display = gv_default_Ignore_State_For_Display;
-   v_Ignore_Unactionable_Records = gv_default_Ignore_Unactionable_Records;
-   v_Ignore_Uneditable_Parent = gv_default_Ignore_Uneditable_Parent;
-   v_Ignore_User_Id_Filter = gv_default_Ignore_User_Id_Filter;
-   v_Is_Admin = gv_default_Is_Admin;
-   v_Is_Child = gv_default_Is_Child;
-   v_Is_Home = gv_default_Is_Home;
-   v_Is_Not_Anonymous = gv_default_Is_Not_Anonymous;
-   v_Is_Variation = gv_default_Is_Variation;
-   v_Limit_Scroll_And_New = gv_default_Limit_Scroll_And_New;
-   v_Multiline_Truncate_For_Print = gv_default_Multiline_Truncate_For_Print;
-   v_Name = gv_default_Name;
-   v_Number_Multiple_Pages = gv_default_Number_Multiple_Pages;
-   v_PDF_Font_Type = gv_default_PDF_Font_Type;
-   v_PDF_List_Type = gv_default_PDF_List_Type;
-   v_Print_Restriction = gv_default_Print_Restriction;
-   v_Print_Without_Highlight = gv_default_Print_Without_Highlight;
-   v_Search_Option_Limit = gv_default_Search_Option_Limit;
-   v_Sort_Rows_In_UI = gv_default_Sort_Rows_In_UI;
-   v_Style = gv_default_Style;
-   v_Text_Match_Highlight = gv_default_Text_Match_Highlight;
-   v_Title = gv_default_Title;
-   v_Variation_Name = gv_default_Variation_Name;
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Allow_Anonymous_Access = g_default_Allow_Anonymous_Access;
+   v_Allow_Quick_Link = g_default_Allow_Quick_Link;
+   v_Allow_Text_Search = g_default_Allow_Text_Search;
+   v_Create_Only_If_Default_Other = g_default_Create_Only_If_Default_Other;
+   v_Create_Restriction = g_default_Create_Restriction;
+   v_Destroy_Only_If_Default_Other = g_default_Destroy_Only_If_Default_Other;
+   v_Destroy_Restriction = g_default_Destroy_Restriction;
+   v_Direction = g_default_Direction;
+   v_Display_Only_If_Default_Other = g_default_Display_Only_If_Default_Other;
+   v_Display_Row_Limit = g_default_Display_Row_Limit;
+   v_Display_Security_Level = g_default_Display_Security_Level;
+   v_Id = g_default_Id;
+   v_Ignore_Implicit_Ordering = g_default_Ignore_Implicit_Ordering;
+   v_Ignore_State_For_Display = g_default_Ignore_State_For_Display;
+   v_Ignore_Unactionable_Records = g_default_Ignore_Unactionable_Records;
+   v_Ignore_Uneditable_Parent = g_default_Ignore_Uneditable_Parent;
+   v_Ignore_User_Id_Filter = g_default_Ignore_User_Id_Filter;
+   v_Is_Admin = g_default_Is_Admin;
+   v_Is_Child = g_default_Is_Child;
+   v_Is_Home = g_default_Is_Home;
+   v_Is_Not_Anonymous = g_default_Is_Not_Anonymous;
+   v_Is_Variation = g_default_Is_Variation;
+   v_Limit_Scroll_And_New = g_default_Limit_Scroll_And_New;
+   v_Multiline_Truncate_For_Print = g_default_Multiline_Truncate_For_Print;
+   v_Name = g_default_Name;
+   v_Number_Multiple_Pages = g_default_Number_Multiple_Pages;
+   v_PDF_Font_Type = g_default_PDF_Font_Type;
+   v_PDF_List_Type = g_default_PDF_List_Type;
+   v_Print_Restriction = g_default_Print_Restriction;
+   v_Print_Without_Highlight = g_default_Print_Without_Highlight;
+   v_Search_Option_Limit = g_default_Search_Option_Limit;
+   v_Sort_Rows_In_UI = g_default_Sort_Rows_In_UI;
+   v_Style = g_default_Style;
+   v_Text_Match_Highlight = g_default_Text_Match_Highlight;
+   v_Title = g_default_Title;
+   v_Variation_Name = g_default_Variation_Name;
 
    v_Access_Parent_Modifier = string( );
    if( cp_Access_Parent_Modifier )
@@ -3244,28 +3244,28 @@ void Meta_List::impl::validate( unsigned state, bool is_internal, validation_err
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Title )
-    && ( v_Title != gv_default_Title
+    && ( v_Title != g_default_Title
     || !value_will_be_provided( c_field_name_Title ) )
     && !g_Title_domain.is_valid( v_Title, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Title,
        get_module_string( c_field_display_name_Title ) + " " + error_message ) );
 
    if( !is_null( v_Variation_Name )
-    && ( v_Variation_Name != gv_default_Variation_Name
+    && ( v_Variation_Name != g_default_Variation_Name
     || !value_will_be_provided( c_field_name_Variation_Name ) )
     && !g_Variation_Name_domain.is_valid( v_Variation_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Variation_Name,
@@ -3493,7 +3493,7 @@ void Meta_List::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600429a
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Allow_Anonymous_Access( ) == gv_default_Allow_Anonymous_Access
+    && get_obj( ).Allow_Anonymous_Access( ) == g_default_Allow_Anonymous_Access
     && get_obj( ).Type( ).Is_Not_Anonymous( ) == true )
       get_obj( ).Allow_Anonymous_Access( get_obj( ).Type( ).Dummy_0( ) );
    // [(finish default_to_field)] 600429a

@@ -22,7 +22,7 @@
 `{`!`@eq`(`$arg_check_mod`,`'`'`)\
     && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
-    && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
+    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
 `,\
    if( get_obj( ).get_is_iterating( )
     && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
@@ -30,7 +30,7 @@
 `{`!`@eq`(`$arg_check_mod`,`'`'`)\
     && ( state & c_modifier_`{`$arg_check_mod`} )
 `}\
-    && get_obj( ).`{`$arg_field`}( ) == gv_default_`{`$arg_field`} )\
+    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )\
 `}`}
       get_obj( ).`{`$arg_field`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}get_obj( ).`{`$arg_sfield`}( )\
 `{`!`@eq`(`$arg_scfield`,`'`'`).`{`$arg_scfield`}( )`}`{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`) )`} );

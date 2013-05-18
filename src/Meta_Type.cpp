@@ -238,27 +238,27 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-bool gv_default_Auto_Round = bool( 0 );
-int gv_default_Date_Precision = int( 0 );
-int gv_default_Default_UOM = int( 0 );
-int gv_default_Fraction_Limit = int( 0 );
-string gv_default_Id = string( );
-int gv_default_Int_Type = int( 0 );
-bool gv_default_Internal = bool( 0 );
-int gv_default_Max_Size = int( 0 );
-string gv_default_Max_Value = string( );
-string gv_default_Min_Value = string( );
-string gv_default_Name = string( );
-int gv_default_Numeric_Decimals = int( 0 );
-int gv_default_Numeric_Digits = int( 0 );
-int gv_default_Numeric_Type = int( 0 );
-int gv_default_Primitive = int( 0 );
-int gv_default_Rounding_Method = int( 3 );
-bool gv_default_Show_Plus_Sign = bool( 0 );
-int gv_default_String_Domain = int( 0 );
-int gv_default_Time_Precision = int( 0 );
-string gv_default_Workgroup = string( );
-int gv_default_Zero_Padding = int( 0 );
+bool g_default_Auto_Round = bool( 0 );
+int g_default_Date_Precision = int( 0 );
+int g_default_Default_UOM = int( 0 );
+int g_default_Fraction_Limit = int( 0 );
+string g_default_Id = string( );
+int g_default_Int_Type = int( 0 );
+bool g_default_Internal = bool( 0 );
+int g_default_Max_Size = int( 0 );
+string g_default_Max_Value = string( );
+string g_default_Min_Value = string( );
+string g_default_Name = string( );
+int g_default_Numeric_Decimals = int( 0 );
+int g_default_Numeric_Digits = int( 0 );
+int g_default_Numeric_Type = int( 0 );
+int g_default_Primitive = int( 0 );
+int g_default_Rounding_Method = int( 3 );
+bool g_default_Show_Plus_Sign = bool( 0 );
+int g_default_String_Domain = int( 0 );
+int g_default_Time_Precision = int( 0 );
+string g_default_Workgroup = string( );
+int g_default_Zero_Padding = int( 0 );
 
 set< int > g_date_precision_enum;
 set< int > g_uom_enum;
@@ -1286,26 +1286,26 @@ void Meta_Type::impl::add_extra_paging_info( vector< pair< string, string > >& p
 
 void Meta_Type::impl::clear( )
 {
-   v_Auto_Round = gv_default_Auto_Round;
-   v_Date_Precision = gv_default_Date_Precision;
-   v_Default_UOM = gv_default_Default_UOM;
-   v_Fraction_Limit = gv_default_Fraction_Limit;
-   v_Id = gv_default_Id;
-   v_Int_Type = gv_default_Int_Type;
-   v_Internal = gv_default_Internal;
-   v_Max_Size = gv_default_Max_Size;
-   v_Max_Value = gv_default_Max_Value;
-   v_Min_Value = gv_default_Min_Value;
-   v_Name = gv_default_Name;
-   v_Numeric_Decimals = gv_default_Numeric_Decimals;
-   v_Numeric_Digits = gv_default_Numeric_Digits;
-   v_Numeric_Type = gv_default_Numeric_Type;
-   v_Primitive = gv_default_Primitive;
-   v_Rounding_Method = gv_default_Rounding_Method;
-   v_Show_Plus_Sign = gv_default_Show_Plus_Sign;
-   v_String_Domain = gv_default_String_Domain;
-   v_Time_Precision = gv_default_Time_Precision;
-   v_Zero_Padding = gv_default_Zero_Padding;
+   v_Auto_Round = g_default_Auto_Round;
+   v_Date_Precision = g_default_Date_Precision;
+   v_Default_UOM = g_default_Default_UOM;
+   v_Fraction_Limit = g_default_Fraction_Limit;
+   v_Id = g_default_Id;
+   v_Int_Type = g_default_Int_Type;
+   v_Internal = g_default_Internal;
+   v_Max_Size = g_default_Max_Size;
+   v_Max_Value = g_default_Max_Value;
+   v_Min_Value = g_default_Min_Value;
+   v_Name = g_default_Name;
+   v_Numeric_Decimals = g_default_Numeric_Decimals;
+   v_Numeric_Digits = g_default_Numeric_Digits;
+   v_Numeric_Type = g_default_Numeric_Type;
+   v_Primitive = g_default_Primitive;
+   v_Rounding_Method = g_default_Rounding_Method;
+   v_Show_Plus_Sign = g_default_Show_Plus_Sign;
+   v_String_Domain = g_default_String_Domain;
+   v_Time_Precision = g_default_Time_Precision;
+   v_Zero_Padding = g_default_Zero_Padding;
 
    v_Workgroup = string( );
    if( cp_Workgroup )
@@ -1347,49 +1347,49 @@ void Meta_Type::impl::validate( unsigned state, bool is_internal, validation_err
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Max_Size )
-    && ( v_Max_Size != gv_default_Max_Size
+    && ( v_Max_Size != g_default_Max_Size
     || !value_will_be_provided( c_field_name_Max_Size ) )
     && !g_Max_Size_domain.is_valid( v_Max_Size, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Size,
        get_module_string( c_field_display_name_Max_Size ) + " " + error_message ) );
 
    if( !is_null( v_Max_Value )
-    && ( v_Max_Value != gv_default_Max_Value
+    && ( v_Max_Value != g_default_Max_Value
     || !value_will_be_provided( c_field_name_Max_Value ) )
     && !g_Max_Value_domain.is_valid( v_Max_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Max_Value,
        get_module_string( c_field_display_name_Max_Value ) + " " + error_message ) );
 
    if( !is_null( v_Min_Value )
-    && ( v_Min_Value != gv_default_Min_Value
+    && ( v_Min_Value != g_default_Min_Value
     || !value_will_be_provided( c_field_name_Min_Value ) )
     && !g_Min_Value_domain.is_valid( v_Min_Value, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Min_Value,
        get_module_string( c_field_display_name_Min_Value ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
    if( !is_null( v_Numeric_Decimals )
-    && ( v_Numeric_Decimals != gv_default_Numeric_Decimals
+    && ( v_Numeric_Decimals != g_default_Numeric_Decimals
     || !value_will_be_provided( c_field_name_Numeric_Decimals ) )
     && !g_Numeric_Decimals_domain.is_valid( v_Numeric_Decimals, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Decimals,
        get_module_string( c_field_display_name_Numeric_Decimals ) + " " + error_message ) );
 
    if( !is_null( v_Numeric_Digits )
-    && ( v_Numeric_Digits != gv_default_Numeric_Digits
+    && ( v_Numeric_Digits != g_default_Numeric_Digits
     || !value_will_be_provided( c_field_name_Numeric_Digits ) )
     && !g_Numeric_Digits_domain.is_valid( v_Numeric_Digits, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Numeric_Digits,

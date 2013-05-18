@@ -246,25 +246,25 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Actions = string( "137410$137100*@id" );
-string gv_default_Date = string( );
-string gv_default_Datetime = string( );
-string gv_default_Id = string( );
-bool gv_default_Installed = bool( 0 );
-int gv_default_Integer = int( 0 );
-bool gv_default_Is_Other_Package = bool( 0 );
-string gv_default_Model = string( );
-string gv_default_Name = string( );
-string gv_default_Numeric = string( );
-string gv_default_Other_Package = string( );
-bool gv_default_Other_Package_Required = bool( 0 );
-string gv_default_Other_Package_Type = string( );
-string gv_default_Package = string( );
-int gv_default_Primitive = int( 6 );
-string gv_default_String = string( );
-string gv_default_Time = string( );
-bool gv_default_Use_Option = bool( 0 );
-string gv_default_Value = string( );
+string g_default_Actions = string( "137410$137100*@id" );
+string g_default_Date = string( );
+string g_default_Datetime = string( );
+string g_default_Id = string( );
+bool g_default_Installed = bool( 0 );
+int g_default_Integer = int( 0 );
+bool g_default_Is_Other_Package = bool( 0 );
+string g_default_Model = string( );
+string g_default_Name = string( );
+string g_default_Numeric = string( );
+string g_default_Other_Package = string( );
+bool g_default_Other_Package_Required = bool( 0 );
+string g_default_Other_Package_Type = string( );
+string g_default_Package = string( );
+int g_default_Primitive = int( 6 );
+string g_default_String = string( );
+string g_default_Time = string( );
+bool g_default_Use_Option = bool( 0 );
+string g_default_Value = string( );
 
 set< int > g_primitive_enum;
 
@@ -1110,22 +1110,22 @@ void Meta_Package_Option::impl::add_extra_paging_info( vector< pair< string, str
 
 void Meta_Package_Option::impl::clear( )
 {
-   v_Actions = gv_default_Actions;
-   v_Date = gv_default_Date;
-   v_Datetime = gv_default_Datetime;
-   v_Id = gv_default_Id;
-   v_Installed = gv_default_Installed;
-   v_Integer = gv_default_Integer;
-   v_Is_Other_Package = gv_default_Is_Other_Package;
-   v_Name = gv_default_Name;
-   v_Numeric = gv_default_Numeric;
-   v_Other_Package_Required = gv_default_Other_Package_Required;
-   v_Other_Package_Type = gv_default_Other_Package_Type;
-   v_Primitive = gv_default_Primitive;
-   v_String = gv_default_String;
-   v_Time = gv_default_Time;
-   v_Use_Option = gv_default_Use_Option;
-   v_Value = gv_default_Value;
+   v_Actions = g_default_Actions;
+   v_Date = g_default_Date;
+   v_Datetime = g_default_Datetime;
+   v_Id = g_default_Id;
+   v_Installed = g_default_Installed;
+   v_Integer = g_default_Integer;
+   v_Is_Other_Package = g_default_Is_Other_Package;
+   v_Name = g_default_Name;
+   v_Numeric = g_default_Numeric;
+   v_Other_Package_Required = g_default_Other_Package_Required;
+   v_Other_Package_Type = g_default_Other_Package_Type;
+   v_Primitive = g_default_Primitive;
+   v_String = g_default_String;
+   v_Time = g_default_Time;
+   v_Use_Option = g_default_Use_Option;
+   v_Value = g_default_Value;
 
    v_Model = string( );
    if( cp_Model )
@@ -1180,14 +1180,14 @@ void Meta_Package_Option::impl::validate( unsigned state, bool is_internal, vali
 
    string error_message;
    if( !is_null( v_Id )
-    && ( v_Id != gv_default_Id
+    && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
     && !g_Id_domain.is_valid( v_Id, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Id,
        get_module_string( c_field_display_name_Id ) + " " + error_message ) );
 
    if( !is_null( v_Name )
-    && ( v_Name != gv_default_Name
+    && ( v_Name != g_default_Name
     || !value_will_be_provided( c_field_name_Name ) )
     && !g_Name_domain.is_valid( v_Name, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
@@ -1332,7 +1332,7 @@ void Meta_Package_Option::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_field)] 600881
    if( is_create
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Model( ) == gv_default_Model )
+    && get_obj( ).Model( ) == g_default_Model )
       get_obj( ).Model( get_obj( ).Package( ).Model( ) );
    // [(finish default_to_field)] 600881
 

@@ -184,16 +184,16 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
-string gv_default_Class = string( );
-string gv_default_Field_1 = string( );
-string gv_default_Field_2 = string( );
-string gv_default_Field_3 = string( );
-string gv_default_Field_4 = string( );
-string gv_default_Field_5 = string( );
-bool gv_default_Internal = bool( 0 );
-string gv_default_Order = string( );
-string gv_default_Source_Index = string( );
-bool gv_default_Unique = bool( 1 );
+string g_default_Class = string( );
+string g_default_Field_1 = string( );
+string g_default_Field_2 = string( );
+string g_default_Field_3 = string( );
+string g_default_Field_4 = string( );
+string g_default_Field_5 = string( );
+bool g_default_Internal = bool( 0 );
+string g_default_Order = string( );
+string g_default_Source_Index = string( );
+bool g_default_Unique = bool( 1 );
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -1085,9 +1085,9 @@ void Meta_Index::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Index::impl::clear( )
 {
-   v_Internal = gv_default_Internal;
-   v_Order = gv_default_Order;
-   v_Unique = gv_default_Unique;
+   v_Internal = g_default_Internal;
+   v_Order = g_default_Order;
+   v_Unique = g_default_Unique;
 
    v_Class = string( );
    if( cp_Class )
