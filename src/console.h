@@ -11,6 +11,8 @@
 #     include <string>
 #  endif
 
+#  include "config.h"
+
 char get_char( const char* prompt = "" );
 
 std::string get_line( const char* prompt = "" );
