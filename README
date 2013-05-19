@@ -21,7 +21,8 @@ The following are platform specific instructions for installing 3rd party librar
 NOTE: To make things easier for Windows developers some .lib and .dll files have been included.
 Also note that you will need to be using VS2003 or higher.
 
-For Linux environments the development packages for libpng and readline will need to have been installed.
+For Linux environments the development packages for libpng (and optionally readline) will need to have been
+installed.
 
 
 MySQL

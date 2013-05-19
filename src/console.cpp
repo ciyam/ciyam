@@ -17,10 +17,12 @@
 #  include <stdlib.h>
 #  include <unistd.h>
 #  include <termios.h>
+#  ifdef RDLINE_SUPPORT
 extern "C"
 {
-#  include <readline/readline.h>
+#     include <readline/readline.h>
 }
+#  endif
 #else
 #  ifdef _WIN32
 #     include <conio.h>
