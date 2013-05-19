@@ -13,7 +13,6 @@
 #     include <string>
 #  endif
 
-#  include "config.h"
 #  include "command_handler.h"
 #  include "command_processor.h"
 

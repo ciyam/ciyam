@@ -17,12 +17,6 @@
 #  include <stdlib.h>
 #  include <unistd.h>
 #  include <termios.h>
-#  ifdef RDLINE_SUPPORT
-extern "C"
-{
-#     include <readline/readline.h>
-}
-#  endif
 #else
 #  ifdef _WIN32
 #     include <conio.h>
@@ -36,6 +30,13 @@ extern "C"
 #endif
 
 #include "console.h"
+
+#ifdef RDLINE_SUPPORT
+extern "C"
+{
+#  include <readline/readline.h>
+}
+#endif
 
 using namespace std;
 

@@ -28,10 +28,20 @@ extern "C"
 
 #include "console_commands.h"
 
+#include "config.h"
 #include "macros.h"
 #include "console.h"
 #include "pointers.h"
 #include "utilities.h"
+
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
+extern "C"
+{
+#     include <readline/history.h>
+}
+#  endif
+#endif
 
 using namespace std;
 
