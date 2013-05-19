@@ -37,8 +37,6 @@ extern "C"
 
 #include "console.h"
 
-#include "config.h"
-
 using namespace std;
 
 char get_char( const char* prompt )

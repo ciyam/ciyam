@@ -28,7 +28,6 @@ extern "C"
 
 #include "console_commands.h"
 
-#include "config.h"
 #include "macros.h"
 #include "console.h"
 #include "pointers.h"
