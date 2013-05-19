@@ -26,6 +26,7 @@ extern "C"
 
 #include "console_commands.h"
 
+#include "config.h"
 #include "macros.h"
 #include "console.h"
 #include "pointers.h"
@@ -272,8 +273,10 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
       }
 
 #ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
       if( isatty( STDIN_FILENO ) && !is_executing_commands )
          add_history( str.c_str( ) );
+#  endif
 #endif
 
       string str_for_history( str );

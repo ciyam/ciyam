@@ -35,6 +35,8 @@ extern "C"
 
 #include "console.h"
 
+#include "config.h"
+
 using namespace std;
 
 char get_char( const char* prompt )
@@ -96,6 +98,7 @@ string get_line( const char* prompt )
 #ifdef __GNUG__
    // NOTE: If standard input is not a terminal (such as is the case with redirected input) then
    // don't use "readline" (as it seems to be causing problems).
+#  ifdef RDLINE_SUPPORT
    if( isatty( STDIN_FILENO ) )
    {
       char* p = readline( prompt );
@@ -106,6 +109,7 @@ string get_line( const char* prompt )
       }
    }
    else
+#  endif
    {
       if( prompt[ 0 ] != 0 )
          cout << prompt;
