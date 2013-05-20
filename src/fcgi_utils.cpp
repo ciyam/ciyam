@@ -93,7 +93,7 @@ void log_trace_message( const string& message )
    guard g( g_mutex );
 
    ofstream outf( c_log_file, ios::out | ios::app );
-   outf << message;
+   outf << message << '\n';
 }
 
 const char* get_server_id( )
