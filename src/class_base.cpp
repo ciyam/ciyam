@@ -3089,6 +3089,11 @@ void get_tz_info( const date_time& dt, string& tz_abbr, float& offset )
       tz_abbr = g_timezones[ tz_abbr ].daylight_abbr;
 }
 
+date_time utc_to_local( const date_time& dt )
+{
+   return utc_to_local( dt, get_tz_abbr( ) );
+}
+
 date_time utc_to_local( const date_time& dt, const string& tz_abbr )
 {
    if( !g_timezones.count( tz_abbr ) )

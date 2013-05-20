@@ -134,6 +134,14 @@ template< > inline tdatetime from_string< tdatetime >( const std::string& s )
    return tdt;
 }
 
+template< > inline std::string to_formatted_string< tdatetime >( const tdatetime& tdt )
+{
+   std::string s;
+   if( !tdt.is_null( ) )
+      s = to_formatted_string( *tdt );
+   return s;
+}
+
 inline bool operator <( const tdatetime& lhs, const date_time& rhs )
 {
    if( lhs.is_null( ) )

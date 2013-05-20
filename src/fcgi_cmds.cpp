@@ -2298,7 +2298,8 @@ void save_record( const string& module_id,
 
       // FUTURE: The skipping of fields here repeats what is already being done in
       // the output of the "view" itself. The "user_field_info" should probably be
-      // used here instead to avoid this unnecessary repetition.
+      // used here instead to avoid unnecessary repetition and potential bugs when
+      // code changes are performed.
 
       // NOTE: Fields that were included in the view but not editable must be skipped.
       if( field_id == c_key_field )
@@ -2348,31 +2349,67 @@ void save_record( const string& module_id,
        && !view.new_field_values.count( field_id ) ) ) ) )
          continue;
 
+      string owner;
+
+      if( !view.owning_user_field.empty( ) && view.fk_field_values.count( view.owning_user_field ) )
+         owner = view.fk_field_values.find( view.owning_user_field )->second;
+
+      bool is_record_owner;
+      if( owner == sess_info.user_key )
+         is_record_owner = true;
+      else
+         is_record_owner = false;
+
+      if( !view.is_effective_owner_field.empty( ) )
+      {
+         int is_effective_owner_field = atoi( view.field_values.find( view.is_effective_owner_field )->second.c_str( ) );
+         if( is_effective_owner_field )
+            is_record_owner = true;
+      }
+
+      // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
+      if( view.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
+         is_record_owner = true;
+
+      // NOTE: If session is anonymous then will never be considered as a record owner.
+      if( sess_info.user_id.empty( ) )
+         is_record_owner = false;
+
+      if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
+         continue;
+
+      if( !is_new_record && !is_record_owner && view.owner_fields.count( value_id ) )
+         continue;
+
+      if( !is_new_record && !is_record_owner
+       && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
+         continue;
+
+      if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
+       && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
+         continue;
+
+      // NOTE: If the user is anonymous or has "level 0" security then the security level was not displayed.
+      if( extra_data.count( c_field_extra_security_level ) )
+      {
+         if( !view.enum_fields.count( value_id ) )
+            throw runtime_error( "security level enum not found for " + value_id );
+
+         const enum_info& info(
+          get_storage_info( ).enums.find( view.enum_fields.find( value_id )->second )->second );
+
+         if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
+         {
+            num++;
+            continue;
+         }
+      }
+
       // NOTE: If the field belongs to a tab which the user does not have access to
       // then this field must be skipped (otherwise URL tampering could allow these
       // fields to appear as 'vtab' is not part of the URL checksum).
       if( ( view.field_tab_ids[ i ] != 0 && vtab_num == view.field_tab_ids[ i ] ) )
       {
-         string owner;
-
-         if( !view.owning_user_field.empty( ) && view.fk_field_values.count( view.owning_user_field ) )
-            owner = view.fk_field_values.find( view.owning_user_field )->second;
-
-         bool is_record_owner = false;
-         if( owner == sess_info.user_key )
-            is_record_owner = true;
-
-         if( !view.is_effective_owner_field.empty( ) )
-         {
-            int is_effective_owner_field = atoi( view.field_values.find( view.is_effective_owner_field )->second.c_str( ) );
-            if( is_effective_owner_field )
-               is_record_owner = true;
-         }
-
-         // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
-         if( view.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
-            is_record_owner = true;
-
          map< string, string > extra_data;
          if( !view.tab_extras[ vtab_num - 1 ].empty( ) )
             parse_field_extra( view.tab_extras[ vtab_num - 1 ], extra_data );
@@ -2391,22 +2428,6 @@ void save_record( const string& module_id,
 
          if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
             continue;
-      }
-
-      // NOTE: If the user is anonymous or has "level 0" security then the security level was not displayed.
-      if( extra_data.count( c_field_extra_security_level ) )
-      {
-         if( !view.enum_fields.count( value_id ) )
-            throw runtime_error( "security level enum not found for " + value_id );
-
-         const enum_info& info(
-          get_storage_info( ).enums.find( view.enum_fields.find( value_id )->second )->second );
-
-         if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
-         {
-            num++;
-            continue;
-         }
       }
 
       string next;

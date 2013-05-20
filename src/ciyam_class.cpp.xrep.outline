@@ -1348,6 +1348,11 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_id=$specification_\0_id arg_field=$specification_\0_field\
  arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}\
 `,\
+`@eq`(`'\1`'`,`'check_field_is_between`'`)
+`{`#check_field_is_between.spec.xrep section=validate class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_lfield=$specification_\0_lfield\
+ arg_rfield=$specification_\0_rfield arg_tfield=$specification_\0_tfield`}\
+`,\
 `@eq`(`'\1`'`,`'check_field_op_field`'`)
 `{`#check_field_op_field.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
@@ -1417,8 +1422,8 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
  arg_ugname=$specification_\0_ugname arg_ugvalue=$specification_\0_ugvalue`}\
 `,\
 `@eq`(`'\1`'`,`'modifier_field_required`'`)
-`{`#modifier_field_required.spec.xrep section=validate class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field arg_modifier=$specification_\0_modifier`}\
+`{`#modifier_field_required.spec.xrep section=validate class_name=$class_name arg_id=$specification_\0_id\
+ arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield arg_modifier=$specification_\0_modifier`}\
 ### validate
 `}`]`}
 

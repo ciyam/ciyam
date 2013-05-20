@@ -1111,6 +1111,7 @@ void setup_timezones( );
 
 void CLASS_BASE_DECL_SPEC get_tz_info( const date_time& dt, std::string& tz_abbr, float& offset );
 
+date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt );
 date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt, const std::string& tz_abbr );
 date_time CLASS_BASE_DECL_SPEC local_to_utc( const date_time& dt, const std::string& tz_abbr );
 
