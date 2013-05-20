@@ -57,6 +57,11 @@ template< > inline date_time from_string< date_time >( const std::string& s )
    }
 }
 
+template< > inline std::string to_formatted_string< date_time >( const date_time& dt )
+{
+   return utc_to_local( dt ).as_string( e_time_format_hhmm, true );
+}
+
 template< > inline bool is_valid_str_val< date_time >( const std::string& s ) { return is_valid_date_time( s ); }
 
 #endif

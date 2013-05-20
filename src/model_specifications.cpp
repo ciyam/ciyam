@@ -8672,6 +8672,8 @@ void modifier_field_required_specification::add_specification_data( model& m, sp
 
    string field_name = get_field_name_for_id( m, class_name, field_id );
    spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
+
+   spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
 }
 
 string modifier_field_required_specification::static_class_name( ) { return "modifier_field_required"; }

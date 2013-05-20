@@ -25,6 +25,8 @@ template< > inline bool from_string< bool >( const std::string& s )
       return true;
 }
 
+template< typename T > inline std::string to_formatted_string( const T& t ) { return to_string( t ); }
+
 // NOTE: It is being assumed that a type cannot be null unless it has its own "is_null" function
 // (the function is not being inlined for BCB due to noisy warnings that it will otherwise issue)
 // and also any string value is valid unless it has provided its own "is_valid_str_val" function.
