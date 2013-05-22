@@ -3351,11 +3351,11 @@ void request_handler::process_request( )
                      {
                         if( !is_ssl )
                            extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                            << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join Key\" border=\"0\" margin=\"10\"/></a>";
+                            << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
 
                         extra_content
                          << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
-                         << "/openid\"><img src=\"open.png\" alt=\"Join Open\" border=\"0\" margin=\"10\"/></a>";
+                         << "/openid/" << lower( module_ref ) << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
                      }
                   }
                }
