@@ -327,6 +327,7 @@ function load( )
 {
    if( typeof sessionStorage == 'object' )
    {
+      sessionStorage.setItem( 'app', '`{`@lower`(`$storage_name`)`}' );
       if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
          document.getElementById( 'content' ).innerHTML = sessionStorage.getItem( 'old_content' );
    }
