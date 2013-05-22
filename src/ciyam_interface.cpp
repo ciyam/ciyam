@@ -3336,8 +3336,8 @@ void request_handler::process_request( )
                         extra_content << g_minilogin_html;
 
                      // NOTE: To limit "sign ups" to specific IP addresses simply add them
-                     // as lines to the list of "sign up testers" file (to open tall *all*
-                     // simply remove the file).
+                     // as lines to the list of "sign up testers" file (to let *all* users
+                     // have access simply remove the file).
                      set< string > testers;
                      if( file_exists( c_sign_up_testers_file ) )
                      {
@@ -3351,11 +3351,13 @@ void request_handler::process_request( )
                      {
                         if( !is_ssl )
                            extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                            << "?cmd=" << c_cmd_join << "\">" << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
+                            << "?cmd=" << c_cmd_join << "\">"
+                            << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
 
                         extra_content
                          << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
-                         << "/openid/" << lower( module_ref ) << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
+                         << "/openid/" << lower( get_storage_info( ).storage_name )
+                         << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
                      }
                   }
                }
@@ -4180,7 +4182,7 @@ void request_handler::process_request( )
 
                         string gpg_message( buffer_file( "join.txt" ) );
 
-                        str_replace( gpg_message, c_app_name, module_name );
+                        str_replace( gpg_message, c_app_name, get_storage_info( ).storage_name );
                         str_replace( gpg_message, c_user_id, req_username );
                         str_replace( gpg_message, c_password, password );
 
