@@ -3354,10 +3354,11 @@ void request_handler::process_request( )
                             << "?cmd=" << c_cmd_join << "\">"
                             << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
 
-                        extra_content
-                         << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
-                         << "/openid/" << lower( get_storage_info( ).storage_name )
-                         << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
+                        string app_name( lower( get_storage_info( ).storage_name ) );
+
+                        if( file_exists( "../openid/" + app_name, false ) )
+                           extra_content << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
+                            << "/openid/" << app_name << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
                      }
                   }
                }
