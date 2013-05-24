@@ -343,7 +343,7 @@
       <name>Encrypt_Dynamic_Content
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
@@ -577,7 +577,7 @@
       <name>Use_Embedded_Images
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>

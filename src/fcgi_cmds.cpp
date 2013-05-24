@@ -1668,8 +1668,6 @@ bool populate_list_info( list_source& list,
          key_info = old_key_info;
       }
 
-      string user_info( sess_info.user_key + ":" + sess_info.user_id );
-
       if( redo_fetch && !fetch_list_info( list.module_id, mod_info,
        class_info, sess_info, is_reverse, row_limit, key_info, list.field_list,
        filters, search_text, search_query, set_field_values, list.row_data, "", &prev, &perms ) )
@@ -1930,6 +1928,9 @@ bool fetch_user_record(
    string key_info;
    if( userhash.empty( ) )
    {
+      if( username.empty( ) )
+         throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
+
       key_info = mod_info.user_uid_field_id;
       key_info += " " + username;
    }
