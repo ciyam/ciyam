@@ -3277,6 +3277,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          else
             throw runtime_error( "unknown system password name '" + name + "'" );
       }
+      else if( command == c_cmd_ciyam_session_passtotp )
+      {
+         string pin( get_parm_val( parameters, c_cmd_parm_ciyam_session_passtotp_pin ) );
+
+         response = get_totp( atoi( pin.c_str( ) ) );
+      }
       else if( command == c_cmd_ciyam_session_sendmail )
       {
          string to( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_to ) );
@@ -3348,6 +3354,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string script_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_runscript_script_name ) );
 
          run_script( script_name );
+      }
+      else if( command == c_cmd_ciyam_session_utc_now )
+      {
+         response = date_time::standard( ).as_string( true, false );
       }
       else if( command == c_cmd_ciyam_session_utc_offset )
       {

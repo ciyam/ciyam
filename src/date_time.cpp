@@ -29,6 +29,7 @@
 
 #include "date_time.h"
 
+#include "sha1.h"
 #include "utilities.h"
 #include "read_write_stream.h"
 
@@ -3213,6 +3214,19 @@ void convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th )
 {
    julian_to_calendar( jdt, yr, mo, dy, hr, mn, sc, te, hd, th );
+}
+
+string get_totp( int pin, int freq )
+{
+   // NOTE: Use of time_t is subject to the 2038 "bug" (if 32 bit).
+   time_t tm( time( 0 ) / freq );
+
+   if( pin )
+      tm *= pin;
+
+   sha1 hash( to_string( tm ) );
+
+   return lower( hash.get_digest_as_string( ).substr( 0, 6 ) );
 }
 
 string format_udate( const udate& ud, const string& mask )
