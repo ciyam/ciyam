@@ -21,7 +21,9 @@
 #include "crypt_stream.h"
 
 #include "md5.h"
+#include "sha1.h"
 #include "base64.h"
+#include "utilities.h"
 
 #ifdef SSL_SUPPORT
 #  include <openssl/aes.h>
@@ -138,6 +140,19 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
    return output;
 }
 #endif
+
+string get_totp( int pin, int freq )
+{
+   // NOTE: Platforms with a 32 bit time_t will suffer from the 2038 *bug*.
+   time_t tm( time( 0 ) / freq );
+
+   if( pin )
+      tm *= pin;
+
+   sha1 hash( to_string( tm ) );
+
+   return lower( hash.get_digest_as_string( ).substr( 0, 6 ) );
+}
 
 string password_encrypt( const string& password, const string& key, bool use_ssl )
 {

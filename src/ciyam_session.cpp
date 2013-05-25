@@ -40,6 +40,7 @@
 #include "ciyam_base.h"
 #include "class_base.h"
 #include "auto_script.h"
+#include "crypt_stream.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
 #include "command_handler.h"
