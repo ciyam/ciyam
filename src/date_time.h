@@ -770,6 +770,8 @@ void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
 void DATE_TIME_DECL_SPEC convert_julian_to_calendar( julian jdt,
  year& yr, month& mo, day& dy, hour& hr, minute& mn, second& sc, tenth& te, hundredth& hd, thousandth& th );
 
+std::string get_totp( int pin, int freq = 30 );
+
 std::string format_udate( const udate& ud, const std::string& mask );
 std::string format_mtime( const mtime& mt, const std::string& mask );
 
