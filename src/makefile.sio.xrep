@@ -209,7 +209,7 @@
     <mysqldb>false
     <zlibuse>false
     <dynamic>false
-    <readline>false
+    <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
     <link_libs>base
     <dlink_libs>ciyam_base
     <cpp_files/>
@@ -254,7 +254,7 @@
     <mysqldb>false
     <zlibuse>false
     <dynamic>false
-    <readline>false
+    <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
@@ -380,7 +380,7 @@
     <mysqldb>false
     <zlibuse>false
     <dynamic>false
-    <readline>false
+    <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
@@ -578,7 +578,7 @@
     <mysqldb>false
     <zlibuse>`{`!`(`?`$use_zlib`)`|`@eq`(`$use_zlib`,`'0`'`)`|`@eq`(`$use_zlib`,`'false`'`)false`,true`}
     <dynamic>false
-    <readline>false
+    <readline>`{`!`(`?`$use_rdline`)`|`@eq`(`$use_rdline`,`'0`'`)`|`@eq`(`$use_rdline`,`'false`'`)false`,true`}
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
