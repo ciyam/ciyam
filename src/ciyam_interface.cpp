@@ -986,7 +986,7 @@ void request_handler::process_request( )
          session_id = c_new_session;
       }
 
-      if( is_ssl && cmd.empty( ) )
+      if( is_ssl && cmd.empty( ) && input_data.count( c_http_param_ruser ) )
          cmd = c_cmd_open;
 
       if( cmd != c_cmd_status )
@@ -1273,7 +1273,7 @@ void request_handler::process_request( )
             }
 
             bool was_openid = false;
-            if( connection_okay && cmd == c_cmd_open )
+            if( connection_okay && cmd == c_cmd_open && !userhash.empty( ) )
             {
                if( fetch_user_record( id_for_login, module_id, module_name,
                 mod_info, *p_session_info, true, true, username, userhash, password, unique_id ) )
@@ -3368,8 +3368,7 @@ void request_handler::process_request( )
                {
                   if( cmd != c_cmd_join && cmd != c_cmd_open )
                   {
-                     if( !is_ssl )
-                        extra_content << g_minilogin_html;
+                     extra_content << g_minilogin_html;
 
                      // NOTE: To limit "sign ups" to specific IP addresses simply add them
                      // as lines to the list of "sign up testers" file (to let *all* users
@@ -3385,10 +3384,9 @@ void request_handler::process_request( )
 
                      if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
                      {
-                        if( !is_ssl )
-                           extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                            << "?cmd=" << c_cmd_join << "\">"
-                            << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
+                        extra_content << "<a href=\"" << get_module_page_name( module_ref )
+                         << "?cmd=" << c_cmd_join << "\">"
+                         << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
 
                         string app_name( lower( get_storage_info( ).storage_name ) );
 
