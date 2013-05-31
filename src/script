@@ -12,7 +12,7 @@ else
  fi
  ./ciyam_client -echo -quiet -no_prompt < $1 >>$1.log
 
- cat $1.log >>script.log
+ cat $1.log >>ciyam_script.log
 
  rm $1
  rm $1.log

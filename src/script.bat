@@ -12,7 +12,7 @@ echo %date% %time% [%2] >>%1.log
 :skip
 ciyam_client -echo -quiet -no_prompt < %1 >>%1.log
 
-type %1.log >> script.log
+type %1.log >> ciyam_script.log
 
 del %1
 del %1.log
