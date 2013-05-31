@@ -1,40 +1,38 @@
 <div align="center">
 <div align="left">
 <p>
-@@sign_up_introduction
+@@ssl_sign_up_introduction
 <br/>
-@@sign_up_extra_details
+<br/>
+@@ssl_sign_up_extra_details
 <br/>
 @@error_message
 </p>
    <form method="POST" name="sign_up" id="sign_up"
     onsubmit="return dyn_load( this,
      'requsername=' + escape( document.sign_up.username.value )
-     + '&accttype=' + document.sign_up.account_type.value
-     + '&gpgpubkey=' + encodeURIComponent( document.sign_up.gpg_public_key.value ), false );">
+     + '&email=' + escape( document.sign_up.email.value )
+     + '&accttype=' + document.sign_up.account_type.value, false );">
        <label for="username">@@user_id<br/>
           <input type="text" name="username" tabindex="1"
            id="username" size="20" maxlength="30" validate="reqd" value="@@user_id" />
        </label>
        <br/>
        <br/>
+       <label for="email">@@email<br/>
+          <input type="text" name="email" tabindex="3"
+           id="email" size="30" maxlength="50" validate="reqd" value="@@email" />
+       </label>
+       <br/>
+       <br/>
        <label for="account_type">@@account_type<br/>
-          <select name="account_type" id="account_type"">
+         <select name="account_type" id="account_type">
              <option value="0" @@selected_0>@@account_type_0</option>
              <option value="1" @@selected_1>@@account_type_1</option>
              <option value="2" @@selected_2>@@account_type_2</option>
              <option value="3" @@selected_3>@@account_type_3</option>
           </select>
        </label>
-       <br/>
-       <br/>
-       <label for="gpg_public_key">@@gpg_public_key<br/>
-          <textarea name="gpg_public_key" rows="20" cols="100" tabindex="3"
-           id="gpg_public_key" size="25" maxlength="60000" validate="reqd">@@gpg_public_key</textarea>
-       </label>
-       <br/>
-       <br/>
-@@sign_up_gpg_expert_tip
        <br/>
        <br/>
        <label for="submit" id="submit">

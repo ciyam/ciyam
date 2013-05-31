@@ -2099,7 +2099,7 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
 
 void add_user( const string& user_id, const string& user_name,
  const string& email, const string& clone_key, const string& password,
- string& error_message, const module_info& mod_info, session_info& sess_info )
+ string& error_message, const module_info& mod_info, session_info& sess_info, string* p_new_key, bool active )
 {
    bool okay = true;
    string new_user_cmd( "perform_create" );
@@ -2116,6 +2116,8 @@ void add_user( const string& user_id, const string& user_name,
    if( password.empty( ) )
       new_user_cmd += "," + mod_info.user_hash_field_id + "=" + escaped( uid, ",\"" );
    new_user_cmd += "," + mod_info.user_name_field_id + "=" + escaped( name, ",\"" );
+
+   new_user_cmd += "," + mod_info.user_active_field_id + "=" + to_string( active );
 
    if( !email.empty( ) && !mod_info.user_email_field_id.empty( ) )
       new_user_cmd += "," + mod_info.user_email_field_id + "=" + escaped( email, ",\"" );
@@ -2140,6 +2142,8 @@ void add_user( const string& user_id, const string& user_name,
          {
             if( extra_response != c_response_okay )
                error_message = escape_markup( response + extra_response );
+            else if( p_new_key )
+               *p_new_key = response;
          }
       }
       else

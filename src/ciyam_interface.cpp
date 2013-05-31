@@ -121,6 +121,7 @@ const char* const c_signup_file = "signup.htms";
 const char* const c_activate_file = "activate.htms";
 const char* const c_password_file = "password.htms";
 const char* const c_minilogin_file = "minilogin.htms";
+const char* const c_ssl_signup_file = "ssl_signup.htms";
 const char* const c_ciyam_interface_file = "ciyam_interface.htms";
 const char* const c_login_persistent_file = "login_persistent.htms";
 const char* const c_password_persistent_file = "password_persistent.htms";
@@ -149,12 +150,14 @@ const char* const c_nbsp = "&nbsp;";
 
 string g_nbsp( c_nbsp );
 
-const char* const c_title = "@@title";
+const char* const c_email = "@@email";
 const char* const c_login = "@@login";
+const char* const c_title = "@@title";
 const char* const c_checked = "@@checked";
 const char* const c_user_id = "@@user_id";
 const char* const c_app_name = "@@app_name";
 const char* const c_password = "@@password";
+const char* const c_selected_ = "@@selected_";
 const char* const c_user_name = "@@user_name";
 const char* const c_persistent = "@@persistent";
 const char* const c_account_type = "@@account_type";
@@ -175,6 +178,8 @@ const char* const c_open_up_introduction = "@@open_up_introduction";
 const char* const c_sign_up_introduction = "@@sign_up_introduction";
 const char* const c_sign_up_extra_details = "@@sign_up_extra_details";
 const char* const c_sign_up_gpg_expert_tip = "@@sign_up_gpg_expert_tip";
+const char* const c_ssl_sign_up_introduction = "@@ssl_sign_up_introduction";
+const char* const c_ssl_sign_up_extra_details = "@@ssl_sign_up_extra_details";
 
 const char* const c_form_content_comment = "<!-- @@form_content -->";
 const char* const c_extra_content_comment = "<!-- @@extra_content -->";
@@ -202,6 +207,7 @@ string g_signup_html;
 string g_password_html;
 string g_activate_html;
 string g_minilogin_html;
+string g_ssl_signup_html;
 string g_ciyam_interface_html;
 string g_login_persistent_html;
 string g_password_persistent_html;
@@ -920,6 +926,13 @@ void request_handler::process_request( )
       module_name = input_data[ c_param_module ];
       module_ref = get_storage_info( ).get_module_ref( module_name );
 
+      if( cmd == c_cmd_activate && ( !username.empty( ) || !userhash.empty( ) ) )
+      {
+         data.erase( );
+         user.erase( );
+         cmd = c_cmd_login;
+      }
+
       bool new_session = true;
       bool is_activation = ( cmd == c_cmd_activate );
 
@@ -979,6 +992,10 @@ void request_handler::process_request( )
       if( cmd != c_cmd_status )
          unique_id = get_unique( g_id, input_data[ c_http_param_raddr ] );
 
+      string activation_file;
+      if( is_activation )
+         activation_file = data + chksum;
+
       if( session_id.empty( ) || session_id == c_new_session )
       {
          if( cmd == c_cmd_open )
@@ -992,7 +1009,8 @@ void request_handler::process_request( )
             }
          }
 
-         if( !using_anonymous && username.empty( ) && userhash.empty( ) && password.empty( ) )
+         if( username.empty( ) && userhash.empty( ) && password.empty( )
+          && ( !using_anonymous || ( is_activation && file_exists( activation_file ) ) ) )
          {
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -1010,7 +1028,11 @@ void request_handler::process_request( )
                string activate_html( g_activate_html );
                str_replace( activate_html, c_user_id, user );
 
-               output_login_logout( module_name, extra_content, activate_html );
+               string message( "<p><b>"
+                + string_message( GDS( c_display_provide_password_to_activate ),
+                make_pair( c_display_provide_password_to_activate_parm_id, user ) ) + "</b></p>" );
+
+               output_login_logout( module_name, extra_content, activate_html, message );
             }
          }
          else
@@ -1275,6 +1297,9 @@ void request_handler::process_request( )
                {
                   if( is_activation )
                   {
+                     if( !file_exists( activation_file ) )
+                        throw runtime_error( GDS( c_display_invalid_or_already_activated ) );
+
                      string field_list( mod_info.user_uid_field_id );
                      field_list += "," + mod_info.user_pwd_field_id;
 
@@ -1319,13 +1344,24 @@ void request_handler::process_request( )
 
                      vector< pair< string, string > > field_value_pairs;
 
-                     activate_password = password_encrypt( activate_password, get_server_id( ) );
+                     string encrypted_password( password_encrypt( activate_password, get_server_id( ) ) );
 
-                     field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, activate_password ) );
+                     field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, encrypted_password ) );
                      field_value_pairs.push_back( make_pair( mod_info.user_active_field_id, "1" ) );
+
+                     p_session_info->user_key = data;
 
                      if( !perform_update( module_id, mod_info.user_class_id, data, field_value_pairs, *p_session_info ) )
                         throw runtime_error( "unexpected error occurred processing activation" );
+
+                     temp_session = false;
+                     file_remove( activation_file );
+
+                     is_authorised = true;
+                     using_anonymous = false;
+                     password = activate_password;
+                     p_session_info->user_id = user;
+                     userhash = sha256( user + activate_password ).get_digest_as_string( );
                   }
 
                   if( using_anonymous )
@@ -4019,23 +4055,26 @@ void request_handler::process_request( )
 
                bool has_completed = false;
                bool had_unexpected_error = false;
-               string account_type, req_username, oreq_username, gpg_public_key;
+               string email, account_type, req_username, oreq_username, gpg_public_key;
 
-               if( input_data.count( c_param_gpgpubkey ) )
+               email = input_data[ c_param_email ];
+               req_username = oreq_username = input_data[ c_param_requsername ];
+
+               if( !email.empty( ) || input_data.count( c_param_gpgpubkey ) )
                {
                   account_type = input_data[ c_param_accttype ];
-                  req_username = input_data[ c_param_requsername ];
                   gpg_public_key = input_data[ c_param_gpgpubkey ];
 
                   bool is_help_request = false;
-                  string::size_type pos = req_username.find( "help " );
-                  if( pos == 0 )
+                  if( !gpg_public_key.empty( ) )
                   {
-                     is_help_request = true;
-                     req_username.erase( 0, 5 );
+                     string::size_type pos = req_username.find( "help " );
+                     if( pos == 0 )
+                     {
+                        is_help_request = true;
+                        req_username.erase( 0, 5 );
+                     }
                   }
-
-                  oreq_username = req_username;
 
                   if( req_username != "anon" )
                   {
@@ -4049,7 +4088,7 @@ void request_handler::process_request( )
 
                      if( !fetch_item_info( module_id, mod_info,
                       mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info ) )
-                        throw runtime_error( "unexpected error occurred checking activation" );
+                        throw runtime_error( "unexpected error occurred checking for user" );
 
                      vector< string > user_data;
                      split( user_info.second, user_data );
@@ -4061,6 +4100,9 @@ void request_handler::process_request( )
                         error_message = "<p class=\"error\" align=\"center\">"
                          + string_message( GDS( c_display_user_id_has_already_been_taken ),
                          make_pair( c_display_user_id_has_already_been_taken_parm_id, req_username ) ) + "</p>";
+
+                     if( is_ssl )
+                        msleep( 2000 );
                   }
                   else
                   {
@@ -4068,7 +4110,15 @@ void request_handler::process_request( )
                      req_username += uuid( ).as_string( ).substr( 0, 10 );\
                   }
 
-                  if( error_message.empty( ) )
+                  string clone_key;
+                  map< string, string > sign_up_types_map;
+                  if( file_exists( c_sign_up_types_map ) )
+                  {
+                     buffer_file_items( c_sign_up_types_map, sign_up_types_map );
+                     clone_key = sign_up_types_map[ account_type ];
+                  }
+
+                  if( error_message.empty( ) && !gpg_public_key.empty( ) )
                   {
                      string key, email_addr;
                      regex expr( "-----BEGIN PGP PUBLIC KEY BLOCK-----.*-----END PGP PUBLIC KEY BLOCK-----" );
@@ -4218,14 +4268,6 @@ void request_handler::process_request( )
                            password = hash_password( g_id + password + req_username );
                            password = password_encrypt( password, get_server_id( ) );
 
-                           string clone_key;
-                           map< string, string > sign_up_types_map;
-                           if( file_exists( c_sign_up_types_map ) )
-                           {
-                              buffer_file_items( c_sign_up_types_map, sign_up_types_map );
-                              clone_key = sign_up_types_map[ account_type ];
-                           }
-
                            bool is_anon_email_addr = false;
                            string::size_type pos = email_addr.find( "@" );
                            if( pos != string::npos )
@@ -4295,6 +4337,56 @@ void request_handler::process_request( )
                         }
                      }
                   }
+                  else if( error_message.empty( ) )
+                  {
+                     string encrypted_email( password_encrypt( email, get_server_id( ) ) );
+
+                     string new_key;
+                     add_user( req_username, req_username, encrypted_email,
+                      clone_key, req_username, error_message, mod_info, *p_session_info, &new_key, false );
+
+                     if( error_message.empty( ) )
+                     {
+                        string smtp_result;
+                        ostringstream osstr;
+
+                        string checksum( get_checksum( "activate" + req_username + new_key ) );
+
+                        activation_file = new_key + checksum;
+
+                        osstr << string_message( GDS( c_display_activation_email_content ),
+                         make_pair( c_display_activation_email_content_perm_user_id, req_username ) )
+                         << "\n\n" << ( is_ssl ? "https" : "http" ) << "://" << input_data[ c_http_param_host ]
+                         << "/" << lower( get_storage_info( ).storage_name ) << "/" << get_module_page_name( module_ref, true )
+                         << "?cmd=activate&data=" << new_key << "&user=" << req_username << "&chksum=" << checksum;
+
+                        simple_command( *p_session_info, "sendmail "
+                         + email + " \"" + GDS( c_display_welcome_aboard ) + "!\" \""
+                         + osstr.str( ) + "\"", &smtp_result );
+
+                        if( !smtp_result.empty( ) && smtp_result != c_response_okay )
+                           error_message = "<p class=\"error\" align=\"center\">" + smtp_result + "</p>";
+                     }
+
+                     if( !error_message.empty( ) )
+                     {
+                        if( error_message.find( c_response_error ) == 0 )
+                           error_message.erase( 0, strlen( c_response_error ) );
+
+                        error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
+                     }
+                     else
+                     {
+                        has_completed = true;
+                        ofstream outf( activation_file.c_str( ) );
+
+                        extra_content << "<p><b>"
+                         << GDS( c_display_welcome_aboard ) << " " << oreq_username << " !<br/><br/>";
+
+                        extra_content << "<p>" << string_message( GDS( c_display_activation_email_details ),
+                         make_pair( c_display_activation_email_details_parm_email, email ) ) << "</p>";
+                     }
+                  }
 
                   if( had_unexpected_error )
                      error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_sorry_unexpected_error_processing_gpg ) + "</p>";
@@ -4302,12 +4394,22 @@ void request_handler::process_request( )
 
                if( !has_completed )
                {
-                  string signup_html( g_signup_html );
+                  string signup_html( !is_ssl ? g_signup_html : g_ssl_signup_html );
 
                   str_replace( signup_html, c_error_message, error_message );
 
                   str_replace( signup_html, c_user_id, oreq_username );
-                  str_replace( signup_html, c_gpg_public_key, gpg_public_key );
+
+                  if( is_ssl )
+                  {
+                     str_replace( signup_html, c_email, email );
+                     str_replace( signup_html, c_password, password );
+                     str_replace( signup_html, c_verify_password, password );
+                  }
+                  else
+                     str_replace( signup_html, c_gpg_public_key, gpg_public_key );
+
+                  str_replace( signup_html, string( c_selected_ + account_type ).c_str( ), "selected" );
 
                   error_message.erase( );
 
@@ -4931,7 +5033,7 @@ void request_handler::process_request( )
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
       else
-         extra_content << "<input type=\"hidden\" value=\"uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
+         extra_content << "<input type=\"hidden\" value=\"serverId = '" + g_id + "'; uniqueId = '" + unique_id + "';\" id=\"extra_content_func\"/>\n";
    }
    catch( ... )
    {
@@ -5122,6 +5224,7 @@ int main( int argc, char* argv[ ] )
       g_activate_html = buffer_file( c_activate_file );
       g_password_html = buffer_file( c_password_file );
       g_minilogin_html = buffer_file( c_minilogin_file );
+      g_ssl_signup_html = buffer_file( c_ssl_signup_file );
 
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
@@ -5158,10 +5261,6 @@ int main( int argc, char* argv[ ] )
       str_replace( g_signup_html, c_sign_up_extra_details, GDS( c_display_sign_up_main_form_client_security_extra_details ) );
       str_replace( g_signup_html, c_sign_up_gpg_expert_tip, GDS( c_display_sign_up_main_form_client_security_gpg_expert_tip ) );
 
-      str_replace( g_minilogin_html, c_login, GDS( c_display_login ) );
-      str_replace( g_minilogin_html, c_user_id, GDS( c_display_user_id ) );
-      str_replace( g_minilogin_html, c_password, GDS( c_display_password ) );
-
       str_replace( g_activate_html, c_login, GDS( c_display_login ) );
       str_replace( g_activate_html, c_password, GDS( c_display_password ) );
       str_replace( g_activate_html, c_persistent, GDS( c_display_automatically_login ) );
@@ -5171,6 +5270,23 @@ int main( int argc, char* argv[ ] )
       str_replace( g_password_html, c_new_password, GDS( c_display_new_password ) );
       str_replace( g_password_html, c_change_password, GDS( c_display_change_password ) );
       str_replace( g_password_html, c_verify_new_password, GDS( c_display_verify_new_password ) );
+
+      str_replace( g_minilogin_html, c_login, GDS( c_display_login ) );
+      str_replace( g_minilogin_html, c_user_id, GDS( c_display_user_id ) );
+      str_replace( g_minilogin_html, c_password, GDS( c_display_password ) );
+
+      str_replace( g_ssl_signup_html, c_email, GDS( c_display_email ) );
+      str_replace( g_ssl_signup_html, c_user_id, GDS( c_display_user_id ) );
+      str_replace( g_ssl_signup_html, c_password, GDS( c_display_password ) );
+      str_replace( g_ssl_signup_html, c_verify_password, GDS( c_display_verify_password ) );
+      str_replace( g_ssl_signup_html, c_account_type, GDS( c_display_account_type ) );
+      str_replace( g_ssl_signup_html, c_send_request, GDS( c_display_send_request ) );
+      str_replace( g_ssl_signup_html, c_account_type_0, GDS( c_display_account_type_0 ) );
+      str_replace( g_ssl_signup_html, c_account_type_1, GDS( c_display_account_type_1 ) );
+      str_replace( g_ssl_signup_html, c_account_type_2, GDS( c_display_account_type_2 ) );
+      str_replace( g_ssl_signup_html, c_account_type_3, GDS( c_display_account_type_3 ) );
+      str_replace( g_ssl_signup_html, c_ssl_sign_up_introduction, GDS( c_display_ssl_sign_up_main_form ) );
+      str_replace( g_ssl_signup_html, c_ssl_sign_up_extra_details, GDS( c_display_ssl_sign_up_main_form_extra_details ) );
 
       if( file_exists( c_login_persistent_file ) )
       {

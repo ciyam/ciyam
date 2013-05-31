@@ -683,6 +683,12 @@ function process( )
 
    document.body.style.opacity = 25;
 
+   if( xmlReq.responseText == null || xmlReq.responseText.length == 0 )
+   {
+      alert( displayTimeout );
+      return;
+   }
+
    var response = xmlReq.responseText.substring( 2 );
 
    var base64test = /[^A-Za-z0-9\+\/\=]/g;
@@ -992,10 +998,7 @@ function hash_password( salt, pwd, skip_id )
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
 
    if( !skip_id && !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
-   {
       sessionStorage.setItem( 'key', retval );
-      sessionStorage.setItem( 'key', retval );
-   }
 
    return retval;
 }
