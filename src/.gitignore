@@ -93,6 +93,7 @@ for_*.spec.xrep
 blog*.jpg
 blog*.png
 user*.jpg
+user_*.txt
 photo_*.jpg
 gen_photo_*.xrep
 Forum_*.gif
