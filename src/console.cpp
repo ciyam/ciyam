@@ -32,11 +32,15 @@
 
 #include "console.h"
 
-#ifdef RDLINE_SUPPORT
+#include "config.h"
+
+#ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
 extern "C"
 {
 #  include <readline/readline.h>
 }
+#  endif
 #endif
 
 using namespace std;
