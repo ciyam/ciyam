@@ -4430,7 +4430,13 @@ void request_handler::process_request( )
                      clone_key = sign_up_types_map[ account_type ];
                   }
 
-                  add_user( userhash, req_username, input_data[ c_openid_ext_email ],
+                  string email( input_data[ c_openid_ext_email ] );
+                  string encrypted_email;
+
+                  if( !email.empty( ) )
+                     encrypted_email = password_encrypt( email, get_server_id( ) );
+
+                  add_user( userhash, req_username, encrypted_email,
                    clone_key, "", error_message, mod_info, *p_session_info );
 
                   if( !error_message.empty( ) )

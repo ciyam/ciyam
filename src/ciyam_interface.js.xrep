@@ -1345,7 +1345,7 @@ function get_all_field_values( form )
             if( form.elements[ i ].getAttribute( 'salt' ) == '1' )
                salt = value;
 
-            if( form.elements[ i ].getAttribute( 'hash' ) == '1' )
+            if( value != '' && form.elements[ i ].getAttribute( 'hash' ) == '1' )
             {
                if( salt == '' )
                   alert( '*** no salt found possibly bad hash created ***' );
