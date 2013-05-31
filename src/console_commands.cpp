@@ -17,12 +17,6 @@
 #  include <stdexcept>
 #  ifdef __GNUG__
 #     include <unistd.h>
-#     ifdef RDLINE_SUPPORT
-extern "C"
-{
-#        include <readline/history.h>
-}
-#     endif
 #  endif
 #endif
 
