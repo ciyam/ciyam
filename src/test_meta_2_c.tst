@@ -30,7 +30,9 @@ Hide_Email_Address,M001C101F115
 Permissions,M001C101F116
 Is_Self_Or_Admin,M001C101F117
 Key,M001C101F118
-Dummy_Self,M001C101F119
+No_Email,M001C101F119
+No_Email_Padding,M001C101F120
+Dummy_Self,M001C101F121
 
 > perform_fetch Meta Enum "Id " Name,Id -min
 primitive,E000
