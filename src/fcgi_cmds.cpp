@@ -2384,7 +2384,7 @@ void save_record( const string& module_id,
 
          // NOTE: A fetch is required for manually provided foreign keys (where an
          // alternate key has been provided rather than the actual foreign key itself).
-         fld_info fld( ( vici->second )->fields[ i ] );
+         fld_info fld( ( vici->second )->fields[ j ] );
          string::size_type pos = fld.pfield.find( '+' );
          if( pos != string::npos && fld.pfield.substr( pos + 1 ) != c_key_field )
          {
