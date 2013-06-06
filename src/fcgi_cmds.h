@@ -89,8 +89,8 @@ void add_quick_link( const std::string& module_ref,
 
 void save_record( const std::string& module_id,
  const std::string& flags, const std::string& app, const std::string& chk,
- const std::string& field, const std::string& extra, const std::string& exec,
- const std::string& cont, bool is_new_record, const std::map< std::string, std::string >& new_field_and_values,
+ const std::string& field, const std::string& extra, const std::string& exec, const std::string& cont,
+ const std::string& fieldlist, bool is_new_record, const std::map< std::string, std::string >& new_field_and_values,
  const std::map< std::string, std::string >& extra_field_info, view_info_const_iterator& vici,
  const view_source& view, int vtab_num, session_info& sess_info, std::string& act, std::string& data,
  std::string& new_key, std::string& error_message, bool& was_invalid, bool& had_send_or_recv_error );
