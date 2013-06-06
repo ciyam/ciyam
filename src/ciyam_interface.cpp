@@ -2118,7 +2118,7 @@ void request_handler::process_request( )
                       && !extra_field_info.count( view.create_user_key_field ) )
                         extra_field_info.insert( make_pair( view.create_user_key_field, p_session_info->user_key ) );
 
-                     save_record( module_id, flags, app, chk, field, extra, exec, cont,
+                     save_record( module_id, flags, app, chk, field, extra, exec, cont, fieldlist,
                       is_new_record, new_field_and_values, extra_field_info, vici, view, vtab_num,
                       *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
                   }
@@ -4292,6 +4292,8 @@ void request_handler::process_request( )
                               }
                            }
 
+                           // FUTURE: It would be better if the email was sent from the User class rather
+                           // than being done separately here.
                            if( error_message.empty( ) )
                            {
                               if( is_help_request || is_anon_email_addr )
@@ -4343,6 +4345,8 @@ void request_handler::process_request( )
                      add_user( req_username, req_username, encrypted_email,
                       clone_key, req_username, error_message, mod_info, *p_session_info, &new_key, false );
 
+                     // FUTURE: It would be better if the email was sent from the User class rather
+                     // than being done separately here.
                      if( error_message.empty( ) )
                      {
                         string smtp_result;

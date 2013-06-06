@@ -2259,8 +2259,8 @@ void add_quick_link( const string& module_ref,
 
 void save_record( const string& module_id,
  const string& flags, const string& app, const string& chk,
- const string& field, const string& extra, const string& exec,
- const string& cont, bool is_new_record, const map< string, string >& new_field_and_values,
+ const string& field, const string& extra, const string& exec, const string& cont,
+ const string& fieldlist, bool is_new_record, const map< string, string >& new_field_and_values,
  const map< string, string >& extra_field_info, view_info_const_iterator& vici, const view_source& view, int vtab_num,
  session_info& sess_info, string& act, string& data, string& new_key, string& error_message, bool& was_invalid, bool& had_send_or_recv_error )
 {
@@ -2290,217 +2290,48 @@ void save_record( const string& module_id,
    vector< string > values;
    split( app, values );
 
+   vector< string > fields;
+   split( fieldlist, fields );
+
    size_t num = 0;
    size_t used = 0;
    string field_values;
    bool found_field = false;
    set< string > found_new_fields;
 
-   for( size_t i = 0; i < view.field_ids.size( ); i++ )
+   for( size_t i = 0; i < fields.size( ); i++ )
    {
-      string field_id( view.field_ids[ i ] );
-      string value_id( view.value_ids[ i ] );
+      string field_id( fields[ i ] );
 
-      // FUTURE: The skipping of fields here repeats what is already being done in
-      // the output of the "view" itself. The "user_field_info" should probably be
-      // used here instead to avoid unnecessary repetition and potential bugs when
-      // code changes are performed.
+      string next( values.at( num++ ) );
 
-      // NOTE: Fields that were included in the view but not editable must be skipped.
       if( field_id == c_key_field )
       {
          if( is_new_record )
-            key_info = values.at( num++ );
+            key_info = next;
          continue;
       }
 
-      // NOTE: Also need to skip fields that were protected or relegated by modifiers.
-      uint64_t state = from_string< uint64_t >( flags );
-
-      string modifier;
-      bool skip_field = false;
-      for( size_t j = 0; j < ARRAY_SIZE( state_modifiers ); j++ )
+      size_t j;
+      for( j = 0; j < view.field_ids.size( ); j++ )
       {
-         if( state & state_modifiers[ j ] )
-         {
-            if( view.vici->second->fields[ i ].modifiers.count( state_modifiers[ j ] ) )
-            {
-               modifier = view.vici->second->fields[ i ].modifiers.find( state_modifiers[ j ] )->second;
-               if( modifier == c_modifier_effect_relegate || modifier == c_modifier_effect_protect )
-                  skip_field = true;
-               break;
-            }
-         }
+         if( view.field_ids[ j ] == field_id )
+            break;
       }
 
-      if( data == view.root_folder
-       && view.self_relationships.find( field_id ) != view.self_relationships.end( ) )
-         continue;
+      if( j == view.field_ids.size( ) )
+         throw runtime_error( "unable to find field '" + field_id + "' in field_ids" );
 
       map< string, string > extra_data;
-      if( !view.vici->second->fields[ i ].extra.empty( ) )
-         parse_field_extra( view.vici->second->fields[ i ].extra, extra_data );
+      if( !view.vici->second->fields[ j ].extra.empty( ) )
+         parse_field_extra( view.vici->second->fields[ j ].extra, extra_data );
 
-      // NOTE: Skip file fields and any protected and hidden fields (unless
-      // they are to be provided with an explicit "new value" or "defcurrent").
-      if( extra_data.count( c_field_extra_file )
-       || extra_data.count( c_field_extra_flink )
-       || extra_data.count( c_field_extra_image )
-       || ( ( skip_field
-       || view.hidden_fields.count( value_id )
-       || view.protected_fields.count( value_id ) )
-       && ( !is_new_record
-       || ( !view.defcurrent_fields.count( value_id )
-       && !view.new_field_values.count( field_id ) ) ) ) )
-         continue;
-
-      string owner;
-
-      if( !view.owning_user_field.empty( ) && view.fk_field_values.count( view.owning_user_field ) )
-         owner = view.fk_field_values.find( view.owning_user_field )->second;
-
-      bool is_record_owner;
-      if( owner == sess_info.user_key )
-         is_record_owner = true;
-      else
-         is_record_owner = false;
-
-      if( !view.is_effective_owner_field.empty( ) )
-      {
-         int is_effective_owner_field = atoi( view.field_values.find( view.is_effective_owner_field )->second.c_str( ) );
-         if( is_effective_owner_field )
-            is_record_owner = true;
-      }
-
-      // NOTE: If is the "user_info" view and the key matches the current user then "is_owner".
-      if( view.vici->second->id == get_storage_info( ).user_info_view_id && data == sess_info.user_key )
-         is_record_owner = true;
-
-      // NOTE: If session is anonymous then will never be considered as a record owner.
-      if( sess_info.user_id.empty( ) )
-         is_record_owner = false;
-
-      if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
-         continue;
-
-      if( !is_new_record && !is_record_owner && view.owner_fields.count( value_id ) )
-         continue;
-
-      if( !is_new_record && !is_record_owner
-       && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
-         continue;
-
-      if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
-       && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
-         continue;
-
-      // NOTE: If the user is anonymous or has "level 0" security then the security level was not displayed.
-      if( extra_data.count( c_field_extra_security_level ) )
-      {
-         if( !view.enum_fields.count( value_id ) )
-            throw runtime_error( "security level enum not found for " + value_id );
-
-         const enum_info& info(
-          get_storage_info( ).enums.find( view.enum_fields.find( value_id )->second )->second );
-
-         if( sess_info.user_id.empty( ) || info.values[ 0 ].first == sess_info.user_slevel )
-         {
-            num++;
-            continue;
-         }
-      }
-
-      // NOTE: If the field belongs to a tab which the user does not have access to
-      // then this field must be skipped (otherwise URL tampering could allow these
-      // fields to appear as 'vtab' is not part of the URL checksum).
-      if( ( view.field_tab_ids[ i ] != 0 && vtab_num == view.field_tab_ids[ i ] ) )
-      {
-         map< string, string > extra_data;
-         if( !view.tab_extras[ vtab_num - 1 ].empty( ) )
-            parse_field_extra( view.tab_extras[ vtab_num - 1 ], extra_data );
-
-         if( !sess_info.is_admin_user
-          && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
-            continue;
-
-         if( !is_new_record && !is_record_owner
-          && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
-            continue;
-
-         if( !is_new_record && !sess_info.is_admin_user && !is_record_owner
-          && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
-            continue;
-
-         if( sess_info.user_id.empty( ) && extra_data.count( c_field_extra_no_anon ) )
-            continue;
-      }
-
-      string next;
-
-      if( field_id == view.create_user_key_field
-       || field_id == view.modify_user_key_field
-       || field_id == view.create_datetime_field
-       || field_id == view.modify_datetime_field )
-         continue;
-      else if( view.date_fields.count( value_id ) )
-      {
-         if( view.hidden_fields.count( value_id ) || view.protected_fields.count( value_id ) )
-         {
-            if( view.defcurrent_fields.count( value_id ) )
-            {
-               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-               next = dt.get_date( ).as_string( );
-            }
-         }
-         else
-            next = values.at( num++ );
-
-         if( !next.empty( ) )
-            next = format_date( udate( next ) );
-      }
-      else if( view.time_fields.count( value_id ) )
-      {
-         if( view.hidden_fields.count( value_id ) || view.protected_fields.count( value_id ) )
-         {
-            if( view.defcurrent_fields.count( value_id ) )
-            {
-               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-               next = dt.get_time( ).as_string( );
-            }
-         }
-         else
-            next = values.at( num++ );
-
-         if( !next.empty( ) )
-            next = format_time( mtime( next ) );
-      }
-      else if( view.datetime_fields.count( value_id ) )
-      {
-         if( view.hidden_fields.count( value_id ) || view.protected_fields.count( value_id ) )
-         {
-            if( view.defcurrent_fields.count( value_id ) )
-            {
-               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-               next = dt.as_string( );
-            }
-         }
-         else
-            next = values.at( num++ );
-
-         if( !next.empty( ) )
-         {
-            date_time dt( next );
-            next = format_date_time( dt );
-         }
-      }
-      else if( view.int_fields.count( value_id ) )
+      if( view.int_fields.count( field_id ) )
       {
          if( new_field_and_values.count( field_id ) )
             next = new_field_and_values.find( field_id )->second;
-         else if( !view.hidden_fields.count( value_id ) && !view.protected_fields.count( value_id ) )
+         else
          {
-            next = values.at( num++ );
-
             if( extra_data.count( c_field_extra_int_type ) )
             {
                string int_type = extra_data[ c_field_extra_int_type ];
@@ -2514,14 +2345,12 @@ void save_record( const string& module_id,
             }
          }
       }
-      else if( view.numeric_fields.count( value_id ) )
+      else if( view.numeric_fields.count( field_id ) )
       {
          if( new_field_and_values.count( field_id ) )
             next = new_field_and_values.find( field_id )->second;
-         else if( !view.hidden_fields.count( value_id ) && !view.protected_fields.count( value_id ) )
+         else
          {
-            next = values.at( num++ );
-
             if( extra_data.count( c_field_extra_numeric_type ) )
             {
                string numeric_type = extra_data[ c_field_extra_numeric_type ];
@@ -2533,11 +2362,9 @@ void save_record( const string& module_id,
             }
          }
       }
-      else if( view.password_fields.count( value_id )
-       || view.encrypted_fields.count( value_id ) || view.hpassword_fields.count( value_id ) )
+      else if( view.password_fields.count( field_id )
+       || view.encrypted_fields.count( field_id ) || view.hpassword_fields.count( field_id ) )
       {
-         next = values.at( num++ );
-
          if( !next.empty( ) )
             next = password_encrypt( next, get_server_id( ) );
       }
@@ -2551,16 +2378,9 @@ void save_record( const string& module_id,
             next = new_field_and_values.find( field_id )->second;
          else if( view.new_field_values.count( field_id ) )
          {
-            if( !skip_field
-             && !view.hidden_fields.count( value_id )
-             && !view.protected_fields.count( value_id ) )
-               next = escaped( values.at( num++ ), "," );
-
             if( next.empty( ) )
                next = view.new_field_values.find( field_id )->second;
          }
-         else
-            next = escaped( values.at( num++ ), "," );
 
          // NOTE: A fetch is required for manually provided foreign keys (where an
          // alternate key has been provided rather than the actual foreign key itself).
@@ -2586,7 +2406,7 @@ void save_record( const string& module_id,
          }
       }
 
-      if( view.html_fields.count( value_id ) )
+      if( view.html_fields.count( field_id ) )
          force_html_tags_to_lower_case( next );
 
       if( field_id == field )
