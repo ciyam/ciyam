@@ -161,6 +161,9 @@ bool get_response( string& text, tcp_socket& socket,
             if( prefix != c_smtp_prefix_info && prefix != c_smtp_prefix_okay
              && prefix != c_smtp_prefix_auth && prefix != c_smtp_prefix_user && prefix != c_smtp_prefix_data )
                okay = false;
+            // NOTE: If the prefix is followed by a "space" then no further lines are expected.
+            else if( response[ c_smtp_prefix_length ] == ' ' )
+               break;
          }
          else
             okay = false;
