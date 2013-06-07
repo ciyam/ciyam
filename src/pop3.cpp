@@ -59,8 +59,8 @@ namespace
 // DELE n     ;delete a message
 // QUIT
 
-const size_t c_initial_timeout = 25000;
-const size_t c_subsequent_timeout = 5000;
+const size_t c_initial_timeout = 15000;
+const size_t c_subsequent_timeout = 1500;
 const size_t c_final_response_timeout = 500;
 
 // NOTE: The standard POP3 port is 110. For SSL it is usually 995 and for TLS it's usually 110.
