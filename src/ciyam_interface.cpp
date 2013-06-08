@@ -367,6 +367,9 @@ void destroy_user_session_info( const string& user_id, const char* p_module = 0 
 
    if( si != g_sessions.end( ) )
    {
+      if( si->second->locked )
+         throw runtime_error( GDS( c_display_you_are_currently_logged_in ) );
+
       delete si->second;
       g_sessions.erase( si );
    }
