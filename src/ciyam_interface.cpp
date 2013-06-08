@@ -76,6 +76,7 @@
 #include "fs_iterator.h"
 #include "crypt_stream.h"
 
+#define ALWAYS_REPLACE_SESSION
 //#define ALLOW_MULTIPLE_RECORD_ENTRY
 
 #ifdef _WIN32
@@ -1407,9 +1408,13 @@ void request_handler::process_request( )
                    || ( !permit_module_switching
                    && has_user_session_info( p_session_info->user_id, p_session_info->user_module.c_str( ) ) ) ) )
                   {
-                     // NOTE: If a new persistent session has started but an old one still exists then remove
-                     // the old one (i.e. assume that the user's browser either was closed or had crashed).
+                     // NOTE: If a new (persistent) session has started but an old one still exists then remove
+                     // the old one (i.e. assume the browser window was closed or that the browser had crashed).
+#ifdef ALWAYS_REPLACE_SESSION
+                     if( created_session )
+#else
                      if( created_session && persistent == c_true )
+#endif
                      {
                         is_replacement_session = true;
                         destroy_user_session_info( p_session_info->user_id, permit_module_switching ? 0 : p_session_info->user_module.c_str( ) );
