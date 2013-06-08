@@ -2303,7 +2303,7 @@ void save_record( const string& module_id,
    {
       string field_id( fields[ i ] );
 
-      string next( values.at( num++ ) );
+      string next( escaped( values.at( num++ ), "," ) );
 
       if( field_id == c_key_field )
       {
@@ -2418,7 +2418,7 @@ void save_record( const string& module_id,
       // NOTE: Ensure that only "\n" is being used for "end of line".
       replace( next, "\r\n", "\n" );
 
-      // NOTE: Due to the comma escaping above this will result in the escaping for commas
+      // NOTE: Due to the first comma escaping this will result in the escaping for commas
       // (and for the escape character itself) to be doubled up. This is necessary because
       // of the unescaping that is being performed by the server's command parser.
       if( used++ > 0 )
