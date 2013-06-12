@@ -276,6 +276,8 @@ struct session
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
+   vector< string > async_system_commands;
+
    set< size_t > release_sessions;
    map< size_t, date_time > condemned_sessions;
 
@@ -4027,6 +4029,15 @@ int exec_system( const string& cmd, bool async )
 #else
       s += " &";
 #endif
+
+      // NOTE: It is expected that synchronous system calls are needed as a part
+      // of the transaction itself, however, for async calls they will only ever
+      // be issued after the transaction is successfully committed.
+      if( !gtp_session->transactions.empty( ) )
+      {
+         gtp_session->async_system_commands.push_back( s );
+         return 0;
+      }
    }
 
    TRACE_LOG( TRACE_SESSIONS, s );
@@ -8451,6 +8462,14 @@ void transaction_commit( )
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
+
+   for( size_t i = 0; i < gtp_session->async_system_commands.size( ); i++ )
+   {
+      TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
+      system( gtp_session->async_system_commands[ i ].c_str( ) );
+   }
+
+   gtp_session->async_system_commands.clear( );
 }
 
 void transaction_rollback( )
@@ -8466,6 +8485,8 @@ void transaction_rollback( )
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
+
+   gtp_session->async_system_commands.clear( );
 
    if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
    {
