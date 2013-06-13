@@ -103,7 +103,7 @@ time_t g_scripts_mod = 0;
 
 vector< script_info > g_scripts;
 
-typedef map< date_time, int > script_schedule_container;
+typedef multimap< date_time, int > script_schedule_container;
 typedef script_schedule_container::const_iterator script_schedule_const_iterator;
 
 script_schedule_container g_script_schedule;
@@ -139,6 +139,7 @@ void read_script_info( )
 
          string time_info( reader.read_attribute( c_attribute_time ) );
          string::size_type pos = time_info.find( '-' );
+
          if( pos == string::npos )
             info.start_time = info.finish_time = mtime( time_info );
          else
