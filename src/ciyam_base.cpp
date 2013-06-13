@@ -276,6 +276,9 @@ struct session
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
+   string async_temp_file;
+
+   vector< string > async_temp_files;
    vector< string > async_system_commands;
 
    set< size_t > release_sessions;
@@ -4033,9 +4036,13 @@ int exec_system( const string& cmd, bool async )
       // NOTE: It is expected that synchronous system calls are needed as a part
       // of the transaction itself, however, for async calls they will only ever
       // be issued after the transaction is successfully committed.
-      if( !gtp_session->transactions.empty( ) )
+      if( gtp_session && !gtp_session->transactions.empty( ) )
       {
          gtp_session->async_system_commands.push_back( s );
+
+         if( !gtp_session->async_temp_file.empty( ) )
+            gtp_session->async_temp_files.push_back( gtp_session->async_temp_file );
+
          return 0;
       }
    }
@@ -4065,7 +4072,10 @@ int run_script( const string& script_name, bool async )
 
    auto_ptr< restorable< bool > > ap_running_script;
    if( gtp_session )
+   {
+      gtp_session->async_temp_file.erase( );
       ap_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
+   }
 
    if( is_script )
    {
@@ -4077,6 +4087,9 @@ int run_script( const string& script_name, bool async )
 
       outf << "<" << arguments << endl;
       outf.close( );
+
+      if( gtp_session )
+         gtp_session->async_temp_file = script_args;
 
       string is_quiet( get_session_variable( c_special_variable_is_quiet ) );
 
@@ -8451,25 +8464,27 @@ void transaction_commit( )
             TRACE_LOG( TRACE_SQLSTMTS, "COMMIT" );
             exec_sql( *gtp_session->ap_db, "COMMIT" );
          }
+
+         remove_tx_info_from_cache( );
+         gtp_session->tx_key_info.clear( );
+         handler.release_locks_for_commit( gtp_session );
       }
-
-      remove_tx_info_from_cache( );
    }
-
-   handler.release_locks_for_commit( gtp_session );
-
-   gtp_session->tx_key_info.clear( );
 
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
 
-   for( size_t i = 0; i < gtp_session->async_system_commands.size( ); i++ )
+   if( gtp_session->transactions.empty( ) )
    {
-      TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
-      system( gtp_session->async_system_commands[ i ].c_str( ) );
-   }
+      for( size_t i = 0; i < gtp_session->async_system_commands.size( ); i++ )
+      {
+         TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
+         system( gtp_session->async_system_commands[ i ].c_str( ) );
+      }
 
-   gtp_session->async_system_commands.clear( );
+      gtp_session->async_temp_files.clear( );
+      gtp_session->async_system_commands.clear( );
+   }
 }
 
 void transaction_rollback( )
@@ -8479,14 +8494,8 @@ void transaction_rollback( )
 
    gtp_session->transactions.top( )->rollback( );
 
-   gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
-
-   gtp_session->tx_key_info.clear( );
-
    delete gtp_session->transactions.top( );
    gtp_session->transactions.pop( );
-
-   gtp_session->async_system_commands.clear( );
 
    if( gtp_session->ap_db.get( ) && gtp_session->transactions.empty( ) )
    {
@@ -8494,6 +8503,21 @@ void transaction_rollback( )
       exec_sql( *gtp_session->ap_db, "ROLLBACK" );
 
       gtp_session->transaction_log_command.erase( );
+   }
+
+   if( gtp_session->transactions.empty( ) )
+   {
+      gtp_session->tx_key_info.clear( );
+      gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
+
+      for( size_t i = 0; i < gtp_session->async_temp_files.size( ); i++ )
+      {
+         if( file_exists( gtp_session->async_temp_files[ i ] ) )
+            file_remove( gtp_session->async_temp_files[ i ] );
+      }
+
+      gtp_session->async_temp_files.clear( );
+      gtp_session->async_system_commands.clear( );
    }
 }
 

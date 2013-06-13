@@ -862,7 +862,10 @@ mtime::mtime( const std::string& s )
       hr = ( hour )( ( ( s[ 0 ] - '0' ) * 10 ) + ( s[ 1 ] - '0' ) );
       mn = ( minute )( ( ( s[ mn_off ] - '0' ) * 10 ) + ( s[ mn_off + 1 ] - '0' ) );
 
-      if( sc_off )
+      if( sc_off == 6 && s.length( ) > 5 && s.length( ) < 8 )
+         throw runtime_error( "invalid format for mtime (given '" + s + "' but expecting 'hhmmss[t[h[t]]]' or 'hh:mm:ss[.t[h[t]]]')" );
+
+      if( sc_off && s.length( ) > sc_off + 1 )
          sc = ( second )( ( ( s[ sc_off ] - '0' ) * 10 ) + ( s[ sc_off + 1 ] - '0' ) );
 
       tenth te( 0 );
