@@ -1,9 +1,16 @@
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start permit_ignore_uneditable)] `{`$arg_id`}
-`{`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_tfield`,`'`'`)`&`@eq`(`$arg_var`,`'`'`)\
    state |= c_state_ignore_uneditable;\
-`,\
+`,`@eq`(`$arg_tfield`,`'`'`)\
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}!is_null( get_obj( ).get_variable( "`{`$arg_var`}" ) ) )
+      state |= c_state_ignore_uneditable;\
+`,`@eq`(`$arg_var`,`'`'`)\
    if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( ) || `}get_obj( ).`{`$arg_tfield`}( ) )
+      state |= c_state_ignore_uneditable;\
+`,\
+   if( `{`@eq`(`$arg_admin_always`,`'true`'`)is_admin_uid( )
+    || ( `}get_obj( ).`{`$arg_tfield`}( ) && !is_null( get_obj( ).get_variable( "`{`$arg_var`}" ) )`{`@eq`(`$arg_admin_always`,`'true`'`) )`} )
       state |= c_state_ignore_uneditable;\
 `}
    // [(finish permit_ignore_uneditable)] `{`$arg_id`}
