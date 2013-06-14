@@ -525,13 +525,18 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
+
 `{`?`$all_fields`[`$all_fields`%,`,\
-      else if( field_name == c_field_id_\0 || field_name == c_field_name_\0 )
-         string_getter< \1 >( cmd_handler.p_`{`$full_class_name`}->\0( ), cmd_handler.retval );\
+      if( !handled && field_name == c_field_id_\0 || field_name == c_field_name_\0 )
+      {
+         handled = true;
+         string_getter< \1 >( cmd_handler.p_`{`$full_class_name`}->\0( ), cmd_handler.retval );
+      }
 `+\n`]`}
-      else
+      if( !handled )
 `{`(`?`$parent_class`)\
          cmd_handler.retval = cmd_handler.p_`{`$full_class_name`}->`{`$parent_class`}::execute( cmd_handler.cmd_and_args );\
 `,\
@@ -543,14 +548,19 @@ void `{`$full_class_name`}_command_functor::operator ( )( const string& command,
       string field_name( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_`{`$full_class_name`}_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+
 `{`?`$all_fields`[`$all_fields`%,`,\
-      else if( field_name == c_field_id_\0 || field_name == c_field_name_\0 )
+      if( !handled && field_name == c_field_id_\0 || field_name == c_field_name_\0 )
+      {
+         handled = true;
          func_string_setter< `{`$full_class_name`}, \1 >(
-          *cmd_handler.p_`{`$full_class_name`}, &`{`$full_class_name`}::\0, field_value );\
+          *cmd_handler.p_`{`$full_class_name`}, &`{`$full_class_name`}::\0, field_value );
+      }
 `+\n`]`}
-      else
+      if( !handled )
 `{`(`?`$parent_class`)\
          cmd_handler.p_`{`$full_class_name`}->`{`$parent_class`}::execute( cmd_handler.cmd_and_args );\
 `,\
@@ -1037,7 +1047,8 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
 `,\
 `@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)
 `{`#permit_ignore_uneditable.spec.xrep section=get_state\
- arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield arg_admin_always=$specification_\0_admin_always`}\
+ arg_id=$specification_\0_id arg_var=$specification_\0_var\
+ arg_tfield=$specification_\0_tfield arg_admin_always=$specification_\0_admin_always`}\
 `,\
 `@eq`(`'\1`'`,`'permit_user_ignore_uneditable`'`)
 `{`#permit_user_ignore_uneditable.spec.xrep section=get_state module_name=$module_name class_name=$class_name\
@@ -2913,8 +2924,8 @@ const char* `{`$full_class_name`}::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
-`{`?`$all_fields`[`$all_fields`%,`,\
-   else if( name == c_field_name_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
+   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( name == c_field_name_\0 )
    {
       p_id = c_field_id_\0;
 
@@ -2943,8 +2954,8 @@ const char* `{`$full_class_name`}::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
-`{`?`$all_fields`[`$all_fields`%,`,\
-   else if( id == c_field_id_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
+   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( id == c_field_id_\0 )
    {
       p_name = c_field_name_\0;
 
@@ -3001,8 +3012,8 @@ string `{`$full_class_name`}::get_field_uom_symbol( const string& id_or_name ) c
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
-`{`?`$all_fields`[`$all_fields`%,`,\
-   else if( id_or_name == c_field_id_\0 || id_or_name == c_field_name_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
+   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( id_or_name == c_field_id_\0 || id_or_name == c_field_name_\0 )
    {
       name = string( c_field_display_name_\0 );
       get_module_string( c_field_display_name_\0, &next );
@@ -3029,8 +3040,8 @@ string `{`$full_class_name`}::get_field_display_name( const string& id_or_name )
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
-`{`?`$all_fields`[`$all_fields`%,`,\
-   else if( id_or_name == c_field_id_\0 || id_or_name == c_field_name_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
+   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( id_or_name == c_field_id_\0 || id_or_name == c_field_name_\0 )
       display_name = get_module_string( c_field_display_name_\0 );\
 `+\n`]`}
 
@@ -3323,8 +3334,8 @@ class_base& `{`$full_class_name`}::get_or_create_graph_child( const string& cont
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
-`{`?`$child_info`[`$child_info`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
-   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( sub_context == "_\3" || sub_context == "\0" )
+`{`?`$child_info`[`$child_info`%,`,\
+   else if( sub_context == "_\3" || sub_context == "\0" )
       p_class_base = &\0( );
 `]`}`{`[`$parent_fields`,\
    else if( sub_context == c_field_id_\$ || sub_context == c_field_name_\$ )
@@ -3832,8 +3843,8 @@ int `{`$full_class_name`}::static_get_field_num( const string& field )
 `}
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-`{`?`$all_fields`[`$all_fields`%,`,\
-   else if( field == c_field_id_\0 || field == c_field_name_\0 )
+`{`?`$all_fields`[`$all_fields`%,`,`{`;KLUDGE: Compiler limits (for VC++) require the block depth to be <= 100`}\
+   `{`!`@eq`(`'\#`'`,`'100`'`)`&`!`@eq`(`'\#`'`,`'200`'`)`&`!`@eq`(`'\#`'`,`'300`'`)else `}if( field == c_field_id_\0 || field == c_field_name_\0 )
       rc += \+;
 `]`}
    return rc - 1;
