@@ -8286,6 +8286,29 @@ bool is_update_locked_by_own_session( class_base& instance, const char* p_key )
    return lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_update;
 }
 
+bool is_destroy_locked_by_own_session( class_base& instance, const char* p_key )
+{
+   op_lock lock;
+   bool rc = false;
+
+   lock = gtp_session->p_storage_handler->get_lock_info(
+    instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
+
+   return lock.p_session == gtp_session && lock.type == op_lock::e_lock_type_destroy;
+}
+
+bool is_update_or_destroy_locked_by_own_session( class_base& instance, const char* p_key )
+{
+   op_lock lock;
+   bool rc = false;
+
+   lock = gtp_session->p_storage_handler->get_lock_info(
+    instance.get_lock_class_id( ), p_key ? string( p_key ) : instance.get_key( ) );
+
+   return lock.p_session == gtp_session
+    && ( lock.type == op_lock::e_lock_type_update || lock.type == op_lock::e_lock_type_destroy );
+}
+
 void instance_fetch( size_t handle, const string& context, const string& key_info, instance_fetch_rc* p_rc )
 {
    perform_instance_fetch( get_class_base_from_handle_for_op( handle, context ), key_info, p_rc );
