@@ -2432,46 +2432,49 @@ void save_record( const string& module_id,
 
    // NOTE: After dealing with all the field values provided via the UI next check the view
    // for any "defcurrent" fields that haven't already been provided.
-   for( size_t i = 0; i < view.field_ids.size( ); i++ )
+   if( is_new_record )
    {
-      if( sorted_fields.count( view.field_ids[ i ] ) )
-         continue;
-
-      string next;
-
-      string field_id( view.field_ids[ i ] );
-      string value_id( view.value_ids[ i ] );
-
-      if( view.date_fields.count( value_id ) )
+      for( size_t i = 0; i < view.field_ids.size( ); i++ )
       {
-         if( view.defcurrent_fields.count( value_id ) )
+         if( sorted_fields.count( view.field_ids[ i ] ) )
+            continue;
+
+         string next;
+
+         string field_id( view.field_ids[ i ] );
+         string value_id( view.value_ids[ i ] );
+
+         if( view.date_fields.count( value_id ) )
          {
-            date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-            next = dt.get_date( ).as_string( );
+            if( view.defcurrent_fields.count( value_id ) )
+            {
+               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+               next = dt.get_date( ).as_string( );
+            }
          }
-      }
-      else if( view.time_fields.count( value_id ) )
-      {
-         if( view.defcurrent_fields.count( value_id ) )
+         else if( view.time_fields.count( value_id ) )
          {
-            date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-            next = dt.get_time( ).as_string( );
+            if( view.defcurrent_fields.count( value_id ) )
+            {
+               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+               next = dt.get_time( ).as_string( );
+            }
          }
-      }
-      else if( view.datetime_fields.count( value_id ) )
-      {
-         if( view.defcurrent_fields.count( value_id ) )
+         else if( view.datetime_fields.count( value_id ) )
          {
-            date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-            next = dt.as_string( );
+            if( view.defcurrent_fields.count( value_id ) )
+            {
+               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+               next = dt.as_string( );
+            }
          }
-      }
 
-      if( !next.empty( ) )
-      {
-         if( used++ > 0 )
-            field_values += ',';
-         field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
+         if( !next.empty( ) )
+         {
+            if( used++ > 0 )
+               field_values += ',';
+            field_values += field_id + '=' + escaped( next, "\"", '\\', "rn\r\n" );
+         }
       }
    }
 
