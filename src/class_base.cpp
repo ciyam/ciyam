@@ -118,6 +118,8 @@ const char* const c_attribute_finish_occurrence = "finish_occurrence";
 const char* const c_attribute_finish_day_of_week = "finish_day_of_week";
 const char* const c_attribute_finish_time = "finish_time";
 
+const char* const c_gpg_key_fingerprint_prefix = "Key fingerprint = ";
+
 typedef map< string, size_t > foreign_key_lock_container;
 typedef foreign_key_lock_container::iterator foreign_key_lock_iterator;
 typedef foreign_key_lock_container::const_iterator foreign_key_lock_const_iterator;
@@ -1860,7 +1862,7 @@ void class_base::fetch_updated_instance( )
    set_ver_exp( get_version_info( ) );
 }
 
-void class_base::add_required_transients( std::set< std::string >& required_transients )
+void class_base::add_required_transients( set< string >& required_transients )
 {
    for( map< string, string >::const_iterator
     ci = transient_filter_field_values.begin( ); ci != transient_filter_field_values.end( ); ++ci )
@@ -2568,6 +2570,187 @@ string get_directory_for_file_name( const string& file_name )
       directory = file_name.substr( 0, pos );
 
    return directory;
+}
+
+void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
+{
+   guard g( g_mutex );
+
+   string tmp( "~" + uuid( ).as_string( ) );
+   string cmd( "gpg --yes --batch --delete-key " + gpg_key_id + ">" + tmp + " 2>&1" );
+
+   system( cmd.c_str( ) );
+
+   vector< string > lines;
+   buffer_file_lines( tmp, lines );
+
+   string response( buffer_file( tmp ) );
+   file_remove( tmp );
+
+   if( !ignore_error && !lines.empty( ) )
+      throw runtime_error( lines[ 0 ] );
+}
+
+void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_fingerprint )
+{
+   guard g( g_mutex );
+
+   string tmp( "~" + uuid( ).as_string( ) );
+
+   string cmd( "gpg --fingerprint " + email + ">" + tmp +  " 2>&1" );
+
+   system( cmd.c_str( ) );
+
+   vector< string > lines;
+   buffer_file_lines( tmp, lines );
+
+   file_remove( tmp );
+
+   if( lines.size( ) >= 3 )
+   {
+      string::size_type pos = lines[ 0 ].find( '/' );
+      if( pos != string::npos )
+      {
+         string::size_type epos = lines[ 0 ].find( ' ', pos + 1 );
+         if( epos != string::npos )
+         {
+            string key = lines[ 0 ].substr( pos + 1, epos - pos );
+
+            pos = lines[ 1 ].find( c_gpg_key_fingerprint_prefix );
+            if( pos != string::npos )
+            {
+               gpg_key_id = key;
+               gpg_fingerprint = lines[ 1 ].substr( pos + strlen( c_gpg_key_fingerprint_prefix ) );
+            }
+         }
+      }
+   }
+}
+
+void install_gpg_key( const string& key_file,
+ const string& email, string& gpg_key_id, string& gpg_fingerprint )
+{
+   guard g( g_mutex );
+
+   for( size_t i = 0; i < 2; i++ )
+   {
+      string tmp( "~" + uuid( ).as_string( ) );
+      string cmd( "gpg --batch --import " );
+
+      if( i == 0 )
+         cmd += "--dry-run ";
+
+      cmd += key_file + ">" + tmp + " 2>&1";
+
+      system( cmd.c_str( ) );
+
+      vector< string > lines;
+      buffer_file_lines( tmp, lines );
+
+      bool had_unexpected_error = false;
+
+      if( lines.empty( ) )
+         had_unexpected_error = true;
+      else if( lines.size( ) < 3 )
+         throw runtime_error( lines[ 0 ] );
+      else if( lines.size( ) > 3 )
+      {
+         // FUTURE: These messages should be handled as a server string message.
+         if( lines[ 0 ].find( "CRC error" ) )
+            throw runtime_error( "Invalid or corrupt GPG key file." );
+         else
+            throw runtime_error( "GPG key file contains more than one email address." );
+      }
+      else
+      {
+         string result;
+         string first_line( lines[ 0 ] );
+
+         regex expr( "\".*\"" );
+
+         string::size_type len;
+         string::size_type pos = expr.search( first_line, &len );
+
+         if( pos == string::npos )
+            had_unexpected_error = true;
+         else
+         {
+            result = first_line.substr( pos + len + 1 );
+
+            if( result == "imported" || result == "not changed" )
+            {
+               pos = first_line.find( " key " );
+               if( pos == string::npos )
+                  had_unexpected_error = true;
+               else
+               {
+                  string::size_type epos = first_line.find( ':' );
+                  if( epos == string::npos )
+                     had_unexpected_error = true;
+                  else
+                  {
+                     string key( first_line.substr( pos + 5, 8 ) );
+
+                     pos = first_line.find_last_of( '<' );
+
+                     if( pos != string::npos )
+                     {
+                        regex expr( "<" + string( c_regex_email_address ) + ">" );
+
+                        if( expr.search( first_line.substr( pos ), &len ) != 0 )
+                           pos = string::npos;
+
+                        if( pos == string::npos )
+                           // FUTURE: This message should be handled as a server string message.
+                           throw runtime_error( "GPG key is missing email address." );
+                        else
+                        {
+                           string email_addr = first_line.substr( pos + 1, len - 2 );
+
+                           if( email_addr != email )
+                              // FUTURE: This message should be handled as a server string message.
+                              throw runtime_error( "GPG key has incorrect email address (found '"
+                               + email_addr + "' but expecting '" + email + "')." );
+
+                           if( i == 1 )
+                           {
+                              cmd = "gpg --fingerprint ";
+                              cmd += key + ">" + tmp +  " 2>&1";
+
+                              system( cmd.c_str( ) );
+
+                              lines.clear( );
+                              buffer_file_lines( tmp, lines );
+
+                              if( lines.empty( ) )
+                                 had_unexpected_error = true;
+                              else if( lines.size( ) != 4 )
+                                 throw runtime_error( lines[ 0 ] );
+
+                              pos = lines[ 1 ].find( c_gpg_key_fingerprint_prefix );
+                              if( pos == string::npos )
+                                 had_unexpected_error = true;
+                              else
+                              {
+                                 gpg_key_id = key;
+                                 gpg_fingerprint = lines[ 1 ].substr( pos + strlen( c_gpg_key_fingerprint_prefix ) );
+                              }
+                           }
+                        }
+                     }
+                  }
+               }
+            }
+            else
+               had_unexpected_error = true;
+         }
+      }
+
+      file_remove( tmp );
+
+      if( had_unexpected_error )
+         throw runtime_error( "unexpected error occurred installing GPG key" );
+   }
 }
 
 string trim_whitespace( const string& s )

@@ -272,29 +272,71 @@ void Meta_Index_command_functor::operator ( )( const string& command, const para
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Index_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Index->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_1( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_3( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_4( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Index->Field_5( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Index->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Index->Order( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      {
+         handled = true;
          string_getter< Meta_Index >( cmd_handler.p_Meta_Index->Source_Index( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Unique || field_name == c_field_name_Unique )
+      }
+
+      if( !handled && field_name == c_field_id_Unique || field_name == c_field_name_Unique )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Index->Unique( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Index_set )
@@ -302,39 +344,81 @@ void Meta_Index_command_functor::operator ( )( const string& command, const para
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Index_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Index_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Class >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Class, field_value );
-      else if( field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_1 || field_name == c_field_name_Field_1 )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_1, field_value );
-      else if( field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_2 || field_name == c_field_name_Field_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_2, field_value );
-      else if( field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_3 || field_name == c_field_name_Field_3 )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_3, field_value );
-      else if( field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_4 || field_name == c_field_name_Field_4 )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_4, field_value );
-      else if( field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      }
+
+      if( !handled && field_name == c_field_id_Field_5 || field_name == c_field_name_Field_5 )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Field >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Field_5, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Index, bool >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Internal, field_value );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          func_string_setter< Meta_Index, string >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Order, field_value );
-      else if( field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Index || field_name == c_field_name_Source_Index )
+      {
+         handled = true;
          func_string_setter< Meta_Index, Meta_Index >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Source_Index, field_value );
-      else if( field_name == c_field_id_Unique || field_name == c_field_name_Unique )
+      }
+
+      if( !handled && field_name == c_field_id_Unique || field_name == c_field_name_Unique )
+      {
+         handled = true;
          func_string_setter< Meta_Index, bool >(
           *cmd_handler.p_Meta_Index, &Meta_Index::Unique, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

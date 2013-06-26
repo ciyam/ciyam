@@ -859,159 +859,461 @@ void Meta_Specification_command_functor::operator ( )( const string& command, co
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Actions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_All_Strings || field_name == c_field_name_All_Strings )
+      }
+
+      if( !handled && field_name == c_field_id_All_Strings || field_name == c_field_name_All_Strings )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->All_Strings( ), cmd_handler.retval );
-      else if( field_name == c_field_id_All_Vars || field_name == c_field_name_All_Vars )
+      }
+
+      if( !handled && field_name == c_field_id_All_Vars || field_name == c_field_name_All_Vars )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->All_Vars( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Child_Rel_Child_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Field_Key || field_name == c_field_name_Child_Rel_Field_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Field_Key || field_name == c_field_name_Child_Rel_Field_Key )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Child_Rel_Field_Key( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      {
+         handled = true;
          string_getter< Meta_Relationship >( cmd_handler.p_Meta_Specification->Child_Relationship( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+      {
+         handled = true;
          string_getter< Meta_Specification_Type >( cmd_handler.p_Meta_Specification->Child_Specification_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      }
+
+      if( !handled && field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Comments( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      }
+
+      if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      {
+         handled = true;
          string_getter< Meta_Enum >( cmd_handler.p_Meta_Specification->Enum( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum_Item || field_name == c_field_name_Enum_Item )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item || field_name == c_field_name_Enum_Item )
+      {
+         handled = true;
          string_getter< Meta_Enum_Item >( cmd_handler.p_Meta_Specification->Enum_Item( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum_Item_2 || field_name == c_field_name_Enum_Item_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_2 || field_name == c_field_name_Enum_Item_2 )
+      {
+         handled = true;
          string_getter< Meta_Enum_Item >( cmd_handler.p_Meta_Specification->Enum_Item_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum_Item_3 || field_name == c_field_name_Enum_Item_3 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_3 || field_name == c_field_name_Enum_Item_3 )
+      {
+         handled = true;
          string_getter< Meta_Enum_Item >( cmd_handler.p_Meta_Specification->Enum_Item_3( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum_Item_4 || field_name == c_field_name_Enum_Item_4 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_4 || field_name == c_field_name_Enum_Item_4 )
+      {
+         handled = true;
          string_getter< Meta_Enum_Item >( cmd_handler.p_Meta_Specification->Enum_Item_4( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum_Item_5 || field_name == c_field_name_Enum_Item_5 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_5 || field_name == c_field_name_Enum_Item_5 )
+      {
+         handled = true;
          string_getter< Meta_Enum_Item >( cmd_handler.p_Meta_Specification->Enum_Item_5( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field || field_name == c_field_name_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Field || field_name == c_field_name_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_Class || field_name == c_field_name_Field_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Class || field_name == c_field_name_Field_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Field_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_Pairs || field_name == c_field_name_Field_Pairs )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Pairs || field_name == c_field_name_Field_Pairs )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Field_Pairs( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_Values || field_name == c_field_name_Field_Values )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Values || field_name == c_field_name_Field_Values )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Field_Values( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Fields || field_name == c_field_name_Fields )
+      }
+
+      if( !handled && field_name == c_field_id_Fields || field_name == c_field_name_Fields )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Fields( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Required_For_UI_Gen || field_name == c_field_name_Is_Required_For_UI_Gen )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Required_For_UI_Gen || field_name == c_field_name_Is_Required_For_UI_Gen )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Specification->Is_Required_For_UI_Gen( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          string_getter< Meta_Model >( cmd_handler.p_Meta_Specification->Model( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_Specification->Modifier( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Options || field_name == c_field_name_Options )
+      }
+
+      if( !handled && field_name == c_field_id_Options || field_name == c_field_name_Options )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Options( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Order( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Class || field_name == c_field_name_Other_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Class || field_name == c_field_name_Other_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Other_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Field || field_name == c_field_name_Other_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Field || field_name == c_field_name_Other_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Other_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Field_2 || field_name == c_field_name_Other_Field_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Field_2 || field_name == c_field_name_Other_Field_2 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Other_Field_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Modifier || field_name == c_field_name_Other_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Modifier || field_name == c_field_name_Other_Modifier )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_Specification->Other_Modifier( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Modifier_2 || field_name == c_field_name_Other_Modifier_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Modifier_2 || field_name == c_field_name_Other_Modifier_2 )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_Specification->Other_Modifier_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Permission || field_name == c_field_name_Other_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Permission || field_name == c_field_name_Other_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_Specification->Other_Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Permission_2 || field_name == c_field_name_Other_Permission_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Permission_2 || field_name == c_field_name_Other_Permission_2 )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_Specification->Other_Permission_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Procedure || field_name == c_field_name_Other_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Procedure || field_name == c_field_name_Other_Procedure )
+      {
+         handled = true;
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_Specification->Other_Procedure( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Procedure_2 || field_name == c_field_name_Other_Procedure_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Procedure_2 || field_name == c_field_name_Other_Procedure_2 )
+      {
+         handled = true;
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_Specification->Other_Procedure_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Source_Child || field_name == c_field_name_Other_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Source_Child || field_name == c_field_name_Other_Source_Child )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Other_Source_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Source_Child_2 || field_name == c_field_name_Other_Source_Child_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Source_Child_2 || field_name == c_field_name_Other_Source_Child_2 )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Other_Source_Child_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Specification || field_name == c_field_name_Parent_Specification )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Specification || field_name == c_field_name_Parent_Specification )
+      {
+         handled = true;
          string_getter< Meta_Specification >( cmd_handler.p_Meta_Specification->Parent_Specification( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_Specification->Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      {
+         handled = true;
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_Specification->Procedure( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Procedure_Arg || field_name == c_field_name_Procedure_Arg )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Arg || field_name == c_field_name_Procedure_Arg )
+      {
+         handled = true;
          string_getter< Meta_Procedure_Arg >( cmd_handler.p_Meta_Specification->Procedure_Arg( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Procedure_Arg_2 || field_name == c_field_name_Procedure_Arg_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Arg_2 || field_name == c_field_name_Procedure_Arg_2 )
+      {
+         handled = true;
          string_getter< Meta_Procedure_Arg >( cmd_handler.p_Meta_Specification->Procedure_Arg_2( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Procedure_Arg_3 || field_name == c_field_name_Procedure_Arg_3 )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Arg_3 || field_name == c_field_name_Procedure_Arg_3 )
+      {
+         handled = true;
          string_getter< Meta_Procedure_Arg >( cmd_handler.p_Meta_Specification->Procedure_Arg_3( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Protect_Child_Rel || field_name == c_field_name_Protect_Child_Rel )
+      }
+
+      if( !handled && field_name == c_field_id_Protect_Child_Rel || field_name == c_field_name_Protect_Child_Rel )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Specification->Protect_Child_Rel( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Protect_Procedure || field_name == c_field_name_Protect_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Protect_Procedure || field_name == c_field_name_Protect_Procedure )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Specification->Protect_Procedure( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Protect_Source_Parent || field_name == c_field_name_Protect_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Protect_Source_Parent || field_name == c_field_name_Protect_Source_Parent )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Specification->Protect_Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Restrict_Values || field_name == c_field_name_Restrict_Values )
+      }
+
+      if( !handled && field_name == c_field_id_Restrict_Values || field_name == c_field_name_Restrict_Values )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Restrict_Values( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Source_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Source_Child_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Class || field_name == c_field_name_Source_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Class || field_name == c_field_name_Source_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Source_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Source_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Field_Class || field_name == c_field_name_Source_Field_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field_Class || field_name == c_field_name_Source_Field_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Source_Field_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Source_Grandchild( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Source_Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Specification_Type || field_name == c_field_name_Specification_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Specification_Type || field_name == c_field_name_Specification_Type )
+      {
+         handled = true;
          string_getter< Meta_Specification_Type >( cmd_handler.p_Meta_Specification->Specification_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Strings || field_name == c_field_name_Strings )
+      }
+
+      if( !handled && field_name == c_field_id_Strings || field_name == c_field_name_Strings )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Strings( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Child || field_name == c_field_name_Test_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Child || field_name == c_field_name_Test_Child )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Test_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Field || field_name == c_field_name_Test_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Field || field_name == c_field_name_Test_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Test_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Field_Class || field_name == c_field_name_Test_Field_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Field_Class || field_name == c_field_name_Test_Field_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Test_Field_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Parent || field_name == c_field_name_Test_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Parent || field_name == c_field_name_Test_Parent )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification->Test_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Parent_Class || field_name == c_field_name_Test_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Parent_Class || field_name == c_field_name_Test_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification->Test_Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Value || field_name == c_field_name_Test_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Value || field_name == c_field_name_Test_Value )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Test_Value( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Test_Value_Label || field_name == c_field_name_Test_Value_Label )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Value_Label || field_name == c_field_name_Test_Value_Label )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Test_Value_Label( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Specification->Use_Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Test_Parent_Child || field_name == c_field_name_Use_Test_Parent_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Test_Parent_Child || field_name == c_field_name_Use_Test_Parent_Child )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Specification->Use_Test_Parent_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value_Label || field_name == c_field_name_Value_Label )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Label || field_name == c_field_name_Value_Label )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_Label( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value_Left_Part || field_name == c_field_name_Value_Left_Part )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Left_Part || field_name == c_field_name_Value_Left_Part )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_Left_Part( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value_Literal || field_name == c_field_name_Value_Literal )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Literal || field_name == c_field_name_Value_Literal )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_Literal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value_Numeric_String || field_name == c_field_name_Value_Numeric_String )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Numeric_String || field_name == c_field_name_Value_Numeric_String )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_Numeric_String( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value_Right_Part || field_name == c_field_name_Value_Right_Part )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Right_Part || field_name == c_field_name_Value_Right_Part )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_Right_Part( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value_String || field_name == c_field_name_Value_String )
+      }
+
+      if( !handled && field_name == c_field_id_Value_String || field_name == c_field_name_Value_String )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Value_String( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Vars || field_name == c_field_name_Vars )
+      }
+
+      if( !handled && field_name == c_field_id_Vars || field_name == c_field_name_Vars )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification->Vars( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Specification_set )
@@ -1019,234 +1321,536 @@ void Meta_Specification_command_functor::operator ( )( const string& command, co
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Specification_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Actions, field_value );
-      else if( field_name == c_field_id_All_Strings || field_name == c_field_name_All_Strings )
+      }
+
+      if( !handled && field_name == c_field_id_All_Strings || field_name == c_field_name_All_Strings )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::All_Strings, field_value );
-      else if( field_name == c_field_id_All_Vars || field_name == c_field_name_All_Vars )
+      }
+
+      if( !handled && field_name == c_field_id_All_Vars || field_name == c_field_name_All_Vars )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::All_Vars, field_value );
-      else if( field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Child_Rel_Child_Class, field_value );
-      else if( field_name == c_field_id_Child_Rel_Field_Key || field_name == c_field_name_Child_Rel_Field_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Field_Key || field_name == c_field_name_Child_Rel_Field_Key )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Child_Rel_Field_Key, field_value );
-      else if( field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Relationship >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Child_Relationship, field_value );
-      else if( field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Specification_Type || field_name == c_field_name_Child_Specification_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Specification_Type >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Child_Specification_Type, field_value );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Class, field_value );
-      else if( field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      }
+
+      if( !handled && field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Comments, field_value );
-      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      }
+
+      if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Enum >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Enum, field_value );
-      else if( field_name == c_field_id_Enum_Item || field_name == c_field_name_Enum_Item )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item || field_name == c_field_name_Enum_Item )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Enum_Item >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Enum_Item, field_value );
-      else if( field_name == c_field_id_Enum_Item_2 || field_name == c_field_name_Enum_Item_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_2 || field_name == c_field_name_Enum_Item_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Enum_Item >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Enum_Item_2, field_value );
-      else if( field_name == c_field_id_Enum_Item_3 || field_name == c_field_name_Enum_Item_3 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_3 || field_name == c_field_name_Enum_Item_3 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Enum_Item >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Enum_Item_3, field_value );
-      else if( field_name == c_field_id_Enum_Item_4 || field_name == c_field_name_Enum_Item_4 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_4 || field_name == c_field_name_Enum_Item_4 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Enum_Item >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Enum_Item_4, field_value );
-      else if( field_name == c_field_id_Enum_Item_5 || field_name == c_field_name_Enum_Item_5 )
+      }
+
+      if( !handled && field_name == c_field_id_Enum_Item_5 || field_name == c_field_name_Enum_Item_5 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Enum_Item >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Enum_Item_5, field_value );
-      else if( field_name == c_field_id_Field || field_name == c_field_name_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Field || field_name == c_field_name_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Field, field_value );
-      else if( field_name == c_field_id_Field_Class || field_name == c_field_name_Field_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Class || field_name == c_field_name_Field_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Field_Class, field_value );
-      else if( field_name == c_field_id_Field_Pairs || field_name == c_field_name_Field_Pairs )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Pairs || field_name == c_field_name_Field_Pairs )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Field_Pairs, field_value );
-      else if( field_name == c_field_id_Field_Values || field_name == c_field_name_Field_Values )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Values || field_name == c_field_name_Field_Values )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Field_Values, field_value );
-      else if( field_name == c_field_id_Fields || field_name == c_field_name_Fields )
+      }
+
+      if( !handled && field_name == c_field_id_Fields || field_name == c_field_name_Fields )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Fields, field_value );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Id, field_value );
-      else if( field_name == c_field_id_Is_Required_For_UI_Gen || field_name == c_field_name_Is_Required_For_UI_Gen )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Required_For_UI_Gen || field_name == c_field_name_Is_Required_For_UI_Gen )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, bool >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Is_Required_For_UI_Gen, field_value );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Model >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Model, field_value );
-      else if( field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Modifier >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Modifier, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Name, field_value );
-      else if( field_name == c_field_id_Options || field_name == c_field_name_Options )
+      }
+
+      if( !handled && field_name == c_field_id_Options || field_name == c_field_name_Options )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Options, field_value );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Order, field_value );
-      else if( field_name == c_field_id_Other_Class || field_name == c_field_name_Other_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Class || field_name == c_field_name_Other_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Class, field_value );
-      else if( field_name == c_field_id_Other_Field || field_name == c_field_name_Other_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Field || field_name == c_field_name_Other_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Field, field_value );
-      else if( field_name == c_field_id_Other_Field_2 || field_name == c_field_name_Other_Field_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Field_2 || field_name == c_field_name_Other_Field_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Field_2, field_value );
-      else if( field_name == c_field_id_Other_Modifier || field_name == c_field_name_Other_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Modifier || field_name == c_field_name_Other_Modifier )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Modifier >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Modifier, field_value );
-      else if( field_name == c_field_id_Other_Modifier_2 || field_name == c_field_name_Other_Modifier_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Modifier_2 || field_name == c_field_name_Other_Modifier_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Modifier >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Modifier_2, field_value );
-      else if( field_name == c_field_id_Other_Permission || field_name == c_field_name_Other_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Permission || field_name == c_field_name_Other_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Permission >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Permission, field_value );
-      else if( field_name == c_field_id_Other_Permission_2 || field_name == c_field_name_Other_Permission_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Permission_2 || field_name == c_field_name_Other_Permission_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Permission >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Permission_2, field_value );
-      else if( field_name == c_field_id_Other_Procedure || field_name == c_field_name_Other_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Procedure || field_name == c_field_name_Other_Procedure )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Procedure >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Procedure, field_value );
-      else if( field_name == c_field_id_Other_Procedure_2 || field_name == c_field_name_Other_Procedure_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Procedure_2 || field_name == c_field_name_Other_Procedure_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Procedure >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Procedure_2, field_value );
-      else if( field_name == c_field_id_Other_Source_Child || field_name == c_field_name_Other_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Source_Child || field_name == c_field_name_Other_Source_Child )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Source_Child, field_value );
-      else if( field_name == c_field_id_Other_Source_Child_2 || field_name == c_field_name_Other_Source_Child_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Source_Child_2 || field_name == c_field_name_Other_Source_Child_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Other_Source_Child_2, field_value );
-      else if( field_name == c_field_id_Parent_Specification || field_name == c_field_name_Parent_Specification )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Specification || field_name == c_field_name_Parent_Specification )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Specification >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Parent_Specification, field_value );
-      else if( field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Permission >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Permission, field_value );
-      else if( field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Procedure >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Procedure, field_value );
-      else if( field_name == c_field_id_Procedure_Arg || field_name == c_field_name_Procedure_Arg )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Arg || field_name == c_field_name_Procedure_Arg )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Procedure_Arg >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Procedure_Arg, field_value );
-      else if( field_name == c_field_id_Procedure_Arg_2 || field_name == c_field_name_Procedure_Arg_2 )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Arg_2 || field_name == c_field_name_Procedure_Arg_2 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Procedure_Arg >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Procedure_Arg_2, field_value );
-      else if( field_name == c_field_id_Procedure_Arg_3 || field_name == c_field_name_Procedure_Arg_3 )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Arg_3 || field_name == c_field_name_Procedure_Arg_3 )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Procedure_Arg >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Procedure_Arg_3, field_value );
-      else if( field_name == c_field_id_Protect_Child_Rel || field_name == c_field_name_Protect_Child_Rel )
+      }
+
+      if( !handled && field_name == c_field_id_Protect_Child_Rel || field_name == c_field_name_Protect_Child_Rel )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, bool >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Protect_Child_Rel, field_value );
-      else if( field_name == c_field_id_Protect_Procedure || field_name == c_field_name_Protect_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Protect_Procedure || field_name == c_field_name_Protect_Procedure )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, bool >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Protect_Procedure, field_value );
-      else if( field_name == c_field_id_Protect_Source_Parent || field_name == c_field_name_Protect_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Protect_Source_Parent || field_name == c_field_name_Protect_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, bool >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Protect_Source_Parent, field_value );
-      else if( field_name == c_field_id_Restrict_Values || field_name == c_field_name_Restrict_Values )
+      }
+
+      if( !handled && field_name == c_field_id_Restrict_Values || field_name == c_field_name_Restrict_Values )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Restrict_Values, field_value );
-      else if( field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Child, field_value );
-      else if( field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Child_Class, field_value );
-      else if( field_name == c_field_id_Source_Class || field_name == c_field_name_Source_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Class || field_name == c_field_name_Source_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Class, field_value );
-      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Field, field_value );
-      else if( field_name == c_field_id_Source_Field_Class || field_name == c_field_name_Source_Field_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field_Class || field_name == c_field_name_Source_Field_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Field_Class, field_value );
-      else if( field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Grandchild, field_value );
-      else if( field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Parent, field_value );
-      else if( field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Source_Parent_Class, field_value );
-      else if( field_name == c_field_id_Specification_Type || field_name == c_field_name_Specification_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Specification_Type || field_name == c_field_name_Specification_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Specification_Type >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Specification_Type, field_value );
-      else if( field_name == c_field_id_Strings || field_name == c_field_name_Strings )
+      }
+
+      if( !handled && field_name == c_field_id_Strings || field_name == c_field_name_Strings )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Strings, field_value );
-      else if( field_name == c_field_id_Test_Child || field_name == c_field_name_Test_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Child || field_name == c_field_name_Test_Child )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Child, field_value );
-      else if( field_name == c_field_id_Test_Field || field_name == c_field_name_Test_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Field || field_name == c_field_name_Test_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Field, field_value );
-      else if( field_name == c_field_id_Test_Field_Class || field_name == c_field_name_Test_Field_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Field_Class || field_name == c_field_name_Test_Field_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Field_Class, field_value );
-      else if( field_name == c_field_id_Test_Parent || field_name == c_field_name_Test_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Parent || field_name == c_field_name_Test_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Field >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Parent, field_value );
-      else if( field_name == c_field_id_Test_Parent_Class || field_name == c_field_name_Test_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Parent_Class || field_name == c_field_name_Test_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, Meta_Class >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Parent_Class, field_value );
-      else if( field_name == c_field_id_Test_Value || field_name == c_field_name_Test_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Value || field_name == c_field_name_Test_Value )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Value, field_value );
-      else if( field_name == c_field_id_Test_Value_Label || field_name == c_field_name_Test_Value_Label )
+      }
+
+      if( !handled && field_name == c_field_id_Test_Value_Label || field_name == c_field_name_Test_Value_Label )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Test_Value_Label, field_value );
-      else if( field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, bool >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Use_Source_Parent, field_value );
-      else if( field_name == c_field_id_Use_Test_Parent_Child || field_name == c_field_name_Use_Test_Parent_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Test_Parent_Child || field_name == c_field_name_Use_Test_Parent_Child )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, bool >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Use_Test_Parent_Child, field_value );
-      else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value, field_value );
-      else if( field_name == c_field_id_Value_Label || field_name == c_field_name_Value_Label )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Label || field_name == c_field_name_Value_Label )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Label, field_value );
-      else if( field_name == c_field_id_Value_Left_Part || field_name == c_field_name_Value_Left_Part )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Left_Part || field_name == c_field_name_Value_Left_Part )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Left_Part, field_value );
-      else if( field_name == c_field_id_Value_Literal || field_name == c_field_name_Value_Literal )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Literal || field_name == c_field_name_Value_Literal )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Literal, field_value );
-      else if( field_name == c_field_id_Value_Numeric_String || field_name == c_field_name_Value_Numeric_String )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Numeric_String || field_name == c_field_name_Value_Numeric_String )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Numeric_String, field_value );
-      else if( field_name == c_field_id_Value_Right_Part || field_name == c_field_name_Value_Right_Part )
+      }
+
+      if( !handled && field_name == c_field_id_Value_Right_Part || field_name == c_field_name_Value_Right_Part )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_Right_Part, field_value );
-      else if( field_name == c_field_id_Value_String || field_name == c_field_name_Value_String )
+      }
+
+      if( !handled && field_name == c_field_id_Value_String || field_name == c_field_name_Value_String )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Value_String, field_value );
-      else if( field_name == c_field_id_Vars || field_name == c_field_name_Vars )
+      }
+
+      if( !handled && field_name == c_field_id_Vars || field_name == c_field_name_Vars )
+      {
+         handled = true;
          func_string_setter< Meta_Specification, string >(
           *cmd_handler.p_Meta_Specification, &Meta_Specification::Vars, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

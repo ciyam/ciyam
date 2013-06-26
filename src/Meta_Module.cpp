@@ -213,15 +213,29 @@ void Meta_Module_command_functor::operator ( )( const string& command, const par
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Module_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Application || field_name == c_field_name_Application )
+
+      if( !handled && field_name == c_field_id_Application || field_name == c_field_name_Application )
+      {
+         handled = true;
          string_getter< Meta_Application >( cmd_handler.p_Meta_Module->Application( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          string_getter< Meta_Model >( cmd_handler.p_Meta_Module->Model( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Module->Order( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Module_set )
@@ -229,18 +243,32 @@ void Meta_Module_command_functor::operator ( )( const string& command, const par
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Module_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Module_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Application || field_name == c_field_name_Application )
+
+      if( !handled && field_name == c_field_id_Application || field_name == c_field_name_Application )
+      {
+         handled = true;
          func_string_setter< Meta_Module, Meta_Application >(
           *cmd_handler.p_Meta_Module, &Meta_Module::Application, field_value );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          func_string_setter< Meta_Module, Meta_Model >(
           *cmd_handler.p_Meta_Module, &Meta_Module::Model, field_value );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          func_string_setter< Meta_Module, string >(
           *cmd_handler.p_Meta_Module, &Meta_Module::Order, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

@@ -51,6 +51,11 @@ string get_uid_info( const session_info& sess_info )
       else
          uid_info += ":" + sess_info.user_name;
    }
+   else
+   {
+      uid_info = "anon!";
+      uid_info += c_default_security_level;
+   }
 
    return uid_info;
 }
@@ -661,7 +666,7 @@ bool fetch_list_info( const string& module,
    if( p_perms && !p_perms->empty( ) )
       fetch_cmd += " -p=" + *p_perms;
 
-   if( p_security_info && !sess_info.user_id.empty( ) )
+   if( p_security_info )
       fetch_cmd += " -s=" + *p_security_info;
 
    if( !search_text.empty( ) )

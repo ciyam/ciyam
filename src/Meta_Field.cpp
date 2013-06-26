@@ -621,55 +621,149 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Field_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Field->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->Def_Value( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default || field_name == c_field_name_Default )
+      }
+
+      if( !handled && field_name == c_field_id_Default || field_name == c_field_name_Default )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->Default( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Dummy_1 || field_name == c_field_name_Dummy_1 )
+      }
+
+      if( !handled && field_name == c_field_id_Dummy_1 || field_name == c_field_name_Dummy_1 )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Dummy_1( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      }
+
+      if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      {
+         handled = true;
          string_getter< Meta_Enum >( cmd_handler.p_Meta_Field->Enum( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Field->Extra( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Foreign_Key || field_name == c_field_name_Is_Foreign_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Foreign_Key || field_name == c_field_name_Is_Foreign_Key )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Is_Foreign_Key( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Text_Type || field_name == c_field_name_Is_Text_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Text_Type || field_name == c_field_name_Is_Text_Type )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Is_Text_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      }
+
+      if( !handled && field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Mandatory( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      }
+
+      if( !handled && field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      {
+         handled = true;
          string_getter< numeric >( cmd_handler.p_Meta_Field->Numeric_Decimals( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Field->Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Class_Name || field_name == c_field_name_Parent_Class_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class_Name || field_name == c_field_name_Parent_Class_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->Parent_Class_Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      }
+
+      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Field->Primitive( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Field->Source_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      }
+
+      if( !handled && field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Transient( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          string_getter< Meta_Type >( cmd_handler.p_Meta_Field->Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_UOM || field_name == c_field_name_UOM )
+      }
+
+      if( !handled && field_name == c_field_id_UOM || field_name == c_field_name_UOM )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Field->UOM( ), cmd_handler.retval );
-      else if( field_name == c_field_id_UOM_Name || field_name == c_field_name_UOM_Name )
+      }
+
+      if( !handled && field_name == c_field_id_UOM_Name || field_name == c_field_name_UOM_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->UOM_Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_UOM_Symbol || field_name == c_field_name_UOM_Symbol )
+      }
+
+      if( !handled && field_name == c_field_id_UOM_Symbol || field_name == c_field_name_UOM_Symbol )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Field->UOM_Symbol( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_In_Text_Search || field_name == c_field_name_Use_In_Text_Search )
+      }
+
+      if( !handled && field_name == c_field_id_Use_In_Text_Search || field_name == c_field_name_Use_In_Text_Search )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Field->Use_In_Text_Search( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Field_set )
@@ -677,78 +771,172 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Field_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Field_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Field, Meta_Class >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Class, field_value );
-      else if( field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Def_Value, field_value );
-      else if( field_name == c_field_id_Default || field_name == c_field_name_Default )
+      }
+
+      if( !handled && field_name == c_field_id_Default || field_name == c_field_name_Default )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Default, field_value );
-      else if( field_name == c_field_id_Dummy_1 || field_name == c_field_name_Dummy_1 )
+      }
+
+      if( !handled && field_name == c_field_id_Dummy_1 || field_name == c_field_name_Dummy_1 )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Dummy_1, field_value );
-      else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      }
+
+      if( !handled && field_name == c_field_id_Enum || field_name == c_field_name_Enum )
+      {
+         handled = true;
          func_string_setter< Meta_Field, Meta_Enum >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Enum, field_value );
-      else if( field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      {
+         handled = true;
          func_string_setter< Meta_Field, int >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Extra, field_value );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Id, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Internal, field_value );
-      else if( field_name == c_field_id_Is_Foreign_Key || field_name == c_field_name_Is_Foreign_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Foreign_Key || field_name == c_field_name_Is_Foreign_Key )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Is_Foreign_Key, field_value );
-      else if( field_name == c_field_id_Is_Text_Type || field_name == c_field_name_Is_Text_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Text_Type || field_name == c_field_name_Is_Text_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Is_Text_Type, field_value );
-      else if( field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      }
+
+      if( !handled && field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Mandatory, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Name, field_value );
-      else if( field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      }
+
+      if( !handled && field_name == c_field_id_Numeric_Decimals || field_name == c_field_name_Numeric_Decimals )
+      {
+         handled = true;
          func_string_setter< Meta_Field, numeric >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Numeric_Decimals, field_value );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Field, Meta_Class >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Parent_Class, field_value );
-      else if( field_name == c_field_id_Parent_Class_Name || field_name == c_field_name_Parent_Class_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class_Name || field_name == c_field_name_Parent_Class_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Parent_Class_Name, field_value );
-      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      }
+
+      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      {
+         handled = true;
          func_string_setter< Meta_Field, int >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Primitive, field_value );
-      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Field, Meta_Field >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Source_Field, field_value );
-      else if( field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      }
+
+      if( !handled && field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Transient, field_value );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Field, Meta_Type >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Type, field_value );
-      else if( field_name == c_field_id_UOM || field_name == c_field_name_UOM )
+      }
+
+      if( !handled && field_name == c_field_id_UOM || field_name == c_field_name_UOM )
+      {
+         handled = true;
          func_string_setter< Meta_Field, int >(
           *cmd_handler.p_Meta_Field, &Meta_Field::UOM, field_value );
-      else if( field_name == c_field_id_UOM_Name || field_name == c_field_name_UOM_Name )
+      }
+
+      if( !handled && field_name == c_field_id_UOM_Name || field_name == c_field_name_UOM_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::UOM_Name, field_value );
-      else if( field_name == c_field_id_UOM_Symbol || field_name == c_field_name_UOM_Symbol )
+      }
+
+      if( !handled && field_name == c_field_id_UOM_Symbol || field_name == c_field_name_UOM_Symbol )
+      {
+         handled = true;
          func_string_setter< Meta_Field, string >(
           *cmd_handler.p_Meta_Field, &Meta_Field::UOM_Symbol, field_value );
-      else if( field_name == c_field_id_Use_In_Text_Search || field_name == c_field_name_Use_In_Text_Search )
+      }
+
+      if( !handled && field_name == c_field_id_Use_In_Text_Search || field_name == c_field_name_Use_In_Text_Search )
+      {
+         handled = true;
          func_string_setter< Meta_Field, bool >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Use_In_Text_Search, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;
@@ -2752,7 +2940,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification( ) ) )
          {
             get_obj( ).child_Specification( ).op_update( );
             get_obj( ).child_Specification( ).op_apply( );
@@ -2768,7 +2956,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Source( ) ) )
          {
             get_obj( ).child_Specification_Source( ).op_update( );
             get_obj( ).child_Specification_Source( ).op_apply( );
@@ -2784,7 +2972,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source_Parent( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Source_Parent( ) ) )
          {
             get_obj( ).child_Specification_Source_Parent( ).op_update( );
             get_obj( ).child_Specification_Source_Parent( ).op_apply( );
@@ -2800,7 +2988,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Source_Child( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Source_Child( ) ) )
          {
             get_obj( ).child_Specification_Source_Child( ).op_update( );
             get_obj( ).child_Specification_Source_Child( ).op_apply( );
@@ -2816,7 +3004,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Test( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Test( ) ) )
          {
             get_obj( ).child_Specification_Test( ).op_update( );
             get_obj( ).child_Specification_Test( ).op_apply( );
@@ -2832,7 +3020,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Test_Parent( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Test_Parent( ) ) )
          {
             get_obj( ).child_Specification_Test_Parent( ).op_update( );
             get_obj( ).child_Specification_Test_Parent( ).op_apply( );
@@ -2848,7 +3036,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Test_Child( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Test_Child( ) ) )
          {
             get_obj( ).child_Specification_Test_Child( ).op_update( );
             get_obj( ).child_Specification_Test_Child( ).op_apply( );
@@ -2905,7 +3093,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Other_Source_Child( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Other_Source_Child( ) ) )
          {
             get_obj( ).child_Specification_Other_Source_Child( ).op_update( );
             get_obj( ).child_Specification_Other_Source_Child( ).op_apply( );
@@ -2921,7 +3109,7 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Other_Source_Child_2( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Other_Source_Child_2( ) ) )
          {
             get_obj( ).child_Specification_Other_Source_Child_2( ).op_update( );
             get_obj( ).child_Specification_Other_Source_Child_2( ).op_apply( );

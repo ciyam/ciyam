@@ -76,7 +76,7 @@
    if( `{`!`@eq`(`$arg_altfield`,`'`'`)get_obj( ).`{`$arg_altfield`}( ) || `}get_perms( ).count( "`{`$arg_permission_id`}" ) ) // i.e. `{`$arg_permission`}
 `}`,\
 `{`@eq`(`$arg_altfield`,`'`'`)\
-   if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" ) && `}get_obj( ).`{`$arg_tfield`}( ) ) // i.e. `{`$arg_permission`}
+   if( `{`!`@eq`(`$arg_permission_id`,`'`'`)get_perms( ).count( "`{`$arg_permission_id`}" ) && `}get_obj( ).`{`$arg_tfield`}( ) )`{`!`@eq`(`$arg_permission_id`,`'`'`) // i.e. `{`$arg_permission`}`}
 `,\
 `{`@eq`(`$arg_permission_id`,`'`'`)\
    if( get_obj( ).`{`$arg_tfield`}( ) && get_obj( ).`{`$arg_altfield`}( ) )

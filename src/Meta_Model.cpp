@@ -472,45 +472,119 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Model_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Actions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Add_Packages || field_name == c_field_name_Add_Packages )
+      }
+
+      if( !handled && field_name == c_field_id_Add_Packages || field_name == c_field_name_Add_Packages )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Model->Add_Packages( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Model->Allow_Anonymous_Access( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
+      }
+
+      if( !handled && field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Commands_File( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Created || field_name == c_field_name_Created )
+      }
+
+      if( !handled && field_name == c_field_id_Created || field_name == c_field_name_Created )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Model->Created( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_Class_Id || field_name == c_field_name_Next_Class_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Class_Id || field_name == c_field_name_Next_Class_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Next_Class_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_List_Id || field_name == c_field_name_Next_List_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_List_Id || field_name == c_field_name_Next_List_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Next_List_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_Specification_Id || field_name == c_field_name_Next_Specification_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Specification_Id || field_name == c_field_name_Next_Specification_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Next_Specification_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_View_Id || field_name == c_field_name_Next_View_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_View_Id || field_name == c_field_name_Next_View_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Next_View_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_Model->Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_File || field_name == c_field_name_Source_File )
+      }
+
+      if( !handled && field_name == c_field_id_Source_File || field_name == c_field_name_Source_File )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Source_File( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Status || field_name == c_field_name_Status )
+      }
+
+      if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Status( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Package_Demo_Data || field_name == c_field_name_Use_Package_Demo_Data )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Package_Demo_Data || field_name == c_field_name_Use_Package_Demo_Data )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Model->Use_Package_Demo_Data( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
+      }
+
+      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Model->Version( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Model->Workgroup( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      }
+
+      if( !handled && field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Model->Year_Created( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Model_set )
@@ -518,63 +592,137 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Model_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Model_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Actions, field_value );
-      else if( field_name == c_field_id_Add_Packages || field_name == c_field_name_Add_Packages )
+      }
+
+      if( !handled && field_name == c_field_id_Add_Packages || field_name == c_field_name_Add_Packages )
+      {
+         handled = true;
          func_string_setter< Meta_Model, int >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Add_Packages, field_value );
-      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      {
+         handled = true;
          func_string_setter< Meta_Model, bool >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Allow_Anonymous_Access, field_value );
-      else if( field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
+      }
+
+      if( !handled && field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Commands_File, field_value );
-      else if( field_name == c_field_id_Created || field_name == c_field_name_Created )
+      }
+
+      if( !handled && field_name == c_field_id_Created || field_name == c_field_name_Created )
+      {
+         handled = true;
          func_string_setter< Meta_Model, bool >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Created, field_value );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Id, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Name, field_value );
-      else if( field_name == c_field_id_Next_Class_Id || field_name == c_field_name_Next_Class_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Class_Id || field_name == c_field_name_Next_Class_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Next_Class_Id, field_value );
-      else if( field_name == c_field_id_Next_List_Id || field_name == c_field_name_Next_List_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_List_Id || field_name == c_field_name_Next_List_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Next_List_Id, field_value );
-      else if( field_name == c_field_id_Next_Specification_Id || field_name == c_field_name_Next_Specification_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Specification_Id || field_name == c_field_name_Next_Specification_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Next_Specification_Id, field_value );
-      else if( field_name == c_field_id_Next_View_Id || field_name == c_field_name_Next_View_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_View_Id || field_name == c_field_name_Next_View_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Next_View_Id, field_value );
-      else if( field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Permission || field_name == c_field_name_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_Model, Meta_Permission >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Permission, field_value );
-      else if( field_name == c_field_id_Source_File || field_name == c_field_name_Source_File )
+      }
+
+      if( !handled && field_name == c_field_id_Source_File || field_name == c_field_name_Source_File )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Source_File, field_value );
-      else if( field_name == c_field_id_Status || field_name == c_field_name_Status )
+      }
+
+      if( !handled && field_name == c_field_id_Status || field_name == c_field_name_Status )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Status, field_value );
-      else if( field_name == c_field_id_Use_Package_Demo_Data || field_name == c_field_name_Use_Package_Demo_Data )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Package_Demo_Data || field_name == c_field_name_Use_Package_Demo_Data )
+      {
+         handled = true;
          func_string_setter< Meta_Model, bool >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Use_Package_Demo_Data, field_value );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
+      }
+
+      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      {
+         handled = true;
          func_string_setter< Meta_Model, string >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Version, field_value );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          func_string_setter< Meta_Model, Meta_Workgroup >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Workgroup, field_value );
-      else if( field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      }
+
+      if( !handled && field_name == c_field_id_Year_Created || field_name == c_field_name_Year_Created )
+      {
+         handled = true;
          func_string_setter< Meta_Model, int >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Year_Created, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

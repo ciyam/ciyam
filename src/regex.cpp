@@ -109,7 +109,7 @@ size_t literal_size( const string& lit )
 
    for( size_t i = 0; i < lit.length( ); i++ )
    {
-      if( lit[ i ] != '\b' )
+      if( lit[ i ] != '\\' && lit[ i ] != '\b' )
          ++len;
    }
 
@@ -1279,6 +1279,12 @@ string::size_type regex::impl::do_search(
                }
             }
 
+            if( !found && ref_started != string::npos && p.finish_ref && p.min_matches == 0 )
+            {
+               ref_finished = i;
+               node_refs[ ref_starts ] = text.substr( ref_started, ref_finished - ref_started );
+            }
+
             bool was_last_part = ( matched_last_part == parts.size( ) - 1 );
             matched_last_part = -1;
 
@@ -1295,8 +1301,9 @@ string::size_type regex::impl::do_search(
                force_repeat = true;
 
             bool forcing_previous_repeat = false;
-            if( ( has_last_set_used && last_set_part_used == last_found - 1 )
-             || ( has_last_literal_used && last_lit_part_used == last_found - 1 ) )
+            if( !found
+             && ( ( has_last_set_used && last_set_part_used == last_found - 1 )
+             || ( has_last_literal_used && last_lit_part_used == last_found - 1 ) ) )
                forcing_previous_repeat = true;
 
             if( force_repeat && forcing_previous_repeat )

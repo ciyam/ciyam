@@ -843,101 +843,287 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+
+      if( !handled && field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_List->Access_Parent_Modifier( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Access_Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Access_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Allow_Anonymous_Access( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Quick_Link || field_name == c_field_name_Allow_Quick_Link )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Quick_Link || field_name == c_field_name_Allow_Quick_Link )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Allow_Quick_Link( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Text_Search || field_name == c_field_name_Allow_Text_Search )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Text_Search || field_name == c_field_name_Allow_Text_Search )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Allow_Text_Search( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Create_Only_If_Default_Other || field_name == c_field_name_Create_Only_If_Default_Other )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Only_If_Default_Other || field_name == c_field_name_Create_Only_If_Default_Other )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Create_Only_If_Default_Other( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Create_Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Create_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Destroy_Only_If_Default_Other || field_name == c_field_name_Destroy_Only_If_Default_Other )
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Only_If_Default_Other || field_name == c_field_name_Destroy_Only_If_Default_Other )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Destroy_Only_If_Default_Other( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List->Destroy_Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Destroy_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Direction || field_name == c_field_name_Direction )
+      }
+
+      if( !handled && field_name == c_field_id_Direction || field_name == c_field_name_Direction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Direction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Display_Only_If_Default_Other || field_name == c_field_name_Display_Only_If_Default_Other )
+      }
+
+      if( !handled && field_name == c_field_id_Display_Only_If_Default_Other || field_name == c_field_name_Display_Only_If_Default_Other )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Only_If_Default_Other( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Display_Row_Limit || field_name == c_field_name_Display_Row_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Display_Row_Limit || field_name == c_field_name_Display_Row_Limit )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Display_Row_Limit( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Display_Security_Level || field_name == c_field_name_Display_Security_Level )
+      }
+
+      if( !handled && field_name == c_field_id_Display_Security_Level || field_name == c_field_name_Display_Security_Level )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Security_Level( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Ignore_Implicit_Ordering || field_name == c_field_name_Ignore_Implicit_Ordering )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Implicit_Ordering || field_name == c_field_name_Ignore_Implicit_Ordering )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Implicit_Ordering( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Ignore_State_For_Display || field_name == c_field_name_Ignore_State_For_Display )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_State_For_Display || field_name == c_field_name_Ignore_State_For_Display )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_State_For_Display( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Unactionable_Records( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Ignore_Uneditable_Parent || field_name == c_field_name_Ignore_Uneditable_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Uneditable_Parent || field_name == c_field_name_Ignore_Uneditable_Parent )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_Uneditable_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Ignore_User_Id_Filter || field_name == c_field_name_Ignore_User_Id_Filter )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_User_Id_Filter || field_name == c_field_name_Ignore_User_Id_Filter )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Ignore_User_Id_Filter( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Admin( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Home( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Not_Anonymous( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Is_Variation( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
+      }
+
+      if( !handled && field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Limit_Scroll_And_New( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          string_getter< Meta_Model >( cmd_handler.p_Meta_List->Model( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Multiline_Truncate_For_Print || field_name == c_field_name_Multiline_Truncate_For_Print )
+      }
+
+      if( !handled && field_name == c_field_id_Multiline_Truncate_For_Print || field_name == c_field_name_Multiline_Truncate_For_Print )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Multiline_Truncate_For_Print( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
+      }
+
+      if( !handled && field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Number_Multiple_Pages( ), cmd_handler.retval );
-      else if( field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
+      }
+
+      if( !handled && field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->PDF_Font_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
+      }
+
+      if( !handled && field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->PDF_List_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List->Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List->Parent_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Print_Restriction || field_name == c_field_name_Print_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Restriction || field_name == c_field_name_Print_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Print_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Print_Without_Highlight || field_name == c_field_name_Print_Without_Highlight )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Without_Highlight || field_name == c_field_name_Print_Without_Highlight )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Print_Without_Highlight( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Search_Option_Limit( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Sort_Rows_In_UI || field_name == c_field_name_Sort_Rows_In_UI )
+      }
+
+      if( !handled && field_name == c_field_id_Sort_Rows_In_UI || field_name == c_field_name_Sort_Rows_In_UI )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List->Sort_Rows_In_UI( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Style || field_name == c_field_name_Style )
+      }
+
+      if( !handled && field_name == c_field_id_Style || field_name == c_field_name_Style )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Style( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Text_Match_Highlight || field_name == c_field_name_Text_Match_Highlight )
+      }
+
+      if( !handled && field_name == c_field_id_Text_Match_Highlight || field_name == c_field_name_Text_Match_Highlight )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List->Text_Match_Highlight( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Title || field_name == c_field_name_Title )
+      }
+
+      if( !handled && field_name == c_field_id_Title || field_name == c_field_name_Title )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List->Title( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          string_getter< Meta_List_Type >( cmd_handler.p_Meta_List->Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Variation_Name || field_name == c_field_name_Variation_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Variation_Name || field_name == c_field_name_Variation_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List->Variation_Name( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_List_set )
@@ -945,147 +1131,333 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_List_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+
+      if( !handled && field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Modifier >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Parent_Modifier, field_value );
-      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Permission, field_value );
-      else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Access_Restriction, field_value );
-      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Allow_Anonymous_Access, field_value );
-      else if( field_name == c_field_id_Allow_Quick_Link || field_name == c_field_name_Allow_Quick_Link )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Quick_Link || field_name == c_field_name_Allow_Quick_Link )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Allow_Quick_Link, field_value );
-      else if( field_name == c_field_id_Allow_Text_Search || field_name == c_field_name_Allow_Text_Search )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Text_Search || field_name == c_field_name_Allow_Text_Search )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Allow_Text_Search, field_value );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Class >(
           *cmd_handler.p_Meta_List, &Meta_List::Class, field_value );
-      else if( field_name == c_field_id_Create_Only_If_Default_Other || field_name == c_field_name_Create_Only_If_Default_Other )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Only_If_Default_Other || field_name == c_field_name_Create_Only_If_Default_Other )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Only_If_Default_Other, field_value );
-      else if( field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Permission, field_value );
-      else if( field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Create_Restriction, field_value );
-      else if( field_name == c_field_id_Destroy_Only_If_Default_Other || field_name == c_field_name_Destroy_Only_If_Default_Other )
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Only_If_Default_Other || field_name == c_field_name_Destroy_Only_If_Default_Other )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Only_If_Default_Other, field_value );
-      else if( field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Permission >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Permission, field_value );
-      else if( field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Destroy_Restriction, field_value );
-      else if( field_name == c_field_id_Direction || field_name == c_field_name_Direction )
+      }
+
+      if( !handled && field_name == c_field_id_Direction || field_name == c_field_name_Direction )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Direction, field_value );
-      else if( field_name == c_field_id_Display_Only_If_Default_Other || field_name == c_field_name_Display_Only_If_Default_Other )
+      }
+
+      if( !handled && field_name == c_field_id_Display_Only_If_Default_Other || field_name == c_field_name_Display_Only_If_Default_Other )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Only_If_Default_Other, field_value );
-      else if( field_name == c_field_id_Display_Row_Limit || field_name == c_field_name_Display_Row_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Display_Row_Limit || field_name == c_field_name_Display_Row_Limit )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Row_Limit, field_value );
-      else if( field_name == c_field_id_Display_Security_Level || field_name == c_field_name_Display_Security_Level )
+      }
+
+      if( !handled && field_name == c_field_id_Display_Security_Level || field_name == c_field_name_Display_Security_Level )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Display_Security_Level, field_value );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Id, field_value );
-      else if( field_name == c_field_id_Ignore_Implicit_Ordering || field_name == c_field_name_Ignore_Implicit_Ordering )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Implicit_Ordering || field_name == c_field_name_Ignore_Implicit_Ordering )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Implicit_Ordering, field_value );
-      else if( field_name == c_field_id_Ignore_State_For_Display || field_name == c_field_name_Ignore_State_For_Display )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_State_For_Display || field_name == c_field_name_Ignore_State_For_Display )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_State_For_Display, field_value );
-      else if( field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Unactionable_Records || field_name == c_field_name_Ignore_Unactionable_Records )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Unactionable_Records, field_value );
-      else if( field_name == c_field_id_Ignore_Uneditable_Parent || field_name == c_field_name_Ignore_Uneditable_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_Uneditable_Parent || field_name == c_field_name_Ignore_Uneditable_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_Uneditable_Parent, field_value );
-      else if( field_name == c_field_id_Ignore_User_Id_Filter || field_name == c_field_name_Ignore_User_Id_Filter )
+      }
+
+      if( !handled && field_name == c_field_id_Ignore_User_Id_Filter || field_name == c_field_name_Ignore_User_Id_Filter )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Ignore_User_Id_Filter, field_value );
-      else if( field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Admin, field_value );
-      else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Child, field_value );
-      else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Home, field_value );
-      else if( field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Not_Anonymous, field_value );
-      else if( field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Variation || field_name == c_field_name_Is_Variation )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Is_Variation, field_value );
-      else if( field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
+      }
+
+      if( !handled && field_name == c_field_id_Limit_Scroll_And_New || field_name == c_field_name_Limit_Scroll_And_New )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Limit_Scroll_And_New, field_value );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Model >(
           *cmd_handler.p_Meta_List, &Meta_List::Model, field_value );
-      else if( field_name == c_field_id_Multiline_Truncate_For_Print || field_name == c_field_name_Multiline_Truncate_For_Print )
+      }
+
+      if( !handled && field_name == c_field_id_Multiline_Truncate_For_Print || field_name == c_field_name_Multiline_Truncate_For_Print )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Multiline_Truncate_For_Print, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Name, field_value );
-      else if( field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
+      }
+
+      if( !handled && field_name == c_field_id_Number_Multiple_Pages || field_name == c_field_name_Number_Multiple_Pages )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Number_Multiple_Pages, field_value );
-      else if( field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
+      }
+
+      if( !handled && field_name == c_field_id_PDF_Font_Type || field_name == c_field_name_PDF_Font_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::PDF_Font_Type, field_value );
-      else if( field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
+      }
+
+      if( !handled && field_name == c_field_id_PDF_List_Type || field_name == c_field_name_PDF_List_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::PDF_List_Type, field_value );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Class >(
           *cmd_handler.p_Meta_List, &Meta_List::Parent_Class, field_value );
-      else if( field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Field || field_name == c_field_name_Parent_Field )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_Field >(
           *cmd_handler.p_Meta_List, &Meta_List::Parent_Field, field_value );
-      else if( field_name == c_field_id_Print_Restriction || field_name == c_field_name_Print_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Restriction || field_name == c_field_name_Print_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Print_Restriction, field_value );
-      else if( field_name == c_field_id_Print_Without_Highlight || field_name == c_field_name_Print_Without_Highlight )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Without_Highlight || field_name == c_field_name_Print_Without_Highlight )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Print_Without_Highlight, field_value );
-      else if( field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Search_Option_Limit, field_value );
-      else if( field_name == c_field_id_Sort_Rows_In_UI || field_name == c_field_name_Sort_Rows_In_UI )
+      }
+
+      if( !handled && field_name == c_field_id_Sort_Rows_In_UI || field_name == c_field_name_Sort_Rows_In_UI )
+      {
+         handled = true;
          func_string_setter< Meta_List, bool >(
           *cmd_handler.p_Meta_List, &Meta_List::Sort_Rows_In_UI, field_value );
-      else if( field_name == c_field_id_Style || field_name == c_field_name_Style )
+      }
+
+      if( !handled && field_name == c_field_id_Style || field_name == c_field_name_Style )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Style, field_value );
-      else if( field_name == c_field_id_Text_Match_Highlight || field_name == c_field_name_Text_Match_Highlight )
+      }
+
+      if( !handled && field_name == c_field_id_Text_Match_Highlight || field_name == c_field_name_Text_Match_Highlight )
+      {
+         handled = true;
          func_string_setter< Meta_List, int >(
           *cmd_handler.p_Meta_List, &Meta_List::Text_Match_Highlight, field_value );
-      else if( field_name == c_field_id_Title || field_name == c_field_name_Title )
+      }
+
+      if( !handled && field_name == c_field_id_Title || field_name == c_field_name_Title )
+      {
+         handled = true;
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Title, field_value );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List, Meta_List_Type >(
           *cmd_handler.p_Meta_List, &Meta_List::Type, field_value );
-      else if( field_name == c_field_id_Variation_Name || field_name == c_field_name_Variation_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Variation_Name || field_name == c_field_name_Variation_Name )
+      {
+         handled = true;
          func_string_setter< Meta_List, string >(
           *cmd_handler.p_Meta_List, &Meta_List::Variation_Name, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

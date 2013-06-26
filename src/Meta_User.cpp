@@ -257,27 +257,65 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_User_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Active || field_name == c_field_name_Active )
+
+      if( !handled && field_name == c_field_id_Active || field_name == c_field_name_Active )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_User->Active( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Description || field_name == c_field_name_Description )
+      }
+
+      if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->Description( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Email || field_name == c_field_name_Email )
+      }
+
+      if( !handled && field_name == c_field_id_Email || field_name == c_field_name_Email )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->Email( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Password || field_name == c_field_name_Password )
+      }
+
+      if( !handled && field_name == c_field_id_Password || field_name == c_field_name_Password )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->Password( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Password_Hash || field_name == c_field_name_Password_Hash )
+      }
+
+      if( !handled && field_name == c_field_id_Password_Hash || field_name == c_field_name_Password_Hash )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->Password_Hash( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Permissions || field_name == c_field_name_Permissions )
+      }
+
+      if( !handled && field_name == c_field_id_Permissions || field_name == c_field_name_Permissions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->Permissions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_User_Hash || field_name == c_field_name_User_Hash )
+      }
+
+      if( !handled && field_name == c_field_id_User_Hash || field_name == c_field_name_User_Hash )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->User_Hash( ), cmd_handler.retval );
-      else if( field_name == c_field_id_User_Id || field_name == c_field_name_User_Id )
+      }
+
+      if( !handled && field_name == c_field_id_User_Id || field_name == c_field_name_User_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_User->User_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_User->Workgroup( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_User_set )
@@ -285,36 +323,74 @@ void Meta_User_command_functor::operator ( )( const string& command, const param
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_User_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_User_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Active || field_name == c_field_name_Active )
+
+      if( !handled && field_name == c_field_id_Active || field_name == c_field_name_Active )
+      {
+         handled = true;
          func_string_setter< Meta_User, bool >(
           *cmd_handler.p_Meta_User, &Meta_User::Active, field_value );
-      else if( field_name == c_field_id_Description || field_name == c_field_name_Description )
+      }
+
+      if( !handled && field_name == c_field_id_Description || field_name == c_field_name_Description )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Description, field_value );
-      else if( field_name == c_field_id_Email || field_name == c_field_name_Email )
+      }
+
+      if( !handled && field_name == c_field_id_Email || field_name == c_field_name_Email )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Email, field_value );
-      else if( field_name == c_field_id_Password || field_name == c_field_name_Password )
+      }
+
+      if( !handled && field_name == c_field_id_Password || field_name == c_field_name_Password )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Password, field_value );
-      else if( field_name == c_field_id_Password_Hash || field_name == c_field_name_Password_Hash )
+      }
+
+      if( !handled && field_name == c_field_id_Password_Hash || field_name == c_field_name_Password_Hash )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Password_Hash, field_value );
-      else if( field_name == c_field_id_Permissions || field_name == c_field_name_Permissions )
+      }
+
+      if( !handled && field_name == c_field_id_Permissions || field_name == c_field_name_Permissions )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::Permissions, field_value );
-      else if( field_name == c_field_id_User_Hash || field_name == c_field_name_User_Hash )
+      }
+
+      if( !handled && field_name == c_field_id_User_Hash || field_name == c_field_name_User_Hash )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::User_Hash, field_value );
-      else if( field_name == c_field_id_User_Id || field_name == c_field_name_User_Id )
+      }
+
+      if( !handled && field_name == c_field_id_User_Id || field_name == c_field_name_User_Id )
+      {
+         handled = true;
          func_string_setter< Meta_User, string >(
           *cmd_handler.p_Meta_User, &Meta_User::User_Id, field_value );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          func_string_setter< Meta_User, Meta_Workgroup >(
           *cmd_handler.p_Meta_User, &Meta_User::Workgroup, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

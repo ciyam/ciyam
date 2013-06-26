@@ -2753,16 +2753,21 @@ string construct_sql_select(
    string security_field;
    if( !security_info.empty( ) )
    {
+      // NOTE: The 'security_info' can either be just a field id (in which case the security level is
+      // taken from the session variable 'c_session_variable_sec') or a field id and a security level
+      // value separated by a colon.
       string::size_type pos = security_info.find( ':' );
-      if( pos == string::npos )
-         throw runtime_error( "unexpected format for security_info '" + security_info + "'" );
+
+      string security_level( get_session_variable( c_session_variable_sec ) );
+      if( pos != string::npos )
+         security_level = security_info.substr( pos + 1 );
 
       security_field = security_info.substr( 0, pos );
 
       bool is_sql_numeric;
       get_field_name( instance, security_field, &is_sql_numeric );
 
-      sql += "C_" + security_field + " LIKE '" + security_info.substr( pos + 1 ) + "%'";
+      sql += "C_" + security_field + " LIKE '" + security_level + "%'";
    }
 
    if( !order_info.empty( ) )

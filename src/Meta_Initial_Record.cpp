@@ -218,17 +218,35 @@ void Meta_Initial_Record_command_functor::operator ( )( const string& command, c
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Initial_Record->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      }
+
+      if( !handled && field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Initial_Record->Comments( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Key || field_name == c_field_name_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Key || field_name == c_field_name_Key )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Initial_Record->Key( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Initial_Record->Order( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Initial_Record_set )
@@ -236,21 +254,39 @@ void Meta_Initial_Record_command_functor::operator ( )( const string& command, c
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Initial_Record_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Initial_Record, Meta_Class >(
           *cmd_handler.p_Meta_Initial_Record, &Meta_Initial_Record::Class, field_value );
-      else if( field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      }
+
+      if( !handled && field_name == c_field_id_Comments || field_name == c_field_name_Comments )
+      {
+         handled = true;
          func_string_setter< Meta_Initial_Record, string >(
           *cmd_handler.p_Meta_Initial_Record, &Meta_Initial_Record::Comments, field_value );
-      else if( field_name == c_field_id_Key || field_name == c_field_name_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Key || field_name == c_field_name_Key )
+      {
+         handled = true;
          func_string_setter< Meta_Initial_Record, string >(
           *cmd_handler.p_Meta_Initial_Record, &Meta_Initial_Record::Key, field_value );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          func_string_setter< Meta_Initial_Record, string >(
           *cmd_handler.p_Meta_Initial_Record, &Meta_Initial_Record::Order, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

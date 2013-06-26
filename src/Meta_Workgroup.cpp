@@ -250,23 +250,53 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Workgroup_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_Enum_Id || field_name == c_field_name_Next_Enum_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Enum_Id || field_name == c_field_name_Next_Enum_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Enum_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_Model_Id || field_name == c_field_name_Next_Model_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Model_Id || field_name == c_field_name_Next_Model_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Model_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_Permission_Id || field_name == c_field_name_Next_Permission_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Permission_Id || field_name == c_field_name_Next_Permission_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Permission_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next_Type_Id || field_name == c_field_name_Next_Type_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Type_Id || field_name == c_field_name_Next_Type_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Workgroup->Next_Type_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      {
+         handled = true;
          string_getter< Meta_Package >( cmd_handler.p_Meta_Workgroup->Standard_Package( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Workgroup_set )
@@ -274,30 +304,60 @@ void Meta_Workgroup_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Workgroup_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Workgroup_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Id, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Name, field_value );
-      else if( field_name == c_field_id_Next_Enum_Id || field_name == c_field_name_Next_Enum_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Enum_Id || field_name == c_field_name_Next_Enum_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Enum_Id, field_value );
-      else if( field_name == c_field_id_Next_Model_Id || field_name == c_field_name_Next_Model_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Model_Id || field_name == c_field_name_Next_Model_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Model_Id, field_value );
-      else if( field_name == c_field_id_Next_Permission_Id || field_name == c_field_name_Next_Permission_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Permission_Id || field_name == c_field_name_Next_Permission_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Permission_Id, field_value );
-      else if( field_name == c_field_id_Next_Type_Id || field_name == c_field_name_Next_Type_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Next_Type_Id || field_name == c_field_name_Next_Type_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, string >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Next_Type_Id, field_value );
-      else if( field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Standard_Package || field_name == c_field_name_Standard_Package )
+      {
+         handled = true;
          func_string_setter< Meta_Workgroup, Meta_Package >(
           *cmd_handler.p_Meta_Workgroup, &Meta_Workgroup::Standard_Package, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

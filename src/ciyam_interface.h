@@ -29,6 +29,8 @@ const size_t c_default_filesize_limit = 0;
 const char* const c_default_int_mask = "-##########";
 const char* const c_default_numeric_mask = "-##############.#####";
 
+const char* const c_default_security_level = "XXXXXXXXXX";
+
 const char* const c_extkey = "@extkey";
 
 const char* const c_fcgi_sio = "fcgi.sio";

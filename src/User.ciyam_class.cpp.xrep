@@ -23,6 +23,12 @@
  arg_mfield=$specification_\\0_mfield arg_owner=$specification_\\0_owner arg_pfield=$specification_\\0_pfield\
  arg_rfield=$specification_\\0_rfield arg_ufield=$specification_\\0_ufield arg_umchild=$specification_\\0_umchild arg_umclass=$specification_\\0_umclass`}\
 `,\
+`@eq`(`'\\1`'`,`'for_user_gpg`'`)`&`@eq`(`'\$`'`,`$specification_\\0_install_proc`)
+`{`#for_user_gpg.spec.xrep section=install_procedure module_name=$module_name class_name=$class_name\
+ arg_id=$specification_\\0_id arg_email_addr=$specification_\\0_email_addr arg_new_gpg_key=$specification_\\0_new_gpg_key\
+ arg_gpg_key_id=$specification_\\0_gpg_key_id arg_gpg_fingerprint=$specification_\\0_gpg_fingerprint\
+ arg_procedure=$specification_\\0_install_proc arg_output_arg=$specification_\\0_output_arg`}\
+`,\
 `@eq`(`'\\1`'`,`'for_user_ignore`'`)`&`@eq`(`'\$`'`,`$specification_\\0_ignore_proc`)
 `{`#for_user_ignore.spec.xrep section=ignore_procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_children=$specification_\\0_children arg_self=$specification_\\0_self arg_other=$specification_\\0_other`}\

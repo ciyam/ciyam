@@ -210,15 +210,29 @@ void Meta_Permission_command_functor::operator ( )( const string& command, const
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Permission_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Permission->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Permission->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Permission->Workgroup( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Permission_set )
@@ -226,18 +240,32 @@ void Meta_Permission_command_functor::operator ( )( const string& command, const
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Permission_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Permission_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Permission, string >(
           *cmd_handler.p_Meta_Permission, &Meta_Permission::Id, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Permission, string >(
           *cmd_handler.p_Meta_Permission, &Meta_Permission::Name, field_value );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          func_string_setter< Meta_Permission, Meta_Workgroup >(
           *cmd_handler.p_Meta_Permission, &Meta_Permission::Workgroup, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;
@@ -986,7 +1014,7 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification( ) ) )
          {
             get_obj( ).child_Specification( ).op_update( );
             get_obj( ).child_Specification( ).op_apply( );

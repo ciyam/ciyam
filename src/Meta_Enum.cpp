@@ -259,19 +259,41 @@ void Meta_Enum_command_functor::operator ( )( const string& command, const param
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Enum_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Enum->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Enum->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Enum->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      }
+
+      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Enum->Primitive( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Enum->Workgroup( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Enum_set )
@@ -279,24 +301,46 @@ void Meta_Enum_command_functor::operator ( )( const string& command, const param
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Enum_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Enum_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Enum, string >(
           *cmd_handler.p_Meta_Enum, &Meta_Enum::Id, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Enum, bool >(
           *cmd_handler.p_Meta_Enum, &Meta_Enum::Internal, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Enum, string >(
           *cmd_handler.p_Meta_Enum, &Meta_Enum::Name, field_value );
-      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      }
+
+      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      {
+         handled = true;
          func_string_setter< Meta_Enum, int >(
           *cmd_handler.p_Meta_Enum, &Meta_Enum::Primitive, field_value );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          func_string_setter< Meta_Enum, Meta_Workgroup >(
           *cmd_handler.p_Meta_Enum, &Meta_Enum::Workgroup, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;
@@ -856,7 +900,7 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification( ) ) )
          {
             get_obj( ).child_Specification( ).op_update( );
             get_obj( ).child_Specification( ).op_apply( );
