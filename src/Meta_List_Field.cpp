@@ -1049,115 +1049,329 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+
+      if( !handled && field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_List_Field->Access_Parent_Modifier( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List_Field->Access_Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Access_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Alignment || field_name == c_field_name_Alignment )
+      }
+
+      if( !handled && field_name == c_field_id_Alignment || field_name == c_field_name_Alignment )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Alignment( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Allow_Anonymous_Access( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List_Field->Child_Rel_Child_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Source_Child || field_name == c_field_name_Child_Rel_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Child || field_name == c_field_name_Child_Rel_Source_Child )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Child_Rel_Source_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Source_Field || field_name == c_field_name_Child_Rel_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Field || field_name == c_field_name_Child_Rel_Source_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Child_Rel_Source_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Source_Parent || field_name == c_field_name_Child_Rel_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Parent || field_name == c_field_name_Child_Rel_Source_Parent )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Child_Rel_Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Rel_Source_Parent_Class || field_name == c_field_name_Child_Rel_Source_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Parent_Class || field_name == c_field_name_Child_Rel_Source_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List_Field->Child_Rel_Source_Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      {
+         handled = true;
          string_getter< Meta_Relationship >( cmd_handler.p_Meta_List_Field->Child_Relationship( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List_Field->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Exact_Match_Only || field_name == c_field_name_Exact_Match_Only )
+      }
+
+      if( !handled && field_name == c_field_id_Exact_Match_Only || field_name == c_field_name_Exact_Match_Only )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Exact_Match_Only( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Exclude_In_Use_FK || field_name == c_field_name_Exclude_In_Use_FK )
+      }
+
+      if( !handled && field_name == c_field_id_Exclude_In_Use_FK || field_name == c_field_name_Exclude_In_Use_FK )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Exclude_In_Use_FK( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Font_Size || field_name == c_field_name_Font_Size )
+      }
+
+      if( !handled && field_name == c_field_id_Font_Size || field_name == c_field_name_Font_Size )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Font_Size( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Include_Key_Additions || field_name == c_field_name_Include_Key_Additions )
+      }
+
+      if( !handled && field_name == c_field_id_Include_Key_Additions || field_name == c_field_name_Include_Key_Additions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Field->Include_Key_Additions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Label_Class || field_name == c_field_name_Label_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Label_Class || field_name == c_field_name_Label_Class )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Label_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Label_Source || field_name == c_field_name_Label_Source )
+      }
+
+      if( !handled && field_name == c_field_id_Label_Source || field_name == c_field_name_Label_Source )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Label_Source( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      }
+
+      if( !handled && field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Label_Without_Prefix( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Link_Empty_Restriction || field_name == c_field_name_Link_Empty_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Empty_Restriction || field_name == c_field_name_Link_Empty_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Link_Empty_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Link_Permission || field_name == c_field_name_Link_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Permission || field_name == c_field_name_Link_Permission )
+      {
+         handled = true;
          string_getter< Meta_Permission >( cmd_handler.p_Meta_List_Field->Link_Permission( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Link_Restriction || field_name == c_field_name_Link_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Restriction || field_name == c_field_name_Link_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Link_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Link_Type || field_name == c_field_name_Link_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Type || field_name == c_field_name_Link_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Link_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_List || field_name == c_field_name_List )
+      }
+
+      if( !handled && field_name == c_field_id_List || field_name == c_field_name_List )
+      {
+         handled = true;
          string_getter< Meta_List >( cmd_handler.p_Meta_List_Field->List( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Field->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Non_Instance_Procedure || field_name == c_field_name_Non_Instance_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Non_Instance_Procedure || field_name == c_field_name_Non_Instance_Procedure )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Non_Instance_Procedure( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Notes_Truncation || field_name == c_field_name_Notes_Truncation )
+      }
+
+      if( !handled && field_name == c_field_id_Notes_Truncation || field_name == c_field_name_Notes_Truncation )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Notes_Truncation( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Omit_Versions || field_name == c_field_name_Omit_Versions )
+      }
+
+      if( !handled && field_name == c_field_id_Omit_Versions || field_name == c_field_name_Omit_Versions )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Omit_Versions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Field->Order( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List_Field->Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Print_Type || field_name == c_field_name_Print_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Type || field_name == c_field_name_Print_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Print_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      {
+         handled = true;
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_List_Field->Procedure( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Procedure_Args || field_name == c_field_name_Procedure_Args )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Args || field_name == c_field_name_Procedure_Args )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Field->Procedure_Args( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Restriction_Field || field_name == c_field_name_Restriction_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Restriction_Field || field_name == c_field_name_Restriction_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Restriction_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Restriction_Spec || field_name == c_field_name_Restriction_Spec )
+      }
+
+      if( !handled && field_name == c_field_id_Restriction_Spec || field_name == c_field_name_Restriction_Spec )
+      {
+         handled = true;
          string_getter< Meta_Specification >( cmd_handler.p_Meta_List_Field->Restriction_Spec( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Restriction_Value || field_name == c_field_name_Restriction_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Restriction_Value || field_name == c_field_name_Restriction_Value )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Field->Restriction_Value( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Retain_Selected_Rows || field_name == c_field_name_Retain_Selected_Rows )
+      }
+
+      if( !handled && field_name == c_field_id_Retain_Selected_Rows || field_name == c_field_name_Retain_Selected_Rows )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Retain_Selected_Rows( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Reverse_Order || field_name == c_field_name_Reverse_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Reverse_Order || field_name == c_field_name_Reverse_Order )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Reverse_Order( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Search_Option_Limit( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Select_Key_Exclusions || field_name == c_field_name_Select_Key_Exclusions )
+      }
+
+      if( !handled && field_name == c_field_id_Select_Key_Exclusions || field_name == c_field_name_Select_Key_Exclusions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Field->Select_Key_Exclusions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Source_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List_Field->Source_Child_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Source_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Source_Grandchild( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_List_Field->Source_Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Switch_Type || field_name == c_field_name_Switch_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Switch_Type || field_name == c_field_name_Switch_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Switch_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Trigger_Option || field_name == c_field_name_Trigger_Option )
+      }
+
+      if( !handled && field_name == c_field_id_Trigger_Option || field_name == c_field_name_Trigger_Option )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->Trigger_Option( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          string_getter< Meta_List_Field_Type >( cmd_handler.p_Meta_List_Field->Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Child_Rel_Source_Parent || field_name == c_field_name_Use_Child_Rel_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Child_Rel_Source_Parent || field_name == c_field_name_Use_Child_Rel_Source_Parent )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Use_Child_Rel_Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_In_Text_Search_Title || field_name == c_field_name_Use_In_Text_Search_Title )
+      }
+
+      if( !handled && field_name == c_field_id_Use_In_Text_Search_Title || field_name == c_field_name_Use_In_Text_Search_Title )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Use_In_Text_Search_Title( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Use_Source_Parent( ), cmd_handler.retval );
-      else if( field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_List_Field->View_Parent_Extra( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_List_Field_set )
@@ -1165,168 +1379,382 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_List_Field_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+
+      if( !handled && field_name == c_field_id_Access_Parent_Modifier || field_name == c_field_name_Access_Parent_Modifier )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Modifier >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Access_Parent_Modifier, field_value );
-      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Permission >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Access_Permission, field_value );
-      else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Access_Restriction, field_value );
-      else if( field_name == c_field_id_Alignment || field_name == c_field_name_Alignment )
+      }
+
+      if( !handled && field_name == c_field_id_Alignment || field_name == c_field_name_Alignment )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Alignment, field_value );
-      else if( field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Anonymous_Access || field_name == c_field_name_Allow_Anonymous_Access )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Allow_Anonymous_Access, field_value );
-      else if( field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Child_Class || field_name == c_field_name_Child_Rel_Child_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Class >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Child_Rel_Child_Class, field_value );
-      else if( field_name == c_field_id_Child_Rel_Source_Child || field_name == c_field_name_Child_Rel_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Child || field_name == c_field_name_Child_Rel_Source_Child )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Child_Rel_Source_Child, field_value );
-      else if( field_name == c_field_id_Child_Rel_Source_Field || field_name == c_field_name_Child_Rel_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Field || field_name == c_field_name_Child_Rel_Source_Field )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Child_Rel_Source_Field, field_value );
-      else if( field_name == c_field_id_Child_Rel_Source_Parent || field_name == c_field_name_Child_Rel_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Parent || field_name == c_field_name_Child_Rel_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Child_Rel_Source_Parent, field_value );
-      else if( field_name == c_field_id_Child_Rel_Source_Parent_Class || field_name == c_field_name_Child_Rel_Source_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Rel_Source_Parent_Class || field_name == c_field_name_Child_Rel_Source_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Class >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Child_Rel_Source_Parent_Class, field_value );
-      else if( field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Relationship || field_name == c_field_name_Child_Relationship )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Relationship >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Child_Relationship, field_value );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Class >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Class, field_value );
-      else if( field_name == c_field_id_Exact_Match_Only || field_name == c_field_name_Exact_Match_Only )
+      }
+
+      if( !handled && field_name == c_field_id_Exact_Match_Only || field_name == c_field_name_Exact_Match_Only )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Exact_Match_Only, field_value );
-      else if( field_name == c_field_id_Exclude_In_Use_FK || field_name == c_field_name_Exclude_In_Use_FK )
+      }
+
+      if( !handled && field_name == c_field_id_Exclude_In_Use_FK || field_name == c_field_name_Exclude_In_Use_FK )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Exclude_In_Use_FK, field_value );
-      else if( field_name == c_field_id_Font_Size || field_name == c_field_name_Font_Size )
+      }
+
+      if( !handled && field_name == c_field_id_Font_Size || field_name == c_field_name_Font_Size )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Font_Size, field_value );
-      else if( field_name == c_field_id_Include_Key_Additions || field_name == c_field_name_Include_Key_Additions )
+      }
+
+      if( !handled && field_name == c_field_id_Include_Key_Additions || field_name == c_field_name_Include_Key_Additions )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, string >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Include_Key_Additions, field_value );
-      else if( field_name == c_field_id_Label_Class || field_name == c_field_name_Label_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Label_Class || field_name == c_field_name_Label_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Label_Class, field_value );
-      else if( field_name == c_field_id_Label_Source || field_name == c_field_name_Label_Source )
+      }
+
+      if( !handled && field_name == c_field_id_Label_Source || field_name == c_field_name_Label_Source )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Label_Source, field_value );
-      else if( field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      }
+
+      if( !handled && field_name == c_field_id_Label_Without_Prefix || field_name == c_field_name_Label_Without_Prefix )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Label_Without_Prefix, field_value );
-      else if( field_name == c_field_id_Link_Empty_Restriction || field_name == c_field_name_Link_Empty_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Empty_Restriction || field_name == c_field_name_Link_Empty_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Link_Empty_Restriction, field_value );
-      else if( field_name == c_field_id_Link_Permission || field_name == c_field_name_Link_Permission )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Permission || field_name == c_field_name_Link_Permission )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Permission >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Link_Permission, field_value );
-      else if( field_name == c_field_id_Link_Restriction || field_name == c_field_name_Link_Restriction )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Restriction || field_name == c_field_name_Link_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Link_Restriction, field_value );
-      else if( field_name == c_field_id_Link_Type || field_name == c_field_name_Link_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Link_Type || field_name == c_field_name_Link_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Link_Type, field_value );
-      else if( field_name == c_field_id_List || field_name == c_field_name_List )
+      }
+
+      if( !handled && field_name == c_field_id_List || field_name == c_field_name_List )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_List >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::List, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, string >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Name, field_value );
-      else if( field_name == c_field_id_Non_Instance_Procedure || field_name == c_field_name_Non_Instance_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Non_Instance_Procedure || field_name == c_field_name_Non_Instance_Procedure )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Non_Instance_Procedure, field_value );
-      else if( field_name == c_field_id_Notes_Truncation || field_name == c_field_name_Notes_Truncation )
+      }
+
+      if( !handled && field_name == c_field_id_Notes_Truncation || field_name == c_field_name_Notes_Truncation )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Notes_Truncation, field_value );
-      else if( field_name == c_field_id_Omit_Versions || field_name == c_field_name_Omit_Versions )
+      }
+
+      if( !handled && field_name == c_field_id_Omit_Versions || field_name == c_field_name_Omit_Versions )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Omit_Versions, field_value );
-      else if( field_name == c_field_id_Order || field_name == c_field_name_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Order || field_name == c_field_name_Order )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, string >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Order, field_value );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Class >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Parent_Class, field_value );
-      else if( field_name == c_field_id_Print_Type || field_name == c_field_name_Print_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Type || field_name == c_field_name_Print_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Print_Type, field_value );
-      else if( field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Procedure >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Procedure, field_value );
-      else if( field_name == c_field_id_Procedure_Args || field_name == c_field_name_Procedure_Args )
+      }
+
+      if( !handled && field_name == c_field_id_Procedure_Args || field_name == c_field_name_Procedure_Args )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, string >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Procedure_Args, field_value );
-      else if( field_name == c_field_id_Restriction_Field || field_name == c_field_name_Restriction_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Restriction_Field || field_name == c_field_name_Restriction_Field )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Restriction_Field, field_value );
-      else if( field_name == c_field_id_Restriction_Spec || field_name == c_field_name_Restriction_Spec )
+      }
+
+      if( !handled && field_name == c_field_id_Restriction_Spec || field_name == c_field_name_Restriction_Spec )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Specification >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Restriction_Spec, field_value );
-      else if( field_name == c_field_id_Restriction_Value || field_name == c_field_name_Restriction_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Restriction_Value || field_name == c_field_name_Restriction_Value )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, string >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Restriction_Value, field_value );
-      else if( field_name == c_field_id_Retain_Selected_Rows || field_name == c_field_name_Retain_Selected_Rows )
+      }
+
+      if( !handled && field_name == c_field_id_Retain_Selected_Rows || field_name == c_field_name_Retain_Selected_Rows )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Retain_Selected_Rows, field_value );
-      else if( field_name == c_field_id_Reverse_Order || field_name == c_field_name_Reverse_Order )
+      }
+
+      if( !handled && field_name == c_field_id_Reverse_Order || field_name == c_field_name_Reverse_Order )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Reverse_Order, field_value );
-      else if( field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Search_Option_Limit || field_name == c_field_name_Search_Option_Limit )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Search_Option_Limit, field_value );
-      else if( field_name == c_field_id_Select_Key_Exclusions || field_name == c_field_name_Select_Key_Exclusions )
+      }
+
+      if( !handled && field_name == c_field_id_Select_Key_Exclusions || field_name == c_field_name_Select_Key_Exclusions )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, string >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Select_Key_Exclusions, field_value );
-      else if( field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child || field_name == c_field_name_Source_Child )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Source_Child, field_value );
-      else if( field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Child_Class || field_name == c_field_name_Source_Child_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Class >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Source_Child_Class, field_value );
-      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Source_Field, field_value );
-      else if( field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Grandchild || field_name == c_field_name_Source_Grandchild )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Source_Grandchild, field_value );
-      else if( field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent || field_name == c_field_name_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Field >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Source_Parent, field_value );
-      else if( field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Parent_Class || field_name == c_field_name_Source_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_Class >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Source_Parent_Class, field_value );
-      else if( field_name == c_field_id_Switch_Type || field_name == c_field_name_Switch_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Switch_Type || field_name == c_field_name_Switch_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Switch_Type, field_value );
-      else if( field_name == c_field_id_Trigger_Option || field_name == c_field_name_Trigger_Option )
+      }
+
+      if( !handled && field_name == c_field_id_Trigger_Option || field_name == c_field_name_Trigger_Option )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Trigger_Option, field_value );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, Meta_List_Field_Type >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Type, field_value );
-      else if( field_name == c_field_id_Use_Child_Rel_Source_Parent || field_name == c_field_name_Use_Child_Rel_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Child_Rel_Source_Parent || field_name == c_field_name_Use_Child_Rel_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Use_Child_Rel_Source_Parent, field_value );
-      else if( field_name == c_field_id_Use_In_Text_Search_Title || field_name == c_field_name_Use_In_Text_Search_Title )
+      }
+
+      if( !handled && field_name == c_field_id_Use_In_Text_Search_Title || field_name == c_field_name_Use_In_Text_Search_Title )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Use_In_Text_Search_Title, field_value );
-      else if( field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Source_Parent || field_name == c_field_name_Use_Source_Parent )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, bool >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Use_Source_Parent, field_value );
-      else if( field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
+      {
+         handled = true;
          func_string_setter< Meta_List_Field, int >(
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::View_Parent_Extra, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

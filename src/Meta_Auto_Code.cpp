@@ -192,15 +192,29 @@ void Meta_Auto_Code_command_functor::operator ( )( const string& command, const 
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Auto_Code_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Exhausted || field_name == c_field_name_Exhausted )
+
+      if( !handled && field_name == c_field_id_Exhausted || field_name == c_field_name_Exhausted )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Auto_Code->Exhausted( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Mask || field_name == c_field_name_Mask )
+      }
+
+      if( !handled && field_name == c_field_id_Mask || field_name == c_field_name_Mask )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Auto_Code->Mask( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Next || field_name == c_field_name_Next )
+      }
+
+      if( !handled && field_name == c_field_id_Next || field_name == c_field_name_Next )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Auto_Code->Next( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Auto_Code_set )
@@ -208,18 +222,32 @@ void Meta_Auto_Code_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Auto_Code_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Auto_Code_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Exhausted || field_name == c_field_name_Exhausted )
+
+      if( !handled && field_name == c_field_id_Exhausted || field_name == c_field_name_Exhausted )
+      {
+         handled = true;
          func_string_setter< Meta_Auto_Code, bool >(
           *cmd_handler.p_Meta_Auto_Code, &Meta_Auto_Code::Exhausted, field_value );
-      else if( field_name == c_field_id_Mask || field_name == c_field_name_Mask )
+      }
+
+      if( !handled && field_name == c_field_id_Mask || field_name == c_field_name_Mask )
+      {
+         handled = true;
          func_string_setter< Meta_Auto_Code, string >(
           *cmd_handler.p_Meta_Auto_Code, &Meta_Auto_Code::Mask, field_value );
-      else if( field_name == c_field_id_Next || field_name == c_field_name_Next )
+      }
+
+      if( !handled && field_name == c_field_id_Next || field_name == c_field_name_Next )
+      {
+         handled = true;
          func_string_setter< Meta_Auto_Code, string >(
           *cmd_handler.p_Meta_Auto_Code, &Meta_Auto_Code::Next, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

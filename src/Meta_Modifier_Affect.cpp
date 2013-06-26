@@ -351,25 +351,59 @@ void Meta_Modifier_Affect_command_functor::operator ( )( const string& command, 
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Modifier_Affect_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Modifier_Affect->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Modifier_Affect->Extra( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field || field_name == c_field_name_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Field || field_name == c_field_name_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Modifier_Affect->Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Modifier_Affect->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_Modifier_Affect->Modifier( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Scope || field_name == c_field_name_Scope )
+      }
+
+      if( !handled && field_name == c_field_id_Scope || field_name == c_field_name_Scope )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Modifier_Affect->Scope( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Modifier_Affect || field_name == c_field_name_Source_Modifier_Affect )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Modifier_Affect || field_name == c_field_name_Source_Modifier_Affect )
+      {
+         handled = true;
          string_getter< Meta_Modifier_Affect >( cmd_handler.p_Meta_Modifier_Affect->Source_Modifier_Affect( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Modifier_Affect->Type( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Modifier_Affect_set )
@@ -377,33 +411,67 @@ void Meta_Modifier_Affect_command_functor::operator ( )( const string& command, 
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Modifier_Affect_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Modifier_Affect_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, Meta_Class >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Class, field_value );
-      else if( field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, int >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Extra, field_value );
-      else if( field_name == c_field_id_Field || field_name == c_field_name_Field )
+      }
+
+      if( !handled && field_name == c_field_id_Field || field_name == c_field_name_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, Meta_Field >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Field, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, bool >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Internal, field_value );
-      else if( field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Modifier || field_name == c_field_name_Modifier )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, Meta_Modifier >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Modifier, field_value );
-      else if( field_name == c_field_id_Scope || field_name == c_field_name_Scope )
+      }
+
+      if( !handled && field_name == c_field_id_Scope || field_name == c_field_name_Scope )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, int >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Scope, field_value );
-      else if( field_name == c_field_id_Source_Modifier_Affect || field_name == c_field_name_Source_Modifier_Affect )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Modifier_Affect || field_name == c_field_name_Source_Modifier_Affect )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, Meta_Modifier_Affect >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Source_Modifier_Affect, field_value );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier_Affect, int >(
           *cmd_handler.p_Meta_Modifier_Affect, &Meta_Modifier_Affect::Type, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

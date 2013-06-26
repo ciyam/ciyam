@@ -347,6 +347,8 @@ session_info::session_info( storage_info& si )
 
    hashval_prefix = uuid( ).as_string( );
    checksum_prefix = uuid( ).as_string( );
+
+   user_slevel = string( c_default_security_level );
 }
 
 bool session_info::is_default_other( ) const

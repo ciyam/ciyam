@@ -238,19 +238,41 @@ void Meta_Procedure_command_functor::operator ( )( const string& command, const 
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Procedure_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Procedure->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Procedure->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Procedure->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Procedure->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Procedure || field_name == c_field_name_Source_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Procedure || field_name == c_field_name_Source_Procedure )
+      {
+         handled = true;
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_Procedure->Source_Procedure( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Procedure_set )
@@ -258,24 +280,46 @@ void Meta_Procedure_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Procedure_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Procedure_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Procedure, Meta_Class >(
           *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Class, field_value );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Procedure, string >(
           *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Id, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Procedure, bool >(
           *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Internal, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Procedure, string >(
           *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Name, field_value );
-      else if( field_name == c_field_id_Source_Procedure || field_name == c_field_name_Source_Procedure )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Procedure || field_name == c_field_name_Source_Procedure )
+      {
+         handled = true;
          func_string_setter< Meta_Procedure, Meta_Procedure >(
           *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Source_Procedure, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;
@@ -928,7 +972,7 @@ void Meta_Procedure::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification( ) ) )
          {
             get_obj( ).child_Specification( ).op_update( );
             get_obj( ).child_Specification( ).op_apply( );

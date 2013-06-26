@@ -234,23 +234,53 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Type_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
+
+      if( !handled && field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Dummy_0( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Admin( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Child( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Home( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_List_Type->Is_Not_Anonymous( ), cmd_handler.retval );
-      else if( field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
+      }
+
+      if( !handled && field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Type->List_Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_List_Type->Name( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_List_Type_set )
@@ -258,30 +288,60 @@ void Meta_List_Type_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_List_Type_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_List_Type_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
+
+      if( !handled && field_name == c_field_id_Dummy_0 || field_name == c_field_name_Dummy_0 )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Dummy_0, field_value );
-      else if( field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Admin || field_name == c_field_name_Is_Admin )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Admin, field_value );
-      else if( field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Child || field_name == c_field_name_Is_Child )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Child, field_value );
-      else if( field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Home || field_name == c_field_name_Is_Home )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Home, field_value );
-      else if( field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Not_Anonymous || field_name == c_field_name_Is_Not_Anonymous )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, bool >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Is_Not_Anonymous, field_value );
-      else if( field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
+      }
+
+      if( !handled && field_name == c_field_id_List_Name || field_name == c_field_name_List_Name )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, string >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::List_Name, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_List_Type, string >(
           *cmd_handler.p_Meta_List_Type, &Meta_List_Type::Name, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

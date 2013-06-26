@@ -186,13 +186,23 @@ void Meta_View_Type_command_functor::operator ( )( const string& command, const 
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_View_Type_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_View_Type->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_View_Name || field_name == c_field_name_View_Name )
+      }
+
+      if( !handled && field_name == c_field_id_View_Name || field_name == c_field_name_View_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_View_Type->View_Name( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_View_Type_set )
@@ -200,15 +210,25 @@ void Meta_View_Type_command_functor::operator ( )( const string& command, const 
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_View_Type_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_View_Type_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_View_Type, string >(
           *cmd_handler.p_Meta_View_Type, &Meta_View_Type::Name, field_value );
-      else if( field_name == c_field_id_View_Name || field_name == c_field_name_View_Name )
+      }
+
+      if( !handled && field_name == c_field_id_View_Name || field_name == c_field_name_View_Name )
+      {
+         handled = true;
          func_string_setter< Meta_View_Type, string >(
           *cmd_handler.p_Meta_View_Type, &Meta_View_Type::View_Name, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

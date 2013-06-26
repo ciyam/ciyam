@@ -675,7 +675,9 @@ void timeout_handler::on_start( )
 
       if( g_sessions.empty( ) )
       {
-#ifndef USE_MULTIPLE_REQUEST_HANDLERS
+#ifdef USE_MULTIPLE_REQUEST_HANDLERS
+         disconnect_sockets( );
+#else
          if( g_has_connected )
          {
             g_has_connected = false;
@@ -796,11 +798,13 @@ void request_handler::process_request( )
 
    string hash;
    string user;
+   string raddr;
    string title;
    string unique_id;
    string module_id;
    string module_ref;
    string module_name;
+
    string session_id;
    string interface_file;
    session_info* p_session_info = 0;
@@ -876,6 +880,7 @@ void request_handler::process_request( )
       string userhash( input_data[ c_param_userhash ] );
       string username( input_data[ c_param_username ] );
 
+      raddr = input_data[ c_http_param_raddr ];
       session_id = input_data[ c_param_session ];
 
       // NOTE: If an existing session is present then obtain its
@@ -994,7 +999,7 @@ void request_handler::process_request( )
          cmd = c_cmd_open;
 
       if( cmd != c_cmd_status )
-         unique_id = get_unique( g_id, input_data[ c_http_param_raddr ] );
+         unique_id = get_unique( g_id, raddr );
 
       string activation_file;
       if( is_activation )
@@ -1054,7 +1059,7 @@ void request_handler::process_request( )
 
             created_session = true;
             p_session_info->locked = true;
-            p_session_info->ip_addr = input_data[ c_http_param_raddr ];
+            p_session_info->ip_addr = raddr;
 
             if( temp_session )
             {
@@ -2206,8 +2211,8 @@ void request_handler::process_request( )
                   add_quick_link( module_ref, cmd, findinfo, quicklink, listsrch, listsort, oident,
                    uselect, error_message, had_send_or_recv_error, mod_info, *p_session_info, &list_selections );
                else if( !perform_action( list.module, list.cid, act, app,
-                field, "", exec, extra, list.row_errors, *p_session_info ) )
-                  had_send_or_recv_error = true;
+                   field, "", exec, extra, list.row_errors, *p_session_info ) )
+                     had_send_or_recv_error = true;
 
                // NOTE: Handle an error/response (is stored as the first record in "row_errors").
                // Also if no message was returned for a non-instance procedure call then output
@@ -4995,7 +5000,8 @@ void request_handler::process_request( )
    }
    catch( exception& x )
    {
-      LOG_TRACE( string( "error: " ) + x.what( ) );
+      LOG_TRACE( string( "error: " ) + x.what( )
+       + " (at " + date_time::local( ).as_string( true, false ) + " from " + raddr + ")" );
 
       ostringstream osstr;
       osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";

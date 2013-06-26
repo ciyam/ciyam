@@ -230,17 +230,35 @@ void Meta_Modifier_command_functor::operator ( )( const string& command, const p
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Modifier_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Modifier->Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Modifier->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Modifier->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      {
+         handled = true;
          string_getter< Meta_Modifier >( cmd_handler.p_Meta_Modifier->Source_Modifier( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Modifier_set )
@@ -248,21 +266,39 @@ void Meta_Modifier_command_functor::operator ( )( const string& command, const p
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Modifier_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Modifier_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
+
+      if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier, Meta_Class >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Class, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier, bool >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Internal, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier, string >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Name, field_value );
-      else if( field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Modifier || field_name == c_field_name_Source_Modifier )
+      {
+         handled = true;
          func_string_setter< Meta_Modifier, Meta_Modifier >(
           *cmd_handler.p_Meta_Modifier, &Meta_Modifier::Source_Modifier, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;
@@ -887,7 +923,7 @@ void Meta_Modifier::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification( ) ) )
          {
             get_obj( ).child_Specification( ).op_update( );
             get_obj( ).child_Specification( ).op_apply( );

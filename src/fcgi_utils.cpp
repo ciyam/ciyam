@@ -819,6 +819,12 @@ void force_html_tags_to_lower_case( string& html )
          new_html += old_html.substr( 0, pos );
 
       size_t rlen = refs[ 0 ].size( );
+
+      // NOTE: If matched a closing tag then extend the length (as the '/'
+      // is not included in the reference).
+      if( rlen && old_html[ pos + 1 ] == '/' )
+         ++rlen;
+
       new_html += lower( old_html.substr( pos, rlen + 1 ) );
 
       new_html += old_html.substr( pos + rlen + 1, len - rlen - 1 );

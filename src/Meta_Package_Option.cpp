@@ -379,47 +379,125 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Package_Option_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Actions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Date || field_name == c_field_name_Date )
+      }
+
+      if( !handled && field_name == c_field_id_Date || field_name == c_field_name_Date )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Date( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Datetime || field_name == c_field_name_Datetime )
+      }
+
+      if( !handled && field_name == c_field_id_Datetime || field_name == c_field_name_Datetime )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Datetime( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      }
+
+      if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Installed( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Integer || field_name == c_field_name_Integer )
+      }
+
+      if( !handled && field_name == c_field_id_Integer || field_name == c_field_name_Integer )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Package_Option->Integer( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Is_Other_Package || field_name == c_field_name_Is_Other_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Other_Package || field_name == c_field_name_Is_Other_Package )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Is_Other_Package( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          string_getter< Meta_Model >( cmd_handler.p_Meta_Package_Option->Model( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Numeric || field_name == c_field_name_Numeric )
+      }
+
+      if( !handled && field_name == c_field_id_Numeric || field_name == c_field_name_Numeric )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Numeric( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
+      {
+         handled = true;
          string_getter< Meta_Package >( cmd_handler.p_Meta_Package_Option->Other_Package( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Package_Required || field_name == c_field_name_Other_Package_Required )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Package_Required || field_name == c_field_name_Other_Package_Required )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Other_Package_Required( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Other_Package_Type || field_name == c_field_name_Other_Package_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Package_Type || field_name == c_field_name_Other_Package_Type )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Other_Package_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Package || field_name == c_field_name_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Package || field_name == c_field_name_Package )
+      {
+         handled = true;
          string_getter< Meta_Package >( cmd_handler.p_Meta_Package_Option->Package( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      }
+
+      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Package_Option->Primitive( ), cmd_handler.retval );
-      else if( field_name == c_field_id_String || field_name == c_field_name_String )
+      }
+
+      if( !handled && field_name == c_field_id_String || field_name == c_field_name_String )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->String( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Time || field_name == c_field_name_Time )
+      }
+
+      if( !handled && field_name == c_field_id_Time || field_name == c_field_name_Time )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Time( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Option || field_name == c_field_name_Use_Option )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Option || field_name == c_field_name_Use_Option )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Use_Option( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Value( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Package_Option_set )
@@ -427,66 +505,144 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Package_Option_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Package_Option_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Actions, field_value );
-      else if( field_name == c_field_id_Date || field_name == c_field_name_Date )
+      }
+
+      if( !handled && field_name == c_field_id_Date || field_name == c_field_name_Date )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Date, field_value );
-      else if( field_name == c_field_id_Datetime || field_name == c_field_name_Datetime )
+      }
+
+      if( !handled && field_name == c_field_id_Datetime || field_name == c_field_name_Datetime )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Datetime, field_value );
-      else if( field_name == c_field_id_Id || field_name == c_field_name_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Id, field_value );
-      else if( field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      }
+
+      if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Installed, field_value );
-      else if( field_name == c_field_id_Integer || field_name == c_field_name_Integer )
+      }
+
+      if( !handled && field_name == c_field_id_Integer || field_name == c_field_name_Integer )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, int >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Integer, field_value );
-      else if( field_name == c_field_id_Is_Other_Package || field_name == c_field_name_Is_Other_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Is_Other_Package || field_name == c_field_name_Is_Other_Package )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Is_Other_Package, field_value );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, Meta_Model >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Model, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Name, field_value );
-      else if( field_name == c_field_id_Numeric || field_name == c_field_name_Numeric )
+      }
+
+      if( !handled && field_name == c_field_id_Numeric || field_name == c_field_name_Numeric )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Numeric, field_value );
-      else if( field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, Meta_Package >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Other_Package, field_value );
-      else if( field_name == c_field_id_Other_Package_Required || field_name == c_field_name_Other_Package_Required )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Package_Required || field_name == c_field_name_Other_Package_Required )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Other_Package_Required, field_value );
-      else if( field_name == c_field_id_Other_Package_Type || field_name == c_field_name_Other_Package_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Other_Package_Type || field_name == c_field_name_Other_Package_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Other_Package_Type, field_value );
-      else if( field_name == c_field_id_Package || field_name == c_field_name_Package )
+      }
+
+      if( !handled && field_name == c_field_id_Package || field_name == c_field_name_Package )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, Meta_Package >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Package, field_value );
-      else if( field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      }
+
+      if( !handled && field_name == c_field_id_Primitive || field_name == c_field_name_Primitive )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, int >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Primitive, field_value );
-      else if( field_name == c_field_id_String || field_name == c_field_name_String )
+      }
+
+      if( !handled && field_name == c_field_id_String || field_name == c_field_name_String )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::String, field_value );
-      else if( field_name == c_field_id_Time || field_name == c_field_name_Time )
+      }
+
+      if( !handled && field_name == c_field_id_Time || field_name == c_field_name_Time )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Time, field_value );
-      else if( field_name == c_field_id_Use_Option || field_name == c_field_name_Use_Option )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Option || field_name == c_field_name_Use_Option )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Use_Option, field_value );
-      else if( field_name == c_field_id_Value || field_name == c_field_name_Value )
+      }
+
+      if( !handled && field_name == c_field_id_Value || field_name == c_field_name_Value )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Option, string >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Value, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

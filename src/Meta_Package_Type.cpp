@@ -230,25 +230,59 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Package_Type_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Type->Actions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Dependencies || field_name == c_field_name_Dependencies )
+      }
+
+      if( !handled && field_name == c_field_id_Dependencies || field_name == c_field_name_Dependencies )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Type->Dependencies( ), cmd_handler.retval );
-      else if( field_name == c_field_id_File || field_name == c_field_name_File )
+      }
+
+      if( !handled && field_name == c_field_id_File || field_name == c_field_name_File )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Type->File( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      }
+
+      if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Type->Installed( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Multi || field_name == c_field_name_Multi )
+      }
+
+      if( !handled && field_name == c_field_id_Multi || field_name == c_field_name_Multi )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Type->Multi( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Type->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Plural || field_name == c_field_name_Plural )
+      }
+
+      if( !handled && field_name == c_field_id_Plural || field_name == c_field_name_Plural )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Package_Type->Plural( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
+      }
+
+      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Package_Type->Version( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Package_Type_set )
@@ -256,33 +290,67 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Package_Type_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Package_Type_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, string >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Actions, field_value );
-      else if( field_name == c_field_id_Dependencies || field_name == c_field_name_Dependencies )
+      }
+
+      if( !handled && field_name == c_field_id_Dependencies || field_name == c_field_name_Dependencies )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, string >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Dependencies, field_value );
-      else if( field_name == c_field_id_File || field_name == c_field_name_File )
+      }
+
+      if( !handled && field_name == c_field_id_File || field_name == c_field_name_File )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, string >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::File, field_value );
-      else if( field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      }
+
+      if( !handled && field_name == c_field_id_Installed || field_name == c_field_name_Installed )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, bool >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Installed, field_value );
-      else if( field_name == c_field_id_Multi || field_name == c_field_name_Multi )
+      }
+
+      if( !handled && field_name == c_field_id_Multi || field_name == c_field_name_Multi )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, bool >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Multi, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, string >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Name, field_value );
-      else if( field_name == c_field_id_Plural || field_name == c_field_name_Plural )
+      }
+
+      if( !handled && field_name == c_field_id_Plural || field_name == c_field_name_Plural )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, string >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Plural, field_value );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
+      }
+
+      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      {
+         handled = true;
          func_string_setter< Meta_Package_Type, int >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Version, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

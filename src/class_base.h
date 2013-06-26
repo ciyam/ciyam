@@ -957,6 +957,13 @@ void CLASS_BASE_DECL_SPEC delete_directory_tree( const std::string& path );
 void CLASS_BASE_DECL_SPEC create_directories_for_file_name( const std::string& file_name );
 std::string CLASS_BASE_DECL_SPEC get_directory_for_file_name( const std::string& file_name );
 
+void CLASS_BASE_DECL_SPEC remove_gpg_key( const std::string& gpg_key_id, bool ignore_error = false );
+
+void CLASS_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );
+
+void CLASS_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
+ const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );
+
 std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );
 
 std::string CLASS_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );

@@ -722,77 +722,215 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Application_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Actions( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Add_Modules_Automatically || field_name == c_field_name_Add_Modules_Automatically )
+      }
+
+      if( !handled && field_name == c_field_id_Add_Modules_Automatically || field_name == c_field_name_Add_Modules_Automatically )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Add_Modules_Automatically( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Duplicate_Logins || field_name == c_field_name_Allow_Duplicate_Logins )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Duplicate_Logins || field_name == c_field_name_Allow_Duplicate_Logins )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Allow_Duplicate_Logins( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Allow_Module_Switching || field_name == c_field_name_Allow_Module_Switching )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Module_Switching || field_name == c_field_name_Allow_Module_Switching )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Allow_Module_Switching( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Auto_Login_Days || field_name == c_field_name_Auto_Login_Days )
+      }
+
+      if( !handled && field_name == c_field_id_Auto_Login_Days || field_name == c_field_name_Auto_Login_Days )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Auto_Login_Days( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Create_Database( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Created_Database || field_name == c_field_name_Created_Database )
+      }
+
+      if( !handled && field_name == c_field_id_Created_Database || field_name == c_field_name_Created_Database )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Created_Database( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Image_Height || field_name == c_field_name_Default_Image_Height )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Image_Height || field_name == c_field_name_Default_Image_Height )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Image_Height( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Image_Width || field_name == c_field_name_Default_Image_Width )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Image_Width || field_name == c_field_name_Default_Image_Width )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Image_Width( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_List_Print_Row_Limit || field_name == c_field_name_Default_List_Print_Row_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Default_List_Print_Row_Limit || field_name == c_field_name_Default_List_Print_Row_Limit )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_List_Print_Row_Limit( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_List_Row_Limit || field_name == c_field_name_Default_List_Row_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Default_List_Row_Limit || field_name == c_field_name_Default_List_Row_Limit )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_List_Row_Limit( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Max_Attached_File_Size || field_name == c_field_name_Default_Max_Attached_File_Size )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Max_Attached_File_Size || field_name == c_field_name_Default_Max_Attached_File_Size )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Max_Attached_File_Size( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Multiline_Max_Rows || field_name == c_field_name_Default_Multiline_Max_Rows )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Max_Rows || field_name == c_field_name_Default_Multiline_Max_Rows )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Max_Rows( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Multiline_Min_Rows || field_name == c_field_name_Default_Multiline_Min_Rows )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Min_Rows || field_name == c_field_name_Default_Multiline_Min_Rows )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Min_Rows( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Multiline_Text_Limit || field_name == c_field_name_Default_Multiline_Text_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Text_Limit || field_name == c_field_name_Default_Multiline_Text_Limit )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Text_Limit( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Multiline_Text_Trunc || field_name == c_field_name_Default_Multiline_Text_Trunc )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Text_Trunc || field_name == c_field_name_Default_Multiline_Text_Trunc )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Default_Multiline_Text_Trunc( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Default_Timezone_Abbr || field_name == c_field_name_Default_Timezone_Abbr )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Timezone_Abbr || field_name == c_field_name_Default_Timezone_Abbr )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Default_Timezone_Abbr( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+      }
+
+      if( !handled && field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Encrypt_Dynamic_Content( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
+      }
+
+      if( !handled && field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Generate_Details( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
+      }
+
+      if( !handled && field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Generate_Status( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Generate_Type || field_name == c_field_name_Generate_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Generate_Type || field_name == c_field_name_Generate_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Application->Generate_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Keep_Existing_Data || field_name == c_field_name_Keep_Existing_Data )
+      }
+
+      if( !handled && field_name == c_field_id_Keep_Existing_Data || field_name == c_field_name_Keep_Existing_Data )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Keep_Existing_Data( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Module_Prefix || field_name == c_field_name_Module_Prefix )
+      }
+
+      if( !handled && field_name == c_field_id_Module_Prefix || field_name == c_field_name_Module_Prefix )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Module_Prefix( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Print_Lists_With_Check_Boxes || field_name == c_field_name_Print_Lists_With_Check_Boxes )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Lists_With_Check_Boxes || field_name == c_field_name_Print_Lists_With_Check_Boxes )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Print_Lists_With_Check_Boxes( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Print_Lists_With_Row_Numbers( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Registration_Key( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
+      }
+
+      if( !handled && field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Show_Inaccessible_Modules( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Check_Boxes_for_Bools( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Embedded_Images( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_Menubar_Not_Sidebar || field_name == c_field_name_Use_Menubar_Not_Sidebar )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Menubar_Not_Sidebar || field_name == c_field_name_Use_Menubar_Not_Sidebar )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_Menubar_Not_Sidebar( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
+      }
+
+      if( !handled && field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Application->Use_URL_Checksum( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
+      }
+
+      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Application->Version( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          string_getter< Meta_Workgroup >( cmd_handler.p_Meta_Application->Workgroup( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Application_set )
@@ -800,111 +938,249 @@ void Meta_Application_command_functor::operator ( )( const string& command, cons
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Application_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Application_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+
+      if( !handled && field_name == c_field_id_Actions || field_name == c_field_name_Actions )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Actions, field_value );
-      else if( field_name == c_field_id_Add_Modules_Automatically || field_name == c_field_name_Add_Modules_Automatically )
+      }
+
+      if( !handled && field_name == c_field_id_Add_Modules_Automatically || field_name == c_field_name_Add_Modules_Automatically )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Add_Modules_Automatically, field_value );
-      else if( field_name == c_field_id_Allow_Duplicate_Logins || field_name == c_field_name_Allow_Duplicate_Logins )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Duplicate_Logins || field_name == c_field_name_Allow_Duplicate_Logins )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Allow_Duplicate_Logins, field_value );
-      else if( field_name == c_field_id_Allow_Module_Switching || field_name == c_field_name_Allow_Module_Switching )
+      }
+
+      if( !handled && field_name == c_field_id_Allow_Module_Switching || field_name == c_field_name_Allow_Module_Switching )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Allow_Module_Switching, field_value );
-      else if( field_name == c_field_id_Auto_Login_Days || field_name == c_field_name_Auto_Login_Days )
+      }
+
+      if( !handled && field_name == c_field_id_Auto_Login_Days || field_name == c_field_name_Auto_Login_Days )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Auto_Login_Days, field_value );
-      else if( field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Database || field_name == c_field_name_Create_Database )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Create_Database, field_value );
-      else if( field_name == c_field_id_Created_Database || field_name == c_field_name_Created_Database )
+      }
+
+      if( !handled && field_name == c_field_id_Created_Database || field_name == c_field_name_Created_Database )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Created_Database, field_value );
-      else if( field_name == c_field_id_Default_Image_Height || field_name == c_field_name_Default_Image_Height )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Image_Height || field_name == c_field_name_Default_Image_Height )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Image_Height, field_value );
-      else if( field_name == c_field_id_Default_Image_Width || field_name == c_field_name_Default_Image_Width )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Image_Width || field_name == c_field_name_Default_Image_Width )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Image_Width, field_value );
-      else if( field_name == c_field_id_Default_List_Print_Row_Limit || field_name == c_field_name_Default_List_Print_Row_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Default_List_Print_Row_Limit || field_name == c_field_name_Default_List_Print_Row_Limit )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_List_Print_Row_Limit, field_value );
-      else if( field_name == c_field_id_Default_List_Row_Limit || field_name == c_field_name_Default_List_Row_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Default_List_Row_Limit || field_name == c_field_name_Default_List_Row_Limit )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_List_Row_Limit, field_value );
-      else if( field_name == c_field_id_Default_Max_Attached_File_Size || field_name == c_field_name_Default_Max_Attached_File_Size )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Max_Attached_File_Size || field_name == c_field_name_Default_Max_Attached_File_Size )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Max_Attached_File_Size, field_value );
-      else if( field_name == c_field_id_Default_Multiline_Max_Rows || field_name == c_field_name_Default_Multiline_Max_Rows )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Max_Rows || field_name == c_field_name_Default_Multiline_Max_Rows )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Max_Rows, field_value );
-      else if( field_name == c_field_id_Default_Multiline_Min_Rows || field_name == c_field_name_Default_Multiline_Min_Rows )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Min_Rows || field_name == c_field_name_Default_Multiline_Min_Rows )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Min_Rows, field_value );
-      else if( field_name == c_field_id_Default_Multiline_Text_Limit || field_name == c_field_name_Default_Multiline_Text_Limit )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Text_Limit || field_name == c_field_name_Default_Multiline_Text_Limit )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Text_Limit, field_value );
-      else if( field_name == c_field_id_Default_Multiline_Text_Trunc || field_name == c_field_name_Default_Multiline_Text_Trunc )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Multiline_Text_Trunc || field_name == c_field_name_Default_Multiline_Text_Trunc )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Multiline_Text_Trunc, field_value );
-      else if( field_name == c_field_id_Default_Timezone_Abbr || field_name == c_field_name_Default_Timezone_Abbr )
+      }
+
+      if( !handled && field_name == c_field_id_Default_Timezone_Abbr || field_name == c_field_name_Default_Timezone_Abbr )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Default_Timezone_Abbr, field_value );
-      else if( field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+      }
+
+      if( !handled && field_name == c_field_id_Encrypt_Dynamic_Content || field_name == c_field_name_Encrypt_Dynamic_Content )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Encrypt_Dynamic_Content, field_value );
-      else if( field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
+      }
+
+      if( !handled && field_name == c_field_id_Generate_Details || field_name == c_field_name_Generate_Details )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Details, field_value );
-      else if( field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
+      }
+
+      if( !handled && field_name == c_field_id_Generate_Status || field_name == c_field_name_Generate_Status )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Status, field_value );
-      else if( field_name == c_field_id_Generate_Type || field_name == c_field_name_Generate_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Generate_Type || field_name == c_field_name_Generate_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Application, int >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Generate_Type, field_value );
-      else if( field_name == c_field_id_Keep_Existing_Data || field_name == c_field_name_Keep_Existing_Data )
+      }
+
+      if( !handled && field_name == c_field_id_Keep_Existing_Data || field_name == c_field_name_Keep_Existing_Data )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Keep_Existing_Data, field_value );
-      else if( field_name == c_field_id_Module_Prefix || field_name == c_field_name_Module_Prefix )
+      }
+
+      if( !handled && field_name == c_field_id_Module_Prefix || field_name == c_field_name_Module_Prefix )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Module_Prefix, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Name, field_value );
-      else if( field_name == c_field_id_Print_Lists_With_Check_Boxes || field_name == c_field_name_Print_Lists_With_Check_Boxes )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Lists_With_Check_Boxes || field_name == c_field_name_Print_Lists_With_Check_Boxes )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Print_Lists_With_Check_Boxes, field_value );
-      else if( field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
+      }
+
+      if( !handled && field_name == c_field_id_Print_Lists_With_Row_Numbers || field_name == c_field_name_Print_Lists_With_Row_Numbers )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Print_Lists_With_Row_Numbers, field_value );
-      else if( field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Registration_Key || field_name == c_field_name_Registration_Key )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Registration_Key, field_value );
-      else if( field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
+      }
+
+      if( !handled && field_name == c_field_id_Show_Inaccessible_Modules || field_name == c_field_name_Show_Inaccessible_Modules )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Show_Inaccessible_Modules, field_value );
-      else if( field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Check_Boxes_for_Bools || field_name == c_field_name_Use_Check_Boxes_for_Bools )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Check_Boxes_for_Bools, field_value );
-      else if( field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Embedded_Images || field_name == c_field_name_Use_Embedded_Images )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Embedded_Images, field_value );
-      else if( field_name == c_field_id_Use_Menubar_Not_Sidebar || field_name == c_field_name_Use_Menubar_Not_Sidebar )
+      }
+
+      if( !handled && field_name == c_field_id_Use_Menubar_Not_Sidebar || field_name == c_field_name_Use_Menubar_Not_Sidebar )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_Menubar_Not_Sidebar, field_value );
-      else if( field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
+      }
+
+      if( !handled && field_name == c_field_id_Use_URL_Checksum || field_name == c_field_name_Use_URL_Checksum )
+      {
+         handled = true;
          func_string_setter< Meta_Application, bool >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Use_URL_Checksum, field_value );
-      else if( field_name == c_field_id_Version || field_name == c_field_name_Version )
+      }
+
+      if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
+      {
+         handled = true;
          func_string_setter< Meta_Application, string >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Version, field_value );
-      else if( field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      }
+
+      if( !handled && field_name == c_field_id_Workgroup || field_name == c_field_name_Workgroup )
+      {
+         handled = true;
          func_string_setter< Meta_Application, Meta_Workgroup >(
           *cmd_handler.p_Meta_Application, &Meta_Application::Workgroup, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;

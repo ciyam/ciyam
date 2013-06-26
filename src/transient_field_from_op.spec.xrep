@@ -26,6 +26,7 @@
 `{`@eq`(`$type`,`'month`'`)`$type`=`'months`'`}\
 `{`@eq`(`$type`,`'year`'`)`$type`=`'years`'`}\
 `{`$value`=`$arg_value`}\
+`{`@eq`(`$value`,`'@null`'`)`$arg_value`=`'`'`}\
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
    // [(start transient_field_from_op)] `{`$arg_id`}

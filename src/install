@@ -17,8 +17,8 @@ else
  else
   cp $1.fcgi.sio $directory
 
-  if [ ! -f $directory/$1.jpg ]; then
-   cp module.jpg $directory/$1.jpg
+  if [ ! -f $directory/$1.png ]; then
+   cp module.png $directory/$1.png
   fi
 
   if [ ! "$alias" = "" ]; then

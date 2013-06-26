@@ -598,23 +598,53 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Specification_Field_Action->Access_Restriction( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Clone_Key || field_name == c_field_name_Clone_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Clone_Key || field_name == c_field_name_Clone_Key )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification_Field_Action->Clone_Key( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Create_Type || field_name == c_field_name_Create_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Type || field_name == c_field_name_Create_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Specification_Field_Action->Create_Type( ), cmd_handler.retval );
-      else if( field_name == c_field_id_New_Record_Class || field_name == c_field_name_New_Record_Class )
+      }
+
+      if( !handled && field_name == c_field_id_New_Record_Class || field_name == c_field_name_New_Record_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Specification_Field_Action->New_Record_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_New_Record_FK_Field || field_name == c_field_name_New_Record_FK_Field )
+      }
+
+      if( !handled && field_name == c_field_id_New_Record_FK_Field || field_name == c_field_name_New_Record_FK_Field )
+      {
+         handled = true;
          string_getter< Meta_Field >( cmd_handler.p_Meta_Specification_Field_Action->New_Record_FK_Field( ), cmd_handler.retval );
-      else if( field_name == c_field_id_New_Record_FK_Value || field_name == c_field_name_New_Record_FK_Value )
+      }
+
+      if( !handled && field_name == c_field_id_New_Record_FK_Value || field_name == c_field_name_New_Record_FK_Value )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Specification_Field_Action->New_Record_FK_Value( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Specification_Field_Action->Type( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          cmd_handler.retval = cmd_handler.p_Meta_Specification_Field_Action->Meta_Specification::execute( cmd_handler.cmd_and_args );
    }
    else if( command == c_cmd_Meta_Specification_Field_Action_set )
@@ -622,30 +652,60 @@ void Meta_Specification_Field_Action_command_functor::operator ( )( const string
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Specification_Field_Action_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, int >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::Access_Restriction, field_value );
-      else if( field_name == c_field_id_Clone_Key || field_name == c_field_name_Clone_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Clone_Key || field_name == c_field_name_Clone_Key )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, string >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::Clone_Key, field_value );
-      else if( field_name == c_field_id_Create_Type || field_name == c_field_name_Create_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Create_Type || field_name == c_field_name_Create_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, int >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::Create_Type, field_value );
-      else if( field_name == c_field_id_New_Record_Class || field_name == c_field_name_New_Record_Class )
+      }
+
+      if( !handled && field_name == c_field_id_New_Record_Class || field_name == c_field_name_New_Record_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, Meta_Class >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::New_Record_Class, field_value );
-      else if( field_name == c_field_id_New_Record_FK_Field || field_name == c_field_name_New_Record_FK_Field )
+      }
+
+      if( !handled && field_name == c_field_id_New_Record_FK_Field || field_name == c_field_name_New_Record_FK_Field )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, Meta_Field >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::New_Record_FK_Field, field_value );
-      else if( field_name == c_field_id_New_Record_FK_Value || field_name == c_field_name_New_Record_FK_Value )
+      }
+
+      if( !handled && field_name == c_field_id_New_Record_FK_Value || field_name == c_field_name_New_Record_FK_Value )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, string >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::New_Record_FK_Value, field_value );
-      else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
+      }
+
+      if( !handled && field_name == c_field_id_Type || field_name == c_field_name_Type )
+      {
+         handled = true;
          func_string_setter< Meta_Specification_Field_Action, int >(
           *cmd_handler.p_Meta_Specification_Field_Action, &Meta_Specification_Field_Action::Type, field_value );
-      else
+      }
+
+      if( !handled )
          cmd_handler.p_Meta_Specification_Field_Action->Meta_Specification::execute( cmd_handler.cmd_and_args );
 
       cmd_handler.retval = c_okay;

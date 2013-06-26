@@ -387,37 +387,95 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
    {
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Relationship_get_field_name ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
-      else if( field_name == c_field_id_Cascade_Op || field_name == c_field_name_Cascade_Op )
+
+      if( !handled && field_name == c_field_id_Cascade_Op || field_name == c_field_name_Cascade_Op )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Relationship->Cascade_Op( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Relationship->Child_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Class_Name || field_name == c_field_name_Child_Class_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Class_Name || field_name == c_field_name_Child_Class_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Relationship->Child_Class_Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Child_Name || field_name == c_field_name_Child_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Name || field_name == c_field_name_Child_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Relationship->Child_Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      {
+         handled = true;
          string_getter< int >( cmd_handler.p_Meta_Relationship->Extra( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_Id || field_name == c_field_name_Field_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Id || field_name == c_field_name_Field_Id )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Relationship->Field_Id( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Field_Key || field_name == c_field_name_Field_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Key || field_name == c_field_name_Field_Key )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Relationship->Field_Key( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Relationship->Internal( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      }
+
+      if( !handled && field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Relationship->Mandatory( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          string_getter< Meta_Model >( cmd_handler.p_Meta_Relationship->Model( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          string_getter< string >( cmd_handler.p_Meta_Relationship->Name( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          string_getter< Meta_Class >( cmd_handler.p_Meta_Relationship->Parent_Class( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
+      {
+         handled = true;
          string_getter< Meta_Relationship >( cmd_handler.p_Meta_Relationship->Source_Relationship( ), cmd_handler.retval );
-      else if( field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      }
+
+      if( !handled && field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      {
+         handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Relationship->Transient( ), cmd_handler.retval );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for getter call" );
    }
    else if( command == c_cmd_Meta_Relationship_set )
@@ -425,51 +483,109 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
       string field_name( get_parm_val( parameters, c_cmd_parm_Meta_Relationship_set_field_name ) );
       string field_value( get_parm_val( parameters, c_cmd_parm_Meta_Relationship_set_field_value ) );
 
+      bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
-      else if( field_name == c_field_id_Cascade_Op || field_name == c_field_name_Cascade_Op )
+
+      if( !handled && field_name == c_field_id_Cascade_Op || field_name == c_field_name_Cascade_Op )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, int >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Cascade_Op, field_value );
-      else if( field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, Meta_Class >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Child_Class, field_value );
-      else if( field_name == c_field_id_Child_Class_Name || field_name == c_field_name_Child_Class_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Class_Name || field_name == c_field_name_Child_Class_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, string >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Child_Class_Name, field_value );
-      else if( field_name == c_field_id_Child_Name || field_name == c_field_name_Child_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Child_Name || field_name == c_field_name_Child_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, string >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Child_Name, field_value );
-      else if( field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      }
+
+      if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, int >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Extra, field_value );
-      else if( field_name == c_field_id_Field_Id || field_name == c_field_name_Field_Id )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Id || field_name == c_field_name_Field_Id )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, string >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Field_Id, field_value );
-      else if( field_name == c_field_id_Field_Key || field_name == c_field_name_Field_Key )
+      }
+
+      if( !handled && field_name == c_field_id_Field_Key || field_name == c_field_name_Field_Key )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, string >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Field_Key, field_value );
-      else if( field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      }
+
+      if( !handled && field_name == c_field_id_Internal || field_name == c_field_name_Internal )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, bool >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Internal, field_value );
-      else if( field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      }
+
+      if( !handled && field_name == c_field_id_Mandatory || field_name == c_field_name_Mandatory )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, bool >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Mandatory, field_value );
-      else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
+      }
+
+      if( !handled && field_name == c_field_id_Model || field_name == c_field_name_Model )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, Meta_Model >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Model, field_value );
-      else if( field_name == c_field_id_Name || field_name == c_field_name_Name )
+      }
+
+      if( !handled && field_name == c_field_id_Name || field_name == c_field_name_Name )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, string >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Name, field_value );
-      else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, Meta_Class >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Parent_Class, field_value );
-      else if( field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
+      }
+
+      if( !handled && field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, Meta_Relationship >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Source_Relationship, field_value );
-      else if( field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      }
+
+      if( !handled && field_name == c_field_id_Transient || field_name == c_field_name_Transient )
+      {
+         handled = true;
          func_string_setter< Meta_Relationship, bool >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Transient, field_value );
-      else
+      }
+
+      if( !handled )
          throw runtime_error( "unknown field name '" + field_name + "' for setter call" );
 
       cmd_handler.retval = c_okay;
@@ -1358,7 +1474,7 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
    {
       do
       {
-         if( !is_update_locked_by_own_session( get_obj( ).child_Specification_Child( ) ) )
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Child( ) ) )
          {
             get_obj( ).child_Specification_Child( ).op_update( );
             get_obj( ).child_Specification_Child( ).op_apply( );
