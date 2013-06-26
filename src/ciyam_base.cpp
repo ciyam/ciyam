@@ -131,6 +131,7 @@ const char* const c_default_web_root = "%root%/%store%";
 const char* const c_expand_root = "%root%";
 const char* const c_expand_store = "%store%";
 
+const char* const c_uid_anon = "anon";
 const char* const c_uid_unknown = "<unknown>";
 
 const char* const c_dead_keys_ext = ".dead_keys.lst";
@@ -5806,10 +5807,19 @@ void set_uid( const string& uid )
       }
    }
 
-   gtp_session->uid = s;
-
    pos = s.find( ':' );
-   set_session_variable( c_special_variable_uid, s.substr( 0, pos ) );
+   string user_key( s.substr( 0, pos ) );
+
+   if( user_key == c_uid_anon )
+   {
+      gtp_session->uid.erase( );
+      set_session_variable( c_special_variable_uid, "" );
+   }
+   else
+   {
+      gtp_session->uid = s;
+      set_session_variable( c_special_variable_uid, user_key );
+   }
 }
 
 bool is_sys_uid( )
