@@ -984,51 +984,23 @@ string::size_type regex::impl::search(
 #endif
    string::size_type pos = string::npos;
 
-   // NOTE: If the expression needs to match at the end then matching is first
-   // attempted at the last possible position and from the first position. The
-   // search completes immediately if successful closest to the first position
-   // and a mid-point between the high and low is tested in order to shift one
-   // or the other positions to reduce the number of comparisons.
+   // NOTE: If matching at the end but not at the start then start as close
+   // to the end as possible and work backwards until has reached the start
+   // or has matched.
    if( match_at_finish && !match_at_start )
    {
       string::size_type start = text.size( ) - min_size;
 
-      string::size_type low = 0;
-      string::size_type high = start;
+      string::size_type from = start;
 
       while( true )
       {
-         start = do_search( text, high, p_length, p_refs );
-         if( start != string::npos && start < high )
-            pos = high = start;
+         pos = do_search( text, from, p_length, p_refs );
 
-         start = do_search( text, low, p_length, p_refs );
-         if( start != string::npos )
-         {
-            pos = low = start;
-            break;
-         }
-
-         string::size_type mid = ( low + high ) / 2;
-
-         if( mid != pos )
-         {
-            vector< string > old_refs( refs );
-            start = do_search( text, mid, p_length, p_refs );
-
-            if( start == string::npos )
-               low = mid;
-            else if( start < high )
-               pos = high = start;
-            else if( p_refs )
-               *p_refs = old_refs;
-         }
-
-         if( low == high )
+         if( from == 0 || pos != string::npos )
             break;
 
-         ++low;
-         --high;
+         --from;
       }
    }
    else
