@@ -25,18 +25,14 @@ Description,M001C101F110
 Email,M001C101F111
 Email_Failure,M001C101F112
 Email_Address,M001C101F113
-GPG_Key_Id,M001C101F114
-Has_New_GPG_Public_Key,M001C101F115
-GPG_Fingerprint,M001C101F116
-New_GPG_Public_Key,M001C101F117
-Has_Password,M001C101F118
-Hide_Email_Address,M001C101F119
-Permissions,M001C101F120
-Is_Self_Or_Admin,M001C101F121
-Key,M001C101F122
-No_Email,M001C101F123
-No_Email_Padding,M001C101F124
-Dummy_Self,M001C101F125
+Has_Password,M001C101F114
+Hide_Email_Address,M001C101F115
+Permissions,M001C101F116
+Is_Self_Or_Admin,M001C101F117
+Key,M001C101F118
+No_Email,M001C101F119
+No_Email_Padding,M001C101F120
+Dummy_Self,M001C101F121
 
 > perform_fetch Meta Enum "Id " Name,Id -min
 primitive,E000
