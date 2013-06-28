@@ -1434,7 +1434,7 @@ void request_handler::process_request( )
                   if( !using_anonymous )
                      clear_unique( input_data );
 
-                  if( !mod_info.user_select_field.empty( ) )
+                  if( !p_session_info->user_key.empty( ) && !mod_info.user_select_field.empty( ) )
                   {
                      string class_id( mod_info.user_class_id );
 
@@ -1516,7 +1516,7 @@ void request_handler::process_request( )
                      }
                   }
 
-                  if( !permit_multiple_logins && !mod_info.user_qlink_class_id.empty( ) )
+                  if( !p_session_info->user_key.empty( ) && !mod_info.user_qlink_class_id.empty( ) )
                      fetch_user_quick_links( mod_info, *p_session_info );
                }
 
