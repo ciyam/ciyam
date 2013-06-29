@@ -1021,17 +1021,29 @@ string::size_type regex::impl::do_search(
    refs.clear( );
    node_refs.clear( );
 
+   size_t pf = 0;
+   bool had_min = false;
    // NOTE: Need to force all refs to be empty strings in case they are in optional parts.
    for( size_t i = 0; i < parts.size( ); i++ )
    {
       if( parts[ i ].start_ref )
          node_refs[ i ] = "";
+
+      // NOTE: If matching at the end but not at the start then only start matching after
+      // any non-optional parts (i.e. preceeding optional parts are ignored in this case).
+      if( !had_min && match_at_finish && !match_at_start )
+      {
+         if( !parts[ i ].min_matches )
+            ++pf;
+         else
+            had_min = true;
+      }
    }
 
    while( !parts.empty( ) )
    {
+      size_t part_from = pf;
       size_t last_found = 0;
-      size_t start_from = 0;
 
       size_t ref_starts = 0;
       size_t ref_started = string::npos;
@@ -1081,9 +1093,9 @@ string::size_type regex::impl::do_search(
 
          int matched_last_part = -1;
 
-         size_t old_start_from = start_from;
+         size_t old_part_from = part_from;
 
-         for( size_t j = start_from; j < parts.size( ); j++ )
+         for( size_t j = part_from; j < parts.size( ); j++ )
          {
             bool found = false;
             const part& p = parts[ j ];
@@ -1143,7 +1155,7 @@ string::size_type regex::impl::do_search(
                         node_refs[ ref_starts ] = "";
                      }
 
-                     start_from = j + 1;
+                     part_from = j + 1;
 
                      if( literal.empty( ) )
                         i += p.min_matches;
@@ -1213,7 +1225,7 @@ string::size_type regex::impl::do_search(
                            node_refs[ ref_starts ] = "";
                         }
 
-                        start_from = j + 1;
+                        part_from = j + 1;
 
                         i += min_matches;
 
@@ -1282,7 +1294,7 @@ string::size_type regex::impl::do_search(
             {
                okay = old_okay;
                finishes = old_finishes;
-               start_from = old_start_from;
+               part_from = old_part_from;
             }
 
             // NOTE: If we have matched with the last unlimited part but have reached the point
@@ -1342,7 +1354,7 @@ string::size_type regex::impl::do_search(
                    << " in part #" << ( last_lit_part + 1 ) << " at " << i
                    << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
-                  j = start_from = matched_last_part = last_lit_part;
+                  j = part_from = matched_last_part = last_lit_part;
 
                   if( j == parts.size( ) - 1 || p.min_matches > 0 )
                      --j;
@@ -1361,7 +1373,6 @@ string::size_type regex::impl::do_search(
 
                   if( was_last_part && i == text.size( ) )
                      done = true;
-
 
                   if( last_ref_finish )
                      ref_finished = i;
@@ -1406,7 +1417,7 @@ string::size_type regex::impl::do_search(
                          << " in part #" << ( last_set_part + 1 ) << " for " << text[ i ] << " at " << i
                          << ( text.length( ) > 50 ? string( ) : " ==> " + text.substr( start, i - start + 1 ) ) << endl;
 #endif
-                        j = start_from = matched_last_part = last_set_part;
+                        j = part_from = matched_last_part = last_set_part;
 
                         if( j == parts.size( ) - 1 || p.min_matches > 0 )
                         {
@@ -1449,7 +1460,7 @@ string::size_type regex::impl::do_search(
                if( !has_matched || ( j > last_found && p.min_matches ) )
                   okay = false;
 
-               start_from = 0;
+               part_from = 0;
                has_last_set = false;
                has_last_literal = false;
 
@@ -1460,7 +1471,7 @@ string::size_type regex::impl::do_search(
          if( match_at_start && ( !okay || begins != 0 ) )
             break;
 
-         if( done || start_from >= parts.size( ) )
+         if( done || part_from >= parts.size( ) )
             break;
 
          if( i > finishes && i < text.size( ) - 1 )
@@ -1475,7 +1486,7 @@ string::size_type regex::impl::do_search(
 
       if( okay && !done )
       {
-         for( size_t j = start_from; j < parts.size( ); j++ )
+         for( size_t j = part_from; j < parts.size( ); j++ )
          {
             if( parts[ j ].min_matches )
             {
