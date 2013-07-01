@@ -20,6 +20,7 @@ var qsContext = window.location.search.substring( 1 ); //i.e. remove the ? prefi
 var qsFurther = '';
 
 var secureOnly = false;
+var autoConfirm = true;
 var encryptPosts = `{`?`$encrypt_data`&`@eq`(`$encrypt_data`,`'true`'`)true`,false`};
 var useHashUserid = true;
 var usePageFading = false;
@@ -78,7 +79,7 @@ var extra_values = '';
 var warn_refresh_func = '';
 
 var auto_refresh_seconds = 30;
-var warn_refresh_default = 500;
+var warn_refresh_default = 550;
 var warn_refresh_seconds = warn_refresh_default;
 
 var warn_refresh_timer_id = 0;
@@ -145,7 +146,7 @@ function warn_refresh( )
    {
       warn_refresh_seconds = 0;
 
-      if( confirm( displayYourSessionIsAboutToExpire ) )
+      if( autoConfirm || confirm( displayYourSessionIsAboutToExpire ) )
       {
          if( warn_refresh_func != '' )
             eval( warn_refresh_func );
