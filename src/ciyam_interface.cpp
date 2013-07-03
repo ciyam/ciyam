@@ -1319,7 +1319,7 @@ void request_handler::process_request( )
                      pair< string, string > user_info;
 
                      if( !fetch_item_info( module_id, mod_info,
-                      mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info ) )
+                      mod_info.user_class_id, key_info, field_list, "", "", *p_session_info, user_info ) )
                         throw runtime_error( "unexpected error occurred checking activation" );
 
                      if( user_info.first.empty( ) )
@@ -2546,7 +2546,7 @@ void request_handler::process_request( )
             }
 
             if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
-             view.field_list, set_field_values, *p_session_info, item_info, 0, 0, 0, 0, 0, &view_extra_vars ) )
+             view.field_list, set_field_values, "", *p_session_info, item_info, 0, 0, 0, 0, 0, &view_extra_vars ) )
                had_send_or_recv_error = true;
             else
             {
@@ -3178,7 +3178,7 @@ void request_handler::process_request( )
 
                   if( !fetch_item_info( view.module_id, mod_info,
                    view.cid, item_key, view.field_list, set_field_values,
-                   *p_session_info, item_info, &owner, &view.pdf_spec_name,
+                   "", *p_session_info, item_info, &owner, &view.pdf_spec_name,
                    &pdf_title, &filename_value, &pdf_view_file_name ) )
                      throw runtime_error( "unexpected error occurred generating PDF" );
                }
@@ -4098,7 +4098,7 @@ void request_handler::process_request( )
                      pair< string, string > user_info;
 
                      if( !fetch_item_info( module_id, mod_info,
-                      mod_info.user_class_id, key_info, field_list, "", *p_session_info, user_info ) )
+                      mod_info.user_class_id, key_info, field_list, "", "", *p_session_info, user_info ) )
                         throw runtime_error( "unexpected error occurred checking for user" );
 
                      vector< string > user_data;

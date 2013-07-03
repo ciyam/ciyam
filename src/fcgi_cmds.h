@@ -39,9 +39,9 @@ bool perform_action( const std::string& module_name,
 
 bool fetch_item_info( const std::string& module, const module_info& mod_info,
  const std::string& class_id, const std::string& item_key, const std::string& field_list,
- const std::string& set_field_values, const session_info& sess_info, std::pair< std::string, std::string >& item_info,
- const std::string* p_owner = 0, const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_title = 0,
- const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0,
+ const std::string& set_field_values, const std::string& query_info, const session_info& sess_info,
+ std::pair< std::string, std::string >& item_info, const std::string* p_owner = 0, const std::string* p_pdf_spec_name = 0,
+ const std::string* p_pdf_title = 0, const std::string* p_pdf_link_filename = 0, std::string* p_pdf_view_file_name = 0,
  const std::map< std::string, std::string >* p_vext_items = 0 );
 
 bool fetch_list_info( const std::string& module,
