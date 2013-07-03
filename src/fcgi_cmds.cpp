@@ -477,9 +477,10 @@ bool perform_action( const string& module_name,
 
 bool fetch_item_info( const string& module, const module_info& mod_info,
  const string& class_id, const string& item_key, const string& field_list,
- const string& set_field_values, const session_info& sess_info, pair< string, string >& item_info,
- const string* p_owner, const string* p_pdf_spec_name, const string* p_pdf_title,
- const string* p_pdf_link_filename, string* p_pdf_view_file_name, const map< string, string >* p_vext_items )
+ const string& set_field_values, const string& query_info, const session_info& sess_info,
+ pair< string, string >& item_info, const string* p_owner, const string* p_pdf_spec_name,
+ const string* p_pdf_title, const string* p_pdf_link_filename, string* p_pdf_view_file_name,
+ const map< string, string >* p_vext_items )
 {
    bool okay = true;
 
@@ -519,6 +520,9 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
 
    if( !perms.empty( ) )
       fetch_cmd += " -p=" + perms;
+
+   if( !query_info.empty( ) )
+      fetch_cmd += " -q=" + query_info;
 
    if( get_storage_info( ).embed_images )
       fetch_cmd += " -x=@embed=1";
@@ -1951,7 +1955,7 @@ bool fetch_user_record(
    pair< string, string > user_info;
 
    if( !fetch_item_info( module_id, mod_info,
-    mod_info.user_class_id, key_info, field_list, "", sess_info, user_info ) )
+    mod_info.user_class_id, key_info, field_list, "", "", sess_info, user_info ) )
       throw runtime_error( "unexpected error occurred processing login" );
 
    if( user_info.first.empty( ) )
@@ -2403,11 +2407,18 @@ void save_record( const string& module_id,
 
             const module_info& mod_info( *get_storage_info( ).modules_index.find( view.module )->second );
 
-            if( !fetch_item_info( view.module_id, mod_info,
-             fld.pclass, key_info, "", "", sess_info, item_info ) )
-               throw runtime_error( "Unexpected error occurred processing save." );
+            string query_info( replaced( fld.pextra, "+", "," ) );
 
-            if( !item_info.first.empty( ) )
+            if( !fetch_item_info( view.module_id, mod_info,
+             fld.pclass, key_info, "", "", query_info, sess_info, item_info ) )
+               throw runtime_error( "unexpected error occurred processing save" );
+
+            // KLUDGE: In order for a sensible error to appear when the record is not found
+            // replace the key with what was provided adding a space at either end (to make
+            // the key invalid but include what the user had provided in the error message).
+            if( item_info.first.empty( ) )
+               next = " " + next + " ";
+            else
             {
                pos = item_info.first.find( ' ' );
                next = item_info.first.substr( 0, pos );
