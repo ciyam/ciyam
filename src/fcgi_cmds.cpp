@@ -2413,6 +2413,11 @@ void save_record( const string& module_id,
              fld.pclass, key_info, "", "", query_info, sess_info, item_info ) )
                throw runtime_error( "unexpected error occurred processing save" );
 
+            // NOTE: Do not allow the "admin" user to be used by anyone except admin.
+            if( !sess_info.is_admin_user
+             && fld.pclass == mod_info.user_class_id && next == "admin" )
+               item_info.first.erase( );
+
             // KLUDGE: In order for a sensible error to appear when the record is not found
             // replace the key with what was provided adding a space at either end (to make
             // the key invalid but include what the user had provided in the error message).
