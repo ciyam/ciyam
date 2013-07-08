@@ -430,9 +430,6 @@ function load2( )
    {
       session_id = 'new_session';
       document.cookie = 'session=new_session';
-
-      if( typeof localStorage == 'object' )
-         localStorage.removeItem( 'key' );
    }
 
    var full_context = module;
@@ -479,6 +476,8 @@ function load2( )
       }
       else if( !loggedIn && encryptPosts && sessionStorage.getItem( 'key' ) == null )
          full_context += '&session=new_session';
+      else if( !loggedIn && localStorage.getItem( 'key' ) != null )
+         full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true';
    }
 
    xmlReq.open( 'POST', ServerApp, true );

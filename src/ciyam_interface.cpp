@@ -961,6 +961,7 @@ void request_handler::process_request( )
 
       title = mod_info.title;
 
+      bool is_invalid_session = false;
       if( !session_id.empty( ) && session_id != c_new_session )
       {
          if( user.empty( ) || ( !user.empty( ) && hash == get_user_hash( user ) ) )
@@ -969,21 +970,30 @@ void request_handler::process_request( )
 
             if( !p_session_info )
             {
-               session_id.erase( );
+               if( cmd.empty( ) || cmd == c_cmd_quit || cmd == c_cmd_login || !username.empty( ) || !userhash.empty( ) )
+               {
+                  cmd = c_cmd_home;
+                  session_id.erase( );
+               }
+               else
+                  is_invalid_session = true;
+
                if( is_kept && get_storage_info( ).login_days )
                {
                   username = user;
+                  cmd = c_cmd_home;
+                  session_id.erase( );
                   is_authorised = true;
+                  is_invalid_session = false;
                }
             }
          }
-         else
-            session_id.erase( );
       }
 
       bool using_anonymous = false;
       
-      if( mod_info.allows_anonymous_access && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
+      if( !is_kept && !is_invalid_session && mod_info.allows_anonymous_access
+       && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
       {
          is_authorised = true;
          using_anonymous = true;
@@ -1051,6 +1061,8 @@ void request_handler::process_request( )
                username = user;
                cmd = c_cmd_login;
             }
+            else if( !using_anonymous )
+               cmd = c_cmd_home;
 
             if( g_max_user_limit && get_num_sessions( ) >= g_max_user_limit )
                throw runtime_error( GDS( c_display_max_concurrent_users_logged_in ) );
@@ -1688,15 +1700,15 @@ void request_handler::process_request( )
 
             // NOTE: For list searches part of an SHA1 hash of the "findinfo" parameter is used to
             // ensure the search data hasn't been changed via URL tampering.
-            if( ( !hashval.empty( ) && hashval != get_hash( hash_values ) )
-             || ( chksum != get_checksum( identity_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) )
+            if( !has_just_logged_in && ( ( !hashval.empty( ) && hashval != get_hash( hash_values ) )
+             || ( chksum != get_checksum( identity_values ) && chksum != get_checksum( *p_session_info, checksum_values ) ) ) )
             {
 #ifdef DEBUG
                for( map< string, string >::const_iterator ci = input_data.begin( ); ci != input_data.end( ); ++ci )
                   DEBUG_TRACE( "Input[ " + ci->first + " ] => " + ci->second );
 #endif
                // NOTE: If a session has just been created then assume the invalid URL was
-               // actually due to an already timeout session.
+               // actually due to an already "timed out" session.
                if( created_session && !using_anonymous )
                   throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
                else
