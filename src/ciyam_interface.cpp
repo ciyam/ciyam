@@ -291,6 +291,8 @@ void disconnect_sockets( )
 
 void remove_sockets( )
 {
+   guard g( g_socket_mutex );
+
    for( size_t i = 0; i < g_sockets.size( ); i++ )
    {
       if( g_sockets[ i ].second )
@@ -585,7 +587,7 @@ void clear_unique( map< string, string >& input_data )
 void crypt_decoded( const string& pwd_hash, string& decoded, bool decode = true )
 {
    // KLUDGE: As Javascript strings are UTF encoded to avoid losing data the encrypted
-   // strings are actually "hex" (refer to similar KLUDGE comment in cat_interface.js).
+   // strings are actually "hex" (also refer to similar KLUDGE in ciyam_interface.js).
    if( decode )
    {
       string s;
@@ -2925,6 +2927,9 @@ void request_handler::process_request( )
 
                            // NOTE: As a performance optimisation if a previous field has the exact same
                            // parent query information then simply copy this data rather than re-query.
+                           //
+                           // FUTURE: Currently "skey" dependent queries are issued even when the "skey"
+                           // needed has not been selected (such unnecessary queries should be removed).
                            if( previous_parents.count( info ) )
                               parent_row_data = view.parent_lists[ previous_parents[ info ] ];
                            else if( !fetch_parent_row_data( view.module_id, mod_info,
