@@ -49,6 +49,10 @@ int64_t g_total_bytes = 0;
 
 const char* const c_files_directory = "files";
 
+#ifndef _WIN32
+const int c_default_directory_perms = S_IRWXU | S_IRWXG;
+#endif
+
 }
 
 size_t get_total_files( )
