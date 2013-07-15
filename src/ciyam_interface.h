@@ -150,10 +150,6 @@ const char* const c_param_extrafields = "extrafields";
 const char* const c_param_extravalues = "extravalues";
 const char* const c_param_requsername = "requsername";
 
-const char* const c_response_okay = "(okay)";
-const char* const c_response_error = "(error)";
-const char* const c_response_okay_more = "(okay more)";
-
 const char* const c_operation_link = "link";
 const char* const c_operation_search = "search";
 const char* const c_operation_select = "select";
@@ -555,6 +551,7 @@ const char* const c_display_activation_email_details_parm_email = "{@email}";
 const char* const c_display_select_local_upload_file = "Select a local file and then click {@attach} to upload it.";
 const char* const c_display_select_local_upload_file_parm_attach = "{@attach}";
 const char* const c_display_you_have_been_logged_out = "You have been logged out.";
+const char* const c_display_old_password_is_incorrect = "Old Password is incorrect.";
 const char* const c_display_password_has_been_changed = "Password has been changed!";
 const char* const c_display_please_re_check_your_email = "Please re-check your email (including all junk/spam folders).";
 const char* const c_display_unknown_or_invalid_user_id = "Unknown or invalid user credentials.";

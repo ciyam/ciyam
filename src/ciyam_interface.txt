@@ -94,6 +94,7 @@ activation_email_content "Your account '{@user_id}' has been created. To activat
 activation_email_details "An email has just been sent to '{@email}' that contains a link for you to activate your new account."
 select_local_upload_file "Select a local file and then click {@attach} to upload it."
 you_have_been_logged_out "You have been logged out."
+old_password_is_incorrect "Old Password is incorrect."
 password_has_been_changed "Password has been changed!"
 please_re_check_your_email "Please re-check your email (including all junk/spam folders)."
 unknown_or_invalid_user_id "Unknown or invalid user credentials."

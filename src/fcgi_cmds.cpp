@@ -30,6 +30,8 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const int c_initial_response_timeout = 25000;
 const int c_subsequent_response_timeout = 2500;
 
@@ -164,7 +166,8 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
 }
 
 bool perform_update( const string& module, const string& class_id,
- const string& key, const vector< pair< string, string > >& field_value_pairs, const session_info& sess_info )
+ const string& key, const vector< pair< string, string > >& field_value_pairs,
+ const session_info& sess_info, string* p_error_message )
 {
    bool okay = true;
 
@@ -192,7 +195,11 @@ bool perform_update( const string& module, const string& class_id,
    {
       string response;
       if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 || response != c_response_okay )
+      {
          okay = false;
+         if( p_error_message )
+            *p_error_message = response;
+      }
    }
    else
       okay = false;
@@ -790,9 +797,9 @@ bool fetch_list_info( const string& module,
                rows.push_front( make_pair( key_ver_rev_state_and_type_info,
                 field_list.empty( ) ? string( ) : response.substr( pos + 2 ) ) );
          }
-         else if( response.length( ) > strlen( c_response_error )
-          && response.substr( 0, strlen( c_response_error ) ) == c_response_error )
-            throw runtime_error( response.substr( strlen( c_response_error ) ) );
+         else if( response.length( ) > strlen( c_response_error_prefix )
+          && response.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
+            throw runtime_error( response.substr( strlen( c_response_error_prefix ) ) );
       }
    }
 
@@ -1977,10 +1984,7 @@ bool fetch_user_record(
       // NOTE: Password fields that are < 20 characters are assumed to have not been
       // either hashed or encrypted.
       if( user_password.length( ) < 20 )
-      {
-         sess_info.clear_password = user_password;
          user_password = hash_password( gid + user_data[ 1 ] + ( userhash.empty( ) ? username : user_data[ 0 ] ) );
-      }
       else
          user_password = password_decrypt( user_password, get_server_id( ) );
 

@@ -12,6 +12,8 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <stdio.h>
 #  include <memory.h>
+#  include <fstream>
+#  include <iostream>
 #  ifndef _WIN32
 #     include <fcntl.h>
 #     include <netdb.h>
@@ -25,7 +27,17 @@
 
 #include "sockets.h"
 
+#include "base64.h"
+#include "utilities.h"
+
 using namespace std;
+
+namespace
+{
+
+const int c_buf_size = 128;
+
+}
 
 #ifdef _WIN32
 winsock_init::winsock_init( WORD wVersionRequested )
@@ -393,7 +405,7 @@ int tcp_socket::send_n( const unsigned char* buf, int buflen, size_t timeout )
    return sent;
 }
 
-int tcp_socket::read_line( string& str, size_t timeout )
+int tcp_socket::read_line( string& str, size_t timeout, int max_chars )
 {
    int n = 0;
    unsigned char b, lb = '\0';
@@ -416,7 +428,12 @@ int tcp_socket::read_line( string& str, size_t timeout )
       }
 
       if( lb != '\0' )
-         str += lb;
+      {
+         if( !max_chars || str.size( ) < max_chars )
+            str += lb;
+         else
+            throw runtime_error( "max. line length exceeded" );
+      }
 
       lb = b;
    }
@@ -477,5 +494,78 @@ bool tcp_socket::get_option( int type, int opt, char* p_buffer, socklen_t& bufle
 bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t buflen )
 {
    return ::setsockopt( socket, type, opt, p_buffer, buflen ) != SOCKET_ERROR;
+}
+
+void file_transfer( const string& name, tcp_socket& s, ft_direction d,
+ size_t max_size, const char* p_ack_message, size_t line_timeout, int max_line_size )
+{
+   bool max_size_exceeded = false;
+
+   if( d == e_ft_direction_send )
+   {
+      ifstream inpf( name.c_str( ), ios::binary );
+      if( !inpf )
+         throw runtime_error( "file '" + name + "' could not be opened for input" );
+
+      char buf[ c_buf_size ];
+      while( true )
+      {
+         size_t count = c_buf_size;
+         if( !inpf.read( buf, c_buf_size ) )
+            count = inpf.gcount( );
+
+         string next( base64::encode( string( buf, count ) ) );
+
+         s.write_line( next, line_timeout );
+
+         next.erase( );
+         s.read_line( next, line_timeout, max_line_size );
+
+         if( next != string( p_ack_message ) )
+            throw runtime_error( next );
+
+         if( inpf.eof( ) || count == 0 )
+            break;
+      }
+
+      s.write_line( p_ack_message );
+   }
+   else
+   {
+      ofstream outf( name.c_str( ), ios::binary );
+      if( !outf )
+         throw runtime_error( "file '" + name + "' could not be opened for output" );
+
+      string next;
+      size_t written = 0;
+      while( true )
+      {
+         next.erase( );
+         s.read_line( next, line_timeout, max_line_size );
+         if( next.empty( ) || next == string( p_ack_message ) )
+            break;
+
+         string decoded( base64::decode( next ) );
+         if( !outf.write( &decoded[ 0 ], decoded.length( ) ) )
+            throw runtime_error( "unexpected error writing to file '" + name + "'" );
+
+         written += decoded.length( );
+         if( written > max_size )
+         {
+            max_size_exceeded = true;
+            break;
+         }
+
+         s.write_line( p_ack_message );
+      }
+
+      outf.close( );
+   }
+
+   if( max_size_exceeded )
+   {
+      file_remove( name.c_str( ) );
+      throw runtime_error( "maximum file length exceeded" );
+   }
 }
 

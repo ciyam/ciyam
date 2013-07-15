@@ -44,6 +44,7 @@
 #include "utilities.h"
 #include "date_time.h"
 #include "class_base.h"
+#include "ciyam_files.h"
 #ifdef SSL_SUPPORT
 #  include "ssl_socket.h"
 #endif
@@ -125,6 +126,8 @@ const char* const c_attribute_session_timeout = "session_timeout";
 const char* const c_attribute_max_send_attempts = "max_send_attempts";
 const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
+const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
+const char* const c_attribute_files_area_item_max_size = "files_area_item_max_size";
 
 const char* const c_default_web_root = "%root%/%store%";
 
@@ -1148,13 +1151,19 @@ struct scoped_lock_holder
 
 // NOTE: If max sessions is set to a value greater than 1000 then would need to change "gen_key".
 const size_t c_max_sessions_limit = 1000;
+
 const size_t c_max_sessions_default = 100;
 const size_t c_max_storage_handlers_default = 10;
+const size_t c_files_area_item_max_num_default = 100;
+const size_t c_files_area_item_max_size_default = 1024 * 100; // i.e. 100K
 
 string g_empty_string;
 
 size_t g_max_sessions = c_max_sessions_default;
 size_t g_max_storage_handlers = c_max_storage_handlers_default + 1; // i.e. extra for <none>
+
+size_t g_files_area_item_max_num = c_files_area_item_max_num_default;
+size_t g_files_area_item_max_size = c_files_area_item_max_size_default;
 
 const char* const c_default_storage_name = "<none>";
 const char* const c_default_storage_identity = "<default>";
@@ -3114,6 +3123,12 @@ void read_server_configuration( )
       g_max_storage_handlers = atoi( reader.read_opt_attribute(
        c_attribute_max_storage_handlers, to_string( c_max_storage_handlers_default ) ).c_str( ) ) + 1;
 
+      g_files_area_item_max_num = atoi( reader.read_opt_attribute(
+       c_attribute_files_area_item_max_num, to_string( c_files_area_item_max_num_default ) ).c_str( ) );
+
+      g_files_area_item_max_size = ( size_t )unformat_bytes( reader.read_opt_attribute(
+       c_attribute_files_area_item_max_size, to_string( c_files_area_item_max_size_default ) ).c_str( ) );
+
       reader.start_section( c_section_email );
 
       if( reader.has_started_section( c_section_mbox ) )
@@ -3677,6 +3692,8 @@ void init_globals( )
 
    read_server_configuration( );
 
+   init_files_area( );
+
    setup_timezones( );
 
    // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
@@ -3919,6 +3936,16 @@ bool get_using_ssl( )
    return g_using_ssl;
 }
 
+size_t get_files_area_item_max_num( )
+{
+   return g_files_area_item_max_num;
+}
+
+size_t get_files_area_item_max_size( )
+{
+   return g_files_area_item_max_size;
+}
+
 string get_mbox_path( )
 {
    return g_mbox_path;
@@ -4000,7 +4027,7 @@ string encrypt_password( const string& password, bool no_ssl, bool no_salt, bool
    if( !no_salt )
       salt = sid_hash( ) + ( hash_only ? "" : c_salt_value );
 
-   return password_encrypt( password, salt, !no_ssl );
+   return password_encrypt( password, salt, !no_ssl, !no_salt );
 }
 
 string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )

@@ -84,7 +84,7 @@ class tcp_socket
    int recv_n( unsigned char* buf, int buflen, size_t timeout = 0 );
    int send_n( const unsigned char* buf, int buflen, size_t timeout = 0 );
 
-   int read_line( std::string& str, size_t timeout = 0 );
+   int read_line( std::string& str, size_t timeout = 0, int max_chars = 0 );
    int write_line( const std::string& str, size_t timeout = 0 );
 
    bool get_option( int type, int opt, char* p_buffer, socklen_t& buflen );
@@ -112,6 +112,15 @@ class tcp_socket
    bool set_blocking( );
    bool set_non_blocking( );
 };
+
+enum ft_direction
+{
+   e_ft_direction_send,
+   e_ft_direction_fetch
+};
+
+void file_transfer( const std::string& name, tcp_socket& s,
+ ft_direction d, size_t max_size, const char* p_ack_message, size_t line_timeout = 0, int max_line_size = 0 );
 
 #endif
 

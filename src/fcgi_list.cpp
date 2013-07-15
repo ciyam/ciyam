@@ -32,6 +32,8 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const size_t c_default_search_opt_limit = 3;
 
 const char* const c_nbsp = "&nbsp;";
@@ -3373,9 +3375,9 @@ void output_list_form( ostream& os,
 
          string error( rci->second );
 
-         if( error.length( ) > strlen( c_response_error )
-          && error.substr( 0, strlen( c_response_error ) ) == c_response_error )
-            error = string( GDS( c_display_error ) ) + ": " + remove_key( error.substr( strlen( c_response_error ) ) );
+         if( error.length( ) > strlen( c_response_error_prefix )
+          && error.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
+            error = string( GDS( c_display_error ) ) + ": " + remove_key( error.substr( strlen( c_response_error_prefix ) ) );
 
          os << "  <td width=\"25\">&nbsp;</td>\n";
          os << "  <td class=\"error\" colspan=\"" << ( source.field_ids.size( ) ) << "\">" << error << "</td>\n";

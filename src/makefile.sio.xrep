@@ -79,6 +79,7 @@
      <filename>ciyam_base_file_buffer.cpp
      <filename>ciyam_base_numeric.cpp
      <filename>ciyam_base_ods.cpp
+     <filename>ciyam_files.cpp
      <filename>class_base.cpp
      <filename>commands_date_time.cpp
      <filename>commands_numeric.cpp

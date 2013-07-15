@@ -283,6 +283,17 @@ void sha1::update( const unsigned char* p_data, unsigned int length )
    }
 }
 
+void sha1::copy_digest_to_buffer( unsigned char* p_buffer )
+{
+   if( !p_impl->final )
+   {
+      p_impl->final = true;
+      sha1_final( p_impl->digest, &p_impl->context );
+   }
+
+   memcpy( p_impl->digest, p_buffer, 20 );
+}
+
 string sha1::get_digest_as_string( char separator )
 {
    if( !p_impl->final )

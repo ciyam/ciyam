@@ -49,19 +49,15 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const char* const c_app_title = "ciyam_client";
 const char* const c_app_version = "0.1";
 
-const size_t c_command_timeout = 60000;
-const size_t c_greeting_timeout = 10000;
-
 const char* const c_env_var_error = "ERROR";
 
-const char* const c_response_okay = "(okay)";
-const char* const c_response_okay_more = "(okay more)";
-
-const char* const c_response_error_prefix = "(error) ";
-const char* const c_response_message_prefix = "(message) ";
+const size_t c_command_timeout = 60000;
+const size_t c_greeting_timeout = 10000;
 
 string application_title( app_info_request request )
 {
@@ -151,6 +147,39 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          }
          else
          {
+            string::size_type pos = str.find( ' ' );
+            if( str.substr( 0, pos ) == "file_get" )
+            {
+               file_transfer( str.substr( pos + 1 ), socket,
+                e_ft_direction_fetch, c_max_file_transfer_size,
+                c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+            }
+            else if( str.substr( 0, pos ) == "file_put" )
+            {
+               try
+               {
+                  file_transfer( str.substr( pos + 1 ), socket,
+                   e_ft_direction_send, c_max_file_transfer_size,
+                   c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+               }
+               catch( exception& x )
+               {
+                  str.erase( );
+                  string s( x.what( ) );
+
+                  size_t err_prefix_length( strlen( c_response_error_prefix ) );
+
+                  if( s.length( ) > err_prefix_length
+                   && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
+                  {
+                     s = "Error: " + s.substr( err_prefix_length );
+                  }
+
+                  cout << s << endl;
+                  return str;
+               }
+            }
+
             string response;
             bool is_in_progress = false;
             while( response.empty( ) || response[ 0 ] != '(' )
@@ -187,6 +216,7 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
 
                   bool is_error = false;
                   size_t err_prefix_length( strlen( c_response_error_prefix ) );
+
                   if( response.length( ) > err_prefix_length
                    && response.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
                   {

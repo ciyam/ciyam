@@ -31,6 +31,7 @@
 #include "ciyam_session.h"
 
 #include "sio.h"
+#include "sha1.h"
 #include "config.h"
 #include "format.h"
 #include "pdf_gen.h"
@@ -40,6 +41,7 @@
 #include "ciyam_base.h"
 #include "class_base.h"
 #include "auto_script.h"
+#include "ciyam_files.h"
 #include "crypt_stream.h"
 #include "ciyam_strings.h"
 #include "command_parser.h"
@@ -55,23 +57,18 @@ using namespace std;
 extern size_t g_active_sessions;
 extern volatile sig_atomic_t g_server_shutdown;
 
-const size_t c_request_timeout = 500;
-
 namespace
 {
 
 mutex g_mutex;
 
+#include "ciyam_constants.h"
+
 #include "ciyam_session.cmh"
 
+const size_t c_request_timeout = 500;
+
 const int c_pdf_default_limit = 5000;
-
-const char* const c_response_okay = "(okay)";
-const char* const c_response_okay_more = "(okay more)";
-const char* const c_response_not_found = "(not found)";
-
-const char* const c_response_error_prefix = "(error) ";
-const char* const c_response_message_prefix = "(message) ";
 
 const char* const c_log_transformation_scope_any_change = "any_change";
 const char* const c_log_transformation_scope_execute_only = "execute_only";
@@ -980,6 +977,22 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             set_identity( info );
 
          response = get_identity( true, true );
+      }
+      else if( command == c_cmd_ciyam_session_file_get )
+      {
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_get_filename ) );
+
+         fetch_file( lower( sha1( filename ).get_digest_as_string( ) ), socket );
+      }
+      else if( command == c_cmd_ciyam_session_file_put )
+      {
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_put_filename ) );
+
+         store_file( lower( sha1( filename ).get_digest_as_string( ) ), socket );
+      }
+      else if( command == c_cmd_ciyam_session_file_stats )
+      {
+         response = get_file_stats( );
       }
       else if( command == c_cmd_ciyam_session_module_list )
       {
@@ -3280,9 +3293,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       }
       else if( command == c_cmd_ciyam_session_passtotp )
       {
-         string pin( get_parm_val( parameters, c_cmd_parm_ciyam_session_passtotp_pin ) );
+         string secret( get_parm_val( parameters, c_cmd_parm_ciyam_session_passtotp_secret ) );
 
-         response = get_totp( atoi( pin.c_str( ) ) );
+         response = get_totp( secret );
       }
       else if( command == c_cmd_ciyam_session_sendmail )
       {
