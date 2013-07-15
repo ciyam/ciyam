@@ -14,6 +14,7 @@
 #  include <memory.h>
 #  include <fstream>
 #  include <iostream>
+#  include <stdexcept>
 #  ifndef _WIN32
 #     include <fcntl.h>
 #     include <netdb.h>
