@@ -90,6 +90,8 @@ using namespace std;
 namespace
 {
 
+#include "ciyam_constants.h"
+
 const int c_num_handlers = 10;
 
 const size_t c_max_fcgi_input_size = 65536;
@@ -2255,29 +2257,25 @@ void request_handler::process_request( )
                string old_password( input_data[ c_param_password ] );
 
                if( new_password == hash_password( g_id + p_session_info->user_id + p_session_info->user_id ) )
-                  error_message = string( c_response_error ) + GDS( c_display_password_must_not_be_the_same_as_your_user_id );
+                  error_message = string( c_response_error_prefix ) + GDS( c_display_password_must_not_be_the_same_as_your_user_id );
+               else if( old_password != p_session_info->user_pwd_hash )
+                  error_message = string( c_response_error_prefix ) + GDS( c_display_old_password_is_incorrect );
                else
                {
-                  // NOTE: Only use the encrypted original password if it was decrypted when logging in.
-                  if( p_session_info->clear_password.length( ) )
-                  {
-                     if( old_password == hash_password( g_id + p_session_info->clear_password + p_session_info->user_id ) )
-                        old_password = p_session_info->clear_password;
-                  }
-                  else
-                     old_password = password_encrypt( old_password, get_server_id( ) );
-
+                  string new_user_pwd_hash( new_password );
                   new_password = password_encrypt( new_password, get_server_id( ) );
 
+                  vector< pair< string, string > > pwd_field_value_pairs;
+                  pwd_field_value_pairs.push_back( make_pair( mod_info.user_pwd_field_id, new_password ) );
+
                   if( !perform_update( module_id, mod_info.user_class_id,
-                   p_session_info->user_key, mod_info.user_pwd_field_id,
-                   old_password, new_password, *p_session_info, error_message ) )
+                   p_session_info->user_key, pwd_field_value_pairs, *p_session_info, &error_message ) )
                   {
                      if( error_message.empty( ) )
-                        throw runtime_error( "Unexpected server error occurred." );
+                        throw runtime_error( "unexpected server error occurred." );
                   }
                   else
-                     p_session_info->clear_password.erase( );
+                     p_session_info->user_pwd_hash = new_user_pwd_hash;
                }
             }
             else if( !persistent.empty( ) )
@@ -2297,9 +2295,9 @@ void request_handler::process_request( )
          else if( cmd == c_cmd_join || cmd == c_cmd_open )
             server_command.erase( );
 
-         if( error_message.length( ) > strlen( c_response_error )
-          && error_message.substr( 0, strlen( c_response_error ) ) == c_response_error )
-            error_message = string( GDS( c_display_error ) ) + ": " + error_message.substr( strlen( c_response_error ) );
+         if( error_message.length( ) > strlen( c_response_error_prefix )
+          && error_message.substr( 0, strlen( c_response_error_prefix ) ) == c_response_error_prefix )
+            error_message = string( GDS( c_display_error ) ) + ": " + error_message.substr( strlen( c_response_error_prefix ) );
 
          string view_permission_value;
          string view_security_level_value;
@@ -4315,8 +4313,8 @@ void request_handler::process_request( )
 
                               if( !error_message.empty( ) )
                               {
-                                 if( error_message.find( c_response_error ) == 0 )
-                                    error_message.erase( 0, strlen( c_response_error ) );
+                                 if( error_message.find( c_response_error_prefix ) == 0 )
+                                    error_message.erase( 0, strlen( c_response_error_prefix ) );
 
                                  error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
                               }
@@ -4402,8 +4400,8 @@ void request_handler::process_request( )
 
                      if( !error_message.empty( ) )
                      {
-                        if( error_message.find( c_response_error ) == 0 )
-                           error_message.erase( 0, strlen( c_response_error ) );
+                        if( error_message.find( c_response_error_prefix ) == 0 )
+                           error_message.erase( 0, strlen( c_response_error_prefix ) );
 
                         error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
                      }
@@ -4475,8 +4473,8 @@ void request_handler::process_request( )
 
                   if( !error_message.empty( ) )
                   {
-                     if( error_message.find( c_response_error ) == 0 )
-                        error_message.erase( 0, strlen( c_response_error ) );
+                     if( error_message.find( c_response_error_prefix ) == 0 )
+                        error_message.erase( 0, strlen( c_response_error_prefix ) );
 
                      error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
                   }

@@ -99,6 +99,9 @@ bool CIYAM_BASE_DECL_SPEC get_is_accepted_ip_addr( const std::string& ip_addr );
 
 bool CIYAM_BASE_DECL_SPEC get_using_ssl( );
 
+size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_num( );
+size_t CIYAM_BASE_DECL_SPEC get_files_area_item_max_size( );
+
 std::string CIYAM_BASE_DECL_SPEC get_mbox_path( );
 std::string CIYAM_BASE_DECL_SPEC get_mbox_username( );
 

@@ -1,5 +1,8 @@
 version "display protocol version"
 identity "get/set identity information" [<val//info>]
+file_get "fetch a file from the files area" <val//filename>
+file_put "stores a file to the files area" <val//filename>
+file_stats "get file area stats"
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>
@@ -59,7 +62,7 @@ trace "get/set trace flags" [<val//flags>]
 trace_flags "view available trace flags"
 encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>
 password "retrieve an encrypted system password" <val//name>
-passtotp "retrieve a TOTP password" <val//pin>
+passtotp "retrieve a TOTP password" <val//secret>
 sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_abbr>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 schedule "display autoscript schedule"
 smtpinfo "retrieves the sendmail sender address"

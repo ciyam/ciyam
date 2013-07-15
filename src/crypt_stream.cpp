@@ -21,8 +21,8 @@
 #include "crypt_stream.h"
 
 #include "md5.h"
-#include "sha1.h"
 #include "base64.h"
+#include "sha256.h"
 #include "utilities.h"
 
 #ifdef SSL_SUPPORT
@@ -141,20 +141,17 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
 }
 #endif
 
-string get_totp( int pin, int freq )
+string get_totp( const string& secret, int freq )
 {
    // NOTE: Platforms with a 32 bit time_t will suffer from the 2038 *bug*.
    time_t tm( time( 0 ) / freq );
 
-   if( pin )
-      tm *= pin;
-
-   sha1 hash( to_string( tm ) );
+   sha256 hash( secret + to_string( tm ) );
 
    return lower( hash.get_digest_as_string( ).substr( 0, 6 ) );
 }
 
-string password_encrypt( const string& password, const string& key, bool use_ssl )
+string password_encrypt( const string& password, const string& key, bool use_ssl, bool add_salt )
 {
    string s( password );
 
@@ -180,17 +177,29 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
    stringstream ss( s );
    ss.seekp( 0 );
 
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )key.c_str( ) ).hex_digest( ) );
+   string salt;
+   if( add_salt )
+      salt += uuid( ).as_string( ) + ':';
+
+   string salted_key( key + salt );
+
+   if( add_salt )
+   {
+      for( size_t i = 0; i < c_password_hash_rounds; i++ )
+         salted_key = sha256( salted_key ).get_digest_as_string( ) + salted_key;
+   }
+
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
 
    if( !use_ssl )
    {
       crypt_stream( ss, ap_digest.get( ), 32 );
-      s = base64::encode( ss.str( ) );
+      s = salt + base64::encode( ss.str( ) );
    }
 
 #ifdef SSL_SUPPORT
    if( use_ssl )
-      s = base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
+      s = salt + base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
 #endif
 
    return s;
@@ -202,13 +211,29 @@ string password_decrypt( const string& password, const string& key, bool use_ssl
    if( password.empty( ) )
       return password;
 
-   stringstream ss( base64::decode( password ) );
+   string salt;
+   string::size_type pos = password.find( ':' );
+
+   if( pos == string::npos )
+      pos = 0;
+   else
+      salt = password.substr( 0, ++pos );
+
+   stringstream ss( base64::decode( password.substr( pos ) ) );
 
 #ifndef SSL_SUPPORT
    use_ssl = false;
 #endif
 
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )key.c_str( ) ).hex_digest( ) );
+   string salted_key( key + salt );
+
+   if( !salt.empty( ) )
+   {
+      for( size_t i = 0; i < c_password_hash_rounds; i++ )
+         salted_key = sha256( salted_key ).get_digest_as_string( ) + salted_key;
+   }
+   
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
 
    if( !use_ssl )
    {

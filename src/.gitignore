@@ -50,6 +50,9 @@ xvars
 # Except dummy log file template.
 !app.log
 
+# Ignore local files area
+files
+
 # Ignore locally generated config.
 salt.h
 config.h

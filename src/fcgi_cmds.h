@@ -25,8 +25,9 @@ void read_module_strings( module_info& info, tcp_socket& socket );
 
 bool simple_command( session_info& sess_info, const std::string& cmd, std::string* p_response = 0 );
 
-bool perform_update( const std::string& module, const std::string& class_id, const std::string& key,
- const std::vector< std::pair< std::string, std::string > >& field_value_pairs, const session_info& sess_info );
+bool perform_update( const std::string& module, const std::string& class_id,
+ const std::string& key, const std::vector< std::pair< std::string, std::string > >& field_value_pairs,
+ const session_info& sess_info, std::string* p_error_message = 0 );
 
 bool perform_update( const std::string& module,
  const std::string& class_id, const std::string& key, const std::string& field,

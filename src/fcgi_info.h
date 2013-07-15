@@ -510,8 +510,6 @@ struct session_info
 
    std::string last_uselextra;
 
-   std::string clear_password;
-
    data_container select_data;
 
    data_container quick_link_data;
