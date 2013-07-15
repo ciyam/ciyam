@@ -21,6 +21,8 @@
 
 #include "sha256.h"
 
+#include "utilities.h"
+
 using namespace std;
 
 //#define COMPILE_TESTBED_MAIN
@@ -283,6 +285,24 @@ void sha256::copy_digest_to_buffer( unsigned char* p_buffer )
    }
 
    memcpy( p_impl->digest, p_buffer, 32 );
+}
+
+void sha256::get_digest_as_string( string& s )
+{
+   if( !p_impl->final )
+   {
+      p_impl->final = true;
+      sha256_final( &p_impl->context, p_impl->digest );
+   }
+
+   if( s.length( ) != 64 )
+      s = string( 64, '\0' );
+
+   for( size_t i = 0, j = 0; i < 32; i++ )
+   {
+      s[ j++ ] = ascii_digit( ( p_impl->digest[ i ] & 0xf0 ) >> 4 );
+      s[ j++ ] = ascii_digit( p_impl->digest[ i ] & 0x0f );
+   }
 }
 
 string sha256::get_digest_as_string( char separator )

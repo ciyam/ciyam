@@ -37,8 +37,15 @@
 
 using namespace std;
 
+namespace
+{
+
 const size_t c_max_key_size = 128;
 const size_t c_file_buf_size = 32768;
+
+const size_t c_password_rounds_multiplier = 99;
+
+}
 
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick, however, it is not considered "strong encryption" and
@@ -185,8 +192,12 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
 
    if( add_salt )
    {
-      for( size_t i = 0; i < c_password_hash_rounds; i++ )
-         salted_key = sha256( salted_key ).get_digest_as_string( ) + salted_key;
+      sha256 hash;
+      for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
+      {
+         hash.update( salted_key + key );
+         hash.get_digest_as_string( salted_key );
+      }
    }
 
    auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
@@ -229,8 +240,12 @@ string password_decrypt( const string& password, const string& key, bool use_ssl
 
    if( !salt.empty( ) )
    {
-      for( size_t i = 0; i < c_password_hash_rounds; i++ )
-         salted_key = sha256( salted_key ).get_digest_as_string( ) + salted_key;
+      sha256 hash;
+      for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
+      {
+         hash.update( salted_key + key );
+         hash.get_digest_as_string( salted_key );
+      }
    }
    
    auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
