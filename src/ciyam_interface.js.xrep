@@ -989,10 +989,9 @@ function hash_password( salt, pwd, skip_id )
    if( salt.length && salt.charAt( 0 ) == '!' )
       salt = salt.substring( 1 );
 
-   // NOTE: If the password length is >= 40 then it is being
-   // assumed that it is already hashed (this will occur for
-   // record editing where it has not been changed).
-   if( pwd.length >= 40 )
+   // NOTE: If the password length is > 50 then it is being assumed that it has been
+   // already hashed (this occurs for record editing when it has not been changed).
+   if( pwd.length > 50 )
       retval = pwd;
    else
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
