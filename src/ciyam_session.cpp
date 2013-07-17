@@ -2533,48 +2533,48 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: Scope to ensure streams are closed.
          {
-            string sql_name( name + ".sql" );
-            string dat_name( name + ".dat" );
-            string idx_name( name + ".idx" );
             string hdr_name( name + ".hdr" );
+            string idx_name( name + ".idx" );
+            string dat_name( name + ".dat" );
+            string sql_name( name + ".sql" );
             string log_name( name + ".log" );
             string sid_name( "ciyam_server.sid" );
             string sio_name( "ciyam_server.sio" );
 
-            string sav_sql_name( sql_name + ".sav" );
-            string sav_dat_name( dat_name + ".sav" );
-            string sav_idx_name( idx_name + ".sav" );
             string sav_hdr_name( hdr_name + ".sav" );
+            string sav_idx_name( idx_name + ".sav" );
+            string sav_dat_name( dat_name + ".sav" );
+            string sav_sql_name( sql_name + ".sav" );
             string sav_log_name( log_name + ".sav" );
             string sav_sid_name( sid_name + ".sav" );
             string sav_sio_name( sio_name + ".sav" );
 
-            ifstream sqlf( sql_name.c_str( ), ios::in | ios::binary );
-            ifstream datf( dat_name.c_str( ), ios::in | ios::binary );
-            ifstream idxf( idx_name.c_str( ), ios::in | ios::binary );
             ifstream hdrf( hdr_name.c_str( ), ios::in | ios::binary );
+            ifstream idxf( idx_name.c_str( ), ios::in | ios::binary );
+            ifstream datf( dat_name.c_str( ), ios::in | ios::binary );
+            ifstream sqlf( sql_name.c_str( ), ios::in | ios::binary );
             ifstream logf( log_name.c_str( ), ios::in | ios::binary );
             ifstream sidf( sid_name.c_str( ), ios::in | ios::binary );
             ifstream siof( sio_name.c_str( ), ios::in | ios::binary );
 
-            if( !sqlf || !datf || !idxf || !hdrf || !logf || !sidf || !siof )
+            if( !hdrf || !idxf || !datf || !sqlf || !logf || !sidf || !siof )
                throw runtime_error( "unable to open backup files for '" + name + "' (in use?)" );
 
-            ofstream sav_sqlf( sav_sql_name.c_str( ), ios::out | ios::binary );
-            ofstream sav_datf( sav_dat_name.c_str( ), ios::out | ios::binary );
-            ofstream sav_idxf( sav_idx_name.c_str( ), ios::out | ios::binary );
             ofstream sav_hdrf( sav_hdr_name.c_str( ), ios::out | ios::binary );
+            ofstream sav_idxf( sav_idx_name.c_str( ), ios::out | ios::binary );
+            ofstream sav_datf( sav_dat_name.c_str( ), ios::out | ios::binary );
+            ofstream sav_sqlf( sav_sql_name.c_str( ), ios::out | ios::binary );
             ofstream sav_logf( sav_log_name.c_str( ), ios::out | ios::binary );
             ofstream sav_sidf( sav_sid_name.c_str( ), ios::out | ios::binary );
             ofstream sav_siof( sav_sio_name.c_str( ), ios::out | ios::binary );
 
-            if( !sav_sqlf || !sav_datf || !sav_idxf || !sav_hdrf || !sav_logf || !sav_sidf || !sav_siof )
+            if( !sav_hdrf || !sav_idxf || !sav_datf || !sav_sqlf || !sav_logf || !sav_sidf || !sav_siof )
                throw runtime_error( "unable to open backup files for '" + name + "'" );
 
-            copy_stream( sqlf, sav_sqlf );
-            copy_stream( datf, sav_datf );
-            copy_stream( idxf, sav_idxf );
             copy_stream( hdrf, sav_hdrf );
+            copy_stream( idxf, sav_idxf );
+            copy_stream( datf, sav_datf );
+            copy_stream( sqlf, sav_sqlf );
             copy_stream( logf, sav_logf );
             copy_stream( sidf, sav_sidf );
             copy_stream( siof, sav_siof );
@@ -2650,10 +2650,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
          }
 
-         string file_names( name + ".sql.sav" );
-         file_names += " " + name + ".dat.sav";
+         string file_names( name + ".hdr.sav" );
          file_names += " " + name + ".idx.sav";
-         file_names += " " + name + ".hdr.sav";
+         file_names += " " + name + ".dat.sav";
+         file_names += " " + name + ".sql.sav";
          file_names += " " + name + ".log.sav";
          file_names += " ciyam_server.sid.sav ciyam_server.sio.sav";
 
@@ -2708,10 +2708,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( truncate_log )
             exec_system( bundle + " -q " + name + "." + osstr.str( ) + ".bun.gz " + name + ".log." + osstr.str( ) );
 
-         remove_file( name + ".sql.sav" );
-         remove_file( name + ".dat.sav" );
-         remove_file( name + ".idx.sav" );
          remove_file( name + ".hdr.sav" );
+         remove_file( name + ".idx.sav" );
+         remove_file( name + ".dat.sav" );
+         remove_file( name + ".sql.sav" );
          remove_file( name + ".log.sav" );
          remove_file( name + ".backup.sql" );
          remove_file( "ciyam_server.sid.sav" );
@@ -2736,18 +2736,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool partial( has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_partial ) );
          bool quicker( has_parm_val( parameters, c_cmd_parm_ciyam_session_storage_restore_quicker ) );
 
-         string sql_name( name + ".sql" );
-         string dat_name( name + ".dat" );
-         string idx_name( name + ".idx" );
          string hdr_name( name + ".hdr" );
+         string idx_name( name + ".idx" );
+         string dat_name( name + ".dat" );
+         string sql_name( name + ".sql" );
          string log_name( name + ".log" );
          string ltf_name( name + ".ltf" );
          string key_name( name + ".dead_keys.lst" );
 
-         string sav_sql_name( sql_name + ".sav" );
-         string sav_dat_name( dat_name + ".sav" );
-         string sav_idx_name( idx_name + ".sav" );
          string sav_hdr_name( hdr_name + ".sav" );
+         string sav_idx_name( idx_name + ".sav" );
+         string sav_dat_name( dat_name + ".sav" );
+         string sav_sql_name( sql_name + ".sav" );
          string sav_log_name( log_name + ".sav" );
          string sav_ltf_name( ltf_name + ".sav" );
          string sav_key_name( key_name + ".sav" );
@@ -2769,10 +2769,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !rebuild && !partial )
          {
-            string file_names( sav_sql_name );
-            file_names += " " + sav_dat_name;
+            string file_names( sav_hdr_name );
             file_names += " " + sav_idx_name;
-            file_names += " " + sav_hdr_name;
+            file_names += " " + sav_dat_name;
+            file_names += " " + sav_sql_name;
 
             if( !file_exists( log_name ) )
                file_names += " " + sav_log_name;
@@ -2823,23 +2823,25 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                exec_system( unbundle + " -o -q " + name + ".backup.bun.gz" + file_names );
          }
 
-         if( !rebuild && !partial && ( !file_exists( sav_sql_name ) || !file_exists( sav_dat_name )
-          || !file_exists( sav_idx_name ) || !file_exists( sav_hdr_name ) || !file_exists( backup_sql_name ) ) )
+         if( !rebuild && !partial && ( !file_exists( sav_hdr_name ) || !file_exists( sav_idx_name )
+          || !file_exists( sav_dat_name ) || !file_exists( sav_sql_name ) || !file_exists( backup_sql_name ) ) )
             throw runtime_error( "incomplete or missing file set for backup restore" );
+
+         storage_admin_name_lock( name );
 
          if( rebuild )
          {
-            remove_file( sql_name );
-            remove_file( dat_name );
-            remove_file( idx_name );
             remove_file( hdr_name );
+            remove_file( idx_name );
+            remove_file( dat_name );
+            remove_file( sql_name );
          }
          else if( !partial )
          {
-            copy_file( sav_sql_name, sql_name );
-            copy_file( sav_dat_name, dat_name );
-            copy_file( sav_idx_name, idx_name );
             copy_file( sav_hdr_name, hdr_name );
+            copy_file( sav_idx_name, idx_name );
+            copy_file( sav_dat_name, dat_name );
+            copy_file( sav_sql_name, sql_name );
 
             if( !file_exists( log_name ) && file_exists( sav_log_name ) )
                copy_file( sav_log_name, log_name );
@@ -3118,10 +3120,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             if( !rebuild && !partial )
             {
-               remove_file( sav_sql_name );
-               remove_file( sav_dat_name );
-               remove_file( sav_idx_name );
                remove_file( sav_hdr_name );
+               remove_file( sav_idx_name );
+               remove_file( sav_dat_name );
+               remove_file( sav_sql_name );
 
                if( file_exists( sav_log_name ) )
                   remove_file( sav_log_name );

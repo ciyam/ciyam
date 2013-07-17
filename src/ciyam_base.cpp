@@ -208,6 +208,31 @@ typedef module_commands_registry_container::value_type module_commands_registry_
 
 class storage_handler;
 
+mutex g_mutex;
+mutex g_trace_mutex;
+
+string g_storage_name_lock;
+
+struct global_storage_name_lock
+{
+   global_storage_name_lock( const string& name )
+   {
+      guard g( g_mutex );
+
+      if( !g_storage_name_lock.empty( ) )
+         throw runtime_error( "global storage name lock already in use" );
+
+      g_storage_name_lock = name;
+   }
+
+   ~global_storage_name_lock( )
+   {
+      guard g( g_mutex );
+
+      g_storage_name_lock.erase( );
+   }
+};
+
 struct session
 {
    session( size_t id, size_t slot, command_handler& cmd_handler, storage_handler* p_storage_handler )
@@ -266,6 +291,8 @@ struct session
    module_container modules_by_name;
 
    auto_ptr< sql_db > ap_db;
+
+   auto_ptr< global_storage_name_lock > ap_storage_name_lock;
 
    command_handler& cmd_handler;
 
@@ -793,7 +820,7 @@ bool storage_handler::obtain_lock( size_t& handle,
 
             // NOTE: Locks that are effectively "dead" (i.e. awaiting cleanup when the tx completes) can
             // result in increasingly poorer performance if duplicates are allowed to exist (due to lock
-            // clash scanning) therefore remove any duplicates as discovered.
+            // clash scanning) therefore remove any duplicates as they are discovered.
             if( next_lock.type == op_lock::e_lock_type_none && next_lock == last_lock )
             {
                lock_duplicates.insert( next_lock.handle );
@@ -1170,9 +1197,6 @@ const char* const c_default_storage_identity = "<default>";
 
 const char* const c_ignore_field = "@ignore";
 
-mutex g_mutex;
-mutex g_trace_mutex;
-
 size_t g_next_session_id;
 
 map< string, string > g_variables;
@@ -1245,6 +1269,12 @@ void perform_storage_op( storage_op op,
 
       if( !slot || slot == g_max_storage_handlers )
          throw runtime_error( "max. permitted concurrent storage handlers already active" );
+
+      if( gtp_session->ap_storage_name_lock.get( ) )
+         gtp_session->ap_storage_name_lock.reset( );
+
+      if( name == g_storage_name_lock )
+         throw runtime_error( "storage '" + name + "' cannot be administered as its already in use" );
 
       ods::open_mode open_mode;
 
@@ -5203,6 +5233,22 @@ void term_storage( command_handler& cmd_handler )
 
       set_session_variable( c_session_variable_storage, "" );
       gtp_session->p_storage_handler = g_storage_handlers[ 0 ];
+   }
+}
+
+void storage_admin_name_lock( const string& name )
+{
+   guard g( g_mutex );
+
+   if( gtp_session )
+   {
+      if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
+         throw runtime_error( "storage '" + name + "' cannot be administered as its already in use" );
+
+      if( gtp_session->ap_storage_name_lock.get( ) )
+         gtp_session->ap_storage_name_lock.reset( );
+
+      gtp_session->ap_storage_name_lock.reset( new global_storage_name_lock( name ) );
    }
 }
 

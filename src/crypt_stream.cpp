@@ -161,8 +161,8 @@ string get_totp( const string& secret, int freq )
 string password_encrypt( const string& password, const string& key, bool use_ssl, bool add_salt )
 {
    string s( password );
-
-   srand( time( 0 ) );
+   if( password.empty( ) )
+      return s;
 
 #ifndef SSL_SUPPORT
    use_ssl = false;
@@ -173,6 +173,8 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
    // disguised from non-technical user observation.
    if( !use_ssl )
    {
+      srand( time( 0 ) );
+
       char c( '\0' );
       while( s.length( ) < 20 )
       {
@@ -220,7 +222,7 @@ string password_decrypt( const string& password, const string& key, bool use_ssl
 {
    string s;
    if( password.empty( ) )
-      return password;
+      return s;
 
    string salt;
    string::size_type pos = password.find( ':' );

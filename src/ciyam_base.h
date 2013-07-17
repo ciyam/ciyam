@@ -232,6 +232,8 @@ void CIYAM_BASE_DECL_SPEC upgrade_storage( command_handler& cmd_handler );
 
 void CIYAM_BASE_DECL_SPEC term_storage( command_handler& cmd_handler );
 
+void CIYAM_BASE_DECL_SPEC storage_admin_name_lock( const std::string& name );
+
 void CIYAM_BASE_DECL_SPEC storage_cache_clear( );
 size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( );
 size_t CIYAM_BASE_DECL_SPEC storage_cache_limit( size_t new_limit );
