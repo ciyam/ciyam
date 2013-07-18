@@ -104,6 +104,7 @@ system_is_under_maintenance "Sorry - the system is currently under maintenance. 
 you_are_currently_logged_in "You are already currently logged in."
 provide_password_to_activate "Please provide a password to activate and login to your account '{@id}'."
 invalid_or_already_activated "Invalid account or account has already been activated."
+service_busy_try_again_later "This service is currently busy - please try again later."
 application_server_unavailable "Application server is not currently available."
 max_concurrent_users_logged_in "Maximum concurrent users already logged in. Please try again later."
 user_id_has_already_been_taken "Sorry but the User Id '{@id}' has already been taken. Please try another one."

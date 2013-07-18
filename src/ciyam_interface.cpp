@@ -966,7 +966,7 @@ void request_handler::process_request( )
       title = mod_info.title;
 
       bool is_invalid_session = false;
-      if( !session_id.empty( ) && session_id != c_new_session )
+      if( !session_id.empty( ) && session_id != c_new_session && cmd != c_cmd_join && cmd != c_cmd_status )
       {
          if( user.empty( ) || ( !user.empty( ) && hash == get_user_hash( user ) ) )
          {
@@ -974,7 +974,8 @@ void request_handler::process_request( )
 
             if( !p_session_info )
             {
-               if( cmd.empty( ) || cmd == c_cmd_quit || cmd == c_cmd_login || !username.empty( ) || !userhash.empty( ) )
+               if( cmd.empty( ) || cmd == c_cmd_home
+                || cmd == c_cmd_quit || cmd == c_cmd_login || !username.empty( ) || !userhash.empty( ) )
                {
                   cmd = c_cmd_home;
                   session_id.erase( );
@@ -1167,7 +1168,7 @@ void request_handler::process_request( )
 #else
             p_session_info->p_socket = get_tcp_socket( );
             if( !p_session_info->p_socket )
-               throw runtime_error( "this service is currently busy - please try again later" );
+               throw runtime_error( GDS( c_display_service_busy_try_again_later ) );
 #endif
             bool connection_okay = false;
 
@@ -4020,7 +4021,6 @@ void request_handler::process_request( )
                extra_content << "</div>\n";
             }
 
-
             if( use_menubar )
                extra_content << "\n<div id=\"main\" class=\"menubar_width\">\n";
             else
@@ -4133,7 +4133,7 @@ void request_handler::process_request( )
                   else
                   {
                      msleep( 2000 );
-                     req_username += uuid( ).as_string( ).substr( 0, 10 );\
+                     req_username += uuid( ).as_string( ).substr( 0, 10 );
                   }
 
                   string clone_key;
@@ -4316,7 +4316,16 @@ void request_handler::process_request( )
                                  if( error_message.find( c_response_error_prefix ) == 0 )
                                     error_message.erase( 0, strlen( c_response_error_prefix ) );
 
-                                 error_message = "<p class=\"error\" align=\"center\">" + error_message + "</p>";
+                                 error_message = "<p class=\"error\" align=\"center\">" + remove_key( error_message ) + "</p>";
+
+                                 if( !key.empty( ) && file_exists( key + ".asc" ) )
+                                 {
+                                    file_remove( key + "x.asc" );
+
+                                    string cmd(  "gpg --batch --delete-key --yes " + key + ">x.tmp 2>&1" );
+                                    if( system( cmd.c_str( ) ) != 0 )
+                                       LOG_TRACE( buffer_file( "x.tmp" ) );
+                                 }
                               }
                            }
 

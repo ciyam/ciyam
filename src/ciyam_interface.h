@@ -563,6 +563,7 @@ const char* const c_display_you_are_currently_logged_in = "You are already curre
 const char* const c_display_provide_password_to_activate = "Please provide a password to activate and login to your account '{@id}'.";
 const char* const c_display_provide_password_to_activate_parm_id = "{@id}";
 const char* const c_display_invalid_or_already_activated = "Invalid account or account has already been activated.";
+const char* const c_display_service_busy_try_again_later = "This service is currently busy - please try again later.";
 const char* const c_display_application_server_unavailable = "Application server is not currently available.";
 const char* const c_display_max_concurrent_users_logged_in = "Maximum concurrent users already logged in. Please try again later.";
 const char* const c_display_user_id_has_already_been_taken = "Sorry but the User Id '{@id}' has already been taken. Please try another one.";
