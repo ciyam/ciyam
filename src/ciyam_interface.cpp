@@ -1259,13 +1259,13 @@ void request_handler::process_request( )
                      g_max_user_limit = ( size_t )atoi( identity_info.substr( pos + 1 ).c_str( ) );
 
                      if( !simple_command( *p_session_info, "storage_init " + get_storage_info( ).storage_name ) )
-                        throw runtime_error( "Unable to initialise '" + get_storage_info( ).storage_name + "' storage." );
+                        throw runtime_error( "unable to initialise '" + get_storage_info( ).storage_name + "' storage" );
 
                      string response;
                      if( !get_storage_info( ).has_web_root( ) )
                      {
                         if( !simple_command( *p_session_info, "storage_web_root -expand", &response ) )
-                           throw runtime_error( "Unable to get web root from '" + get_storage_info( ).storage_name + "' storage." );
+                           throw runtime_error( "unable to get web root from '" + get_storage_info( ).storage_name + "' storage" );
 
                         get_storage_info( ).web_root = response;
 
@@ -1280,7 +1280,7 @@ void request_handler::process_request( )
                         read_module_strings( mod_info, *p_session_info->p_socket );
 
                         if( !simple_command( *p_session_info, mod_info.name + "_ver", &response ) )
-                           throw runtime_error( "Unable to get version information for module '" + mod_info.name + "'" );
+                           throw runtime_error( "unable to get version information for module '" + mod_info.name + "'" );
 
                         mod_info.title = response;
                      }
