@@ -952,6 +952,8 @@ void request_handler::process_request( )
       bool is_authorised = false;
       bool is_login_screen = false;
 
+      string app_dir_name( lower( get_storage_info( ).storage_name ) );
+
       if( !get_storage_info( ).modules_index.count( module_name ) )
          throw runtime_error( "cannot find information for module '" + module_name + "'" );
 
@@ -3417,11 +3419,9 @@ void request_handler::process_request( )
                          << "?cmd=" << c_cmd_join << "\">"
                          << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
 
-                        string app_name( lower( get_storage_info( ).storage_name ) );
-
-                        if( file_exists( "../openid/" + app_name, false ) )
+                        if( file_exists( "../openid/" + app_dir_name, false ) )
                            extra_content << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
-                            << "/openid/" << app_name << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
+                            << "/openid/" << app_dir_name << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
                      }
                   }
                }
@@ -4246,11 +4246,13 @@ void request_handler::process_request( )
                               }
                            }
                            else if( error_message.empty( ) )
+                           {
+                              file_remove( "x.gpg" );
                               had_unexpected_error = true;
+                           }
                         }
 
                         file_remove( "x.tmp" );
-                        file_remove( "x.gpg" );
                      }
 
                      if( error_message.empty( ) && !had_unexpected_error )
@@ -4304,12 +4306,19 @@ void request_handler::process_request( )
 
                            if( !is_help_request )
                            {
-                              string email;
-                              if( !is_anon_email_addr )
-                                 email = password_encrypt( email_addr, get_server_id( ) );
+                              string email, gpg_key_file;
 
-                              add_user( req_username, req_username, email,
-                               clone_key, password, error_message, mod_info, *p_session_info );
+                              if( !is_anon_email_addr )
+                              {
+                                 email = password_encrypt( email_addr, get_server_id( ) );
+                                 gpg_key_file = get_storage_info( ).web_root + "/x.gpg";
+                              }
+
+                              // NOTE: The GPG key is installed when the User is created as it is being
+                              // assumed that the FCGI interface's GPG key ring is not the same as that
+                              // of the application server.
+                              add_user( req_username, req_username, email, clone_key,
+                               password, error_message, mod_info, *p_session_info, 0, true, &gpg_key_file );
 
                               if( !error_message.empty( ) )
                               {
@@ -4327,10 +4336,15 @@ void request_handler::process_request( )
                                        LOG_TRACE( buffer_file( "x.tmp" ) );
                                  }
                               }
+                              else
+                              {
+                                 LOG_TRACE( "[add_user: " + req_username + " at "
+                                  + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
+                              }
                            }
 
-                           // FUTURE: It would be better if the email was sent from the User class rather
-                           // than being done separately here.
+                           file_remove( "x.gpg" );
+
                            if( error_message.empty( ) )
                            {
                               if( is_help_request || is_anon_email_addr )
@@ -4361,9 +4375,7 @@ void request_handler::process_request( )
                         }
 
                         file_remove( key );
-
-                        if( file_exists( key + ".tmp" ) )
-                           file_remove( key + ".tmp" );
+                        file_remove( key + ".tmp" );
 
                         if( !has_completed && !had_unexpected_error && error_message.empty( ) )
                         {

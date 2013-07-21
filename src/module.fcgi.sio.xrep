@@ -38,7 +38,8 @@
 `{`!`@eq`(`$specification_user_info_slperm`,`'`'`),`{`$specification_user_info_slperm`}`}\
 `{`!`@eq`(`$specification_user_info_koverride`,`'`'`)@`{`$specification_user_info_koverride`}`}\
 `{`!`@eq`(`$specification_user_info_soverride`,`'`'`)#`{`$specification_user_info_soverride`}`}
- <user_slevel>`{`(`?`$specification_user_info_slevel`)`$specification_user_info_slevel`}`}
+ <user_slevel>`{`(`?`$specification_user_info_slevel`)`$specification_user_info_slevel`}
+ <user_gpg_install>`{`(`?`$specification_user_info_gpg_install`)`$specification_user_info_gpg_install`}`}
  <home_info>`{`(`?`$specification_home_message_id`)`{`$specification_home_message_command`}`}`{\
 `(`?`$specification_home_message_cmd_args`) `{`$specification_home_message_cmd_args`}`}
  <enums/>
