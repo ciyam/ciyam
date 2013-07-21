@@ -30153,7 +30153,7 @@
     <data/>
      <name>*
      <type>admin
-     <extra>no_limit
+     <extra>limit=100
      <class_id>114100
      <ordering>forward
      <field_info>114101
