@@ -2114,7 +2114,8 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
 
 void add_user( const string& user_id, const string& user_name,
  const string& email, const string& clone_key, const string& password,
- string& error_message, const module_info& mod_info, session_info& sess_info, string* p_new_key, bool active )
+ string& error_message, const module_info& mod_info, session_info& sess_info,
+ string* p_new_key, bool active, const string* p_gpg_key_file )
 {
    bool okay = true;
    string new_user_cmd( "perform_create" );
@@ -2137,7 +2138,14 @@ void add_user( const string& user_id, const string& user_name,
    if( !email.empty( ) && !mod_info.user_email_field_id.empty( ) )
       new_user_cmd += "," + mod_info.user_email_field_id + "=" + escaped( email, ",\"" );
 
-   new_user_cmd += "\"";
+   string new_user_cmd_extra;
+   if( p_gpg_key_file && !p_gpg_key_file->empty( ) )
+   {
+      new_user_cmd += ",@file=" + *p_gpg_key_file;
+      new_user_cmd_extra = " -x=" + mod_info.user_gpg_install_proc_id;
+   }
+
+   new_user_cmd += "\"" + new_user_cmd_extra;
 
    if( sess_info.p_socket->write_line( new_user_cmd ) <= 0 )
       okay = false;

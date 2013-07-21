@@ -80,7 +80,8 @@ void fetch_user_quick_links( const module_info& mod_info, session_info& sess_inf
 
 void add_user( const std::string& user_id, const std::string& user_name,
  const std::string& email, const std::string& clone_key, const std::string& password,
- std::string& error_message, const module_info& mod_info, session_info& sess_info, std::string* p_new_key = 0, bool active = true );
+ std::string& error_message, const module_info& mod_info, session_info& sess_info,
+ std::string* p_new_key = 0, bool active = true, const std::string* p_gpg_key_file = 0 );
 
 void add_quick_link( const std::string& module_ref,
  const std::string& cmd, const std::string& data, const std::string& extra,

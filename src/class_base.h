@@ -962,7 +962,7 @@ void CLASS_BASE_DECL_SPEC remove_gpg_key( const std::string& gpg_key_id, bool ig
 void CLASS_BASE_DECL_SPEC locate_gpg_key( const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );
 
 void CLASS_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
- const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint );
+ const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint, std::string* p_new_email = 0 );
 
 std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );
 

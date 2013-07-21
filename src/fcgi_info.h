@@ -356,6 +356,7 @@ struct module_info
    std::string user_parent_field_id;
    std::string user_active_field_id;
    std::string user_security_level_id;
+   std::string user_gpg_install_proc_id;
 
    std::string user_select_perm;
    std::string user_select_field;

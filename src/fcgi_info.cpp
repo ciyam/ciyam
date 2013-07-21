@@ -132,6 +132,7 @@ const char* const c_attribute_module_prefix = "module_prefix";
 const char* const c_attribute_checkbox_bools = "checkbox_bools";
 const char* const c_attribute_filesize_limit = "filesize_limit";
 const char* const c_attribute_print_list_opts = "print_list_opts";
+const char* const c_attribute_user_gpg_install = "user_gpg_install";
 
 const char* const c_list_field_parent_extra_folder = "[folder]";
 
@@ -184,6 +185,7 @@ void module_info::clear( )
    user_parent_field_id.erase( );
    user_active_field_id.erase( );
    user_security_level_id.erase( );
+   user_gpg_install_proc_id.erase( );
 
    user_select_perm.erase( );
    user_select_field.erase( );
@@ -707,6 +709,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       }
 
       info.user_security_level_id = reader.read_opt_attribute( c_attribute_user_slevel );
+      info.user_gpg_install_proc_id = reader.read_opt_attribute( c_attribute_user_gpg_install );
 
       info.home_info = reader.read_attribute( c_attribute_home_info );
 

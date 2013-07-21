@@ -2579,6 +2579,8 @@ void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
    string tmp( "~" + uuid( ).as_string( ) );
    string cmd( "gpg --yes --batch --delete-key " + gpg_key_id + ">" + tmp + " 2>&1" );
 
+   TRACE_LOG( TRACE_SESSIONS, cmd );
+
    system( cmd.c_str( ) );
 
    vector< string > lines;
@@ -2598,6 +2600,8 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
    string tmp( "~" + uuid( ).as_string( ) );
 
    string cmd( "gpg --fingerprint " + email + ">" + tmp +  " 2>&1" );
+
+   TRACE_LOG( TRACE_SESSIONS, cmd );
 
    system( cmd.c_str( ) );
 
@@ -2628,7 +2632,7 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
 }
 
 void install_gpg_key( const string& key_file,
- const string& email, string& gpg_key_id, string& gpg_fingerprint )
+ const string& email, string& gpg_key_id, string& gpg_fingerprint, string* p_new_email )
 {
    guard g( g_mutex );
 
@@ -2642,10 +2646,14 @@ void install_gpg_key( const string& key_file,
 
       cmd += key_file + ">" + tmp + " 2>&1";
 
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
       system( cmd.c_str( ) );
 
       vector< string > lines;
       buffer_file_lines( tmp, lines );
+
+      file_remove( tmp );
 
       bool had_unexpected_error = false;
 
@@ -2705,22 +2713,34 @@ void install_gpg_key( const string& key_file,
                            throw runtime_error( "GPG key is missing email address." );
                         else
                         {
-                           string email_addr = first_line.substr( pos + 1, len - 2 );
+                           string email_addr( first_line.substr( pos + 1, len - 2 ) );
 
-                           if( email_addr != email )
+                           if( !email.empty( ) && email_addr != email )
+                           {
+                              if( i == 1 )
+                                 remove_gpg_key( key, true );
+
                               // FUTURE: This message should be handled as a server string message.
                               throw runtime_error( "GPG key has incorrect email address (found '"
                                + email_addr + "' but expecting '" + email + "')." );
+                           }
 
                            if( i == 1 )
                            {
+                              if( p_new_email )
+                                 *p_new_email = email_addr;
+
                               cmd = "gpg --fingerprint ";
                               cmd += key + ">" + tmp +  " 2>&1";
+
+                              TRACE_LOG( TRACE_SESSIONS, cmd );
 
                               system( cmd.c_str( ) );
 
                               lines.clear( );
                               buffer_file_lines( tmp, lines );
+
+                              file_remove( tmp );
 
                               if( lines.empty( ) )
                                  had_unexpected_error = true;
@@ -2745,8 +2765,6 @@ void install_gpg_key( const string& key_file,
                had_unexpected_error = true;
          }
       }
-
-      file_remove( tmp );
 
       if( had_unexpected_error )
          throw runtime_error( "unexpected error occurred installing GPG key" );

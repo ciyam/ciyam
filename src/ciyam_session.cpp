@@ -1628,6 +1628,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_tz_abbr ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_key ) );
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_field_values ) );
+         string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_method_name ) );
 
          if( tz_abbr.empty( ) )
             tz_abbr = get_timezone( );
@@ -1724,7 +1725,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !skip_create )
          {
+            if( !method_id_or_name.empty( ) )
+               transaction_start( );
+
             size_t handle = create_object_instance( module, mclass, 0, false );
+
             try
             {
                set_uid( uid );
@@ -1769,16 +1774,32 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                response = key.substr( 0, key.find( ' ' ) );
 
+               // NOTE: If a method name has also been provided then execute it now (omitting the version).
+               if( !method_id_or_name.empty( ) )
+               {
+                  method_id_or_name = resolve_method_name( module,
+                   mclass, method_id_or_name, &socket_handler.get_transformations( ) );
+
+                  instance_execute( handle, "", key, method_id_or_name );
+                  transaction_commit( );
+               }
+
                destroy_object_instance( handle );
             }
             catch( exception& )
             {
+               if( !method_id_or_name.empty( ) )
+                  transaction_rollback( );
+
                possibly_expected_error = true;
                destroy_object_instance( handle );
                throw;
             }
             catch( ... )
             {
+               if( !method_id_or_name.empty( ) )
+                  transaction_rollback( );
+
                destroy_object_instance( handle );
                throw;
             }
@@ -1952,6 +1973,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( exception& x )
             {
+               if( !method_id_or_name.empty( ) )
+                  transaction_rollback( );
+
                possibly_expected_error = true;
                destroy_object_instance( handle );
                throw;
