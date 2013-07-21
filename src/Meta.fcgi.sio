@@ -16,6 +16,7 @@
  <user_active>100102
  <user_select>
  <user_slevel>
+ <user_gpg_install>
  <home_info>
  <enums/>
   <enum/>
@@ -8680,7 +8681,7 @@
    <cid>114100
    <name>602410_name
    <type>admin
-   <extra>no_limit
+   <extra>limit=100
    <actions>
    <modifiers>
    <view>602400

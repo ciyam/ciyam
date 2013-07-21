@@ -1849,7 +1849,7 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,Specification_Actions,Child_{Specification_Type}:Name;link,Has_Next_Specification_Info\
 ,Next_Protect_Procedure,Next_Protect_Source_Parent,Next_Protect_Child_Rel\
 ,Next_Specification_Actions,Next_Child_{Specification_Type}:Name;link"
-specification_add -id=602410 {Specification_Type}_list list "* admin:no_limit\
+specification_add -id=602410 {Specification_Type}_list list "* admin:limit=50\
  Specification_Type Name,Specification_Name Parent_{Specification_Type},@key,restricted"
 specification_add -id=602420 {Specification_Type}_child_list0 list "@602420_Child_* child:admin_new,admin_erase,no_limit\
  Specification_Type Name,Specification_Name Parent_{Specification_Type}"
