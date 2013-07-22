@@ -2744,7 +2744,7 @@ void install_gpg_key( const string& key_file,
 
                               if( lines.empty( ) )
                                  had_unexpected_error = true;
-                              else if( lines.size( ) != 4 )
+                              else if( lines.size( ) < 3 )
                                  throw runtime_error( lines[ 0 ] );
 
                               pos = lines[ 1 ].find( c_gpg_key_fingerprint_prefix );
