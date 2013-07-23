@@ -922,6 +922,7 @@ void request_handler::process_request( )
       string keep( input_data[ c_param_keep ] );
       string chksum( input_data[ c_param_chksum ] );
       string hashval( input_data[ c_param_hashval ] );
+      string newhash( input_data[ c_param_newhash ] );
       string password( input_data[ c_param_password ] );
       string persistent( input_data[ c_param_persistent ] );
 
@@ -1866,6 +1867,16 @@ void request_handler::process_request( )
             p_session_info->logged_in = false;
             created_session = true;
             throw;
+         }
+
+         // NOTE: If a new password hash is passed from the client after logging in then
+         // encrypt and store it in the application server "files area" for later usage.
+         if( p_session_info->logged_in && !newhash.empty( ) )
+         {
+            string cmd( "file_init " );
+            cmd += p_session_info->user_key;
+            cmd += " " + password_encrypt( newhash, get_server_id( ) );
+            simple_command( *p_session_info, cmd );
          }
 
          // NOTE: For a save or continue edit action it is expected that a field list and

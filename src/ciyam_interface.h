@@ -120,6 +120,7 @@ const char* const c_param_module = "module";
 const char* const c_param_utcdtm = "utcdtm";
 const char* const c_param_hashval = "hashval";
 const char* const c_param_newflds = "newflds";
+const char* const c_param_newhash = "newhash";
 const char* const c_param_newvals = "newvals";
 const char* const c_param_ochksum = "ochksum";
 const char* const c_param_scrollx = "scrollx";

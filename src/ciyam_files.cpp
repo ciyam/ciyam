@@ -10,6 +10,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <vector>
+#  include <fstream>
 #  include <stdexcept>
 #endif
 
@@ -124,6 +125,37 @@ void init_files_area( )
    _chdir( ".." );
 }
 
+void init_file( const string& name, const string& data )
+{
+   string filename( string( c_files_directory ) + "/" + name );
+
+   if( !file_exists( filename ) )
+   {
+      if( g_total_files >= get_files_area_item_max_num( ) )
+         throw runtime_error( "maximum file area item limit has been reached" );
+
+      size_t max_num = get_files_area_item_max_num( );
+      size_t max_size = get_files_area_item_max_size( );
+
+      if( data.size( ) > max_size )
+         throw runtime_error( "maximum file area item size limit cannot be exceeded" );
+
+      int64_t max_bytes = ( int64_t )max_num * ( int64_t )max_size;
+
+      if( g_total_bytes + data.size( ) > max_bytes )
+         throw runtime_error( "maximum file area size limit cannot be exceeded" );
+
+      ofstream outf( filename.c_str( ), ios::out | ios::binary );
+      if( !outf )
+         throw runtime_error( "unable to create output file '" + filename + "'" );
+
+      outf << data;
+
+      ++g_total_files;
+      g_total_bytes += data.size( );
+   }
+}
+
 void fetch_file( const string& name, tcp_socket& socket )
 {
    string filename( string( c_files_directory ) + "/" + name );
@@ -134,9 +166,6 @@ void fetch_file( const string& name, tcp_socket& socket )
 
 void store_file( const string& name, tcp_socket& socket )
 {
-   if( g_total_files >= get_files_area_item_max_num( ) )
-      throw runtime_error( "maximum file area item limit has been reached" );
-
    string filename( string( c_files_directory ) + "/" + name );
 
    bool existing = file_exists( filename );
@@ -144,6 +173,9 @@ void store_file( const string& name, tcp_socket& socket )
 
    if( existing )
       existing_bytes = file_size( filename );
+
+   if( !existing && g_total_files >= get_files_area_item_max_num( ) )
+      throw runtime_error( "maximum file area item limit has been reached" );
 
    try
    {

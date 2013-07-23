@@ -3,4 +3,5 @@
 `{`$use_zlib`=`'true`'`}
 `{`$use_iconv`=`'true`'`}
 `{`$use_rdline`=`'false`'`}
-`{`$pwd_rounds`=`'123`'`}
+`{`$pwd_rounds`=`'12345`'`}
+`{`$new_rounds`=`'12345`'`}
