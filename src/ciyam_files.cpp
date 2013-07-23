@@ -145,7 +145,13 @@ void init_file( const string& name, const string& data )
       if( g_total_bytes + data.size( ) > max_bytes )
          throw runtime_error( "maximum file area size limit cannot be exceeded" );
 
+#ifndef _WIN32
+      int um = umask( 077 );
+#endif
       ofstream outf( filename.c_str( ), ios::out | ios::binary );
+#ifndef _WIN32
+      umask( um );
+#endif
       if( !outf )
          throw runtime_error( "unable to create output file '" + filename + "'" );
 
@@ -177,16 +183,25 @@ void store_file( const string& name, tcp_socket& socket )
    if( !existing && g_total_files >= get_files_area_item_max_num( ) )
       throw runtime_error( "maximum file area item limit has been reached" );
 
+#ifndef _WIN32
+   int um = umask( 077 );
+#endif
    try
    {
       file_transfer( filename, socket, e_ft_direction_fetch, get_files_area_item_max_size( ),
        c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
 
+#ifndef _WIN32
+      umask( um );
+#endif
       g_total_bytes -= existing_bytes;
       g_total_bytes += file_size( filename );
    }
    catch( ... )
    {
+#ifndef _WIN32
+      umask( um );
+#endif
       if( existing && !file_exists( filename ) )
       {
          --g_total_files;
