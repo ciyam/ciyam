@@ -27,6 +27,8 @@ std::string CLASS_BASE_DECL_SPEC get_file_stats( );
 
 void CLASS_BASE_DECL_SPEC init_files_area( );
 
+void CLASS_BASE_DECL_SPEC init_file( const std::string& name, const std::string& data );
+
 void CLASS_BASE_DECL_SPEC fetch_file( const std::string& name, tcp_socket& socket );
 void CLASS_BASE_DECL_SPEC store_file( const std::string& name, tcp_socket& socket );
 

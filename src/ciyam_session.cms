@@ -2,6 +2,7 @@ version "display protocol version"
 identity "get/set identity information" [<val//info>]
 file_get "fetch a file from the files area" <val//filename>
 file_put "stores a file to the files area" <val//filename>
+file_init "create a new file with initial data" <val//filename>[<val//data>]
 file_stats "get file area stats"
 module_list "list loaded modules"
 module_load "load an existing module" <val//module>

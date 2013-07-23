@@ -990,10 +990,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          store_file( lower( sha1( filename ).get_digest_as_string( ) ), socket );
       }
-      else if( command == c_cmd_ciyam_session_file_stats )
+      else if( command == c_cmd_ciyam_session_file_init )
       {
-         response = get_file_stats( );
+         string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_init_filename ) );
+         string initial_data( get_parm_val( parameters, c_cmd_parm_ciyam_session_file_init_data ) );
+
+         init_file( lower( sha1( filename ).get_digest_as_string( ) ), initial_data );
       }
+      else if( command == c_cmd_ciyam_session_file_stats )
+         response = get_file_stats( );
       else if( command == c_cmd_ciyam_session_module_list )
       {
          module_list( osstr );

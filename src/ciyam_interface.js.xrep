@@ -50,6 +50,7 @@ var serverId = '';
 var uniqueId = '';
 
 var hashRounds = `{`$pwd_rounds`};
+var newHashRounds = `{`$new_rounds`};
 
 var validation_error = '';
 
@@ -453,6 +454,16 @@ function load2( )
       if( full_context != '' )
          full_context += '&';
       full_context += qsFurther;
+   }
+
+   if( !is_login
+    && typeof sessionStorage == 'object' && sessionStorage.getItem( 'newhash' ) != null )
+   {
+      if( full_context != '' )
+         full_context += '&';
+      full_context += 'newhash=' + sessionStorage.getItem( 'newhash' );
+
+      sessionStorage.removeItem( 'newhash' );
    }
 
    if( dataFieldList != '' )
@@ -994,7 +1005,12 @@ function hash_password( salt, pwd, skip_id )
    if( pwd.length > 50 )
       retval = pwd;
    else
+   {
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
+
+      if( !loggedIn && hashRounds != newHashRounds && typeof sessionStorage == 'object' )
+         sessionStorage.setItem( 'newhash', hash_value( serverId + pwd + salt, newHashRounds ).toLowerCase( ) );
+   }
 
    if( !skip_id && !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
       sessionStorage.setItem( 'key', retval );
