@@ -26,7 +26,7 @@ enum crypt_op
 std::string aes_crypt( const std::string& s, const char* p_key, size_t key_length, crypt_op op );
 #  endif
 
-std::string get_totp( const std::string& secret, int freq = 30 );
+std::string get_totp( const std::string& base32_encoded_secret, int freq = 30 );
 
 std::string password_encrypt( const std::string& password, const std::string& key, bool use_ssl = true, bool add_salt = true );
 std::string password_decrypt( const std::string& password, const std::string& key, bool use_ssl = true );

@@ -1788,7 +1788,7 @@ void read_strings( const string& filename, map< string, string >& strings,
       throw runtime_error( "unexpected error occurred whilst reading '" + filename + "' for input" );
 }
 
-void write_strings( const std::string& filename,
+void write_strings( const string& filename,
  const string_container& strings, bool escape_data, char esc, const char* p_specials )
 {
    ofstream outf( filename.c_str( ) );

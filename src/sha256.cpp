@@ -201,19 +201,6 @@ void sha256_final( SHA256_CTX* ctx, uchar hash[ ] )
    }
 }
 
-string digest_as_string( unsigned char digest[ ], char separator = ' ' )
-{
-   ostringstream outs;
-   for( size_t i = 0; i < 32; i++ )
-   {
-      if( i && i % 4 == 0 && separator != '\0' )
-         outs << separator;
-      outs << hex << setw( 2 ) << setfill( '0' ) << ( unsigned )digest[ i ];
-   }
-
-   return outs.str( );
-}
-
 } // namespace
 
 struct sha256::impl
@@ -237,6 +224,14 @@ sha256::sha256( const std::string& str )
 
    init( );
    update( ( const unsigned char* )&str[ 0 ], str.length( ) );
+}
+
+sha256::sha256( const unsigned char* p_data, unsigned int length )
+{
+   p_impl = new impl;
+
+   init( );
+   update( p_data, length );
 }
 
 sha256::~sha256( )
@@ -284,7 +279,7 @@ void sha256::copy_digest_to_buffer( unsigned char* p_buffer )
       sha256_final( &p_impl->context, p_impl->digest );
    }
 
-   memcpy( p_impl->digest, p_buffer, 32 );
+   memcpy( p_buffer, p_impl->digest, 32 );
 }
 
 void sha256::get_digest_as_string( string& s )
@@ -322,6 +317,74 @@ string sha256::get_digest_as_string( char separator )
    }
 
    return outs.str( );
+}
+
+string hmac_sha256( const string& key, const string& message )
+{
+   string s( 64, '\0' );
+   unsigned char buffer[ 32 ];
+
+   hmac_sha256( key, message, buffer );
+
+   for( size_t i = 0, j = 0; i < 32; i++ )
+   {
+      s[ j++ ] = ascii_digit( ( buffer[ i ] & 0xf0 ) >> 4 );
+      s[ j++ ] = ascii_digit( buffer[ i ] & 0x0f );
+   }
+
+   return s;
+}
+
+void hmac_sha256( const string& key, const string& message, unsigned char* p_buffer )
+{
+   int key_len = key.length( );
+   int msg_len = message.length( );
+
+   const unsigned char* p_key = ( const unsigned char* )key.data( );
+   const unsigned char* p_msg = ( const unsigned char* )message.data( );
+
+   unsigned char k_ipad[ 65 ];
+   unsigned char k_opad[ 65 ];
+
+   unsigned char tk[ 32 ];
+   unsigned char tk2[ 32 ];
+   unsigned char bufferIn[ 1024 ];
+   unsigned char bufferOut[ 1024 ];
+
+   if( key_len > 64 )
+   {
+      sha256 hash( key );
+      hash.copy_digest_to_buffer( tk );
+
+      p_key = tk;
+      key_len = 64;
+   }
+ 
+   memset( k_ipad, 0, 65 );
+   memset( k_opad, 0, 65 );
+
+   memcpy( k_ipad, p_key, key_len );
+   memcpy( k_opad, p_key, key_len );
+ 
+   for( int i = 0; i < 64; i++ )
+   {
+      k_ipad[ i ] ^= 0x36;
+      k_opad[ i ] ^= 0x5c;
+   }
+ 
+   memset( bufferIn, 0x00, 1024 );
+   memcpy( bufferIn, k_ipad, 64 );
+   memcpy( bufferIn + 64, p_msg, msg_len );
+ 
+   sha256 hash1( bufferIn, 64 + msg_len );
+   hash1.copy_digest_to_buffer( tk2 );
+
+   memset( bufferOut, 0x00, 1024 );
+   memcpy( bufferOut, k_opad, 64 );
+   memcpy( bufferOut + 64, tk2, 32 );
+ 
+   sha256 hash2( bufferOut, 64 + 32 );
+   hash2.copy_digest_to_buffer( p_buffer );
 }
 
 #ifdef COMPILE_TESTBED_MAIN

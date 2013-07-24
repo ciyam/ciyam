@@ -10,6 +10,7 @@
    <lib/>
     <name>base
     <cpp_files/>
+     <filename>base32.cpp
      <filename>base64.cpp
      <filename>console.cpp
      <filename>console_commands.cpp

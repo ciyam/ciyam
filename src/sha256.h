@@ -16,6 +16,7 @@ class sha256
    public:
    sha256( );
    sha256( const std::string& str );
+   sha256( const unsigned char* p_data, unsigned int length );
 
    ~sha256( );
 
@@ -32,6 +33,10 @@ class sha256
    struct impl;
    impl* p_impl;
 };
+
+std::string hmac_sha256( const std::string& key, const std::string& message );
+
+void hmac_sha256( const std::string& key, const std::string& message, unsigned char* p_buffer );
 
 #endif
 
