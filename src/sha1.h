@@ -16,6 +16,7 @@ class sha1
    public:
    sha1( );
    sha1( const std::string& str );
+   sha1( const unsigned char* p_data, unsigned int length );
 
    ~sha1( );
 
@@ -24,12 +25,18 @@ class sha1
    void update( const unsigned char* p_data, unsigned int length );
 
    void copy_digest_to_buffer( unsigned char* p_buffer );
+
+   void get_digest_as_string( std::string& s );
    std::string get_digest_as_string( char separator = '\0' );
 
    private:
    struct impl;
    impl* p_impl;
 };
+
+std::string hmac_sha1( const std::string& key, const std::string& message );
+
+void hmac_sha1( const std::string& key, const std::string& message, unsigned char* p_buffer );
 
 #endif
 

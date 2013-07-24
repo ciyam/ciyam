@@ -2411,7 +2411,7 @@ void save_record( const string& module_id,
          // alternate key has been provided rather than the actual foreign key itself).
          fld_info fld( ( vici->second )->fields[ j ] );
          string::size_type pos = fld.pfield.find( '+' );
-         if( pos != string::npos && fld.pfield.substr( pos + 1 ) != c_key_field )
+         if( !next.empty( ) && pos != string::npos && fld.pfield.substr( pos + 1 ) != c_key_field )
          {
             pair< string, string > item_info;
             string key_info( fld.pfield.substr( pos + 1 ) );

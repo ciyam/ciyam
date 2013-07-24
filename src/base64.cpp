@@ -13,17 +13,13 @@
 
 using namespace std;
 
-//#define DEBUG
-
 namespace
 {
 
 const char c_fillchar = '=';
-const string b64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-#if ( 'a' != 97 ) || ( 'A' != 65 )
-#  error This function has been only implemented for ASCII character platforms...
-#endif
+const string g_b64_table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
 char get_b64_char_value( char c )
 {
    if( c >= 'a' )
@@ -43,10 +39,6 @@ char get_b64_char_value( char c )
 string base64::encode( const string& input )
 {
    string str( ( ( input.length( ) + 2 ) / 3 ) * 4, '\0' );
-#ifdef DEBUG
-   cout << "input.length( ) = " << input.length( ) << endl;
-   cout << "str.length( ) = " << str.length( ) << endl;
-#endif
 
    char c;
    string::size_type i, o = 0;
@@ -55,14 +47,14 @@ string base64::encode( const string& input )
    for( i = 0; i < len; ++i )
    {
       c = ( input[ i ] >> 2 ) & 0x3f;
-      str[ o++ ] = b64_table[ c ];
+      str[ o++ ] = g_b64_table[ c ];
 
       c = ( input[ i ] << 4 ) & 0x3f;
 
       if( ++i < len )
          c |= ( input[ i ] >> 4 ) & 0x0f;
 
-      str[ o++ ] = b64_table[ c ];
+      str[ o++ ] = g_b64_table[ c ];
 
       if( i < len )
       {
@@ -70,7 +62,7 @@ string base64::encode( const string& input )
          if( ++i < len )
             c |= ( input[ i ] >> 6 ) & 0x03;
 
-         str[ o++ ] = b64_table[ c ];
+         str[ o++ ] = g_b64_table[ c ];
       }
       else
       {
@@ -81,15 +73,12 @@ string base64::encode( const string& input )
       if( i < len )
       {
          c = input[ i ] & 0x3f;
-         str[ o++ ] = b64_table[ c ];
+         str[ o++ ] = g_b64_table[ c ];
       }
       else
          str[ o++ ] = c_fillchar;
    }
 
-#ifdef DEBUG
-   cout << "o = " << o << endl;
-#endif
    return str;
 }
 
@@ -105,10 +94,6 @@ string base64::decode( const string& input )
    }
 
    string str( l, '\0' );
-#ifdef DEBUG
-   cout << "input.length( ) = " << input.length( ) << endl;
-   cout << "str.length( ) = " << str.length( ) << endl;
-#endif
 
    char c;
    char c1;
@@ -150,9 +135,6 @@ string base64::decode( const string& input )
       }
    }
 
-#ifdef DEBUG
-   cout << "o = " << o << endl;
-#endif
    return str;
 }
 

@@ -21,6 +21,8 @@
 
 #include "sha1.h"
 
+#include "utilities.h"
+
 using namespace std;
 
 //#define COMPILE_TESTBED_MAIN
@@ -246,6 +248,14 @@ sha1::sha1( const std::string& str )
    update( ( const unsigned char* )&str[ 0 ], str.length( ) );
 }
 
+sha1::sha1( const unsigned char* p_data, unsigned int length )
+{
+   p_impl = new impl;
+
+   init( );
+   update( p_data, length );
+}
+
 sha1::~sha1( )
 {
    delete p_impl;
@@ -291,7 +301,25 @@ void sha1::copy_digest_to_buffer( unsigned char* p_buffer )
       sha1_final( p_impl->digest, &p_impl->context );
    }
 
-   memcpy( p_impl->digest, p_buffer, 20 );
+   memcpy( p_buffer, p_impl->digest, 20 );
+}
+
+void sha1::get_digest_as_string( string& s )
+{
+   if( !p_impl->final )
+   {
+      p_impl->final = true;
+      sha1_final( p_impl->digest, &p_impl->context );
+   }
+
+   if( s.length( ) != 40 )
+      s = string( 40, '\0' );
+
+   for( size_t i = 0, j = 0; i < 20; i++ )
+   {
+      s[ j++ ] = ascii_digit( ( p_impl->digest[ i ] & 0xf0 ) >> 4 );
+      s[ j++ ] = ascii_digit( p_impl->digest[ i ] & 0x0f );
+   }
 }
 
 string sha1::get_digest_as_string( char separator )
@@ -311,6 +339,74 @@ string sha1::get_digest_as_string( char separator )
    }
 
    return outs.str( );
+}
+
+string hmac_sha1( const string& key, const string& message )
+{
+   string s( 40, '\0' );
+   unsigned char buffer[ 20 ];
+
+   hmac_sha1( key, message, buffer );
+
+   for( size_t i = 0, j = 0; i < 20; i++ )
+   {
+      s[ j++ ] = ascii_digit( ( buffer[ i ] & 0xf0 ) >> 4 );
+      s[ j++ ] = ascii_digit( buffer[ i ] & 0x0f );
+   }
+
+   return s;
+}
+
+void hmac_sha1( const string& key, const string& message, unsigned char* p_buffer )
+{
+   int key_len = key.length( );
+   int msg_len = message.length( );
+
+   const unsigned char* p_key = ( const unsigned char* )key.data( );
+   const unsigned char* p_msg = ( const unsigned char* )message.data( );
+
+   unsigned char k_ipad[ 65 ];
+   unsigned char k_opad[ 65 ];
+
+   unsigned char tk[ 20 ];
+   unsigned char tk2[ 20 ];
+   unsigned char bufferIn[ 1024 ];
+   unsigned char bufferOut[ 1024 ];
+
+   if( key_len > 64 )
+   {
+      sha1 hash( key );
+      hash.copy_digest_to_buffer( tk );
+
+      p_key = tk;
+      key_len = 64;
+   }
+ 
+   memset( k_ipad, 0, 65 );
+   memset( k_opad, 0, 65 );
+
+   memcpy( k_ipad, p_key, key_len );
+   memcpy( k_opad, p_key, key_len );
+ 
+   for( int i = 0; i < 64; i++ )
+   {
+      k_ipad[ i ] ^= 0x36;
+      k_opad[ i ] ^= 0x5c;
+   }
+ 
+   memset( bufferIn, 0x00, 1024 );
+   memcpy( bufferIn, k_ipad, 64 );
+   memcpy( bufferIn + 64, p_msg, msg_len );
+ 
+   sha1 hash1( bufferIn, 64 + msg_len );
+   hash1.copy_digest_to_buffer( tk2 );
+
+   memset( bufferOut, 0x00, 1024 );
+   memcpy( bufferOut, k_opad, 64 );
+   memcpy( bufferOut + 64, tk2, 20 );
+ 
+   sha1 hash2( bufferOut, 64 + 20 );
+   hash2.copy_digest_to_buffer( p_buffer );
 }
 
 #ifdef COMPILE_TESTBED_MAIN

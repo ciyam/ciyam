@@ -21,6 +21,8 @@
 #include "crypt_stream.h"
 
 #include "md5.h"
+#include "sha1.h"
+#include "base32.h"
 #include "base64.h"
 #include "sha256.h"
 #include "utilities.h"
@@ -148,14 +150,38 @@ string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_o
 }
 #endif
 
-string get_totp( const string& secret, int freq )
+// NOTE: This TOTP algorithm is in accordance with RFC 6238.
+string get_totp( const string& base32_encoded_secret, int freq )
 {
-   // NOTE: Platforms with a 32 bit time_t will suffer from the 2038 *bug*.
-   time_t tm( time( 0 ) / freq );
+   string totp, secret = base32::decode( base32_encoded_secret );
 
-   sha256 hash( secret + to_string( tm ) );
+   uint64_t tm = time( 0 ) / freq;
 
-   return lower( hash.get_digest_as_string( ).substr( 0, 6 ) );
+   uint8_t challenge[ 8 ];
+   for( int i = 8; i--; tm >>= 8 )
+      challenge[ i ] = tm;
+
+   string message( ( const char* )&challenge[ 0 ], 8 );
+
+   uint8_t hash[ 20 ];
+   hmac_sha1( secret, message, hash );
+
+   int offset = hash[ 19 ] & 0xf;
+   unsigned int truncatedHash = 0;
+   for( int i = 0; i < 4; ++i )
+   {
+      truncatedHash <<= 8;
+      truncatedHash |= hash[ offset + i ];
+   }
+
+   truncatedHash &= 0x7fffffff;
+   truncatedHash %= 1000000;
+
+   totp = to_string( truncatedHash );
+   while( totp.length( ) < 6 )
+      totp = '0' + totp;
+
+   return totp;
 }
 
 string password_encrypt( const string& password, const string& key, bool use_ssl, bool add_salt )
