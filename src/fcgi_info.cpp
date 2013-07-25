@@ -124,6 +124,7 @@ const char* const c_attribute_user_parent = "user_parent";
 const char* const c_attribute_user_active = "user_active";
 const char* const c_attribute_user_select = "user_select";
 const char* const c_attribute_user_slevel = "user_slevel";
+const char* const c_attribute_user_unique = "user_unique";
 const char* const c_attribute_embed_images = "embed_images";
 const char* const c_attribute_encrypt_data = "encrypt_data";
 const char* const c_attribute_image_height = "image_height";
@@ -709,6 +710,8 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       }
 
       info.user_security_level_id = reader.read_opt_attribute( c_attribute_user_slevel );
+
+      info.user_unique_field_id = reader.read_opt_attribute( c_attribute_user_unique );
       info.user_gpg_install_proc_id = reader.read_opt_attribute( c_attribute_user_gpg_install );
 
       info.home_info = reader.read_attribute( c_attribute_home_info );

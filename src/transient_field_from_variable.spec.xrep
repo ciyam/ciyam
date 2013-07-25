@@ -1,9 +1,16 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_from_variable)] `{`$arg_id`}
+`{`@eq`(`$arg_session`,`'true`'`)\
+   if( !get_session_variable( "`{`$arg_variable`}" ).empty( ) )
+`,\
    if( !get_obj( ).get_variable( "`{`$arg_variable`}" ).empty( ) )
+`}\
       get_obj( ).`{`$arg_field`}( from_string< typeof(
+`{`@eq`(`$arg_session`,`'true`'`)\
+       get_obj( ).`{`$arg_field`}( ) ) >( get_session_variable( "`{`$arg_variable`}" ) ) );
+`,\
        get_obj( ).`{`$arg_field`}( ) ) >( get_obj( ).get_variable( "`{`$arg_variable`}" ) ) );
-`{`!`@eq`(`$arg_sfield`,`'`'`)\
+`}`{`!`@eq`(`$arg_sfield`,`'`'`)\
    else
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) );
 `}\

@@ -143,7 +143,7 @@ void CIYAM_BASE_DECL_SPEC list_sessions( std::ostream& os, bool inc_dtms = true 
 
 command_handler CIYAM_BASE_DECL_SPEC& get_session_command_handler( );
 
-void CIYAM_BASE_DECL_SPEC set_last_session_cmd( const std::string& cmd );
+void CIYAM_BASE_DECL_SPEC set_last_session_cmd_and_hash( const std::string& cmd, const std::string& parameter_info );
 
 void CIYAM_BASE_DECL_SPEC condemn_session(
  size_t sess_id, int num_seconds, bool force_uncapture, bool wait_until_term );

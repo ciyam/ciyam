@@ -502,6 +502,8 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
 {
    bool max_size_exceeded = false;
 
+   s.set_no_delay( );
+   
    if( d == e_ft_direction_send )
    {
       ifstream inpf( name.c_str( ), ios::binary );

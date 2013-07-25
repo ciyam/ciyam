@@ -955,13 +955,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    if( command != c_cmd_ciyam_session_quit && !socket_handler.is_restoring( ) && !socket.set_delay( ) )
       issue_warning( "socket set_delay failure" );
 
-   srand( time( 0 ) );
-
    set_dtm( "" );
    set_uid( "" );
    set_tz_abbr( "" );
    set_tmp_directory( "" );
-   set_last_session_cmd( command );
+
+   set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
    try
    {
@@ -1662,6 +1661,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
+         set_last_session_cmd_and_hash( command, next_command );
+
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
 
@@ -1835,6 +1836,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          set_dtm_if_now( dtm, next_command );
 
          transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
+
+         set_last_session_cmd_and_hash( command, next_command );
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
@@ -2019,6 +2022,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
+         set_last_session_cmd_and_hash( command, next_command );
+
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
          mclass = resolve_class_id( module, mclass, &socket_handler.get_transformations( ) );
 
@@ -2127,6 +2132,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
 
             transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
+
+            set_last_session_cmd_and_hash( command, next_command );
          }
 
          module = resolve_module_id( module, &socket_handler.get_transformations( ) );
@@ -3078,7 +3085,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         {
                            string bulk_init_cmd( "perform_bulk_ops init " );
 
-                           bulk_init_cmd += date_time::standard( ).as_string( false, false ) + " ";
+                           bulk_init_cmd += "20011111111002 ";
                            bulk_init_cmd += module_list[ i ] + " " + init_classes[ j ] + " ";
                            bulk_init_cmd += module_list[ i ] + "_" + init_classes[ j ] + ".csv";
 
