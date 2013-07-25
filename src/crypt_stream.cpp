@@ -184,6 +184,11 @@ string get_totp( const string& base32_encoded_secret, int freq )
    return totp;
 }
 
+string get_totp_secret( const string& user_unique, const string& system_unique )
+{
+   return base32::encode( sha256( user_unique + system_unique ).get_digest_as_string( ).substr( 0, 20 ) );
+}
+
 string password_encrypt( const string& password, const string& key, bool use_ssl, bool add_salt )
 {
    string s( password );
@@ -199,8 +204,6 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
    // disguised from non-technical user observation.
    if( !use_ssl )
    {
-      srand( time( 0 ) );
-
       char c( '\0' );
       while( s.length( ) < 20 )
       {

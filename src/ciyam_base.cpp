@@ -152,7 +152,7 @@ const char* const c_session_variable_class = "@class";
 const char* const c_session_variable_module = "@module";
 const char* const c_session_variable_storage = "@storage";
 const char* const c_session_variable_tz_abbr = "@tz_abbr";
-
+const char* const c_session_variable_cmd_hash = "@cmd_hash";
 const char* const c_session_variable_val_error = "@val_error";
 
 const char* const c_special_variable_uid = "@uid";
@@ -252,8 +252,6 @@ struct session
    {
       dtm_created = date_time::local( );
       dtm_last_cmd = date_time::local( );
-
-      srand( time( 0 ) );
 
       variables.insert( make_pair( "@uuid", uuid( ).as_string( ) ) );
    }
@@ -4444,7 +4442,7 @@ command_handler& get_session_command_handler( )
    return gtp_session->cmd_handler;
 }
 
-void set_last_session_cmd( const string& cmd )
+void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_info )
 {
    guard g( g_mutex );
 
@@ -4452,6 +4450,17 @@ void set_last_session_cmd( const string& cmd )
    {
       gtp_session->last_cmd = cmd;
       gtp_session->dtm_last_cmd = date_time::local( );
+
+      string::size_type pos = parameter_info.find( cmd );
+      if( pos != 0 )
+         pos = 0;
+      else
+         pos += cmd.length( );
+
+      string s( cmd + parameter_info.substr( pos ) );
+      s = lower( sha1( s ).get_digest_as_string( ) );
+
+      set_session_variable( c_session_variable_cmd_hash, s.substr( 0, 20 ) );
    }
 }
 

@@ -470,6 +470,7 @@ int main( int argc, char* argv[ ] )
 #endif
 
       init_globals( );
+      srand( time( 0 ) );
 
 #ifdef USE_MAC_LICENSE
       // NOTE: Make sure that server has the correct registration key.
