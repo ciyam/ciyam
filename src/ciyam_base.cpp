@@ -81,6 +81,8 @@ const size_t c_iteration_row_cache_limit = 100;
 const int c_max_lock_attempts = 20;
 const int c_lock_attempt_sleep_time = 100;
 
+const int c_loop_variable_digits = 8;
+
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 
@@ -156,6 +158,7 @@ const char* const c_session_variable_cmd_hash = "@cmd_hash";
 const char* const c_session_variable_val_error = "@val_error";
 
 const char* const c_special_variable_uid = "@uid";
+const char* const c_special_variable_loop = "@loop";
 const char* const c_special_variable_is_quiet = "@quiet";
 const char* const c_special_variable_was_cloned = "@cloned";
 const char* const c_special_variable_execute_return = "@return";
@@ -4838,6 +4841,10 @@ string get_special_var_name( special_var var )
    {
       case e_special_var_uid:
       s = string( c_special_variable_uid );
+      break;
+
+      case e_special_var_loop:
+      s = string( c_special_variable_loop );
       break;
 
       case e_special_var_is_quiet:
@@ -9744,6 +9751,8 @@ bool perform_instance_iterate( class_base& instance,
             instance_accessor.set_is_in_iteration( true, direction == e_iter_direction_forwards );
          }
 
+         instance.set_variable( c_special_variable_loop, int_to_comparable_string( 0, false, c_loop_variable_digits ) );
+
          found = fetch_instance_from_db( instance,
           instance_accessor.select_fields( ), instance_accessor.select_columns( ), skip_after_fetch );
 
@@ -9879,6 +9888,9 @@ bool perform_instance_iterate_next( class_base& instance )
          fetch_instance_from_row_cache( instance, skip_after_fetch );
       }
    }
+
+   int loop_num = atoi( instance.get_variable( c_special_variable_loop ).c_str( ) );
+   instance.set_variable( c_special_variable_loop, int_to_comparable_string( ++loop_num, false, c_loop_variable_digits ) );
 
    if( found || cache_depleted )
       return found;

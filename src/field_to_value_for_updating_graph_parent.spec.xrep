@@ -13,7 +13,14 @@
       `{`$module_name`}_`{`$arg_spclass`}* p_parent = dynamic_cast< `{`$module_name`}_`{`$arg_spclass`}* >( get_obj( ).get_graph_parent( ) );
 
       if( p_parent && p_parent->get_is_updating( )`{`!`@eq`(`$arg_scfield`,`'`'`) && p_parent->`{`$arg_scfield`}( )`} )
+`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_oscfield`,`'`'`)\
+      {
+`}\
          get_obj( ).`{`$arg_field`}( `{`$value`} );
+`{`!`@eq`(`$arg_ofield`,`'`'`)`&`!`@eq`(`$arg_oscfield`,`'`'`)\
+         p_parent->`{`$arg_oscfield`}( get_obj( ).`{`$arg_ofield`}( ) );
+      }
+`}\
    }
    // [(finish field_to_value_for_updating_graph_parent)] `{`$arg_id`}
 `}

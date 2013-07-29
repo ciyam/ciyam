@@ -15,6 +15,12 @@
          {
             get_obj( ).child_`{`$arg_child`}( ).op_update( );
             get_obj( ).child_`{`$arg_child`}( ).op_apply( );
+`{`@eq`(`$arg_set_loopvar`,`'true`'`)
+            get_obj( ).set_variable( get_special_var_name( e_special_var_loop ),
+             get_obj( ).child_`{`$arg_child`}( ).get_variable( get_special_var_name( e_special_var_loop ) ) );
+`}`{`!`@eq`(`$arg_procedure`,`'`'`)
+            get_obj( ).`{`$arg_procedure`}( );
+`}\
          }
       } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
    }
