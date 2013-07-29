@@ -610,6 +610,7 @@ const char* const c_display_incorrect_duration_format = "Incorrect duration form
 const char* const c_display_maximum_text_limit_reached = "Maximum text limit reached.";
 const char* const c_display_password_verification_incorrect = "Password verification incorrect.";
 const char* const c_display_your_session_is_about_to_expire = "Your session is about to expire. Click OK to continue.";
+const char* const c_display_your_session_has_become_invalid = "Your session has become invalid. This window should now be closed.";
 const char* const c_display_selected_records_will_be_removed = "Selected record(s) will be permanently removed. Click OK to confirm.";
 
 #endif

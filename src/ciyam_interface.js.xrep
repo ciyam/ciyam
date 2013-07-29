@@ -67,6 +67,7 @@ var displayIncorrectNumericFormat = 'Incorrect numeric format.';
 var displayIncorrectDurationFormat = 'Incorrect duration format.';
 var displayMaximumTextLimitReached = 'Maximum text limit reached.';
 var displayYourSessionIsAboutToExpire = 'Your session is about to expire. Click OK to continue.';
+var displayYourSessionHasBecomeInvalid = 'Your session has become invalid. This window should now be closed.';
 var displaySelectedRecordsWillBeRemoved = 'Selected record(s) will be permanently removed. Click OK to confirm.';
 var displayPasswordVerificationIncorrect = 'Password verification incorrect.';
 
@@ -717,7 +718,10 @@ function process( )
          str = response + str;
       }
 
-      document.getElementById( 'content' ).innerHTML = str;
+      if( str.indexOf( "extra_content" ) < 0 )
+         alert( displayYourSessionHasBecomeInvalid );
+      else
+         document.getElementById( 'content' ).innerHTML = str;
    }
    else
    {
@@ -756,7 +760,10 @@ function process( )
          str = utf8_decode( decrypted ) + str;
       }
 
-      document.getElementById( 'content' ).innerHTML = str;
+      if( str.indexOf( "extra_content" ) < 0 )
+         alert( displayYourSessionHasBecomeInvalid );
+      else
+         document.getElementById( 'content' ).innerHTML = str;
    }
 
    if( typeof sessionStorage == 'object' )
