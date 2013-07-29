@@ -4992,6 +4992,9 @@ void request_handler::process_request( )
             extra_content_func += "displayYourSessionIsAboutToExpire = '"
              + replaced( GDS( c_display_your_session_is_about_to_expire ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
+            extra_content_func += "displayYourSessionHasBecomeInvalid = '"
+             + replaced( GDS( c_display_your_session_has_become_invalid ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
+
             extra_content_func += "displaySelectedRecordsWillBeRemoved = '"
              + replaced( GDS( c_display_selected_records_will_be_removed ), "\"", "\\x22", "'", "\\x27" ) + "';\n";
 
