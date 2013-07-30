@@ -59,9 +59,7 @@ const int c_num_handlers = 10;
 const char* const c_prefix_name = "name=";
 const char* const c_prefix_filename = "filename=";
 
-#ifndef _WIN32
-const char* const c_kill_script = "upload.kill.sh";
-#else
+#ifdef _WIN32
 const char* const c_kill_script = "upload.kill.bat";
 #endif
 
@@ -75,25 +73,21 @@ class pid_handler : public thread
 
 void pid_handler::on_start( )
 {
+#ifdef _WIN32
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );
-
+#endif
    while( true )
    {
       msleep( 1000 );
 
+#ifdef _WIN32
       if( !file_exists( c_kill_script ) )
       {
          ofstream outf( c_kill_script );
-#ifdef _WIN32
          outf << "TASKKILL /F /PID " << get_pid( ) << '\n';
-#else
-         outf << "kill -9 " << get_pid( ) << '\n';
-         outf.close( );
-
-         file_perms( c_kill_script, "rwxrwxrwx" );
-#endif
       }
+#endif
    }
 }
 
@@ -452,9 +446,10 @@ int main( int /*argc*/, char* argv[ ] )
       rc = 2;
    }
 
+#ifdef _WIN32
    if( file_exists( c_kill_script ) )
       file_remove( c_kill_script );
-
+#endif
    return rc;
 }
 
