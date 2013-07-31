@@ -31,7 +31,7 @@ else
 
  pushd $web_path
  echo Adding application files to backup...
- ./bundle -r -q -y "$backup_path/$CIYAM_STORAGE.backup" files/*
+ "$backup_path/bundle" -r -q -y "$backup_path/$CIYAM_STORAGE.backup" files/*
  popd
 
  echo Finished backup...
