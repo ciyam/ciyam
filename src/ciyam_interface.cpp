@@ -666,11 +666,14 @@ void timeout_handler::on_start( )
 
          if( tm_now - ( si->second )->tm_last_request > c_timeout_seconds )
          {
-            LOG_TRACE( "session timeout" );
-
-            LOG_TRACE( "[logout: "
-             + ( si->second->user_name.empty( ) ? si->second->user_id : si->second->user_name )
-             + " at " + date_time::local( ).as_string( true, false ) + " from " + si->second->ip_addr + "]" );
+            // KLUDGE: For some unknown reason occasionally this code is being executed for
+            // anonymous sessions (this should be investigated further at some stage).
+            if( !si->second->user_id.empty( ) || !si->second->user_name.empty( ) )
+            {
+               LOG_TRACE( "[timeout: "
+                + ( si->second->user_name.empty( ) ? si->second->user_id : si->second->user_name )
+                + " at " + date_time::local( ).as_string( true, false ) + " from " + si->second->ip_addr + "]" );
+            }
 
             remove_session_temp_directory( si->second->session_id );
 
