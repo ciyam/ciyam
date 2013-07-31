@@ -109,6 +109,8 @@ const char* const c_local_ip_addr = "127.0.0.1";
 
 const char* const c_identity_file = "identity.txt";
 
+const char* const c_stop_file = "ciyam_interface.stop";
+
 #ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
 #endif
@@ -274,12 +276,15 @@ void release_socket( tcp_socket* p_socket )
    }
 }
 
-void disconnect_sockets( )
+void disconnect_sockets( bool released_only )
 {
    guard g( g_socket_mutex );
 
    for( size_t i = 0; i < g_sockets.size( ); i++ )
    {
+      if( released_only && g_sockets[ i ].first )
+         continue;
+
       if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
       {
          g_sockets[ i ].second->close( );
@@ -677,10 +682,14 @@ void timeout_handler::on_start( )
       for( size_t i = 0; i < dead_sessions.size( ); i++ )
          g_sessions.erase( dead_sessions[ i ] );
 
+#ifdef USE_MULTIPLE_REQUEST_HANDLERS
+      if( file_exists( c_stop_file ) )
+         disconnect_sockets( true );
+#endif
       if( g_sessions.empty( ) )
       {
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
-         disconnect_sockets( );
+         disconnect_sockets( false );
 #else
          if( g_has_connected )
          {
@@ -952,6 +961,13 @@ void request_handler::process_request( )
 
       bool is_authorised = false;
       bool is_login_screen = false;
+
+      if( file_exists( c_stop_file ) )
+      {
+         msleep( 3000 );
+         if( file_exists( c_stop_file ) )
+            throw runtime_error( GDS( c_display_under_maintenance_try_again_later ) );
+      }
 
       string app_dir_name( lower( get_storage_info( ).storage_name ) );
 
@@ -5251,11 +5267,6 @@ void request_handler::process_request( )
       destroy_session( session_id );
    else if( p_session_info )
       p_session_info->locked = false;
-
-#ifdef USE_MULTIPLE_REQUEST_HANDLERS
-   if( get_num_sessions( ) == 0 )
-      disconnect_sockets( );
-#endif
 }
 
 int main( int argc, char* argv[ ] )
