@@ -16,26 +16,33 @@ shift
 :next
 
 if '%1' == '' goto usage
+if '%2' == '' goto usage
+
 set CIYAM_STORAGE=%1
 
-:next
+if "%WEBDIR%" == "" goto error1
+
 echo Starting backup...
+call touch.bat %WEBDIR%/%2/ciyam_interface.stop
 echo ^<ciyam_backup.cin %opt%>~ciyam_backup.cin
 ciyam_client -quiet -no_prompt< ~ciyam_backup.cin
 del ~ciyam_backup.cin
+del %WEBDIR%\%2\ciyam_interface.stop
 
-if '%2' == '' goto next2
-pushd %2
+pushd %WEBDIR%\%2
 echo Adding application files to backup...
-bundle "%backup_path%\%1.backup" -r -q files/*
+bundle -r -q -y "%backup_path%\%1.backup" files/*
 popd
 
-:next2
 echo Finished backup...
 goto end
 
+:error1
+echo Error: Missing environment variable 'WEBDIR'.
+goto end
+
 :usage
-echo Usage: ciyam_backup [[-trunc]] [app name] [[web path]]
+echo Usage: ciyam_backup [[-trunc]] [app name] [app dir]
 
 :end
 endlocal

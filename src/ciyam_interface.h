@@ -575,6 +575,7 @@ const char* const c_display_session_logged_into_other_module = "Cannot access th
 const char* const c_display_session_logged_into_other_module_parm_href = "{@href}";
 const char* const c_display_your_session_has_been_timed_out = "Your session has been timed out.";
 const char* const c_display_your_session_has_been_terminated = "Your session has been terminated by the server";
+const char* const c_display_under_maintenance_try_again_later = "Server is under maintenance - please try again later.";
 const char* const c_display_email_not_found_in_gpg_public_key = "Email address was not found in this GPG public key. Please try again with a another GPG public key.";
 const char* const c_display_account_has_already_been_activated = "Account has already been activated - please login with your User Id and Password.";
 const char* const c_display_open_up_openid_account_introduction = "Please enter your desired User Name and Account Type for your OpenID account.";
