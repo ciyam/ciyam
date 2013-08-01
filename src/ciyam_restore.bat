@@ -16,9 +16,13 @@ shift
 :next
 
 if '%1' == '' goto usage
+if '%2' == '' goto usage
+
 set CIYAM_STORAGE=%1
 
-if not exist %1.backup.bun.gz goto error1
+if "%WEBDIR%" == "" goto error1
+
+if not exist %1.backup.bun.gz goto error2
 
 :next
 echo Starting restore...
@@ -26,22 +30,23 @@ echo ^<ciyam_restore.cin %opt% >~ciyam_restore.cin
 ciyam_client -quiet -no_prompt <~ciyam_restore.cin
 del ~ciyam_restore.cin
 
-if '%2' == '' goto next2
-pushd %2
-rmdir /s /q files
+pushd %WEBDIR%\%2
 unbundle -o "%backup_path%\%1.backup.bun.gz" files/*
 popd
 
-:next2
 echo Finished restore...
 goto end
 
 :error1
+echo Error: Missing environment variable 'WEBDIR'.
+goto end
+
+:error2
 echo Error: Backup file '%1.backup.bun.gz' not found.
 goto end
 
 :usage
-echo Usage: ciyam_restore [[-rebuild]] [app name] [[web [path]]
+echo Usage: ciyam_restore [[-rebuild]] [app name] [app dir]
 
 :end
 endlocal
