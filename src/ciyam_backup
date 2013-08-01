@@ -31,7 +31,11 @@ else
 
  pushd $web_path
  echo Adding application files to backup...
- "$backup_path/bundle" -r -q -y "$backup_path/$CIYAM_STORAGE.backup" "files/*" -x "files/100/105100/*" "files/100/106100/*"
+ if [ ! "$CIYAM_STORAGE" = "Meta" ]; then
+  "$backup_path/bundle" -r -q -y "$backup_path/$CIYAM_STORAGE.backup" "files/*"
+ else
+  "$backup_path/bundle" -r -q -y "$backup_path/$CIYAM_STORAGE.backup" "files/*" -x "files/100/105100/*" "files/100/106100/*"
+ fi
  popd
 
  echo Finished backup...

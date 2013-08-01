@@ -4,18 +4,22 @@
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
-if [ $# -lt 1 -o $# -gt 3 ]; then
- echo Usage: ciyam_restore [[-rebuild]] [app name] [[web path]]
+if [ $# -lt 2 -o $# -gt 3 ]; then
+ echo Usage: ciyam_restore [[-rebuild]] [app name] [app dir]
+elif [ $# -lt 3 ] && [ "$1" = "-rebuild" ]; then
+ echo Usage: ciyam_restore [[-rebuild]] [app name] [app dir]
+elif [ "$WEBDIR" = "" ]; then
+ echo Error: Missing environment variable 'WEBDIR'.
 else
  opt=
  export CIYAM_STORAGE=$1
- web_path=$2
+ web_path=$WEBDIR/$2
  backup_path=$PWD
 
  if [ "$1" = "-rebuild" ]; then
   opt=$1
   export CIYAM_STORAGE=$2
-  web_path=$3
+  web_path=$WEBDIR/$3
  fi
 
  if [ -f "$backup_path/$CIYAM_STORAGE.backup.bun.gz" ]; then
@@ -24,14 +28,12 @@ else
   ./ciyam_client -quiet -no_prompt <~ciyam_restore.cin
   rm ~ciyam_restore.cin
 
-  if [ ! "$web_path" = "" ]; then
-   pushd $web_path
-   rm -r -f files
-   ./unbundle -o "$backup_path/$CIYAM_STORAGE.bun.gz" files/*
-   popd
-   echo
-   echo NOTE: Use "chmod -R a+rw $web_path/files" if required.
-  fi
+  pushd $web_path
+  ./unbundle -o "$backup_path/$CIYAM_STORAGE.bun.gz" files/*
+  popd
+  echo
+  echo NOTE: Change permissions to "$web_path/files/*" if required.
+
   echo Finished restore...
  else
   echo Error: Backup file \'$CIYAM_STORAGE.backup.bun.gz\' not found.
