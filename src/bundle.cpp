@@ -675,8 +675,9 @@ int main( int argc, char* argv[ ] )
    {
       g_cwd = get_cwd( );
 
-#ifdef _WIN32
       string::size_type pos;
+
+#ifdef _WIN32
       while( ( pos = g_cwd.find( '\\' ) ) != string::npos )
          g_cwd[ pos ] = '/';
 #endif
