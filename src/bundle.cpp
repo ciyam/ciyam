@@ -274,6 +274,13 @@ void process_directory( const string& directory, const string& filespec_path,
       fs_iterator ffsi( dfsi.get_path_name( ), &ff );
 
       string path_name( dfsi.get_path_name( ) );
+
+#ifdef _WIN32
+      string::size_type pos;
+      while( ( pos = path_name.find( '\\' ) ) != string::npos )
+         path_name[ pos ] = '/';
+#endif
+
       if( path_name.find( filespec_path ) == 0 )
          path_name.erase( 0, filespec_path.length( ) );
 
@@ -281,12 +288,6 @@ void process_directory( const string& directory, const string& filespec_path,
          path_name = directory;
       else
          path_name = directory + path_name;
-
-#ifdef _WIN32
-      string::size_type pos;
-      while( ( pos = path_name.find( "\\" ) ) != string::npos )
-         path_name[ pos ] = '/';
-#endif
 
       bool has_output_directory = false;
 
@@ -674,11 +675,14 @@ int main( int argc, char* argv[ ] )
    {
       g_cwd = get_cwd( );
 
-#ifndef _WIN32
-      string::size_type pos = g_cwd.find_last_of( "/" );
-#else
-      string::size_type pos = g_cwd.find_last_of( "/\\" );
+#ifdef _WIN32
+      string::size_type pos;
+      while( ( pos = g_cwd.find( '\\' ) ) != string::npos )
+         g_cwd[ pos ] = '/';
 #endif
+
+      pos = g_cwd.find_last_of( '/' );
+
       if( is_root_path( g_cwd ) )
          throw runtime_error( "cannot created a bundle in the root directory" );
 
@@ -719,18 +723,28 @@ int main( int argc, char* argv[ ] )
 
             if( !next.empty( ) )
             {
+               string::size_type wpos = next.find_first_of( "?*" );
+
                string filespec_path;
-               if( !absolute_path( next, filespec_path ) )
+               if( !absolute_path( next.substr( 0, wpos ), filespec_path ) )
                   throw runtime_error( "unable to determine absolute path for '" + next + "'" );
+
+#ifdef _WIN32
+               string::size_type pos;
+               while( ( pos = filespec_path.find( '\\' ) ) != string::npos )
+                  filespec_path[ pos ] = '/';
+#endif
 
                if( is_root_path( filespec_path ) )
                   throw runtime_error( "cannot bundle directory '" + next + "' (need to specify a non-root directory)" );
 
-#ifndef _WIN32
-               string::size_type rpos = filespec_path.find_last_of( "/" );
+               if( wpos != string::npos )
+#ifdef _WIN32
+                  filespec_path += next.substr( wpos );
 #else
-               string::size_type rpos = filespec_path.find_last_of( "/\\" );
+                  filespec_path += "/" + next.substr( wpos );
 #endif
+               string::size_type rpos = filespec_path.find_last_of( '/' );
 
                string filename_filter;
                if( rpos != string::npos )

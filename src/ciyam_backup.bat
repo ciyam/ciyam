@@ -31,7 +31,7 @@ del %WEBDIR%\%2\ciyam_interface.stop
 
 pushd %WEBDIR%\%2
 echo Adding application files to backup...
-"%backup_path%\bundle" -r -q -y "%backup_path%\%1.backup" files/*
+"%backup_path%\bundle" -r -q -y "%backup_path%\%1.backup" files/* -x files/100/105100/* files/100/106100/*
 popd
 
 echo Finished backup...

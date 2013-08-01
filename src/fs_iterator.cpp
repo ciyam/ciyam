@@ -233,13 +233,11 @@ bool fs_iterator::has_next( )
                   DIR* p_dir = opendir( path.c_str( ) );
                   if( p_dir )
                   {
-                     struct dirent* p_dirent = readdir( p_dir );
-
                      name = next;
                      full_name = path;
                      path_name = full_name;
 
-                     directories.push( new directory_info( p_dir, path, p_dirent ) );
+                     directories.push( new directory_info( p_dir, path, 0 ) );
 
                      is_directory = true;
                      found = true;
