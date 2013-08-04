@@ -996,6 +996,9 @@ std::string CLASS_BASE_DECL_SPEC hash_sha256( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC decrypt( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC encrypt( const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC totp_pin( const std::string& secret );
+std::string CLASS_BASE_DECL_SPEC totp_secret( const std::string& unique );
+
 std::string CLASS_BASE_DECL_SPEC valid_utf8_filename( const std::string& str );
 std::string CLASS_BASE_DECL_SPEC valid_non_utf8_filename( const std::string& str );
 

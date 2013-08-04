@@ -126,6 +126,8 @@ std::string CIYAM_BASE_DECL_SPEC encrypt_password(
 std::string CIYAM_BASE_DECL_SPEC decrypt_password(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 
+std::string CIYAM_BASE_DECL_SPEC totp_secret_key( const std::string& unique );
+
 int CIYAM_BASE_DECL_SPEC exec_system( const std::string& cmd, bool async = false );
 
 int CIYAM_BASE_DECL_SPEC run_script( const std::string& script_name, bool async = true );

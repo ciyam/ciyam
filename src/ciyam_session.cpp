@@ -2952,6 +2952,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             socket_handler.set_restore_error( "" );
             auto_ptr< restorable< bool > > ap_restoring( socket_handler.set_restoring( ) );
 
+            set_session_variable( get_special_var_name( e_special_var_is_in_restore ), "1" );
+
             time_t ts;
             string next;
             size_t line = 0;
@@ -3181,6 +3183,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             term_storage( handler );
             socket_handler.get_transformations( ).clear( );
+
+            set_session_variable( get_special_var_name( e_special_var_is_in_restore ), "0" );
          }
          catch( ... )
          {
@@ -3198,6 +3202,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             term_storage( handler );
             socket_handler.get_transformations( ).clear( );
+
+            set_session_variable( get_special_var_name( e_special_var_is_in_restore ), "0" );
+
             throw;
          }
       }

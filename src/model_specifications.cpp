@@ -10680,6 +10680,8 @@ void update_children_specification::add_specification_data( model& m, specificat
    spec_data.data_pairs.push_back( make_pair( "tvalue", "" ) );
    spec_data.data_pairs.push_back( make_pair( "after_self", "true" ) );
    spec_data.data_pairs.push_back( make_pair( "not_var", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "set_loopvar", "" ) );
 }
 
 string update_children_specification::static_class_name( ) { return "update_children"; }

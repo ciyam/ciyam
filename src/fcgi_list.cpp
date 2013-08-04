@@ -260,6 +260,8 @@ void setup_list_fields( list_source& list,
          }
          else if( extra_data.count( c_field_extra_mailto ) )
             list.mailto_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_qr_code ) )
+            list.qr_code_fields.insert( value_id );
 
          if( extra_data.count( c_field_extra_filename ) )
             list.filename_field = field_id;
@@ -3180,6 +3182,49 @@ void output_list_form( ostream& os,
 
                   is_image = true;
                }
+            }
+
+            if( !cell_data.empty( ) && source.qr_code_fields.count( source_value_id ) )
+            {
+               string temp_file_name( c_files_directory );
+               temp_file_name += "/" + string( c_tmp_directory );
+               temp_file_name += "/" + session_id;
+
+               ostringstream outs;
+               outs << ifmt( 6 ) << row;
+               temp_file_name += "/" + outs.str( ) + source_value_id + ".png";
+
+               string cmd( "qrencode -o " + temp_file_name + " \"" + cell_data + "\"" );
+#ifdef _WIN32
+               replace( cmd, "&", "^&" );
+#endif
+               system( cmd.c_str( ) );
+
+               bool is_href = false;
+               if( !embed_images )
+               {
+                  is_href = true;
+                  os << "<a href=\"" << temp_file_name << "\" target=\"_blank\">";
+               }
+
+               string image_src( temp_file_name );
+               if( embed_images )
+               {
+                  string buffer( buffer_file( temp_file_name ) );
+                  image_src = "data:image/png;base64," + base64::encode( buffer );
+               }
+
+               os << "<img src=\"" << image_src;
+
+               if( !embed_images )
+                  os << "\" width=\"150\" height=\"150\"";
+
+               os << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
+
+               if( is_href )
+                  os << "</a>";
+
+               is_image = true;
             }
 
             if( source.enum_fields.count( source_value_id ) )

@@ -130,8 +130,10 @@ const char* const c_attribute_encrypt_data = "encrypt_data";
 const char* const c_attribute_image_height = "image_height";
 const char* const c_attribute_storage_name = "storage_name";
 const char* const c_attribute_module_prefix = "module_prefix";
+const char* const c_attribute_user_has_auth = "user_has_auth";
 const char* const c_attribute_checkbox_bools = "checkbox_bools";
 const char* const c_attribute_filesize_limit = "filesize_limit";
+const char* const c_attribute_user_pin_value = "user_pin_value";
 const char* const c_attribute_print_list_opts = "print_list_opts";
 const char* const c_attribute_user_gpg_install = "user_gpg_install";
 
@@ -185,7 +187,10 @@ void module_info::clear( )
    user_other_field_id.erase( );
    user_parent_field_id.erase( );
    user_active_field_id.erase( );
-   user_security_level_id.erase( );
+   user_slevel_field_id.erase( );
+   user_unique_field_id.erase( );
+   user_has_auth_field_id.erase( );
+   user_pin_value_field_id.erase( );
    user_gpg_install_proc_id.erase( );
 
    user_select_perm.erase( );
@@ -325,6 +330,7 @@ session_info::session_info( storage_info& si )
  :
  locked( false ),
  logged_in( false ),
+ needs_pin( false ),
  checksum_serial( 0 ),
  is_openid( false ),
  is_admin_user( false ),
@@ -709,9 +715,11 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
             info.user_select_perm = user_select_info.substr( pos + 1 );
       }
 
-      info.user_security_level_id = reader.read_opt_attribute( c_attribute_user_slevel );
+      info.user_slevel_field_id = reader.read_opt_attribute( c_attribute_user_slevel );
 
       info.user_unique_field_id = reader.read_opt_attribute( c_attribute_user_unique );
+      info.user_has_auth_field_id = reader.read_opt_attribute( c_attribute_user_has_auth );
+      info.user_pin_value_field_id = reader.read_opt_attribute( c_attribute_user_pin_value );
       info.user_gpg_install_proc_id = reader.read_opt_attribute( c_attribute_user_gpg_install );
 
       info.home_info = reader.read_attribute( c_attribute_home_info );

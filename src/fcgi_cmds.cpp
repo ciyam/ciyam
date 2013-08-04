@@ -1940,8 +1940,14 @@ bool fetch_user_record(
    if( !mod_info.user_active_field_id.empty( ) )
       field_list += "," + mod_info.user_active_field_id;
 
-   if( !mod_info.user_security_level_id.empty( ) )
-      field_list += "," + mod_info.user_security_level_id;
+   if( !mod_info.user_slevel_field_id.empty( ) )
+      field_list += "," + mod_info.user_slevel_field_id;
+
+   if( !mod_info.user_has_auth_field_id.empty( ) )
+      field_list += "," + mod_info.user_has_auth_field_id;
+
+   if( !mod_info.user_pin_value_field_id.empty( ) )
+      field_list += "," + mod_info.user_pin_value_field_id;
 
    string key_info;
    if( userhash.empty( ) )
@@ -2077,8 +2083,14 @@ bool fetch_user_record(
    if( !is_active )
       throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
-   if( !mod_info.user_security_level_id.empty( ) )
+   if( !mod_info.user_slevel_field_id.empty( ) )
       sess_info.user_slevel = user_data[ offset++ ];
+
+   if( !mod_info.user_has_auth_field_id.empty( ) )
+      sess_info.user_has_auth = user_data[ offset++ ];
+
+   if( !mod_info.user_pin_value_field_id.empty( ) )
+      sess_info.user_pin_value = user_data[ offset++ ];
 
    return true;
 }

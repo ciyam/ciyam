@@ -161,6 +161,7 @@ const char* const c_special_variable_uid = "@uid";
 const char* const c_special_variable_loop = "@loop";
 const char* const c_special_variable_is_quiet = "@quiet";
 const char* const c_special_variable_was_cloned = "@cloned";
+const char* const c_special_variable_is_in_restore = "@restore";
 const char* const c_special_variable_execute_return = "@return";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
@@ -4070,6 +4071,11 @@ string decrypt_password( const string& password, bool no_ssl, bool no_salt, bool
    return password_decrypt( password, salt, !no_ssl );
 }
 
+string totp_secret_key( const string& unique )
+{
+   return get_totp_secret( unique, sid_hash( ) );
+}
+
 int exec_system( const string& cmd, bool async )
 {
    string s( cmd );
@@ -4855,6 +4861,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_was_cloned );
       break;
 
+      case e_special_var_is_in_restore:
+      s = string( c_special_variable_is_in_restore );
+      break;
+
       case e_special_var_execute_return:
       s = string( c_special_variable_execute_return );
       break;
@@ -4877,6 +4887,7 @@ string get_special_var_name( special_var var )
 void set_default_session_variables( )
 {
    set_session_variable( c_session_variable_storage, get_default_storage( ) );
+   set_session_variable( c_special_variable_is_in_restore, "0" );
 }
 
 string get_system_variable( const string& name )
