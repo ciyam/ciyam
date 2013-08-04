@@ -16,6 +16,7 @@
  <user_active>100102
  <user_select>
  <user_slevel>
+ <user_unique>
  <user_gpg_install>
  <home_info>
  <enums/>
@@ -526,6 +527,10 @@
     <value/>
      <data>8
      <name>enum_field_extra_actions
+    </value>
+    <value/>
+     <data>29
+     <name>enum_field_extra_qr_code
     </value>
     <value/>
      <data>22
@@ -8681,7 +8686,7 @@
    <cid>114100
    <name>602410_name
    <type>admin
-   <extra>limit=100
+   <extra>limit=50
    <actions>
    <modifiers>
    <view>602400

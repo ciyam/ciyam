@@ -2920,6 +2920,16 @@ string encrypt( const string& s )
    return encrypt_password( s, false, false, true );
 }
 
+string totp_pin( const string& secret )
+{
+   return get_totp( secret );
+}
+
+string totp_secret( const string& unique )
+{
+   return totp_secret_key( unique );
+}
+
 string valid_utf8_filename( const string& str )
 {
    bool has_utf8 = false;
@@ -4580,6 +4590,10 @@ string meta_field_extras( int uom, const string& uom_name,
 
       case 28:
       all_extras.push_back( "is_effective_owner" );
+      break;
+
+      case 29:
+      all_extras.push_back( "qr_code" );
       break;
 
       default:

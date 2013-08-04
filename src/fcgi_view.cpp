@@ -361,6 +361,8 @@ void setup_view_fields( view_source& view,
          }
          else if( extra_data.count( c_field_extra_mailto ) )
             view.mailto_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_qr_code ) )
+            view.qr_code_fields.insert( value_id );
 
          if( extra_data.count( c_field_extra_file ) || extra_data.count( c_field_extra_image ) )
          {
@@ -1395,7 +1397,8 @@ bool output_view_form( ostream& os, const string& act,
       if( source.enum_fields.count( source_value_id ) || source.html_fields.count( source_value_id )
        || source.text_fields.count( source_value_id ) || source.notes_fields.count( source_value_id )
        || source.file_fields.count( source_value_id ) || source.image_fields.count( source_value_id )
-       || source.bool_fields.count( source_value_id ) || source.protected_fields.count( source_value_id ) )
+       || source.qr_code_fields.count( source_value_id ) || source.bool_fields.count( source_value_id )
+       || source.protected_fields.count( source_value_id ) )
          is_special_field = true;
 
       bool is_protected_field = false;
@@ -2214,7 +2217,6 @@ bool output_view_form( ostream& os, const string& act,
 
                      os << "<img src=\"" << image_src;
 
-                     // NOTE: As
                      if( !embed_images )
                         os << "\" width=\"" << image_width << "\" height=\"" << image_height;
 
@@ -2281,6 +2283,47 @@ bool output_view_form( ostream& os, const string& act,
                }
 
                os << "</form>";
+            }
+         }
+         else if( source.qr_code_fields.count( source_value_id ) )
+         {
+            if( !cell_data.empty( ) )
+            {
+               string temp_file_name( c_files_directory );
+               temp_file_name += "/" + string( c_tmp_directory );
+               temp_file_name += "/" + session_id;
+
+               temp_file_name += "/" + source_value_id + ".png";
+
+               string cmd( "qrencode -o " + temp_file_name + " \"" + cell_data + "\"" );
+#ifdef _WIN32
+               replace( cmd, "&", "^&" );
+#endif
+               system( cmd.c_str( ) );
+
+               bool is_href = false;
+               if( !embed_images )
+               {
+                  is_href = true;
+                  os << "<a href=\"" << temp_file_name << "\" target=\"_blank\">";
+               }
+
+               string image_src( temp_file_name );
+               if( embed_images )
+               {
+                  string buffer( buffer_file( temp_file_name ) );
+                  image_src = "data:image/png;base64," + base64::encode( buffer );
+               }
+
+               os << "<img src=\"" << image_src;
+
+               if( !embed_images )
+                  os << "\" width=\"150\" height=\"150\"";
+
+               os << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
+
+               if( is_href )
+                  os << "</a>";
             }
          }
          else if( source.enum_fields.count( source_value_id ) )

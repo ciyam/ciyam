@@ -133,7 +133,7 @@ basic_set_expression          ::= "`(" set_union_expression "`)"
 unary_set_expression          ::= set_function
                               ::= set_simple_expression
 set_function                  ::= set_function_name "`(" set_union_expression "`)"
-set_function_name             ::= "`@sort" | "`@upper" | "`@lower"
+set_function_name             ::= "`@sort" | "`@upper" | "`@lower" | "`@encode"
 set_simple_expression         ::= value_expression
                               ::= literal_expression
 
@@ -232,6 +232,7 @@ const char* const c_func_name_count = "count";
 const char* const c_set_func_name_sort = "sort";
 const char* const c_set_func_name_lower = "lower";
 const char* const c_set_func_name_upper = "upper";
+const char* const c_set_func_name_encode = "encode";
 
 const char* const c_primary_split_value = "*";
 const char* const c_template_prefix_name = "`";
@@ -258,6 +259,79 @@ struct function_call_debug
    ~function_call_debug( ) { --function_call_depth; }
 };
 #endif
+
+string encode( const string& input )
+{
+   string output;
+
+   for( size_t i = 0; i < input.size( ); i++ )
+   {
+      if( input[ i ] == ' ' )
+         output += "%20";
+      else if( input[ i ] == '!' )
+         output += "%21";
+      else if( input[ i ] == '"' )
+         output += "%22";
+      else if( input[ i ] == '#' )
+         output += "%23";
+      else if( input[ i ] == '$' )
+         output += "%24";
+      else if( input[ i ] == '%' )
+         output += "%25";
+      else if( input[ i ] == '&' )
+         output += "%26";
+      else if( input[ i ] == '\'' )
+         output += "%27";
+      else if( input[ i ] == '(' )
+         output += "%28";
+      else if( input[ i ] == ')' )
+         output += "%29";
+      else if( input[ i ] == '*' )
+         output += "%2A";
+      else if( input[ i ] == '+' )
+         output += "%2B";
+      else if( input[ i ] == ',' )
+         output += "%2C";
+      else if( input[ i ] == '-' )
+         output += "%2D";
+      else if( input[ i ] == '.' )
+         output += "%2E";
+      else if( input[ i ] == '/' )
+         output += "%2F";
+      else if( input[ i ] == '<' )
+         output += "%3C";
+      else if( input[ i ] == '=' )
+         output += "%3D";
+      else if( input[ i ] == '>' )
+         output += "%3E";
+      else if( input[ i ] == '?' )
+         output += "%3F";
+      else if( input[ i ] == '@' )
+         output += "%40";
+      else if( input[ i ] == '[' )
+         output += "%5B";
+      else if( input[ i ] == '\\' )
+         output += "%5C";
+      else if( input[ i ] == ']' )
+         output += "%5D";
+      else if( input[ i ] == '^' )
+         output += "%5E";
+      else if( input[ i ] == '`' )
+         output += "%60";
+      else if( input[ i ] == '{' )
+         output += "%7B";
+      else if( input[ i ] == '|' )
+         output += "%7C";
+      else if( input[ i ] == '}' )
+         output += "%7D";
+      else if( input[ i ] == '~' )
+         output += "%7E";
+      else
+         output += input[ i ];
+   }
+
+   return output;
+}
 
 size_t find_escape_level_sequence( const string& input, size_t pos = 0 )
 {
@@ -1164,10 +1238,11 @@ cout << "evaluate value_expression" << endl;
       if( !p_rep_expr )
          throw runtime_error( "unexpected non-replacement expression in rhs of value expression" );
 
+      string::size_type lpos = 0;
       string find_text( p_rep_expr->evaluate( xi ) );
       while( true )
       {
-         string::size_type pos = retval.find( find_text );
+         string::size_type pos = retval.find( find_text, lpos );
          if( pos == string::npos )
             break;
 
@@ -1175,10 +1250,12 @@ cout << "evaluate value_expression" << endl;
 
          string value( p_rep_expr->get_replacement_text( ) );
          string variable( p_rep_expr->get_replacement_variable( ) );
+
          if( !variable.empty( ) )
             value = xi.get_variable( variable );
 
          retval.insert( pos, value );
+         lpos = pos + value.length( );
 
          if( !p_rep_expr->get_is_multi( ) )
             break;
@@ -1843,6 +1920,8 @@ cout << "evaluate set_function_expression" << endl;
       to_lower( retval );
    else if( func_name == c_set_func_name_upper )
       to_upper( retval );
+   else if( func_name == c_set_func_name_encode )
+      retval = encode( retval );
    else
       throw runtime_error( "unexpected set function name '" + func_name + "'" );
 
@@ -2068,7 +2147,8 @@ auto_ptr< expression_base > parse_set_function( xrep_lexer& xl, bool is_opt )
 
    string func_name = xl.read_next_token( );
 
-   if( func_name != c_set_func_name_sort && func_name != c_set_func_name_upper && func_name != c_set_func_name_lower )
+   if( func_name != c_set_func_name_sort && func_name != c_set_func_name_upper
+    && func_name != c_set_func_name_lower && func_name != c_set_func_name_encode )
    {
       sli.restore( );
       return ap_node;
@@ -3537,7 +3617,7 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "xrep v0.1q\n";
+               cout << "xrep v0.1r\n";
                cout << "Usage: xrep [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
                cout << "       Each <value> can also be expressed as @<filename> (useful for large values).\n";

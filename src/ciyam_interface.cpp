@@ -127,6 +127,7 @@ const char* const c_activate_file = "activate.htms";
 const char* const c_password_file = "password.htms";
 const char* const c_minilogin_file = "minilogin.htms";
 const char* const c_ssl_signup_file = "ssl_signup.htms";
+const char* const c_authenticate_file = "authenticate.htms";
 const char* const c_ciyam_interface_file = "ciyam_interface.htms";
 const char* const c_login_persistent_file = "login_persistent.htms";
 const char* const c_password_persistent_file = "password_persistent.htms";
@@ -161,10 +162,14 @@ const char* const c_title = "@@title";
 const char* const c_checked = "@@checked";
 const char* const c_user_id = "@@user_id";
 const char* const c_app_name = "@@app_name";
+const char* const c_continue = "@@continue";
 const char* const c_password = "@@password";
+const char* const c_pin_name = "@@pin_name";
 const char* const c_selected_ = "@@selected_";
+const char* const c_pin_value = "@@pin_value";
 const char* const c_user_name = "@@user_name";
 const char* const c_persistent = "@@persistent";
+const char* const c_pin_message = "@@pin_message";
 const char* const c_account_type = "@@account_type";
 const char* const c_old_password = "@@old_password";
 const char* const c_new_password = "@@new_password";
@@ -213,6 +218,7 @@ string g_password_html;
 string g_activate_html;
 string g_minilogin_html;
 string g_ssl_signup_html;
+string g_authenticate_html;
 string g_ciyam_interface_html;
 string g_login_persistent_html;
 string g_password_persistent_html;
@@ -1598,6 +1604,9 @@ void request_handler::process_request( )
                       + " at " + date_time::local( ).as_string( true, false ) + " from " + p_session_info->ip_addr + "]" );
                   }
 
+                  if( p_session_info->user_has_auth == c_true_value )
+                     p_session_info->needs_pin = true;
+
                   if( cmd == c_cmd_open )
                      cmd = c_cmd_home;
                }
@@ -1608,6 +1617,7 @@ void request_handler::process_request( )
          string app( input_data[ c_param_app ] );
          string chk( input_data[ c_param_chk ] );
          string cls( input_data[ c_param_cls ] );
+         string pin( input_data[ c_param_pin ] );
          string cont( input_data[ c_param_cont ] );
          string exec( input_data[ c_param_exec ] );
          string vtab( input_data[ c_param_vtab ] );
@@ -1887,6 +1897,12 @@ void request_handler::process_request( )
             created_session = true;
             throw;
          }
+
+         if( pin == p_session_info->user_pin_value )
+            p_session_info->needs_pin = false;
+
+         if( p_session_info->needs_pin && cmd != c_cmd_quit )
+            cmd = c_cmd_home;
 
          // NOTE: If a new password hash is passed from the client after logging in then
          // encrypt and store it in the application server "files area" for later usage.
@@ -3459,7 +3475,7 @@ void request_handler::process_request( )
                {
                   extra_content << "         <div id=\"username\">\n";
 
-                  if( !get_storage_info( ).user_info_view_id.empty( ) )
+                  if( !p_session_info->needs_pin && !get_storage_info( ).user_info_view_id.empty( ) )
                   {
                      extra_content << GDS( c_display_logged_in_as ) << " ";
 
@@ -3523,7 +3539,7 @@ void request_handler::process_request( )
                   else
                      extra_content << GDS( c_display_logged_in_as ) << " " << p_session_info->user_id;
 
-                  if( !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
+                  if( !p_session_info->needs_pin && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
                   {
                      if( cmd == c_cmd_pwd && !input_data.count( c_param_newpwd ) )
                         extra_content << " | " << pwd_display_name << "";
@@ -3579,7 +3595,8 @@ void request_handler::process_request( )
                extra_content << "         <div id=\"uselects\">\n";
 
                // NOTE: If a user select option is specified and the user has access to it then include it.
-               if( !mod_info.user_select_str_key.empty( )
+               if( !p_session_info->needs_pin
+                && !mod_info.user_select_str_key.empty( )
                 && p_session_info->select_data.size( )
                 && ( mod_info.user_select_perm.empty( )
                 || p_session_info->user_perms.count( mod_info.user_select_perm ) ) )
@@ -3640,7 +3657,7 @@ void request_handler::process_request( )
                   extra_content << "            </select>\n";
                }
 
-               if( allow_module_switching && cmd != c_cmd_join )
+               if( !p_session_info->needs_pin && allow_module_switching && cmd != c_cmd_join )
                {
                   bool had_first = false;
 
@@ -3716,7 +3733,7 @@ void request_handler::process_request( )
 
             map< string, vector< string > > menu_items;
 
-            if( cmd != c_cmd_join && cmd != c_cmd_open
+            if( !p_session_info->needs_pin && cmd != c_cmd_join && cmd != c_cmd_open
              && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
             {
                if( use_menubar )
@@ -4568,33 +4585,52 @@ void request_handler::process_request( )
             }
             else if( cmd == c_cmd_home )
             {
-               extra_content << "<h2>" << GDS( c_display_welcome_to ) << " " << title << "</h2>\n";
-
-               if( !user_home_info.empty( ) )
-                  extra_content << "<p align=\"center\">" << user_home_info << "</p>\n";
-
-               for( map< string, list_source >::iterator i = home_lists.begin( ); i != home_lists.end( ); ++i )
+               if( p_session_info->needs_pin )
                {
-                  bool can_output = true;
+                  string authenticate_html( g_authenticate_html );
 
-                  if( p_session_info->is_admin_user || ( using_anonymous
-                   && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
-                     can_output = false;
-
-                  if( can_output )
+                  if( !pin.empty( ) )
                   {
-                     if( !i->second.name.empty( ) )
-                     {
-                        extra_content << "<h3>"
-                         << get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info ) << "</h3>\n";
-                     }
+                     msleep( 2000 );
+                     error_message = "<p class=\"error\" align=\"center\">" + GDS( c_display_incorrect_pin ) + "</p>";
+                  }
 
-                     output_list_form( extra_content,
-                      i->second, session_id, uselect, "", false,
-                      cookies_permitted, true, false, list_selections, list_search_text,
-                      list_search_values, 0, false, "", false, "", i->second.lici->second->id, *p_session_info,
-                      extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
-                      embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
+                  str_replace( authenticate_html, c_pin_value, pin );
+                  str_replace( authenticate_html, c_error_message, error_message );
+
+                  extra_content << "<h2>" << GDS( c_display_authentication_required ) << "</h2>\n";
+                  extra_content << authenticate_html;
+               }
+               else
+               {
+                  extra_content << "<h2>" << GDS( c_display_welcome_to ) << " " << title << "</h2>\n";
+
+                  if( !user_home_info.empty( ) )
+                     extra_content << "<p align=\"center\">" << user_home_info << "</p>\n";
+
+                  for( map< string, list_source >::iterator i = home_lists.begin( ); i != home_lists.end( ); ++i )
+                  {
+                     bool can_output = true;
+
+                     if( p_session_info->is_admin_user || ( using_anonymous
+                      && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
+                        can_output = false;
+
+                     if( can_output )
+                     {
+                        if( !i->second.name.empty( ) )
+                        {
+                           extra_content << "<h3>"
+                            << get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info ) << "</h3>\n";
+                        }
+
+                        output_list_form( extra_content,
+                         i->second, session_id, uselect, "", false,
+                         cookies_permitted, true, false, list_selections, list_search_text,
+                         list_search_values, 0, false, "", false, "", i->second.lici->second->id, *p_session_info,
+                         extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
+                         embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
+                     }
                   }
                }
             }
@@ -5311,6 +5347,7 @@ int main( int argc, char* argv[ ] )
       g_password_html = buffer_file( c_password_file );
       g_minilogin_html = buffer_file( c_minilogin_file );
       g_ssl_signup_html = buffer_file( c_ssl_signup_file );
+      g_authenticate_html = buffer_file( c_authenticate_file );
 
       g_ciyam_interface_html = buffer_file( c_ciyam_interface_file );
 
@@ -5373,6 +5410,10 @@ int main( int argc, char* argv[ ] )
       str_replace( g_ssl_signup_html, c_account_type_3, GDS( c_display_account_type_3 ) );
       str_replace( g_ssl_signup_html, c_ssl_sign_up_introduction, GDS( c_display_ssl_sign_up_main_form ) );
       str_replace( g_ssl_signup_html, c_ssl_sign_up_extra_details, GDS( c_display_ssl_sign_up_main_form_extra_details ) );
+
+      str_replace( g_authenticate_html, c_pin_name, GDS( c_display_pin ) );
+      str_replace( g_authenticate_html, c_pin_message, GDS( c_display_pin_message ) );
+      str_replace( g_authenticate_html, c_continue, GDS( c_display_continue ) );
 
       if( file_exists( c_login_persistent_file ) )
       {

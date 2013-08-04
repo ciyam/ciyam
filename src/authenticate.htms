@@ -1,0 +1,24 @@
+<div align="center">
+<div align="left">
+<p>
+@@pin_message
+</p>
+<p>
+@@error_message
+</p>
+   <form method="POST" name="authenticate" id="authenticate"
+    onsubmit="return dyn_load( this,
+     'pin=' + escape( document.authenticate.pin.value ), false );">
+       <label for="pin">@@pin_name<br/>
+          <input type="text" name="pin" tabindex="1"
+           id="pin" size="10" maxlength="10" validate="reqd" value="@@pin_value" />
+       </label>
+       <br/>
+       <br/>
+       <label for="submit" id="submit">
+          <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@continue" />
+       </label>
+   </form>
+</div>
+</div>
+

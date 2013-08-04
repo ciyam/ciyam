@@ -355,8 +355,10 @@ struct module_info
    std::string user_extra2_field_id;
    std::string user_parent_field_id;
    std::string user_active_field_id;
+   std::string user_slevel_field_id;
    std::string user_unique_field_id;
-   std::string user_security_level_id;
+   std::string user_has_auth_field_id;
+   std::string user_pin_value_field_id;
    std::string user_gpg_install_proc_id;
 
    std::string user_select_perm;
@@ -483,6 +485,8 @@ struct session_info
 
    bool locked;
    bool logged_in;
+   bool needs_pin;
+
    tcp_socket* p_socket;
 
    std::string ip_addr;
@@ -499,6 +503,8 @@ struct session_info
    std::string user_parent;
    std::string user_module;
    std::string user_slevel;
+   std::string user_has_auth;
+   std::string user_pin_value;
 
    std::string user_pwd_hash;
 
@@ -595,6 +601,7 @@ struct source
    std::set< std::string > hidden_fields;
    std::set< std::string > larger_fields;
    std::set< std::string > mailto_fields;
+   std::set< std::string > qr_code_fields;
    std::set< std::string > smaller_fields;
    std::set< std::string > non_link_fields;
    std::set< std::string > non_print_fields;

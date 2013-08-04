@@ -38,6 +38,7 @@ enum special_var
    e_special_var_loop,
    e_special_var_is_quiet,
    e_special_var_was_cloned,
+   e_special_var_is_in_restore,
    e_special_var_execute_return,
    e_special_var_skip_after_fetch,
    e_special_var_attached_file_path
