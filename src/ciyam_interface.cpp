@@ -4433,7 +4433,7 @@ void request_handler::process_request( )
                         }
                      }
                   }
-                  else if( error_message.empty( ) )
+                  else if( error_message.empty( ) && !email.empty( ) )
                   {
                      string encrypted_email( password_encrypt( email, get_server_id( ) ) );
 
@@ -4442,9 +4442,13 @@ void request_handler::process_request( )
                       clone_key, req_username, error_message, mod_info, *p_session_info, &new_key, false );
 
                      // FUTURE: It would be better if the email was sent from the User class rather
-                     // than being done separately here.
+                     // than being done separately here (that way a User record won't be created in
+                     // the case where sending the activation email fails).
                      if( error_message.empty( ) )
                      {
+                        LOG_TRACE( "[add_user: " + req_username + " at "
+                         + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
+
                         string smtp_result;
                         ostringstream osstr;
 
@@ -4549,6 +4553,9 @@ void request_handler::process_request( )
                   else
                   {
                      has_completed = true;
+
+                     LOG_TRACE( "[add_user: " + req_username + " at "
+                      + date_time::local( ).as_string( true, false ) + " from " + raddr + "]" );
 
                      extra_content << "<p align=\"center\"><b>"
                       << GDS( c_display_welcome_aboard ) << " " << req_username << " !</p>\n";
