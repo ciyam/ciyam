@@ -17,6 +17,8 @@
  <user_select>
  <user_slevel>
  <user_unique>
+ <user_has_auth>
+ <user_pin_value>
  <user_gpg_install>
  <home_info>
  <enums/>
