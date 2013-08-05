@@ -75,7 +75,7 @@ bool delete_directory_files( const string& path, bool include_directory )
    okay = delete_files( ( path + "\\*.*" ).c_str( ), false );
 #else
    directory_filter df;
-   fs_iterator dfsi( path, &df );
+   fs_iterator dfsi( path, &df, true );
 
    deque< string > directories;
 
@@ -83,7 +83,7 @@ bool delete_directory_files( const string& path, bool include_directory )
    do
    {
       file_filter ff;
-      fs_iterator ffsi( dfsi.get_path_name( ), &ff );
+      fs_iterator ffsi( dfsi.get_path_name( ), &ff, true );
 
       while( ffsi.has_next( ) )
       {
