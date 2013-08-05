@@ -73,7 +73,6 @@
 #include "fcgi_view.h"
 #include "fcgi_utils.h"
 #include "fcgi_parser.h"
-#include "fs_iterator.h"
 #include "crypt_stream.h"
 
 #define ALWAYS_REPLACE_SESSION
