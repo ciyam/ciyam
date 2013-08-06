@@ -10,18 +10,26 @@
 const int c_timeout_seconds = 600;
 
 const int c_default_row_limit = 10;
+
 const int c_default_login_days = 0;
+
 const int c_default_notes_cols = 100;
 const int c_default_notes_rmax = 40;
 const int c_default_notes_rmin = 6;
 const int c_default_notes_limit = 1000;
 const int c_default_notes_trunc = 15;
+
 const int c_default_print_limit = 4000;
+
 const int c_default_image_width = 100;
 const int c_default_image_height = 75;
 
+const int c_default_qr_code_pixels = 5;
+
 const bool c_default_embed_images = false;
+
 const bool c_default_encrypt_data = false;
+
 const bool c_default_checkbox_bools = false;
 
 const size_t c_default_filesize_limit = 0;

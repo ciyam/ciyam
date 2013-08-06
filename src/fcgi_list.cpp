@@ -3194,7 +3194,8 @@ void output_list_form( ostream& os,
                outs << ifmt( 6 ) << row;
                temp_file_name += "/" + outs.str( ) + source_value_id + ".png";
 
-               string cmd( "qrencode -o " + temp_file_name + " \"" + cell_data + "\"" );
+               string cmd( "qrencode -o " + temp_file_name
+                + " -s " + to_string( c_default_qr_code_pixels ) + " \"" + cell_data + "\"" );
 #ifdef _WIN32
                replace( cmd, "&", "^&" );
 #endif
@@ -3215,9 +3216,6 @@ void output_list_form( ostream& os,
                }
 
                os << "<img src=\"" << image_src;
-
-               if( !embed_images )
-                  os << "\" width=\"150\" height=\"150\"";
 
                os << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
 
