@@ -1007,8 +1007,6 @@ void request_handler::process_request( )
                   cmd = c_cmd_home;
                   session_id.erase( );
                }
-               else
-                  is_invalid_session = true;
 
                if( is_kept && get_storage_info( ).login_days )
                {
@@ -1018,13 +1016,17 @@ void request_handler::process_request( )
                   is_authorised = true;
                   is_invalid_session = false;
                }
+               else if( !session_id.empty( )
+                && session_id != get_unique( g_id, raddr ) )
+                  is_invalid_session = true;
             }
          }
       }
 
       bool using_anonymous = false;
-      
-      if( !is_kept && !is_invalid_session && mod_info.allows_anonymous_access
+
+      if( !is_kept
+       && !is_invalid_session && mod_info.allows_anonymous_access
        && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
       {
          is_authorised = true;
