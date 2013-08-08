@@ -1340,7 +1340,8 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `{`#check_compare_op_field.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield\
  arg_spfield=$specification_\0_spfield arg_op=$specification_\0_op arg_tfield=$specification_\0_tfield\
- arg_not_null=$specification_\0_not_null arg_not_pedit=$specification_\0_not_pedit`}\
+ arg_not_null=$specification_\0_not_null arg_not_pedit=$specification_\0_not_pedit\
+ arg_create_only=$specification_\0_create_only arg_create_also=$specification_\0_create_also`}\
 `,\
 `@eq`(`'\1`'`,`'check_compare_op_value`'`)
 `{`#check_compare_op_value.spec.xrep section=validate class_name=$class_name module_name=$module_name\

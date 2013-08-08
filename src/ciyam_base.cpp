@@ -8012,6 +8012,19 @@ void import_package( const string& module,
             vector< string > fields;
             split( field_list, fields );
 
+            // NOTE: Check that field names have not been repeated (apart from "ignore").
+            vector< string > sorted_fields( fields.begin( ), fields.end( ) );
+            sort( sorted_fields.begin( ), sorted_fields.end( ) );
+
+            string last_field;
+            for( size_t i = 0; i < sorted_fields.size( ); i++ )
+            {
+               if( last_field != c_ignore_field && sorted_fields[ i ] == last_field )
+                  throw runtime_error( "field name '" + last_field + "' was repeated" );
+
+               last_field = sorted_fields[ i ];
+            }
+
             set_any_field_names_to_ids( handle, "", fields );
 
             map< string, string > foreign_field_and_class_ids;
