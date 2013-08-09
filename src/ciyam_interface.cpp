@@ -4387,6 +4387,7 @@ void request_handler::process_request( )
                            }
 
                            file_remove( "x.gpg" );
+                           file_remove( "x.tmp" );
 
                            if( error_message.empty( ) )
                            {
