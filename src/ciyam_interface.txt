@@ -127,7 +127,6 @@ re_copy_and_paste_your_gpg_public_key "Please re-copy and paste your GPG public 
 sorry_unexpected_error_processing_gpg "Sorry - an unexpected error occurred while processing your GPG public key. Please try again later."
 more_than_one_email_address_in_gpg_key "There is more than one email address in this GPG public key."
 your_gpg_encrypted_account_credentials "Your GPG encrypted account credentials can now be copied to the clipboard from below ready for you to decode."
-need_gpg_public_for_single_email_address "Please ensure that you use a GPG public key that is for a single email address only."
 gpg_public_key_is_not_correctly_formatted "Sorry but the GPG public key is not correctly formatted. Please try again."
 a_gpg_encrypted_email_with_your_credentials "A GPG encrypted email with your account credentials has now been sent."
 password_must_not_be_the_same_as_your_user_id "For security reasons your password must not be the same as your user id."

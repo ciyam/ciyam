@@ -4217,16 +4217,11 @@ void request_handler::process_request( )
 
                         if( lines.size( ) < 3 )
                            had_unexpected_error = true;
-                        else if( lines.size( ) > 3 )
+                        else if( lines[ 0 ].find( "CRC error" ) != string::npos )
                         {
-                           if( lines[ 0 ].find( "CRC error" ) )
-                              error_message = "<p class=\"error\" align=\"center\">"
-                               + GDS( c_display_gpg_public_key_appears_to_be_corrupt )
-                               + "<br/>" + GDS( c_display_re_copy_and_paste_your_gpg_public_key ) + "</p>";
-                           else
-                              error_message = "<p class=\"error\" align=\"center\">"
-                               + GDS( c_display_more_than_one_email_address_in_gpg_key )
-                               + "<br/>" + GDS( c_display_need_gpg_public_for_single_email_address ) + "</p>";
+                           error_message = "<p class=\"error\" align=\"center\">"
+                            + GDS( c_display_gpg_public_key_appears_to_be_corrupt )
+                            + "<br/>" + GDS( c_display_re_copy_and_paste_your_gpg_public_key ) + "</p>";
                         }
                         else
                         {
@@ -4294,12 +4289,12 @@ void request_handler::process_request( )
                               }
                            }
                            else if( error_message.empty( ) )
-                           {
-                              file_remove( "x.gpg" );
                               had_unexpected_error = true;
-                           }
                         }
 
+                        if( !error_message.empty( ) || had_unexpected_error )
+                           file_remove( "x.gpg" );
+                        
                         file_remove( "x.tmp" );
                      }
 
@@ -4412,6 +4407,7 @@ void request_handler::process_request( )
                                  string msg_file( "message?" + get_cwd( true ) + "/" + key + ".asc" );
 
                                  string smtp_result;
+
                                  simple_command( *p_session_info, "sendmail "
                                   + email_addr + " \"" + GDS( c_display_welcome_aboard ) + "!\" \""
                                   + GDS( c_display_see_attachment_for_details ) + "\" -attach=" + msg_file, &smtp_result );

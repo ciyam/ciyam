@@ -2151,7 +2151,9 @@ void add_user( const string& user_id, const string& user_name,
       new_user_cmd += "," + mod_info.user_email_field_id + "=" + escaped( email, ",\"" );
 
    string new_user_cmd_extra;
-   if( p_gpg_key_file && !p_gpg_key_file->empty( ) )
+
+   if( p_gpg_key_file
+    && !p_gpg_key_file->empty( ) && !mod_info.user_gpg_install_proc_id.empty( ) )
    {
       new_user_cmd += ",@file=" + *p_gpg_key_file;
       new_user_cmd_extra = " -x=" + mod_info.user_gpg_install_proc_id;
