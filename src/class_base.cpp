@@ -2661,13 +2661,10 @@ void install_gpg_key( const string& key_file,
          had_unexpected_error = true;
       else if( lines.size( ) < 3 )
          throw runtime_error( lines[ 0 ] );
-      else if( lines.size( ) > 3 )
+      else if( lines[ 0 ].find( "CRC error" ) != string::npos )
       {
-         // FUTURE: These messages should be handled as a server string message.
-         if( lines[ 0 ].find( "CRC error" ) )
-            throw runtime_error( "Invalid or corrupt GPG key file." );
-         else
-            throw runtime_error( "GPG key file contains more than one email address." );
+         // FUTURE: This message should be handled as a server string message.
+         throw runtime_error( "Invalid or corrupt GPG key file." );
       }
       else
       {
