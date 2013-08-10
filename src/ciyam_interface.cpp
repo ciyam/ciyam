@@ -3538,7 +3538,8 @@ void request_handler::process_request( )
                         extra_content << "</a>";
                   }
                   else
-                     extra_content << GDS( c_display_logged_in_as ) << " " << p_session_info->user_id;
+                     extra_content << GDS( c_display_logged_in_as ) << " "
+                      << ( p_session_info->user_name.empty( ) ? p_session_info->user_id : p_session_info->user_name );
 
                   if( !p_session_info->needs_pin && !mod_info.user_pwd_field_id.empty( ) && !p_session_info->is_openid )
                   {
