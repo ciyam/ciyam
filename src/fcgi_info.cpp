@@ -335,7 +335,6 @@ session_info::session_info( storage_info& si )
  is_openid( false ),
  is_admin_user( false ),
  is_persistent( false ),
- has_set_offsets( false ),
  row_limit( si.row_limit ),
  notes_rmin( si.notes_rmin ),
  notes_rmax( si.notes_rmax ),

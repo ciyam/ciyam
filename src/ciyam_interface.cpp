@@ -101,6 +101,8 @@ const int c_greeting_timeout = 2500;
 const int c_initial_response_timeout = 7500;
 const int c_subsequent_response_timeout = 2000;
 
+const int c_max_pin_time_difference = 30;
+
 const int c_auto_refresh_seconds_local = 5;
 const int c_auto_refresh_seconds_remote = 10;
 
@@ -1566,10 +1568,9 @@ void request_handler::process_request( )
                      fetch_user_quick_links( mod_info, *p_session_info );
                }
 
-               setup_gmt_and_dtm_offset( input_data, *p_session_info );
-
-               // FUTURE: A User field should be available to be used to determine which
-               // timezone abbreviation will be used above.
+               // FUTURE: A User field should be added to hold the user's timezone
+               // abbreviation (useful when scheduling future events especially if
+               // the user's timezone includes daylight savings adjustments).
                if( p_session_info->tz_abbr.empty( ) )
                   p_session_info->tz_abbr = get_storage_info( ).tz_abbr;
 
@@ -1653,7 +1654,7 @@ void request_handler::process_request( )
             split( get_storage_info( ).url_opts, url_opts, '+' );
 
          bool keep_checks = false;
-         if( keepchecks == "1" )
+         if( keepchecks == c_true_value )
             keep_checks = true;
 
          int back_count = 1;
@@ -1666,8 +1667,7 @@ void request_handler::process_request( )
 
          bool use_url_checksum = ( url_opts.count( c_url_opt_use_checksum ) > 0 );
 
-         bool is_checksummed_home = ( cmd == c_cmd_home && username.empty( )
-          && userhash.empty( ) && ( !uselect.empty( ) || !input_data[ c_param_utcdtm ].empty( ) ) );
+         bool is_checksummed_home = ( cmd == c_cmd_home && !uselect.empty( ) );
 
          if( use_url_checksum && !cmd.empty( ) && cmd != c_cmd_join && cmd != c_cmd_open
           && ( is_checksummed_home || ( cmd != c_cmd_home && cmd != c_cmd_quit && cmd != c_cmd_login
@@ -1899,7 +1899,10 @@ void request_handler::process_request( )
             throw;
          }
 
-         if( pin == p_session_info->user_pin_value )
+         // NOTE: The PIN is compared against the current and previous (if has already checked)
+         // expected value to allow for a little bit more margin with the device time accuracy.
+         if( !pin.empty( )
+          && ( pin == p_session_info->user_pin_value || pin == p_session_info->last_user_pin_value ) )
             p_session_info->needs_pin = false;
 
          if( p_session_info->needs_pin && cmd != c_cmd_quit )
@@ -2352,13 +2355,13 @@ void request_handler::process_request( )
          string view_permission_value;
          string view_security_level_value;
 
+         setup_gmt_and_dtm_offset( input_data, *p_session_info );
+
          if( cmd == c_cmd_home )
          {
             server_command.erase( );
 
             bool issued_command = false;
-
-            setup_gmt_and_dtm_offset( input_data, *p_session_info );
 
             if( !temp_session && !mod_info.home_info.empty( )
              && ( !p_session_info->user_group.empty( ) || !p_session_info->is_admin_user ) )
@@ -4605,6 +4608,10 @@ void request_handler::process_request( )
                   str_replace( authenticate_html, c_error_message, error_message );
 
                   extra_content << "<h2>" << GDS( c_display_authentication_required ) << "</h2>\n";
+
+                  if( abs( p_session_info->dtm_offset ) >= c_max_pin_time_difference )
+                     extra_content << "<p><b>" << GDS( c_display_local_time_bad ) << "</b></p>\n";
+
                   extra_content << authenticate_html;
                }
                else

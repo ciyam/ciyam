@@ -1,11 +1,13 @@
 <div id="loginbox">
    <div id="loginform">
       <form method="POST" name="login" id="login"
-       onsubmit="var cd = new Date( ); var checkval = 'false';
+       onsubmit="var checkval = 'false';
+
        if( document.login.persistent.checked )
           checkval = document.login.persistent.value;
-       return dyn_load( this, 'password=' + hash_password( document.login.username.value, document.login.password.value, true ) + '&persistent='
-        + checkval + '&utcdtm=' + utc_dtm( cd ) + '&tzoffcur=' + escape( cd.getTimezoneOffset( ) ), false )">
+
+       return dyn_load( this, 'password='
+        + hash_password( document.login.username.value, document.login.password.value, true ) + '&persistent=' + checkval, false )">
          <label for="password">
             <input class="loginfields" type="password" name="password" tabindex="1"
              id="password" size="25" maxlength="25" validate="reqd" onkeypress="className = 'loginfields'" />@@password

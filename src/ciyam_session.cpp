@@ -1236,9 +1236,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string output_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_output_file ) );
          string title_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_title_name ) );
 
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
-
          string context;
          string::size_type pos = mclass.find( ':' );
          if( pos != string::npos )
@@ -2405,9 +2402,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string search_text( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_search_text ) );
          string search_query( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_search_query ) );
          string fixed_field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_fixed_field_values ) );
-
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
 
          if( dtm == c_dtm_now )
             dtm = date_time::standard( ).as_string( );
