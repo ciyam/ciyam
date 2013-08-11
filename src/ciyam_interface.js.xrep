@@ -476,10 +476,6 @@ function load2( )
       full_context += 'fieldlist=' + dataFieldList;
    }
 
-   if( full_context != '' )
-      full_context += '&';
-   full_context += 'suffix=';
-
    if( typeof localStorage == 'object' )
    {
       if( sessionStorage.getItem( 'key' ) == null && localStorage.getItem( 'key' ) != null )
@@ -493,6 +489,13 @@ function load2( )
       else if( !loggedIn && localStorage.getItem( 'key' ) != null )
          full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true';
    }
+
+   var cd = new Date( );
+
+   if( full_context != '' )
+      full_context += '&';
+   full_context += 'utcdtm=' + utc_dtm( cd );
+   full_context += '&tzoffcur=' + escape( cd.getTimezoneOffset( ) );
 
    xmlReq.open( 'POST', ServerApp, true );
 
@@ -510,7 +513,9 @@ function load2( )
          for( var i = 0; i < 22 - dummy.length; i++ )
             prefix += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
 
-         full_context = prefix + '&' + full_context;
+         if( full_context != '' )
+            full_context += '&';
+         full_context = prefix + '&' + full_context + 'suffix=';
 
          while( full_context.length % 40 )
             full_context += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );

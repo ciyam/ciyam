@@ -2090,7 +2090,13 @@ bool fetch_user_record(
       sess_info.user_has_auth = user_data[ offset++ ];
 
    if( !mod_info.user_pin_value_field_id.empty( ) )
+   {
+      string last_pin_value( sess_info.user_pin_value );
       sess_info.user_pin_value = user_data[ offset++ ];
+
+      if( last_pin_value != sess_info.user_pin_value )
+         sess_info.last_user_pin_value = last_pin_value;
+   }
 
    return true;
 }
@@ -2310,8 +2316,7 @@ void save_record( const string& module_id,
    date_time dt( date_time::standard( ) );
 
    string current_dtm( dt.as_string( ) );
-   string current_local_dtm( ( dt + ( seconds )sess_info.gmt_offset ).as_string( ) );
-   
+
    string act_cmd;
    if( is_new_record )
       act_cmd = "perform_create";
@@ -2399,6 +2404,19 @@ void save_record( const string& module_id,
                else
                   throw runtime_error( "unsupported numeric_type '" + numeric_type + "'" );
             }
+         }
+      }
+      else if( view.datetime_fields.count( field_id ) )
+      {
+         if( new_field_and_values.count( field_id ) )
+            next = new_field_and_values.find( field_id )->second;
+
+         if( !next.empty( ) )
+         {
+            date_time dt( next );
+            dt -= ( seconds )sess_info.gmt_offset;
+
+            next = "U" + dt.as_string( );
          }
       }
       else if( view.password_fields.count( field_id )
@@ -2511,8 +2529,8 @@ void save_record( const string& module_id,
          {
             if( view.defcurrent_fields.count( value_id ) )
             {
-               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-               next = dt.as_string( );
+               date_time dt( date_time::standard( ) );
+               next = "U" + dt.as_string( );
             }
          }
 

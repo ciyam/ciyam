@@ -311,7 +311,7 @@ string get_cookie_value( const string& session_id,
 
    if( !get_storage_info( ).login_days )
    {
-      cookie = "session=" + session_id + ",keep=,dtmoff=,gmtoff=";
+      cookie = "session=" + session_id + ",keep=";
 
       if( user_id == c_anon_user_key )
          cookie += "; Expires=Thu, 01-Jan-1970 00:00:01 UTC; path=/";
@@ -340,8 +340,6 @@ string get_cookie_value( const string& session_id,
          dt += ( days )get_storage_info( ).login_days;
       }
 
-      cookie += ",dtmoff=" + to_string( dtm_offset ) + ",gmtoff=" + to_string( gmt_offset );
-
       cookie += "; Expires=" + dt.weekday_name( true ) + ", " + to_string( ( int )dt.get_day( ) ) + "-" + dt.month_name( true )
        + "-" + to_string( dt.get_year( ) ) + " " + dt.get_time( ).as_string( e_time_format_hhmmss, true ) + " UTC; path=/";
    }
@@ -351,23 +349,18 @@ string get_cookie_value( const string& session_id,
 
 void setup_gmt_and_dtm_offset( map< string, string >& input_data, session_info& sess_info )
 {
-   if( !sess_info.has_set_offsets )
+   string utcdtm( input_data[ c_param_utcdtm ] );
+   if( !utcdtm.empty( ) )
    {
-      string utcdtm( input_data[ c_param_utcdtm ] );
-      if( !utcdtm.empty( ) )
-      {
-         date_time dt( input_data[ c_param_utcdtm ] );
-         sess_info.dtm_offset = ( int )( dt - date_time::standard( ) );
-      }
-
-      // NOTE: The current GMT offset is used to determine "defcurrent" field
-      // values (although it may not be the same as the user's set timezone).
-      string gmt_offcur( input_data[ c_param_tzoffcur ] );
-      if( !gmt_offcur.empty( ) )
-         sess_info.gmt_offset = atoi( gmt_offcur.c_str( ) ) * -60;
-
-      sess_info.has_set_offsets = true;
+      date_time dt( input_data[ c_param_utcdtm ] );
+      sess_info.dtm_offset = ( int )( dt - date_time::standard( ) );
    }
+
+   // NOTE: The current GMT offset is used to determine "defcurrent" values
+   // for date and times (as they are not adjusted like a datetime type is).
+   string gmt_offcur( input_data[ c_param_tzoffcur ] );
+   if( !gmt_offcur.empty( ) )
+      sess_info.gmt_offset = atoi( gmt_offcur.c_str( ) ) * -60;
 }
 
 string hash_password( const string& salted_password )

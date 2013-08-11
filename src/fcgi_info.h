@@ -517,6 +517,7 @@ struct session_info
    std::string checksum_prefix;
 
    std::string last_uselextra;
+   std::string last_user_pin_value;
 
    data_container select_data;
 
@@ -530,8 +531,6 @@ struct session_info
 
    bool is_admin_user;
    bool is_persistent;
-
-   bool has_set_offsets;
 
    int row_limit;
    int notes_rmin;

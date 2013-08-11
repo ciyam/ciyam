@@ -1565,9 +1565,9 @@ bool output_view_form( ostream& os, const string& act,
 
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
+                  is_empty = false;
                   date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
                   ud = dt.get_date( );
-                  is_empty = false;
                }
 
                string date_precision;
@@ -1603,9 +1603,8 @@ bool output_view_form( ostream& os, const string& act,
 
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
-                  date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-                  mt = dt.get_time( );
                   is_empty = false;
+                  mt = date_time::standard( ).get_time( ) + ( seconds )sess_info.gmt_offset;
                }
 
                string time_precision;
@@ -1649,9 +1648,12 @@ bool output_view_form( ostream& os, const string& act,
 
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
-                  dt = date_time::standard( ) + ( seconds )sess_info.gmt_offset;
                   is_empty = false;
+                  dt = date_time::standard( );
                }
+
+               if( !is_empty )
+                  dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
                if( extra_data.count( c_field_extra_time_precision ) )
@@ -2683,7 +2685,7 @@ bool output_view_form( ostream& os, const string& act,
             {
                if( source.defcurrent_fields.count( source_value_id ) )
                {
-                  date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
+                  date_time dt( date_time::standard( ) );
                   cell_data = dt.as_string( );
                }
                else if( !source.protected_fields.count( source_value_id ) )
@@ -2693,6 +2695,7 @@ bool output_view_form( ostream& os, const string& act,
             if( !cell_data.empty( ) )
             {
                date_time dt( cell_data );
+               dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
                if( extra_data.count( c_field_extra_time_precision ) )

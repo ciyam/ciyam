@@ -2372,7 +2372,6 @@ string formatted_value( const string& value, const string& field_type )
             formatted_value = local_to_utc( date_time( formatted_value ), tz_abbr ).as_string( );
          }
 
-
          formatted_value = date_time( formatted_value ).as_string( true );
       }
    }
@@ -6814,18 +6813,23 @@ string get_field_values( size_t handle,
       if( p_raw_values )
          p_raw_values->push_back( next_value );
 
-      if( field != c_key_field && !next_value.empty( ) && !tz_abbr.empty( ) )
+      if( field != c_key_field && !next_value.empty( ) )
       {
          string type_name = get_field_type_name( handle, context, field );
          if( type_name == "date_time" || type_name == "tdatetime" )
          {
             date_time dt( next_value );
 
-            // NOTE: For mandatory date_time's the "default" date_time (for default or
-            // "new" records) is not adjusted so it can be used in order to identify a
-            // "default" value (which may in a UI be displayed as blank instead).
-            if( !is_default || dt != date_time( ) )
-               next_value = utc_to_local( dt, tz_abbr ).as_string( );
+            if( tz_abbr.empty( ) )
+               next_value = 'U' + dt.as_string( );
+            else
+            {
+               // NOTE: For mandatory date_time's the "default" date_time (for default or
+               // "new" records) is not adjusted so it can be used in order to identify a
+               // "default" value (which may in a UI be displayed as blank instead).
+               if( !is_default || dt != date_time( ) )
+                  next_value = utc_to_local( dt, tz_abbr ).as_string( );
+            }
          }
       }
 
@@ -7412,11 +7416,17 @@ string exec_bulk_ops( const string& module,
                   if( ( has_key_field && i == key_field_num ) || fields[ i ] == c_ignore_field )
                      continue;
 
-                  if( !values[ i ].empty( ) && !tz_abbr.empty( ) )
+                  if( !values[ i ].empty( ) )
                   {
                      string type_name = get_field_type_name( handle, "", fields[ i ] );
-                     if( !tz_abbr.empty( ) && ( type_name == "date_time" || type_name == "tdatetime" ) )
-                        values[ i ] = local_to_utc( date_time( values[ i ] ), tz_abbr ).as_string( );
+                     if( type_name == "date_time" || type_name == "tdatetime" )
+                     {
+                        // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
+                        if( values[ i ][ 0 ] == 'U' )
+                           values[ i ].erase( 0, 1 );
+                        else if( !tz_abbr.empty( ) )
+                           values[ i ] = local_to_utc( date_time( values[ i ] ), tz_abbr ).as_string( );
+                     }
                   }
 
                   string method_name_and_args( "set " );
@@ -7425,6 +7435,7 @@ string exec_bulk_ops( const string& module,
 
                   if( !log_field_value_pairs.empty( ) )
                      log_field_value_pairs += ",";
+
                   log_field_value_pairs += fields[ i ] + "="
                    + search_replace( escaped( escaped( values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
 
@@ -7439,6 +7450,7 @@ string exec_bulk_ops( const string& module,
 
                   if( !log_field_value_pairs.empty( ) )
                      log_field_value_pairs += ",";
+
                   log_field_value_pairs += fixed_fields[ i ] + "="
                    + search_replace( escaped( escaped( fixed_values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
 
