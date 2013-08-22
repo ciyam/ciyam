@@ -153,7 +153,7 @@ const char* const c_session_variable_none = "@none";
 const char* const c_session_variable_class = "@class";
 const char* const c_session_variable_module = "@module";
 const char* const c_session_variable_storage = "@storage";
-const char* const c_session_variable_tz_abbr = "@tz_abbr";
+const char* const c_session_variable_tz_name = "@tz_name";
 const char* const c_session_variable_cmd_hash = "@cmd_hash";
 const char* const c_session_variable_val_error = "@val_error";
 
@@ -267,7 +267,7 @@ struct session
    string uid;
    string sec;
 
-   string tz_abbr;
+   string tz_name;
 
    string last_cmd;
 
@@ -2365,11 +2365,11 @@ string formatted_value( const string& value, const string& field_type )
             formatted_value.erase( 0, 1 );
          else
          {
-            string tz_abbr( get_tz_abbr( ) );
-            if( tz_abbr.empty( ) )
-               tz_abbr = get_timezone( );
+            string tz_name( get_tz_name( ) );
+            if( tz_name.empty( ) )
+               tz_name = get_timezone( );
 
-            formatted_value = local_to_utc( date_time( formatted_value ), tz_abbr ).as_string( );
+            formatted_value = local_to_utc( date_time( formatted_value ), tz_name ).as_string( );
          }
 
          formatted_value = date_time( formatted_value ).as_string( true );
@@ -3735,9 +3735,9 @@ void init_globals( )
 
    // NOTE: This "get_tz_info" call is performed to verify that the server timezone is valid.
    float offset = 0.0;
-   string tz_abbr( get_timezone( ) );
+   string tz_name( get_timezone( ) );
    date_time now( date_time::standard( ) );
-   get_tz_info( now, tz_abbr, offset );
+   get_tz_info( now, tz_name, offset );
 
    read_strings( "ciyam_strings.txt", g_strings, "c_str_" );
    read_strings( "module_strings.txt", g_strings, "c_str_" );
@@ -3944,10 +3944,10 @@ string get_checksum( const string& data, bool use_reg_key )
 
 string get_timezone( )
 {
-   string tz_abbr( g_timezone );
+   string tz_name( g_timezone );
 
-   if( tz_abbr.empty( ) )
-      tz_abbr = "GMT";
+   if( tz_name.empty( ) )
+      tz_name = "UTC";
 
    return g_timezone;
 }
@@ -6012,19 +6012,19 @@ void set_module( const string& module )
    set_session_variable( c_session_variable_module, module );
 }
 
-string get_tz_abbr( )
+string get_tz_name( )
 {
-   return gtp_session->tz_abbr;
+   return gtp_session->tz_name;
 }
 
-void set_tz_abbr( const string& tz_abbr )
+void set_tz_name( const string& tz_name )
 {
-   string tz( tz_abbr );
+   string tz( tz_name );
    if( tz.empty( ) )
       tz = get_timezone( );
 
-   gtp_session->tz_abbr = tz;
-   set_session_variable( c_session_variable_tz_abbr, tz );
+   gtp_session->tz_name = tz;
+   set_session_variable( c_session_variable_tz_name, tz );
 }
 
 const set< string >& get_perms( )
@@ -6737,7 +6737,7 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
 
 string get_field_values( size_t handle,
  const string& parent_context, const vector< string >& field_list,
- const string& tz_abbr, bool is_default, bool as_csv, vector< string >* p_raw_values,
+ const string& tz_name, bool is_default, bool as_csv, vector< string >* p_raw_values,
  const map< int, string >* p_inserts, const map< string, string >* p_package_map )
 {
    string field_values;
@@ -6820,7 +6820,7 @@ string get_field_values( size_t handle,
          {
             date_time dt( next_value );
 
-            if( tz_abbr.empty( ) )
+            if( tz_name.empty( ) )
                next_value = 'U' + dt.as_string( );
             else
             {
@@ -6828,7 +6828,7 @@ string get_field_values( size_t handle,
                // "new" records) is not adjusted so it can be used in order to identify a
                // "default" value (which may in a UI be displayed as blank instead).
                if( !is_default || dt != date_time( ) )
-                  next_value = utc_to_local( dt, tz_abbr ).as_string( );
+                  next_value = utc_to_local( dt, tz_name ).as_string( );
             }
          }
       }
@@ -7013,7 +7013,7 @@ void dump_storage_locks( ostream& os )
 
 string exec_bulk_ops( const string& module,
  const string& uid, const string& dtm, const string& mclass,
- const string& filename, const string& export_fields, const string& tz_abbr, bool destroy_records,
+ const string& filename, const string& export_fields, const string& tz_name, bool destroy_records,
  const string& search_text, const string& search_query, const string& fixed_field_values, command_handler& handler )
 {
    string response;
@@ -7111,7 +7111,7 @@ string exec_bulk_ops( const string& module,
          {
             do
             {
-               outf << get_field_values( handle, "", fields, tz_abbr, false, true ) << "\n";
+               outf << get_field_values( handle, "", fields, tz_name, false, true ) << "\n";
             } while( instance_iterate_next( handle, "" ) );
          }
       }
@@ -7119,7 +7119,7 @@ string exec_bulk_ops( const string& module,
       {
          set_uid( uid );
          set_dtm( dtm );
-         set_tz_abbr( tz_abbr );
+         set_tz_name( tz_name );
 
          string log_lines;
 
@@ -7424,8 +7424,8 @@ string exec_bulk_ops( const string& module,
                         // NOTE: If a date_time string starts with 'U' then it is considered as already being UTC.
                         if( values[ i ][ 0 ] == 'U' )
                            values[ i ].erase( 0, 1 );
-                        else if( !tz_abbr.empty( ) )
-                           values[ i ] = local_to_utc( date_time( values[ i ] ), tz_abbr ).as_string( );
+                        else if( !tz_name.empty( ) )
+                           values[ i ] = local_to_utc( date_time( values[ i ] ), tz_name ).as_string( );
                      }
                   }
 

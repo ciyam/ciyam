@@ -1052,8 +1052,11 @@ struct timezone_info
    }
 
    std::string abbr;
+   std::string name;
 
    float utc_offset;
+
+   std::string tz_info;
    std::string description;
 
    std::string daylight_abbr;
@@ -1111,19 +1114,30 @@ struct daylight_savings_info
 struct timezone_data
 {
    int utc_offset;
+   std::string tz_info;
+   std::string description;
    std::string daylight_abbr;
    daylight_savings_info daylight_savings;
 };
 
 typedef std::map< std::string, timezone_data > timezone_container;
 
-void setup_timezones( );
+typedef timezone_container::iterator timezone_iterator;
+typedef timezone_container::const_iterator timezone_const_iterator;
+typedef timezone_container::value_type timezone_value_type;
 
-void CLASS_BASE_DECL_SPEC get_tz_info( const date_time& dt, std::string& tz_abbr, float& offset );
+void CLASS_BASE_DECL_SPEC setup_timezones( );
+
+std::string CLASS_BASE_DECL_SPEC list_timezones( );
+
+std::string CLASS_BASE_DECL_SPEC get_tz_desc( const std::string& tz_name );
+void CLASS_BASE_DECL_SPEC get_tz_info( const date_time& dt, std::string& tz_name, float& offset );
 
 date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt );
-date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt, const std::string& tz_abbr );
-date_time CLASS_BASE_DECL_SPEC local_to_utc( const date_time& dt, const std::string& tz_abbr );
+date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt, std::string& tz_name );
+date_time CLASS_BASE_DECL_SPEC utc_to_local( const date_time& dt, const std::string& tz_name );
+
+date_time CLASS_BASE_DECL_SPEC local_to_utc( const date_time& dt, const std::string& tz_name );
 
 bool CLASS_BASE_DECL_SPEC schedulable_month_and_day( int month, int day );
 
@@ -1145,19 +1159,19 @@ struct user_account
 void CLASS_BASE_DECL_SPEC send_email_message( const std::string& recipient,
  const std::string& subject, const std::string& message,
  const std::string& html_source, const std::vector< std::string >* p_extra_headers = 0,
- const std::vector< std::string >* p_file_names = 0, const std::string* p_tz_abbr = 0,
+ const std::vector< std::string >* p_file_names = 0, const std::string* p_tz_name = 0,
  const std::vector< std::string >* p_image_names = 0, const std::string* p_image_path_prefix = 0 );
 
 void CLASS_BASE_DECL_SPEC send_email_message( const std::vector< std::string >& recipients,
  const std::string& subject, const std::string& message, const std::string& html_source,
  const std::vector< std::string >* p_extra_headers = 0, const std::vector< std::string >* p_file_names = 0,
- const std::string* p_tz_abbr = 0, const std::vector< std::string >* p_image_names = 0,
+ const std::string* p_tz_name = 0, const std::vector< std::string >* p_image_names = 0,
  const std::string* p_image_path_prefix = 0 );
 
 void CLASS_BASE_DECL_SPEC send_email_message( const user_account& account,
  const std::vector< std::string >& recipients, const std::string& subject, const std::string& message,
  const std::string& html_source, const std::vector< std::string >* p_extra_headers = 0,
- const std::vector< std::string >* p_file_names = 0, const std::string* p_tz_abbr = 0,
+ const std::vector< std::string >* p_file_names = 0, const std::string* p_tz_name = 0,
  const std::vector< std::string >* p_image_names = 0, const std::string* p_image_path_prefix = 0 );
 
 std::string CLASS_BASE_DECL_SPEC generate_hashcash( const std::string& recipient );

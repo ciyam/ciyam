@@ -696,7 +696,6 @@ field_add -id=127118 Application Default_List_Print_Row_Limit int mand -def=4000
 field_add -id=127119 Application Default_Multiline_Text_Trunc int mand -def=50 -e=app_text_trunc_limit
 field_add -id=127120 Application Generate_Type int mand -def=0 -e=app_generate_type
 field_add -id=127121 Application Use_Check_Boxes_for_Bools bool mand -def=1
-field_add -id=127122 Application Default_Timezone_Abbr str5 mand -x=upper
 field_add -id=127123 Application Default_Multiline_Max_Rows int mand -def=50 -e=app_text_rows
 field_add -id=127124 Application Auto_Login_Days int mand -def=0 -e=app_auto_days
 field_add -id=127125 Application Create_Database bool mand -def=1 -transient
@@ -1943,7 +1942,7 @@ specification_add -id=602910 {Application}_view view "? standard:can_copy Applic
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
 ,@tab:Generate_Details,Version,Generate_Details;show+no_edit\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
-,Use_Menubar_Not_Sidebar,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers,Default_Timezone_Abbr\
+,Use_Menubar_Not_Sidebar,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
 ,@tab:Other_Settings,Module_Prefix,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content,Auto_Login_Days,Allow_Duplicate_Logins,Registration_Key\

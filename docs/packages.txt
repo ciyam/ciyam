@@ -86,7 +86,7 @@ group_package - Optional "group" package to divide events between workgroups.
 message_package - Optional "message" package to provide support for event notifications and automatic closing.
 
 use_duration - Use this option to give an event a duration (and to allow overlap detection).
-use_tz_abbr - Use this option to be able to tie a timezone abbreviation to an event.
+use_tz_name - Use this option to be able to tie a timezone name to an event.
 
 use_user - This option needs to be set true in order to to tie events to specific users.
 
@@ -234,7 +234,7 @@ Timezone
 
 Other Package Dependencies: Standard
 
-This package provides the ability to create records for different timezones that can include daylight savings
+This package provides the ability to manage records for different timezones that can include daylight savings
 adjustments and historical changes for such. The "timezones.sio" file used by the application server can also
 be generated from the timezone records.
 
@@ -251,6 +251,8 @@ sure a system is secured the password for "admin" must be changed (the default p
 Package Options:
 
 @use_demo_data - Use this option to create one or more demo User records.
+
+timezone_package - Optional "timezone" package to be able to tie a timezone to a user.
 
 use_access_level - Use this option to be able to assign users a specific "access" level.
 use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.

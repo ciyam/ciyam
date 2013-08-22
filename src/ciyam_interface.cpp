@@ -1568,12 +1568,6 @@ void request_handler::process_request( )
                      fetch_user_quick_links( mod_info, *p_session_info );
                }
 
-               // FUTURE: A User field should be added to hold the user's timezone
-               // abbreviation (useful when scheduling future events especially if
-               // the user's timezone includes daylight savings adjustments).
-               if( p_session_info->tz_abbr.empty( ) )
-                  p_session_info->tz_abbr = get_storage_info( ).tz_abbr;
-
                if( !temp_session )
                {
                   has_just_logged_in = true;
@@ -2203,6 +2197,13 @@ void request_handler::process_request( )
                      save_record( module_id, flags, app, chk, field, extra, exec, cont, fieldlist,
                       is_new_record, new_field_and_values, extra_field_info, vici, view, vtab_num,
                       *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
+
+                     // NOTE: If the record saved was a user record then if not admin assume a
+                     // user has changed their own details (so re-read the user record details).
+                     if( error_message.empty( ) && !had_send_or_recv_error
+                      && mod_info.user_class_id == view.cid && !p_session_info->is_admin_user )
+                        fetch_user_record( g_id, module_id, module_name, mod_info,
+                         *p_session_info, is_authorised, false, p_session_info->user_id, "", "", "" );
                   }
                }
                else if( act == c_act_cont )
@@ -2298,6 +2299,27 @@ void request_handler::process_request( )
             if( ( cmd == c_cmd_view || cmd == c_cmd_list )
              && !mod_info.user_qlink_class_id.empty( ) && !p_session_info->quick_link_data.empty( ) )
                fetch_user_quick_links( mod_info, *p_session_info );
+         }
+
+         // NOTE: If the user has selected a "timezone" then work out the current local
+         // time (for display as well as for use in "defcurrent" date and time fields).
+         if( p_session_info->tz_name.empty( ) )
+            p_session_info->tz_abbr = p_session_info->current_dtm = string( );
+         else
+         {
+            string cmd, time_info;
+
+            cmd = "utc_to_local " + p_session_info->tz_name
+             + " " + date_time::standard( ).as_string( e_time_format_hhmm );
+
+            if( simple_command( *p_session_info, cmd, &time_info ) )
+            {
+               string::size_type pos = time_info.rfind( ' ' );
+               p_session_info->current_dtm = time_info.substr( 0, pos );
+
+               if( pos != string::npos )
+                  p_session_info->tz_abbr = time_info.substr( pos + 1 );
+            }
          }
 
          if( cmd == c_cmd_pwd )
@@ -3198,13 +3220,16 @@ void request_handler::process_request( )
 
                            field_value_pairs.push_back( make_pair( file_field_id, new_file_name ) );
 
-                           date_time dtm_modified( date_time::standard( ) );
-
                            // NOTE: If a "modified" date/time field exists then update this to the current
-                           // date/time (the 'U' prefix is used to indicate UTC).
+                           // date/time.
                            if( !view.modify_datetime_field.empty( ) )
+                           {
+                              date_time dtm_modified;
+                              get_session_dtm( *p_session_info, dtm_modified );
+
                               field_value_pairs.push_back(
-                               make_pair( view.modify_datetime_field, "U" + dtm_modified.as_string( ) ) );
+                               make_pair( view.modify_datetime_field, dtm_modified.as_string( ) ) );
+                           }
 
                            // FUTURE: Need to and report an error if the update fails.
                            if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )
@@ -3598,6 +3623,25 @@ void request_handler::process_request( )
                }
               
                extra_content << "         <div id=\"uselects\">\n";
+
+               if( !using_anonymous )
+               {
+                  string cmd, time_info;
+
+                  if( !p_session_info->current_dtm.empty( ) )
+                  {
+                     time_info = date_time( p_session_info->current_dtm ).as_string( e_time_format_hhmm, true );
+                     if( !p_session_info->tz_abbr.empty( ) )
+                        time_info += ' ' + p_session_info->tz_abbr;
+                  }
+                  else
+                  {
+                     date_time dt( date_time::standard( ) + ( seconds )p_session_info->gmt_offset );
+                     time_info = dt.as_string( e_time_format_hhmm, true );
+                  }
+
+                  extra_content << time_info;
+               }
 
                // NOTE: If a user select option is specified and the user has access to it then include it.
                if( !p_session_info->needs_pin

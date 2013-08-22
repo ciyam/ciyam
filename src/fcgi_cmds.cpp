@@ -184,8 +184,8 @@ bool perform_update( const string& module, const string& class_id,
    string cmd( "perform_update " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id );
 
-   if( !sess_info.tz_abbr.empty( ) )
-      cmd += " -tz=" + sess_info.tz_abbr;
+   if( !sess_info.tz_name.empty( ) )
+      cmd += " -tz=" + sess_info.tz_name;
 
    cmd += " " + key + " \"" + field_values + "\"";
 
@@ -287,9 +287,7 @@ bool perform_action( const string& module_name,
    }
 
    date_time dt( date_time::standard( ) );
-
    string current_dtm( dt.as_string( ) );
-   string current_local_dtm( ( dt + ( seconds )sess_info.gmt_offset ).as_string( ) );
 
    // NOTE: If a view is found for the class and it contains a "modified" date/time field then this field will be updated.
    if( !view_id.empty( ) && act == c_act_link )
@@ -309,7 +307,7 @@ bool perform_action( const string& module_name,
                fields_and_values += ',';
                fields_and_values += fld.field;
                fields_and_values += '=';
-               fields_and_values += current_local_dtm;
+               fields_and_values += "U" + current_dtm;
                break;
             }
          }
@@ -390,8 +388,8 @@ bool perform_action( const string& module_name,
       {
          act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
-         if( !sess_info.tz_abbr.empty( ) )
-            act_cmd += " -tz=" + sess_info.tz_abbr;
+         if( !sess_info.tz_name.empty( ) )
+            act_cmd += " -tz=" + sess_info.tz_name;
 
          if( act == c_act_exec && !fieldlist.empty( ) )
             act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -407,8 +405,8 @@ bool perform_action( const string& module_name,
          {
             act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
-            if( !sess_info.tz_abbr.empty( ) )
-               act_cmd += " -tz=" + sess_info.tz_abbr;
+            if( !sess_info.tz_name.empty( ) )
+               act_cmd += " -tz=" + sess_info.tz_name;
 
             if( act == c_act_exec && !fieldlist.empty( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -424,8 +422,8 @@ bool perform_action( const string& module_name,
 
             act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
-            if( !sess_info.tz_abbr.empty( ) )
-               act_cmd += " -tz=" + sess_info.tz_abbr;
+            if( !sess_info.tz_name.empty( ) )
+               act_cmd += " -tz=" + sess_info.tz_name;
 
             if( !fieldlist.empty( ) )
                act_cmd += " \"-v=" + fields_and_values + "\"";
@@ -502,8 +500,8 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
-   if( !sess_info.tz_abbr.empty( ) )
-      fetch_cmd += " -tz=" + sess_info.tz_abbr;
+   if( !sess_info.tz_name.empty( ) )
+      fetch_cmd += " -tz=" + sess_info.tz_name;
 
    string perms;
 
@@ -668,8 +666,8 @@ bool fetch_list_info( const string& module,
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
 
-   if( !sess_info.tz_abbr.empty( ) )
-      fetch_cmd += " -tz=" + sess_info.tz_abbr;
+   if( !sess_info.tz_name.empty( ) )
+      fetch_cmd += " -tz=" + sess_info.tz_name;
 
    if( !filters.empty( ) )
       fetch_cmd += " -f=" + filters;
@@ -1387,7 +1385,7 @@ bool populate_list_info( list_source& list,
          if( svname[ 0 ] == 'L' )
             field_value = '*' + replaced( escaped( field_value, "\"" ), ",", "\\\\\\," ) + '*';
 
-         // NOTE: Value prefixes 'T' and 'U' are used for "datetime" values that require timezone adjustment.
+         // NOTE: Value prefixes 'T' and 'U' are used for "datetime" values.
          if( svname[ 0 ] >= 'T' && svname[ 0 ] <= 'U' && !field_value.empty( ) )
          {
             date_time dt( field_value );
@@ -1943,6 +1941,9 @@ bool fetch_user_record(
    if( !mod_info.user_slevel_field_id.empty( ) )
       field_list += "," + mod_info.user_slevel_field_id;
 
+   if( !mod_info.user_tz_name_field_id.empty( ) )
+      field_list += "," + mod_info.user_tz_name_field_id;
+
    if( !mod_info.user_has_auth_field_id.empty( ) )
       field_list += "," + mod_info.user_has_auth_field_id;
 
@@ -2085,6 +2086,9 @@ bool fetch_user_record(
 
    if( !mod_info.user_slevel_field_id.empty( ) )
       sess_info.user_slevel = user_data[ offset++ ];
+
+   if( !mod_info.user_tz_name_field_id.empty( ) )
+      sess_info.tz_name = user_data[ offset++ ];
 
    if( !mod_info.user_has_auth_field_id.empty( ) )
       sess_info.user_has_auth = user_data[ offset++ ];
@@ -2314,7 +2318,6 @@ void save_record( const string& module_id,
       key_info = "\"" + data + "\"";
 
    date_time dt( date_time::standard( ) );
-
    string current_dtm( dt.as_string( ) );
 
    string act_cmd;
@@ -2323,11 +2326,10 @@ void save_record( const string& module_id,
    else
       act_cmd = "perform_update";
 
-   act_cmd += " " + get_uid_info( sess_info )
-    + " " + current_dtm + " " + view.module_id + " " + view.cid;
+   act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + view.module_id + " " + view.cid;
 
-   if( !sess_info.tz_abbr.empty( ) )
-      act_cmd += " -tz=" + sess_info.tz_abbr;
+   if( !sess_info.tz_name.empty( ) )
+      act_cmd += " -tz=" + sess_info.tz_name;
 
    vector< string > values;
    split( app, values );
@@ -2411,12 +2413,12 @@ void save_record( const string& module_id,
          if( new_field_and_values.count( field_id ) )
             next = new_field_and_values.find( field_id )->second;
 
-         if( !next.empty( ) )
+         if( !next.empty( ) && sess_info.tz_name.empty( ) )
          {
             date_time dt( next );
             dt -= ( seconds )sess_info.gmt_offset;
 
-            next = "U" + dt.as_string( );
+            next = dt.as_string( );
          }
       }
       else if( view.password_fields.count( field_id )
@@ -2499,6 +2501,9 @@ void save_record( const string& module_id,
    // for any "defcurrent" fields that haven't already been provided.
    if( is_new_record )
    {
+      date_time dt_current;
+      get_session_dtm( sess_info, dt_current );
+
       for( size_t i = 0; i < view.field_ids.size( ); i++ )
       {
          if( sorted_fields.count( view.field_ids[ i ] ) )
@@ -2512,26 +2517,17 @@ void save_record( const string& module_id,
          if( view.date_fields.count( value_id ) )
          {
             if( view.defcurrent_fields.count( value_id ) )
-            {
-               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-               next = dt.get_date( ).as_string( );
-            }
+               next = dt_current.get_date( ).as_string( );
          }
          else if( view.time_fields.count( value_id ) )
          {
             if( view.defcurrent_fields.count( value_id ) )
-            {
-               date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-               next = dt.get_time( ).as_string( );
-            }
+               next = dt_current.get_time( ).as_string( );
          }
          else if( view.datetime_fields.count( value_id ) )
          {
             if( view.defcurrent_fields.count( value_id ) )
-            {
-               date_time dt( date_time::standard( ) );
-               next = "U" + dt.as_string( );
-            }
+               next = dt_current.as_string( );
          }
 
          if( !next.empty( ) )

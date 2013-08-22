@@ -594,13 +594,13 @@ void send_message( const string& host_and_port,
          else
             date_header += " -";
 
-         if( user_info.utc_offset < 10 )
+         if( abs( user_info.utc_offset ) < 10 )
             date_header += "0";
          date_header += to_string( ( int )user_info.utc_offset );
 
          int minutes = ( int )( ( user_info.utc_offset - ( int )user_info.utc_offset ) * 60.0 );
 
-         if( minutes < 10 )
+         if( abs( minutes ) < 10 )
             date_header += "0";
          date_header += to_string( minutes );
 

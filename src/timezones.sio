@@ -1,89 +1,686 @@
 <sio/>
  <timezones/>
   <timezone/>
-   <abbr>CST
-   <utc_offset>8
-   <description>Beijing, Chongqing, Hong Kong, Urumqi
+   <abbr>UTC
+   <tz_info>Universal
+   <utc_offset>0
+   <description>(UTC+00:00) (Universal Time)
+   <daylight_abbr>UTC
   </timezone>
   <timezone/>
-   <abbr>AEST
-   <utc_offset>10
-   <description>Canberra, Melbourne, Sydney
-   <daylight_abbr>AEDT
-   <daylight_year_start>2007
-   <daylight_year_finish>2020
+   <abbr>GMT
+   <tz_info>Europe/London
+   <utc_offset>0
+   <description>(UTC+00:00) Grenwich Mean Time
+   <daylight_abbr>BSST
+   <daylight_year_start>2000
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>5
+   <daylight_start_day_of_week>7
+   <daylight_start_time>01:00
+   <daylight_finish_month>10
+   <daylight_finish_occurrence>5
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>01:00
+   <daylight_utc_offset>1
+  </timezone>
+  <timezone/>
+   <abbr>WET
+   <tz_info>Europe/London
+   <utc_offset>0
+   <description>(UTC+00:00) Western European Time
+   <daylight_abbr>WEST
+   <daylight_year_start>2000
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>5
+   <daylight_start_day_of_week>7
+   <daylight_start_time>01:00
+   <daylight_finish_month>10
+   <daylight_finish_occurrence>5
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>01:00
+   <daylight_utc_offset>1
+  </timezone>
+  <timezone/>
+   <abbr>CET
+   <tz_info>Europe/Amsterdam
+   <utc_offset>1
+   <description>(UTC+01:00) Central European Time
+   <daylight_abbr>CEST
+   <daylight_year_start>2000
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>5
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>10
+   <daylight_finish_occurrence>5
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>02:00
+   <daylight_utc_offset>2
+  </timezone>
+  <timezone/>
+   <abbr>EET
+   <tz_info>Europe/Athens
+   <utc_offset>2
+   <description>(UTC+02:00) Eastern European Time
+   <daylight_abbr>EEST
+   <daylight_year_start>2000
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>5
+   <daylight_start_day_of_week>7
+   <daylight_start_time>03:00
+   <daylight_finish_month>10
+   <daylight_finish_occurrence>5
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>03:00
+   <daylight_utc_offset>3
+  </timezone>
+  <timezone/>
+   <abbr>MST
+   <name>Moscow
+   <tz_info>Europe/Moscow
+   <utc_offset>3
+   <description>(UTC+03:00) Moscow Time
+   <daylight_abbr>MSD
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2010
+     <description>2000-2010
+     <start_month>3
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>4
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>GST
+   <tz_info>Asia/Dubai
+   <utc_offset>4
+   <description>(UTC+04:00) Gulf Standard Time
+   <daylight_abbr>GDT
+  </timezone>
+  <timezone/>
+   <abbr>PKT
+   <tz_info>Asia/Karachi
+   <utc_offset>5
+   <description>(UTC+05:00) Pakistan Standard Time
+   <daylight_abbr>PKDST
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2002
+     <year_finish>2002
+     <description>2002-2002
+     <start_month>4
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>00:15
+     <finish_month>10
+     <finish_occurrence>1
+     <finish_day_of_week>6
+     <finish_time>23:15
+     <utc_offset>6
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2008
+     <year_finish>2008
+     <description>2008-2008
+     <start_month>6
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>00:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>5
+     <finish_time>23:00
+     <utc_offset>6
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2009
+     <year_finish>2009
+     <description>2009-2009
+     <start_month>4
+     <start_occurrence>3
+     <start_day_of_week>3
+     <start_time>00:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>6
+     <finish_time>23:00
+     <utc_offset>6
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>IST
+   <tz_info>Asia/Kolkata
+   <utc_offset>5.5
+   <description>(UTC+05:30) India Standard Time
+   <daylight_abbr>IDT
+  </timezone>
+  <timezone/>
+   <abbr>BST
+   <tz_info>Asia/Dhaka
+   <utc_offset>6
+   <description>(UTC+06:00) Bangladesh Standard Time
+   <daylight_abbr>BDT
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2009
+     <year_finish>2009
+     <description>2009-2009
+     <start_month>6
+     <start_occurrence>3
+     <start_day_of_week>6
+     <start_time>23:00
+     <finish_month>12
+     <finish_occurrence>5
+     <finish_day_of_week>4
+     <finish_time>23:00
+     <utc_offset>7
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>ICT
+   <tz_info>Asia/Bangkok
+   <utc_offset>7
+   <description>(UTC+07:00) Indochina Time
+   <daylight_abbr>ICST
+  </timezone>
+  <timezone/>
+   <abbr>AWST
+   <tz_info>Australia/Perth
+   <utc_offset>8
+   <description>(UTC+08:00) Australian Western Standard Time
+   <daylight_abbr>AWDT
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2006
+     <year_finish>2006
+     <description>2006-2006
+     <start_month>12
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>1
+     <finish_occurrence>1
+     <finish_day_of_week>7
+     <finish_time>00:00
+     <utc_offset>9
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2007
+     <year_finish>2008
+     <description>2007-2008
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>9
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2009
+     <year_finish>2009
+     <description>2009-2009
+     <start_month>1
+     <start_occurrence>1
+     <start_day_of_week>4
+     <start_time>00:00
+     <finish_month>3
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>9
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>CST
+   <name>China
+   <tz_info>Asia/Beijing
+   <utc_offset>8
+   <description>(UTC+08:00) China Standard Time
+   <daylight_abbr>CDT
+  </timezone>
+  <timezone/>
+   <abbr>JST
+   <tz_info>Asia/Tokyo
+   <utc_offset>9
+   <description>(UTC+09:00) Japan Standard Time
+   <daylight_abbr>JDT
+  </timezone>
+  <timezone/>
+   <abbr>ACST
+   <tz_info>Australia/Adelaide
+   <utc_offset>9.5
+   <description>(UTC+09:30) Australian Central Standard Time
+   <daylight_abbr>ACDT
+   <daylight_year_start>2008
+   <daylight_year_finish>2015
    <daylight_start_month>10
    <daylight_start_occurrence>1
    <daylight_start_day_of_week>7
-   <daylight_start_time>02:00:00
+   <daylight_start_time>02:00
    <daylight_finish_month>4
    <daylight_finish_occurrence>1
    <daylight_finish_day_of_week>7
-   <daylight_finish_time>02:00:00
+   <daylight_finish_time>02:00
+   <daylight_utc_offset>10.5
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2005
+     <description>2000-2005
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>10.5
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2006
+     <year_finish>2006
+     <description>2006-2006
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>4
+     <finish_occurrence>1
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>10.5
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2007
+     <year_finish>2007
+     <description>2007-2007
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>10.5
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>AEST
+   <tz_info>Australia/Canberra
+   <utc_offset>10
+   <description>(UTC+10:00) Australian Eastern Standard Time
+   <daylight_abbr>AEDT
+   <daylight_year_start>2008
+   <daylight_year_finish>2015
+   <daylight_start_month>10
+   <daylight_start_occurrence>1
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>4
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>02:00
    <daylight_utc_offset>11
    <historical_daylight_savings/>
     <historical_daylight_saving/>
-     <year_start>1971
-     <year_finish>1971
-     <description>Initial DST Introduction
-     <start_month>10
-     <start_occurrence>5
-     <start_day_of_week>7
-     <start_time>02:00:00
-     <finish_month>1
-     <finish_occurrence>1
-     <finish_day_of_week>5
-     <finish_time>00:00:00
-     <utc_offset>11
-    </historical_daylight_saving>
-    <historical_daylight_saving/>
-     <year_start>1972
-     <year_finish>2006
-     <description>Initial DST Continuations
-     <start_month>10
-     <start_occurrence>5
-     <start_day_of_week>7
-     <start_time>01:00:00
-     <finish_month>4
-     <finish_occurrence>1
-     <finish_day_of_week>7
-     <finish_time>02:00:00
-     <utc_offset>11
-    </historical_daylight_saving>
-    <historical_daylight_saving/>
      <year_start>2000
      <year_finish>2000
-     <description>Sydney Olympics Start
+     <description>2000-2000
      <start_month>8
      <start_occurrence>5
      <start_day_of_week>7
-     <start_time>02:00:00
-     <finish_month>4
-     <finish_occurrence>1
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>5
      <finish_day_of_week>7
-     <finish_time>02:00:00
+     <finish_time>02:00
      <utc_offset>11
     </historical_daylight_saving>
     <historical_daylight_saving/>
      <year_start>2001
-     <year_finish>2001
-     <description>Sydney Olympics Finish
+     <year_finish>2005
+     <description>2001-2005
      <start_month>10
      <start_occurrence>5
      <start_day_of_week>7
-     <start_time>02:00:00
+     <start_time>02:00
      <finish_month>3
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
+     <utc_offset>11
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2006
+     <year_finish>2006
+     <description>2006-2006
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>4
      <finish_occurrence>1
      <finish_day_of_week>7
-     <finish_time>02:00:00
+     <finish_time>02:00
+     <utc_offset>11
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2007
+     <year_finish>2007
+     <description>2007-2007
+     <start_month>10
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>3
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>02:00
      <utc_offset>11
     </historical_daylight_saving>
    </historical_daylight_savings>
   </timezone>
   <timezone/>
-   <abbr>GMT
-   <utc_offset>0
-   <description>Greenwich Mean Time
+   <abbr>NCT
+   <tz_info>Pacific/Noumea
+   <utc_offset>11
+   <description>(UTC+11:00) New Caledonia Time
+   <daylight_abbr>NCST
+  </timezone>
+  <timezone/>
+   <abbr>CVT
+   <tz_info>Atlantic/Cape_Verde
+   <utc_offset>-1
+   <description>(UTC-01:00) Cape Verde Time
+   <daylight_abbr>CVST
+  </timezone>
+  <timezone/>
+   <abbr>FNT
+   <tz_info>America/Noronha
+   <utc_offset>-2
+   <description>(UTC-02:00) Fernando de Noronha Time
+   <daylight_abbr>FNST
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2001
+     <year_finish>2001
+     <description>2001-2001
+     <start_month>10
+     <start_occurrence>2
+     <start_day_of_week>7
+     <start_time>00:00
+     <finish_month>1
+     <finish_occurrence>1
+     <finish_day_of_week>1
+     <finish_time>00:00
+     <utc_offset>-1
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2002
+     <year_finish>2002
+     <description>2002-2002
+     <start_month>1
+     <start_occurrence>1
+     <start_day_of_week>2
+     <start_time>00:00
+     <finish_month>2
+     <finish_occurrence>3
+     <finish_day_of_week>6
+     <finish_time>23:00
+     <utc_offset>-1
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>ART
+   <tz_info>America/Argentina/Buenos_Aires
+   <utc_offset>-3
+   <description>(UTC-03:00) Argentina Time
+   <daylight_abbr>ARST
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2000
+     <description>2000-2000
+     <start_month>1
+     <start_occurrence>1
+     <start_day_of_week>6
+     <start_time>00:00
+     <finish_month>3
+     <finish_occurrence>1
+     <finish_day_of_week>5
+     <finish_time>00:00
+     <utc_offset>-3
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2007
+     <year_finish>2007
+     <description>2007-2007
+     <start_month>12
+     <start_occurrence>5
+     <start_day_of_week>7
+     <start_time>00:00
+     <finish_month>1
+     <finish_occurrence>1
+     <finish_day_of_week>1
+     <finish_time>00:00
+     <utc_offset>-2
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2008
+     <year_finish>2008
+     <description>2008-2008
+     <start_month>10
+     <start_occurrence>3
+     <start_day_of_week>7
+     <start_time>00:00
+     <finish_month>3
+     <finish_occurrence>3
+     <finish_day_of_week>6
+     <finish_time>23:00
+     <utc_offset>-2
+    </historical_daylight_saving>
+    <historical_daylight_saving/>
+     <year_start>2009
+     <year_finish>2009
+     <description>2009-2009
+     <start_month>1
+     <start_occurrence>1
+     <start_day_of_week>4
+     <start_time>00:00
+     <finish_month>3
+     <finish_occurrence>2
+     <finish_day_of_week>6
+     <finish_time>23:00
+     <utc_offset>-2
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>AST
+   <tz_info>America/Blanc-Sablon
+   <utc_offset>-4
+   <description>(UTC-04:00) Atlantic Time
+   <daylight_abbr>ADT
+  </timezone>
+  <timezone/>
+   <abbr>EST
+   <tz_info>America/New_York
+   <utc_offset>-5
+   <description>(UTC-05:00) Eastern Time
+   <daylight_abbr>EDT
+   <daylight_year_start>2007
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>2
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>11
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>01:00
+   <daylight_utc_offset>-4
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2006
+     <description>2000-2006
+     <start_month>4
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>01:00
+     <utc_offset>-4
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>CST
+   <tz_info>America/Chicago
+   <utc_offset>-6
+   <description>(UTC-06:00) Central Time
+   <daylight_abbr>CDT
+   <daylight_year_start>2007
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>2
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>11
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>01:00
+   <daylight_utc_offset>-5
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2006
+     <description>2000-2006
+     <start_month>4
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>01:00
+     <utc_offset>-5
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>MST
+   <tz_info>US/Mountain
+   <utc_offset>-7
+   <description>(UTC-07:00) Mountain Time
+   <daylight_abbr>MSD
+   <daylight_year_start>2007
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>2
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>11
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>01:00
+   <daylight_utc_offset>-6
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2006
+     <description>2000-2006
+     <start_month>4
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>01:00
+     <utc_offset>-6
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>PST
+   <tz_info>America/Los_Angeles
+   <utc_offset>-8
+   <description>(UTC-08:00) Pacific Time
+   <daylight_abbr>PDT
+   <daylight_year_start>2007
+   <daylight_year_finish>2015
+   <daylight_start_month>3
+   <daylight_start_occurrence>2
+   <daylight_start_day_of_week>7
+   <daylight_start_time>02:00
+   <daylight_finish_month>11
+   <daylight_finish_occurrence>1
+   <daylight_finish_day_of_week>7
+   <daylight_finish_time>01:00
+   <daylight_utc_offset>-7
+   <historical_daylight_savings/>
+    <historical_daylight_saving/>
+     <year_start>2000
+     <year_finish>2006
+     <description>2000-2006
+     <start_month>4
+     <start_occurrence>1
+     <start_day_of_week>7
+     <start_time>02:00
+     <finish_month>10
+     <finish_occurrence>5
+     <finish_day_of_week>7
+     <finish_time>01:00
+     <utc_offset>-7
+    </historical_daylight_saving>
+   </historical_daylight_savings>
+  </timezone>
+  <timezone/>
+   <abbr>GAMT
+   <tz_info>Pacific/Gambier
+   <utc_offset>-9
+   <description>(UTC-09:00) Gambier Time
+   <daylight_abbr>GAMST
+  </timezone>
+  <timezone/>
+   <abbr>HAST
+   <tz_info>Pacific/Honolulu
+   <utc_offset>-10
+   <description>(UTC-10:00) Hawaii-Aleutian Standard Time
+   <daylight_abbr>HADT
+  </timezone>
+  <timezone/>
+   <abbr>NUT
+   <tz_info>Pacific/Niue
+   <utc_offset>-11
+   <description>(UTC-11:00) Niue Time
+   <daylight_abbr>NUST
   </timezone>
  </timezones>
 </sio>

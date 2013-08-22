@@ -1,4 +1,18 @@
 version
 session_list -min
 encrypt -no_ssl -no_salt for_testing_password
+utc_to_local AEST "2013-10-05 15:00"
+utc_to_local AEST+ "2013-10-05 15:00"
+utc_from_local AEST "2013-10-06 01:00"
+utc_to_local AEST "2013-10-06 16:00"
+utc_to_local AEST+ "2013-10-06 16:00"
+utc_from_local AEST "2013-10-07 03:00"
+utc_from_local AEDT "2013-10-07 03:00"
+utc_to_local AEST "2014-04-05 15:00"
+utc_to_local AEST+ "2014-04-05 15:00"
+utc_from_local AEST "2014-04-06 02:00"
+utc_from_local AEDT "2014-04-06 02:00"
+utc_to_local AEST "2014-04-05 16:00"
+utc_to_local AEST+ "2014-04-05 16:00"
+utc_from_local AEST "2014-04-06 02:00"
 .quit

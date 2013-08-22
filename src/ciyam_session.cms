@@ -28,12 +28,12 @@ object_iterate_forwards "iterate forwards on a persistent instance" <val//handle
 object_iterate_backwards "iterate backwards on a persistent instance" <val//handle>[<val/./context>][<val//key_info>][<opt/inc>]
 object_iterate_next "next iteration on a persistent instance" <val//handle>[<val/./context>]
 object_iterate_stop "stop iteration on a persistent instance" <val//handle>[<val/./context>]
-perform_fetch "fetch persistent instances" <val//module><val//mclass>[<opt/-rev/reverse>][<val/-u=/uid>][<val/-d=/dtm>][<val/-td=/tmp_dir>][<val/-tz=/tz_abbr>][<list/-f=/filters>][<list/-p=/perms>][<val/-s=/security_info>][<val/-t=/search_text>][<val/-q=/search_query>][<list/-x=/extra_vars>][<oval//key_info>][<val/#/limit>][<list/-v=/set_values>][<list//fields>][{<opt/-min/minimal>[<val//map_file>]}|{<opt/-pdf/create_pdf><val//format_file><val//output_file>[<val//title_name>]}]
-perform_create "create a new persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<oval//key>[<list//field_values>][<val/-x=/method_name>]
-perform_update "update an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<val//key>[<val/=/ver_info>]<list//field_values>[<val/-x=/method_name>][<list//check_values>]
-perform_destroy "destroy an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>][<opt/-q/quiet>]<val//key>[<val/=/ver_info>]
-perform_execute "execute a method for a persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>][<list/-v=/set_values>]<list//keys>[<list/=/vers>]<val//method_name>[<val//args>]
-perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_abbr>]<val//filename>[<opt/-destroy/destroy_records>|<list/-export=/export_fields>[<val/-t=/search_text>][<val/-q=/search_query>]|<list//fixed_field_values>]
+perform_fetch "fetch persistent instances" <val//module><val//mclass>[<opt/-rev/reverse>][<val/-u=/uid>][<val/-d=/dtm>][<val/-td=/tmp_dir>][<val/-tz=/tz_name>][<list/-f=/filters>][<list/-p=/perms>][<val/-s=/security_info>][<val/-t=/search_text>][<val/-q=/search_query>][<list/-x=/extra_vars>][<oval//key_info>][<val/#/limit>][<list/-v=/set_values>][<list//fields>][{<opt/-min/minimal>[<val//map_file>]}|{<opt/-pdf/create_pdf><val//format_file><val//output_file>[<val//title_name>]}]
+perform_create "create a new persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_name>]<oval//key>[<list//field_values>][<val/-x=/method_name>]
+perform_update "update an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_name>]<val//key>[<val/=/ver_info>]<list//field_values>[<val/-x=/method_name>][<list//check_values>]
+perform_destroy "destroy an existing persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_name>][<opt/-q/quiet>]<val//key>[<val/=/ver_info>]
+perform_execute "execute a method for a persistent instance" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_name>][<list/-v=/set_values>]<list//keys>[<list/=/vers>]<val//method_name>[<val//args>]
+perform_bulk_ops "perform bulk instance operations" <val//uid><val//dtm><val//module><val//mclass>[<val/-tz=/tz_name>]<val//filename>[<opt/-destroy/destroy_records>|<list/-export=/export_fields>[<val/-t=/search_text>][<val/-q=/search_query>]|<list//fixed_field_values>]
 perform_package_export "export a record package" <val//module><val//mclass><list//keys><val//filename>[<val/-t=/test_info>][<val/-x=/exclude_info>][<val/-i=/include_info>]
 perform_package_import "import a record package" <val//uid><val//dtm><val//module><val//filename>[<opt/-new_only/new_only>|<opt/-for_remove/for_remove>][<val/-k=/key_prefix>][<val/-r=/replace_info>][<val/-s=/skip_field_info>]
 session_list "list active sessions" [<opt/-min/minimal>]
@@ -64,15 +64,17 @@ trace_flags "view available trace flags"
 encrypt "encrypt a password" [<opt/-no_ssl/no_ssl>][<opt/-no_salt/no_salt>]<val//password>
 password "retrieve an encrypted system password" <val//name>
 passtotp "retrieve a TOTP password" <val//secret>
-sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_abbr>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
+sendmail "send a simple test email" <val//to><val//subject>[<val//message>][<val/-tz=/tz_name>][<list/-attach=/file_names>][<val//html_source>][<list/-images=/image_names>][<val/-prefix=/image_prefix>]
 schedule "display autoscript schedule"
 smtpinfo "retrieves the sendmail sender address"
 starttls "start TLS session"
-timezone "display timezone abbreviation"
 checkmail "check for incoming email or process email script calls" [<opt/-script/create_script>|<list//headers>]
 runscript "run an external script or program" [<val//script_name>]
+timezones "display a list of known timezones"
 utc_now "get the current UTC time"
-utc_offset "get UTC offset for a timezone" <val//tz_abbr><val//local_time>
+utc_offset "get UTC offset for a timezone" <val//tz_name><val//local_time>
+utc_to_local "convert UTC to local for a timezone" <val//tz_name><val//utc_time>
+utc_from_local "convert local to UTC for a timezone" <val//tz_name><val//local_time>
 wait "wait for a number of milliseconds" [<val/-u=/uid>]<val//milliseconds>
 test "test command for prototyping" [<oval//arg_1>][<oval//arg_2>][<oval//arg_3>]
 quit "terminate session"
