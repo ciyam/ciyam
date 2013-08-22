@@ -1,0 +1,29 @@
+echo "<sio/>" >timezone.data.package.sio
+./timezone NUT Pacific/Niue "(UTC-11:00) Niue Time" package >>timezone.data.package.sio
+./timezone HAST Pacific/Honolulu "(UTC-10:00) Hawaii-Aleutian Standard Time" package >>timezone.data.package.sio
+./timezone GAMT Pacific/Gambier "(UTC-09:00) Gambier Time" package >>timezone.data.package.sio
+./timezone PST America/Los_Angeles "(UTC-08:00) Pacific Time" package >>timezone.data.package.sio
+./timezone MST US/Mountain "(UTC-07:00) Mountain Time" package >>timezone.data.package.sio
+./timezone CST America/Chicago "(UTC-06:00) Central Time" package >>timezone.data.package.sio
+./timezone EST America/New_York "(UTC-05:00) Eastern Time" package >>timezone.data.package.sio
+./timezone AST America/Blanc-Sablon "(UTC-04:00) Atlantic Time" package >>timezone.data.package.sio
+./timezone ART America/Argentina/Buenos_Aires "(UTC-03:00) Argentina Time" package >>timezone.data.package.sio
+./timezone FNT America/Noronha "(UTC-02:00) Fernando de Noronha Time" package >>timezone.data.package.sio
+./timezone CVT Atlantic/Cape_Verde "(UTC-01:00) Cape Verde Time" package >>timezone.data.package.sio
+./timezone GMT Europe/London "(UTC+00:00) Grenwich Mean Time" package >>timezone.data.package.sio
+./timezone WET Europe/London "(UTC+00:00) Western European Time" package >>timezone.data.package.sio
+./timezone CET Europe/Amsterdam "(UTC+01:00) Central European Time" package >>timezone.data.package.sio
+./timezone EET Europe/Athens "(UTC+02:00) Eastern European Time" package >>timezone.data.package.sio
+./timezone MST:Moscow Europe/Moscow "(UTC+03:00) Moscow Time" package >>timezone.data.package.sio
+./timezone GST Asia/Dubai "(UTC+04:00) Gulf Standard Time" package >>timezone.data.package.sio
+./timezone PKT Asia/Karachi "(UTC+05:00) Pakistan Standard Time" package >>timezone.data.package.sio
+./timezone IST Asia/Kolkata "(UTC+05:30) India Standard Time" package >>timezone.data.package.sio
+./timezone BST Asia/Dhaka "(UTC+06:00) Bangladesh Standard Time" package >>timezone.data.package.sio
+./timezone ICT Asia/Bangkok "(UTC+07:00) Indochina Time" package >>timezone.data.package.sio
+./timezone AWST Australia/Perth "(UTC+08:00) Australian Western Standard Time" package >>timezone.data.package.sio
+./timezone CST:China Asia/Beijing "(UTC+08:00) China Standard Time" package >>timezone.data.package.sio
+./timezone JST Asia/Tokyo "(UTC+09:00) Japan Standard Time" package >>timezone.data.package.sio
+./timezone ACST Australia/Adelaide "(UTC+09:30) Australian Central Standard Time" package >>timezone.data.package.sio
+./timezone AEST Australia/Canberra "(UTC+10:00) Australian Eastern Standard Time" package >>timezone.data.package.sio
+./timezone NCT Pacific/Noumea "(UTC+11:00) New Caledonia Time" package >>timezone.data.package.sio
+echo "</sio>" >>timezone.data.package.sio
