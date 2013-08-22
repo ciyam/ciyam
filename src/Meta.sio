@@ -322,23 +322,6 @@
       </specifications>
      </field>
      <field/>
-      <id>127122
-      <name>Default_Timezone_Abbr
-      <type>1000
-      <mandatory>true
-      <extra>upper
-      <indexes/>
-      </indexes>
-      <modifiers/>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>602910
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
       <id>127130
       <name>Encrypt_Dynamic_Content
       <type>bool
@@ -26272,7 +26255,6 @@
      <field_info>127121
      <field_info>127111
      <field_info>127112
-     <field_info>127122
      <field_info>127113
      <field_info>127114
      <field_info>127115;enum=900

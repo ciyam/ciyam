@@ -40,6 +40,7 @@
 `{`!`@eq`(`$specification_user_info_soverride`,`'`'`)#`{`$specification_user_info_soverride`}`}
  <user_slevel>`{`(`?`$specification_user_info_slevel`)`$specification_user_info_slevel`}
  <user_unique>`{`(`?`$specification_user_info_unique`)`$specification_user_info_unique`}
+ <user_tz_name>`{`(`?`$specification_user_info_tz_name`)`$specification_user_info_tz_name`}
  <user_has_auth>`{`(`?`$specification_user_info_has_auth`)`$specification_user_info_has_auth`}
  <user_pin_value>`{`(`?`$specification_user_info_pin_value`)`$specification_user_info_pin_value`}
  <user_gpg_install>`{`(`?`$specification_user_info_gpg_install`)`$specification_user_info_gpg_install`}`}

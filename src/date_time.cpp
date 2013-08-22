@@ -844,7 +844,7 @@ mtime::mtime( const std::string& s )
    else
    {
       if( s.length( ) < 4 || s.length( ) > 12 )
-         throw runtime_error( "invalid format for mtime (given '" + s + "' but expecting 'hhmmss[t[h[t]]]' or 'hh:mm:ss[.t[h[t]]]')" );
+         throw runtime_error( "invalid format for mtime (given '" + s + "' but expecting 'hhmm[ss[t[h[t]]]]' or 'hh:mm[:ss[.t[h[t]]]]')" );
 
       hour hr;
       minute mn;
@@ -863,7 +863,7 @@ mtime::mtime( const std::string& s )
       mn = ( minute )( ( ( s[ mn_off ] - '0' ) * 10 ) + ( s[ mn_off + 1 ] - '0' ) );
 
       if( sc_off == 6 && s.length( ) > 5 && s.length( ) < 8 )
-         throw runtime_error( "invalid format for mtime (given '" + s + "' but expecting 'hhmmss[t[h[t]]]' or 'hh:mm:ss[.t[h[t]]]')" );
+         throw runtime_error( "invalid format for mtime (given '" + s + "' but expecting 'hhmm[ss[t[h[t]]]]' or 'hh:mm[:ss[.t[h[t]]]]')" );
 
       if( sc_off && s.length( ) > sc_off + 1 )
          sc = ( second )( ( ( s[ sc_off ] - '0' ) * 10 ) + ( s[ sc_off + 1 ] - '0' ) );
@@ -2534,7 +2534,7 @@ date_time::date_time( const string& s )
    }
    else
    {
-      if( s.length( ) != 8 && s.length( ) != 10 && ( s.length( ) < 14 || s.length( ) > 23 ) )
+      if( s.length( ) != 8 && s.length( ) != 10 && ( s.length( ) < 12 || s.length( ) > 23 ) )
          throw runtime_error( "invalid format for date_time (given '"
           + s + "' but expecting 'yyyymmdd[hhmm[ss[t[h[t]]]]]' or 'yyyy-mm-dd[ hh:mm[:ss[.t[h[t]]]]]')" );
 

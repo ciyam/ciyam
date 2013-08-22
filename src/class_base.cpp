@@ -93,6 +93,8 @@ const char* const c_section_historical_daylight_saving = "historical_daylight_sa
 const char* const c_section_historical_daylight_savings = "historical_daylight_savings";
 
 const char* const c_attribute_abbr = "abbr";
+const char* const c_attribute_name = "name";
+const char* const c_attribute_tz_info = "tz_info";
 const char* const c_attribute_utc_offset = "utc_offset";
 const char* const c_attribute_description = "description";
 const char* const c_attribute_daylight_abbr = "daylight_abbr";
@@ -125,6 +127,9 @@ typedef foreign_key_lock_container::iterator foreign_key_lock_iterator;
 typedef foreign_key_lock_container::const_iterator foreign_key_lock_const_iterator;
 
 timezone_container g_timezones;
+
+map< string, string > g_timezone_abbrs;
+map< string, string > g_daylight_names;
 
 mutex g_mutex;
 
@@ -196,7 +201,7 @@ string get_mask( int numeric_digits,
 }
 
 date_time local_utc_conv( const date_time& dt, int utc_offset,
- daylight_savings_info* p_daylight_savings_info, bool to_local, int* p_offset = 0 )
+ daylight_savings_info* p_daylight_savings_info, bool to_local, int* p_offset = 0, bool is_daylight = false )
 {
    int bias = 0;
    date_time retval( dt );
@@ -229,6 +234,9 @@ date_time local_utc_conv( const date_time& dt, int utc_offset,
 
             date_time dt_begin( begin );
             date_time dt_finish( finish );
+
+            if( !to_local && is_daylight )
+               dt_finish += ( seconds )yici->second.bias;
 
             if( dt_begin < dt_finish )
             {
@@ -3105,12 +3113,15 @@ void generate_timezones_sio( const vector< timezone_info >& timezones )
       writer.start_section( c_section_timezone );
 
       writer.write_attribute( c_attribute_abbr, timezones[ i ].abbr );
+      writer.write_opt_attribute( c_attribute_name, timezones[ i ].name, timezones[ i ].abbr );
+      writer.write_attribute( c_attribute_tz_info, timezones[ i ].tz_info );
       writer.write_attribute( c_attribute_utc_offset, to_string( timezones[ i ].utc_offset ) );
       writer.write_attribute( c_attribute_description, timezones[ i ].description );
 
-      if( !timezones[ i ].daylight_abbr.empty( ) )
+      writer.write_opt_attribute( c_attribute_daylight_abbr, timezones[ i ].daylight_abbr );
+
+      if( timezones[ i ].daylight_year_start )
       {
-         writer.write_attribute( c_attribute_daylight_abbr, timezones[ i ].daylight_abbr );
          writer.write_attribute( c_attribute_daylight_year_start, to_string( timezones[ i ].daylight_year_start ) );
          writer.write_attribute( c_attribute_daylight_year_finish, to_string( timezones[ i ].daylight_year_finish ) );
 
@@ -3125,36 +3136,36 @@ void generate_timezones_sio( const vector< timezone_info >& timezones )
          writer.write_attribute( c_attribute_daylight_finish_time, timezones[ i ].daylight_finish_time );
 
          writer.write_attribute( c_attribute_daylight_utc_offset, to_string( timezones[ i ].daylight_utc_offset ) );
+      }
 
-         if( timezones[ i ].historical_daylights.size( ) )
+      if( timezones[ i ].historical_daylights.size( ) )
+      {
+         writer.start_section( c_section_historical_daylight_savings );
+
+         for( int j = 0; j < timezones[ i ].historical_daylights.size( ); j++ )
          {
-            writer.start_section( c_section_historical_daylight_savings );
+            writer.start_section( c_section_historical_daylight_saving );
 
-            for( int j = 0; j < timezones[ i ].historical_daylights.size( ); j++ )
-            {
-               writer.start_section( c_section_historical_daylight_saving );
+            writer.write_attribute( c_attribute_year_start, to_string( timezones[ i ].historical_daylights[ j ].year_start ) );
+            writer.write_attribute( c_attribute_year_finish, to_string( timezones[ i ].historical_daylights[ j ].year_finish ) );
+            writer.write_attribute( c_attribute_description, timezones[ i ].historical_daylights[ j ].description );
 
-               writer.write_attribute( c_attribute_year_start, to_string( timezones[ i ].historical_daylights[ j ].year_start ) );
-               writer.write_attribute( c_attribute_year_finish, to_string( timezones[ i ].historical_daylights[ j ].year_finish ) );
-               writer.write_attribute( c_attribute_description, timezones[ i ].historical_daylights[ j ].description );
+            writer.write_attribute( c_attribute_start_month, to_string( timezones[ i ].historical_daylights[ j ].start_month ) );
+            writer.write_attribute( c_attribute_start_occurrence, to_string( timezones[ i ].historical_daylights[ j ].start_occurrence ) );
+            writer.write_attribute( c_attribute_start_day_of_week, to_string( timezones[ i ].historical_daylights[ j ].start_day_of_week ) );
+            writer.write_attribute( c_attribute_start_time, timezones[ i ].historical_daylights[ j ].start_time );
 
-               writer.write_attribute( c_attribute_start_month, to_string( timezones[ i ].historical_daylights[ j ].start_month ) );
-               writer.write_attribute( c_attribute_start_occurrence, to_string( timezones[ i ].historical_daylights[ j ].start_occurrence ) );
-               writer.write_attribute( c_attribute_start_day_of_week, to_string( timezones[ i ].historical_daylights[ j ].start_day_of_week ) );
-               writer.write_attribute( c_attribute_start_time, timezones[ i ].historical_daylights[ j ].start_time );
+            writer.write_attribute( c_attribute_finish_month, to_string( timezones[ i ].historical_daylights[ j ].finish_month ) );
+            writer.write_attribute( c_attribute_finish_occurrence, to_string( timezones[ i ].historical_daylights[ j ].finish_occurrence ) );
+            writer.write_attribute( c_attribute_finish_day_of_week, to_string( timezones[ i ].historical_daylights[ j ].finish_day_of_week ) );
+            writer.write_attribute( c_attribute_finish_time, timezones[ i ].historical_daylights[ j ].finish_time );
 
-               writer.write_attribute( c_attribute_finish_month, to_string( timezones[ i ].historical_daylights[ j ].finish_month ) );
-               writer.write_attribute( c_attribute_finish_occurrence, to_string( timezones[ i ].historical_daylights[ j ].finish_occurrence ) );
-               writer.write_attribute( c_attribute_finish_day_of_week, to_string( timezones[ i ].historical_daylights[ j ].finish_day_of_week ) );
-               writer.write_attribute( c_attribute_finish_time, timezones[ i ].historical_daylights[ j ].finish_time );
+            writer.write_attribute( c_attribute_utc_offset, to_string( timezones[ i ].historical_daylights[ j ].utc_offset ) );
 
-               writer.write_attribute( c_attribute_utc_offset, to_string( timezones[ i ].historical_daylights[ j ].utc_offset ) );
-
-               writer.finish_section( c_section_historical_daylight_saving );
-            }
-
-            writer.finish_section( c_section_historical_daylight_savings );
+            writer.finish_section( c_section_historical_daylight_saving );
          }
+
+         writer.finish_section( c_section_historical_daylight_savings );
       }
 
       writer.finish_section( c_section_timezone );
@@ -3180,14 +3191,19 @@ void setup_timezones( )
       timezone_data tz_data;
 
       string abbr = reader.read_attribute( c_attribute_abbr );
-      tz_data.utc_offset = ( int )atof( reader.read_attribute( c_attribute_utc_offset ).c_str( ) ) * 3600;
+      string name = reader.read_opt_attribute( c_attribute_name );
+      tz_data.tz_info = reader.read_opt_attribute( c_attribute_tz_info );
 
-      reader.read_attribute( c_attribute_description ); // i.e. not actually used
+      tz_data.utc_offset = ( int )( atof( reader.read_attribute( c_attribute_utc_offset ).c_str( ) ) * 3600.0 );
+
+      tz_data.description = reader.read_attribute( c_attribute_description );
       tz_data.daylight_abbr = reader.read_opt_attribute( c_attribute_daylight_abbr );
 
-      if( !tz_data.daylight_abbr.empty( ) )
+      string daylight_year_start_value = reader.read_opt_attribute( c_attribute_daylight_year_start );
+
+      if( !daylight_year_start_value.empty( ) )
       {
-         int daylight_year_start = atoi( reader.read_attribute( c_attribute_daylight_year_start ).c_str( ) );
+         int daylight_year_start = atoi( daylight_year_start_value.c_str( ) );
          int daylight_year_finish = atoi( reader.read_attribute( c_attribute_daylight_year_finish ).c_str( ) );
 
          int daylight_start_month = atoi( reader.read_attribute( c_attribute_daylight_start_month ).c_str( ) );
@@ -3202,7 +3218,7 @@ void setup_timezones( )
 
          mtime daylight_finish_time( reader.read_attribute( c_attribute_daylight_finish_time ) );
 
-         int daylight_utc_offset = ( int )atof( reader.read_attribute( c_attribute_daylight_utc_offset ).c_str( ) ) * 3600;
+         int daylight_utc_offset = ( int )( atof( reader.read_attribute( c_attribute_daylight_utc_offset ).c_str( ) ) * 3600.0 );
          int bias = daylight_utc_offset - tz_data.utc_offset;
 
          for( int i = daylight_year_start; i <= daylight_year_finish; i++ )
@@ -3222,57 +3238,70 @@ void setup_timezones( )
             tz_data.daylight_savings.years_info.insert( years_info_value_type( i,
              daylight_bias_info( bias, ds_start.as_string( ), ds_finish.as_string( ) ) ) );
          }
-
-         if( reader.has_started_section( c_section_historical_daylight_savings ) )
-         {
-            while( reader.has_started_section( c_section_historical_daylight_saving ) )
-            {
-               int year_start = atoi( reader.read_attribute( c_attribute_year_start ).c_str( ) );
-               int year_finish = atoi( reader.read_attribute( c_attribute_year_finish ).c_str( ) );
-
-               reader.read_attribute( c_attribute_description ); // i.e. not actually used
-
-               int start_month = atoi( reader.read_attribute( c_attribute_start_month ).c_str( ) );
-               int start_occurrence = atoi( reader.read_attribute( c_attribute_start_occurrence ).c_str( ) );
-               int start_day_of_week = atoi( reader.read_attribute( c_attribute_start_day_of_week ).c_str( ) );
-
-               mtime start_time( reader.read_attribute( c_attribute_start_time ) );
-
-               int finish_month = atoi( reader.read_attribute( c_attribute_finish_month ).c_str( ) );
-               int finish_occurrence = atoi( reader.read_attribute( c_attribute_finish_occurrence ).c_str( ) );
-               int finish_day_of_week = atoi( reader.read_attribute( c_attribute_finish_day_of_week ).c_str( ) );
-
-               mtime finish_time( reader.read_attribute( c_attribute_finish_time ) );
-
-               int utc_offset = ( int )atof( reader.read_attribute( c_attribute_utc_offset ).c_str( ) ) * 3600;
-               int bias = utc_offset - tz_data.utc_offset;
-
-               for( int i = year_start; i <= year_finish; i++ )
-               {
-                  date_time ds_start( ( year )i,
-                   ( month )start_month,
-                   ( weekday )start_day_of_week,
-                   ( occurrence )start_occurrence,
-                   start_time.get_hour( ), start_time.get_minute( ) );
-
-                  date_time ds_finish( ( year )i,
-                   ( month )finish_month,
-                   ( weekday )finish_day_of_week,
-                   ( occurrence )finish_occurrence,
-                   finish_time.get_hour( ), finish_time.get_minute( ) );
-
-                  tz_data.daylight_savings.years_info.insert( years_info_value_type( i,
-                   daylight_bias_info( bias, ds_start.as_string( ), ds_finish.as_string( ) ) ) );
-               }
-
-               reader.finish_section( c_section_historical_daylight_saving );
-            }
-
-            reader.finish_section( c_section_historical_daylight_savings );
-         }
       }
 
-      g_timezones.insert( make_pair( abbr, tz_data ) );
+      if( reader.has_started_section( c_section_historical_daylight_savings ) )
+      {
+         while( reader.has_started_section( c_section_historical_daylight_saving ) )
+         {
+            int year_start = atoi( reader.read_attribute( c_attribute_year_start ).c_str( ) );
+            int year_finish = atoi( reader.read_attribute( c_attribute_year_finish ).c_str( ) );
+
+            reader.read_attribute( c_attribute_description ); // i.e. not actually used
+
+            int start_month = atoi( reader.read_attribute( c_attribute_start_month ).c_str( ) );
+            int start_occurrence = atoi( reader.read_attribute( c_attribute_start_occurrence ).c_str( ) );
+            int start_day_of_week = atoi( reader.read_attribute( c_attribute_start_day_of_week ).c_str( ) );
+
+            mtime start_time( reader.read_attribute( c_attribute_start_time ) );
+
+            int finish_month = atoi( reader.read_attribute( c_attribute_finish_month ).c_str( ) );
+            int finish_occurrence = atoi( reader.read_attribute( c_attribute_finish_occurrence ).c_str( ) );
+            int finish_day_of_week = atoi( reader.read_attribute( c_attribute_finish_day_of_week ).c_str( ) );
+
+            mtime finish_time( reader.read_attribute( c_attribute_finish_time ) );
+
+            int utc_offset = ( int )( atof( reader.read_attribute( c_attribute_utc_offset ).c_str( ) ) * 3600.0 );
+            int bias = utc_offset - tz_data.utc_offset;
+
+            for( int i = year_start; i <= year_finish; i++ )
+            {
+               date_time ds_start( ( year )i,
+                ( month )start_month,
+                ( weekday )start_day_of_week,
+                ( occurrence )start_occurrence,
+                start_time.get_hour( ), start_time.get_minute( ) );
+
+               date_time ds_finish;
+
+               if( !finish_month )
+                  ds_finish = date_time( ( year )i, ( month )1, ( day )1, ( hour )0, ( minute )0 );
+               else
+                  ds_finish = date_time( ( year )i, ( month )finish_month,
+                   ( weekday )finish_day_of_week, ( occurrence )finish_occurrence,
+                   finish_time.get_hour( ), finish_time.get_minute( ) );
+
+               tz_data.daylight_savings.years_info.insert( years_info_value_type( i,
+                daylight_bias_info( bias, ds_start.as_string( ), ds_finish.as_string( ) ) ) );
+            }
+
+            reader.finish_section( c_section_historical_daylight_saving );
+         }
+
+         reader.finish_section( c_section_historical_daylight_savings );
+      }
+
+      g_timezones.insert( make_pair( name.empty( ) ? abbr : name, tz_data ) );
+
+      g_timezone_abbrs[ name.empty( ) ? abbr : name ] = abbr;
+
+      if( !tz_data.daylight_abbr.empty( ) )
+      {
+         if( name.empty( ) )
+            g_daylight_names[ tz_data.daylight_abbr ] = abbr;
+         else
+            g_daylight_names[ name + "_DST" ] = name;
+      }
 
       reader.finish_section( c_section_timezone );
    }
@@ -3281,43 +3310,157 @@ void setup_timezones( )
    reader.verify_finished_sections( );
 }
 
-void get_tz_info( const date_time& dt, string& tz_abbr, float& offset )
+string list_timezones( )
 {
-   if( !g_timezones.count( tz_abbr ) )
-      throw runtime_error( "unable to find timezone information for '" + tz_abbr + "'" );
+   string retval;
+
+   for( timezone_const_iterator tci = g_timezones.begin( ); tci != g_timezones.end( ); ++tci )
+   {
+      if( !retval.empty( ) )
+         retval += '\n';
+
+      retval += tci->first + " " + tci->second.description;
+   }
+
+   return retval;
+}
+
+string get_tz_desc( const string& tz_name )
+{
+   string name( tz_name );
+   if( !name.empty( ) && name[ name.length( ) - 1 ] == '+' )
+      name.erase( name.length( ) - 1 );
+
+   if( name.empty( ) )
+      name = get_timezone( );
+      
+   if( !g_timezones.count( name ) )
+      throw runtime_error( "unable to find timezone information for '" + name + "'" );
+
+   return g_timezones[ name ].description;
+}
+
+void get_tz_info( const date_time& dt, string& tz_name, float& offset )
+{
+   string tz( tz_name );
+   bool is_daylight = false;
+   bool use_daylight = false;
+
+   if( g_daylight_names.count( tz ) )
+   {
+      is_daylight = true;
+      use_daylight = true;
+      tz = g_daylight_names[ tz ];
+   }
+
+   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   {
+      use_daylight = true;
+      tz.erase( tz.length( ) - 1 );
+   }
+
+   if( !g_timezones.count( tz ) )
+      throw runtime_error( "unable to find timezone information for '" + tz + "'" );
 
    int utc_offset;
 
-   local_utc_conv( dt,
-    g_timezones[ tz_abbr ].utc_offset, &g_timezones[ tz_abbr ].daylight_savings, false, &utc_offset );
+   local_utc_conv( dt, g_timezones[ tz ].utc_offset,
+    ( use_daylight ? &g_timezones[ tz ].daylight_savings : 0 ), false, &utc_offset, is_daylight );
 
    offset = ( float )utc_offset / 3600.0;
 
-   if( utc_offset != g_timezones[ tz_abbr ].utc_offset )
-      tz_abbr = g_timezones[ tz_abbr ].daylight_abbr;
+   if( utc_offset == g_timezones[ tz ].utc_offset )
+      tz_name = g_timezone_abbrs[ tz ];
+   else
+      tz_name = g_timezones[ tz ].daylight_abbr;
 }
 
 date_time utc_to_local( const date_time& dt )
 {
-   return utc_to_local( dt, get_tz_abbr( ) );
+   return utc_to_local( dt, get_tz_name( ) );
 }
 
-date_time utc_to_local( const date_time& dt, const string& tz_abbr )
+date_time utc_to_local( const date_time& dt, string& tz_name )
 {
-   if( !g_timezones.count( tz_abbr ) )
-      throw runtime_error( "unable to find timezone information for '" + tz_abbr + "'" );
+   string tz( tz_name );
+   bool use_daylight = false;
 
-   return local_utc_conv( dt,
-    g_timezones[ tz_abbr ].utc_offset, &g_timezones[ tz_abbr ].daylight_savings, true );
+   if( g_daylight_names.count( tz ) )
+   {
+      use_daylight = true;
+      tz = g_daylight_names[ tz ];
+   }
+
+   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   {
+      use_daylight = true;
+      tz.erase( tz.length( ) - 1 );
+   }
+
+   if( !g_timezones.count( tz ) )
+      throw runtime_error( "unable to find timezone information for '" + tz + "'" );
+
+   int utc_offset;
+
+   date_time rc = local_utc_conv( dt, g_timezones[ tz ].utc_offset,
+    ( use_daylight ? &g_timezones[ tz ].daylight_savings : 0 ), true, &utc_offset );
+
+   if( utc_offset == g_timezones[ tz ].utc_offset )
+      tz_name = g_timezone_abbrs[ tz ];
+   else
+      tz_name = g_timezones[ tz ].daylight_abbr;
+
+   return rc;
 }
 
-date_time local_to_utc( const date_time& dt, const string& tz_abbr )
+date_time utc_to_local( const date_time& dt, const string& tz_name )
 {
-   if( !g_timezones.count( tz_abbr ) )
-      throw runtime_error( "unable to find timezone information for '" + tz_abbr + "'" );
+   string tz( tz_name );
+   bool use_daylight = false;
 
-   return local_utc_conv( dt,
-    g_timezones[ tz_abbr ].utc_offset, &g_timezones[ tz_abbr ].daylight_savings, false );
+   if( g_daylight_names.count( tz ) )
+   {
+      use_daylight = true;
+      tz = g_daylight_names[ tz ];
+   }
+
+   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   {
+      use_daylight = true;
+      tz.erase( tz.length( ) - 1 );
+   }
+
+   if( !g_timezones.count( tz ) )
+      throw runtime_error( "unable to find timezone information for '" + tz + "'" );
+
+   return local_utc_conv( dt, g_timezones[ tz ].utc_offset,
+    ( use_daylight ? &g_timezones[ tz ].daylight_savings : 0 ), true );
+}
+
+date_time local_to_utc( const date_time& dt, const string& tz_name )
+{
+   string tz( tz_name );
+   bool is_daylight = false;
+   bool use_daylight = false;
+
+   if( g_daylight_names.count( tz ) )
+   {
+      is_daylight = true;
+      use_daylight = true;
+      tz = g_daylight_names[ tz ];
+   }
+
+   if( !tz.empty( ) && tz[ tz.length( ) - 1 ] == '+' )
+   {
+      use_daylight = true;
+      tz.erase( tz.length( ) - 1 );
+   }
+
+   if( !g_timezones.count( tz ) )
+      throw runtime_error( "unable to find timezone information for '" + tz + "'" );
+
+   return local_utc_conv( dt, g_timezones[ tz ].utc_offset,
+    ( use_daylight ? &g_timezones[ tz ].daylight_savings : 0 ), false, 0, is_daylight );
 }
 
 bool schedulable_month_and_day( int month, int day )
@@ -3423,7 +3566,7 @@ string get_class_map_value( const string& class_id, const string& map_id, const 
 void send_email_message(
  const string& recipient, const string& subject,
  const string& message, const string& html_source, const vector< string >* p_extra_headers,
- const vector< string >* p_file_names, const string* p_tz_abbr, const vector< string >* p_image_names,
+ const vector< string >* p_file_names, const string* p_tz_name, const vector< string >* p_image_names,
  const string* p_image_path_prefix )
 {
    user_account account;
@@ -3445,13 +3588,13 @@ void send_email_message(
    recipients.push_back( to );
 
    send_email_message( account, recipients, subject, message,
-    html_source, p_extra_headers, p_file_names, p_tz_abbr, p_image_names, p_image_path_prefix );
+    html_source, p_extra_headers, p_file_names, p_tz_name, p_image_names, p_image_path_prefix );
 }
 
 void send_email_message(
  const vector< string >& recipients, const string& subject,
  const string& message, const string& html_source, const vector< string >* p_extra_headers,
- const vector< string >* p_file_names, const string* p_tz_abbr, const vector< string >* p_image_names,
+ const vector< string >* p_file_names, const string* p_tz_name, const vector< string >* p_image_names,
  const string* p_image_path_prefix )
 {
    user_account account;
@@ -3465,27 +3608,27 @@ void send_email_message(
       account.username += "@" + suffix;
 
    send_email_message( account, recipients, subject, message,
-    html_source, p_extra_headers, p_file_names, p_tz_abbr, p_image_names, p_image_path_prefix );
+    html_source, p_extra_headers, p_file_names, p_tz_name, p_image_names, p_image_path_prefix );
 }
 
 void send_email_message( const user_account& account,
  const vector< string >& recipients, const string& subject,
  const string& message, const string& html_source, const vector< string >* p_extra_headers,
- const vector< string >* p_file_names, const string* p_tz_abbr, const vector< string >* p_image_names,
+ const vector< string >* p_file_names, const string* p_tz_name, const vector< string >* p_image_names,
  const string* p_image_path_prefix )
 {
    if( account.username.empty( ) )
       throw runtime_error( "missing SMTP account information" );
 
-   string tz_abbr;
+   string tz_name;
    float utc_offset = 0.0;
 
    date_time dt( date_time::standard( ) );
 
-   if( p_tz_abbr && !p_tz_abbr->empty( ) )
+   if( p_tz_name && !p_tz_name->empty( ) )
    {
-      tz_abbr = *p_tz_abbr;
-      get_tz_info( dt, tz_abbr, utc_offset );
+      tz_name = *p_tz_name;
+      get_tz_info( dt, tz_name, utc_offset );
 
       dt += minutes( ( int32_t )( utc_offset * 60.0 ) );
    }
@@ -3495,7 +3638,7 @@ void send_email_message( const user_account& account,
    string password( account.password );
 
    smtp_user_info user_info( account.sender,
-    account.username, password, &dt, utc_offset, &tz_abbr, &charset );
+    account.username, password, &dt, utc_offset, &tz_name, &charset );
 
    string security( get_smtp_security( ) );
    if( !security.empty( ) )

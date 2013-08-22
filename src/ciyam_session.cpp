@@ -121,7 +121,7 @@ inline void set_dtm_if_now( string& dtm, string& next_command )
    }
 }
 
-inline string convert_local_to_utc( const string& local, const string& tz_abbr )
+inline string convert_local_to_utc( const string& local, const string& tz_name )
 {
    string s;
 
@@ -131,7 +131,7 @@ inline string convert_local_to_utc( const string& local, const string& tz_abbr )
       if( local[ 0 ] == 'U' )
          s = local.substr( 1 );
       else
-         s = local_to_utc( date_time( local ), tz_abbr ).as_string( );
+         s = local_to_utc( date_time( local ), tz_name ).as_string( );
    }
 
    return s;
@@ -261,7 +261,7 @@ struct summary_info
 void add_pdf_variables( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  vector< summary_info >& summaries, map< string, string >& pdf_variables,
- const string& tz_abbr, bool is_single_record, size_t row_num, bool add_values = true )
+ const string& tz_name, bool is_single_record, size_t row_num, bool add_values = true )
 {
    map< string, int > all_contexts;
    for( size_t i = 0; i < field_list.size( ); i++ )
@@ -335,11 +335,11 @@ void add_pdf_variables( size_t handle,
       {
          string value = execute_object_command( handle, context, "get " + field );
 
-         if( !value.empty( ) && !tz_abbr.empty( ) )
+         if( !value.empty( ) && !tz_name.empty( ) )
          {
             string type_name = get_field_type_name( handle, context, field );
             if( type_name == "date_time" || type_name == "tdatetime" )
-               value = utc_to_local( date_time( value ), tz_abbr ).as_string( );
+               value = utc_to_local( date_time( value ), tz_name ).as_string( );
          }
 
          if( all_summaries.count( next_field ) )
@@ -957,7 +957,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
    set_dtm( "" );
    set_uid( "" );
-   set_tz_abbr( "" );
+   set_tz_name( "" );
    set_tmp_directory( "" );
 
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
@@ -1217,7 +1217,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_reverse( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_reverse ) );
          string uid( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_uid ) );
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_dtm ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tz_name ) );
          string tmp_dir( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tmp_dir ) );
          string filters( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_filters ) );
          string perms( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_perms ) );
@@ -1235,6 +1235,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string format_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_format_file ) );
          string output_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_output_file ) );
          string title_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_title_name ) );
+
+         if( tz_name.empty( ) )
+            tz_name = get_timezone( );
 
          string context;
          string::size_type pos = mclass.find( ':' );
@@ -1408,7 +1411,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             set_uid( uid );
             set_dtm( dtm );
-            set_tz_abbr( tz_abbr );
+            set_tz_name( tz_name );
             set_tmp_directory( tmp_dir );
             
             set< string > perm_set;
@@ -1425,8 +1428,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( !parent_key.empty( ) )
                   instance_fetch( handle, "", parent_key );
-
-               set_dtm( convert_local_to_utc( date_time::standard( ).as_string( ), tz_abbr ) );
 
                if( key_info == " " )
                   init_object_instance( handle, context, true );
@@ -1462,7 +1463,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                prepare_object_instance( handle, context, true );
 
                string output( "[" + instance_key_info( handle, context ) + "]" );
-               string field_output( get_field_values( handle, context, field_list, tz_abbr, true ) );
+               string field_output( get_field_values( handle, context, field_list, tz_name, true ) );
 
                if( !field_output.empty( ) )
                   output += " " + field_output;
@@ -1540,7 +1541,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      if( create_pdf )
                         add_pdf_variables( handle, context,
-                         field_list, summaries, pdf_gen_variables, tz_abbr, num_limit == 1, num_found );
+                         field_list, summaries, pdf_gen_variables, tz_name, num_limit == 1, num_found );
                      else
                      {
                         string output;
@@ -1548,7 +1549,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                         string key_output( "[" + instance_key_info( handle, context ) + "]" );
 
-                        string field_output( get_field_values( handle, context, field_list, tz_abbr,
+                        string field_output( get_field_values( handle, context, field_list, tz_name,
                          false, false, summaries.empty( ) ? 0 : &raw_values, &field_inserts, &search_replaces ) );
 
                         if( minimal )
@@ -1589,7 +1590,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( !num_found )
                   {
                      add_pdf_variables( handle, context,
-                      field_list, summaries, pdf_gen_variables, tz_abbr, num_limit == 1, 0, false );
+                      field_list, summaries, pdf_gen_variables, tz_name, num_limit == 1, 0, false );
                   }
 
                   if( summaries.empty( ) )
@@ -1632,13 +1633,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_mclass ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_tz_name ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_key ) );
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_field_values ) );
          string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_method_name ) );
 
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
+         if( tz_name.empty( ) )
+            tz_name = get_timezone( );
 
          set_dtm_if_now( dtm, next_command );
 
@@ -1745,7 +1746,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_class( mclass );
                set_module( module );
-               set_tz_abbr( tz_abbr );
+               set_tz_name( tz_name );
 
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
@@ -1762,11 +1763,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
-                     if( !i->second.empty( ) && !tz_abbr.empty( ) )
+                     if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
                         string type_name = get_field_type_name( handle, "", i->first );
                         if( type_name == "date_time" || type_name == "tdatetime" )
-                           i->second = convert_local_to_utc( i->second, tz_abbr );
+                           i->second = convert_local_to_utc( i->second, tz_name );
                      }
 
                      string method_name_and_args( "set " );
@@ -1822,15 +1823,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_mclass ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_tz_name ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_ver_info ) );
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_field_values ) );
          string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_method_name ) );
          string check_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_check_values ) );
 
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
+         if( tz_name.empty( ) )
+            tz_name = get_timezone( );
 
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
@@ -1923,7 +1924,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_class( mclass );
                set_module( module );
-               set_tz_abbr( tz_abbr );
+               set_tz_name( tz_name );
 
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
@@ -1951,11 +1952,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] != '@' )
                   {
-                     if( !i->second.empty( ) && !tz_abbr.empty( ) )
+                     if( !i->second.empty( ) && !tz_name.empty( ) )
                      {
                         string type_name = get_field_type_name( handle, "", i->first );
                         if( type_name == "date_time" || type_name == "tdatetime" )
-                           i->second = convert_local_to_utc( i->second, tz_abbr );
+                           i->second = convert_local_to_utc( i->second, tz_name );
                      }
 
                      string method_name_and_args( "set " );
@@ -2009,13 +2010,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_mclass ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_tz_name ) );
          bool quiet( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_quiet ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_ver_info ) );
 
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
+         if( tz_name.empty( ) )
+            tz_name = get_timezone( );
 
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
@@ -2063,7 +2064,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_class( mclass );
                set_module( module );
-               set_tz_abbr( tz_abbr );
+               set_tz_name( tz_name );
 
                op_destroy_rc rc;
                op_instance_destroy( handle, "", key, ver_info, false, &rc );
@@ -2100,14 +2101,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_mclass ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_tz_name ) );
          string set_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_set_values ) );
          string keys( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_keys ) );
          string vers( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_vers ) );
          string method_name_and_args( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_method_name ) );
 
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
+         if( tz_name.empty( ) )
+            tz_name = get_timezone( );
 
          // NOTE: Ignore version information during storage recovery.
          if( socket_handler.is_restoring( ) )
@@ -2252,7 +2253,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_dtm( dtm );
                set_class( mclass );
                set_module( module );
-               set_tz_abbr( tz_abbr );
+               set_tz_name( tz_name );
 
                if( all_vers.size( ) && ( all_keys.size( ) != all_vers.size( ) ) )
                   throw runtime_error( "unexpected # keys ("
@@ -2395,7 +2396,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_mclass ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_tz_name ) );
          string filename( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_filename ) );
          string export_fields( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_export_fields ) );
          bool destroy_records( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_bulk_ops_destroy_records ) );
@@ -2407,7 +2408,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             dtm = date_time::standard( ).as_string( );
 
          response = exec_bulk_ops( module, uid, dtm, mclass, filename,
-          export_fields, tz_abbr, destroy_records, search_text, search_query, fixed_field_values, handler );
+          export_fields, tz_name, destroy_records, search_text, search_query, fixed_field_values, handler );
       }
       else if( command == c_cmd_ciyam_session_perform_package_export )
       {
@@ -3347,14 +3348,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string to( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_to ) );
          string subject( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_subject ) );
          string message( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_message ) );
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_tz_name ) );
          string file_names( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_file_names ) );
          string html_source( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_html_source ) );
          string image_names( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_image_names ) );
          string image_prefix( get_parm_val( parameters, c_cmd_parm_ciyam_session_sendmail_image_prefix ) );
 
-         if( tz_abbr.empty( ) )
-            tz_abbr = get_timezone( );
+         if( tz_name.empty( ) )
+            tz_name = get_timezone( );
 
          vector< string > all_file_names;
          if( !file_names.empty( ) )
@@ -3371,7 +3372,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          }
 
          send_email_message( to, subject, message,
-          html_source, 0, &all_file_names, &tz_abbr, &all_image_names, &image_prefix );
+          html_source, 0, &all_file_names, &tz_name, &all_image_names, &image_prefix );
       }
       else if( command == c_cmd_ciyam_session_schedule )
       {
@@ -3394,8 +3395,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          throw runtime_error( "SSL support not available" );
 #endif
       }
-      else if( command == c_cmd_ciyam_session_timezone )
-         response = get_timezone( );
       else if( command == c_cmd_ciyam_session_checkmail )
       {
          string headers( get_parm_val( parameters, c_cmd_parm_ciyam_session_checkmail_headers ) );
@@ -3414,19 +3413,46 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          run_script( script_name );
       }
+      else if( command == c_cmd_ciyam_session_timezones )
+      {
+         string own_tz( get_timezone( ) );
+
+         response = list_timezones( );
+
+         if( response.find( own_tz + ' ' ) != string::npos )
+            replace( response, own_tz + ' ', "*" + own_tz + ' ' );
+      }
       else if( command == c_cmd_ciyam_session_utc_now )
       {
          response = date_time::standard( ).as_string( true, false );
       }
       else if( command == c_cmd_ciyam_session_utc_offset )
       {
-         string tz_abbr( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_offset_tz_abbr ) );
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_offset_tz_name ) );
          string local_time( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_offset_local_time ) );
 
          float offset;
-         get_tz_info( date_time( local_time ), tz_abbr, offset );
+         get_tz_info( date_time( local_time ), tz_name, offset );
 
-         response = tz_abbr + " " + to_string( offset );
+         response = tz_name + " " + to_string( offset );
+      }
+      else if( command == c_cmd_ciyam_session_utc_to_local )
+      {
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_to_local_tz_name ) );
+         string utc_time( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_to_local_utc_time ) );
+
+         date_time local( utc_to_local( date_time( utc_time ), tz_name ) );
+
+         response = local.as_string( e_time_format_hhmm, true ) + " " + tz_name;
+      }
+      else if( command == c_cmd_ciyam_session_utc_from_local )
+      {
+         string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_from_local_tz_name ) );
+         string local_time( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_from_local_local_time ) );
+
+         date_time utc( local_to_utc( date_time( local_time ), tz_name ) );
+
+         response = utc.as_string( e_time_format_hhmm, true );
       }
       else if( command == c_cmd_ciyam_session_wait )
       {

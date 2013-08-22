@@ -17,6 +17,7 @@
  <user_select>
  <user_slevel>
  <user_unique>
+ <user_tz_name>
  <user_has_auth>
  <user_pin_value>
  <user_gpg_install>
@@ -2482,14 +2483,6 @@
      <field>127112
      <ftype>bool
      <extra>
-     <mandatory>true
-     <modifiers>
-    </field>
-    <field/>
-     <name>field_application_default_timezone_abbr
-     <field>127122
-     <ftype>string
-     <extra>upper+max_size=5
      <mandatory>true
      <modifiers>
     </field>

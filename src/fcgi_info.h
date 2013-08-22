@@ -357,6 +357,7 @@ struct module_info
    std::string user_active_field_id;
    std::string user_slevel_field_id;
    std::string user_unique_field_id;
+   std::string user_tz_name_field_id;
    std::string user_has_auth_field_id;
    std::string user_pin_value_field_id;
    std::string user_gpg_install_proc_id;
@@ -446,7 +447,6 @@ struct storage_info
    time_t extkeys_mod;
 
    std::string reg_key;
-   std::string tz_abbr;
    std::string url_opts;
    std::string menu_opts;
 
@@ -549,12 +549,15 @@ struct session_info
    size_t quick_link_limit;
 
    std::string tz_abbr;
+   std::string tz_name;
 
    int gmt_offset;
    int dtm_offset;
 
    time_t tm_created;
    time_t tm_last_request;
+
+   std::string current_dtm;
 };
 
 typedef std::map< std::string, session_info* > session_container;

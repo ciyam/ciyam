@@ -48,24 +48,23 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Default_Multiline_Min_Rows = 14,
       e_field_id_Default_Multiline_Text_Limit = 15,
       e_field_id_Default_Multiline_Text_Trunc = 16,
-      e_field_id_Default_Timezone_Abbr = 17,
-      e_field_id_Encrypt_Dynamic_Content = 18,
-      e_field_id_Generate_Details = 19,
-      e_field_id_Generate_Status = 20,
-      e_field_id_Generate_Type = 21,
-      e_field_id_Keep_Existing_Data = 22,
-      e_field_id_Module_Prefix = 23,
-      e_field_id_Name = 24,
-      e_field_id_Print_Lists_With_Check_Boxes = 25,
-      e_field_id_Print_Lists_With_Row_Numbers = 26,
-      e_field_id_Registration_Key = 27,
-      e_field_id_Show_Inaccessible_Modules = 28,
-      e_field_id_Use_Check_Boxes_for_Bools = 29,
-      e_field_id_Use_Embedded_Images = 30,
-      e_field_id_Use_Menubar_Not_Sidebar = 31,
-      e_field_id_Use_URL_Checksum = 32,
-      e_field_id_Version = 33,
-      e_field_id_Workgroup = 34
+      e_field_id_Encrypt_Dynamic_Content = 17,
+      e_field_id_Generate_Details = 18,
+      e_field_id_Generate_Status = 19,
+      e_field_id_Generate_Type = 20,
+      e_field_id_Keep_Existing_Data = 21,
+      e_field_id_Module_Prefix = 22,
+      e_field_id_Name = 23,
+      e_field_id_Print_Lists_With_Check_Boxes = 24,
+      e_field_id_Print_Lists_With_Row_Numbers = 25,
+      e_field_id_Registration_Key = 26,
+      e_field_id_Show_Inaccessible_Modules = 27,
+      e_field_id_Use_Check_Boxes_for_Bools = 28,
+      e_field_id_Use_Embedded_Images = 29,
+      e_field_id_Use_Menubar_Not_Sidebar = 30,
+      e_field_id_Use_URL_Checksum = 31,
+      e_field_id_Version = 32,
+      e_field_id_Workgroup = 33
    };
 
    Meta_Application( );
@@ -118,9 +117,6 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    int Default_Multiline_Text_Trunc( ) const;
    void Default_Multiline_Text_Trunc( int Default_Multiline_Text_Trunc );
-
-   const std::string& Default_Timezone_Abbr( ) const;
-   void Default_Timezone_Abbr( const std::string& Default_Timezone_Abbr );
 
    bool Encrypt_Dynamic_Content( ) const;
    void Encrypt_Dynamic_Content( bool Encrypt_Dynamic_Content );

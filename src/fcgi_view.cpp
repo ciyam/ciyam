@@ -1071,6 +1071,10 @@ bool output_view_form( ostream& os, const string& act,
    int skip_tab_num = -1;
    int num_displayed = 0;
    bool hide_slevel = false;
+
+   date_time dt_current;
+   get_session_dtm( sess_info, dt_current );
+
    for( size_t i = 0; i < source.field_ids.size( ); i++ )
    {
       string cell_data;
@@ -1491,10 +1495,7 @@ bool output_view_form( ostream& os, const string& act,
                {
                   if( ( cell_data.empty( ) || !atoi( cell_data.c_str( ) ) )
                    && source.defcurrentyear_fields.count( source_value_id ) )
-                  {
-                     date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-                     cell_data = to_string( dt.get_date( ).get_year( ) );
-                  }
+                     cell_data = to_string( dt_current.get_date( ).get_year( ) );
 
                   if( !has_value )
                   {
@@ -1566,8 +1567,7 @@ bool output_view_form( ostream& os, const string& act,
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
                   is_empty = false;
-                  date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-                  ud = dt.get_date( );
+                  ud = dt_current.get_date( );
                }
 
                string date_precision;
@@ -1604,7 +1604,7 @@ bool output_view_form( ostream& os, const string& act,
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
                   is_empty = false;
-                  mt = date_time::standard( ).get_time( ) + ( seconds )sess_info.gmt_offset;
+                  mt = dt_current.get_time( );
                }
 
                string time_precision;
@@ -1652,7 +1652,7 @@ bool output_view_form( ostream& os, const string& act,
                   dt = date_time::standard( );
                }
 
-               if( !is_empty )
+               if( !is_empty && sess_info.tz_name.empty( ) )
                   dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
@@ -2632,10 +2632,7 @@ bool output_view_form( ostream& os, const string& act,
             if( is_new_record )
             {
                if( source.defcurrent_fields.count( source_value_id ) )
-               {
-                  date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-                  cell_data = dt.get_date( ).as_string( );
-               }
+                  cell_data = dt_current.get_date( ).as_string( );
                else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
@@ -2658,10 +2655,7 @@ bool output_view_form( ostream& os, const string& act,
             if( is_new_record )
             {
                if( source.defcurrent_fields.count( source_value_id ) )
-               {
-                  date_time dt( date_time::standard( ) + ( seconds )sess_info.gmt_offset );
-                  cell_data = dt.get_time( ).as_string( );
-               }
+                  cell_data = dt_current.get_time( ).as_string( );
                else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
@@ -2695,7 +2689,9 @@ bool output_view_form( ostream& os, const string& act,
             if( !cell_data.empty( ) )
             {
                date_time dt( cell_data );
-               dt += ( seconds )sess_info.gmt_offset;
+
+               if( sess_info.tz_name.empty( ) )
+                  dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
                if( extra_data.count( c_field_extra_time_precision ) )

@@ -97,7 +97,6 @@ const char* const c_attribute_actions = "actions";
 const char* const c_attribute_filters = "filters";
 const char* const c_attribute_indexed = "indexed";
 const char* const c_attribute_reg_key = "reg_key";
-const char* const c_attribute_tz_abbr = "tz_abbr";
 const char* const c_attribute_pdf_spec = "pdf_spec";
 const char* const c_attribute_url_opts = "url_opts";
 const char* const c_attribute_home_info = "home_info";
@@ -129,6 +128,7 @@ const char* const c_attribute_embed_images = "embed_images";
 const char* const c_attribute_encrypt_data = "encrypt_data";
 const char* const c_attribute_image_height = "image_height";
 const char* const c_attribute_storage_name = "storage_name";
+const char* const c_attribute_user_tz_name = "user_tz_name";
 const char* const c_attribute_module_prefix = "module_prefix";
 const char* const c_attribute_user_has_auth = "user_has_auth";
 const char* const c_attribute_checkbox_bools = "checkbox_bools";
@@ -189,6 +189,7 @@ void module_info::clear( )
    user_active_field_id.erase( );
    user_slevel_field_id.erase( );
    user_unique_field_id.erase( );
+   user_tz_name_field_id.erase( );
    user_has_auth_field_id.erase( );
    user_pin_value_field_id.erase( );
    user_gpg_install_proc_id.erase( );
@@ -280,7 +281,6 @@ void storage_info::clear( )
 
    quick_link_limit = c_default_quick_link_limit;
 
-   tz_abbr.erase( );
    url_opts.erase( );
    menu_opts.erase( );
    login_opts.erase( );
@@ -390,8 +390,6 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       sio_reader reader( inpf );
 
       info.reg_key = reader.read_opt_attribute( c_attribute_reg_key );
-
-      info.tz_abbr = reader.read_opt_attribute( c_attribute_tz_abbr );
 
       info.url_opts = reader.read_opt_attribute( c_attribute_url_opts );
 
@@ -717,6 +715,7 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       info.user_slevel_field_id = reader.read_opt_attribute( c_attribute_user_slevel );
 
       info.user_unique_field_id = reader.read_opt_attribute( c_attribute_user_unique );
+      info.user_tz_name_field_id = reader.read_opt_attribute( c_attribute_user_tz_name );
       info.user_has_auth_field_id = reader.read_opt_attribute( c_attribute_user_has_auth );
       info.user_pin_value_field_id = reader.read_opt_attribute( c_attribute_user_pin_value );
       info.user_gpg_install_proc_id = reader.read_opt_attribute( c_attribute_user_gpg_install );

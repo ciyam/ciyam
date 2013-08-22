@@ -289,6 +289,14 @@ string get_checksum( const string& values )
    return sha1_quads[ 2 ];
 }
 
+void get_session_dtm( const session_info& sess_info, date_time& dt )
+{
+   if( !sess_info.current_dtm.empty( ) )
+      dt = sess_info.current_dtm;
+   else
+      dt = date_time::standard( ) + ( seconds )sess_info.gmt_offset;
+}
+
 string get_checksum( const session_info& sess_info, const string& values )
 {
    DEBUG_TRACE( "(checksum) values = " + values );

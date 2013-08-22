@@ -295,8 +295,8 @@ void CIYAM_BASE_DECL_SPEC set_dtm( const std::string& dtm );
 void CIYAM_BASE_DECL_SPEC set_class( const std::string& mclass );
 void CIYAM_BASE_DECL_SPEC set_module( const std::string& module );
 
-std::string CIYAM_BASE_DECL_SPEC get_tz_abbr( );
-void CIYAM_BASE_DECL_SPEC set_tz_abbr( const std::string& tz_abbr );
+std::string CIYAM_BASE_DECL_SPEC get_tz_name( );
+void CIYAM_BASE_DECL_SPEC set_tz_name( const std::string& tz_name );
 
 const std::set< std::string > CIYAM_BASE_DECL_SPEC& get_perms( );
 void CIYAM_BASE_DECL_SPEC set_perms( const std::set< std::string >& perms );
@@ -366,7 +366,7 @@ std::string CIYAM_BASE_DECL_SPEC get_field_display_name( size_t handle, const st
 
 std::string CIYAM_BASE_DECL_SPEC get_field_values(
  size_t handle, const std::string& parent_context,
- const std::vector< std::string >& field_list, const std::string& tz_abbr,
+ const std::vector< std::string >& field_list, const std::string& tz_name,
  bool is_default = false, bool as_csv = false, std::vector< std::string >* p_raw_values = 0,
  const std::map< int, std::string >* p_inserts = 0, const std::map< std::string, std::string >* p_package_map = 0 );
 
@@ -394,7 +394,7 @@ void CIYAM_BASE_DECL_SPEC dump_storage_locks( std::ostream& os );
 
 std::string CIYAM_BASE_DECL_SPEC exec_bulk_ops( const std::string& module,
  const std::string& uid, const std::string& dtm, const std::string& mclass,
- const std::string& filename, const std::string& export_fields, const std::string& tz_abbr, bool destroy_records,
+ const std::string& filename, const std::string& export_fields, const std::string& tz_name, bool destroy_records,
  const std::string& search_text, const std::string& search_query, const std::string& fixed_field_values, command_handler& handler );
 
 void CIYAM_BASE_DECL_SPEC export_package( const std::string& module,

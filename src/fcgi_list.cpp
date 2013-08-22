@@ -3345,7 +3345,9 @@ void output_list_form( ostream& os,
                if( !cell_data.empty( ) )
                {
                   date_time dt( cell_data );
-                  dt += ( seconds )sess_info.gmt_offset;
+
+                  if( sess_info.tz_name.empty( ) )
+                     dt += ( seconds )sess_info.gmt_offset;
 
                   string time_precision;
                   if( source.time_precision_fields.count( source_value_id ) )

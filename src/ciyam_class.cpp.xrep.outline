@@ -1623,6 +1623,11 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield\
  arg_op=$specification_\0_op`}\
 `,\
+`@eq`(`'\1`'`,`'transient_field_from_utc_convert`'`)
+`{`#transient_field_from_utc_convert.spec.xrep section=after_fetch class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield`}\
+`,\
 `@eq`(`'\1`'`,`'transient_field_to_value`'`)
 `{`#transient_field_to_value.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype arg_value=$specification_\0_value`}\
@@ -3532,6 +3537,11 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'transient_field_from_unary_op`'`)
 `{`#transient_field_from_unary_op.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_utc_convert`'`)
+`{`#transient_field_from_utc_convert.spec.xrep section=get_required_field_names class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ofield=$specification_\0_ofield\
+ arg_o2field=$specification_\0_o2field arg_sfield=$specification_\0_sfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`!`@eq`(`'`'`,`$specification_\0_sfield`)
 `{`#transient_field_from_variable.spec.xrep section=get_required_field_names\
