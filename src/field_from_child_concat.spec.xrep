@@ -1,7 +1,10 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
 `{`$order`=`'`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`&`!`@eq`(`$arg_ctransient`,`'1`'`)`$order`=`$arg_cfield`}`{`!`@eq`(`$arg_ofield`,`'`'`)`$order`=`$arg_ofield`}\
-`{`$fields`=`'"@key"`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`$fields`=`'"`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$arg_ofield`},`}`{`$arg_cfield`}"`'`}\
-`{`!`@eq`(`$arg_xpfield`,`'`'`)`$fields`=`'"`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$arg_ofield`},`}`{`$arg_xpfield`}"`'`}\
+`{`$fields`=`'"@key"`'`}`{`!`@eq`(`$arg_cfield`,`'`'`)`$fields`=`'"`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$arg_ofield`},`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$arg_tfield`},`}`{`$arg_cfield`}"`'`}\
+`{`!`@eq`(`$arg_xpfield`,`'`'`)`$fields`=`'"`{`!`@eq`(`$arg_ofield`,`'`'`)`{`$arg_ofield`},`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$arg_tfield`},`}`{`$arg_xpfield`}"`'`}\
+`{`@eq`(`$arg_cfield`,`'`'`)`&`@eq`(`$arg_xpfield`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$field`=`'"`{`$arg_tfield`}"`'`}\
    // [(start field_from_child_concat)] `{`$arg_id`}
    if( !is_create && get_obj( ).get_is_editing( ) )
    {
