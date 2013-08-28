@@ -2652,7 +2652,7 @@ void install_gpg_key( const string& key_file,
       if( i == 0 )
          cmd += "--dry-run ";
 
-      cmd += key_file + ">" + tmp + " 2>&1";
+      cmd += "\"" + key_file + "\">" + tmp + " 2>&1";
 
       TRACE_LOG( TRACE_SESSIONS, cmd );
 

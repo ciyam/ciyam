@@ -246,12 +246,12 @@ int main( int argc, char* argv[ ] )
       if( string( argv[ first_arg + 1 ] ) == "-i" )
       {
          ++first_arg;
-         junk = true;
+         include = true;
       }
       else if( string( argv[ first_arg + 1 ] ) == "-j" )
       {
          ++first_arg;
-         include = true;
+         junk = true;
       }
    }
 
@@ -302,7 +302,7 @@ int main( int argc, char* argv[ ] )
    }
 
    if( !is_quiet )
-      cout << "unbundle v0.1d\n";
+      cout << "unbundle v0.1e\n";
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
