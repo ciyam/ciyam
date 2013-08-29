@@ -57,6 +57,7 @@
 #include "ciyam_base.h"
 #include "mail_source.h"
 #include "oid_pointer.h"
+#include "ciyam_common.h"
 #include "crypt_stream.h"
 #include "module_management.h"
 
@@ -1890,6 +1891,9 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
       skip_fk_handling = true;
       set_variable( c_object_variable_skip_fk_handling, "" );
    }
+
+   if( new_key.size( ) > c_max_key_length )
+      throw runtime_error( new_key + " exceeds max key length of " + to_string( c_max_key_length ) );
 
    if( p_graph_parent && is_singular && !is_fetching && !skip_fk_handling && !graph_parent_fk_field.empty( ) )
    {
@@ -4157,7 +4161,7 @@ string meta_sql_type( const string& field_type, bool is_mandatory, sql_char_type
       else if( char_type == e_sql_char_type_security )
          sql_type = "VARCHAR(10)";
       else if( char_type == e_sql_char_type_foreign_key )
-         sql_type = "VARCHAR(64)";
+         sql_type = "VARCHAR(" + to_string( c_max_key_length ) + ")";
       else
          throw runtime_error( "unexpected char_type '" + to_string( char_type ) + "' in meta_sql_type" );
    }

@@ -2013,14 +2013,14 @@ string Meta_Modifier::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Class VARCHAR(64) NOT NULL,"
+    "C_Class VARCHAR(75) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
-    "C_Source_Modifier VARCHAR(64) NOT NULL,"
+    "C_Source_Modifier VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

@@ -116,6 +116,18 @@ a
    height: 35px;
 }
 
+#sign_in
+{
+   margin-top: 10px;
+   float: right;
+   border: 0px solid #000;
+}
+
+#sign_in a
+{
+   color: #fff;
+}
+
 #uselects
 {
    margin-top: 10px;
@@ -731,42 +743,6 @@ input.pikaday_button
 {
    margin-top: 5px;
    text-align: center;
-}
-
-#minilogin
-{
-   height: 100%;
-   float: right;
-}
-
-#miniloginform
-{
-   height: 100%;
-}
-
-#minilogintable
-{
-   height: 100%;
-}
-
-#miniusername
-{
-  border: 1px solid black; 
-  height: 12px;
-  width: 80px;
-}
-
-#minipassword
-{
-  border: 1px solid black; 
-  height: 12px;
-  width: 80px;
-}
-
-#minisubmit
-{
-  border: 1px solid black; 
-  height: 20px;
 }
 
 #footer

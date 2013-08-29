@@ -3072,21 +3072,21 @@ string Meta_Relationship::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Cascade_Op INTEGER NOT NULL,"
-    "C_Child_Class VARCHAR(64) NOT NULL,"
+    "C_Child_Class VARCHAR(75) NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
     "C_Field_Id VARCHAR(200) NOT NULL,"
     "C_Field_Key VARCHAR(200) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
     "C_Mandatory INTEGER NOT NULL,"
-    "C_Model VARCHAR(64) NOT NULL,"
+    "C_Model VARCHAR(75) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
-    "C_Parent_Class VARCHAR(64) NOT NULL,"
-    "C_Source_Relationship VARCHAR(64) NOT NULL,"
+    "C_Parent_Class VARCHAR(75) NOT NULL,"
+    "C_Source_Relationship VARCHAR(75) NOT NULL,"
     "C_Transient INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

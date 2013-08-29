@@ -11259,7 +11259,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -11293,7 +11293,7 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Child_Rel_Grandparent_Match INTEGER NOT NULL,"
     "C_Child_Rel_Parent_Match INTEGER NOT NULL,"
     "C_Child_Relationship_Class_Match INTEGER NOT NULL,"
-    "C_Child_Specification_Type VARCHAR(64) NOT NULL,"
+    "C_Child_Specification_Type VARCHAR(75) NOT NULL,"
     "C_Default_Child_Vars TEXT NOT NULL,"
     "C_Field_type INTEGER NOT NULL,"
     "C_Has_Next_Specification_Info INTEGER NOT NULL,"
@@ -11334,13 +11334,13 @@ string Meta_Specification_Type::static_get_sql_columns( )
     "C_Needs_Test_Field INTEGER NOT NULL,"
     "C_Needs_Test_Value INTEGER NOT NULL,"
     "C_Needs_Value INTEGER NOT NULL,"
-    "C_Next_Child_Specification_Type VARCHAR(64) NOT NULL,"
+    "C_Next_Child_Specification_Type VARCHAR(75) NOT NULL,"
     "C_Next_Protect_Child_Rel INTEGER NOT NULL,"
     "C_Next_Protect_Procedure INTEGER NOT NULL,"
     "C_Next_Protect_Source_Parent INTEGER NOT NULL,"
     "C_Next_Specification_Actions VARCHAR(200) NOT NULL,"
     "C_Notes TEXT NOT NULL,"
-    "C_Parent_Specification_Type VARCHAR(64) NOT NULL,"
+    "C_Parent_Specification_Type VARCHAR(75) NOT NULL,"
     "C_Procedure_Arg_primitive INTEGER NOT NULL,"
     "C_Procedure_Arg_type INTEGER NOT NULL,"
     "C_Protect_Child_Rel_From_Update INTEGER NOT NULL,"

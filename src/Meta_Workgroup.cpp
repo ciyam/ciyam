@@ -2201,7 +2201,7 @@ string Meta_Workgroup::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -2211,7 +2211,7 @@ string Meta_Workgroup::static_get_sql_columns( )
     "C_Next_Model_Id VARCHAR(200) NOT NULL,"
     "C_Next_Permission_Id VARCHAR(200) NOT NULL,"
     "C_Next_Type_Id VARCHAR(200) NOT NULL,"
-    "C_Standard_Package VARCHAR(64) NOT NULL,"
+    "C_Standard_Package VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

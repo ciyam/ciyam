@@ -162,7 +162,7 @@ string get_sql_type( const string& type, bool is_mandatory,
       if( is_large_text )
          sql_type = "TEXT";
       else if( is_foreign_key )
-         sql_type = "VARCHAR(64)";
+         sql_type = "VARCHAR(" + to_string( c_max_key_length ) + ")";
       else
          sql_type = "VARCHAR(200)";
    }
@@ -1150,7 +1150,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
                string sql_columns;
                if( !all_field_data.empty( ) )
                {
-                  sql_columns += "C_Key_ VARCHAR(64),\n";
+                  sql_columns += "C_Key_ VARCHAR(" + to_string( c_max_key_length ) + "),\n";
                   sql_columns += "C_Ver_ INTEGER NOT NULL,\n";
                   sql_columns += "C_Rev_ INTEGER NOT NULL,\n";
                   sql_columns += "C_Typ_ VARCHAR(24) NOT NULL";

@@ -1944,7 +1944,7 @@ string Meta_User::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -1955,7 +1955,7 @@ string Meta_User::static_get_sql_columns( )
     "C_Permissions VARCHAR(200) NOT NULL,"
     "C_User_Hash VARCHAR(200) NOT NULL,"
     "C_User_Id VARCHAR(200) NOT NULL,"
-    "C_Workgroup VARCHAR(64) NOT NULL,"
+    "C_Workgroup VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

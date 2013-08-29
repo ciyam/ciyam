@@ -5284,7 +5284,7 @@ string Meta_Application::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -5317,7 +5317,7 @@ string Meta_Application::static_get_sql_columns( )
     "C_Use_Menubar_Not_Sidebar INTEGER NOT NULL,"
     "C_Use_URL_Checksum INTEGER NOT NULL,"
     "C_Version VARCHAR(200) NOT NULL,"
-    "C_Workgroup VARCHAR(64) NOT NULL,"
+    "C_Workgroup VARCHAR(75) NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
    return sql_columns;

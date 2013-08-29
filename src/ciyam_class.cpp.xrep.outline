@@ -41,7 +41,7 @@
 `{`;$all_indexes='name1,name3;bool,string ...'`}
 `{`;$all_unique_indexes='name1,name3 ...'`}
 `{`}
-`{`;$sql_columns='C_Key_ VARCHAR(32), C_Ver_ INTEGER NOT NULL, ...'`}
+`{`;$sql_columns='C_Key_ VARCHAR(75), C_Ver_ INTEGER NOT NULL, ...'`}
 `{`;$sql_numeric_fields='name1 ...'`}
 `{`}
 `{`;$all_sql_indexes='C_name1,C_name3 ...'`}
@@ -237,6 +237,7 @@
 `]`}
 
 #include "ciyam_base.h"
+#include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"
@@ -3573,11 +3574,7 @@ void `{`$full_class_name`}::get_always_required_field_names(
    ( void )use_transients;\
 `}
 `{`?`$all_get_always_required_field_names_specifications`[`$all_get_always_required_field_names_specifications`%,`,\
-`{`@eq`(`'\1`'`,`'create_child`'`)`&`!`@eq`(`'`'`,`$specification_\0_procedure`)`&`!`@eq`(`'`'`,`$specification_\0_field_list`)
-`{`#create_child.spec.xrep section=get_always_required_field_names\
- arg_id=$specification_\0_id arg_field_list=$specification_\0_field_list`}\
-`,\
-`@eq`(`'\1`'`,`'filter_field_value`'`)
+`{`@eq`(`'\1`'`,`'filter_field_value`'`)
 `{`#filter_field_value.spec.xrep section=get_always_required_field_names arg_name=\0\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
 `,\

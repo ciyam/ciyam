@@ -3290,7 +3290,7 @@ string Meta_Package_Option::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -3300,13 +3300,13 @@ string Meta_Package_Option::static_get_sql_columns( )
     "C_Installed INTEGER NOT NULL,"
     "C_Integer INTEGER NOT NULL,"
     "C_Is_Other_Package INTEGER NOT NULL,"
-    "C_Model VARCHAR(64) NOT NULL,"
+    "C_Model VARCHAR(75) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Numeric VARCHAR(200) NOT NULL,"
-    "C_Other_Package VARCHAR(64) NOT NULL,"
+    "C_Other_Package VARCHAR(75) NOT NULL,"
     "C_Other_Package_Required INTEGER NOT NULL,"
     "C_Other_Package_Type VARCHAR(200) NOT NULL,"
-    "C_Package VARCHAR(64) NOT NULL,"
+    "C_Package VARCHAR(75) NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
     "C_String VARCHAR(200) NOT NULL,"
     "C_Time VARCHAR(200) NOT NULL,"
