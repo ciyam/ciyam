@@ -2331,7 +2331,7 @@ string Meta_Procedure_Arg::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -2339,8 +2339,8 @@ string Meta_Procedure_Arg::static_get_sql_columns( )
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Order VARCHAR(200) NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
-    "C_Procedure VARCHAR(64) NOT NULL,"
-    "C_Source_Procedure_Arg VARCHAR(64) NOT NULL,"
+    "C_Procedure VARCHAR(75) NOT NULL,"
+    "C_Source_Procedure_Arg VARCHAR(75) NOT NULL,"
     "C_Type INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

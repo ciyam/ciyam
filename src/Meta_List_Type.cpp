@@ -1739,7 +1739,7 @@ string Meta_List_Type::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"

@@ -3,15 +3,17 @@
 `{`@eq`(`$arg_create_only`,`'`'`)\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( get_obj( ).`{`$arg_tfield`}( ) )\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
 `,\
-   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )\
-`}`}`,\
+   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
+`}`,\
+   // NOTE: Empty code block for scope purposes.
+`}`,\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )\
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
 `,\
-   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`} )\
-`}`}
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`} )
+`}`}\
    {
 `{`@eq`(`$arg_key_suffix`,`'`'`)\
 `{`@eq`(`$arg_tfield`,`'`'`)`|`@eq`(`$arg_use_test_field_as_suffix`,`'`'`)\
@@ -51,16 +53,5 @@
        + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
    }
-   // [(finish create_child)] `{`$arg_id`}
-`}
-`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
-   // [(start create_child)] `{`$arg_id`}
-`{`?`$arg_field_list`[`$arg_field_list`%,`,\
-   dependents.insert( "\\1" );
-
-   if( ( use_transients && is_field_transient( e_field_id_\\1 ) )
-    || ( !use_transients && !is_field_transient( e_field_id_\\1 ) ) )
-      names.insert( "\\1" );
-`+\n`]`}\
    // [(finish create_child)] `{`$arg_id`}
 `}

@@ -97,6 +97,7 @@ const char* const c_cmd_plist = "plist";
 const char* const c_cmd_pview = "pview";
 const char* const c_cmd_status = "status";
 const char* const c_cmd_activate = "activate";
+const char* const c_cmd_credentials = "credentials";
 
 const char* const c_param_act = "act";
 const char* const c_param_app = "app";
@@ -487,6 +488,7 @@ const char* const c_display_logout = "Logout";
 const char* const c_display_records = "records";
 const char* const c_display_unknown = "Unknown";
 const char* const c_display_confirm = "Confirm";
+const char* const c_display_sign_in = "Sign In";
 const char* const c_display_user_id = "User Id";
 const char* const c_display_contains = "Contains";
 const char* const c_display_continue = "Continue";

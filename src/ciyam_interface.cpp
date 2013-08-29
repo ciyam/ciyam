@@ -126,7 +126,6 @@ const char* const c_openup_file = "openup.htms";
 const char* const c_signup_file = "signup.htms";
 const char* const c_activate_file = "activate.htms";
 const char* const c_password_file = "password.htms";
-const char* const c_minilogin_file = "minilogin.htms";
 const char* const c_ssl_signup_file = "ssl_signup.htms";
 const char* const c_authenticate_file = "authenticate.htms";
 const char* const c_ciyam_interface_file = "ciyam_interface.htms";
@@ -217,7 +216,6 @@ string g_openup_html;
 string g_signup_html;
 string g_password_html;
 string g_activate_html;
-string g_minilogin_html;
 string g_ssl_signup_html;
 string g_authenticate_html;
 string g_ciyam_interface_html;
@@ -1025,14 +1023,28 @@ void request_handler::process_request( )
          }
       }
 
+      bool is_sign_in = false;
       bool using_anonymous = false;
 
       if( !is_kept
+       && cmd != c_cmd_credentials
        && !is_invalid_session && mod_info.allows_anonymous_access
        && ( username.empty( ) && userhash.empty( ) && !p_session_info ) )
       {
          is_authorised = true;
          using_anonymous = true;
+      }
+
+      if( cmd == c_cmd_credentials )
+      {
+         cmd = c_cmd_home;
+         is_sign_in = true;
+
+         if( is_invalid_session )
+         {
+            session_id.erase( );
+            is_invalid_session = false;
+         }   
       }
 
       if( using_anonymous || cmd == c_cmd_join || cmd == c_cmd_status )
@@ -1167,8 +1179,10 @@ void request_handler::process_request( )
             remove_session_temp_directory( session_id );
 
             ostringstream osstr;
-            osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
-             << ": " << GDS( c_display_your_session_has_been_terminated ) << ".</p>\n";
+
+            if( !is_sign_in )
+               osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
+                << ": " << GDS( c_display_your_session_has_been_terminated ) << ".</p>\n";
 
             string login_html( !cookies_permitted || !get_storage_info( ).login_days
              || g_login_persistent_html.empty( ) ? g_login_html : g_login_persistent_html );
@@ -3382,7 +3396,7 @@ void request_handler::process_request( )
                   if( !had_send_or_recv_error )
                      osstr << "<p align=\"center\"><strong>"
                       << GDS( c_display_you_have_been_logged_out ) << "</strong></p>\n";
-                  else
+                  else if( !is_sign_in )
                      osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error )
                       << ": " << GDS( c_display_your_session_has_been_terminated ) << "</p>\n";
                }
@@ -3474,7 +3488,10 @@ void request_handler::process_request( )
                {
                   if( cmd != c_cmd_join && cmd != c_cmd_open )
                   {
-                     extra_content << g_minilogin_html;
+                     extra_content << "<div id=\"sign_in\"><a href=\""
+                      << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+
+                     extra_content << "\">" << GDS( c_display_sign_in ) << "</a></div>";
 
                      // NOTE: To limit "sign ups" to specific IP addresses simply add them
                      // as lines to the list of "sign up testers" file (to let *all* users
@@ -5402,7 +5419,6 @@ int main( int argc, char* argv[ ] )
       g_signup_html = buffer_file( c_signup_file );
       g_activate_html = buffer_file( c_activate_file );
       g_password_html = buffer_file( c_password_file );
-      g_minilogin_html = buffer_file( c_minilogin_file );
       g_ssl_signup_html = buffer_file( c_ssl_signup_file );
       g_authenticate_html = buffer_file( c_authenticate_file );
 
@@ -5450,10 +5466,6 @@ int main( int argc, char* argv[ ] )
       str_replace( g_password_html, c_new_password, GDS( c_display_new_password ) );
       str_replace( g_password_html, c_change_password, GDS( c_display_change_password ) );
       str_replace( g_password_html, c_verify_new_password, GDS( c_display_verify_new_password ) );
-
-      str_replace( g_minilogin_html, c_login, GDS( c_display_login ) );
-      str_replace( g_minilogin_html, c_user_id, GDS( c_display_user_id ) );
-      str_replace( g_minilogin_html, c_password, GDS( c_display_password ) );
 
       str_replace( g_ssl_signup_html, c_email, GDS( c_display_email ) );
       str_replace( g_ssl_signup_html, c_user_id, GDS( c_display_user_id ) );

@@ -1774,11 +1774,11 @@ string Meta_Initial_Record::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Class VARCHAR(64) NOT NULL,"
+    "C_Class VARCHAR(75) NOT NULL,"
     "C_Comments VARCHAR(200) NOT NULL,"
     "C_Key VARCHAR(200) NOT NULL,"
     "C_Order VARCHAR(200) NOT NULL,"

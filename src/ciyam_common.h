@@ -7,6 +7,8 @@
 #ifndef CIYAM_COMMON_H
 #  define CIYAM_COMMON_H
 
+const int c_max_key_length = 75;
+
 const int c_max_fields_per_index = 5;
 
 const int c_max_indexes_per_class = 100;

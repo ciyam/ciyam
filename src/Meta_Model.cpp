@@ -8541,7 +8541,7 @@ string Meta_Model::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
@@ -8554,11 +8554,11 @@ string Meta_Model::static_get_sql_columns( )
     "C_Next_List_Id VARCHAR(200) NOT NULL,"
     "C_Next_Specification_Id VARCHAR(200) NOT NULL,"
     "C_Next_View_Id VARCHAR(200) NOT NULL,"
-    "C_Permission VARCHAR(64) NOT NULL,"
+    "C_Permission VARCHAR(75) NOT NULL,"
     "C_Source_File VARCHAR(200) NOT NULL,"
     "C_Use_Package_Demo_Data INTEGER NOT NULL,"
     "C_Version VARCHAR(200) NOT NULL,"
-    "C_Workgroup VARCHAR(64) NOT NULL,"
+    "C_Workgroup VARCHAR(75) NOT NULL,"
     "C_Year_Created INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

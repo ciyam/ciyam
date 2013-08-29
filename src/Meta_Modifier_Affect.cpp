@@ -2276,17 +2276,17 @@ string Meta_Modifier_Affect::static_get_sql_columns( )
    string sql_columns;
 
    sql_columns += 
-    "C_Key_ VARCHAR(64),"
+    "C_Key_ VARCHAR(75),"
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
-    "C_Class VARCHAR(64) NOT NULL,"
+    "C_Class VARCHAR(75) NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
-    "C_Field VARCHAR(64) NOT NULL,"
+    "C_Field VARCHAR(75) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
-    "C_Modifier VARCHAR(64) NOT NULL,"
+    "C_Modifier VARCHAR(75) NOT NULL,"
     "C_Scope INTEGER NOT NULL,"
-    "C_Source_Modifier_Affect VARCHAR(64) NOT NULL,"
+    "C_Source_Modifier_Affect VARCHAR(75) NOT NULL,"
     "C_Type INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 
