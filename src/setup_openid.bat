@@ -1,5 +1,5 @@
 @echo off
-REM Copyright (c) 2012-2013 CIYAM Open Developers
+REM Copyright (c) 2013 CIYAM Open Developers
 REM
 REM Distributed under the MIT/X11 software license, please refer to the file license.txt
 REM in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -12,13 +12,13 @@ set WEBDIR=%1
 :skip
 if "%WEBDIR%" == "" goto error1
 
-if not exist %WEBDIR%\galleria goto install
-echo Galleria has already been installed.
+if not exist %WEBDIR%\openid goto install
+echo OpenID has already been installed.
 goto end
 
 :install
-mkdir %WEBDIR%\galleria
-unbundle -q galleria -d %WEBDIR%\galleria
+mkdir %WEBDIR%\openid
+unbundle -q openid -d %WEBDIR%
 goto end
 
 :error1

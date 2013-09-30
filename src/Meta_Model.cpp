@@ -36,6 +36,7 @@
 #include "Meta_Workgroup.h"
 
 #include "ciyam_base.h"
+#include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"
@@ -108,6 +109,7 @@ const char* const c_field_id_Add_Packages = "105112";
 const char* const c_field_id_Allow_Anonymous_Access = "105116";
 const char* const c_field_id_Commands_File = "105111";
 const char* const c_field_id_Created = "105113";
+const char* const c_field_id_Home_Title = "105117";
 const char* const c_field_id_Id = "105104";
 const char* const c_field_id_Name = "105101";
 const char* const c_field_id_Next_Class_Id = "105105";
@@ -127,6 +129,7 @@ const char* const c_field_name_Add_Packages = "Add_Packages";
 const char* const c_field_name_Allow_Anonymous_Access = "Allow_Anonymous_Access";
 const char* const c_field_name_Commands_File = "Commands_File";
 const char* const c_field_name_Created = "Created";
+const char* const c_field_name_Home_Title = "Home_Title";
 const char* const c_field_name_Id = "Id";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Next_Class_Id = "Next_Class_Id";
@@ -146,6 +149,7 @@ const char* const c_field_display_name_Add_Packages = "field_model_add_packages"
 const char* const c_field_display_name_Allow_Anonymous_Access = "field_model_allow_anonymous_access";
 const char* const c_field_display_name_Commands_File = "field_model_commands_file";
 const char* const c_field_display_name_Created = "field_model_created";
+const char* const c_field_display_name_Home_Title = "field_model_home_title";
 const char* const c_field_display_name_Id = "field_model_id";
 const char* const c_field_display_name_Name = "field_model_name";
 const char* const c_field_display_name_Next_Class_Id = "field_model_next_class_id";
@@ -160,7 +164,7 @@ const char* const c_field_display_name_Version = "field_model_version";
 const char* const c_field_display_name_Workgroup = "field_model_workgroup";
 const char* const c_field_display_name_Year_Created = "field_model_year_created";
 
-const int c_num_fields = 18;
+const int c_num_fields = 19;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -180,6 +184,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "105114",
    "105115",
    "105116",
+   "105117",
    "300500",
    "301600"
 };
@@ -191,6 +196,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Allow_Anonymous_Access",
    "Commands_File",
    "Created",
+   "Home_Title",
    "Id",
    "Name",
    "Next_Class_Id",
@@ -249,6 +255,7 @@ const char* const c_procedure_id_Remove_Module = "105430";
 
 const uint64_t c_modifier_Is_Not_Busy = UINT64_C( 0x100 );
 
+domain_string_max_size< 100 > g_Home_Title_domain;
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Id_domain;
@@ -291,6 +298,7 @@ int g_default_Add_Packages = int( 2 );
 bool g_default_Allow_Anonymous_Access = bool( 0 );
 string g_default_Commands_File = string( );
 bool g_default_Created = bool( 0 );
+string g_default_Home_Title = string( );
 string g_default_Id = string( );
 string g_default_Name = string( );
 string g_default_Next_Class_Id = string( );
@@ -506,6 +514,12 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
          string_getter< bool >( cmd_handler.p_Meta_Model->Created( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Home_Title || field_name == c_field_name_Home_Title )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Model->Home_Title( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
       {
          handled = true;
@@ -629,6 +643,13 @@ void Meta_Model_command_functor::operator ( )( const string& command, const para
          handled = true;
          func_string_setter< Meta_Model, bool >(
           *cmd_handler.p_Meta_Model, &Meta_Model::Created, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Home_Title || field_name == c_field_name_Home_Title )
+      {
+         handled = true;
+         func_string_setter< Meta_Model, string >(
+          *cmd_handler.p_Meta_Model, &Meta_Model::Home_Title, field_value );
       }
 
       if( !handled && field_name == c_field_id_Id || field_name == c_field_name_Id )
@@ -820,6 +841,9 @@ struct Meta_Model::impl : public Meta_Model_command_handler
 
    bool impl_Created( ) const { return lazy_fetch( p_obj ), v_Created; }
    void impl_Created( bool Created ) { v_Created = Created; }
+
+   const string& impl_Home_Title( ) const { return lazy_fetch( p_obj ), v_Home_Title; }
+   void impl_Home_Title( const string& Home_Title ) { v_Home_Title = Home_Title; }
 
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
    void impl_Id( const string& Id ) { v_Id = Id; }
@@ -1184,6 +1208,7 @@ struct Meta_Model::impl : public Meta_Model_command_handler
    bool v_Allow_Anonymous_Access;
    string v_Commands_File;
    bool v_Created;
+   string v_Home_Title;
    string v_Id;
    string v_Name;
    string v_Next_Class_Id;
@@ -1342,6 +1367,7 @@ void Meta_Model::impl::impl_Generate( )
       outv << "\x60{\x60$model_title\x60=\x60'" << title << "\x60'\x60}\n";
 
       outs << "title \"" << search_replace( title, "_", " " ) << "\"\n";
+      outs << "home_title \"" << get_obj( ).Home_Title( ) << "\"\n";
 
       outs << "field_key \"Key\"\n";
       outs << "field_row \"#\"\n";
@@ -6025,54 +6051,58 @@ string Meta_Model::impl::get_field_value( int field ) const
       break;
 
       case 5:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Home_Title( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Next_Class_Id( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Next_List_Id( ) );
+      retval = to_string( impl_Next_Class_Id( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Next_Specification_Id( ) );
+      retval = to_string( impl_Next_List_Id( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Next_View_Id( ) );
+      retval = to_string( impl_Next_Specification_Id( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Permission( ) );
+      retval = to_string( impl_Next_View_Id( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Source_File( ) );
+      retval = to_string( impl_Permission( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Status( ) );
+      retval = to_string( impl_Source_File( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Use_Package_Demo_Data( ) );
+      retval = to_string( impl_Status( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Version( ) );
+      retval = to_string( impl_Use_Package_Demo_Data( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Workgroup( ) );
+      retval = to_string( impl_Version( ) );
       break;
 
       case 17:
+      retval = to_string( impl_Workgroup( ) );
+      break;
+
+      case 18:
       retval = to_string( impl_Year_Created( ) );
       break;
 
@@ -6108,54 +6138,58 @@ void Meta_Model::impl::set_field_value( int field, const string& value )
       break;
 
       case 5:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Home_Title, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Name, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Id, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Class_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Name, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_List_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Class_Id, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Specification_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_List_Id, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_View_Id, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_Specification_Id, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Model::impl, Meta_Permission >( *this, &Meta_Model::impl::impl_Permission, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Next_View_Id, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Source_File, value );
+      func_string_setter< Meta_Model::impl, Meta_Permission >( *this, &Meta_Model::impl::impl_Permission, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Status, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Source_File, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Use_Package_Demo_Data, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Status, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
+      func_string_setter< Meta_Model::impl, bool >( *this, &Meta_Model::impl::impl_Use_Package_Demo_Data, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Model::impl, Meta_Workgroup >( *this, &Meta_Model::impl::impl_Workgroup, value );
+      func_string_setter< Meta_Model::impl, string >( *this, &Meta_Model::impl::impl_Version, value );
       break;
 
       case 17:
+      func_string_setter< Meta_Model::impl, Meta_Workgroup >( *this, &Meta_Model::impl::impl_Workgroup, value );
+      break;
+
+      case 18:
       func_string_setter< Meta_Model::impl, int >( *this, &Meta_Model::impl::impl_Year_Created, value );
       break;
 
@@ -6250,6 +6284,7 @@ void Meta_Model::impl::clear( )
    v_Allow_Anonymous_Access = g_default_Allow_Anonymous_Access;
    v_Commands_File = g_default_Commands_File;
    v_Created = g_default_Created;
+   v_Home_Title = g_default_Home_Title;
    v_Id = g_default_Id;
    v_Name = g_default_Name;
    v_Next_Class_Id = g_default_Next_Class_Id;
@@ -6315,6 +6350,13 @@ void Meta_Model::impl::validate( unsigned state, bool is_internal, validation_er
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Workgroup ) ) ) ) );
 
    string error_message;
+   if( !is_null( v_Home_Title )
+    && ( v_Home_Title != g_default_Home_Title
+    || !value_will_be_provided( c_field_name_Home_Title ) )
+    && !g_Home_Title_domain.is_valid( v_Home_Title, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Home_Title,
+       get_module_string( c_field_display_name_Home_Title ) + " " + error_message ) );
+
    if( !is_null( v_Id )
     && ( v_Id != g_default_Id
     || !value_will_be_provided( c_field_name_Id ) )
@@ -6388,6 +6430,12 @@ void Meta_Model::impl::validate_set_fields( set< string >& fields_set, validatio
       throw runtime_error( "unexpected null validation_errors container" );
 
    string error_message;
+
+   if( !is_null( v_Home_Title )
+    && ( fields_set.count( c_field_id_Home_Title ) || fields_set.count( c_field_name_Home_Title ) )
+    && !g_Home_Title_domain.is_valid( v_Home_Title, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Home_Title,
+       get_module_string( c_field_display_name_Home_Title ) + " " + error_message ) );
 
    if( !is_null( v_Id )
     && ( fields_set.count( c_field_id_Id ) || fields_set.count( c_field_name_Id ) )
@@ -6873,6 +6921,16 @@ void Meta_Model::Created( bool Created )
    p_impl->impl_Created( Created );
 }
 
+const string& Meta_Model::Home_Title( ) const
+{
+   return p_impl->impl_Home_Title( );
+}
+
+void Meta_Model::Home_Title( const string& Home_Title )
+{
+   p_impl->impl_Home_Title( Home_Title );
+}
+
 const string& Meta_Model::Id( ) const
 {
    return p_impl->impl_Id( );
@@ -7314,6 +7372,16 @@ const char* Meta_Model::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Home_Title )
+   {
+      p_id = c_field_id_Home_Title;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Id )
    {
       p_id = c_field_id_Id;
@@ -7505,6 +7573,16 @@ const char* Meta_Model::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Home_Title )
+   {
+      p_name = c_field_name_Home_Title;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Id )
    {
       p_name = c_field_name_Id;
@@ -7689,6 +7767,11 @@ string Meta_Model::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Created );
       get_module_string( c_field_display_name_Created, &next );
    }
+   else if( id_or_name == c_field_id_Home_Title || id_or_name == c_field_name_Home_Title )
+   {
+      name = string( c_field_display_name_Home_Title );
+      get_module_string( c_field_display_name_Home_Title, &next );
+   }
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
    {
       name = string( c_field_display_name_Id );
@@ -7779,6 +7862,8 @@ string Meta_Model::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Commands_File );
    else if( id_or_name == c_field_id_Created || id_or_name == c_field_name_Created )
       display_name = get_module_string( c_field_display_name_Created );
+   else if( id_or_name == c_field_id_Home_Title || id_or_name == c_field_name_Home_Title )
+      display_name = get_module_string( c_field_display_name_Home_Title );
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
       display_name = get_module_string( c_field_display_name_Id );
    else if( id_or_name == c_field_id_Name || id_or_name == c_field_name_Name )
@@ -8135,6 +8220,7 @@ void Meta_Model::get_sql_column_names(
    names.push_back( "C_Allow_Anonymous_Access" );
    names.push_back( "C_Commands_File" );
    names.push_back( "C_Created" );
+   names.push_back( "C_Home_Title" );
    names.push_back( "C_Id" );
    names.push_back( "C_Name" );
    names.push_back( "C_Next_Class_Id" );
@@ -8161,6 +8247,7 @@ void Meta_Model::get_sql_column_values(
    values.push_back( to_string( Allow_Anonymous_Access( ) ) );
    values.push_back( sql_quote( to_string( Commands_File( ) ) ) );
    values.push_back( to_string( Created( ) ) );
+   values.push_back( sql_quote( to_string( Home_Title( ) ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( sql_quote( to_string( Next_Class_Id( ) ) ) );
@@ -8265,6 +8352,7 @@ void Meta_Model::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "105116", "Allow_Anonymous_Access", "bool", false ) );
    all_field_info.push_back( field_info( "105111", "Commands_File", "string", false ) );
    all_field_info.push_back( field_info( "105113", "Created", "bool", false ) );
+   all_field_info.push_back( field_info( "105117", "Home_Title", "string", false ) );
    all_field_info.push_back( field_info( "105104", "Id", "string", false ) );
    all_field_info.push_back( field_info( "105101", "Name", "string", false ) );
    all_field_info.push_back( field_info( "105105", "Next_Class_Id", "string", false ) );
@@ -8328,54 +8416,58 @@ const char* Meta_Model::static_get_field_id( field_id id )
       break;
 
       case 6:
-      p_id = "105104";
+      p_id = "105117";
       break;
 
       case 7:
-      p_id = "105101";
+      p_id = "105104";
       break;
 
       case 8:
-      p_id = "105105";
+      p_id = "105101";
       break;
 
       case 9:
-      p_id = "105107";
+      p_id = "105105";
       break;
 
       case 10:
-      p_id = "105106";
+      p_id = "105107";
       break;
 
       case 11:
-      p_id = "105108";
+      p_id = "105106";
       break;
 
       case 12:
-      p_id = "301600";
+      p_id = "105108";
       break;
 
       case 13:
-      p_id = "105110";
+      p_id = "301600";
       break;
 
       case 14:
-      p_id = "105114";
+      p_id = "105110";
       break;
 
       case 15:
-      p_id = "105115";
+      p_id = "105114";
       break;
 
       case 16:
-      p_id = "105102";
+      p_id = "105115";
       break;
 
       case 17:
-      p_id = "300500";
+      p_id = "105102";
       break;
 
       case 18:
+      p_id = "300500";
+      break;
+
+      case 19:
       p_id = "105103";
       break;
    }
@@ -8413,54 +8505,58 @@ const char* Meta_Model::static_get_field_name( field_id id )
       break;
 
       case 6:
-      p_id = "Id";
+      p_id = "Home_Title";
       break;
 
       case 7:
-      p_id = "Name";
+      p_id = "Id";
       break;
 
       case 8:
-      p_id = "Next_Class_Id";
+      p_id = "Name";
       break;
 
       case 9:
-      p_id = "Next_List_Id";
+      p_id = "Next_Class_Id";
       break;
 
       case 10:
-      p_id = "Next_Specification_Id";
+      p_id = "Next_List_Id";
       break;
 
       case 11:
-      p_id = "Next_View_Id";
+      p_id = "Next_Specification_Id";
       break;
 
       case 12:
-      p_id = "Permission";
+      p_id = "Next_View_Id";
       break;
 
       case 13:
-      p_id = "Source_File";
+      p_id = "Permission";
       break;
 
       case 14:
-      p_id = "Status";
+      p_id = "Source_File";
       break;
 
       case 15:
-      p_id = "Use_Package_Demo_Data";
+      p_id = "Status";
       break;
 
       case 16:
-      p_id = "Version";
+      p_id = "Use_Package_Demo_Data";
       break;
 
       case 17:
-      p_id = "Workgroup";
+      p_id = "Version";
       break;
 
       case 18:
+      p_id = "Workgroup";
+      break;
+
+      case 19:
       p_id = "Year_Created";
       break;
    }
@@ -8487,32 +8583,34 @@ int Meta_Model::static_get_field_num( const string& field )
       rc += 4;
    else if( field == c_field_id_Created || field == c_field_name_Created )
       rc += 5;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Home_Title || field == c_field_name_Home_Title )
       rc += 6;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 7;
-   else if( field == c_field_id_Next_Class_Id || field == c_field_name_Next_Class_Id )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 8;
-   else if( field == c_field_id_Next_List_Id || field == c_field_name_Next_List_Id )
+   else if( field == c_field_id_Next_Class_Id || field == c_field_name_Next_Class_Id )
       rc += 9;
-   else if( field == c_field_id_Next_Specification_Id || field == c_field_name_Next_Specification_Id )
+   else if( field == c_field_id_Next_List_Id || field == c_field_name_Next_List_Id )
       rc += 10;
-   else if( field == c_field_id_Next_View_Id || field == c_field_name_Next_View_Id )
+   else if( field == c_field_id_Next_Specification_Id || field == c_field_name_Next_Specification_Id )
       rc += 11;
-   else if( field == c_field_id_Permission || field == c_field_name_Permission )
+   else if( field == c_field_id_Next_View_Id || field == c_field_name_Next_View_Id )
       rc += 12;
-   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+   else if( field == c_field_id_Permission || field == c_field_name_Permission )
       rc += 13;
-   else if( field == c_field_id_Status || field == c_field_name_Status )
+   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
       rc += 14;
-   else if( field == c_field_id_Use_Package_Demo_Data || field == c_field_name_Use_Package_Demo_Data )
+   else if( field == c_field_id_Status || field == c_field_name_Status )
       rc += 15;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Use_Package_Demo_Data || field == c_field_name_Use_Package_Demo_Data )
       rc += 16;
-   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
+   else if( field == c_field_id_Version || field == c_field_name_Version )
       rc += 17;
-   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+   else if( field == c_field_id_Workgroup || field == c_field_name_Workgroup )
       rc += 18;
+   else if( field == c_field_id_Year_Created || field == c_field_name_Year_Created )
+      rc += 19;
 
    return rc - 1;
 }
@@ -8548,6 +8646,7 @@ string Meta_Model::static_get_sql_columns( )
     "C_Allow_Anonymous_Access INTEGER NOT NULL,"
     "C_Commands_File VARCHAR(200) NOT NULL,"
     "C_Created INTEGER NOT NULL,"
+    "C_Home_Title VARCHAR(200) NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Next_Class_Id VARCHAR(200) NOT NULL,"

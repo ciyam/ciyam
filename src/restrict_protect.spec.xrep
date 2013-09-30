@@ -6,7 +6,8 @@
 `{`!`@eq`(`$arg_tfield`,`'`'`)
     && !get_obj( ).`{`$arg_tfield`}( )`}\
 `{`!`@eq`(`$arg_permission`,`'`'`)
-    && !get_perms( ).count( "`{`$arg_permission_id`}" )`} )`{`!`@eq`(`$arg_permission`,`'`'`) // i.e. `{`$arg_permission`}`}
+    && ( !get_obj( ).get_is_in_op( )
+    && !get_perms( ).count( "`{`$arg_permission_id`}" ) )`} )`{`!`@eq`(`$arg_permission`,`'`'`) // i.e. `{`$arg_permission`}`}
 `{`!`@eq`(`$arg_no_ignore`,`'`'`)\
    {
 `}`{`@eq`(`$arg_scope`,`'edit`'`)\

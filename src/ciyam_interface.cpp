@@ -166,6 +166,7 @@ const char* const c_continue = "@@continue";
 const char* const c_password = "@@password";
 const char* const c_pin_name = "@@pin_name";
 const char* const c_selected_ = "@@selected_";
+const char* const c_direction = "@@direction";
 const char* const c_pin_value = "@@pin_value";
 const char* const c_user_name = "@@user_name";
 const char* const c_persistent = "@@persistent";
@@ -457,6 +458,14 @@ void read_global_storage_info( )
       LOG_TRACE( log_messages[ i ] );
 }
 
+string get_app_name( )
+{
+   // KLUDGE: This needs to be able to translated but is not currently a module
+   // string (perhaps add an "app" string for this that defaults to the name of
+   // the Application being generated).
+   return get_storage_info( ).storage_name;
+}
+
 string get_display_name( const string& str )
 {
    string display_name( str );
@@ -506,56 +515,15 @@ string get_view_or_list_header( const string& qlink,
    return str;
 }
 
-string get_header_image( const string& module_name )
-{
-   string header_image_name( module_name );
-   string ext( ".gif" );
-
-   bool found = false;
-   if( file_exists( header_image_name + ext ) )
-   {
-      found = true;
-      header_image_name += ext;
-   }
-   else
-   {
-      ext = ".png";
-      if( file_exists( header_image_name + ext ) )
-      {
-         found = true;
-         header_image_name += ext;
-      }
-      else
-      {
-         ext = ".jpg";
-         if( file_exists( header_image_name + ext ) )
-         {
-            found = true;
-            header_image_name += ext;
-         }
-      }
-   }
-
-   if( !found )
-      header_image_name.erase( );
-
-   return header_image_name;
-}
-
 void output_login_logout( const string& module_name, ostream& os, const string& extra_details, const string& msg = "" )
 {
-   os << "\n<div id=\"normal_content\" class=\"menubar_background\">\n";
+   os << "\n<div id=\"normal_content\">\n";
 
-   os << "\n<div id=\"header\">\n";
-
-   string header_image_name( get_header_image( module_name ) );
-   if( !header_image_name.empty( ) )
-      os << "   <img src=\"" << header_image_name << "\" alt=\"Header\"/>\n";
-
+   os << "\n<div id=\"header\"><div id=\"appname\">";
+   os << "<a href=\"?cmd=" << c_cmd_home << "\">" << get_app_name( ) << "</a></div>\n";
    os << "   <div id=\"navband\">\n";
    os << "   </div>\n";
    os << "</div>\n";
-
 
    if( extra_details.empty( ) )
    {
@@ -565,9 +533,12 @@ void output_login_logout( const string& module_name, ostream& os, const string& 
    }
    else
    {
+      os << "<h3 class=\"center\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
       os << extra_details;
       os << msg << "\n";
    }
+
+   os << g_footer_html;
 
    os << "</div>\n";
 }
@@ -810,6 +781,7 @@ void request_handler::process_request( )
 {
    bool okay = true;
    bool is_ssl = false;
+   bool is_vertical = false;
    bool embed_images = false;
    bool encrypt_data = false;
    bool temp_session = false;
@@ -1199,8 +1171,6 @@ void request_handler::process_request( )
             else
                extra_content_func += "document.cookie = '" + get_cookie_value( "", c_anon_user_key, true ) + "';";
          }
-
-         extra_content << g_footer_html;
       }
       else
       {
@@ -3426,8 +3396,6 @@ void request_handler::process_request( )
 
                output_login_logout( module_name, extra_content, login_html, osstr.str( ) );
             }
-
-            extra_content << g_footer_html;
          }
 
          if( finished_session )
@@ -3456,30 +3424,31 @@ void request_handler::process_request( )
             else
                pwd_display_name = g_display_change_password;
 
-            bool use_menubar = menu_opts.count( c_menu_opt_use_menubar_not_sidebar );
+            is_vertical = menu_opts.count( c_menu_opt_use_vertical_menu );
 
             if( cmd != c_cmd_pview && cmd != c_cmd_plist )
-            {
-               if( use_menubar )
-                  extra_content << "\n<div id=\"normal_content\" class=\"menubar_background\">\n";
-               else
-                  extra_content << "\n<div id=\"normal_content\" class=\"sidebar_background\">\n";
-            }
+               extra_content << "\n<div id=\"normal_content\">\n";
             else
                extra_content << "\n<div id=\"print_content\">\n";
 
-            if( cmd != c_cmd_pview && cmd != c_cmd_plist )
-               extra_content << "<div id=\"remainder\">\n";
-            else
-               extra_content << "<div id=\"print_remainder\">\n";
-
             if( cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
             {
-               extra_content << "\n<div id=\"header\">\n";
+               extra_content << "\n<div id=\"header\"><div id=\"appname\">";
 
-               string header_image_name( get_header_image( module_name ) );
-               if( !header_image_name.empty( ) )
-                  extra_content << "   <img src=\"" << header_image_name << "\" alt=\"Header\"/>\n";
+               extra_content << "<a href=\"" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_home;
+
+               if( !uselect.empty( ) )
+               {
+                  extra_content << "&" << c_param_uselect << "=" << uselect;
+                  extra_content << "&" << c_param_uselextra << "=" << uselect;
+               }
+
+               if( !cookies_permitted )
+                  extra_content << "&session=" << session_id;
+
+               if( use_url_checksum )
+                  extra_content << "&chksum=" << get_checksum( *p_session_info, session_id + uselect );
+               extra_content << "\">" << get_app_name( ) << "</a></div>\n";
 
                extra_content << "   <div id=\"navband\">\n";
                extra_content << "      <div id=\"nav\">\n";
@@ -3488,10 +3457,25 @@ void request_handler::process_request( )
                {
                   if( cmd != c_cmd_join && cmd != c_cmd_open )
                   {
-                     extra_content << "<div id=\"sign_in\"><a href=\""
-                      << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+                     // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
+                     // should not be menus but just direct links to the "client crypto" implementations.
+                     extra_content << "<div id=\"sign\"><ul><li><a href=\"#\">" << GDS( c_display_sign_in ) << "</a>";
 
-                     extra_content << "\">" << GDS( c_display_sign_in ) << "</a></div>";
+                     extra_content << "<div id=\"sign_in_up\"><ul>";
+
+                     if( file_exists( "../openid/" + app_dir_name, false ) )
+                        extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
+                         << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
+
+                     extra_content << "<li><a href=\"https://" << input_data[ c_http_param_host ]
+                      << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+                     extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
+
+                     extra_content << "<li><a href=\"http://" << input_data[ c_http_param_host ]
+                      << "/" << app_dir_name << "/" << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_credentials;
+                     extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
+
+                     extra_content << "</ul></div></li>";
 
                      // NOTE: To limit "sign ups" to specific IP addresses simply add them
                      // as lines to the list of "sign up testers" file (to let *all* users
@@ -3507,14 +3491,26 @@ void request_handler::process_request( )
 
                      if( testers.empty( ) || testers.count( p_session_info->ip_addr ) )
                      {
-                        extra_content << "<a href=\"" << get_module_page_name( module_ref )
-                         << "?cmd=" << c_cmd_join << "\">"
-                         << "<img src=\"key.png\" alt=\"Join\" border=\"0\" margin=\"10\"/></a>";
+                        extra_content << "<li><a class=\"grey\" href=\"#\">" << GDS( c_display_sign_up ) << "</a>";
+
+                        extra_content << "<div id=\"sign_in_up\"><ul>";
 
                         if( file_exists( "../openid/" + app_dir_name, false ) )
-                           extra_content << "&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"https://" << input_data[ c_http_param_host ]
-                            << "/openid/" << app_dir_name << "\"><img src=\"open.png\" alt=\"Open\" border=\"0\" margin=\"10\"/></a>";
+                           extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
+                            << "/openid/" << app_dir_name << "\">" << GDS( c_display_openid ) << "</a></li>";
+
+                        extra_content << "<li><a class=\"grey\" href=\"https://" << input_data[ c_http_param_host ]
+                         << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
+                        extra_content << "\">" << GDS( c_display_standard ) << "</a></li>";
+
+                        extra_content << "<li><a class=\"grey\" href=\"http://" << input_data[ c_http_param_host ]
+                         << "/" << app_dir_name << "/" <<  get_module_page_name( module_ref ) << "?cmd=" << c_cmd_join;
+                        extra_content << "\">" << GDS( c_display_client_crypto ) << "</a></li>";
+
+                        extra_content << "</div></li></ul>";
                      }
+
+                     extra_content << "</ul></div>\n";
                   }
                }
                else
@@ -3523,7 +3519,7 @@ void request_handler::process_request( )
 
                   if( !p_session_info->needs_pin && !get_storage_info( ).user_info_view_id.empty( ) )
                   {
-                     extra_content << GDS( c_display_logged_in_as ) << " ";
+                     extra_content << GDS( c_display_logged_in_as ) << "&nbsp;&nbsp;";
 
                      string user_info_view_id( get_storage_info( ).user_info_view_id );
                      string user_info_module_ref( get_storage_info( ).user_info_module_ref );
@@ -3640,25 +3636,6 @@ void request_handler::process_request( )
                }
               
                extra_content << "         <div id=\"uselects\">\n";
-
-               if( !using_anonymous )
-               {
-                  string cmd, time_info;
-
-                  if( !p_session_info->current_dtm.empty( ) )
-                  {
-                     time_info = date_time( p_session_info->current_dtm ).as_string( e_time_format_hhmm, true );
-                     if( !p_session_info->tz_abbr.empty( ) )
-                        time_info += ' ' + p_session_info->tz_abbr;
-                  }
-                  else
-                  {
-                     date_time dt( date_time::standard( ) + ( seconds )p_session_info->gmt_offset );
-                     time_info = dt.as_string( e_time_format_hhmm, true );
-                  }
-
-                  extra_content << time_info;
-               }
 
                // NOTE: If a user select option is specified and the user has access to it then include it.
                if( !p_session_info->needs_pin
@@ -3792,6 +3769,25 @@ void request_handler::process_request( )
 
                extra_content << "\n         </div>\n";
 
+               if( !using_anonymous )
+               {
+                  string time_info;
+
+                  if( !p_session_info->current_dtm.empty( ) )
+                  {
+                     time_info = date_time( p_session_info->current_dtm ).as_string( e_time_format_hhmm, true );
+                     if( !p_session_info->tz_abbr.empty( ) )
+                        time_info += ' ' + p_session_info->tz_abbr;
+                  }
+                  else
+                  {
+                     date_time dt( date_time::standard( ) + ( seconds )p_session_info->gmt_offset );
+                     time_info = dt.as_string( e_time_format_hhmm, true );
+                  }
+
+                  extra_content << "         <div id=\"timeinfo\">" << time_info << "\n         </div>";
+               }
+
                extra_content << "      </div >\n";
                extra_content << "   </div>\n";
                extra_content << "</div>\n";
@@ -3802,30 +3798,13 @@ void request_handler::process_request( )
             if( !p_session_info->needs_pin && cmd != c_cmd_join && cmd != c_cmd_open
              && cmd != c_cmd_pview && cmd != c_cmd_plist && !module_access_denied )
             {
-               if( use_menubar )
-               {
-                  extra_content << "\n<div id=\"menuband\">\n";
-                  extra_content << "   <ul id=\"menubar\">\n";
-               }
-               else
-               {
-                  extra_content << "\n<div id=\"sidebar\">\n";
-                  extra_content << "   <ul>\n";
-               }
+               extra_content << "\n<div id=\"menuband\" class=\"clearfix\">\n";
+               extra_content << "   <ul id=\"menubar\">\n";
 
-               if( cmd == c_cmd_home )
+               // NOTE: Don't display the home menu if logged in (to leave more room for other menus).
+               if( !p_session_info->logged_in )
                {
-                  if( !use_menubar )
-                     extra_content << "     <li class=\"sidebar_selected\">" << GDS( c_display_home ) << "</li>\n";
-                  else
-                     extra_content << "     <li class=\"\"><a href=\"#\">" << GDS( c_display_home ) << "</a></li>\n";
-               }
-               else
-               {
-                  if( !use_menubar )
-                     extra_content << "     <li>";
-                  else
-                     extra_content << "     <li class =\"\">";
+                  extra_content << "     <li class=\"\">";
 
                   extra_content << "<a href=\""
                    << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_home;
@@ -3918,79 +3897,47 @@ void request_handler::process_request( )
 
                      item_name += '!' + lmci->second->id;
                      menu_items[ menu_name ].push_back( item_name );
-
-                     if( !use_menubar )
-                     {
-                        if( qlink.empty( ) && cmd == c_cmd_list && oident == lmci->second->id )
-                        {
-                           has_selected_list = true;
-                           extra_content << "     <li class=\"sidebar_selected\">" << display_name << "</li>\n";
-                        }
-                        else
-                        {
-                           extra_content << "     <li><a href=\""
-                            << get_module_page_name( module_ref )
-                            << "?cmd=" << c_cmd_list << "&ident=" << lmci->second->id;
-
-                           if( !uselect.empty( ) )
-                              extra_content << "&" << c_param_uselect << "=" << uselect;
-
-                           if( !cookies_permitted )
-                              extra_content << "&session=" << session_id;
-
-                           if( use_url_checksum )
-                           {
-                              string checksum_values( string( c_cmd_list ) + lmci->second->id + uselect );
-                              extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                           }
-
-                           extra_content << "\">" << display_name << "</a></li>\n";
-                        }
-                     }
                   }
                }
 
-               if( use_menubar )
+               for( map< string, vector< string > >::iterator i = menu_items.begin( ); i != menu_items.end( ); ++i )
                {
-                  for( map< string, vector< string > >::iterator i = menu_items.begin( ); i != menu_items.end( ); ++i )
+                  extra_content << "     <li class=\"\"><a href=\"#\">" << i->first << "</a>\n";
+
+                  if( i->second.size( ) )
                   {
-                     extra_content << "     <li class=\"\"><a href=\"#\">" << i->first << "</a>\n";
+                     extra_content << "      <ul>\n";
 
-                     if( i->second.size( ) )
+                     for( size_t j = 0; j < i->second.size( ); j++ )
                      {
-                        extra_content << "      <ul>\n";
+                        string::size_type pos = i->second[ j ].find( '!' );
 
-                        for( size_t j = 0; j < i->second.size( ); j++ )
+                        string id, item_name( i->second[ j ].substr( 0, pos ) );
+                        if( pos != string::npos )
+                           id = i->second[ j ].substr( pos + 1 );
+
+                        extra_content << "         <li class=\"\"><a href=\""
+                         << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_list << "&ident=" << id;
+
+                        if( !uselect.empty( ) )
+                           extra_content << "&" << c_param_uselect << "=" << uselect;
+
+                        if( !cookies_permitted )
+                           extra_content << "&session=" << session_id;
+
+                        if( use_url_checksum )
                         {
-                           string::size_type pos = i->second[ j ].find( '!' );
-
-                           string id, item_name( i->second[ j ].substr( 0, pos ) );
-                           if( pos != string::npos )
-                              id = i->second[ j ].substr( pos + 1 );
-
-                           extra_content << "         <li class=\"\"><a href=\""
-                            << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_list << "&ident=" << id;
-
-                           if( !uselect.empty( ) )
-                              extra_content << "&" << c_param_uselect << "=" << uselect;
-
-                           if( !cookies_permitted )
-                              extra_content << "&session=" << session_id;
-
-                           if( use_url_checksum )
-                           {
-                              string checksum_values( string( c_cmd_list ) + id + uselect );
-                              extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
-                           }
-
-                           extra_content << "\">" << item_name << "</a></li>\n";
+                           string checksum_values( string( c_cmd_list ) + id + uselect );
+                           extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
                         }
 
-                        extra_content << "      </ul>\n";
+                        extra_content << "\">" << item_name << "</a></li>\n";
                      }
 
-                     extra_content << "     </li>\n";
+                     extra_content << "      </ul>\n";
                   }
+
+                  extra_content << "     </li>\n";
                }
 
                // NOTE: If the selected list has become inaccessible (to due a uselect change)
@@ -3998,7 +3945,7 @@ void request_handler::process_request( )
                if( !has_selected_list && qlink.empty( ) && cmd == c_cmd_list && !uselect.empty( ) )
                   cmd.erase( );
 
-               if( use_menubar && p_session_info->quick_link_data.size( ) )
+               if( p_session_info->quick_link_data.size( ) )
                {
                   extra_content << "     <li class=\"\"><a href=\"#\">"
                    << get_display_name( mod_info.get_string( mod_info.user_qlink_list_id + "_name" ) ) << "</a>\n";
@@ -4018,18 +3965,10 @@ void request_handler::process_request( )
                   // FUTURE: To make quick link menu items look different italics are being hard-coded here.
                   // This should instead be implemented as a style (only applicable if using the "sidebar").
                   if( !qlink.empty( ) && i == atoi( qlink.c_str( ) ) )
-                  {
-                     if( use_menubar )
-                        extra_content << "     <li class=\"\"><a href=\"#\">" << column_info[ 1 ] << "</a></li>\n";
-                     else
-                        extra_content << "     <li class=\"sidebar_selected\"><i>" << column_info[ 1 ] << "</i></li>\n";
-                  }
+                     extra_content << "     <li class=\"\"><a href=\"#\">" << column_info[ 1 ] << "</a></li>\n";
                   else
                   {
-                     if( !use_menubar )
-                        extra_content << "     <li>";
-                     else
-                        extra_content << "     <li class=\"\">";
+                     extra_content << "     <li class=\"\">";
 
                      extra_content << "<a href=\"" << column_info[ 0 ];
                      extra_content << "&" << c_param_qlink << "=" << to_string( i );
@@ -4056,99 +3995,112 @@ void request_handler::process_request( )
                         }
                      }
 
-                     if( use_menubar )
-                        extra_content << "\">" << column_info[ 1 ] << "</a></li>\n";
-                     else
-                        extra_content << "\"><i>" << column_info[ 1 ] << "</i></a></li>\n";
+                     extra_content << "\">" << column_info[ 1 ] << "</a></li>\n";
                   }
                }
 
-               if( use_menubar && p_session_info->quick_link_data.size( ) )
+               if( p_session_info->quick_link_data.size( ) )
                   extra_content << "      </ul>\n";
 
                extra_content << "   </ul>\n";
                extra_content << "</div>\n";
             }
 
-            if( cmd == c_cmd_join )
+            if( cmd != c_cmd_pview && cmd != c_cmd_plist )
             {
-               if( use_menubar )
+               bool found_slides = false;
+               if( cmd == c_cmd_home && !p_session_info->logged_in )
                {
-                  extra_content << "\n<div id=\"menuband\">\n";
-                  extra_content << "   <ul id=\"menubar\">\n";
+                  extra_content << "    <div class=\"home clearfix\">\n";
+                  extra_content << "        <div class=\"home_container clearfix\">\n";
+
+                  string home_title( mod_info.get_string( "home_title" ) );
+                  if( home_title.empty( ) )
+                     home_title = title;
+
+                  extra_content << "            <h2>" << home_title << "</h2>\n";
+
+                  for( map< string, list_source >::iterator i = home_lists.begin( ); i != home_lists.end( ); ++i )
+                  {
+                     bool can_output = true;
+
+                     if( p_session_info->is_admin_user || ( using_anonymous
+                      && !i->second.lici->second->extras.count( c_list_type_extra_allow_anonymous ) ) )
+                        can_output = false;
+
+                     if( can_output )
+                     {
+                        string header;
+                        if( !i->second.name.empty( ) )
+                           header = get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info );
+
+                        if( header.empty( ) )
+                        {
+                           if( !found_slides )
+                           {
+                              found_slides = true;
+                              extra_content_func += "totalNumSlides = " + to_string( ( i->second ).row_data.size( ) ) + "; show_next_slide( );";
+
+                              extra_content << "            <div class=\"home_slides_container clearfix\" id=\"home_slides_container\">\n";
+
+                              extra_content << "                <a class=\"nav_left\" onclick=\"goto_prev_slide( );\"></a>\n";
+                              extra_content << "                <a class=\"nav_right\" onclick=\"goto_next_slide( );\"></a>\n";
+                              extra_content << "                <ul class=\"paginate\" id=\"home_slides_paginate\">\n";
+                              extra_content << "                    <li class=\"active\" onclick=\"goto_slide( 0 );\"></li>\n";
+                              for( size_t s = 1; s < ( i->second ).row_data.size( ); s++ )
+                                 extra_content << "                    <li class=\"inactive\" onclick=\"goto_slide( " << to_string( s ) << " );\"></li>\n";
+                              extra_content << "                </ul>\n";
+                           }
+
+                           for( size_t s = 0; s < ( i->second ).row_data.size( ); s++ )
+                           {
+                              if( s == 0 )
+                                 extra_content << "               <div class=\"home_slide clearfix\">\n";
+                              else
+                                 extra_content << "               <div class=\"home_slide clearfix invisible\">\n";
+
+                              vector< string > columns;
+                              raw_split( ( i->second ).row_data[ s ].second, columns );
+
+                              string data;
+                              if( !columns.empty( ) )
+                                 data = columns[ columns.size( ) - 1 ];
+
+                              replace_links_and_output( data, ( i->second ).view,
+                               ( i->second ).module, ( i->second ).module_ref, extra_content, true, true,
+                               session_id, *p_session_info, uselect, cookies_permitted, use_url_checksum );
+
+                              extra_content << "               </div>\n";
+                           }
+                        }
+                     }
+                  }
+
+                  if( found_slides )
+                     extra_content << "            </div>\n";
+
+                  extra_content << "        </div>\n";
+                  extra_content << "    </div>\n";
                }
-               else
-               {
-                  extra_content << "\n<div id=\"sidebar\">\n";
-                  extra_content << "   <ul>";
-               }
-
-               if( !use_menubar )
-                  extra_content << "     <li>";
-               else
-                  extra_content << "     <li class =\"\">";
-
-               extra_content << "<a href=\""
-                << get_module_page_name( module_ref ) << "?cmd="
-                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li>\n";
-
-               extra_content << "   </ul>\n";
-
-               if( !use_menubar )
-               {
-                  extra_content << "<pre>\n";
-                  extra_content << "        .--.\n";
-                  extra_content << "       /.-. '----------.\n";
-                  extra_content << "       \\'-' .--\"--\"\"-\"-'\n";
-                  extra_content << "        '--'\n";
-                  extra_content << "</pre>\n";
-               }
-
-               extra_content << "</div>\n";
             }
 
-            if( cmd == c_cmd_open )
-            {
-               if( use_menubar )
-               {
-                  extra_content << "\n<div id=\"menuband\">\n";
-                  extra_content << "   <ul id=\"menubar\">\n";
-               }
-               else
-               {
-                  extra_content << "\n<div id=\"sidebar\">\n";
-                  extra_content << "   <ul>";
-               }
-
-               if( !use_menubar )
-                  extra_content << "     <li>";
-               else
-                  extra_content << "     <li class =\"\">";
-
-               extra_content << "<a href=\""
-                << get_module_page_name( module_ref ) << "?cmd="
-                << c_cmd_home << "\">" << GDS( c_display_home ) << "</a></li>\n";
-
-               extra_content << "   </ul>\n";
-
-               extra_content << "</div>\n";
-            }
-
-            if( use_menubar )
-               extra_content << "\n<div id=\"main\" class=\"menubar_width\">\n";
+            if( cmd != c_cmd_pview && cmd != c_cmd_plist )
+               extra_content << "<div id=\"remainder\">\n";
             else
-               extra_content << "\n<div id=\"main\" class=\"sidebar_width\">\n";
+               extra_content << "<div id=\"print_remainder\">\n";
+
+            extra_content << "\n<div id=\"main\" class=\"menubar_width clearfix\">\n";
 
             if( module_access_denied )
             {
-               extra_content << "<p align=\"center\">"
+               extra_content << "<p class=\"text_with_back\">"
                 << string_message( GDS( c_display_session_logged_into_other_module ),
                 make_pair( c_display_session_logged_into_other_module_parm_href,
                 "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>";
             }
             else if( cmd == c_cmd_pview || cmd == c_cmd_plist )
             {
-               extra_content << "<p class=\"screen\" align=\"center\"><br/><br/>"
+               extra_content << "<p class=\"screen text_with_back\">"
                 << string_message( GDS( c_display_click_the_printer_icon_to_print ),
                 make_pair( c_display_click_the_printer_icon_to_print_parm_href,
                 "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>";
@@ -4163,7 +4115,7 @@ void request_handler::process_request( )
 
             if( cmd == c_cmd_pwd )
             {
-               extra_content << "<h2>" << pwd_display_name << "</h2>";
+               extra_content << "<h3 class=\"center\">" << pwd_display_name << "</h3>";
 
                if( !input_data.count( c_param_newpwd ) )
                {
@@ -4190,7 +4142,7 @@ void request_handler::process_request( )
             {
                guard g( g_join_mutex );
 
-               extra_content << "<h2>" << g_display_sign_up_for_an_account << "</h2>";
+               extra_content << "<h3>" << g_display_sign_up_for_an_account << "</h3>";
 
                bool has_completed = false;
                bool had_unexpected_error = false;
@@ -4369,7 +4321,7 @@ void request_handler::process_request( )
 
                         string gpg_message( buffer_file( "join.txt" ) );
 
-                        str_replace( gpg_message, c_app_name, get_storage_info( ).storage_name );
+                        str_replace( gpg_message, c_app_name, get_app_name( ) );
                         str_replace( gpg_message, c_user_id, req_username );
                         str_replace( gpg_message, c_password, password );
 
@@ -4629,7 +4581,7 @@ void request_handler::process_request( )
 
                if( !has_completed )
                {
-                  extra_content << "<h2>" << g_display_sign_up_for_an_account << "</h2>";
+                  extra_content << "<h3>" << g_display_sign_up_for_an_account << "</h3>";
 
                   string openup_html( g_openup_html );
 
@@ -4668,7 +4620,7 @@ void request_handler::process_request( )
                   str_replace( authenticate_html, c_pin_value, pin );
                   str_replace( authenticate_html, c_error_message, error_message );
 
-                  extra_content << "<h2>" << GDS( c_display_authentication_required ) << "</h2>\n";
+                  extra_content << "<h3>" << GDS( c_display_authentication_required ) << "</h3>\n";
 
                   if( abs( p_session_info->dtm_offset ) >= c_max_pin_time_difference )
                      extra_content << "<p><b>" << GDS( c_display_local_time_bad ) << "</b></p>\n";
@@ -4677,8 +4629,6 @@ void request_handler::process_request( )
                }
                else
                {
-                  extra_content << "<h2>" << GDS( c_display_welcome_to ) << " " << title << "</h2>\n";
-
                   if( !user_home_info.empty( ) )
                      extra_content << "<p align=\"center\">" << user_home_info << "</p>\n";
 
@@ -4692,30 +4642,42 @@ void request_handler::process_request( )
 
                      if( can_output )
                      {
+                        string header;
                         if( !i->second.name.empty( ) )
-                        {
-                           extra_content << "<h3>"
-                            << get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info ) << "</h3>\n";
-                        }
+                           header = get_view_or_list_header( qlink, i->second.name, mod_info, *p_session_info );
 
-                        output_list_form( extra_content,
-                         i->second, session_id, uselect, "", false,
-                         cookies_permitted, true, false, list_selections, list_search_text,
-                         list_search_values, 0, false, "", false, "", i->second.lici->second->id, *p_session_info,
-                         extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
-                         embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
+                        if( !header.empty( ) )
+                        {
+                           extra_content << "<h3>" << header << "</h3>\n";
+
+                           output_list_form( extra_content,
+                            i->second, session_id, uselect, "", false,
+                            cookies_permitted, true, false, list_selections, list_search_text,
+                            list_search_values, 0, false, "", false, "", i->second.lici->second->id, *p_session_info,
+                            extra_content_func, specials, use_url_checksum, qlink, findinfo + listsrch, selected_records,
+                            embed_images, !hashval.empty( ), false, has_any_changing_records, back_count );
+                        }
                      }
                   }
                }
             }
             else if( cmd == c_cmd_view || cmd == c_cmd_pview )
             {
+               extra_content << "<div id=\"title\">";
+               extra_content << "<h3><span class=\"alignleft\">";
+
                if( is_new_record )
-                  extra_content << "<h2>"
-                   << GDS( c_display_new ) << " " << mod_info.get_string( view.name ) << "</h2>\n";
+                  extra_content << GDS( c_display_new ) << " " << mod_info.get_string( view.name );
                else
-                  extra_content << "<h2>"
-                   << get_view_or_list_header( qlink, view.name, mod_info, *p_session_info ) << "</h2>\n";
+                  extra_content << get_view_or_list_header( qlink, view.name, mod_info, *p_session_info );
+
+               extra_content << "</span>";
+
+               if( cmd != c_cmd_pview )
+                  extra_content << "<span class=\"alignright\"><a href=\"javascript:history.go( -"
+                   << back_count << " );\">" << GDS( c_display_back ) << "</a></span>";
+
+               extra_content << "</h3></div>\n";
 
                string user_slevel;
 
@@ -4772,7 +4734,7 @@ void request_handler::process_request( )
                   {
                      extra_content << "<br/><br/>\n";
                      extra_content << "<table width=\"100%\">\n";
-                     extra_content << "<tr><td align=\"right\">\n";
+                     extra_content << "<tr><td>\n";
 
                      extra_content << "<table id=\"vtabc\" class=\"vtab\">\n";
 
@@ -4839,7 +4801,7 @@ void request_handler::process_request( )
                         string name( get_display_name( mod_info.get_string( child_lists[ i->second ].name ) ) );
 
                         if( ++n == vtabc_num )
-                           extra_content << "<th class=\"tab\" align=\"center\">" << name << "</th>\n";
+                           extra_content << "<th class=\"selected_tab\" align=\"center\">" << name << "</th>\n";
                         else
                         {
                            extra_content << "<td class=\"tab\" align=\"center\"><a href=\"javascript:";
@@ -4921,14 +4883,21 @@ void request_handler::process_request( )
                    << GDS( c_display_error ) << ": " << GDS( c_display_permission_denied ) << ".</p>\n";
                else
                {
-                  extra_content << "<h2>"
-                   << get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) << "</h2>\n";
+                  extra_content << "<div id=\"title\">";
+                  extra_content << "<h3><span class=\"alignleft\">"
+                   << get_view_or_list_header( qlink, olist.name, mod_info, *p_session_info, &list.name ) << "</span>";
+
+                  if( cmd != c_cmd_plist )
+                     extra_content << "<span class=\"alignright\"><a href=\"javascript:history.go( -"
+                      << back_count << " );\">" << GDS( c_display_back ) << "</a></span>";
+
+                  extra_content << "</h3></div>\n";
 
                   // NOTE: For non-print lists display links to any "display variations" (if found).
                   if( cmd != c_cmd_plist )
                   {
                      extra_content << "<table width=\"100%\">\n";
-                     extra_content << "<tr><td align=\"right\">\n";
+                     extra_content << "<tr><td>\n";
 
                      vector< string >* p_var_ids = &olist.lici->second->var_ids;
                      if( !p_var_ids->empty( ) )
@@ -4992,7 +4961,7 @@ void request_handler::process_request( )
                            }
                         }
 
-                        extra_content << "</tr></table>\n";
+                        extra_content << "</td></tr></table>\n";
                      }
                   }
 
@@ -5062,12 +5031,11 @@ void request_handler::process_request( )
                extra_content << "<p>Total number of sessions = " << g_sessions.size( ) << ".</p>\n";
             }
 
-            extra_content << "</div>\n\n";
+            extra_content << "</div>\n</div>\n\n";
 
             if( cmd != c_cmd_pview && cmd != c_cmd_plist )
                extra_content << g_footer_html;
 
-            extra_content << "</div>\n";
             extra_content << "</div>\n";
 
             if( performed_file_attach_or_detach )
@@ -5190,7 +5158,7 @@ void request_handler::process_request( )
       {
          is_logged_in = true;
 
-         osstr << "<p align=\"center\">"
+         osstr << "<p class=\"text_with_back\">"
           << string_message( GDS( c_display_click_here_to_go_back ),
           make_pair( c_display_click_here_to_go_back_parm_href,
           "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>\n";
@@ -5229,7 +5197,8 @@ void request_handler::process_request( )
       else
          extra_content << osstr.str( );
 
-      extra_content << g_footer_html;
+      if( is_logged_in )
+         extra_content << g_footer_html;
 
       if( is_logged_in )
          extra_content << "<input type=\"hidden\" value=\"loggedIn = true;\" id=\"extra_content_func\"/>\n";
@@ -5244,7 +5213,7 @@ void request_handler::process_request( )
 
       if( p_session_info && p_session_info->logged_in )
       {
-         extra_content << "<p align=\"center\">"
+         extra_content << "<p class=\"text_with_back\">"
           << string_message( GDS( c_display_click_here_to_go_back ),
           make_pair( c_display_click_here_to_go_back_parm_href,
           "<a href=\"javascript:history.back( )\">" ), "</a>" ) << "</p>\n";
@@ -5291,6 +5260,14 @@ void request_handler::process_request( )
       interface_html = buffer_file( interface_file );
 
    remove_utf8_bom( interface_html );
+
+   string direction;
+   if( is_vertical )
+      direction = "vertical";
+   else
+      direction = "horizontal";
+
+   replace( interface_html, c_direction, direction );
 
    string output;
    size_t pos = interface_html.find( c_title );

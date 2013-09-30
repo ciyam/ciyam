@@ -495,6 +495,7 @@ class_base::class_base( )
  xlock_handle( 0 ),
  p_sql_dataset( 0 ),
  p_graph_parent( 0 ),
+ in_op_begin( false ),
  is_singular( false ),
  is_fetching( false ),
  is_executing( false ),
@@ -1503,6 +1504,8 @@ void class_base::construct_dynamic_instance( )
 
       p_dynamic_instance->p_graph_parent = p_graph_parent;
       p_dynamic_instance->graph_parent_fk_field = graph_parent_fk_field;
+
+      p_dynamic_instance->in_op_begin = in_op_begin;
 
       p_dynamic_instance->is_singular = is_singular;
 

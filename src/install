@@ -17,10 +17,6 @@ else
  else
   cp $1.fcgi.sio $directory
 
-  if [ ! -f $directory/$1.png ]; then
-   cp module.png $directory/$1.png
-  fi
-
   if [ ! "$alias" = "" ]; then
    ./xrep @module.html.xrep model_vars=$1.vars.xrep > $directory/$alias.html
   fi

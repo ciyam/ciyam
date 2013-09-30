@@ -648,7 +648,7 @@ int main( int argc, char* argv[ ] )
 #endif
 
    if( !is_quiet )
-      cout << "bundle v0.1d\n";
+      cout << "bundle v0.1e\n";
 
    if( invalid || ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
@@ -727,8 +727,16 @@ int main( int argc, char* argv[ ] )
                string::size_type wpos = next.find_first_of( "?*" );
 
                string filespec_path;
-               if( !absolute_path( next.substr( 0, wpos ), filespec_path ) )
-                  throw runtime_error( "unable to determine absolute path for '" + next + "'" );
+               if( wpos == 0 )
+               {
+                  filespec_path = g_cwd + "/" + next;
+                  wpos = string::npos;
+               }
+               else
+               {
+                  if( !absolute_path( next.substr( 0, wpos ), filespec_path ) )
+                     throw runtime_error( "unable to determine absolute path for '" + next + "'" );
+               }
 
 #ifdef _WIN32
                string::size_type pos;
@@ -1125,6 +1133,10 @@ int main( int argc, char* argv[ ] )
                         }
                      }
 
+                     pos = current_sub_path.find( '/' );
+                     if( pos != string::npos )
+                        next = current_sub_path.substr( pos + 1 ) + '/' + next;
+
                      if( file_names.count( next ) )
                      {
                         skip_existing_file = true;
@@ -1181,6 +1193,10 @@ int main( int argc, char* argv[ ] )
                         continue;
                      else
                      {
+                        pos = next.find( '/' );
+                        if( !is_quieter && pos != string::npos )
+                           cout << "append \"" << next.substr( pos + 1 ) << "/\"\n";
+
                         file_names.insert( next );
                         g_md5.update( ( unsigned char* )check.c_str( ), check.length( ) );
                      }

@@ -10,7 +10,9 @@ fi
 if [ "$WEBDIR" = "" ]; then
  echo Error: Missing environment variable 'WEBDIR'.
 else
- [ -d $WEBDIR/galleria ] ||
+ if [ -d $WEBDIR/galleria ]; then
+  echo "Error: Galleria has already been installed."
+ else
  {
   mkdir $WEBDIR/galleria
   ./unbundle -q galleria -d $WEBDIR/galleria

@@ -61,8 +61,8 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Show_Inaccessible_Modules = 27,
       e_field_id_Use_Check_Boxes_for_Bools = 28,
       e_field_id_Use_Embedded_Images = 29,
-      e_field_id_Use_Menubar_Not_Sidebar = 30,
-      e_field_id_Use_URL_Checksum = 31,
+      e_field_id_Use_URL_Checksum = 30,
+      e_field_id_Use_Vertical_Menu = 31,
       e_field_id_Version = 32,
       e_field_id_Workgroup = 33
    };
@@ -157,11 +157,11 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
    bool Use_Embedded_Images( ) const;
    void Use_Embedded_Images( bool Use_Embedded_Images );
 
-   bool Use_Menubar_Not_Sidebar( ) const;
-   void Use_Menubar_Not_Sidebar( bool Use_Menubar_Not_Sidebar );
-
    bool Use_URL_Checksum( ) const;
    void Use_URL_Checksum( bool Use_URL_Checksum );
+
+   bool Use_Vertical_Menu( ) const;
+   void Use_Vertical_Menu( bool Use_Vertical_Menu );
 
    const std::string& Version( ) const;
    void Version( const std::string& Version );

@@ -91,7 +91,7 @@ void output_view_tabs( ostream& os, const view_source& source,
          continue;
 
       if( i + 1 == vtab_num )
-         os << "<th class=\"tab\" align=\"center\">" << mod_info.get_string( source.tab_names[ i ] ) << "</th>\n";
+         os << "<td class=\"selected_tab\" align=\"center\">" << mod_info.get_string( source.tab_names[ i ] ) << "</td>\n";
       else
       {
          if( !is_in_edit )
@@ -624,7 +624,7 @@ bool output_view_form( ostream& os, const string& act,
       if( is_in_edit || !source.has_file_attachments )
          os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\">\n";
 
-      os << "<table class=\"list\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" width=\"100%\">\n";
+      os << "<table class=\"full_width_header\">\n";
       os << "<tr><td>";
 
       if( !is_in_edit )
@@ -913,22 +913,6 @@ bool output_view_form( ostream& os, const string& act,
          }
       }
 
-      if( !is_printable )
-      {
-         if( has_started_right )
-            os << "&nbsp;&nbsp;";
-         else
-         {
-            has_started_right = true;
-            os << "<td class=\"right\">";
-         }
-
-         os << "<input id=\"edit\" name=\"edit\" type=\"button\" class=\"button\"";
-         os << " value=\"" << GDS( c_display_back ) << "\" onclick=\"history.go( -" << back_count << " );\" style=\"cursor:pointer\">";
-
-         has_started_right = true;
-      }
-
       // NOTE: If is "standard" or "admin" and a specific "printable" version exists then provide a
       // link to it. If no specific "printable" version exists then the default "printview" version
       // will be linked to instead.
@@ -1012,21 +996,7 @@ bool output_view_form( ostream& os, const string& act,
    if( view_extras.count( c_view_type_extra_use_first_row_as_header ) )
       os << "<thead>\n";
    else
-   {
-      // NOTE: If session is anonymous or is a printable version
-      // then do not output the field name/value column headings.
-      if( !is_printable && !sess_info.user_id.empty( ) )
-      {
-         os << "<thead>\n";
-         os << "<tr>\n";
-         os << "   <th class=\"list\" width=\"30%\">" << GDS( c_display_field_name ) << "</th>\n";
-         os << "   <th class=\"list\" >" << GDS( c_display_field_value ) << "</th>\n";
-         os << "</tr>\n";
-         os << "</thead>\n";
-      }
-
       os << "<tbody>\n";
-   }
 
    set< string > fk_refs;
 
@@ -1071,6 +1041,7 @@ bool output_view_form( ostream& os, const string& act,
    int skip_tab_num = -1;
    int num_displayed = 0;
    bool hide_slevel = false;
+   bool finished_head = false;
 
    date_time dt_current;
    get_session_dtm( sess_info, dt_current );
@@ -1270,8 +1241,8 @@ bool output_view_form( ostream& os, const string& act,
          if( !show )
             skip_tab_num = source.field_tab_ids[ i ];
 
-         string show_less_image( "show_less.gif" );
-         string show_more_image( "show_more.gif" );
+         string show_less_image( "show_less.png" );
+         string show_more_image( "show_more.png" );
 
          if( !is_in_edit )
          {
@@ -1343,7 +1314,9 @@ bool output_view_form( ostream& os, const string& act,
        && ( source.file_fields.count( source_value_id )
        || source.image_fields.count( source_value_id ) ) ) )
       {
-         os << "   <" << td_type << " class=\"list" + ( extra_effect.empty( ) ? string( "" ) : " " + extra_effect ) + "\">";
+         os << "   <" << td_type << " width=\"250\" class=\"list"
+          << ( extra_effect.empty( ) ? string( "" ) : " " + extra_effect ) << "\">";
+
          os << escape_markup( is_in_edit ? source.edit_display_names[ i ] : source.display_names[ i ] );
 
          if( source.uom_fields.count( source_value_id ) )
@@ -2346,10 +2319,10 @@ bool output_view_form( ostream& os, const string& act,
                   // then display the image rather than the string value.
                   // This only will occur if not editing as standard HTML
                   // select controls don't support the use of images.
-                  if( file_exists( info.values[ i ].second + ".gif" ) )
-                     enum_image_file = info.values[ i ].second + ".gif";
-                  else if( file_exists( info.values[ i ].second + ".png" ) )
+                  if( file_exists( info.values[ i ].second + ".png" ) )
                      enum_image_file = info.values[ i ].second + ".png";
+                  else if( file_exists( info.values[ i ].second + ".gif" ) )
+                     enum_image_file = info.values[ i ].second + ".gif";
 
                   cell_data = get_display_string( info.values[ i ].second );
                   break;
@@ -2860,9 +2833,11 @@ bool output_view_form( ostream& os, const string& act,
       os << "</" << td_type << ">\n";
       os << "</tr>\n";
 
-      if( view_extras.count( c_view_type_extra_use_first_row_as_header ) )
+      if( !finished_head && view_extras.count( c_view_type_extra_use_first_row_as_header ) )
       {
          os << "</thead>\n";
+         finished_head = true;
+
          os << "<tbody>\n";
       }
    }

@@ -298,6 +298,7 @@ void CIYAM_BASE_DECL_SPEC set_module( const std::string& module );
 std::string CIYAM_BASE_DECL_SPEC get_tz_name( );
 void CIYAM_BASE_DECL_SPEC set_tz_name( const std::string& tz_name );
 
+void CIYAM_BASE_DECL_SPEC clear_perms( );
 const std::set< std::string > CIYAM_BASE_DECL_SPEC& get_perms( );
 void CIYAM_BASE_DECL_SPEC set_perms( const std::set< std::string >& perms );
 
