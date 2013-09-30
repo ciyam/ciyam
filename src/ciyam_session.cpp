@@ -960,6 +960,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
    set_tz_name( "" );
    set_tmp_directory( "" );
 
+   clear_perms( );
+
    set_last_session_cmd_and_hash( command, socket_handler.get_next_command( ) );
 
    try

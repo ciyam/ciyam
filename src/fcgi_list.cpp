@@ -616,12 +616,11 @@ void output_list_form( ostream& os,
       os << "\"><i>" << GDS( c_display_show_search_criteria ) << "</i></a></p>\n";
    }
 
-   os << "<table width=\"100%\">\n";
-
-   if( !is_child_list )
-      os << "<tr><td>\n";
-   else
+   if( is_child_list )
+   {
+      os << "<table width=\"100%\">\n";
       os << "<tr><td class=\"selected_panel\">\n";
+   }
 
    os << "<form name=\"" << source.id << "\" id=\"" << source.id << "\"";
 
@@ -1461,7 +1460,7 @@ void output_list_form( ostream& os,
       if( is_child_list )
          os << "<table><tr>";
       else
-         os << "<table class=\"full_width\"><tr>";
+         os << "<table class=\"full_width_header\"><tr>";
 
       os << "<td>";
       if( allow_list_actions )
@@ -2953,8 +2952,8 @@ void output_list_form( ostream& os,
                 sinfo.enums.find( source.enum_fields.find( source_value_id )->second )->second );
 
                if( !info.values.empty( )
-                && ( file_exists( info.values[ 0 ].second + ".gif" )
-                || file_exists( info.values[ 0 ].second + ".png" ) ) )
+                && ( file_exists( info.values[ 0 ].second + ".png" )
+                || file_exists( info.values[ 0 ].second + ".gif" ) ) )
                {
                   is_image = true;
                   os << " width=\"25\" align=\"center\"";
@@ -3235,12 +3234,12 @@ void output_list_form( ostream& os,
                   if( info.values[ i ].first == cell_data )
                   {
                      string enum_image_file;
-                     if( file_exists( info.values[ i ].second + ".gif" ) )
-                        enum_image_file = info.values[ i ].second + ".gif";
-                     else if( file_exists( info.values[ i ].second + ".png" ) )
+                     if( file_exists( info.values[ i ].second + ".png" ) )
                         enum_image_file = info.values[ i ].second + ".png";
+                     else if( file_exists( info.values[ i ].second + ".gif" ) )
+                        enum_image_file = info.values[ i ].second + ".gif";
 
-                     // NOTE: If a .gif file with the enum value name exists
+                     // NOTE: If an image file with the enum value name exists
                      // then display the image rather than the string value.
                      if( !enum_image_file.empty( ) )
                         os << "<img src=\"" << enum_image_file << "\" border=\"0\">";
@@ -3724,6 +3723,11 @@ void output_list_form( ostream& os,
       os << "</table>\n";
    }
 
-   os << "</form></td></tr></table>\n";
+   os << "</form>";
+
+   if( is_child_list )
+      os << "</td></tr></table>\n";
+
+   os << "\n";
 }
 

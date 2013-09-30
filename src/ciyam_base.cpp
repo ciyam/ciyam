@@ -6027,6 +6027,11 @@ void set_tz_name( const string& tz_name )
    set_session_variable( c_session_variable_tz_name, tz );
 }
 
+void clear_perms( )
+{
+   gtp_session->perms.clear( );
+}
+
 const set< string >& get_perms( )
 {
    return gtp_session->perms;
@@ -9038,10 +9043,22 @@ void begin_instance_op( instance_op op, class_base& instance,
    instance_accessor.set_key( key_for_op, true );
    instance_accessor.set_clone_key( clone_key );
 
+   instance_accessor.set_in_op_begin( true );
+
    if( op != e_instance_op_update )
       instance_accessor.fetch_field_names( ).clear( );
 
    class_base::op_type old_op( instance.get_op( ) );
+
+   if( op == e_instance_op_review )
+      instance_accessor.set_op( class_base::e_op_type_review, key_for_op != key_in_use );
+   else if( op == e_instance_op_create )
+      instance_accessor.set_op( class_base::e_op_type_create, true );
+   else if( op == e_instance_op_update )
+      instance_accessor.set_op( class_base::e_op_type_update, key_for_op != key_in_use );
+   else if( op == e_instance_op_destroy )
+      instance_accessor.set_op( class_base::e_op_type_destroy, key_for_op != key_in_use );
+
    try
    {
       scoped_lock_holder lock_holder( handler, lock_handle );
@@ -9071,8 +9088,6 @@ void begin_instance_op( instance_op op, class_base& instance,
             }
          }
 
-         // NOTE: In order for foreign keys to be linked the "create" op must be set here.
-         instance_accessor.set_op( class_base::e_op_type_create, false );
          instance_accessor.at_create( );
       }
       else if( op == e_instance_op_review || op == e_instance_op_update )
@@ -9120,6 +9135,7 @@ void begin_instance_op( instance_op op, class_base& instance,
    catch( ... )
    {
       instance_accessor.set_op( old_op, false );
+      instance_accessor.set_in_op_begin( false );
 
       if( op == e_instance_op_destroy && !is_cascade_op )
          handler.release_locks_for_owner( instance, true );
@@ -9127,19 +9143,11 @@ void begin_instance_op( instance_op op, class_base& instance,
       throw;
    }
 
+   instance_accessor.set_in_op_begin( false );
    instance_accessor.set_lock_handle( lock_handle );
 
    if( xlock_handle )
       instance_accessor.set_xlock_handle( xlock_handle );
-
-   if( op == e_instance_op_review )
-      instance_accessor.set_op( class_base::e_op_type_review, key_for_op != key_in_use );
-   else if( op == e_instance_op_create )
-      instance_accessor.set_op( class_base::e_op_type_create, true );
-   else if( op == e_instance_op_update )
-      instance_accessor.set_op( class_base::e_op_type_update, key_for_op != key_in_use );
-   else if( op == e_instance_op_destroy )
-      instance_accessor.set_op( class_base::e_op_type_destroy, key_for_op != key_in_use );
 
    TRACE_LOG( TRACE_CLASSOPS, "begin (leave) op = "
     + to_string( op ) + ", class = " + instance.get_class_name( )
@@ -9412,7 +9420,7 @@ void perform_instance_fetch( class_base& instance,
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
 
-   if( instance.get_is_in_op( ) )
+   if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot fetch "
        + instance.get_class_name( ) + " record whilst currently perfoming an instance operation" );
 
@@ -9505,7 +9513,7 @@ bool perform_instance_iterate( class_base& instance,
       instance_accessor.filters( ) = *p_filters;
    }
 
-   if( instance.get_is_in_op( ) )
+   if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
       throw runtime_error( "cannot begin iteration whilst currently perfoming an instance operation" );
    else
    {
@@ -9888,9 +9896,6 @@ bool perform_instance_iterate( class_base& instance,
 
 bool perform_instance_iterate_next( class_base& instance )
 {
-   if( instance.get_is_in_op( ) )
-      throw runtime_error( "cannot continue iteration whilst currently perfoming an instance operation" );
-
    if( !instance.get_is_iterating( ) )
       return false;
 
@@ -9899,6 +9904,9 @@ bool perform_instance_iterate_next( class_base& instance )
 
    class_base_accessor instance_accessor( instance );
    storage_handler& handler( *gtp_session->p_storage_handler );
+
+   if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
+      throw runtime_error( "cannot continue iteration whilst currently perfoming an instance operation" );
 
    bool found = false, cache_depleted = false;
    if( !instance_accessor.row_cache( ).empty( ) )

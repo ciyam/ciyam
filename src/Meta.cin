@@ -213,6 +213,7 @@ field_add -id=105113 Model Created bool mand -def=0
 field_add -id=105114 Model Status string opt -transient
 field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=0
 field_add -id=105116 Model Allow_Anonymous_Access bool mand -def=0
+field_add -id=105117 Model Home_Title str100 opt
 procedure_add -id=105410 Model Generate
 procedure_add -id=105420 Model Create_Module
 procedure_add -id=105430 Model Remove_Module
@@ -706,7 +707,7 @@ field_add -id=127129 Application Keep_Existing_Data bool mand -def=1
 field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=0
 field_add -id=127131 Application Use_Embedded_Images bool mand -def=0
 field_add -id=127132 Application Registration_Key str100 opt
-field_add -id=127133 Application Use_Menubar_Not_Sidebar bool mand -def=0
+field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
 procedure_add -id=127410 Application Generate
 procedure_add -id=127420 Application Generate_Modules
 procedure_add -id=127430 Application Generate_File_Links
@@ -1775,7 +1776,7 @@ specification_add -id=601420 {Enum_Item}_child_list0 list "@601420_* child:no_li
  -act=+!104410+@rfields+@rvalues,+!^104420+@rfields+@rvalues {Enum}"
 specification_add -id=601500 {Model}_group_list list "* group:no_limit Model Name,Id,Version {Workgroup}"
 specification_add -id=601510 {Model}_view view "? standard Model\
- Name,Id;no_edit+non_new,Status;view_only,Version,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
+ Name,Id;no_edit+non_new,Status;view_only,Version,Home_Title,Year_Created;show,{Permission}:Name!@group:{Workgroup}+Name\
 ,Add_Packages;new_only,Use_Package_Demo_Data,Allow_Anonymous_Access,Source_File,Commands_File,Actions"
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
@@ -1942,7 +1943,7 @@ specification_add -id=602910 {Application}_view view "? standard:can_copy Applic
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
 ,@tab:Generate_Details,Version,Generate_Details;show+no_edit\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
-,Use_Menubar_Not_Sidebar,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
+,Use_Vertical_Menu,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
 ,@tab:Other_Settings,Module_Prefix,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content,Auto_Login_Days,Allow_Duplicate_Logins,Registration_Key\

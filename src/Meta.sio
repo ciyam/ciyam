@@ -573,11 +573,11 @@
       </specifications>
      </field>
      <field/>
-      <id>127133
-      <name>Use_Menubar_Not_Sidebar
+      <id>127107
+      <name>Use_URL_Checksum
       <type>bool
       <mandatory>true
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>
@@ -590,11 +590,11 @@
       </specifications>
      </field>
      <field/>
-      <id>127107
-      <name>Use_URL_Checksum
+      <id>127133
+      <name>Use_Vertical_Menu
       <type>bool
       <mandatory>true
-      <default_value>1
+      <default_value>0
       <indexes/>
       </indexes>
       <modifiers/>
@@ -8662,6 +8662,22 @@
       <modifiers/>
       </modifiers>
       <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>105117
+      <name>Home_Title
+      <type>1020
+      <mandatory>false
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601510
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -28750,6 +28766,7 @@
      <field_info>105104;no_edit+non_new
      <field_info>105114;view_only
      <field_info>105102
+     <field_info>105117
      <field_info>105103;show
      <field_info>301600:116101!@group:301500+116101
      <field_info>105112;new_only+enum=575

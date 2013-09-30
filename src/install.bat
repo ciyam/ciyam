@@ -15,8 +15,6 @@ set alias=%3
 if not exist %1.fcgi.sio goto error1
 if not exist %WEBDIR%\%dest%\fcgi.sio goto error2
 
-if not exist "%WEBDIR%\%dest%\%1.png" copy module.png "%WEBDIR%\%dest%\%1.png" >nul
-
 copy %1.fcgi.sio "%WEBDIR%\%dest%" >nul
 
 if '%alias%' == '' goto next

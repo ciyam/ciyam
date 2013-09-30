@@ -13,13 +13,15 @@
 `{`@eq`(`$arg_perm`,`'`'`)\
    if( !get_obj( ).`{`$arg_tfield`}( )
 `,\
-   if( !get_perms( ).count( "`{`$arg_perm_id`}" )  // i.e. `{`$arg_perm`}
+   if( ( !get_obj( ).get_is_in_op( )
+    && !get_perms( ).count( "`{`$arg_perm_id`}" ) ) // i.e. `{`$arg_perm`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && !get_obj( ).`{`$arg_tfield`}( )
 `}`}`,\
    if( !is_admin_uid( )
 `{`!`@eq`(`$arg_perm`,`'`'`)\
-    && !get_perms( ).count( "`{`$arg_perm_id`}" )  // i.e. `{`$arg_perm`}
+    && ( !get_obj( ).get_is_in_op( )
+    && !get_perms( ).count( "`{`$arg_perm_id`}" ) ) // i.e. `{`$arg_perm`}
 `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
     && !get_obj( ).`{`$arg_tfield`}( )
 `}`}\

@@ -53,19 +53,20 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
       e_field_id_Allow_Anonymous_Access = 3,
       e_field_id_Commands_File = 4,
       e_field_id_Created = 5,
-      e_field_id_Id = 6,
-      e_field_id_Name = 7,
-      e_field_id_Next_Class_Id = 8,
-      e_field_id_Next_List_Id = 9,
-      e_field_id_Next_Specification_Id = 10,
-      e_field_id_Next_View_Id = 11,
-      e_field_id_Permission = 12,
-      e_field_id_Source_File = 13,
-      e_field_id_Status = 14,
-      e_field_id_Use_Package_Demo_Data = 15,
-      e_field_id_Version = 16,
-      e_field_id_Workgroup = 17,
-      e_field_id_Year_Created = 18
+      e_field_id_Home_Title = 6,
+      e_field_id_Id = 7,
+      e_field_id_Name = 8,
+      e_field_id_Next_Class_Id = 9,
+      e_field_id_Next_List_Id = 10,
+      e_field_id_Next_Specification_Id = 11,
+      e_field_id_Next_View_Id = 12,
+      e_field_id_Permission = 13,
+      e_field_id_Source_File = 14,
+      e_field_id_Status = 15,
+      e_field_id_Use_Package_Demo_Data = 16,
+      e_field_id_Version = 17,
+      e_field_id_Workgroup = 18,
+      e_field_id_Year_Created = 19
    };
 
    Meta_Model( );
@@ -85,6 +86,9 @@ class META_MODEL_DECL_SPEC Meta_Model : public class_base
 
    bool Created( ) const;
    void Created( bool Created );
+
+   const std::string& Home_Title( ) const;
+   void Home_Title( const std::string& Home_Title );
 
    const std::string& Id( ) const;
    void Id( const std::string& Id );

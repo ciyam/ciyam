@@ -470,6 +470,8 @@ class CLASS_BASE_DECL_SPEC class_base
    std::map< std::string, char > search_replace_separators;
    std::set< std::string > search_replace_has_opt_prefixing;
 
+   bool in_op_begin;
+
    bool is_singular;
    bool is_fetching;
    bool is_executing;
@@ -555,6 +557,9 @@ class CLASS_BASE_DECL_SPEC class_base
 
    const std::string& get_ver_exp( ) const { return ver_exp; }
    void set_ver_exp( const std::string& new_ver_exp ) { ver_exp = new_ver_exp; }
+
+   bool get_in_op_begin( ) const { return in_op_begin; }
+   void set_in_op_begin( bool new_in_op_begin ) { in_op_begin = new_in_op_begin; }
 
    size_t get_lock_handle( ) const { return lock_handle; }
    void set_lock_handle( size_t new_lock_handle ) { lock_handle = new_lock_handle; }
@@ -740,6 +745,9 @@ struct class_base_accessor
    std::deque< std::vector< std::string > >& row_cache( ) { return cb.row_cache; }
 
    std::map< std::string, std::string >& transient_filter_field_values( ) { return cb.transient_filter_field_values; }
+
+   bool get_in_op_begin( ) const { return cb.get_in_op_begin( ); }
+   void set_in_op_begin( bool new_in_op_begin ) { cb.set_in_op_begin( new_in_op_begin ); }
 
    size_t get_lock_handle( ) const { return cb.get_lock_handle( ); }
    void set_lock_handle( size_t new_lock_handle ) { cb.set_lock_handle( new_lock_handle ); }

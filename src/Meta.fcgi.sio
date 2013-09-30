@@ -2455,7 +2455,7 @@
      <modifiers>
     </field>
     <field/>
-     <name>field_application_use_menubar_not_sidebar
+     <name>field_application_use_vertical_menu
      <field>127133
      <ftype>bool
      <extra>
@@ -4129,6 +4129,14 @@
      <ftype>string
      <extra>max_size=5
      <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_model_home_title
+     <field>105117
+     <ftype>string
+     <extra>max_size=100
+     <mandatory>false
      <modifiers>
     </field>
     <field/>

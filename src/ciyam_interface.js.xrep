@@ -39,6 +39,14 @@ var pageFadeRate = 5;
 var pageFadeTimer = 15;
 var loadProgressDelay = 20;
 
+var isFirst = true;
+var windowHeight = 0;
+
+var slideNum = 0;
+var slideTimeoutId;
+var showSlideNum = 0;
+var totalNumSlides = 0;
+
 var loggedIn = false;
 var isDynamicLoad = false;
 var hasShownAutoProgress = false;
@@ -241,6 +249,30 @@ function insert_scroll_info( )
          qsContext += '&';
       qsContext += 'scrolly=' + scrollTop;
    }
+}
+
+function check_for_new_window_height( )
+{
+   var currentWindowHeight = 0;
+
+   if( window.addEventListener )
+      currentWindowHeight = window.innerHeight;
+   else
+      currentWindowHeight = document.documentElement.clientHeight || document.body.clientHeight;
+
+   // KLUDGE: This value should be determined according to the footer height;
+   currentWindowHeight -= 50;
+
+   if( isFirst || windowHeight != currentWindowHeight )
+   {
+      isFirst = false;
+      windowHeight = currentWindowHeight;
+
+      document.getElementById( 'extra_content' ).style.minHeight = currentWindowHeight + 'px';
+      document.getElementById( 'footer' ).style.visibility = 'visible';
+   }
+
+   setTimeout( "check_for_new_window_height( )", 100 );
 }
 
 function utf8_encode( string )
@@ -667,6 +699,9 @@ function after_force( )
       else
          // KLUDGE: A delay is needed in order for the focussing to work correctly in IE.
          setTimeout( "focus_on_first_text( )", 50 );
+
+      isFirst = true;
+      check_for_new_window_height( );
    }
 }
 
@@ -1113,6 +1148,88 @@ function scroll_page( x, y )
    scrollTop = y;
 
    scrollTo( scrollLeft, scrollTop );
+}
+
+function goto_slide( num )
+{
+   if( totalNumSlides > 0  && num >= 0 && num < totalNumSlides )
+   {
+      clearTimeout( slideTimeoutId );
+
+      showSlideNum = num;
+      show_next_slide( );
+   }
+}
+
+function goto_next_slide( )
+{
+   if( totalNumSlides > 0 )
+   {
+      clearTimeout( slideTimeoutId );
+
+      show_next_slide( );
+   }
+}
+
+function goto_prev_slide( )
+{
+   if( totalNumSlides > 0 )
+   {
+      clearTimeout( slideTimeoutId );
+
+      if( showSlideNum == 0 )
+         showSlideNum = totalNumSlides - 2;
+      else if( showSlideNum == 1 )
+         showSlideNum = totalNumSlides - 1;
+      else
+         showSlideNum -= 2;
+
+      if( showSlideNum < 0 )
+         showSlideNum = 0;
+         
+      show_next_slide( );
+   }
+}
+
+function show_next_slide( )
+{
+   if( totalNumSlides > 0 )
+   {
+      var node;
+      var slideNum = 0;
+
+      for( node = document.getElementById( 'home_slides_paginate' ).childNodes[ 0 ]; node; node = node.nextSibling )
+      {
+         if( node.nodeType == 1 )
+         {
+            if( slideNum == showSlideNum )
+               node.setAttribute( 'class', 'active' );
+            else
+               node.setAttribute( 'class', 'inactive' );
+
+            ++slideNum;
+         }
+      }
+
+      slideNum = 0;
+      for( node = document.getElementById( 'home_slides_container' ).childNodes[ 0 ]; node; node = node.nextSibling )
+      {
+         if( node.nodeType == 1 && node.getAttribute( 'class' ).indexOf( 'home_slide ' ) == 0 )
+         {
+            if( slideNum == showSlideNum )
+               node.setAttribute( 'class', 'home_slide clearfix' );
+            else
+               node.setAttribute( 'class', 'home_slide clearfix invisible' );
+
+            ++slideNum;
+         }
+      }
+
+      if( ++showSlideNum >= totalNumSlides )
+         showSlideNum = 0;
+
+      slideTimeoutId = setTimeout( "show_next_slide( )", 5000 );
+   }
 }
 
 function focus_on_first_text( )
