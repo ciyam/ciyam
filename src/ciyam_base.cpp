@@ -8817,9 +8817,6 @@ void begin_instance_op( instance_op op, class_base& instance,
     + to_string( op ) + ", class = " + instance.get_class_name( )
     + ", internal = " + to_string( internal_modification ) + ", key = " + key );
 
-   if( instance.get_is_in_op( ) )
-      throw runtime_error( "cannot begin an instance operation whilst already perfoming an instance operation" );
-
    string sql;
    bool is_cascade_op = false;
 
@@ -8850,6 +8847,9 @@ void begin_instance_op( instance_op op, class_base& instance,
    size_t lock_handle( 0 );
    size_t xlock_handle( 0 );
    class_base_accessor instance_accessor( instance );
+
+   if( instance.get_is_in_op( ) && !instance_accessor.get_in_op_begin( ) )
+      throw runtime_error( "cannot begin an instance operation whilst already perfoming an instance operation" );
 
    storage_handler& handler( *gtp_session->p_storage_handler );
 
