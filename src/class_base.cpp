@@ -903,7 +903,7 @@ void class_base::perform_lazy_fetch( )
 
       // NOTE: If not in an op and the new lazy fetch key is the same as the previous
       // one then don't perform the fetch (i.e. optimsation to avoid excess queries).
-      if( get_is_in_op( ) || s != last_lazy_fetch_key )
+      if( ( get_is_in_op( ) && !get_in_op_begin( ) ) || s != last_lazy_fetch_key )
       {
          perform_fetch_rc rc;
          perform_fetch( s, &rc );
@@ -999,7 +999,7 @@ void class_base::iterate_stop( )
 void class_base::set_instance( const string& key )
 {
    if( get_is_in_op( ) || get_is_iterating( ) )
-      throw runtime_error( "Cannot set instance key whilst iterating or performing an operation." );
+      throw runtime_error( "cannot set instance key whilst iterating or performing an instance operation" );
 
    set_key( key );
 }
@@ -1900,7 +1900,8 @@ void class_base::set_key( const string& new_key, bool skip_fk_handling )
 
    if( p_graph_parent && is_singular && !is_fetching && !skip_fk_handling && !graph_parent_fk_field.empty( ) )
    {
-      if( p_graph_parent->op == e_op_type_create || p_graph_parent->op == e_op_type_update )
+      if( !p_graph_parent->in_op_begin
+       && ( p_graph_parent->op == e_op_type_create || p_graph_parent->op == e_op_type_update ) )
       {
          size_t fk_lock_handle( 0 );
          bool found_locked_instance = false;
