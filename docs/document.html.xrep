@@ -3,7 +3,7 @@
 
 <html>
 <head>
-<title>CIYAM Open - `{`(`?`$title`)`$title`,`$line0`}</title>
+<title>CIYAM Docs - `{`(`?`$title`)`$title`,`$line0`}</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="copyright" content="Copyright 2012-`{`$y`} CIYAM Open Developers"/>
@@ -12,18 +12,7 @@
 </head>
 
 <div id="content">
-<div id="extra_content">
-
-<div id="normal_content">
-<div id="remainder">
-
-<div id="header">
-   <img src="CIYAM_Open.jpg" alt="Header">
-   <div id="navband">
-      <div id="nav">
-      </div >
-   </div>
-</div>
+<div id="header"><div id="appname"><a href="https://ciyam.org/docs">Docs</a></div></div>
 
 <div id="main">
 <div id="text">
@@ -33,16 +22,8 @@
 </div>
 </div>
 
-<br class=\"clear\"/>
-<div id="footer">
-   <p class="footer" align="center">&copy; 2012-`{`$y`} CIYAM Open Developers</p>
-   <br/>
+<div id="login_footer"><p>&copy; 2012-`{`$y`} CIYAM Developers</p></div>
 </div>
-
-</div>
-</div>
-</div>
-
 </body>
 
 </html>

@@ -20,7 +20,7 @@ LoadModule fcgid_module modules/mod_fcgid.so ### (NOTE: only add this if there a
 #
 # This should be changed to whatever you set DocumentRoot to.
 #
-<Directory "c:/webroot">
+<Directory "/webroot">
 ...
     Options ExecCGI FollowSymLinks
     AddHandler fcgid-script .fcgi

@@ -2,7 +2,7 @@ Overview of System Architecture
 -------------------------------
 
 The CIYAM sytem consists of several key applications and tools. Most of the tools are not relevant for use in
-a production environment although the tools bundle and unbundle should be installed for usage with backing up
+a production environment although the bundle and unbundle tools should be installed for usage with backing up
 and restoring application data.
 
 The essential components of the system are as follows:

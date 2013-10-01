@@ -9,11 +9,7 @@
 # NOTE: Replace with the year u want to replace with or leave it empty to derive the year from 'date'.
 DATEYEAR=""
 
-#############################################################################################################
-# NOTE: DONT CHANGE ANYTHING BELOW UNLESS U KNOW WHAT U DO!
-#############################################################################################################
-
-#some checks to ensure we are inside the ciyam git
+# NOTE: First some checks to ensure we are inside git repo.
 cat .git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
 GITCHECK=$?
 if [ "$GITCHECK" != "0" ]
@@ -27,7 +23,7 @@ then
 	DATEYEAR=`date +%Y`
 fi
 
-find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Open Developers/Copyright (c) \1-${DATEYEAR} CIYAM Open Developers/" "{}"
-find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Open Developers/Copyright (c) \1-${DATEYEAR} CIYAM Open Developers/" "{}"
+find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Open Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
+find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\)-\([0-9]\{4\}\) CIYAM Open Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
 
 exit 0
