@@ -58,23 +58,21 @@ body
    color: #888;
    float: left;
    font-size: 1.6em;
-   padding-top: 35px;
+   margin-top: 35px;
    padding-left: 118px;
    text-decoration: none;
 }
 
 #main
 {
-   text-align: left;
-   border: 0px solid #000;
-   width: 100%;
-   margin-left: 195px;
-   margin-right: 20px;
+   text-align: center;
+   width: 990px;
+   margin: 0 auto;
    padding-bottom: 40px;
 }
 
 #main #text
 {
-   margin: 20px;
+   text-align: left;
 }
 
