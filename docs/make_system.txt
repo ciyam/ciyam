@@ -17,7 +17,7 @@ xvars tool in order to create makefile.vars.xrep.
 
 Finally the xrep tool is used again with a compiler specific makefile template (e.g. makefile.xrep for GCC or
 makefile.mvc.xrep for MVC) and the previously created makefile.vars.xrep to generate the makefile that can be
-actually passed make (or nmake).
+actually passed to make (or nmake).
 
 Dependency handing with MVC
 ---------------------------
