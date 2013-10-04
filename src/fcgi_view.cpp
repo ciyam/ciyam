@@ -893,7 +893,7 @@ bool output_view_form( ostream& os, const string& act,
             string qlink_title( source.field_values.find( source.quick_link_value_id )->second );
 
             os << "<input id=\"quick_link\" name=\"quick_link\" type=\"button\" class=\"button\" value=\""
-             << GDS( c_display_add_quick_link ) << "\" onclick=\"";
+             << GDS( c_display_add_user_link ) << "\" onclick=\"";
 
             if( use_url_checksum )
             {
