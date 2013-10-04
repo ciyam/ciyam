@@ -210,6 +210,38 @@ use_user_tags - Use this option in order to be able to add/remove "tags" to/from
 user_image_directory - This is the name of the directory in which published Photos will be stored.
 
 -------------------------------------------------------------------------------------------------------------
+Project
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard User
+
+This package provides a project management system which breaks individual projects into individual tasks that
+are groups by areas (which can be nested). Task management "workflow" is added via the option "use_task_dibs"
+(this controls task allocation and completion in a strictly stepped manner).
+
+Package Options:
+
+@use_demo_data - Use this option to create a demo project.
+
+cash_demonimation - Use this option to specify the currency code for amounts in cash.
+funds_demonimation - Use this option to specify the currency code for non-cash funds.
+
+group_package - Optional "group" package to divide projects between workgroups.
+message_package - Optional "message" package used for providing task notifications.
+
+use_external_funds - Use this option to use an external API for checking fund balances.
+use_external_funds_escrow - Use this option to use an external API for checking escrow fund balances.
+
+use_open_projects_list - Use this option for all users to be able to see a list of open projects.
+
+use_pdf_print_support - Use this option to be able to generate PDF printed versions of tasks.
+
+use_task_dibs - Use this option to add task management workflow.
+use_task_dibs_with_skills - Use this option to add "project skills" to the task management workflow.
+
+use_user_access_level - Use this option to integrate "user access level" to projects, areas and tasks.
+
+-------------------------------------------------------------------------------------------------------------
 Schedule
 -------------------------------------------------------------------------------------------------------------
 
@@ -218,6 +250,8 @@ Other Package Dependencies: Standard User Event
 This package allows for the scheduling of events in advance for a cycle (weekly, monthly or annually). Within
 the schedule one creates separate schedule items which will be used to create the specific events. The design
 is intended for scheduling meetings or regular tasks.
+
+Package Options:
 
 @use_demo_data - Use this option to create a demo schedule.
 
@@ -279,5 +313,5 @@ These accounts can be tied with the usage of other packages (such as the Photo p
 the construction of "social network" type applications.
 
 *** A "quick link" is a method for extending the standard menu for an application to include menu items which
-are either links to a specific record or to a specific record search.
+are either links to a specific record or to a specific record search (and are also known as "user links").
 

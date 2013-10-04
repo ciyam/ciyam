@@ -1440,7 +1440,7 @@ void output_list_form( ostream& os,
       if( allow_quick_links )
       {
          os << "<td class=\"center\"><label>"
-          << GDS( c_display_add_quick_link ) << "</label>&nbsp;&nbsp;";
+          << GDS( c_display_add_user_link ) << "</label>&nbsp;&nbsp;";
 
          os << "<input type=\"text\" " << "size=\"40\" maxlength=\"100\""
           << " id=\"quick_link\" name=\"quick_link\" value=\"\"></input></td>";
