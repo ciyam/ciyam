@@ -17,10 +17,27 @@
       key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_cufield`} ) );
       key_info += "#2 " + get_obj( ).get_key( ) + "," + get_uid( );
 
+`{`!`@eq`(`$arg_ctfield`,`'`'`)\
+      if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
+`,\
       if( get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, true, 1 ) )
+`}\
       {
+`{`@eq`(`$arg_ctfield`,`'`'`)\
          get_obj( ).`{`$arg_field`}( 1 );
          get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
+`,\
+         do
+         {
+            if( get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( ) )
+            {
+               get_obj( ).`{`$arg_field`}( 1 );
+               get_obj( ).child_`{`$arg_child`}( ).iterate_stop( );
+
+               break;
+            }
+         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+`}\
       }
    }
    // [(finish transient_field_bool_has_child_for_uid)] `{`$arg_id`}
