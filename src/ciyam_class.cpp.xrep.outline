@@ -1568,8 +1568,8 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_bool_has_child_for_uid.spec.xrep section=after_fetch module_name=$module_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_ufield=$specification_\0_ufield arg_permission=$specification_\0_permission\
  arg_permission_id=$specification_\0_permission_id arg_child=$specification_\0_child arg_cclass=$specification_\0_cclass\
- arg_cpfield=$specification_\0_cpfield arg_cufield=$specification_\0_cufield arg_not_self=$specification_\0_not_self\
- arg_top_level=$specification_\0_top_level arg_not_iterating=$specification_\0_not_iterating`}\
+ arg_cpfield=$specification_\0_cpfield arg_cufield=$specification_\0_cufield arg_ctfield=$specification_\0_ctfield\
+ arg_not_self=$specification_\0_not_self arg_top_level=$specification_\0_top_level arg_not_iterating=$specification_\0_not_iterating`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_bool_uid`'`)
 `{`#transient_field_bool_uid.spec.xrep section=after_fetch class_name=$class_name\
