@@ -1021,7 +1021,7 @@ std::string CLASS_BASE_DECL_SPEC value_rightpart( const std::string& s );
 
 std::string CLASS_BASE_DECL_SPEC auto_int_increment( const std::string& current );
 
-struct historical_daylight_info
+struct daylight_info
 {
    int year_start;
    int year_finish;
@@ -1086,7 +1086,7 @@ struct timezone_info
 
    float daylight_utc_offset;
 
-   std::vector< historical_daylight_info > historical_daylights;
+   std::vector< daylight_info > daylight_changes;
 };
 
 void CLASS_BASE_DECL_SPEC generate_timezones_sio( const std::vector< timezone_info >& timezones );

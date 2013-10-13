@@ -90,8 +90,8 @@ const char* const c_special_regex_for_email_address = "@email_address";
 
 const char* const c_section_timezone = "timezone";
 const char* const c_section_timezones = "timezones";
-const char* const c_section_historical_daylight_saving = "historical_daylight_saving";
-const char* const c_section_historical_daylight_savings = "historical_daylight_savings";
+const char* const c_section_daylight_saving_change = "daylight_saving_change";
+const char* const c_section_daylight_saving_changes = "daylight_saving_changes";
 
 const char* const c_attribute_abbr = "abbr";
 const char* const c_attribute_name = "name";
@@ -3146,34 +3146,34 @@ void generate_timezones_sio( const vector< timezone_info >& timezones )
          writer.write_attribute( c_attribute_daylight_utc_offset, to_string( timezones[ i ].daylight_utc_offset ) );
       }
 
-      if( timezones[ i ].historical_daylights.size( ) )
+      if( timezones[ i ].daylight_changes.size( ) )
       {
-         writer.start_section( c_section_historical_daylight_savings );
+         writer.start_section( c_section_daylight_saving_changes );
 
-         for( int j = 0; j < timezones[ i ].historical_daylights.size( ); j++ )
+         for( int j = 0; j < timezones[ i ].daylight_changes.size( ); j++ )
          {
-            writer.start_section( c_section_historical_daylight_saving );
+            writer.start_section( c_section_daylight_saving_change );
 
-            writer.write_attribute( c_attribute_year_start, to_string( timezones[ i ].historical_daylights[ j ].year_start ) );
-            writer.write_attribute( c_attribute_year_finish, to_string( timezones[ i ].historical_daylights[ j ].year_finish ) );
-            writer.write_attribute( c_attribute_description, timezones[ i ].historical_daylights[ j ].description );
+            writer.write_attribute( c_attribute_year_start, to_string( timezones[ i ].daylight_changes[ j ].year_start ) );
+            writer.write_attribute( c_attribute_year_finish, to_string( timezones[ i ].daylight_changes[ j ].year_finish ) );
+            writer.write_attribute( c_attribute_description, timezones[ i ].daylight_changes[ j ].description );
 
-            writer.write_attribute( c_attribute_start_month, to_string( timezones[ i ].historical_daylights[ j ].start_month ) );
-            writer.write_attribute( c_attribute_start_occurrence, to_string( timezones[ i ].historical_daylights[ j ].start_occurrence ) );
-            writer.write_attribute( c_attribute_start_day_of_week, to_string( timezones[ i ].historical_daylights[ j ].start_day_of_week ) );
-            writer.write_attribute( c_attribute_start_time, timezones[ i ].historical_daylights[ j ].start_time );
+            writer.write_attribute( c_attribute_start_month, to_string( timezones[ i ].daylight_changes[ j ].start_month ) );
+            writer.write_attribute( c_attribute_start_occurrence, to_string( timezones[ i ].daylight_changes[ j ].start_occurrence ) );
+            writer.write_attribute( c_attribute_start_day_of_week, to_string( timezones[ i ].daylight_changes[ j ].start_day_of_week ) );
+            writer.write_attribute( c_attribute_start_time, timezones[ i ].daylight_changes[ j ].start_time );
 
-            writer.write_attribute( c_attribute_finish_month, to_string( timezones[ i ].historical_daylights[ j ].finish_month ) );
-            writer.write_attribute( c_attribute_finish_occurrence, to_string( timezones[ i ].historical_daylights[ j ].finish_occurrence ) );
-            writer.write_attribute( c_attribute_finish_day_of_week, to_string( timezones[ i ].historical_daylights[ j ].finish_day_of_week ) );
-            writer.write_attribute( c_attribute_finish_time, timezones[ i ].historical_daylights[ j ].finish_time );
+            writer.write_attribute( c_attribute_finish_month, to_string( timezones[ i ].daylight_changes[ j ].finish_month ) );
+            writer.write_attribute( c_attribute_finish_occurrence, to_string( timezones[ i ].daylight_changes[ j ].finish_occurrence ) );
+            writer.write_attribute( c_attribute_finish_day_of_week, to_string( timezones[ i ].daylight_changes[ j ].finish_day_of_week ) );
+            writer.write_attribute( c_attribute_finish_time, timezones[ i ].daylight_changes[ j ].finish_time );
 
-            writer.write_attribute( c_attribute_utc_offset, to_string( timezones[ i ].historical_daylights[ j ].utc_offset ) );
+            writer.write_attribute( c_attribute_utc_offset, to_string( timezones[ i ].daylight_changes[ j ].utc_offset ) );
 
-            writer.finish_section( c_section_historical_daylight_saving );
+            writer.finish_section( c_section_daylight_saving_change );
          }
 
-         writer.finish_section( c_section_historical_daylight_savings );
+         writer.finish_section( c_section_daylight_saving_changes );
       }
 
       writer.finish_section( c_section_timezone );
@@ -3248,9 +3248,9 @@ void setup_timezones( )
          }
       }
 
-      if( reader.has_started_section( c_section_historical_daylight_savings ) )
+      if( reader.has_started_section( c_section_daylight_saving_changes ) )
       {
-         while( reader.has_started_section( c_section_historical_daylight_saving ) )
+         while( reader.has_started_section( c_section_daylight_saving_change ) )
          {
             int year_start = atoi( reader.read_attribute( c_attribute_year_start ).c_str( ) );
             int year_finish = atoi( reader.read_attribute( c_attribute_year_finish ).c_str( ) );
@@ -3289,14 +3289,17 @@ void setup_timezones( )
                    ( weekday )finish_day_of_week, ( occurrence )finish_occurrence,
                    finish_time.get_hour( ), finish_time.get_minute( ) );
 
+               if( tz_data.daylight_savings.years_info.count( i ) )
+                  tz_data.daylight_savings.years_info.erase( i );
+
                tz_data.daylight_savings.years_info.insert( years_info_value_type( i,
                 daylight_bias_info( bias, ds_start.as_string( ), ds_finish.as_string( ) ) ) );
             }
 
-            reader.finish_section( c_section_historical_daylight_saving );
+            reader.finish_section( c_section_daylight_saving_change );
          }
 
-         reader.finish_section( c_section_historical_daylight_savings );
+         reader.finish_section( c_section_daylight_saving_changes );
       }
 
       g_timezones.insert( make_pair( name.empty( ) ? abbr : name, tz_data ) );

@@ -200,7 +200,7 @@ int main( int argc, char* argv[ ] )
       daylight_info daylight;
       double utc_offset = 0.0;
 
-      vector< daylight_info > historic;
+      vector< daylight_info > changes;
 
       bool has_daylight = get_daylight_info( t, daylight, utc_offset );
 
@@ -222,7 +222,7 @@ int main( int argc, char* argv[ ] )
          if( new_has_daylight != has_daylight || !( new_daylight == daylight ) )
          {
             if( daylight.start_month != daylight.finish_month )
-               historic.push_back( daylight );
+               changes.push_back( daylight );
             daylight = new_daylight;
          }
          else
@@ -271,7 +271,7 @@ int main( int argc, char* argv[ ] )
          cout << "   <utc_offset>" << utc_offset << "\n";
          cout << "   <description>" << argv[ 3 ] << "\n";
 
-         if( has_daylight || !historic.empty( ) )
+         if( has_daylight || !changes.empty( ) )
             cout << "   <daylight_abbr>" << dabbr << "\n";
 
          if( has_daylight )
@@ -289,27 +289,27 @@ int main( int argc, char* argv[ ] )
             cout << "   <daylight_utc_offset>" << daylight.utc_offset << "\n";
          }
 
-         if( !historic.empty( ) )
-            cout << "   <historical_daylight_savings/>\n";
-         for( size_t i = 0; i < historic.size( ); i++ )
+         if( !changes.empty( ) )
+            cout << "   <daylight_saving_changes/>\n";
+         for( size_t i = 0; i < changes.size( ); i++ )
          {
-            cout << "    <historical_daylight_saving/>\n";
-            cout << "     <year_start>" << historic[ i ].year_start << "\n";
-            cout << "     <year_finish>" << historic[ i ].year_finish << "\n";
-            cout << "     <description>" << historic[ i ].year_start << "-" << historic[ i ].year_finish << "\n";
-            cout << "     <start_month>" << historic[ i ].start_month << "\n";
-            cout << "     <start_occurrence>" << historic[ i ].start_occurrence << "\n";
-            cout << "     <start_day_of_week>" << historic[ i ].start_day_of_week << "\n";
-            cout << "     <start_time>" << historic[ i ].start_time << "\n";
-            cout << "     <finish_month>" << historic[ i ].finish_month << "\n";
-            cout << "     <finish_occurrence>" << historic[ i ].finish_occurrence << "\n";
-            cout << "     <finish_day_of_week>" << historic[ i ].finish_day_of_week << "\n";
-            cout << "     <finish_time>" << historic[ i ].finish_time << "\n";
-            cout << "     <utc_offset>" << historic[ i ].utc_offset << "\n";
-            cout << "    </historical_daylight_saving>\n";
+            cout << "    <daylight_saving_change/>\n";
+            cout << "     <year_start>" << changes[ i ].year_start << "\n";
+            cout << "     <year_finish>" << changes[ i ].year_finish << "\n";
+            cout << "     <description>" << changes[ i ].year_start << "-" << changes[ i ].year_finish << "\n";
+            cout << "     <start_month>" << changes[ i ].start_month << "\n";
+            cout << "     <start_occurrence>" << changes[ i ].start_occurrence << "\n";
+            cout << "     <start_day_of_week>" << changes[ i ].start_day_of_week << "\n";
+            cout << "     <start_time>" << changes[ i ].start_time << "\n";
+            cout << "     <finish_month>" << changes[ i ].finish_month << "\n";
+            cout << "     <finish_occurrence>" << changes[ i ].finish_occurrence << "\n";
+            cout << "     <finish_day_of_week>" << changes[ i ].finish_day_of_week << "\n";
+            cout << "     <finish_time>" << changes[ i ].finish_time << "\n";
+            cout << "     <utc_offset>" << changes[ i ].utc_offset << "\n";
+            cout << "    </daylight_saving_change>\n";
          }
-         if( !historic.empty( ) )
-            cout << "   </historical_daylight_savings>\n";
+         if( !changes.empty( ) )
+            cout << "   </daylight_saving_changes>\n";
          cout << "  </timezone>\n";
       }
       else if( format == "package" )
@@ -344,31 +344,31 @@ int main( int argc, char* argv[ ] )
          }
          cout << " </class>\n";
 
-         if( !historic.empty( ) )
+         if( !changes.empty( ) )
          {
             cout << " <class/>\n";
-            cout << "  <name>Timezone_Past_Daylight_Savings\n";
+            cout << "  <name>Timezone_Daylight_Saving_Mod\n";
             cout << "  <fields>@key,Timezone,Year_Start,Year_Finish"
              ",Description,Start_Month,Start_Occurrence,Start_Day_Of_Week,Start_Time"
              ",Finish_Month,Finish_Occurrence,Finish_Day_Of_Week,Finish_Time,UTC_Offset\n";
          }
 
-         for( size_t i = 0; i < historic.size( ); i++ )
+         for( size_t i = 0; i < changes.size( ); i++ )
          {
             ostringstream oss;
             oss << key << setw( 3 ) << setfill( '0' ) << i;
 
             cout << "  <record>" << oss.str( ) << ',' << key << ','
-             << historic[ i ].year_start << ',' << historic[ i ].year_finish << ','
-             << historic[ i ].year_start << '-' << historic[ i ].year_finish << ','
-             << historic[ i ].start_month << ',' << historic[ i ].start_occurrence << ','
-             << historic[ i ].start_day_of_week << ',' << historic[ i ].start_time << ','
-             << historic[ i ].finish_month << ',' << historic[ i ].finish_occurrence << ','
-             << historic[ i ].finish_day_of_week << ',' << historic[ i ].finish_time << ','
-             << historic[ i ].utc_offset << "\n";
+             << changes[ i ].year_start << ',' << changes[ i ].year_finish << ','
+             << changes[ i ].year_start << '-' << changes[ i ].year_finish << ','
+             << changes[ i ].start_month << ',' << changes[ i ].start_occurrence << ','
+             << changes[ i ].start_day_of_week << ',' << changes[ i ].start_time << ','
+             << changes[ i ].finish_month << ',' << changes[ i ].finish_occurrence << ','
+             << changes[ i ].finish_day_of_week << ',' << changes[ i ].finish_time << ','
+             << changes[ i ].utc_offset << "\n";
          }
 
-         if( !historic.empty( ) )
+         if( !changes.empty( ) )
             cout << " </class>\n";
       }
       else
