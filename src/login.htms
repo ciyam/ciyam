@@ -1,3 +1,5 @@
+<div class="wrapper box-shadow">
+
 <div align="center">
 <form method="POST" name="login" id="login"
 onsubmit="
@@ -9,27 +11,32 @@ if( useHashUserid )
 else
    return dyn_load( this, 'username='
     + escape( document.login.username.value ) + '&password=' + hash_with_unique( pwd_hash ), false );">
-<table class="list" cellpadding="0" cellspacing="0" border="0" width="40%">
-<tr class="data">
-   <td align="right">@@user_id</td>
+<table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+   <td align="right" class="icon-user">@@user_id</td>
    <td>
-       <input class="loginfields" type="text" name="username" tabindex="1"
-        id="username" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" />
+      <input class="loginfields" type="text" name="username" tabindex="1"
+       id="username" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
    </td>
 </tr>
-<tr class="odd_data">
-   <td align="right">@@password</td>
+<tr>
+   <td align="right" class="icon-psw">@@password</td>
    <td>
        <input class="loginfields" type="password" name="password" tabindex="2"
-        id="password" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'" />
+        id="password" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
    </td>
 </tr>
-<tr class="data">
-   <td class="center" colspan="2">
-       <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@login" />
+<tr class="odd_data submit">
+   <td class="center"  colspan="2">
+      <input name="submit" class="button" id="submit" tabindex="3" value="@@login" type="submit"/>
    </td>
 </tr>
+</tbody>
 </table>
-   </form>
+
+</form>
+</div>
+
 </div>
 

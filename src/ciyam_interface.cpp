@@ -521,6 +521,10 @@ void output_login_logout( const string& module_name, ostream& os, const string& 
 
    os << "\n<div id=\"header\"><div id=\"appname\">";
    os << "<a href=\"?cmd=" << c_cmd_home << "\">" << get_app_name( ) << "</a></div>\n";
+
+   if( !extra_details.empty( ) )
+      os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
+
    os << "   <div id=\"navband\">\n";
    os << "   </div>\n";
    os << "</div>\n";
@@ -533,7 +537,6 @@ void output_login_logout( const string& module_name, ostream& os, const string& 
    }
    else
    {
-      os << "<h3 class=\"center\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
       os << extra_details;
       os << msg << "\n";
    }
