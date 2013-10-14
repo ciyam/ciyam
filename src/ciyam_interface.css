@@ -1892,3 +1892,80 @@ table table th
    visibility: hidden;
 }
 
+.wrapper
+{
+   border: 0px solid red;
+   border: 1px solid #ddd\0/;
+   width: 990px;
+   background-color: #fff;
+   background-color: rgba(255,255,255,.90);
+   padding: 50px 0;
+   margin: 40px auto;
+   box-shadow: 0px 1px 1px #ccc;
+   font-family: 'Open Sans', sans-serif;
+}
+
+h3.right-top
+{
+   color: #888;
+   width: auto;
+   float: right;
+   margin-top: 26px;
+}
+
+table.login
+{
+   width: 60%;
+   border: 1px solid #ddd;
+   background-color: #fff;
+   background-color: rgba(255,255,255,.90);
+   box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+table.login td
+{
+   border: 0px solid red;
+}
+
+table.login td .loginfields
+{
+   width: 90%;
+}
+
+table.login tr
+{
+   background-color: #fafafa;
+}
+
+.icon-user
+{
+   background: url('ico_user.png') no-repeat right 16px;
+}
+
+.icon-psw
+{
+   background: url('ico_password.png')  no-repeat right 16px;
+}
+
+.icon-pers
+{
+   background: url('ico_automatic.png')  no-repeat right 14px;
+}
+
+table.login .submit td
+{
+   border-top: 1px solid #D3D3D3;
+}
+
+.box-shadow
+{
+   -moz-box-shadow: 0 1px 1px #ccc;
+   -webkit-box-shadow: 0 1px 1px #ccc;
+   box-shadow: 0 1px 1px #ccc;
+}
+
+body:last-child .box-shadow
+{
+   filter: none;
+}
+
