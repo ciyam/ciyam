@@ -515,7 +515,8 @@ string get_view_or_list_header( const string& qlink,
    return str;
 }
 
-void output_login_logout( const string& module_name, ostream& os, const string& extra_details, const string& msg = "" )
+void output_login_logout( const string& module_name, ostream& os,
+ const string& extra_details, const string& msg = "", bool is_activation = false )
 {
    os << "\n<div id=\"normal_content\">\n";
 
@@ -523,7 +524,12 @@ void output_login_logout( const string& module_name, ostream& os, const string& 
    os << "<a href=\"?cmd=" << c_cmd_home << "\">" << get_app_name( ) << "</a></div>\n";
 
    if( !extra_details.empty( ) )
-      os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
+   {
+      if( is_activation )
+         os << "<h3 class=\"right-top\">" << GDS( c_display_activate_account ) << "</h3>" << endl;
+      else
+         os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
+   }
 
    os << "   <div id=\"navband\">\n";
    os << "   </div>\n";
@@ -1074,7 +1080,7 @@ void request_handler::process_request( )
                 + string_message( GDS( c_display_provide_password_to_activate ),
                 make_pair( c_display_provide_password_to_activate_parm_id, user ) ) + "</b></p>" );
 
-               output_login_logout( module_name, extra_content, activate_html, message );
+               output_login_logout( module_name, extra_content, activate_html, message, true );
             }
          }
          else
@@ -1134,7 +1140,7 @@ void request_handler::process_request( )
 
          if( p_session_info )
          {
-            if( cmd == c_cmd_open )
+            if( cmd == c_cmd_open || cmd == c_cmd_activate )
                cmd = c_cmd_home;
 
             p_session_info->tm_last_request = time( 0 );
@@ -1363,7 +1369,7 @@ void request_handler::process_request( )
                      vector< string > user_data;
                      split( user_info.second, user_data );
 
-                     if( user_data.size( ) < 2 )
+                     if( user_data.size( ) < 2 || user_data[ 0 ] != username )
                         throw runtime_error( "unexpected missing user information" );
 
                      string activate_password( password );
@@ -3793,6 +3799,10 @@ void request_handler::process_request( )
 
                extra_content << "      </div >\n";
                extra_content << "   </div>\n";
+
+               if( cmd == c_cmd_join || cmd == c_cmd_open )
+                  extra_content << "<h3 class=\"right-top\">" << g_display_sign_up_for_an_account << "</h3>";
+
                extra_content << "</div>\n";
             }
 
@@ -4079,8 +4089,17 @@ void request_handler::process_request( )
                      }
                   }
 
-                  if( found_slides )
-                     extra_content << "            </div>\n";
+                  // NOTE: If no slides actually exist then create a dummy title slide.
+                  if( !found_slides )
+                  {
+                     extra_content << "            <div class=\"home_slides_container clearfix\" id=\"home_slides_container\">\n";
+                     extra_content << "               <div class=\"home_slide clearfix\">\n";
+                     extra_content << "               <p class=\"title center\"><b>"
+                      << GDS( c_display_welcome_to ) << ' ' << title << "</b></p>\n";
+                     extra_content << "               </div>\n";
+                  }
+
+                  extra_content << "            </div>\n";
 
                   extra_content << "        </div>\n";
                   extra_content << "    </div>\n";
@@ -4118,8 +4137,6 @@ void request_handler::process_request( )
 
             if( cmd == c_cmd_pwd )
             {
-               extra_content << "<h3 class=\"center\">" << pwd_display_name << "</h3>";
-
                if( !input_data.count( c_param_newpwd ) )
                {
                   string password_html( !cookies_permitted || !get_storage_info( ).login_days
@@ -4144,8 +4161,6 @@ void request_handler::process_request( )
             else if( cmd == c_cmd_join )
             {
                guard g( g_join_mutex );
-
-               extra_content << "<h3>" << g_display_sign_up_for_an_account << "</h3>";
 
                bool has_completed = false;
                bool had_unexpected_error = false;
@@ -4584,8 +4599,6 @@ void request_handler::process_request( )
 
                if( !has_completed )
                {
-                  extra_content << "<h3>" << g_display_sign_up_for_an_account << "</h3>";
-
                   string openup_html( g_openup_html );
 
                   str_replace( openup_html, c_error_message, error_message );
@@ -5439,7 +5452,7 @@ int main( int argc, char* argv[ ] )
 
       str_replace( g_activate_html, c_login, GDS( c_display_login ) );
       str_replace( g_activate_html, c_password, GDS( c_display_password ) );
-      str_replace( g_activate_html, c_persistent, GDS( c_display_automatically_login ) );
+      str_replace( g_activate_html, c_persistent, GDS( c_display_automatic_login ) );
       str_replace( g_activate_html, c_verify_password, GDS( c_display_verify_password ) );
 
       str_replace( g_password_html, c_old_password, GDS( c_display_old_password ) );
@@ -5471,7 +5484,7 @@ int main( int argc, char* argv[ ] )
          str_replace( g_login_persistent_html, c_login, GDS( c_display_login ) );
          str_replace( g_login_persistent_html, c_user_id, GDS( c_display_user_id ) );
          str_replace( g_login_persistent_html, c_password, GDS( c_display_password ) );
-         str_replace( g_login_persistent_html, c_persistent, GDS( c_display_automatically_login ) );
+         str_replace( g_login_persistent_html, c_persistent, GDS( c_display_automatic_login ) );
       }
 
       if( file_exists( c_password_persistent_file ) )
@@ -5480,7 +5493,7 @@ int main( int argc, char* argv[ ] )
 
          str_replace( g_password_persistent_html, c_old_password, GDS( c_display_old_password ) );
          str_replace( g_password_persistent_html, c_new_password, GDS( c_display_new_password ) );
-         str_replace( g_password_persistent_html, c_persistent, GDS( c_display_automatically_login ) );
+         str_replace( g_password_persistent_html, c_persistent, GDS( c_display_automatic_login ) );
          str_replace( g_password_persistent_html, c_change_password, GDS( c_display_change_password ) );
          str_replace( g_password_persistent_html, c_change_password, GDS( c_display_change_password ) );
          str_replace( g_password_persistent_html, c_verify_new_password, GDS( c_display_verify_new_password ) );

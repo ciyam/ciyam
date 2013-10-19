@@ -1969,3 +1969,31 @@ body:last-child .box-shadow
    filter: none;
 }
 
+.signup_form
+{
+   width: 83%;
+   position: relative;
+   text-align: center;
+}
+
+.password-checkb
+{
+   width:60%;
+}
+
+.password-checkb label
+{
+   text-align:left;
+   margin-left:-40px;
+   padding:0;
+   width:48%;
+   display:inline-block;
+}
+
+.password-checkb #persistent, .password-checkb #change_password
+{
+   float:left;
+   margin-left:39%;
+   width:2%;
+}
+
