@@ -1,6 +1,8 @@
+<div class="wrapper box-shadow">
+
 <div align="center">
+<div class="signup_form">
 <div align="left">
-<p>
 @@sign_up_introduction
 <br/>
 @@sign_up_extra_details
@@ -42,4 +44,7 @@
        </label>
    </form>
 </div>
+</div>
+</div>
+
 </div>

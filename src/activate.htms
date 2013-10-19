@@ -1,28 +1,36 @@
-<div id="loginbox">
-   <div id="loginform">
-      <form method="POST" name="login" id="login"
-       onsubmit="var checkval = 'false';
+<div class="wrapper box-shadow">
 
-       if( document.login.persistent.checked )
-          checkval = document.login.persistent.value;
+<div align="center">
+<form method="POST" name="login" id="login"
+ onsubmit="var checkval = 'false';
 
-       return dyn_load( this, 'password='
-        + hash_password( document.login.username.value, document.login.password.value, true ) + '&persistent=' + checkval, false )">
-         <label for="password">
-            <input class="loginfields" type="password" name="password" tabindex="1"
-             id="password" size="25" maxlength="25" validate="reqd" onkeypress="className = 'loginfields'" />@@password
-         </label>
-         <label for="verify_password">
-            <input class="loginfields" type="password" name="verify_password" tabindex="2"
-             id="verify_password" size="25" maxlength="25" validate="reqd;verify:password" onkeypress="className = 'loginfields'" />@@verify_password
-         </label>
-            <input name="Submit" class="button" type="submit" id="submit" tabindex="3" value="@@login" />
-         </label>
-         <label for="persistent">
-            <br/>
-            <input type="checkbox" name="persistent" id="persistent" tabindex="4" value="true"/>&nbsp;&nbsp;@@persistent
-         </label>
-         <input type="hidden" name="username" value="@@user_id">
-      </form>
-   </div>
+ return dyn_load( this, 'password='
+  + hash_password( document.login.username.value, document.login.password.value, true ), false );">
+<table class="list login box-shadow" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+   <td align="right" class="icon-psw">@@password</td>
+   <td>
+       <input class="loginfields" type="password" name="password" id="password"
+        tabindex="1" size="35" maxlength="50" validate="reqd" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr>
+   <td align="right" class="icon-psw">@@verify_password</td>
+   <td>
+      <input class="loginfields" type="password" name="verify_password" id="verify_password"
+       tabindex="2" size="35" maxlength="50" validate="reqd;verify:verify_password" onkeypress="className = 'loginfields'"/>
+   </td>
+</tr>
+<tr class="odd_data submit">
+   <td class="center"  colspan="2">
+      <input name="submit" class="button" id="submit" tabindex="3" value="@@login" type="submit"/>
+   </td>
+</tr>
+<input type="hidden" name="username" value="@@user_id">
+</tbody>
+</table>
+</form>
+</div>
+
 </div>

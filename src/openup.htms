@@ -1,4 +1,7 @@
+<div class="wrapper box-shadow">
+
 <div align="center">
+<div class="signup_form">
 <div align="left">
 <p>
 @@open_up_introduction
@@ -26,9 +29,13 @@
        </label>
        <br/>
        <br/>
+       <br/>
        <label for="submit" id="submit">
           <input name="Submit" class="button" type="submit" id="submit" tabindex="4" value="@@send_request" />
        </label>
    </form>
 </div>
+</div>
+</div>
+
 </div>
