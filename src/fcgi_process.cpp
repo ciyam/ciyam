@@ -11,6 +11,7 @@
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <fstream>
 #  include <iostream>
+#  include <stdexcept>
 #endif
 
 #include "fcgi_process.h"
