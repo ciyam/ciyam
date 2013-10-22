@@ -44,6 +44,25 @@ const char* const c_extkey = "@extkey";
 const char* const c_fcgi_sio = "fcgi.sio";
 const char* const c_fcgi_sio_ext = ".fcgi.sio";
 
+const char* const c_email = "@@email";
+const char* const c_user_id = "@@user_id";
+const char* const c_password = "@@password";
+const char* const c_user_name = "@@user_name";
+const char* const c_gpg_public_key = "@@gpg_public_key";
+const char* const c_verify_password = "@@verify_password";
+
+const char* const c_form_content_comment = "<!-- @@form_content -->";
+const char* const c_extra_content_comment = "<!-- @@extra_content -->";
+
+const char* const c_http_param_ssl = "HTTPS";
+const char* const c_http_param_host = "HTTP_HOST";
+const char* const c_http_param_raddr = "REMOTE_ADDR";
+const char* const c_http_param_rhost = "REMOTE_HOST";
+const char* const c_http_param_ruser = "REMOTE_USER";
+const char* const c_http_param_query = "QUERY_STRING";
+const char* const c_http_param_cookie = "HTTP_COOKIE";
+const char* const c_http_param_uagent = "HTTP_USER_AGENT";
+
 const char* const c_tmp_directory = "tmp";
 const char* const c_files_directory = "files";
 

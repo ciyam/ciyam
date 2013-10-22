@@ -50,6 +50,8 @@
 
 using namespace std;
 
+extern string g_footer_html;
+
 namespace
 {
 
@@ -158,6 +160,14 @@ string get_extkey( const string& id )
       str = g_extkeys[ id ];
 
    return str;
+}
+
+string get_app_name( )
+{
+   // KLUDGE: This needs to be able to translated but is not currently a module
+   // string (perhaps add an "app" string for this that defaults to the name of
+   // the Application being generated).
+   return get_storage_info( ).storage_name;
 }
 
 string get_display_string( const string& key )
@@ -1270,6 +1280,43 @@ void replace_links_and_output( const string& s,
          os << data_or_nbsp( unescaped(
           replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
    }
+}
+
+void output_login_logout( const string& module_name, ostream& os,
+ const string& extra_details, const string& msg, bool is_activation )
+{
+   os << "\n<div id=\"normal_content\">\n";
+
+   os << "\n<div id=\"header\"><div id=\"appname\">";
+   os << "<a href=\"?cmd=" << c_cmd_home << "\">" << get_app_name( ) << "</a></div>\n";
+
+   if( !extra_details.empty( ) )
+   {
+      if( is_activation )
+         os << "<h3 class=\"right-top\">" << GDS( c_display_activate_account ) << "</h3>" << endl;
+      else
+         os << "<h3 class=\"right-top\">" << GDS( c_display_sign_in_using_credentials ) << "</h3>" << endl;
+   }
+
+   os << "   <div id=\"navband\">\n";
+   os << "   </div>\n";
+   os << "</div>\n";
+
+   if( extra_details.empty( ) )
+   {
+      os << "\n<div id=\"logout_text\">\n";
+      os << msg << "\n";
+      os << "</div>\n";
+   }
+   else
+   {
+      os << extra_details;
+      os << msg << "\n";
+   }
+
+   os << g_footer_html;
+
+   os << "</div>\n";
 }
 
 void output_actions( ostream& os,

@@ -193,6 +193,7 @@
      <filename>fcgi_info.cpp
      <filename>fcgi_list.cpp
      <filename>fcgi_parser.cpp
+     <filename>fcgi_process.cpp
      <filename>fcgi_utils.cpp
      <filename>fcgi_view.cpp
     </cpp_files>
