@@ -70,6 +70,11 @@ body
    text-decoration: none;
 }
 
+#header #appname a:focus
+{
+   outline: 0;
+}
+
 #main
 {
    text-align: center;
