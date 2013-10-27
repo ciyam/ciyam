@@ -1,3 +1,6 @@
+# If present ignore a 'tmp' file or directory.
+tmp
+
 # Ignore dependency files.
 *.d
 *.dep
@@ -123,18 +126,4 @@ Meta.modules.lst
 
 # Ignore customised environment init file.
 ciyam_init_cmd.bat
-
-# Except libraries that are included in the repository.
-!iconv.dll
-!iconv.lib
-!libfcgi.dll
-!libfcgi.lib
-!libhpdf.dll
-!libhpdf.lib
-!libmySQL.dll
-!libmysql.lib
-!libpng13.dll
-!zlib.dll
-!zlib1.dll
-!zlib1.lib
 
