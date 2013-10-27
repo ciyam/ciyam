@@ -8,8 +8,9 @@ Name   Description                 Sample Value
 CPPENV C++ Compiler (Windows only) mvc
 WEBDIR Web Document Root path**    /srv/www/htdocs
 
-** This path must *not* contain spaces and each directory in the path must have rwx permissions for all users
-(the permissions requirement is necessary for development sites but is not recommended for production sites).
+** This path must *not* contain spaces and each directory in the path must have "rwx" permissions set so that
+both the Apache2 user (wwwrun) and the user account being used for development can create, update, append and
+delete files in and below the path (for a development only environment it is easiest to just "chmod a+rwx").
 
 Environment variables LIB and INCLUDE for VC++ will require additions for MySQL and (if used) OpenSSL.
 
@@ -18,8 +19,7 @@ If wanting to perform a debug build for Windows use the environment variable CPP
 
 The following are platform specific instructions for installing 3rd party libraries:
 
-NOTE: To make things easier for Windows developers some .lib and .dll files have been included.
-Also note that you will need to be using VS2003 or higher.
+NOTE: Windows developers need to be using VS2003 or higher.
 
 For Linux environments the development packages for libpng (and optionally readline) will need to have been
 installed.
