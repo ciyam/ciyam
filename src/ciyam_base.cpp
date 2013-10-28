@@ -145,26 +145,48 @@ const char* const c_default_pem_password = "password";
 
 const char* const c_script_dummy_filename = "*script*";
 
-const char* const c_system_variable_storage = "@storage";
-
-const char* const c_session_variable_dtm = "@dtm";
-const char* const c_session_variable_sec = "@sec";
-const char* const c_session_variable_none = "@none";
-const char* const c_session_variable_class = "@class";
-const char* const c_session_variable_module = "@module";
-const char* const c_session_variable_storage = "@storage";
-const char* const c_session_variable_tz_name = "@tz_name";
-const char* const c_session_variable_cmd_hash = "@cmd_hash";
-const char* const c_session_variable_val_error = "@val_error";
-
+const char* const c_special_variable_id = "@id";
+const char* const c_special_variable_dtm = "@dtm";
+const char* const c_special_variable_key = "@key";
+const char* const c_special_variable_sec = "@sec";
 const char* const c_special_variable_uid = "@uid";
+const char* const c_special_variable_arg1 = "@arg1";
+const char* const c_special_variable_arg2 = "@arg2";
+const char* const c_special_variable_file = "@file";
 const char* const c_special_variable_loop = "@loop";
-const char* const c_special_variable_is_quiet = "@quiet";
-const char* const c_special_variable_was_cloned = "@cloned";
-const char* const c_special_variable_is_in_restore = "@restore";
-const char* const c_special_variable_execute_return = "@return";
+const char* const c_special_variable_name = "@name";
+const char* const c_special_variable_none = "@none";
+const char* const c_special_variable_async = "@async";
+const char* const c_special_variable_class = "@class";
+const char* const c_special_variable_embed = "@embed";
+const char* const c_special_variable_quiet = "@quiet";
+const char* const c_special_variable_title = "@title";
+const char* const c_special_variable_cloned = "@cloned";
+const char* const c_special_variable_images = "@images";
+const char* const c_special_variable_module = "@module";
+const char* const c_special_variable_return = "@return";
+const char* const c_special_variable_do_exec = "@do_exec";
+const char* const c_special_variable_is_last = "@is_last";
+const char* const c_special_variable_message = "@message";
+const char* const c_special_variable_package = "@package";
+const char* const c_special_variable_restore = "@restore";
+const char* const c_special_variable_storage = "@storage";
+const char* const c_special_variable_tz_name = "@tz_name";
+const char* const c_special_variable_trigger = "@trigger";
+const char* const c_special_variable_cmd_hash = "@cmd_hash";
+const char* const c_special_variable_executed = "@executed";
+const char* const c_special_variable_image_dir = "@image_dir";
+const char* const c_special_variable_val_error = "@val_error";
+const char* const c_special_variable_allow_async = "@allow_async";
+const char* const c_special_variable_output_file = "@output_file";
+const char* const c_special_variable_path_prefix = "@path_prefix";
+const char* const c_special_variable_skip_update = "@skip_update";
+const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
+const char* const c_special_variable_fields_and_values = "@fields_and_values";
+const char* const c_special_variable_package_type_path = "@package_type_path";
 const char* const c_special_variable_attached_file_path = "@attached_file_path";
+const char* const c_special_variable_total_child_field_in_parent = "@total_child_field_in_parent";
 
 struct instance_info
 {
@@ -1412,7 +1434,7 @@ void perform_storage_op( storage_op op,
          if( lock_for_admin )
             gtp_session->p_storage_handler->set_is_locked_for_admin( );
 
-         set_session_variable( c_session_variable_storage, gtp_session->p_storage_handler->get_name( ) );
+         set_session_variable( c_special_variable_storage, gtp_session->p_storage_handler->get_name( ) );
       }
       catch( ... )
       {
@@ -2795,11 +2817,11 @@ string construct_sql_select(
    if( !security_info.empty( ) )
    {
       // NOTE: The 'security_info' can either be just a field id (in which case the security level is
-      // taken from the session variable 'c_session_variable_sec') or a field id and a security level
+      // taken from the session variable 'c_special_variable_sec') or a field id and a security level
       // value separated by a colon.
       string::size_type pos = security_info.find( ':' );
 
-      string security_level( get_session_variable( c_session_variable_sec ) );
+      string security_level( get_session_variable( c_special_variable_sec ) );
       if( pos != string::npos )
          security_level = security_info.substr( pos + 1 );
 
@@ -3145,7 +3167,7 @@ void read_server_configuration( )
       g_sql_password = reader.read_opt_attribute( c_attribute_sql_password );
 
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
-      g_variables.insert( make_pair( c_system_variable_storage, g_default_storage ) );
+      g_variables.insert( make_pair( c_special_variable_storage, g_default_storage ) );
 
       g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, "false" ) ) == "true" );
 
@@ -4088,7 +4110,7 @@ int exec_system( const string& cmd, bool async )
     && gtp_session->p_storage_handler->get_name( ) != c_default_storage_name )
       throw runtime_error( "invalid exec_system: " + cmd );
 
-   string async_var( get_session_variable( "@allow_async" ) );
+   string async_var( get_session_variable( c_special_variable_allow_async ) );
 
    // NOTE: The session variable @allow_async can be used to force non-async execution.
    if( async_var == "0" || async_var == "false" )
@@ -4160,7 +4182,7 @@ int run_script( const string& script_name, bool async )
       if( gtp_session )
          gtp_session->async_temp_file = script_args;
 
-      string is_quiet( get_session_variable( c_special_variable_is_quiet ) );
+      string is_quiet( get_session_variable( c_special_variable_quiet ) );
 
       // NOTE: For cases where one script may end up calling numerous others (i.e.
       // such as a scan across records) this special session variable is available
@@ -4468,7 +4490,7 @@ void set_last_session_cmd_and_hash( const string& cmd, const string& parameter_i
       string s( cmd + parameter_info.substr( pos ) );
       s = lower( sha1( s ).get_digest_as_string( ) );
 
-      set_session_variable( c_session_variable_cmd_hash, s.substr( 0, 20 ) );
+      set_session_variable( c_special_variable_cmd_hash, s.substr( 0, 20 ) );
    }
 }
 
@@ -4777,9 +4799,9 @@ string get_session_variable( const string& name )
 
    if( !found )
    {
-      if( name == c_session_variable_none )
+      if( name == c_special_variable_none )
          retval = " ";
-      else if( name == c_session_variable_storage )
+      else if( name == c_special_variable_storage )
          retval = get_default_storage( );
    }
 
@@ -4844,36 +4866,172 @@ string get_special_var_name( special_var var )
 
    switch( var )
    {
+      case e_special_var_id:
+      s = string( c_special_variable_id );
+      break;
+
+      case e_special_var_dtm:
+      s = string( c_special_variable_dtm );
+      break;
+
+      case e_special_var_key:
+      s = string( c_special_variable_key );
+      break;
+
+      case e_special_var_sec:
+      s = string( c_special_variable_sec );
+      break;
+
       case e_special_var_uid:
       s = string( c_special_variable_uid );
+      break;
+
+      case e_special_var_arg1:
+      s = string( c_special_variable_arg1 );
+      break;
+
+      case e_special_var_arg2:
+      s = string( c_special_variable_arg2 );
+      break;
+
+      case e_special_var_file:
+      s = string( c_special_variable_file );
       break;
 
       case e_special_var_loop:
       s = string( c_special_variable_loop );
       break;
 
-      case e_special_var_is_quiet:
-      s = string( c_special_variable_is_quiet );
+      case e_special_var_name:
+      s = string( c_special_variable_name );
       break;
 
-      case e_special_var_was_cloned:
-      s = string( c_special_variable_was_cloned );
+      case e_special_var_none:
+      s = string( c_special_variable_none );
       break;
 
-      case e_special_var_is_in_restore:
-      s = string( c_special_variable_is_in_restore );
+      case e_special_var_async:
+      s = string( c_special_variable_async );
       break;
 
-      case e_special_var_execute_return:
-      s = string( c_special_variable_execute_return );
+      case e_special_var_class:
+      s = string( c_special_variable_class );
+      break;
+
+      case e_special_var_embed:
+      s = string( c_special_variable_embed );
+      break;
+
+      case e_special_var_quiet:
+      s = string( c_special_variable_quiet );
+      break;
+
+      case e_special_var_title:
+      s = string( c_special_variable_title );
+      break;
+
+      case e_special_var_cloned:
+      s = string( c_special_variable_cloned );
+      break;
+
+      case e_special_var_images:
+      s = string( c_special_variable_images );
+      break;
+
+      case e_special_var_module:
+      s = string( c_special_variable_module );
+      break;
+
+      case e_special_var_return:
+      s = string( c_special_variable_return );
+      break;
+
+      case e_special_var_do_exec:
+      s = string( c_special_variable_do_exec );
+      break;
+
+      case e_special_var_is_last:
+      s = string( c_special_variable_is_last );
+      break;
+
+      case e_special_var_message:
+      s = string( c_special_variable_message );
+      break;
+
+      case e_special_var_package:
+      s = string( c_special_variable_package );
+      break;
+
+      case e_special_var_restore:
+      s = string( c_special_variable_restore );
+      break;
+
+      case e_special_var_storage:
+      s = string( c_special_variable_storage );
+      break;
+
+      case e_special_var_tz_name:
+      s = string( c_special_variable_tz_name );
+      break;
+
+      case e_special_var_trigger:
+      s = string( c_special_variable_trigger );
+      break;
+
+      case e_special_var_cmd_hash:
+      s = string( c_special_variable_cmd_hash );
+      break;
+
+      case e_special_var_executed:
+      s = string( c_special_variable_executed );
+      break;
+
+      case e_special_var_image_dir:
+      s = string( c_special_variable_image_dir );
+      break;
+
+      case e_special_var_val_error:
+      s = string( c_special_variable_val_error );
+      break;
+
+      case e_special_var_allow_async:
+      s = string( c_special_variable_allow_async );
+      break;
+
+      case e_special_var_output_file:
+      s = string( c_special_variable_output_file );
+      break;
+
+      case e_special_var_path_prefix:
+      s = string( c_special_variable_path_prefix );
+      break;
+
+      case e_special_var_skip_update:
+      s = string( c_special_variable_skip_update );
+      break;
+
+      case e_special_var_check_if_changed:
+      s = string( c_special_variable_check_if_changed );
       break;
 
       case e_special_var_skip_after_fetch:
       s = string( c_special_variable_skip_after_fetch );
       break;
 
+      case e_special_var_fields_and_values:
+      s = string( c_special_variable_fields_and_values );
+      break;
+
+      case e_special_var_package_type_path:
+      s = string( c_special_variable_package_type_path );
+      break;
+
       case e_special_var_attached_file_path:
       s = string( c_special_variable_attached_file_path );
+      break;
+
+      case e_special_var_total_child_field_in_parent:
+      s = string( c_special_variable_total_child_field_in_parent );
       break;
 
       default:
@@ -4885,8 +5043,8 @@ string get_special_var_name( special_var var )
 
 void set_default_session_variables( )
 {
-   set_session_variable( c_session_variable_storage, get_default_storage( ) );
-   set_session_variable( c_special_variable_is_in_restore, "0" );
+   set_session_variable( c_special_variable_restore, "0" );
+   set_session_variable( c_special_variable_storage, get_default_storage( ) );
 }
 
 string get_system_variable( const string& name )
@@ -5257,7 +5415,7 @@ void term_storage( command_handler& cmd_handler )
          delete gtp_session->p_storage_handler;
       }
 
-      set_session_variable( c_session_variable_storage, "" );
+      set_session_variable( c_special_variable_storage, "" );
       gtp_session->p_storage_handler = g_storage_handlers[ 0 ];
    }
 }
@@ -5889,7 +6047,7 @@ void set_uid( const string& uid )
    string::size_type spos = uid.find( '!' );
 
    gtp_session->sec.erase( );
-   set_session_variable( c_session_variable_sec, "" );
+   set_session_variable( c_special_variable_sec, "" );
 
    if( spos != string::npos )
    {
@@ -5898,7 +6056,7 @@ void set_uid( const string& uid )
          string sec = uid.substr( spos + 1, pos == string::npos ? pos : pos - spos - 1 );
 
          gtp_session->sec = sec;
-         set_session_variable( c_session_variable_sec, sec );
+         set_session_variable( c_special_variable_sec, sec );
 
          s = uid.substr( 0, spos );
          if( pos != string::npos )
@@ -5999,17 +6157,17 @@ string get_dtm( )
 void set_dtm( const string& dtm )
 {
    gtp_session->dtm = dtm;
-   set_session_variable( c_session_variable_dtm, dtm );
+   set_session_variable( c_special_variable_dtm, dtm );
 }
 
 void set_class( const string& mclass )
 {
-   set_session_variable( c_session_variable_class, mclass );
+   set_session_variable( c_special_variable_class, mclass );
 }
 
 void set_module( const string& module )
 {
-   set_session_variable( c_session_variable_module, module );
+   set_session_variable( c_special_variable_module, module );
 }
 
 string get_tz_name( )
@@ -6024,7 +6182,7 @@ void set_tz_name( const string& tz_name )
       tz = get_timezone( );
 
    gtp_session->tz_name = tz;
-   set_session_variable( c_session_variable_tz_name, tz );
+   set_session_variable( c_special_variable_tz_name, tz );
 }
 
 void clear_perms( )
@@ -6521,7 +6679,7 @@ void validate_object_instance( size_t handle, const string& context )
    if( !instance.is_valid( false ) )
    {
       string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
-      set_session_variable( c_session_variable_val_error, validation_error );
+      set_session_variable( c_special_variable_val_error, validation_error );
       throw runtime_error( validation_error );
    }
 }
@@ -9211,7 +9369,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
 
                perform_op_cancel( handler, instance, op );
-               set_session_variable( c_session_variable_val_error, validation_error );
+               set_session_variable( c_special_variable_val_error, validation_error );
 
                throw runtime_error( validation_error );
             }
@@ -9247,7 +9405,7 @@ void finish_instance_op( class_base& instance, bool apply_changes,
                string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
 
                perform_op_cancel( handler, instance, op );
-               set_session_variable( c_session_variable_val_error, validation_error );
+               set_session_variable( c_special_variable_val_error, validation_error );
 
                throw runtime_error( validation_error );
             }

@@ -9,7 +9,7 @@
 `{`$i`}   size_t total( 0 );
 `{`$i`}   procedure_progress progress;
 `{`!`@eq`(`$arg_quiet`,`'`'`)\
-`{`$i`}   temporary_session_variable tmp_is_quiet( get_special_var_name( e_special_var_is_quiet ), "1" );
+`{`$i`}   temporary_session_variable tmp_quiet( get_special_var_name( e_special_var_quiet ), "1" );
 `}`{`!`@eq`(`$arg_var`,`'`'`)
 `{`$i`}   get_obj( ).set_variable( "`{`$arg_var`}", "true" );
 `}

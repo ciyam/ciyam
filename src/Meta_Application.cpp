@@ -2503,7 +2503,7 @@ uint64_t Meta_Application::impl::get_state( ) const
    // [<start get_state>]
 //nyi
    if( !get_obj( ).get_clone_key( ).empty( )
-    || !get_obj( ).get_variable( get_special_var_name( e_special_var_was_cloned ) ).empty( ) )
+    || !get_obj( ).get_variable( get_special_var_name( e_special_var_cloned ) ).empty( ) )
       state |= c_modifier_Was_Cloned;
    // [<finish get_state>]
 

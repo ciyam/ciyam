@@ -5,12 +5,12 @@
       string tmp( get_uuid( ) );
 
 `{`!`@eq`(`$arg_arg1`,`'`'`)\
-      set_session_variable( "@arg1", get_obj( ).`{`$arg_arg1`}( ) );
+      set_session_variable( get_special_var_name( e_special_var_arg1 ), get_obj( ).`{`$arg_arg1`}( ) );
 `}\
 `{`!`@eq`(`$arg_arg2`,`'`'`)\
-      set_session_variable( "@arg2", get_obj( ).`{`$arg_arg2`}( ) );
+      set_session_variable( get_special_var_name( e_special_var_arg1 ), get_obj( ).`{`$arg_arg2`}( ) );
 `}\
-      set_session_variable( "@output_file", tmp );
+      set_session_variable( get_special_var_name( e_special_var_output_file ), tmp );
 
       run_script( "`{`$arg_value`}", false );
 
@@ -20,18 +20,18 @@
       check_with_regex( "`{`$arg_tvalue`}", s );
 `}\
 
-      if( get_obj( ).get_variable( "@check_if_changed" ).empty( )
+      if( get_obj( ).get_variable( get_special_var_name( e_special_var_check_if_changed ) ).empty( )
        || from_string< typeof( get_obj( ).`{`$arg_field`}( ) ) >( s ) != get_obj( ).`{`$arg_field`}( ) )
       {
-         set_session_variable( "@storage", storage_name( ) );
-         set_session_variable( "@key", get_obj( ).get_key( ) );
+         set_session_variable( get_special_var_name( e_special_var_storage ), storage_name( ) );
+         set_session_variable( get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
 
          string fields_and_values( string( c_field_id_`{`$arg_field`} ) + "=" + s );
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
          fields_and_values += "," + string( c_field_id_`{`$arg_sfield`} ) + "=U" + get_dtm( );
 `}\
 
-         set_session_variable( "@fields_and_values", fields_and_values );
+         set_session_variable( get_special_var_name( e_special_var_fields_and_values ), fields_and_values );
 
          run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_field`}", false );
 

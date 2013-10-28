@@ -5870,7 +5870,8 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
       string model_key( "Meta_Model_" + get_obj( ).get_key( ) );
 
       bool async = true;
-      if( get_obj( ).get_variable( "@async" ) == "0" || get_obj( ).get_variable( "@async" ) == "false" )
+      if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
+       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false" )
          async = false;
 
       if( !packages.empty( ) )
@@ -5886,10 +5887,10 @@ void Meta_Model::impl::impl_Remove_All_Packages( )
             if( i != packages.end( ) )
             {
                get_obj( ).child_Package( ).perform_fetch( i->second );
-               get_obj( ).child_Package( ).set_variable( "@do_exec", "0" );
+               get_obj( ).child_Package( ).set_variable( get_special_var_name( e_special_var_do_exec ), "0" );
 
                if( async && i == packages.begin( ) )
-                  get_obj( ).child_Package( ).set_variable( "@is_last", "1" );
+                  get_obj( ).child_Package( ).set_variable( get_special_var_name( e_special_var_is_last ), "1" );
 
                get_obj( ).child_Package( ).Remove( );
 

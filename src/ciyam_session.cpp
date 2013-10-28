@@ -1446,7 +1446,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   // NOTE: Set this variable in order for a "new" record to be able to detect (after
                   // the cancel that is immediately prior to this) that it was cloned.
-                  instance_set_variable( handle, "", get_special_var_name( e_special_var_was_cloned ), "1" );
+                  instance_set_variable( handle, "", get_special_var_name( e_special_var_cloned ), "1" );
                }
 
                for( map< string, string >::iterator i = set_value_items.begin( ), end = set_value_items.end( ); i != end; ++i )
@@ -2233,7 +2233,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   has_any_set_flds = true;
             }
 
-            string client_message = instance_get_variable( handle, "", "@message" );
+            string client_message = instance_get_variable( handle, "", get_special_var_name( e_special_var_message ) );
             if( !client_message.empty( ) )
                handler.output_progress( client_message );
 
@@ -2313,7 +2313,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   // return value (so a return value is possible even if the procedure does not have any
                   // output arguments).
                   if( next_response.empty( ) && all_keys.size( ) == 1 )
-                     next_response = instance_get_variable( handle, "", get_special_var_name( e_special_var_execute_return ) );
+                     next_response = instance_get_variable( handle, "", get_special_var_name( e_special_var_return ) );
 
                   string return_response;
                   // NOTE: Cannot have CR/LF pairs in a response (as the client will get confused) so if
@@ -2949,7 +2949,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             socket_handler.set_restore_error( "" );
             auto_ptr< restorable< bool > > ap_restoring( socket_handler.set_restoring( ) );
 
-            set_session_variable( get_special_var_name( e_special_var_is_in_restore ), "1" );
+            set_session_variable( get_special_var_name( e_special_var_restore ), "1" );
 
             time_t ts;
             string next;
@@ -3181,7 +3181,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             term_storage( handler );
             socket_handler.get_transformations( ).clear( );
 
-            set_session_variable( get_special_var_name( e_special_var_is_in_restore ), "0" );
+            set_session_variable( get_special_var_name( e_special_var_restore ), "0" );
          }
          catch( ... )
          {
@@ -3200,7 +3200,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             term_storage( handler );
             socket_handler.get_transformations( ).clear( );
 
-            set_session_variable( get_special_var_name( e_special_var_is_in_restore ), "0" );
+            set_session_variable( get_special_var_name( e_special_var_restore ), "0" );
 
             throw;
          }
