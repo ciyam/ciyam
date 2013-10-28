@@ -791,7 +791,7 @@ void Meta_Package::impl::impl_Check_Install( )
       was_okay = exists_file( map_filename );
    else
    {
-      string temp_name( get_session_variable( "@package" ) );
+      string temp_name( get_session_variable( get_special_var_name( e_special_var_package ) ) );
 
       string temp_map_filename( temp_name + ".lst.map" );
       string temp_new_filename( temp_name + ".lst.new" );
@@ -980,7 +980,8 @@ void Meta_Package::impl::impl_Install( )
       string keys_filename( type_name + ".keys.lst" );
 
       bool async = true;
-      if( get_obj( ).get_variable( "@async" ) == "0" || get_obj( ).get_variable( "@async" ) == "false" )
+      if( get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "0"
+       || get_obj( ).get_variable( get_special_var_name( e_special_var_async ) ) == "false" )
          async = false;
 
       // NOTE: Empty code block for scope purposes.
@@ -1140,11 +1141,13 @@ void Meta_Package::impl::impl_Remove( )
    string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
 
    bool do_exec = true;
-   if( get_obj( ).get_variable( "@do_exec" ) == "0" || get_obj( ).get_variable( "@do_exec" ) == "false" )
+   if( get_obj( ).get_variable( get_special_var_name( e_special_var_do_exec ) ) == "0"
+    || get_obj( ).get_variable( get_special_var_name( e_special_var_do_exec ) ) == "false" )
       do_exec = false;
 
    bool is_last = false;
-   if( get_obj( ).get_variable( "@is_last" ) == "1" || get_obj( ).get_variable( "@is_last" ) == "true" )
+   if( get_obj( ).get_variable( get_special_var_name( e_special_var_is_last ) ) == "1"
+    || get_obj( ).get_variable( get_special_var_name( e_special_var_is_last ) ) == "true" )
    {
       is_last = true;
       set_system_variable( "@" + model_key, "" );

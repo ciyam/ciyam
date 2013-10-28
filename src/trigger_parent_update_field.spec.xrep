@@ -3,12 +3,14 @@
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
     && !is_update_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) )
-    && ( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) ) )
+    && ( !get_obj( ).get_graph_parent( )
+    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
 `,\
    if( get_obj( ).`{`$arg_tfield`}( )
     && `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
     && !is_update_locked_by_own_session( get_obj( ).`{`$arg_spfield`}( ) )
-    && ( !get_obj( ).get_graph_parent( ) || get_obj( ).get_graph_parent( )->get_variable( "@skip_update" ).empty( ) ) )
+    && ( !get_obj( ).get_graph_parent( )
+    || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )
 `}\
    {
       get_obj( ).`{`$arg_spfield`}( ).op_update( );

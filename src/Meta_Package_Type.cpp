@@ -516,7 +516,7 @@ void Meta_Package_Type::impl::impl_Install( )
    string package_file;
    string info_filename( "package.info" );
 
-   string path( get_session_variable( "@package_type_path" ) );
+   string path( get_session_variable( get_special_var_name( e_special_var_package_type_path ) ) );
 
    if( storage_locked_for_admin( ) )
       info_filename = get_obj( ).get_attached_file_path( get_obj( ).get_key( ) + ".info" );
@@ -634,7 +634,7 @@ void Meta_Package_Type::impl::impl_Install( )
 
       if( exists_file( name + ".specs.sio" ) )
       {
-         set_session_variable( "@name", name );
+         set_session_variable( get_special_var_name( e_special_var_name ), name );
          run_script( "install_package" );
       }
 
@@ -975,7 +975,7 @@ void Meta_Package_Type::impl::after_store( bool is_create, bool is_internal )
    if( is_create
     && !is_internal && exists_file( get_obj( ).Name( ) + ".package.bun.gz" ) )
    {
-      temporary_session_variable tmp_session_package_type_path( "@package_type_path", "." );
+      temporary_session_variable tmp_session_package_type_path( get_special_var_name( e_special_var_package_type_path ), "." );
 
       class_pointer< Meta_Package_Type > cp_other( e_create_instance );
       cp_other->perform_fetch( get_obj( ).get_key( ) );

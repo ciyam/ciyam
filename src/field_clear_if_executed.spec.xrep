@@ -1,6 +1,6 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_clear_if_executed)] `{`$arg_id`}
-   if( get_obj( ).get_variable( "@executed" ) == c_procedure_id_`{`$arg_procedure`} )
+   if( get_obj( ).get_variable( get_special_var_name( e_special_var_executed ) ) == c_procedure_id_`{`$arg_procedure`} )
       get_obj( ).`{`$arg_field`}( `{`@eq`(`$arg_fistexttype`,`'0`'`)0`,""`} );
    // [(finish field_clear_if_executed)] `{`$arg_id`}
 `}
