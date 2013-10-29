@@ -60,6 +60,8 @@ void CIYAM_BASE_DECL_SPEC list_trace_flags( std::vector< std::string >& flag_nam
 
 void CIYAM_BASE_DECL_SPEC log_trace_message( int flag, const std::string& message );
 
+void CIYAM_BASE_DECL_SPEC check_timezone_info( );
+
 void CIYAM_BASE_DECL_SPEC init_globals( );
 void CIYAM_BASE_DECL_SPEC term_globals( );
 

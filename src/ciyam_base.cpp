@@ -86,6 +86,7 @@ const int c_loop_variable_digits = 8;
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 
+const char* const c_timezones_file = "timezones.sio";
 const char* const c_autoscript_file = "autoscript.sio";
 const char* const c_manuscript_file = "manuscript.sio";
 
@@ -3645,9 +3646,27 @@ void fetch_instance_from_row_cache( class_base& instance, bool skip_after_fetch 
       instance_accessor.perform_after_fetch( );
 }
 
+time_t g_timezones_mod;
+
+bool timezones_file_has_changed( )
+{
+   bool changed = false;
+
+   time_t t = 0;
+   if( file_exists( c_timezones_file ) )
+      t = last_modification_time( c_timezones_file );
+
+   if( t != g_timezones_mod )
+      changed = true;
+
+   g_timezones_mod = t;
+
+   return changed;
 }
 
 size_t g_trace_flags;
+
+}
 
 int get_trace_flags( )
 {
@@ -3731,6 +3750,12 @@ void log_trace_message( int flag, const string& message )
     << setfill( '0' ) << ( gtp_session ? gtp_session->id : 0 ) << "] [" << type << "] " << message << '\n';
 }
 
+void check_timezone_info( )
+{
+   if( timezones_file_has_changed( ) )
+      setup_timezones( );
+}
+
 void init_globals( )
 {
    guard g( g_mutex );
@@ -3747,7 +3772,7 @@ void init_globals( )
 
    init_files_area( );
 
-   setup_timezones( );
+   check_timezone_info( );
 
    // NOTE: The manuscript info doesn't actually need to be read until a script is attempted
    // to be run, however, it is been read at startup just to ensure that the .sio file isn't

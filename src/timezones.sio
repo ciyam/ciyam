@@ -1,13 +1,6 @@
 <sio/>
  <timezones/>
   <timezone/>
-   <abbr>UTC
-   <tz_info>Universal
-   <utc_offset>0
-   <description>(UTC+00:00) (Universal Time)
-   <daylight_abbr>UTC
-  </timezone>
-  <timezone/>
    <abbr>GMT
    <tz_info>Europe/London
    <utc_offset>0
@@ -24,6 +17,13 @@
    <daylight_finish_day_of_week>7
    <daylight_finish_time>01:00
    <daylight_utc_offset>1
+  </timezone>
+  <timezone/>
+   <abbr>UTC
+   <tz_info>Universal
+   <utc_offset>0
+   <description>(UTC+00:00) Universal Time
+   <daylight_abbr>UTC
   </timezone>
   <timezone/>
    <abbr>WET
