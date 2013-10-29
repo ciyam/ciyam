@@ -545,6 +545,12 @@ int main( int argc, char* argv[ ] )
                      cout << "server shutdown (due to interrupt) now underway..." << endl;
                }
 
+               // NOTE: If there are no active sessions (apart from the autoscript session) and is not
+               // shutting down then check and update the timezone information if it has been changed.
+               if( !g_server_shutdown
+                && ( !g_active_sessions || ( start_autoscript && g_active_sessions == 1 ) ) )
+                  check_timezone_info( );
+
                // NOTE: Check for accepts and create new sessions.
 #ifdef SSL_SUPPORT
                auto_ptr< ssl_socket > ap_socket( new ssl_socket( s.accept( address, c_accept_timeout ) ) );
