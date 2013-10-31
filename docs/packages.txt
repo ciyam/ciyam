@@ -3,7 +3,7 @@ Notes for Using Specific Packages
 
 The following notes detail the available packages and their usage. Package names that have (default) appended
 to their name are Package Type's that are installed by default. Package Types not installed by default can be
-used after being installed from their package (refer to "Installing Package Types" in "getting_started.txt").
+used after being installed from their bundle (refer to "Installing Package Types" in "getting_started.txt").
 
 -------------------------------------------------------------------------------------------------------------
 Auto_Code (default)
@@ -293,6 +293,10 @@ use_access_level_ten_deep - If using "access level" then this option will extend
 
 use_account - Use this option to allow users to create accounts** that are aliases for other users.
 use_account_invitation - Use this option to enable emailing of invitations to accounts for new users.
+
+use_authenticator - Use this option to let users optionally use 2FA at login via an RFC 6238 TOTP.
+
+use_gpg - Use this option to enable the support of GPG for email messages.
 
 use_ignore_users - Use this option to support the maintenance of a set of users to be ignored. Other packages
 (such as the Forum package) will utilise this list for the purposes of "hiding" records.

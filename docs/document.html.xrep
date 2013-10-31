@@ -12,7 +12,10 @@
 </head>
 
 <div id="content">
-<div id="header"><div id="appname"><a href="//ciyam.org/docs">Docs</a></div></div>
+<div id="header">
+   <div id="appname"><a href="//ciyam.org/docs">Docs</a></div>
+   <h3 class="right-top">`{`(`?`$title`)`$title`,`$line0`}</h3>
+</div>
 
 <div id="main">
 <div id="text">

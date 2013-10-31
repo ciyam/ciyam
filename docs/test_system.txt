@@ -5,7 +5,7 @@ Regression tests are a vital part of any software project so the test tool and i
 were constructed so that performing and maintaining tests is done consistently and in a straight forward way.
 
 The most basic tests (which cover the various tools and some basic server protocol commands) can be run using
-the batch/script dotests (this testing at the very least should be done prior to making any commit).
+the batch/script "dotests" (this testing at the very least should be done prior to making any commit).
 
 Using the Regression Test Tool
 ------------------------------

@@ -28,6 +28,14 @@ h3
    margin-top: 10px;
 }
 
+h3.right-top
+{
+   color: #888;
+   width: auto;
+   float: right;
+   margin-top: 26px;
+}
+
 body
 {
    font-family: 'Open Sans', sans-serif;
@@ -37,6 +45,11 @@ body
    height: 100%;
    min-height: 100%;
    background: url(background_texture.png) #ccc;
+}
+
+pre
+{
+   font-size: 15px;
 }
 
 #content
