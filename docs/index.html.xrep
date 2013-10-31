@@ -2,7 +2,7 @@
 
 <html>
 <head>
-<title>CIYAM Docs</title>
+<title>CIYAM Docs - Documentation Index</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <meta name="copyright" content="Copyright 2012-`{`$y`} CIYAM Open Developers"/>
@@ -12,13 +12,13 @@
 
 <body>
 <div id="content">
-<div id="header"><div id="appname"><a href="//ciyam.org/docs">Docs</a></div></div>
+<div id="header">
+   <div id="appname"><a href="//ciyam.org/docs">Docs</a></div>
+   <h3 class="right-top">Documentation Index</h3>
+</div>
 
 <div id="main">
 <div id="text">
-
-<h2>Documents</h2>
-<br/>
 `{`[`$docs`,`{`$d\#_text`=`#\$`}`{`[`$d\#_text`*\n`,`{`$d\#_line\\#`=`'\\$`'`}`]`}`]`}
 `{`[`$docs`,<p><a href="`{`$x`=`'\$`'`}`{`$x`/.txt`/.html`}">`{`$d\#_line0`}</a></p>`+\n`]`}
 </div>

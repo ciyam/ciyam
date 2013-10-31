@@ -1751,12 +1751,46 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
          for( map< string, vector< string > >::iterator i = menu_items.begin( ); i != menu_items.end( ); ++i )
          {
-            extra_content << "     <li class=\"\"><a href=\"#\">" << i->first << "</a>\n";
-
-            if( i->second.size( ) )
+            // NOTE: If a menu has only one item (and that item has the same name as the menu) then rather
+            // than create a menu just make the menu itself behave as the menu item link.
+            string id, item_name;
+            bool menu_is_item = false;
+            if( i->second.size( ) == 1 )
             {
-               extra_content << "      <ul>\n";
+               string::size_type pos = i->second[ 0 ].find( '!' );
 
+               item_name = i->second[ 0 ].substr( 0, pos );
+               if( pos != string::npos )
+                  id = i->second[ 0 ].substr( pos + 1 );
+
+               if( item_name == i->first )
+                  menu_is_item = true;
+            }
+
+            if( menu_is_item )
+            {
+               extra_content << "     <li class=\"\"><a href=\""
+                << get_module_page_name( module_ref ) << "?cmd=" << c_cmd_list << "&ident=" << id;
+
+               if( !uselect.empty( ) )
+                  extra_content << "&" << c_param_uselect << "=" << uselect;
+
+               if( !cookies_permitted )
+                  extra_content << "&session=" << session_id;
+
+               if( use_url_checksum )
+               {
+                  string checksum_values( string( c_cmd_list ) + id + uselect );
+                  extra_content << "&" << c_param_chksum << "=" << get_checksum( *p_session_info, checksum_values );
+               }
+
+               extra_content << "\">" << item_name << "</a>\n";
+            }
+            else
+            {
+               extra_content << "     <li class=\"\"><a href=\"#\">" << i->first << "</a>\n";
+
+               extra_content << "      <ul>\n";
                for( size_t j = 0; j < i->second.size( ); j++ )
                {
                   string::size_type pos = i->second[ j ].find( '!' );
@@ -1782,7 +1816,6 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                   extra_content << "\">" << item_name << "</a></li>\n";
                }
-
                extra_content << "      </ul>\n";
             }
 
