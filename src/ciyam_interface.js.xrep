@@ -450,7 +450,7 @@ function load2( )
          persistent = 'true';
 
          if( typeof localStorage == 'object' )
-            localStorage.setItem( 'key', sessionStorage.getItem( 'key' ) );
+            localStorage.setItem( 'key', localStorage.getItem( 'skey' ) );
       }
 
       var sname = 'session=';
@@ -510,13 +510,13 @@ function load2( )
 
    if( typeof localStorage == 'object' )
    {
-      if( sessionStorage.getItem( 'key' ) == null && localStorage.getItem( 'key' ) != null )
+      if( localStorage.getItem( 'skey' ) == null && localStorage.getItem( 'key' ) != null )
       {
          if( !has_session )
             full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true&session=new_session';
-         sessionStorage.setItem( 'key', localStorage.getItem( 'key' ) );
+         localStorage.setItem( 'skey', localStorage.getItem( 'key' ) );
       }
-      else if( !loggedIn && encryptPosts && sessionStorage.getItem( 'key' ) == null )
+      else if( !loggedIn && encryptPosts && localStorage.getItem( 'skey' ) == null )
          full_context += '&session=new_session';
       else if( !loggedIn && localStorage.getItem( 'key' ) != null )
          full_context += '&userhash=' + localStorage.getItem( 'hash' ) + '&persistent=true';
@@ -536,7 +536,7 @@ function load2( )
    else
    {
       var post_data = '';
-      var key = sessionStorage.getItem( 'key' );
+      var key = localStorage.getItem( 'skey' );
 
       if( !is_login && has_session && loggedIn && key != null && encryptPosts )
       {
@@ -552,8 +552,7 @@ function load2( )
          while( full_context.length % 40 )
             full_context += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
 
-         var full_key = '';
-         full_key = sessionStorage.getItem( 'key' );
+         var full_key = key;
          var last_key = full_key;
 
          var all_bytes = string_to_bytes( full_context );
@@ -682,8 +681,8 @@ function after_force( )
       sessionStorage.removeItem( 'key' );
 
    if( loggedIn && encryptPosts && source[ 0 ] == 'https'
-    && typeof sessionStorage == 'object' && sessionStorage.getItem( 'key ' ) == null )
-      sessionStorage.setItem( 'key', 'dummy' );
+    && typeof sessionStorage == 'object' && localStorage.getItem( 'skey' ) == null )
+      localStorage.setItem( 'skey', '' );
 
    if( uniqueId != '' && typeof sessionStorage == 'object' )
       sessionStorage.setItem( 'unique', uniqueId );
@@ -770,7 +769,7 @@ function process( )
       response = Base64.decode( response );
 
       // NOTE: Now the encrypted hex string is decoded.
-      var full_key = sessionStorage.getItem( 'key' );
+      var full_key = localStorage.getItem( 'skey' );
       var last_key = full_key;
 
       while( full_key.length < response.length / 2 )
@@ -1062,7 +1061,7 @@ function hash_password( salt, pwd, skip_id )
    }
 
    if( !skip_id && !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
-      sessionStorage.setItem( 'key', retval );
+      localStorage.setItem( 'skey', retval );
 
    return retval;
 }
