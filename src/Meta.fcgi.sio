@@ -1,5 +1,5 @@
 <sio/>
-# Copyright (c) 2013-2013 CIYAM Developers
+# Copyright (c) 2013 CIYAM Open Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -2426,7 +2426,7 @@
      <name>field_application_generate_details
      <field>127106
      <ftype>string
-     <extra>show+no_edit+notes
+     <extra>show+no_edit+full_height+notes
      <mandatory>false
      <modifiers>200:relegate
     </field>
@@ -4404,7 +4404,7 @@
      <name>field_package_install_details
      <field>136104
      <ftype>string
-     <extra>no_edit+notes
+     <extra>no_edit+full_height+notes
      <mandatory>false
      <modifiers>
     </field>
@@ -4892,7 +4892,7 @@
      <name>field_specification_specification_type
      <field>301410
      <ftype>@class
-     <extra>no_edit+notes
+     <extra>no_edit+full_height+notes
      <mandatory>true
      <modifiers>
      <pclass>114100

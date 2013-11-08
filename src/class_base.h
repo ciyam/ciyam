@@ -1212,6 +1212,14 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
 
+void CLASS_BASE_DECL_SPEC load_utxo_information( const std::string& source_address, const std::string& file_name );
+
+uint64_t CLASS_BASE_DECL_SPEC determine_utxo_balance( const std::string& file_name );
+
+std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
+ const std::string& source_address, const std::string& destination_address,
+ uint64_t amount, quote_style qs, uint64_t& fee, std::string& sign_tx_template, const std::string& file_name );
+
 void CLASS_BASE_DECL_SPEC execute_command( numeric& n, const std::string& cmd_and_args, std::string& retval );
 void CLASS_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_and_args, std::string& retval );
 

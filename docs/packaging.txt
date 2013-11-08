@@ -546,7 +546,7 @@ Any following lines consist of a package type name and minimum version number fo
 package has a dependency. Note that external packages that are "optional" should not be placed here.
 
 [package.info]
-Sample 1 multi
+Sample Samples 1 multi
 Standard 1
 
 Once this file has been saved the package archive can then be created and will consist of this file, the key
@@ -555,7 +555,7 @@ file and all of its .spec.xrep files.
 
 The following is the console command required to create the "Sample" package archive.
 
-zip Sample.package.zip package.info Sample.keys.lst Sample.package.sio Sample.ciyam_class.cpp.xrep
+bundle Sample.package package.info Sample.keys.lst Sample.package.sio Sample.ciyam_class.cpp.xrep
  for_sample.spec.xrep
 
 At this time a restore of the meta storage backup (i.e. ciyam_restore Meta) should be executed to return the
@@ -565,8 +565,8 @@ section 4 of this document.
 In order for the package to be available for usage it must now be installed as a Package Type. To accomplish
 this log in to Meta as "admin" and from the Package Types list click New Record. The initial name which will
 default to "New_Package_Type" is not important as the actual name will be determined from the "package.info"
-file during installation. So after saving then attach the archive (Sample.package.zip) and then finally just
-click Install. Assuming no errors occur the new package is now ready for usage testing.
+file during installation. So after saving then attach the archive (Sample.package.bun.gz) and then click the
+Install button. Assuming no errors occur the new package is now ready for usage testing.
 
 10) Test package usage
 

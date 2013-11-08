@@ -26263,7 +26263,7 @@
      <field_info>127128;new_only
      <field_info>@tab:Generate_Details
      <field_info>127102
-     <field_info>127106;show+no_edit
+     <field_info>127106;show+no_edit+full_height
      <field_info>@tab:Display_Settings
      <field_info>127109
      <field_info>127110
@@ -29434,7 +29434,7 @@
      <field_info>136101;new_edit+forced+trigger_protected
      <field_info>136107;new_edit+forced+trigger_protected
      <field_info>302810:135101;new_edit+force+max_size=30
-     <field_info>136104;no_edit
+     <field_info>136104;no_edit+full_height
      <field_info>136102
      <field_info>136105;hidden
     </data>
@@ -32516,7 +32516,7 @@
      <field_info>115117;no_edit
      <field_info>115112
      <field_info>301410:114101;no_edit+link+max_size=100
-     <field_info>301410:114120;no_edit+notes
+     <field_info>301410:114120;no_edit+full_height+notes
      <field_info>301420:106101!@fkey1:300600+106101;link+fkey2+force
      <field_info>301421:106101!@fkey1:300600+106101;link
      <field_info>301430:107101!@fkey2:300700+107101;link+force

@@ -1944,6 +1944,16 @@ bool output_view_form( ostream& os, const string& act,
                // NOTE: Resize text rows after content is inject to set the initial size of the textarea.
                extra_content_func += "resize_text_rows( document." + source.id + ".field_" + source_field_id + ", 2 );\n";
             }
+            else if( !extra_data.count( c_field_extra_full_height ) )
+            {
+               string rows( "2" );
+
+               if( cell_data.size( ) > 200 ) // NOTE: Double the height if likely to be bigger than 2 lines.
+                  rows = "4";
+
+               os << "<textarea readonly rows=\"" << rows << "\" cols=\"" << c_default_notes_cols << "\"";
+               os << ">" << escape_markup( unescaped( cell_data, "trn\t\r\n" ) ) << "</textarea>";
+            }
             else
                os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
          }
@@ -1996,6 +2006,13 @@ bool output_view_form( ostream& os, const string& act,
                 << source_field_id << "\" name=\"countdown_" << source_field_id
                 << "\">" << ( sess_info.notes_limit - cell_data.size( ) )
                 << "</label> " << GDS( c_display_characters_left ) << ".</font>\n";
+            }
+            else if( !extra_data.count( c_field_extra_full_height ) )
+            {
+               os << "<textarea readonly rows=\""
+                << sess_info.notes_rmin << "\" cols=\"" << c_default_notes_cols << "\"";
+
+               os << ">" << escape_markup( unescaped( cell_data, "trn\t\r\n" ) ) << "</textarea>";
             }
             else
                os << data_or_nbsp( unescaped( replace_crlfs_and_spaces( escape_markup( cell_data ), "<br/>", "&nbsp;" ) ) );
@@ -2270,8 +2287,19 @@ bool output_view_form( ostream& os, const string& act,
 
                temp_file_name += "/" + source_value_id + ".png";
 
+               int qr_pixels = c_default_qr_code_pixels;
+
+               if( source.large_fields.count( source_value_id ) )
+                  qr_pixels += 1;
+               else if( source.larger_fields.count( source_value_id ) )
+                  qr_pixels += 2;
+               else if( source.small_fields.count( source_value_id ) )
+                  qr_pixels -= 1;
+               else if( source.smaller_fields.count( source_value_id ) )
+                  qr_pixels -= 2;
+
                string cmd( "qrencode -o " + temp_file_name
-                + " -s " + to_string( c_default_qr_code_pixels ) + " \"" + cell_data + "\"" );
+                + " -s " + to_string( qr_pixels ) + " \"" + cell_data + "\"" );
 #ifdef _WIN32
                replace( cmd, "&", "^&" );
 #endif

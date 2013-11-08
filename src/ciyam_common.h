@@ -34,6 +34,13 @@ const uint64_t c_state_ignore_uneditable = UINT64_C( 0x10 );
 const uint64_t c_sys_state_flags = UINT64_C( 0x00000000000000ff );
 const uint64_t c_user_state_flags = UINT64_C( 0xffffffffffffff00 );
 
+enum quote_style
+{
+   e_quote_style_both_linux,
+   e_quote_style_both_windows,
+   e_quote_style_windows_linux
+};
+
 enum special_var
 {
    e_special_var_id,

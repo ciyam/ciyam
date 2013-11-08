@@ -1,7 +1,7 @@
 `{`#config.info @`}
 <sio/>
 # Copyright (c) 2004-2012 CIYAM Pty. Ltd. ACN 093 704 539
-# Copyright (c) `{`$y`} CIYAM Open Developers
+# Copyright (c) `{`$y`} CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -49,6 +49,7 @@
      <filename>sql_db.cpp
      <filename>tcp_read_write_buffer.cpp
      <filename>text_file_buffer.cpp
+     <filename>tx_create.cpp
      <filename>utilities.cpp
     </cpp_files>
    </lib>
