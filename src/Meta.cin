@@ -1781,7 +1781,7 @@ specification_add -id=601510 {Model}_view view "? standard Model\
 specification_add -id=601520 {Package}_child_list0 list "@601520_* child Package Name {Model}"
 specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
  {Model}:Name;link+no_edit,Name;new_edit+forced+trigger_protected,Plural;new_edit+forced+trigger_protected\
-,{Package_Type}:Name;new_edit+force,Install_Details;no_edit,Actions,Key;hidden"
+,{Package_Type}:Name;new_edit+force,Install_Details;no_edit+full_height,Actions,Key;hidden"
 specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child:no_limit Package_Option Name,Value,Actions;omit_label {Package}"
 specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Package_Option\
  {Package}:Name;no_edit+link,Name;no_edit,String,Datetime,Date,Time,Numeric,Integer,Use_Option\
@@ -1855,7 +1855,7 @@ specification_add -id=602420 {Specification_Type}_child_list0 list "@602420_Chil
  Specification_Type Name,Specification_Name Parent_{Specification_Type}"
 specification_add -id=602500 {Specification}_view view "? standard Specification\
  {Model}:Name;no_edit+link+fkey1,Name;no_edit,Id;no_edit,Comments\
-,{Specification_Type}:Name;no_edit+link,{Specification_Type}:Notes;no_edit\
+,{Specification_Type}:Name;no_edit+link,{Specification_Type}:Notes;no_edit+full_height\
 ,{Class}:Name!@fkey1:{Model}+Name;link+fkey2+force,Other_Class:Name!@fkey1:{Model}+Name;link,{Field}:Name!@fkey2:{Class}+Name;link+force\
 ,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name,Value\
 ,{Modifier}:Name!@fkey2:{Class}+Name;link,Other_{Modifier}:Name!@fkey2:{Class}+Name;link,Other_{Modifier}_2:Name!@fkey2:{Class}+Name;link\
@@ -1941,7 +1941,7 @@ specification_add -id=602900 {Application}_group_list list "* group:no_limit App
 specification_add -id=602910 {Application}_view view "? standard:can_copy Application\
  Name;new_edit,Generate_Type;always_editable+force,Generate_Status;no_edit,Keep_Existing_Data;non_new+always_editable\
 ,Create_Database;new_only,Add_Modules_Automatically;new_only\
-,@tab:Generate_Details,Version,Generate_Details;show+no_edit\
+,@tab:Generate_Details,Version,Generate_Details;show+no_edit+full_height\
 ,@tab:Display_Settings,Allow_Module_Switching,Show_Inaccessible_Modules\
 ,Use_Vertical_Menu,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\

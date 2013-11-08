@@ -4,8 +4,6 @@ Class:*;alias
 Class:Class
 Class:Relationship
 Class:Specification
-Class:Specification_Content_Page
-Class:Specification_Copy_Child_Links
 Class:View
 Class:View_Field
 Class:List
@@ -18,7 +16,6 @@ Modifier:Specification
 Modifier_Affect:*
 Procedure:Procedure
 Procedure:Specification
-Procedure:Specification_Content_Page
 Procedure:List_Field
 Procedure_Arg:*
 Specification:List_Field

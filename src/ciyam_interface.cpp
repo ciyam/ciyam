@@ -2000,8 +2000,6 @@ void request_handler::process_request( )
          {
             if( cmd == c_cmd_view )
             {
-               string act_cmd;
-
                if( act == c_act_save )
                {
                   if( error_message.empty( ) )
@@ -2013,6 +2011,21 @@ void request_handler::process_request( )
                      save_record( module_id, flags, app, chk, field, extra, exec, cont, fieldlist,
                       is_new_record, new_field_and_values, extra_field_info, vici, view, vtab_num,
                       *p_session_info, act, data, new_key, error_message, was_invalid, had_send_or_recv_error );
+
+                     // NOTE: When initially determining the "view source" it had to be assumed that editing
+                     // was still occurring (in order to have all the required field information perform the
+                     // save). If the save was successful then the "view source" needs to now be replaced by
+                     // the non-edit version.
+                     if( error_message.empty( ) )
+                     {
+                        view_source non_edit_view;
+                        non_edit_view.vici = view.vici;
+
+                        setup_view_fields( non_edit_view, *vici->second,
+                         mod_info, *p_session_info, ident, login_opts, module_id, module_ref, false, false );
+
+                        view = non_edit_view;
+                     }
 
                      // NOTE: If the record saved was a user record then if not admin assume a
                      // user has changed their own details (so re-read the user record details).

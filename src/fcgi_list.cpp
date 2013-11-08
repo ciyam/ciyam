@@ -3193,8 +3193,19 @@ void output_list_form( ostream& os,
                outs << ifmt( 6 ) << row;
                temp_file_name += "/" + outs.str( ) + source_value_id + ".png";
 
+               int qr_pixels = c_default_qr_code_pixels;
+
+               if( source.large_fields.count( source_value_id ) )
+                  qr_pixels += 1;
+               else if( source.larger_fields.count( source_value_id ) )
+                  qr_pixels += 2;
+               else if( source.small_fields.count( source_value_id ) )
+                  qr_pixels -= 1;
+               else if( source.smaller_fields.count( source_value_id ) )
+                  qr_pixels -= 2;
+
                string cmd( "qrencode -o " + temp_file_name
-                + " -s " + to_string( c_default_qr_code_pixels ) + " \"" + cell_data + "\"" );
+                + " -s " + to_string( qr_pixels ) + " \"" + cell_data + "\"" );
 #ifdef _WIN32
                replace( cmd, "&", "^&" );
 #endif

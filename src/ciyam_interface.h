@@ -240,6 +240,7 @@ const char* const c_field_extra_owner_link = "owner_link";
 const char* const c_field_extra_owner_only = "owner_only";
 const char* const c_field_extra_permission = "permission";
 const char* const c_field_extra_print_only = "print_only";
+const char* const c_field_extra_full_height = "full_height";
 const char* const c_field_extra_manual_link = "manual_link";
 const char* const c_field_extra_non_fk_link = "non_fk_link";
 const char* const c_field_extra_orientation = "orientation";

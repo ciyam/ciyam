@@ -53,6 +53,7 @@
 #include "numeric.h"
 #include "hashcash.h"
 #include "date_time.h"
+#include "tx_create.h"
 #include "file_utils.h"
 #include "ciyam_base.h"
 #include "mail_source.h"
@@ -4129,6 +4130,24 @@ string create_html_embedded_image( const string& source_file )
    }
 
    return s;
+}
+
+void load_utxo_information( const string& source_address, const string& file_name )
+{
+   get_utxo_information( source_address, file_name );
+}
+
+uint64_t determine_utxo_balance( const string& file_name )
+{
+   return get_utxos_balance_amt( file_name );
+}
+
+string construct_raw_transaction(
+ const string& source_address, const string& destination_address,
+ uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template, const string& file_name )
+{
+   return create_raw_transaction( source_address,
+    destination_address, amount, qs, fee, sign_tx_template, &file_name );
 }
 
 void meta_relationship_child_name( string& name,
