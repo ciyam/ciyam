@@ -32,10 +32,10 @@ del %WEBDIR%\%2\ciyam_interface.stop
 pushd %WEBDIR%\%2
 echo Adding application files to backup...
 if "%CIYAM_STORAGE%" == "Meta" goto meta
-"%backup_path%\bundle" -r -q -y "%backup_path%\%1.backup" files/*
+"%backup_path%\bundle" -r -q -y "%backup_path%\%1.backup" files/* -x files/tmp/*
 goto done
 :meta
-"%backup_path%\bundle" -r -q -y "%backup_path%\%1.backup" files/* -x files/100/105100/* files/100/106100/*
+"%backup_path%\bundle" -r -q -y "%backup_path%\%1.backup" files/* -x files/tmp/* files/100/105100/* files/100/106100/*
 :done
 popd
 
