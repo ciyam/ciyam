@@ -4150,6 +4150,52 @@ string construct_raw_transaction(
     destination_address, amount, qs, fee, sign_tx_template, &file_name );
 }
 
+string send_raw_transaction( const string& tx )
+{
+   string s;
+
+   string tmp( "~" + uuid( ).as_string( ) );
+
+   // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
+   string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/decode-tx >" + tmp );
+
+   system( cmd.c_str( ) );
+
+   s = buffer_file( tmp );
+   file_remove( tmp );
+
+   string marker( "&#034;hash&#034;:&#034;" );
+
+   string::size_type pos = s.rfind( marker );
+   if( pos != string::npos )
+   {
+      s.erase( 0, pos + marker.length( ) );
+
+      pos = s.find( '&' );
+      if( pos != string::npos )
+      {
+         s.erase( pos );
+
+         string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/pushtx >" + tmp );
+         system( cmd.c_str( ) );
+
+         string ss( buffer_file( tmp ) );
+         file_remove( tmp );
+
+         // NOTE: If we don't find an 'error' token then assume that the tx push worked.
+         if( ss.find( "error" ) != string::npos || ss.find( "Error" ) != string::npos )
+         {
+            s = ss;
+            pos = s.find( '\n' );
+            if( pos != string::npos )
+               s.erase( pos );
+         }
+      }
+   }
+
+   return s;
+}
+
 void meta_relationship_child_name( string& name,
  const string& child_name, const string& parent_name, const string& separator )
 {
