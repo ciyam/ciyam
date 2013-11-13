@@ -3,6 +3,7 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include "tx_create.h"
 
