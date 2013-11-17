@@ -7232,6 +7232,14 @@
      <modifiers>10000:relegate,1000:relegate
     </field>
     <field/>
+     <name>field_view_field_use_full_height
+     <field>120130
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>10000:relegate,1000:relegate
+    </field>
+    <field/>
      <name>field_view_field_ignore_manual_links
      <field>120126
      <ftype>bool

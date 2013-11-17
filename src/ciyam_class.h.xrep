@@ -53,7 +53,13 @@
 `{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_args`$\$_all_non_inputs`=`'`'`}`]`}
 `{`?`$all_procedures`[`$all_procedures`,`{`?`$\$_all_outputs`[`$\$_all_outputs`%,`,`{`$\$_all_non_inputs`=`$\$_all_non_inputs`+`'\\0`'`}`]`}`]`}
 `{`}
-// Copyright (c) `{`$year_created`}`{`!`@eq`(`$y`,`$year_created`)-`{`$y`}`} CIYAM Open Developers
+`{`@eq`(`$module_name`,`'Meta`'`)`&`(`@eq`(`$year_created`,`'2008`'`)`|`@eq`(`$year_created`,`'2009`'`)\
+`|`@eq`(`$year_created`,`'2010`'`)`|`@eq`(`$year_created`,`'2010`'`)`|`@eq`(`$year_created`,`'2011`'`)`)\
+// Copyright (c) `{`$year_created`}-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012-`{`$y`} CIYAM Developers\
+`,\
+// Copyright (c) `{`$year_created`}`{`!`@eq`(`$y`,`$year_created`)-`{`$y`}`} CIYAM Developers\
+`}
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.

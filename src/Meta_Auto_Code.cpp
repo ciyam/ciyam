@@ -1,4 +1,5 @@
-// Copyright (c) 2008-2013 CIYAM Developers
+// Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012-2013 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -25,6 +26,7 @@
 #include "Meta_Auto_Code.h"
 
 #include "ciyam_base.h"
+#include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"
@@ -366,7 +368,7 @@ struct Meta_Auto_Code::impl : public Meta_Auto_Code_command_handler
 
 void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
 {
-   // [(start for_auto_code)]
+   // [(start for_auto_code)] 600295
    get_obj( ).op_update( );
    if( !get_obj( ).Exhausted( ) )
    {
@@ -438,7 +440,7 @@ void Meta_Auto_Code::impl::impl_Increment( string& Next_Value )
    }
    else
       get_obj( ).op_cancel( );
-   // [(finish for_auto_code)]
+   // [(finish for_auto_code)] 600295
 
    // [<start Increment_impl>]
    // [<finish Increment_impl>]
@@ -596,7 +598,7 @@ void Meta_Auto_Code::impl::validate( unsigned state, bool is_internal, validatio
       p_validation_errors->insert( validation_error_value_type( c_field_name_Next,
        get_module_string( c_field_display_name_Next ) + " " + error_message ) );
 
-   // [(start for_auto_code)]
+   // [(start for_auto_code)] 600295
    if( !get_obj( ).Next( ).empty( ) )
    {
       bool okay = true;
@@ -637,7 +639,7 @@ void Meta_Auto_Code::impl::validate( unsigned state, bool is_internal, validatio
           c_str_parm_field_mismatch_field, get_module_string( c_field_display_name_Next ) ),
           make_pair( c_str_parm_field_mismatch_field2, get_module_string( c_field_display_name_Mask ) ) ) ) );
    }
-   // [(finish for_auto_code)]
+   // [(finish for_auto_code)] 600295
 
    // [<start validate>]
    // [<finish validate>]

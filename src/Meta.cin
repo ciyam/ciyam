@@ -545,6 +545,7 @@ field_add -id=120126 View_Field Ignore_Manual_Links bool mand -def=0
 field_add -id=120127 View_Field Child_List_Extra_Option int mand -def=0 -e=view_field_child_list_extra_option
 field_add -id=120128 View_Field Label_Without_Prefix bool mand -def=0
 field_add -id=120129 View_Field Allow_Anonymous_Access bool mand -def=1
+field_add -id=120130 View_Field Use_Full_Height bool mand -def=0
 procedure_add -id=120410 View_Field Move_Up
 procedure_arg_add -id=120411 View_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=120412 View_Field Move_Up Restrict_Values string in
@@ -1056,9 +1057,11 @@ modifier_add -id=500710 View_Field Is_Tab Access_Scope:relegate,Change_Scope:rel
 ,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate,Enum_Starts_At:relegate,Enum_Finishes_At:relegate\
 ,Source_Child:relegate,Source_Edit_Child:relegate,Restriction_Spec:relegate,Sort_Manually:relegate\
 ,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate,Mandatory_Option:relegate,Child_List_Extra_Option:relegate\
-,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Ignore_Manual_Links:relegate,Label_Without_Prefix:relegate,Show_Hide_Start_Point:relegate
+,Date_Precision_Option:relegate,Font_Size:relegate,Use_Full_Width:relegate,Use_Full_Height:relegate\
+,Ignore_Manual_Links:relegate,Label_Without_Prefix:relegate,Show_Hide_Start_Point:relegate
 modifier_add -id=500715 View_Field Is_Key Mandatory_Option:relegate,Date_Precision_Option:relegate\
-,Font_Size:relegate,Use_Full_Width:relegate,Show_Hide_Start_Point:relegate,Access_Scope:relegate,Access_Restriction:relegate,Access_{Permission}:relegate\
+,Font_Size:relegate,Use_Full_Width:relegate,Use_Full_Height:relegate\
+,Show_Hide_Start_Point:relegate,Access_Scope:relegate,Access_Restriction:relegate,Access_{Permission}:relegate\
 ,Change_Scope:relegate,Change_Restriction:relegate,Change_{Permission}:relegate,New_Source:relegate,New_Value:relegate\
 ,Link_Restriction:relegate,Link_{Permission}:relegate,Use_Source_Parent:relegate,Source_Field:relegate,Source_Parent:relegate\
 ,Ignore_Manual_Links:relegate,Label_Without_Prefix:relegate\
@@ -1897,7 +1900,7 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
-,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Ignore_Manual_Links\
+,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Use_Full_Height,Ignore_Manual_Links\
 ,Label_Without_Prefix,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
 ,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name,Allow_Anonymous_Access"
