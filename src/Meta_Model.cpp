@@ -1,4 +1,5 @@
-// Copyright (c) 2008-2013 CIYAM Developers
+// Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012-2013 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -2983,6 +2984,13 @@ void Meta_Model::impl::impl_Generate( )
                         if( !extras.empty( ) )
                            extras += '+';
                         extras += "full_width";
+                     }
+
+                     if( get_obj( ).child_View( ).child_View_Field( ).Use_Full_Height( ) )
+                     {
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "full_height";
                      }
 
                      if( get_obj( ).child_View( ).child_View_Field( ).Ignore_Manual_Links( ) )

@@ -24189,6 +24189,31 @@
       </specifications>
      </field>
      <field/>
+      <id>120130
+      <name>Use_Full_Height
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500710
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500715
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>120121
       <name>Use_Full_Width
       <type>bool
@@ -33352,6 +33377,7 @@
      <field_info>120118;enum=678
      <field_info>120125;enum=635
      <field_info>120121
+     <field_info>120130
      <field_info>120126
      <field_info>120128
      <field_info>120116

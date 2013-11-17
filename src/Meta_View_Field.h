@@ -1,4 +1,5 @@
-// Copyright (c) 2008-2013 CIYAM Developers
+// Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012-2013 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -77,9 +78,10 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
       e_field_id_Trigger_For_State = 35,
       e_field_id_Trigger_Option = 36,
       e_field_id_Type = 37,
-      e_field_id_Use_Full_Width = 38,
-      e_field_id_Use_Source_Parent = 39,
-      e_field_id_View = 40
+      e_field_id_Use_Full_Height = 38,
+      e_field_id_Use_Full_Width = 39,
+      e_field_id_Use_Source_Parent = 40,
+      e_field_id_View = 41
    };
 
    Meta_View_Field( );
@@ -162,6 +164,9 @@ class META_VIEW_FIELD_DECL_SPEC Meta_View_Field : public class_base
 
    int Trigger_Option( ) const;
    void Trigger_Option( int Trigger_Option );
+
+   bool Use_Full_Height( ) const;
+   void Use_Full_Height( bool Use_Full_Height );
 
    bool Use_Full_Width( ) const;
    void Use_Full_Width( bool Use_Full_Width );

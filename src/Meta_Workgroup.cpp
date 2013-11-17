@@ -1,4 +1,5 @@
-// Copyright (c) 2008-2013 CIYAM Developers
+// Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012-2013 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -33,15 +34,16 @@
 #include "Meta_Package.h"
 
 #include "ciyam_base.h"
+#include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
 
-// [(start for_auto_code_user)]
+// [(start for_auto_code_user)] 600004
 #include "Meta_Auto_Code.h"
-// [(finish for_auto_code_user)]
+// [(finish for_auto_code_user)] 600004
 
 // [<start includes>]
 // [<finish includes>]
@@ -813,10 +815,10 @@ bool Meta_Workgroup::impl::value_will_be_provided( const string& field_name )
 {
    ( void )field_name;
 
-   // [(start for_auto_code_user)]
+   // [(start for_auto_code_user)] 600004
    if( field_name == "Id" )
       return true;
-   // [(finish for_auto_code_user)]
+   // [(finish for_auto_code_user)] 600004
 
    // [<start value_will_be_provided>]
    // [<finish value_will_be_provided>]
@@ -1010,7 +1012,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
-   // [(start for_auto_code_user)]
+   // [(start for_auto_code_user)] 600004
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
       class_pointer< Meta_Auto_Code > cp_auto_code( e_create_instance );
@@ -1027,7 +1029,7 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
 
       get_obj( ).Id( next_value );
    }
-   // [(finish for_auto_code_user)]
+   // [(finish for_auto_code_user)] 600004
 
    // [<start for_store>]
    // [<finish for_store>]

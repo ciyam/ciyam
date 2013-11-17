@@ -1,4 +1,5 @@
-// Copyright (c) 2008-2013 CIYAM Developers
+// Copyright (c) 2008-2012 CIYAM Pty. Ltd. ACN 093 704 539
+// Copyright (c) 2012-2013 CIYAM Developers
 //
 // Distributed under the MIT/X11 software license, please refer to the file license.txt
 // in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -32,6 +33,7 @@
 #include "Meta_View.h"
 
 #include "ciyam_base.h"
+#include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
 #include "class_utilities.h"
@@ -156,6 +158,7 @@ const char* const c_field_id_Trigger_Behaviour = "120110";
 const char* const c_field_id_Trigger_For_State = "120122";
 const char* const c_field_id_Trigger_Option = "120113";
 const char* const c_field_id_Type = "301910";
+const char* const c_field_id_Use_Full_Height = "120130";
 const char* const c_field_id_Use_Full_Width = "120121";
 const char* const c_field_id_Use_Source_Parent = "120107";
 const char* const c_field_id_View = "301900";
@@ -197,6 +200,7 @@ const char* const c_field_name_Trigger_Behaviour = "Trigger_Behaviour";
 const char* const c_field_name_Trigger_For_State = "Trigger_For_State";
 const char* const c_field_name_Trigger_Option = "Trigger_Option";
 const char* const c_field_name_Type = "Type";
+const char* const c_field_name_Use_Full_Height = "Use_Full_Height";
 const char* const c_field_name_Use_Full_Width = "Use_Full_Width";
 const char* const c_field_name_Use_Source_Parent = "Use_Source_Parent";
 const char* const c_field_name_View = "View";
@@ -238,11 +242,12 @@ const char* const c_field_display_name_Trigger_Behaviour = "field_view_field_tri
 const char* const c_field_display_name_Trigger_For_State = "field_view_field_trigger_for_state";
 const char* const c_field_display_name_Trigger_Option = "field_view_field_trigger_option";
 const char* const c_field_display_name_Type = "field_view_field_type";
+const char* const c_field_display_name_Use_Full_Height = "field_view_field_use_full_height";
 const char* const c_field_display_name_Use_Full_Width = "field_view_field_use_full_width";
 const char* const c_field_display_name_Use_Source_Parent = "field_view_field_use_source_parent";
 const char* const c_field_display_name_View = "field_view_field_view";
 
-const int c_num_fields = 40;
+const int c_num_fields = 41;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -274,6 +279,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "120127",
    "120128",
    "120129",
+   "120130",
    "301900",
    "301905",
    "301910",
@@ -327,6 +333,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Trigger_For_State",
    "Trigger_Option",
    "Type",
+   "Use_Full_Height",
    "Use_Full_Width",
    "Use_Source_Parent",
    "View"
@@ -434,6 +441,7 @@ int g_default_Trigger_Behaviour = int( 0 );
 int g_default_Trigger_For_State = int( 0 );
 int g_default_Trigger_Option = int( 0 );
 string g_default_Type = string( );
+bool g_default_Use_Full_Height = bool( 0 );
 bool g_default_Use_Full_Width = bool( 0 );
 bool g_default_Use_Source_Parent = bool( 0 );
 string g_default_View = string( );
@@ -1231,6 +1239,12 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
          string_getter< Meta_View_Field_Type >( cmd_handler.p_Meta_View_Field->Type( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Use_Full_Height || field_name == c_field_name_Use_Full_Height )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_View_Field->Use_Full_Height( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Use_Full_Width || field_name == c_field_name_Use_Full_Width )
       {
          handled = true;
@@ -1520,6 +1534,13 @@ void Meta_View_Field_command_functor::operator ( )( const string& command, const
           *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Type, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Use_Full_Height || field_name == c_field_name_Use_Full_Height )
+      {
+         handled = true;
+         func_string_setter< Meta_View_Field, bool >(
+          *cmd_handler.p_Meta_View_Field, &Meta_View_Field::Use_Full_Height, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Use_Full_Width || field_name == c_field_name_Use_Full_Width )
       {
          handled = true;
@@ -1696,6 +1717,9 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
 
    int impl_Trigger_Option( ) const { return lazy_fetch( p_obj ), v_Trigger_Option; }
    void impl_Trigger_Option( int Trigger_Option ) { v_Trigger_Option = Trigger_Option; }
+
+   bool impl_Use_Full_Height( ) const { return lazy_fetch( p_obj ), v_Use_Full_Height; }
+   void impl_Use_Full_Height( bool Use_Full_Height ) { v_Use_Full_Height = Use_Full_Height; }
 
    bool impl_Use_Full_Width( ) const { return lazy_fetch( p_obj ), v_Use_Full_Width; }
    void impl_Use_Full_Width( bool Use_Full_Width ) { v_Use_Full_Width = Use_Full_Width; }
@@ -2148,6 +2172,7 @@ struct Meta_View_Field::impl : public Meta_View_Field_command_handler
    int v_Trigger_Behaviour;
    int v_Trigger_For_State;
    int v_Trigger_Option;
+   bool v_Use_Full_Height;
    bool v_Use_Full_Width;
    bool v_Use_Source_Parent;
 
@@ -2475,14 +2500,18 @@ string Meta_View_Field::impl::get_field_value( int field ) const
       break;
 
       case 37:
-      retval = to_string( impl_Use_Full_Width( ) );
+      retval = to_string( impl_Use_Full_Height( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Use_Source_Parent( ) );
+      retval = to_string( impl_Use_Full_Width( ) );
       break;
 
       case 39:
+      retval = to_string( impl_Use_Source_Parent( ) );
+      break;
+
+      case 40:
       retval = to_string( impl_View( ) );
       break;
 
@@ -2646,14 +2675,18 @@ void Meta_View_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 37:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Width, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Height, value );
       break;
 
       case 38:
-      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Source_Parent, value );
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Full_Width, value );
       break;
 
       case 39:
+      func_string_setter< Meta_View_Field::impl, bool >( *this, &Meta_View_Field::impl::impl_Use_Source_Parent, value );
+      break;
+
+      case 40:
       func_string_setter< Meta_View_Field::impl, Meta_View >( *this, &Meta_View_Field::impl::impl_View, value );
       break;
 
@@ -2884,6 +2917,7 @@ void Meta_View_Field::impl::clear( )
    v_Trigger_Behaviour = g_default_Trigger_Behaviour;
    v_Trigger_For_State = g_default_Trigger_For_State;
    v_Trigger_Option = g_default_Trigger_Option;
+   v_Use_Full_Height = g_default_Use_Full_Height;
    v_Use_Full_Width = g_default_Use_Full_Width;
    v_Use_Source_Parent = g_default_Use_Source_Parent;
 
@@ -3669,6 +3703,16 @@ void Meta_View_Field::Trigger_Option( int Trigger_Option )
    p_impl->impl_Trigger_Option( Trigger_Option );
 }
 
+bool Meta_View_Field::Use_Full_Height( ) const
+{
+   return p_impl->impl_Use_Full_Height( );
+}
+
+void Meta_View_Field::Use_Full_Height( bool Use_Full_Height )
+{
+   p_impl->impl_Use_Full_Height( Use_Full_Height );
+}
+
 bool Meta_View_Field::Use_Full_Width( ) const
 {
    return p_impl->impl_Use_Full_Width( );
@@ -4380,6 +4424,16 @@ const char* Meta_View_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Use_Full_Height )
+   {
+      p_id = c_field_id_Use_Full_Height;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Use_Full_Width )
    {
       p_id = c_field_id_Use_Full_Width;
@@ -4791,6 +4845,16 @@ const char* Meta_View_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Use_Full_Height )
+   {
+      p_name = c_field_name_Use_Full_Height;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Use_Full_Width )
    {
       p_name = c_field_name_Use_Full_Width;
@@ -5035,6 +5099,11 @@ string Meta_View_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Type );
       get_module_string( c_field_display_name_Type, &next );
    }
+   else if( id_or_name == c_field_id_Use_Full_Height || id_or_name == c_field_name_Use_Full_Height )
+   {
+      name = string( c_field_display_name_Use_Full_Height );
+      get_module_string( c_field_display_name_Use_Full_Height, &next );
+   }
    else if( id_or_name == c_field_id_Use_Full_Width || id_or_name == c_field_name_Use_Full_Width )
    {
       name = string( c_field_display_name_Use_Full_Width );
@@ -5139,6 +5208,8 @@ string Meta_View_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Trigger_Option );
    else if( id_or_name == c_field_id_Type || id_or_name == c_field_name_Type )
       display_name = get_module_string( c_field_display_name_Type );
+   else if( id_or_name == c_field_id_Use_Full_Height || id_or_name == c_field_name_Use_Full_Height )
+      display_name = get_module_string( c_field_display_name_Use_Full_Height );
    else if( id_or_name == c_field_id_Use_Full_Width || id_or_name == c_field_name_Use_Full_Width )
       display_name = get_module_string( c_field_display_name_Use_Full_Width );
    else if( id_or_name == c_field_id_Use_Source_Parent || id_or_name == c_field_name_Use_Source_Parent )
@@ -5436,6 +5507,7 @@ void Meta_View_Field::get_sql_column_names(
    names.push_back( "C_Trigger_For_State" );
    names.push_back( "C_Trigger_Option" );
    names.push_back( "C_Type" );
+   names.push_back( "C_Use_Full_Height" );
    names.push_back( "C_Use_Full_Width" );
    names.push_back( "C_Use_Source_Parent" );
    names.push_back( "C_View" );
@@ -5486,6 +5558,7 @@ void Meta_View_Field::get_sql_column_values(
    values.push_back( to_string( Trigger_For_State( ) ) );
    values.push_back( to_string( Trigger_Option( ) ) );
    values.push_back( sql_quote( to_string( Type( ) ) ) );
+   values.push_back( to_string( Use_Full_Height( ) ) );
    values.push_back( to_string( Use_Full_Width( ) ) );
    values.push_back( to_string( Use_Source_Parent( ) ) );
    values.push_back( sql_quote( to_string( View( ) ) ) );
@@ -5745,6 +5818,7 @@ void Meta_View_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "120122", "Trigger_For_State", "int", false ) );
    all_field_info.push_back( field_info( "120113", "Trigger_Option", "int", false ) );
    all_field_info.push_back( field_info( "301910", "Type", "Meta_View_Field_Type", true ) );
+   all_field_info.push_back( field_info( "120130", "Use_Full_Height", "bool", false ) );
    all_field_info.push_back( field_info( "120121", "Use_Full_Width", "bool", false ) );
    all_field_info.push_back( field_info( "120107", "Use_Source_Parent", "bool", false ) );
    all_field_info.push_back( field_info( "301900", "View", "Meta_View", true ) );
@@ -5936,14 +6010,18 @@ const char* Meta_View_Field::static_get_field_id( field_id id )
       break;
 
       case 38:
-      p_id = "120121";
+      p_id = "120130";
       break;
 
       case 39:
-      p_id = "120107";
+      p_id = "120121";
       break;
 
       case 40:
+      p_id = "120107";
+      break;
+
+      case 41:
       p_id = "301900";
       break;
    }
@@ -6109,14 +6187,18 @@ const char* Meta_View_Field::static_get_field_name( field_id id )
       break;
 
       case 38:
-      p_id = "Use_Full_Width";
+      p_id = "Use_Full_Height";
       break;
 
       case 39:
-      p_id = "Use_Source_Parent";
+      p_id = "Use_Full_Width";
       break;
 
       case 40:
+      p_id = "Use_Source_Parent";
+      break;
+
+      case 41:
       p_id = "View";
       break;
    }
@@ -6207,12 +6289,14 @@ int Meta_View_Field::static_get_field_num( const string& field )
       rc += 36;
    else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 37;
-   else if( field == c_field_id_Use_Full_Width || field == c_field_name_Use_Full_Width )
+   else if( field == c_field_id_Use_Full_Height || field == c_field_name_Use_Full_Height )
       rc += 38;
-   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
+   else if( field == c_field_id_Use_Full_Width || field == c_field_name_Use_Full_Width )
       rc += 39;
-   else if( field == c_field_id_View || field == c_field_name_View )
+   else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
       rc += 40;
+   else if( field == c_field_id_View || field == c_field_name_View )
+      rc += 41;
 
    return rc - 1;
 }
@@ -6277,6 +6361,7 @@ string Meta_View_Field::static_get_sql_columns( )
     "C_Trigger_For_State INTEGER NOT NULL,"
     "C_Trigger_Option INTEGER NOT NULL,"
     "C_Type VARCHAR(75) NOT NULL,"
+    "C_Use_Full_Height INTEGER NOT NULL,"
     "C_Use_Full_Width INTEGER NOT NULL,"
     "C_Use_Source_Parent INTEGER NOT NULL,"
     "C_View VARCHAR(75) NOT NULL,"
