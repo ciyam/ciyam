@@ -135,6 +135,8 @@ bool has_perm_extra( const std::string& perm_extra,
 void replace_action_parms( std::string& id, std::string& action,
  const std::string& restrict_fields, const std::string& restrict_values );
 
+std::string remove_links( const std::string& s );
+
 void replace_links_and_output( const std::string& s, const std::string& id,
  const std::string& module, const std::string& module_ref, std::ostream& os,
  bool is_content, bool output_hrefs, const std::string& session_id, const session_info& sess_info,

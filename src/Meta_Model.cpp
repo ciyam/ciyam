@@ -2559,12 +2559,15 @@ void Meta_Model::impl::impl_Generate( )
                          get_obj( ).child_View( ).child_View_Field( ).Source_Child( ).Primitive( ),
                          get_obj( ).child_View( ).child_View_Field( ).Source_Child( ).Mandatory( ), "", "" ) );
 
-
                         field_names.push_back( field_name + "_"
                          + lower( get_obj( ).child_View( ).child_View_Field( ).Source_Parent( ).Name( ) ) );
 
                         if( get_obj( ).child_View( ).child_View_Field( ).Source_Parent( ).Mandatory( ) )
                            is_mandatory = true;
+
+                        bool is_manual_link = false;
+                        if( p_field->Extra( ) == 13 ) // i.e. "manual_link"
+                           is_manual_link = true;
 
                         switch( get_obj( ).child_View( ).child_View_Field( ).Mandatory_Option( ) )
                         {
@@ -2920,7 +2923,7 @@ void Meta_Model::impl::impl_Generate( )
                         {
                            if( !field_extra.empty( ) )
                               field_extra += '+';
-                           field_extra += "@sort";
+                           field_extra += !is_manual_link ? "@sort" : "@sortlinks";
                         }
 
                         parent_field_extra.insert( make_pair( field_num, field_extra ) );

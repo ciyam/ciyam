@@ -808,7 +808,7 @@ void read_storage_info( storage_info& info, std::vector< std::string > log_messa
 
 bool read_module_info( const std::string& name, module_info& info, storage_info& sinfo );
 
-void sort_row_data_manually( data_container& row_data );
+void sort_row_data_manually( data_container& row_data, bool remove_manual_links = false );
 
 #endif
 

@@ -312,6 +312,7 @@ const char* const c_parent_extra_xfkey7 = "@xfkey7";
 const char* const c_parent_extra_xfkey8 = "@xfkey8";
 const char* const c_parent_extra_xfkey9 = "@xfkey9";
 const char* const c_parent_extra_xparent = "@xparent";
+const char* const c_parent_extra_sortlinks = "@sortlinks";
 const char* const c_parent_extra_manuallink = "@manuallink";
 const char* const c_parent_extra_permission = "@permission";
 const char* const c_parent_extra_xselfadmin = "@xselfadmin";

@@ -859,6 +859,8 @@ bool fetch_parent_row_data( const string& module,
       split( parent_extras, extras, '+' );
 
    bool sort_manually = false;
+   bool remove_manual_links = false;
+
    for( size_t i = 0; i < extras.size( ); i++ )
    {
       string::size_type pos = extras[ i ].find( '=' );
@@ -1239,9 +1241,11 @@ bool fetch_parent_row_data( const string& module,
                exclude_key_info = sess_info.user_key + "," + to_string( c_admin_user_key );
                continue;
             }
-            else if( key == c_parent_extra_sort )
+            else if( key == c_parent_extra_sort || key == c_parent_extra_sortlinks )
             {
                sort_manually = true;
+               if( key == c_parent_extra_sortlinks )
+                  remove_manual_links = true;
                continue;
             }
             else if( key == c_parent_extra_view )
@@ -1306,7 +1310,7 @@ bool fetch_parent_row_data( const string& module,
     "", "", "", parent_row_data, exclude_key_info, 0, p_perms, p_security_info, &extra_debug, p_exclude_keys );
 
    if( sort_manually )
-      sort_row_data_manually( parent_row_data );
+      sort_row_data_manually( parent_row_data, remove_manual_links );
 
    return okay;
 }
@@ -1770,15 +1774,7 @@ bool populate_list_info( list_source& list,
          }
 
          if( sort_manually )
-         {
-            map< string, string > sorted_items;
-            for( size_t i = 0; i < list.row_data.size( ); i++ )
-               sorted_items.insert( make_pair( list.row_data[ i ].second, list.row_data[ i ].first ) );
-
-            list.row_data.clear( );
-            for( map< string, string >::iterator i = sorted_items.begin( ), end = sorted_items.end( ); i != end; ++i )
-               list.row_data.push_back( make_pair( i->second, i->first ) );
-         }
+            sort_row_data_manually( list.row_data );
 
          if( !( list.lici->second )->dfield.empty( ) )
          {
