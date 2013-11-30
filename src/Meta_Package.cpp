@@ -1306,10 +1306,16 @@ void Meta_Package::impl::impl_Remove( )
                read_file_lines( acyclic_filename, ordered );
 
                // NOTE: Forcing the order to reach "Class" as quickly as possible is done as a performance
-               // optimisation (as it will automatically cascade numerous other records).
+               // optimisation (as it will automatically cascade numerous other records). Although for the
+               // package's own Views and Lists the View Fields and List Fields are automatically cascaded
+               // this will not be the case for View Fields and List Fields added to Views and Lists which
+               // belong to other packages (so they are included explicitly before Specifications as these
+               // can be tied to View Fields and List Fields as "restrictions").
                ordered.push_back( "Class" );
                ordered.push_back( "Specification" );
+               ordered.push_back( "View_Field" );
                ordered.push_back( "View" );
+               ordered.push_back( "List_Field" );
                ordered.push_back( "List" );
 
                // NOTE: In order to make sure deletes are correctedly ordered they need to be
@@ -1333,6 +1339,8 @@ void Meta_Package::impl::impl_Remove( )
                         outf << "#Processed " << total << " records...\n";
                      outf << "@endif\n";
                   }
+
+                  class_keys[ next_cid ].clear( );
                }
 
                outf << "@ifndef %ERROR%\n";

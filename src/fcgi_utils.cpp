@@ -1161,6 +1161,35 @@ void replace_action_parms( string& id, string& action,
    }
 }
 
+string remove_links( const string& s )
+{
+   string rc, str( s );
+
+   string::size_type lpos;
+   while( ( lpos = str.find( '{' ) ) != string::npos )
+   {
+      if( lpos != 0 )
+         rc += str.substr( 0, lpos );
+
+      str.erase( 0, lpos );
+
+      string::size_type rpos = str.find( '}' );
+      if( rpos == string::npos )
+         throw runtime_error( "unexpected manual link format in '" + s + "'" );
+
+      string::size_type npos = str.find( ':' );
+      if( npos == string::npos || npos > rpos )
+         throw runtime_error( "unexpected manual link format in '" + s + "'" );
+
+      rc += str.substr( npos + 1, rpos - npos - 1 );
+      str.erase( 0, rpos + 1 );
+   }
+
+   rc += str;
+
+   return rc;
+}
+
 void replace_links_and_output( const string& s,
  const string& id, const string& module, const string& module_ref,
  ostream& os, bool is_content, bool output_hrefs, const string& session_id,

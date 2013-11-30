@@ -22,6 +22,7 @@
 #include "sio.h"
 #include "sockets.h"
 #include "utilities.h"
+#include "fcgi_utils.h"
 #include "ciyam_interface.h"
 
 using namespace std;
@@ -1117,11 +1118,16 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       return false;
 }
 
-void sort_row_data_manually( data_container& row_data )
+void sort_row_data_manually( data_container& row_data, bool remove_manual_links )
 {
    map< string, string > sorted_items;
    for( size_t i = 0; i < row_data.size( ); i++ )
-      sorted_items.insert( make_pair( row_data[ i ].second, row_data[ i ].first ) );
+   {
+      if( !remove_manual_links )
+         sorted_items.insert( make_pair( row_data[ i ].second, row_data[ i ].first ) );
+      else
+         sorted_items.insert( make_pair( remove_links( row_data[ i ].second ), row_data[ i ].first ) );
+   }
 
    row_data.clear( );
    for( map< string, string >::iterator i = sorted_items.begin( ), end = sorted_items.end( ); i != end; ++i )
