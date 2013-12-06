@@ -463,7 +463,18 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          if( !set_field_values.empty( ) )
             set_field_values += ",";
 
-         set_field_values += "@executed=" + exec;
+         string procedure_id;
+         for( size_t i = 0; i < exec.size( ); i++ )
+         {
+            if( ( exec[ i ] >= '0' && exec[ i ] <= '9' )
+             || ( exec[ i ] >= 'A' && exec[ i ] <= 'Z' ) )
+               procedure_id += exec[ i ];
+
+            if( exec[ i ] == ':' || exec[ i ] == ';' || exec[ i ] == ',' || exec[ i ] == '+' || exec[ i ] == ' ' )
+               break;
+         }
+
+         set_field_values += "@executed=" + procedure_id;
       }
 
       if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
