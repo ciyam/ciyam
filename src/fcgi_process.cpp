@@ -294,8 +294,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          }
       }
 
-      string dummy_command( string( c_dummy_server_command ) + " -u="
-       + p_session_info->user_key + ":" + p_session_info->user_id + " 0" );
+      string dummy_command( string( c_dummy_server_command ) + " \"-u="
+       + p_session_info->user_key + ":" + p_session_info->user_id + "\" 0" );
 
       // NOTE: Issue a dummy command to ensure that a server session timeout won't occur.
       if( !issued_command && !simple_command( *p_session_info, dummy_command ) )
@@ -303,8 +303,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
    }
    else if( cmd == c_cmd_pwd )
    {
-      string dummy_command( string( c_dummy_server_command ) + " -u="
-       + p_session_info->user_key + ":" + p_session_info->user_id + " 0" );
+      string dummy_command( string( c_dummy_server_command ) + " \"-u="
+       + p_session_info->user_key + ":" + p_session_info->user_id + "\" 0" );
 
       // NOTE: Issue a dummy command to ensure that a server session timeout won't occur.
       if( !simple_command( *p_session_info, dummy_command ) )

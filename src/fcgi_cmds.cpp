@@ -493,7 +493,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
 
    string user_info( get_uid_info( sess_info ) );
    if( !user_info.empty( ) )
-      fetch_cmd += " -u=" + user_info;
+      fetch_cmd += " \"-u=" + user_info + "\"";
 
    fetch_cmd += " -d=" + date_time::standard( ).as_string( );
 
@@ -659,7 +659,7 @@ bool fetch_list_info( const string& module,
 
    string user_info( get_uid_info( sess_info ) );
    if( !user_info.empty( ) )
-      fetch_cmd += " -u=" + user_info;
+      fetch_cmd += " \"-u=" + user_info + "\"";
 
    fetch_cmd += " -d=" + date_time::standard( ).as_string( );
 
