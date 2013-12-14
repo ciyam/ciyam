@@ -421,6 +421,25 @@ void decode_mime( mime_decoder& decoder, string& message,
       decode_mime( decoder.get_child( ), message, html_message, attachments );
 }
 
+string escape_sep_if_quoted( const string& s, char sep )
+{
+   string str;
+
+   bool in_quotes = false;
+   for( size_t i = 0; i < s.length( ); i++ )
+   {
+      if( s[ i ] == '"' )
+         in_quotes = !in_quotes;
+
+      if( in_quotes && s[ i ] == sep )
+         str += '\\';
+
+      str += s[ i ];
+   }
+
+   return str;
+}
+
 #include "trace_progress.cpp"
 
 }
@@ -2790,6 +2809,20 @@ string trim_whitespace( const string& s )
    return trim( s );
 }
 
+string trim_whitespace_and_quotes( const string& s )
+{
+   string str( trim( s ) );
+
+   if( str.length( ) >= 2
+    && str[ 0 ] == '"' && str[ str.length( ) - 1 ] == '"' )
+   {
+      str.erase( 0, 1 );
+      str.erase( str.length( ) - 1 );
+   }
+
+   return str;
+}
+
 string truncate_string( const string& s, int max_length, const char* p_overflow_suffix )
 {
    string tmp( s );
@@ -2803,32 +2836,41 @@ size_t split_count( const string& s, char sep )
 
 void split_string( const string& s, set< string >& c, char sep )
 {
-   split( s, c, sep );
+   split( escape_sep_if_quoted( s, sep ), c, sep );
 }
 
 void split_string( const string& s, deque< string >& c, char sep )
 {
-   split( s, c, sep );
+   split( escape_sep_if_quoted( s, sep ), c, sep );
 }
 
 void split_string( const string& s, vector< string >& c, char sep )
 {
-   split( s, c, sep );
+   split( escape_sep_if_quoted( s, sep ), c, sep );
 }
 
 void split_string( const string& s, set< string >& c, const string& sep )
 {
-   split( s, c, sep );
+   if( sep.length( ) != 1 )
+      split( s, c, sep );
+   else
+      split_string( s, c, sep[ 0 ] );
 }
 
 void split_string( const string& s, deque< string >& c, const string& sep )
 {
-   split( s, c, sep );
+   if( sep.length( ) != 1 )
+      split( s, c, sep );
+   else
+      split_string( s, c, sep[ 0 ] );
 }
 
 void split_string( const string& s, vector< string >& c, const string& sep )
 {
-   split( s, c, sep );
+   if( sep.length( ) != 1 )
+      split( s, c, sep );
+   else
+      split_string( s, c, sep[ 0 ] );
 }
 
 string search_replace( const string& s, const string& search, const string& replace )

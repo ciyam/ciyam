@@ -12,7 +12,7 @@
 `{`$i`}      split_string( get_obj( ).`{`$arg_field`}( ), all, "`{`$arg_separator`}" );
 
 `{`$i`}      for( size_t i = 0; i < all.size( ); i++ )
-`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( `{`!`@eq`(`$arg_trim_whitespace`,`'`'`)trim_whitespace( `}all[ i ] `{`!`@eq`(`$arg_trim_whitespace`,`'`'`)) `});
+`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}all[ i ] `{`!`@eq`(`$arg_func`,`'`'`)) `});
 `{`!`@eq`(`$arg_no_trans`,`'true`'`)\
 
          transaction_commit( );
