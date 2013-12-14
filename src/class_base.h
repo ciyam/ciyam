@@ -973,6 +973,7 @@ void CLASS_BASE_DECL_SPEC install_gpg_key( const std::string& key_file,
  const std::string& email, std::string& gpg_key_id, std::string& gpg_fingerprint, std::string* p_new_email = 0 );
 
 std::string CLASS_BASE_DECL_SPEC trim_whitespace( const std::string& s );
+std::string CLASS_BASE_DECL_SPEC trim_whitespace_and_quotes( const std::string& s );
 
 std::string CLASS_BASE_DECL_SPEC truncate_string( const std::string& s, int max_length, const char* p_overflow_suffix = 0 );
 

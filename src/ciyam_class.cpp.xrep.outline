@@ -901,8 +901,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
 `@eq`(`'\\1`'`,`'for_each`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_each.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_separator=$specification_\\0_separator\
- arg_oprocedure=$specification_\\0_oprocedure arg_no_trans=$specification_\\0_no_trans\
- arg_trim_whitespace=$specification_\\0_trim_whitespace`}\
+ arg_oprocedure=$specification_\\0_oprocedure arg_no_trans=$specification_\\0_no_trans arg_func=$specification_\\0_func`}\
 `,\
 `@eq`(`'\\1`'`,`'for_each_record`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_each_record.spec.xrep section=procedure module_name=$module_name class_name=$class_name\

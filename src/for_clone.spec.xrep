@@ -14,7 +14,7 @@
 `{`$i`}   get_obj( ).op_update( );
 `}`{`!`@eq`(`$arg_spfield`,`'`'`)`&`@eq`(`$arg_use_proc_arg_for_source`,`'true`'`)
 `{`$i`}   string key_source_info( FIELD_ID( `{`$module_name`}, `{`$arg_spclass`}, `{`$arg_scfield`} ) );
-`{`$i`}   key_source_info += "#1 " + `{`$arg_proc_arg`};
+`{`$i`}   key_source_info += "#1 " + search_replace( `{`$arg_proc_arg`}, ",", "\\\\\\\\," );
 
 `{`$i`}   class_pointer< `{`$module_name`}_`{`$arg_spclass`} > cp_key_source( e_create_instance );
 
