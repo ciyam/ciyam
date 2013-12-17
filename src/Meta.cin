@@ -1872,7 +1872,7 @@ specification_add -id=602500 {Specification}_view view "? standard Specification
 ,Source_Parent_Class:Name;hidden+fkey4,Source_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force\
 ,Source_Child:Name!@fkey4:{Class}+Name;link+force,Source_Child_Class:Name;hidden+fkey8\
 ,Other_Source_Child:Name!@fkey4:{Class}+Name;link,Other_Source_Child_2:Name!@fkey4:{Class}+Name;link\
-,Source_Grandchild:Name!@fkey8:{Class}+Name;link,Child_Relationship:Child_Name!@fkey2:Parent_Class+@sort\
+,Source_Grandchild:Name!@fkey8:{Class}+Name;link,Child_Relationship:Child_Name!@fkey2:Parent_Class+@sort;link\
 ,Use_Test_Parent_Child;force,Test_Field:Name!@fkey2:{Class}+Name;link,Test_Parent_Class:Name;hidden+fkey6\
 ,Test_Parent:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force+forced,Test_Child:Name!@fkey6:{Class}+Name;link\
 ,Test_Value,{Permission}:Name!@group:{Workgroup}+Name,Other_{Permission}:Name!@group:{Workgroup}+Name,Other_{Permission}_2:Name!@group:{Workgroup}+Name\

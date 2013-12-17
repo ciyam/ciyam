@@ -2438,7 +2438,7 @@ void Meta_Class::impl::impl_Generate( )
    if( get_obj( ).child_Modifier( ).iterate_forwards( modifier_key_info ) )
    {
       string all_modifiers;
-      unsigned flag_value( 0x100u );
+      uint64_t flag_value( 0x100u );
 
       do
       {

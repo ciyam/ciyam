@@ -5268,7 +5268,7 @@
      <name>field_specification_child_relationship
      <field>301475
      <ftype>@class
-     <extra>
+     <extra>link
      <mandatory>false
      <modifiers>100:relegate,800000000000:protect
      <pclass>113100
