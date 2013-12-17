@@ -3345,7 +3345,7 @@
 `{`$specification_Specification_view_pridx036`=`'false`'`}
 `{`$specification_Specification_view_field037`=`'301475`'`}
 `{`$specification_Specification_view_ftype037`=`'@class`'`}
-`{`$specification_Specification_view_extra037`=`'`'`}
+`{`$specification_Specification_view_extra037`=`'link`'`}
 `{`$specification_Specification_view_fmods037`=`'100:relegate,800000000000:protect`'`}
 `{`$specification_Specification_view_fname037`=`'field_specification_child_relationship`'`}
 `{`$specification_Specification_view_fmand037`=`'false`'`}

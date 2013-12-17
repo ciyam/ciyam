@@ -32573,7 +32573,7 @@
      <field_info>301496:107101!@fkey4:300700+107101;link
      <field_info>301497:107101!@fkey4:300700+107101;link
      <field_info>301476:107101!@fkey8:300700+107101;link
-     <field_info>301475:113105!@fkey2:301320+@sort
+     <field_info>301475:113105!@fkey2:301320+@sort;link
      <field_info>115110;force
      <field_info>301485:107101!@fkey2:300700+107101;link
      <field_info>301487:106101;hidden+fkey6+filename+max_size=30
