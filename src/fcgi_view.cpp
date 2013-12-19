@@ -2329,11 +2329,15 @@ bool output_view_form( ostream& os, const string& act,
          }
          else if( source.enum_fields.count( source_value_id ) )
          {
-            if( has_value && !is_protected_field )
-               cell_data = user_values.find( source_field_id )->second;
-
             const enum_info& info(
              sinfo.enums.find( source.enum_fields.find( source_value_id )->second )->second );
+
+            // NOTE: If there is only one enum item then "protect" the field.
+            if( info.values.size( ) == 1 )
+               is_protected_field = true;
+
+            if( has_value && !is_protected_field )
+               cell_data = user_values.find( source_field_id )->second;
 
             string enum_image_file;
             size_t value_offset = 0;

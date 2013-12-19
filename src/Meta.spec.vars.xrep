@@ -2094,7 +2094,7 @@
 `{`$specification_Modifier_Affect_view_cid`=`'110100`'`}
 `{`$specification_Modifier_Affect_view_name`=`'Modifier_Affect`'`}
 `{`$specification_Modifier_Affect_view_type`=`'standard`'`}
-`{`$specification_Modifier_Affect_view_extra`=`'`'`}
+`{`$specification_Modifier_Affect_view_extra`=`'auto_back`'`}
 `{`$specification_Modifier_Affect_view_mods`=`'200:lowlight`'`}
 `{`$specification_Modifier_Affect_view_binfo`=`'`'`}
 `{`$specification_Modifier_Affect_view_fnums`=`'000 001 002 003 004 005`'`}
