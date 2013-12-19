@@ -1,18 +1,13 @@
 <sio/>
  <script/>
+  <name>ext_request
+  <filename>ext_request
+  <arguments>@arg1 @output_file
+ </script>
+ <script/>
   <name>install_package
   <filename>*script*
   <arguments>install_package.cin @storage @name
- </script>
- <script/>
-  <name>ext_balance
-  <filename>ext_balance
-  <arguments>@arg1 @output_file
- </script>
- <script/>
-  <name>ext_reference
-  <filename>ext_reference
-  <arguments>@arg1 @output_file
  </script>
 ### [<start generated>]
 ### [<finish generated>]

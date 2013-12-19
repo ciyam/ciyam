@@ -16,6 +16,6 @@ echo.
 goto end
 
 :usage
-echo Usage: ext_balance [url] [[output_file]]
+echo Usage: ext_request [url] [[output_file]]
 :end
 
