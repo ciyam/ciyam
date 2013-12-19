@@ -1809,7 +1809,7 @@ specification_add -id=601820 {Index}_child_list0 list "@601820_* child:no_limit 
  -act=+!108410+@rfields+@rvalues,+!^108420+@rfields+@rvalues {Class}"
 specification_add -id=601910 {Modifier}_view view "? standard Modifier {Class}:Name;no_edit+link,Name"
 specification_add -id=601920 {Modifier}_child_list0 list "@601920_* child:no_limit Modifier Name {Class}"
-specification_add -id=602010 {Modifier_Affect}_view view "? standard Modifier_Affect\
+specification_add -id=602010 {Modifier_Affect}_view view "? standard:auto_back Modifier_Affect\
  {Modifier}:Name;no_edit+link,Scope;no_edit,Type,Extra,{Field}:Name!@fkey1:{Class}+Name,{Class};fkey1+hidden"
 specification_add -id=602020 {Modifier_Affect}_child_list0 list "@602020_* child:sort_no_limit Modifier_Affect\
  Scope,Type,{Field}:Name -n=Scope {Modifier}"

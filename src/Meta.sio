@@ -28908,6 +28908,7 @@
     <data/>
      <name>?
      <type>standard
+     <extra>auto_back
      <class_id>110100
      <field_info>301000:109101;no_edit+link+max_size=30
      <field_info>110101;no_edit+enum=540
