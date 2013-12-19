@@ -302,7 +302,7 @@ int main( int argc, char* argv[ ] )
    }
 
    if( !is_quiet )
-      cout << "unbundle v0.1e\n";
+      cout << "unbundle v0.1f\n";
 
    if( ( argc - first_arg < 2 )
     || string( argv[ 1 ] ) == "?" || string( argv[ 1 ] ) == "/?" || string( argv[ 1 ] ) == "-?" )
@@ -453,6 +453,10 @@ int main( int argc, char* argv[ ] )
       string top_level_directory;
 
       int progress = c_progress_lines;
+
+      // NOTE: If any filespecs were provided then automatically prune empty directories.
+      if( !filename_filters.empty( ) )
+         prune = true;
 
 #ifndef ZLIB_SUPPORT
       check_file_header( inpf, filename, encoding );
