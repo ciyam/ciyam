@@ -55,7 +55,9 @@ class sio_reader
 
    void verify_finished_sections( );
 
-   std::string get_current_section_name( ) const;
+   std::string get_current_section( ) const;
+
+   bool is_root_section( ) const;
 
    size_t get_last_line_num( ) const { return line_num - 1; }
    size_t get_current_line_num( ) const { return line_num; }
@@ -111,6 +113,8 @@ class sio_writer
    void write_opt_attribute( const std::string& name, const std::string& value, const std::string& default_value = "" );
 
    std::string get_current_section( ) const { return section; }
+
+   bool is_root_section( ) const;
 
    void finish_sections( );
 
@@ -174,6 +178,8 @@ class section_node
    const attribute& get_attribute( size_t num ) const { return attributes.at( num ); }
 
    const section_node* get_parent_node( ) const { return p_parent_node; }
+
+   size_t get_child_depth( ) const;
 
    size_t get_num_child_nodes( ) const { return child_nodes.size( ); }
    const section_node& get_child_node( size_t num ) const { return *child_nodes.at( num ); }

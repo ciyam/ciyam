@@ -1054,6 +1054,7 @@ int main( int argc, char* argv[ ] )
                cout << "=========\n";
                cout << "usage\n";
                cout << "dump\n";
+               cout << "test [<value>]\n";
                cout << "syntax [<expr>]\n";
                cout << "command [<expr>]\n";
                cout << "exit\n";
@@ -1067,6 +1068,11 @@ int main( int argc, char* argv[ ] )
             {
                p.dump_nodes( cout );
                cout << endl;
+            }
+            else if( cmd == "test" )
+            {
+               // NOTE: Dummy command for testing or prototyping.
+               cout << next << endl;
             }
             else if( cmd == "syntax" )
             {

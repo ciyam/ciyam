@@ -203,7 +203,7 @@ bool sio_reader::has_read_attribute( const string& name, string& value )
    return has_read_attribute( str, value );
 }
 
-string sio_reader::get_current_section_name( ) const
+string sio_reader::get_current_section( ) const
 {
    string str;
 
@@ -211,6 +211,14 @@ string sio_reader::get_current_section_name( ) const
       str = sections.top( );
 
    return str;
+}
+
+bool sio_reader::is_root_section( ) const
+{
+   if( !sections.empty( ) && sections.top( ) == c_root_section )
+      return true;
+   else
+      return false;
 }
 
 void sio_reader::verify_finished_sections( )
@@ -423,7 +431,7 @@ void sio_writer::finish_section( const string& name )
       throw runtime_error( "unexpected empty section stack" );
 
    if( name != section )
-      throw runtime_error( "attempt finish section '" + name + "' whilst in section '" + section + "'" );
+      throw runtime_error( "attempt to finish section '" + name + "' whilst in section '" + section + "'" );
 
    os << string( sections.size( ) - 1, ' ' )
     << c_basic_prefix << c_extra_modifier << sections.top( ) << c_basic_suffix << '\n';
@@ -464,7 +472,8 @@ void sio_writer::write_opt_attribute( const string& name, const string& value, c
 
 void sio_writer::finish_sections( )
 {
-   finish_section( c_root_section );
+   if( !sections.empty( ) )
+      finish_section( c_root_section );
 
    os.flush( );
    if( !os.good( ) )
@@ -472,6 +481,11 @@ void sio_writer::finish_sections( )
 
    if( !sections.empty( ) )
       throw runtime_error( "unexpected non-empty section stack" );
+}
+
+bool sio_writer::is_root_section( ) const
+{
+   return section == c_root_section;
 }
 
 void sio_writer::put_line( const string& line )
@@ -512,6 +526,23 @@ const attribute& section_node::get_attribute( const string& name ) const
 const string& section_node::get_attribute_value( const string& name ) const
 {
    return get_attribute( name ).get_value( );
+}
+
+size_t section_node::get_child_depth( ) const
+{
+   size_t depth = 0;
+   const section_node* p_node( this );
+
+   while( true )
+   {
+      if( !p_node->get_parent_node( ) )
+         break;
+
+      ++depth;
+      p_node = p_node->get_parent_node( );
+   }
+
+   return depth;
 }
 
 sio_graph::sio_graph( sio_reader& reader )
