@@ -38,6 +38,7 @@
      <filename>read_write_buffered_stream.cpp
      <filename>regex.cpp
      <filename>sio.cpp
+     <filename>sio_convert.cpp
      <filename>sha1.cpp
      <filename>sha256.cpp
      <filename>smtp.cpp
