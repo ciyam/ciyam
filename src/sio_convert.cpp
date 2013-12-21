@@ -264,7 +264,9 @@ void convert_json_to_sio( const string& json, ostream& outs )
       if( compressed[ 0 ] != '[' || compressed[ compressed.size( ) - 1 ] != ']' )
          throw runtime_error( "invalid json '" + json + "'" );
 
-      if( !process_json( compressed.substr( 1 ), sio ) )
+      compressed.erase( 0, 1 );
+
+      if( !process_json( compressed, sio ) )
          throw runtime_error( "invalid json '" + json + "'" );
    }
 
