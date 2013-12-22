@@ -11,7 +11,7 @@ if '%CPPENV%' == 'MVC' goto mvc
 goto error1
 
 :bcb
-make.exe -fmakefile.bcb %CPPDBG% %* | findstr /V "MAKE Version"
+make.exe -fmakefile.bcb -DPRECOMPILE_H %CPPDBG% %* | findstr /V "MAKE Version"
 goto end
 
 :mvc
