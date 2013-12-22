@@ -4907,6 +4907,7 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( "update", "" ) );
    spec_data.data_pairs.push_back( make_pair( "new_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "non_trigger", "" ) );
    spec_data.data_pairs.push_back( make_pair( "internal_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "include_clones", "" ) );
 }
@@ -9222,6 +9223,8 @@ void modifier_set_field_specification::add_specification_data( model& m, specifi
 
    spec_data.data_pairs.push_back( make_pair( c_data_value, field_value ) );
    spec_data.data_pairs.push_back( make_pair( c_data_evalue, "" ) );
+
+   spec_data.data_pairs.push_back( make_pair( "non_trigger", "" ) );
 }
 
 string modifier_set_field_specification::static_class_name( ) { return "modifier_set_field"; }
