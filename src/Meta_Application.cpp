@@ -1611,6 +1611,10 @@ void Meta_Application::impl::impl_Generate( )
 #else
       outs << "call touch.bat %WEBDIR%/" << app_dir << "/ciyam_interface.stop\n";
 #endif
+      // KLUDGE: Assumes that the first four digits of the key are the year created (there probably should
+      // instead be a Year_Created field for an Application).
+      outv << "\x60{\x60$year_created\x60=\x60'" << get_obj( ).get_key( ).substr( 0, 4 ) << "\x60'\x60}\n";
+
       string url_opts;
       if( get_obj( ).Use_URL_Checksum( ) )
          url_opts = "use_checksum";
