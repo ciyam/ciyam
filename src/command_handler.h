@@ -181,6 +181,7 @@ class COMMAND_HANDLER_DECL_SPEC command_handler : public progress
    typedef std::map< std::string, std::string >::const_iterator option_const_iterator;
 
    std::vector< command_item > command_items;
+   std::map< std::string, std::string > short_commands;
    std::map< std::string, command_dispatcher > command_dispatchers;
    typedef std::map< std::string, command_dispatcher >::iterator command_dispatcher_iterator;
    typedef std::map< std::string, command_dispatcher >::const_iterator command_dispatcher_const_iterator;

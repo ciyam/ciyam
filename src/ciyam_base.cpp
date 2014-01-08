@@ -7524,7 +7524,7 @@ string exec_bulk_ops( const string& module,
                      op_instance_update( handle, "", key, "", false, &rc );
 
                      if( rc == e_op_update_rc_okay )
-                        next_log_line = "perform_update";
+                        next_log_line = "pu";
                      else
                      {
                         // FUTURE: These need to be implemented as string messages.
@@ -7545,7 +7545,7 @@ string exec_bulk_ops( const string& module,
                      op_instance_destroy( handle, "", key, "", false, &rc );
 
                      if( rc == e_op_destroy_rc_okay )
-                        next_log_line = "perform_destroy";
+                        next_log_line = "pd";
                      else
                      {
                         // FUTURE: These need to be implemented as string messages.
@@ -7576,7 +7576,7 @@ string exec_bulk_ops( const string& module,
                op_instance_create( handle, "", key, false, &rc );
 
                if( rc == e_op_create_rc_okay )
-                  next_log_line = "perform_create";
+                  next_log_line = "pc";
                else
                {
                   // FUTURE: These need to be implemented as string messages.
@@ -8369,7 +8369,7 @@ void import_package( const string& module,
                      bool is_update = false;
                      if( rc != e_instance_fetch_rc_okay )
                      {
-                        next_log_line = "perform_create";
+                        next_log_line = "pc";
                         op_instance_create( handle, "", key_value, false );
                      }
                      else if( new_only && !keys_created.count( key_value ) && !keys_updating.count( key_value ) )
@@ -8378,7 +8378,7 @@ void import_package( const string& module,
                      else
                      {
                         is_update = true;
-                        next_log_line = "perform_update";
+                        next_log_line = "pu";
                         op_instance_update( handle, "", key_value, "", false );
                      }
 

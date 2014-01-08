@@ -76,7 +76,12 @@ void command_handler::add_command( const string& name, size_t group_num,
    auto_ptr< command_functor > ap_functor( p_functor );
 
    string dispatch_name( command_prefix );
-   dispatch_name += name;
+
+   string::size_type pos = name.find( '|' );
+   dispatch_name += name.substr( 0, pos );
+
+   if( pos != string::npos )
+      short_commands.insert( make_pair( name.substr( pos + 1 ), name.substr( 0, pos ) ) );
 
    auto_ptr< command_parser > ap_parser( new command_parser );
    ap_parser->parse_syntax( syntax.c_str( ) );
@@ -108,6 +113,16 @@ void command_handler::remove_command( const string& name )
    string dispatch_name( command_prefix );
    dispatch_name += name;
 
+   string short_name;
+   for( map< string, string >::iterator sci = short_commands.begin( ); sci != short_commands.end( ); ++sci )
+   {
+      if( sci->second == name )
+      {
+         short_name = sci->first;
+         break;
+      }
+   }
+
    command_dispatcher_iterator i = command_dispatchers.find( dispatch_name );
    if( i == command_dispatchers.end( ) )
       handle_unknown_command( name );
@@ -126,6 +141,9 @@ void command_handler::remove_command( const string& name )
       delete i->second.p_functor;
       command_dispatchers.erase( i );
 
+      if( !short_name.empty( ) )
+         short_commands.erase( short_name );
+
       if( change_notify )
          perform_after_command_changes( );
    }
@@ -141,9 +159,13 @@ void command_handler::execute_command( const string& cmd_and_args )
    {
       string::size_type pos = s.find( ' ' );
 
-      command_dispatcher_const_iterator ci = command_dispatchers.find( s.substr( 0, pos ) );
+      string cmd( s.substr( 0, pos ) );
+      if( short_commands.count( cmd ) )
+         cmd = short_commands[ cmd ];
+
+      command_dispatcher_const_iterator ci = command_dispatchers.find( cmd );
       if( ci == command_dispatchers.end( ) )
-         handle_unknown_command( s.substr( 0, pos ) );
+         handle_unknown_command( cmd );
       else
       {
          vector< string > arguments;
@@ -156,7 +178,10 @@ void command_handler::execute_command( const string& cmd_and_args )
          {
             // NOTE: Place an empty pair of strings at the start of the map to help the "get_parm_val" function.
             parameters.insert( make_pair( string( ), string( ) ) );
-            ci->second.p_functor->operator( )( ci->second.name, parameters );
+
+            string name( ci->second.name );
+            string::size_type pos = name.find( '|' );
+            ci->second.p_functor->operator( )( name.substr( 0, pos ), parameters );
          }
          else
             handle_invalid_command( *ci->second.p_parser, s );
@@ -168,9 +193,13 @@ void command_handler::execute_command( const string& cmd_and_args )
 
 string command_handler::get_usage_for_command( const string& name ) const
 {
-   command_dispatcher_const_iterator ci = command_dispatchers.find( name );
+   string cmd( name );
+   if( short_commands.count( name ) )
+      cmd = short_commands.find( name )->second;
+
+   command_dispatcher_const_iterator ci = command_dispatchers.find( cmd );
    if( ci == command_dispatchers.end( ) )
-      throw runtime_error( "command '" + name + "' was not found" );
+      throw runtime_error( "command '" + cmd + "' was not found" );
 
    return ci->second.p_parser->get_usage( );
 }
@@ -265,6 +294,15 @@ string command_handler::format_usage_output( const string& command,
  char cmd_arg_separator, const string& usage, const string& description ) const
 {
    string retval( command );
+
+   for( map< string, string >::const_iterator ci = short_commands.begin( ); ci != short_commands.end( ); ++ci )
+   {
+      if( ci->second == command )
+      {
+         retval += '|' + ci->first;
+         break;
+      }
+   }
 
    if( !usage.empty( ) )
    {
