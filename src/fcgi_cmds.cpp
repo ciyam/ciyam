@@ -181,7 +181,7 @@ bool perform_update( const string& module, const string& class_id,
       field_values += escaped( field_value_pairs[ i ].second, ",\"" );
    }
 
-   string cmd( "perform_update " + get_uid_info( sess_info ) + " "
+   string cmd( "pu " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id );
 
    if( !sess_info.tz_name.empty( ) )
@@ -213,7 +213,7 @@ bool perform_update( const string& module,
 {
    bool okay = true;
 
-   string cmd( "perform_update " + get_uid_info( sess_info ) + " "
+   string cmd( "pu " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id + " " + key + " \"" + field
     + "=" + escaped( new_value, ",\"" ) + "\" \"" + field + "=" + escaped( old_value, ",\"" ) + "\"" );
 
@@ -376,11 +376,11 @@ bool perform_action( const string& module_name,
       string act_cmd;
 
       if( act == c_act_link )
-         act_cmd = "perform_update";
+         act_cmd = "pu";
       else if( act == c_act_del )
-         act_cmd = "perform_destroy";
+         act_cmd = "pd";
       else if( act == c_act_exec )
-         act_cmd = "perform_execute";
+         act_cmd = "pe";
       else
          throw runtime_error( "Unknown list action '" + act + "'." );
 
@@ -2136,7 +2136,7 @@ void add_user( const string& user_id, const string& user_name,
  string* p_new_key, bool active, const string* p_gpg_key_file )
 {
    bool okay = true;
-   string new_user_cmd( "perform_create" );
+   string new_user_cmd( "pc" );
 
    new_user_cmd += " sys " + date_time::standard( ).as_string( )
     + " " + mod_info.id + " " + mod_info.user_class_id + " \" " + clone_key + "\"";
@@ -2257,7 +2257,7 @@ void add_quick_link( const string& module_ref,
    if( !uselect.empty( ) )
       URL += "&uselect=" + uselect;
 
-   string qlink_cmd( "perform_create" );
+   string qlink_cmd( "pc" );
 
    qlink_cmd += " " + get_uid_info( sess_info )
     + " " + date_time::standard( ).as_string( )
@@ -2318,9 +2318,9 @@ void save_record( const string& module_id,
 
    string act_cmd;
    if( is_new_record )
-      act_cmd = "perform_create";
+      act_cmd = "pc";
    else
-      act_cmd = "perform_update";
+      act_cmd = "pu";
 
    act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + view.module_id + " " + view.cid;
 

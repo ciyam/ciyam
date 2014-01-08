@@ -154,6 +154,15 @@ int main( int argc, char* argv[ ] )
 
       pos = next.find( ' ' );
       string command( next.substr( 0, pos ) );
+
+      string short_cmd;
+      string::size_type spos = command.find( '|' );
+      if( spos != string::npos )
+      {
+         short_cmd = command.substr( spos );
+         command.erase( spos );
+      }
+
 #ifdef DEBUG
       cout << " command is: " << command << endl;
 #endif
@@ -222,7 +231,7 @@ int main( int argc, char* argv[ ] )
          }
       }
 
-      command_syntax_items.push_back( command_syntax_value_type( command, syntax, description ) );
+      command_syntax_items.push_back( command_syntax_value_type( command + short_cmd, syntax, description ) );
    }
 
    if( !inpf.eof( ) )

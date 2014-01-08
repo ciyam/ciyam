@@ -1791,10 +1791,10 @@ void Meta_Application::impl::impl_Generate( )
       outv << "\x60{\x60$modules\x60=\x60'" << all_modules << "\x60'\x60}\n";
 
       outss1 << "storage_init " << storage_name( ) << "\n";
-      outss1 << "perform_execute sys 20080101 " << get_obj( ).get_module_id( )
+      outss1 << "pe sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_Modules ) << "\n";
-      outss1 << "perform_update sys 20080101 " << get_obj( ).get_module_id( )
+      outss1 << "pu sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Generating Source...\"\n";
       outss1 << "quit\n";
@@ -1857,10 +1857,10 @@ void Meta_Application::impl::impl_Generate( )
       }
 
       outss2 << "storage_init " << storage_name( ) << "\n";
-      outss2 << "perform_update sys 20080101 " << get_obj( ).get_module_id( )
+      outss2 << "pu sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Updating Links...\"\n";
-      outss2 << "perform_execute sys 20080101 " << get_obj( ).get_module_id( )
+      outss2 << "pe sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_File_Links ) << "\n";
       outss2 << "quit\n";
@@ -1876,7 +1876,7 @@ void Meta_Application::impl::impl_Generate( )
       }
 
       outss3 << "storage_init " << storage_name( ) << "\n";
-      outss3 << "perform_update sys 20080101 " << get_obj( ).get_module_id( )
+      outss3 << "pu sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Performing Make...\"\n";
       outss3 << "quit\n";
@@ -1921,11 +1921,11 @@ void Meta_Application::impl::impl_Generate( )
 
       outss4 << "storage_init " << storage_name( ) << "\n";
 
-      outss4 << "perform_execute sys 20080101 " << get_obj( ).get_module_id( )
+      outss4 << "pe sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( )
        << " " << to_string( c_procedure_id_Generate_Upgrade_DDL ) << "\n";
 
-      outss4 << "perform_update sys 20080101 " << get_obj( ).get_module_id( )
+      outss4 << "pu sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Generate_Status ) << "=Upgrading DB...\"\n";
       outss4 << "quit\n";
@@ -1981,7 +1981,7 @@ void Meta_Application::impl::impl_Generate( )
       }
 
       outssx << "storage_init " << storage_name( ) << "\n";
-      outssx << "perform_update sys 20080101 " << get_obj( ).get_module_id( )
+      outssx << "pu sys 20080101 " << get_obj( ).get_module_id( )
        << " " << get_obj( ).get_class_id( ) << " " << get_obj( ).get_key( ) << " \""
        << get_obj( ).static_get_field_id( e_field_id_Actions ) << "=127410,"
        << get_obj( ).static_get_field_id( e_field_id_Generate_Type ) << "=" << to_string( ogen_type ) << ","
