@@ -51,7 +51,7 @@ const size_t c_password_rounds_multiplier = 99;
 
 // NOTE: This algorithm is an XOR approach for encrypting a stream in place
 // and is very quick, however, it is not considered "strong encryption" and
-// therefore should not be used for encryptiong very sensitive information.
+// therefore should not be used for encrypting very sensitive information.
 void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 {
    unsigned char key[ c_max_key_size ];
@@ -111,24 +111,44 @@ void crypt_stream( iostream& io, const char* p_key, size_t key_length )
 }
 
 #ifdef SSL_SUPPORT
-string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_op op )
+string aes_crypt( const string& s, const char* p_key, size_t key_length, crypt_op op, bool use_256 )
 {
    string output( s.length( ) + AES_BLOCK_SIZE, '\0' );
    unsigned char* p_output = ( unsigned char* )output.data( );
 
-   // NOTE: Use an MD5 hash of the key as ckey and ivec must be 16 bytes each.
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )p_key ).hex_digest( ) );
+   unsigned char* p_ckey;
+   unsigned char* p_ivec;
 
-   unsigned char* p_ckey = ( unsigned char* )ap_digest.get( );
-   unsigned char* p_ivec = ( unsigned char* )ap_digest.get( ) + 16;
+   unsigned char buffer[ 64 ];
+   auto_ptr< char > ap_digest;
+
+   if( !use_256 )
+   {
+      // NOTE: Use an MD5 hash of the key as ckey and ivec must be 16 bytes each.
+      ap_digest.reset( MD5( ( unsigned char* )p_key ).hex_digest( ) );
+
+      p_ckey = ( unsigned char* )ap_digest.get( );
+      p_ivec = ( unsigned char* )ap_digest.get( ) + 16;
+   }
+   else
+   {
+      sha256 hash( p_key );
+      hash.copy_digest_to_buffer( buffer );
+
+      hash.update( buffer, 32 );
+      hash.copy_digest_to_buffer( buffer + 32 );
+
+      p_ckey = buffer;
+      p_ivec = buffer + 32;
+   }
 
    EVP_CIPHER_CTX ctx;
    EVP_CIPHER_CTX_init( &ctx );
 
    if( op == e_crypt_op_encrypt )
-      EVP_EncryptInit_ex( &ctx, EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+      EVP_EncryptInit_ex( &ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
    else
-      EVP_DecryptInit_ex( &ctx, EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
+      EVP_DecryptInit_ex( &ctx, use_256 ? EVP_aes_256_cbc( ) : EVP_aes_128_cbc( ), 0, p_ckey, p_ivec );
 
    int num = 0;
    if( op == e_crypt_op_encrypt )
@@ -241,7 +261,7 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
 
 #ifdef SSL_SUPPORT
    if( use_ssl )
-      s = salt + base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
+      s = '*' + salt + base64::encode( aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_encrypt ) );
 #endif
 
    return s;
@@ -260,6 +280,23 @@ string password_decrypt( const string& password, const string& key, bool use_ssl
       pos = 0;
    else
       salt = password.substr( 0, ++pos );
+
+   // NOTE: For compatability with older 128 bit AES encrypted
+   // passwords the 256 bit ones are prefixed with an asterisk.
+   bool use_256 = false;
+   if( password[ pos ] == '*' )
+   {
+      ++pos;
+      use_256 = true;
+   }
+   else
+   {
+      if( !salt.empty( ) && salt[ 0 ] == '*' )
+      {
+         use_256 = true;
+         salt.erase( 0, 1 );
+      }
+   }
 
    stringstream ss( base64::decode( password.substr( pos ) ) );
 
@@ -289,7 +326,7 @@ string password_decrypt( const string& password, const string& key, bool use_ssl
 
 #ifdef SSL_SUPPORT
    if( use_ssl )
-      s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt );
+      s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
 #endif
 
    return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
