@@ -23,7 +23,8 @@ enum crypt_op
    e_crypt_op_decrypt
 };
 
-std::string aes_crypt( const std::string& s, const char* p_key, size_t key_length, crypt_op op );
+std::string aes_crypt( const std::string& s,
+ const char* p_key, size_t key_length, crypt_op op, bool use_256 = true );
 #  endif
 
 std::string get_totp( const std::string& base32_encoded_secret, int freq = 30 );
