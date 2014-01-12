@@ -129,37 +129,42 @@ void init_file( const string& name, const string& data )
 {
    string filename( string( c_files_directory ) + "/" + name );
 
-   if( !file_exists( filename ) )
+   if( file_exists( filename ) )
    {
-      if( g_total_files >= get_files_area_item_max_num( ) )
-         throw runtime_error( "maximum file area item limit has been reached" );
+      --g_total_files;
+      g_total_bytes -= file_size( filename );
 
-      size_t max_num = get_files_area_item_max_num( );
-      size_t max_size = get_files_area_item_max_size( );
-
-      if( data.size( ) > max_size )
-         throw runtime_error( "maximum file area item size limit cannot be exceeded" );
-
-      int64_t max_bytes = ( int64_t )max_num * ( int64_t )max_size;
-
-      if( g_total_bytes + data.size( ) > max_bytes )
-         throw runtime_error( "maximum file area size limit cannot be exceeded" );
-
-#ifndef _WIN32
-      int um = umask( 077 );
-#endif
-      ofstream outf( filename.c_str( ), ios::out | ios::binary );
-#ifndef _WIN32
-      umask( um );
-#endif
-      if( !outf )
-         throw runtime_error( "unable to create output file '" + filename + "'" );
-
-      outf << data;
-
-      ++g_total_files;
-      g_total_bytes += data.size( );
+      file_remove( filename );
    }
+
+   if( g_total_files >= get_files_area_item_max_num( ) )
+      throw runtime_error( "maximum file area item limit has been reached" );
+
+   size_t max_num = get_files_area_item_max_num( );
+   size_t max_size = get_files_area_item_max_size( );
+
+   if( data.size( ) > max_size )
+      throw runtime_error( "maximum file area item size limit cannot be exceeded" );
+
+   int64_t max_bytes = ( int64_t )max_num * ( int64_t )max_size;
+
+   if( g_total_bytes + data.size( ) > max_bytes )
+      throw runtime_error( "maximum file area size limit cannot be exceeded" );
+
+#ifndef _WIN32
+   int um = umask( 077 );
+#endif
+   ofstream outf( filename.c_str( ), ios::out | ios::binary );
+#ifndef _WIN32
+   umask( um );
+#endif
+   if( !outf )
+      throw runtime_error( "unable to create output file '" + filename + "'" );
+
+   outf << data;
+
+   ++g_total_files;
+   g_total_bytes += data.size( );
 }
 
 void fetch_file( const string& name, tcp_socket& socket )
