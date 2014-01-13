@@ -60,6 +60,8 @@ var uniqueId = '';
 var hashRounds = `{`$pwd_rounds`};
 var newHashRounds = `{`$new_rounds`};
 
+var scriptVersion = `{`$ui_script_version`};
+
 var validation_error = '';
 
 var displayTimeout = 'Timeout occurred.';
@@ -483,30 +485,21 @@ function load2( )
       dummy += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
 
    full_context += '&' + dummy;
+   full_context += '&ver=' + scriptVersion;
 
    if( qsFurther != '' )
-   {
-      if( full_context != '' )
-         full_context += '&';
-      full_context += qsFurther;
-   }
+      full_context += '&' + qsFurther;
 
    if( !is_login
     && typeof sessionStorage == 'object' && sessionStorage.getItem( 'newhash' ) != null )
    {
-      if( full_context != '' )
-         full_context += '&';
-      full_context += 'newhash=' + sessionStorage.getItem( 'newhash' );
+      full_context += '&newhash=' + sessionStorage.getItem( 'newhash' );
 
       sessionStorage.removeItem( 'newhash' );
    }
 
    if( dataFieldList != '' )
-   {
-      if( full_context != '' )
-         full_context += '&';
-      full_context += 'fieldlist=' + dataFieldList;
-   }
+      full_context += '&fieldlist=' + dataFieldList;
 
    if( typeof localStorage == 'object' )
    {
@@ -524,9 +517,7 @@ function load2( )
 
    var cd = new Date( );
 
-   if( full_context != '' )
-      full_context += '&';
-   full_context += 'utcdtm=' + utc_dtm( cd );
+   full_context += '&utcdtm=' + utc_dtm( cd );
    full_context += '&tzoffcur=' + escape( cd.getTimezoneOffset( ) );
 
    xmlReq.open( 'POST', ServerApp, true );
@@ -545,8 +536,6 @@ function load2( )
          for( var i = 0; i < 22 - dummy.length; i++ )
             prefix += String.fromCharCode( 65 + Math.floor( Math.random( ) * 26 ) );
 
-         if( full_context != '' )
-            full_context += '&';
          full_context = prefix + '&' + full_context + 'suffix=';
 
          while( full_context.length % 40 )
@@ -707,7 +696,7 @@ function after_force( )
 function force_update( )
 {
    // NOTE: Add and after a minimal timeout remove a dummy node to force a DOM update.
-   var t = document.createTextNode( 'dummy' );
+   var t = document.createTextNode( '' );
 
    setTimeout( "after_force( )", 0 );
    // KLUDGE: document.appendChild( t ) fails in Chrome & Safari

@@ -500,7 +500,10 @@ bool tcp_socket::set_option( int type, int opt, const char* p_buffer, socklen_t 
 void file_transfer( const string& name, tcp_socket& s, ft_direction d,
  size_t max_size, const char* p_ack_message, size_t line_timeout, int max_line_size )
 {
+   bool not_base64 = false;
    bool max_size_exceeded = false;
+
+   string unexpected_data;
 
    s.set_no_delay( );
    
@@ -516,6 +519,9 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
          size_t count = c_buf_size;
          if( !inpf.read( buf, c_buf_size ) )
             count = inpf.gcount( );
+
+         if( !count )
+            break;
 
          string next( base64::encode( string( buf, count ) ) );
 
@@ -545,8 +551,17 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
       {
          next.erase( );
          s.read_line( next, line_timeout, max_line_size );
+
          if( next.empty( ) || next == string( p_ack_message ) )
             break;
+
+         // FUTURE: This should actually check if any non-base64 character is present.
+         if( next.find( ' ' ) != string::npos )
+         {
+            not_base64 = true;
+            unexpected_data = next;
+            break;
+         }
 
          string decoded( base64::decode( next ) );
          if( !outf.write( &decoded[ 0 ], decoded.length( ) ) )
@@ -565,10 +580,14 @@ void file_transfer( const string& name, tcp_socket& s, ft_direction d,
       outf.close( );
    }
 
-   if( max_size_exceeded )
+   if( not_base64 || max_size_exceeded )
    {
       file_remove( name.c_str( ) );
-      throw runtime_error( "maximum file length exceeded" );
+
+      if( not_base64 )
+         throw runtime_error( unexpected_data );
+      else
+         throw runtime_error( "maximum file length exceeded" );
    }
 }
 

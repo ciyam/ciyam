@@ -103,6 +103,7 @@ activation_email_content "Your account '{@user_id}' has been created. To activat
 activation_email_details "An email has just been sent to '{@email}' that contains a link for you to activate your new account."
 select_local_upload_file "Select a local file and then click {@attach} to upload it."
 you_have_been_logged_out "You have been logged out."
+client_script_out_of_date "This UI is out of date - please refresh your browser page."
 old_password_is_incorrect "Old Password is incorrect."
 password_has_been_changed "Password has been changed!"
 sign_in_using_credentials "Sign In Using Credentials"

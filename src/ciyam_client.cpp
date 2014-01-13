@@ -147,37 +147,37 @@ string ciyam_console_command_handler::preprocess_command_and_args( const string&
          }
          else
          {
-            string::size_type pos = str.find( ' ' );
-            if( str.substr( 0, pos ) == "file_get" )
+            try
             {
-               file_transfer( str.substr( pos + 1 ), socket,
-                e_ft_direction_fetch, c_max_file_transfer_size,
-                c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
-            }
-            else if( str.substr( 0, pos ) == "file_put" )
-            {
-               try
+               string::size_type pos = str.find( ' ' );
+               if( str.substr( 0, pos ) == "file_get" )
+               {
+                  file_transfer( str.substr( pos + 1 ), socket,
+                   e_ft_direction_fetch, c_max_file_transfer_size,
+                   c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
+               }
+               else if( str.substr( 0, pos ) == "file_put" )
                {
                   file_transfer( str.substr( pos + 1 ), socket,
                    e_ft_direction_send, c_max_file_transfer_size,
                    c_response_okay_more, c_file_transfer_line_timeout, c_file_transfer_max_line_size );
                }
-               catch( exception& x )
+            }
+            catch( exception& x )
+            {
+               str.erase( );
+               string s( x.what( ) );
+
+               size_t err_prefix_length( strlen( c_response_error_prefix ) );
+
+               if( s.length( ) > err_prefix_length
+                && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
                {
-                  str.erase( );
-                  string s( x.what( ) );
-
-                  size_t err_prefix_length( strlen( c_response_error_prefix ) );
-
-                  if( s.length( ) > err_prefix_length
-                   && s.substr( 0, err_prefix_length ) == string( c_response_error_prefix ) )
-                  {
-                     s = "Error: " + s.substr( err_prefix_length );
-                  }
-
-                  cout << s << endl;
-                  return str;
+                  s = "Error: " + s.substr( err_prefix_length );
                }
+
+               cout << s << endl;
+               return str;
             }
 
             string response;

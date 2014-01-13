@@ -1980,6 +1980,8 @@ bool fetch_user_record(
    if( user_data.size( ) < 2 )
       throw runtime_error( "unexpected missing user information" );
 
+   bool matched_password = false;
+
    if( check_password )
    {
       string user_password( user_data[ 1 ] );
@@ -1995,7 +1997,10 @@ bool fetch_user_record(
       if( !unique_data.empty( ) )
          final_password = sha256( user_password + unique_data ).get_digest_as_string( );
 
-      if( ( !username.empty( ) && user_data[ 0 ] != username ) || ( !is_authorised && password != final_password ) )
+      if( password == final_password )
+         matched_password = true;
+
+      if( ( !username.empty( ) && user_data[ 0 ] != username ) || ( !is_authorised && !matched_password ) )
          throw runtime_error( GDS( c_display_unknown_or_invalid_user_id ) );
 
       if( !userhash.empty( ) )

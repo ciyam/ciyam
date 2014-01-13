@@ -956,6 +956,7 @@ void CLASS_BASE_DECL_SPEC copy_class_files_for_clone(
 std::string CLASS_BASE_DECL_SPEC get_app_dir( );
 std::string CLASS_BASE_DECL_SPEC get_app_file( const std::string& module_name );
 
+std::string CLASS_BASE_DECL_SPEC get_attached_file_dir( );
 std::string CLASS_BASE_DECL_SPEC get_attached_file_path( const std::string& module_id, const std::string& class_id );
 
 std::string CLASS_BASE_DECL_SPEC expand_lf_to_cr_lf( const std::string& input );

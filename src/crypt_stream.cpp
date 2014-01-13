@@ -45,7 +45,7 @@ namespace
 const size_t c_max_key_size = 128;
 const size_t c_file_buf_size = 32768;
 
-const size_t c_password_rounds_multiplier = 99;
+const size_t c_password_rounds_multiplier = 3;
 
 }
 
