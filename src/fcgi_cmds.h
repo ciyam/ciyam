@@ -73,8 +73,9 @@ bool populate_list_info( list_source& list,
 
 bool fetch_user_record( const std::string& gid,
  const std::string& module_id, const std::string& module_name,
- const module_info& mod_info, session_info& sess_info, bool is_authorised, bool check_password,
- std::string& username, const std::string& userhash, const std::string& password, const std::string& unique_data );
+ const module_info& mod_info, session_info& sess_info, bool is_authorised,
+ bool check_password, std::string& username, const std::string& userhash,
+ const std::string& password, const std::string& unique_data );
 
 void fetch_user_quick_links( const module_info& mod_info, session_info& sess_info );
 

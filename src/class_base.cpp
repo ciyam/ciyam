@@ -2507,6 +2507,11 @@ void copy_class_files_for_clone(
    }
 }
 
+string get_attached_file_dir( )
+{
+   return string( c_files_directory );
+}
+
 string get_attached_file_path( const string& module_id, const string& class_id )
 {
    string path( storage_web_root( true ) );

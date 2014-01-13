@@ -756,6 +756,17 @@ void request_handler::process_request( )
             pwd_hash = p_session_info->user_pwd_hash;
       }
 
+      string ver( input_data[ c_param_ver ] );
+
+      // NOTE: It is expected that for any UI version change that the FCGI
+      // server will have been restarted so don't bother with the check if
+      // the session is present. If wanting to change this then would need
+      // to make sure that the "ver" param is included for every call that
+      // can occur into here (which currently is not the case - as you can
+      // test by deleting a list item).
+      if( !p_session_info && atoi( ver.c_str( ) ) < c_ui_script_version )
+         throw runtime_error( GDS( c_display_client_script_out_of_date ) );
+
       string base64_data( input_data[ c_param_base64 ] );
       if( !base64_data.empty( ) )
       {
@@ -1276,8 +1287,11 @@ void request_handler::process_request( )
                      p_session_info->user_module = module_name;
                   else
                   {
-                     fetch_user_record( id_for_login, module_id, module_name, mod_info, *p_session_info,
-                      is_authorised || persistent == c_true || !base64_data.empty( ), true, username, userhash, password, unique_id );
+                     string new_password( newhash );
+
+                     fetch_user_record( id_for_login, module_id, module_name, mod_info,
+                      *p_session_info, is_authorised || persistent == c_true || !base64_data.empty( ),
+                      true, username, userhash, password, unique_id );
 
                      pwd_hash = p_session_info->user_pwd_hash;
                   }

@@ -5,3 +5,4 @@
 `{`$use_rdline`=`'false`'`}
 `{`$pwd_rounds`=`'12345`'`}
 `{`$new_rounds`=`'12345`'`}
+`{`$ui_script_version`=`'1`'`}

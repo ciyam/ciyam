@@ -19,6 +19,8 @@ const int c_default_ciyam_port = `{`$port`};
 
 const char* const c_default_ciyam_host = "localhost";
 
+const int c_ui_script_version = `{`$ui_script_version`};
+
 const int c_protocol_major_version = 0;
 const int c_protocol_minor_version = 1;
 
