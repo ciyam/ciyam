@@ -193,7 +193,9 @@ template< typename T > inline int_t size_of( const oid_pointer< T >& p )
 
 template< typename T > inline read_stream& operator >>( read_stream& rs, oid_pointer< T >& op )
 {
+   delete op.p_T;
    op.p_T = 0;
+
    rs >> op.id;
    return rs;
 }

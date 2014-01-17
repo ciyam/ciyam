@@ -1,17 +1,20 @@
 ** File Info
-Version Id = 65536
+Version Id = 131072
 Num Writers = 0
 Total Entries = 20001
 Transaction Id = 30010
 Index Free List = 2
-Total Size of Data = 577828
+Total Size of Data = 1137888
 Data Transformation Id = 10011
 Index Transformation Id = 50013
 
 ** Entry Info for: 0
-num: 00000000 ext: 00000000 txId: 00007539 txOp: 00000000  flags: lk=0 tx=0
-pos: 0004689a len: 00000010
-0004689a  04 00 00 00 72 6f 6f 74 00 00 00 00 00 00 00 00  ....root........
+num: 0000000000000000            ext: 0000000000000000
+txi: 0000000000007539            txo: 0000000000000000             flags: lk=0 tx=0
+pos: 000000000008ae82            len: 0000000000000024
+000000000008ae82  04 00 00 00 00 00 00 00 72 6f 6f 74 ff ff ff ff  ........root....
+000000000008ae92  ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00  ................
+000000000008aea2  00 00 00 00                                      ....
 
 ** Freelist Info
 First freelist entry = 1

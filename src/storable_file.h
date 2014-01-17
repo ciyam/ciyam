@@ -44,6 +44,8 @@ class FILE_DECL_SPEC storable_file : public file_buffer, public storable_base
    int_t get_size_of( ) const;
    void get_instance( read_stream& rs );
    void put_instance( write_stream& ws ) const;
+
+   void write_to_file( const char* p_file_name );
 };
 
 #endif

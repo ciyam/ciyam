@@ -10,6 +10,7 @@
 #pragma hdrstop
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <fstream>
 #  include <utility>
 #endif
 
@@ -35,6 +36,13 @@ void storable_file::get_instance( read_stream& rs )
 void storable_file::put_instance( write_stream& ws ) const
 {
    ws << *this;
+}
+
+void storable_file::write_to_file( const char* p_file_name )
+{
+   ofstream outf( p_file_name, ios::out | ios::binary );
+   if( outf )
+      outf.write( ( const char* )&data[ 0 ], data.size( ) );
 }
 
 int_t size_of( const storable_file& sf )

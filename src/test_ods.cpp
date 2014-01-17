@@ -27,9 +27,13 @@
 #  define MAX_DESC_LEN 100
 #endif
 
+#define CIYAM_BASE_IMPL
+
 #include "ods.h"
 #include "pointers.h"
 #include "utilities.h"
+#include "oid_pointer.h"
+#include "storable_file.h"
 #include "console_commands.h"
 #include "read_write_stream.h"
 
@@ -91,8 +95,8 @@ class outline_base : public storable_base
 #ifdef USE_CHAR_BUF
     description( MAX_DESC_LEN ),
 #endif
-    only_read_description( false ),
-    only_write_description( false )
+    do_not_read_children( false ),
+    do_not_write_children( false )
    {
 #ifdef USE_CHAR_BUF
       description.fill( );
@@ -106,8 +110,8 @@ class outline_base : public storable_base
 #else
     description( MAX_DESC_LEN ),
 #endif
-    only_read_description( false ),
-    only_write_description( false )
+    do_not_read_children( false ),
+    do_not_write_children( false )
    {
 #ifdef USE_CHAR_BUF
       this->description.fill( );
@@ -132,6 +136,8 @@ class outline_base : public storable_base
       description = new_description;
 #endif
    }
+
+   oid_pointer< storable_file >& get_file( ) { return o_file; }
 
    void iter( )
    {
@@ -191,14 +197,16 @@ class outline_base : public storable_base
 
    private:
    size_t count;
-   bool only_read_description;
-   bool only_write_description;
+   bool do_not_read_children;
+   bool do_not_write_children;
 
 #ifdef USE_CHAR_BUF
    char_buffer description;
 #else
    string description;
 #endif
+   oid_pointer< storable_file > o_file;
+
    vector< oid > children;
 };
 
@@ -212,10 +220,10 @@ int_t size_of( const outline_base& o )
 #endif
 #ifdef USE_CHAR_BUF
    return sizeof( int_t ) + o.description.length( )
-    + size_holder + ( o.children.size( ) * sizeof( oid ) );
+    + sizeof( oid ) + size_holder + ( o.children.size( ) * sizeof( oid ) );
 #else
    return sizeof( string::size_type ) + o.description.length( )
-    + size_holder + ( o.children.size( ) * sizeof( oid ) );
+    + sizeof( oid ) + size_holder + ( o.children.size( ) * sizeof( oid ) );
 #endif
 }
 
@@ -227,12 +235,13 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
    o.children.erase( o.children.begin( ), o.children.end( ) );
 
    rs >> o.description;
+   rs >> o.o_file;
 
-   if( !o.only_read_description )
+   if( !o.do_not_read_children )
       rs >> o.children;
    else
    {
-      byte_skip bs( -1 );
+      byte_skip bs( 0 );
       rs >> bs;
    }
 
@@ -242,8 +251,9 @@ read_stream& operator >>( read_stream& rs, outline_base& o )
 write_stream& operator <<( write_stream& ws, const outline_base& o )
 {
    ws << o.description;
+   ws << o.o_file;
 
-   if( !o.only_write_description )
+   if( !o.do_not_write_children )
       ws << o.children;
 
    return ws;
@@ -254,13 +264,13 @@ struct temp_read_outline_description
    temp_read_outline_description( outline& node )
     : node( node )
    {
-      val = node.only_read_description;
-      node.only_read_description = true;
+      val = node.do_not_read_children;
+      node.do_not_read_children = true;
    }
 
    ~temp_read_outline_description( )
    {
-      node.only_read_description = val;
+      node.do_not_read_children = val;
    }
 
    private:
@@ -273,13 +283,13 @@ struct temp_write_outline_description
    temp_write_outline_description( outline& node )
     : node( node )
    {
-      val = node.only_write_description;
-      node.only_write_description = true;
+      val = node.do_not_write_children;
+      node.do_not_write_children = true;
    }
 
    ~temp_write_outline_description( )
    {
-      node.only_write_description = val;
+      node.do_not_write_children = val;
    }
 
    private:
@@ -413,12 +423,19 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    else if( command == c_cmd_test_ods_list )
    {
       o >> node;
+
+      if( !node.get_file( ).get_id( ).is_new( ) )
+         cout << "<has stored file>" << endl;
+
       temp_read_outline_description tmp_description( temp_node );
       for( node.iter( ); node.more( ); node.next( ) )
       {
          temp_node.set_id( node.child( ) );
          o >> temp_node;
-         cout << temp_node.get_description( ) << '\n';
+         cout << temp_node.get_description( );
+         if( !temp_node.get_file( ).get_id( ).is_new( ) )
+            cout << " *";
+         cout << '\n';
       }
    }
    else if( command == c_cmd_test_ods_in )
@@ -601,6 +618,33 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
             cout << "cannot find folder: " << name << endl;
       }
    }
+   else if( command == c_cmd_test_ods_store )
+   {
+      string name( get_parm_val( parameters, c_cmd_parm_test_ods_store_name ) );
+
+      ods::bulk_write bulk( o );
+      o >> node;
+
+      node.get_file( ).reset( new storable_file( name.c_str( ) ) );
+
+      scoped_ods_instance so( o );
+      node.get_file( ).store( );
+      o << node;
+   }
+   else if( command == c_cmd_test_ods_fetch )
+   {
+      string name( get_parm_val( parameters, c_cmd_parm_test_ods_fetch_name ) );
+
+      o >> node;
+
+      if( node.get_file( ).get_id( ).is_new( ) )
+         cout << "no file data was stored in this folder" << endl;
+      else
+      {
+         scoped_ods_instance so( o );
+         node.get_file( )->write_to_file( name.c_str( ) );
+      }
+   }
    else if( command == c_cmd_test_ods_trans )
    {
       if( trans_level < c_max_trans_depth - 1 )
@@ -721,6 +765,7 @@ int main( int argc, char* argv[ ] )
 
       string path( "/" );
       path += string( cmd_handler.get_path_strings( ).back( ).data( ) );
+
       cmd_handler.set_prompt_prefix( path );
 
       cmd_handler.add_commands( 0,

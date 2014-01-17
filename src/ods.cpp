@@ -56,6 +56,10 @@
 #  define _access access
 #endif
 
+#ifdef _WIN32
+#  define _lseek _lseeki64
+#endif
+
 #ifdef __BORLANDC__
 #  define _locking locking
 #endif
@@ -149,18 +153,18 @@ void debug_log( const string& msg )
 #  define DEBUG_LOG( msg )
 #endif
 
-const unsigned c_bit_1 = 0x1u;
-const unsigned c_bit_2 = 0x2u;
+const int_t c_bit_1 = UINT64_C( 1 );
+const int_t c_bit_2 = UINT64_C( 2 );
 
 // NOTE: It would be expected that if a "major" version change has occurred then any previous file
 // format would no longer be compatible, however, if a "minor" version change has occurred then it
 // should still be possible to operate on previous file formats (with the same "major" version).
-const unsigned c_major_ver = 0x0001u;
-const unsigned c_minor_ver = 0x0000u;
+const int_t c_major_ver = UINT64_C( 2 );
+const int_t c_minor_ver = UINT64_C( 0 );
 
-const unsigned c_version_id = ( c_major_ver << 16 ) | c_minor_ver;
+const int_t c_version_id = ( c_major_ver << 16 ) | c_minor_ver;
 
-const uint_t c_int_type_hi_bit = 1 << ( std::numeric_limits< uint_t >::digits - 1 );
+const uint_t c_int_type_hi_bit = UINT64_C( 1 ) << ( std::numeric_limits< uint_t >::digits - 1 );
 
 const int c_buffer_chunk_size = 1024;
 
@@ -644,8 +648,9 @@ void header_file::acquire_lock_offset( )
       for( size_t i = sizeof( header_info );
        i < sizeof( header_info ) + sizeof( ods_index_entry::data_t ); i++ )
       {
-         if( _lseek( handle, ( long )i, SEEK_SET ) != ( long )i )
+         if( _lseek( handle, ( int64_t )i, SEEK_SET ) != ( int64_t )i )
             throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
+
          if( _locking( handle, LK_NBLCK, 1 ) == 0 )
          {
             lock_offset = ( short )( i - sizeof( header_info ) );
@@ -663,7 +668,7 @@ void header_file::release_lock_offset( )
    {
       DEBUG_LOG( "releasing lock offset" );
 
-      long pos = lock_offset + sizeof( header_info );
+      int64_t pos = lock_offset + sizeof( header_info );
       if( _lseek( handle, pos, SEEK_SET ) != pos )
          throw ods_error( "unexpected _lseek result at " STRINGIZE( __LINE__ ) );
       if( _locking( handle, LK_UNLCK, 1 ) != 0 )
@@ -836,7 +841,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       }
 
       int_t pos;
-      if( ( pos = _lseek( read_data_handle, num * sizeof( ods_data_entry_buffer ), SEEK_SET ) ) < 0 )
+      if( ( pos = _lseek( read_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) ) < 0 )
          throw ods_error( "unexpected _lseek at " STRINGIZE( __LINE__ ) " failed..." );
 
       char* p_data( data.data );
@@ -875,7 +880,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
             throw ods_error( "unexpected bad handle at " STRINGIZE( __LINE__ ) );
       }
 
-      if( _lseek( write_data_handle, num * sizeof( ods_data_entry_buffer ), SEEK_SET ) < 0 )
+      if( _lseek( write_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
       if( _write( write_data_handle, ( void* )&data,
@@ -996,8 +1001,8 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #endif
 
 #ifdef _WIN32
-      long len = 1;
-      long pos = entry_num * sizeof( ods_index_entry::data_t );
+      size_t len = 1;
+      int64_t pos = entry_num * sizeof( ods_index_entry::data_t );
       if( !is_write )
          pos += lock_offset;
       else
@@ -1028,8 +1033,8 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #endif
 
 #ifdef _WIN32
-      long len = 1;
-      long pos = entry_num * sizeof( ods_index_entry::data_t );
+      size_t len = 1;
+      int64_t pos = entry_num * sizeof( ods_index_entry::data_t );
       if( !is_write )
          pos += lock_offset;
       else
@@ -1440,11 +1445,11 @@ struct ods::impl
 
    ref_count_ptr< int > rp_open_store_ref_count;
 
-   ref_count_ptr< int > rp_session_create_total;
-   ref_count_ptr< int > rp_session_revive_total;
-   ref_count_ptr< int > rp_session_review_total;
-   ref_count_ptr< int > rp_session_update_total;
-   ref_count_ptr< int > rp_session_delete_total;
+   ref_count_ptr< int_t > rp_session_create_total;
+   ref_count_ptr< int_t > rp_session_revive_total;
+   ref_count_ptr< int_t > rp_session_review_total;
+   ref_count_ptr< int_t > rp_session_update_total;
+   ref_count_ptr< int_t > rp_session_delete_total;
 
    ref_count_ptr< mutex > rp_impl_lock;
    ref_count_ptr< mutex > rp_file_section;
@@ -1532,13 +1537,13 @@ ods_index_entry::ods_index_entry( )
 void ods_index_entry::dump_entry( ostream& os, int_t num )
 {
    os << "num: " << hex
-    << setw( 8 ) << setfill( '0' ) << num
-    << " ext: " << hex << setw( 8 ) << setfill( '0' )
+    << setw( 16 ) << setfill( '0' ) << num
+    << "            ext: " << hex << setw( 16 ) << setfill( '0' )
     << ( extended ? data.ext | c_int_type_hi_bit : data.ext )
-    << " txId: " << hex << setw( 8 ) << setfill( '0' ) << data.tran_id
-    << " txOp: " << hex << setw( 8 ) << setfill( '0' ) << data.tran_op
-    << "  flags: lk=" << hex << setw( 1 ) << setfill( '0' ) << lock_flag
-    << " tx=" << hex << setw( 1 ) << setfill( '0' ) << trans_flag << dec << "\n";
+    << "\ntxi: " << hex << setw( 16 ) << setfill( '0' ) << data.tran_id
+    << "            txo: " << hex << setw( 16 ) << setfill( '0' ) << data.tran_op
+    << "             flags: lk=" << hex << setw( 1 ) << setfill( '0' ) << lock_flag
+    << " tx=" << hex << setw( 1 ) << setfill( '0' ) << trans_flag << dec << '\n';
 }
 
 size_t ods::header_info_size( )
@@ -1798,11 +1803,11 @@ ods::ods( const char* name, open_mode o_mode, share_mode s_mode )
 
    p_impl->rp_open_store_ref_count = new int( 0 );
 
-   p_impl->rp_session_create_total = new int( 0 );
-   p_impl->rp_session_revive_total = new int( 0 );
-   p_impl->rp_session_review_total = new int( 0 );
-   p_impl->rp_session_update_total = new int( 0 );
-   p_impl->rp_session_delete_total = new int( 0 );
+   p_impl->rp_session_create_total = new int_t( 0 );
+   p_impl->rp_session_revive_total = new int_t( 0 );
+   p_impl->rp_session_review_total = new int_t( 0 );
+   p_impl->rp_session_update_total = new int_t( 0 );
+   p_impl->rp_session_delete_total = new int_t( 0 );
 
    p_impl->rp_ods_data_cache_buffer =
     new ods_data_cache_buffer( *this, p_impl->data_file_name,
@@ -2512,16 +2517,16 @@ void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
          os << "(freelist entry)";
          if( index_entry.data.pos )
             os << " link: " << hex
-             << setw( 8 ) << setfill( '0' ) << ( index_entry.data.pos - 1 ) << dec;
+             << setw( 16 ) << setfill( '0' ) << ( index_entry.data.pos - 1 ) << dec;
          else
             os << " link: <at end>";
          os << "\n";
       }
       else
       {
-         os << "pos: " << hex << setw( 8 )
-          << setfill( '0' ) << index_entry.data.pos << " len: "
-          << hex << setw( 8 ) << setfill( '0' ) << index_entry.data.size << dec << '\n';
+         os << "pos: " << hex << setw( 16 )
+          << setfill( '0' ) << index_entry.data.pos << "            len: "
+          << hex << setw( 16 ) << setfill( '0' ) << index_entry.data.size << dec << '\n';
 
          if( !only_pos_and_size )
          {
@@ -2535,7 +2540,7 @@ void ods::dump_instance_data( ostream& os, int_t num, bool only_pos_and_size )
                   chunk = index_entry.data.size - i;
                read_data_bytes( ( char* )buffer, chunk );
 
-               os << hex << setw( 8 )
+               os << hex << setw( 16 )
                 << setfill( '0' ) << ( index_entry.data.pos + i ) << "  ";
                for( int j = 0; j < chunk; j++ )
                   os << hex << setw( 2 )
@@ -3583,9 +3588,13 @@ ods& operator <<( ods& o, storable_base& s )
    return o;
 }
 
-void ods::read( unsigned char* p_buf, size_t len )
+void ods::read( unsigned char* p_buf, int_t len )
 {
-   DEBUG_LOG( "<read>" );
+#ifdef ODS_DEBUG
+   ostringstream osstr;
+   osstr << "ods::read (len = " << len << ")";
+   DEBUG_LOG( osstr.str( ) );
+#endif
    bytes_retrieved += len;
    if( bytes_retrieved <= bytes_stored )
    {
@@ -3596,9 +3605,13 @@ void ods::read( unsigned char* p_buf, size_t len )
    }
 }
 
-void ods::write( const unsigned char* p_buf, size_t len )
+void ods::write( const unsigned char* p_buf, int_t len )
 {
-   DEBUG_LOG( "<write>" );
+#ifdef ODS_DEBUG
+   ostringstream osstr;
+   osstr << "ods::write (len = " << len << ")";
+   DEBUG_LOG( osstr.str( ) );
+#endif
    bytes_used += len;
    if( bytes_used <= bytes_reserved )
    {
@@ -3659,7 +3672,7 @@ void ods::set_write_data_pos( int_t pos )
       }
 
       if( !attempts )
-         throw ods_error( "unable to lock data region..." );
+         throw ods_error( "unable to lock data region for set_write_data_pos..." );
 
       p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
    }
@@ -3716,7 +3729,7 @@ void ods::adjust_write_data_pos( int_t adjust )
       }
 
       if( !attempts )
-         throw ods_error( "unable to lock data region..." );
+         throw ods_error( "unable to lock data region for adjust_write_data_pos..." );
 
       p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
    }
@@ -3779,7 +3792,7 @@ void ods::write_data_bytes( const char* p_src, int_t len )
          }
 
          if( !attempts )
-            throw ods_error( "unable to lock data region..." );
+            throw ods_error( "unable to lock data region for write_data_bytes..." );
 
          p_impl->data_write_buffer = p_impl->rp_ods_data_cache_buffer->get( data_write_buffer_num );
 

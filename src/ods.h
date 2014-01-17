@@ -31,8 +31,8 @@
 
 #  define ODS_MAX_ERROR_MSG_LENGTH 1024
 
-typedef int32_t int_t;
-typedef uint32_t uint_t;
+typedef int64_t int_t;
+typedef uint64_t uint_t;
 
 const int_t c_max_int_val = std::numeric_limits< int_t >::max( );
 
@@ -752,8 +752,8 @@ class ODS_DECL_SPEC ods
    ods& operator =( const ods& o );
    bool operator ==( const ods& o );
 
-   void read( unsigned char* p_buf, size_t len );
-   void write( const unsigned char* p_buf, size_t len );
+   void read( unsigned char* p_buf, int_t len );
+   void write( const unsigned char* p_buf, int_t len );
 
    void set_read_data_pos( int_t pos );
    void set_write_data_pos( int_t pos );
