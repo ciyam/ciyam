@@ -105,15 +105,11 @@ int main( int argc, char* argv[ ] )
                o.dump_index_entry( cout, i );
 
                if( show_data )
-               {
                   o.dump_instance_data( cout, i, false );
-                  cout << '\n';
-               }
                else
-               {
                   o.dump_instance_data( cout, i, true );
-                  cout << '\n';
-               }
+
+               cout << '\n';
 
                if( ++totalEntriesDumped % 500 == 0 )
                   bulk_dump.pause( );
