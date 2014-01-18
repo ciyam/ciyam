@@ -23,6 +23,13 @@
 
 using namespace std;
 
+namespace
+{
+
+const int c_buf_size = 1024;
+
+}
+
 int_t storable_file::get_size_of( ) const
 {
    return size_of( *this );
@@ -38,29 +45,80 @@ void storable_file::put_instance( write_stream& ws ) const
    ws << *this;
 }
 
-void storable_file::write_to_file( const char* p_file_name )
-{
-   ofstream outf( p_file_name, ios::out | ios::binary );
-   if( outf )
-      outf.write( ( const char* )&data[ 0 ], data.size( ) );
-}
-
 int_t size_of( const storable_file& sf )
 {
-   return sizeof( size_t ) + sf.name.size( ) + sizeof( size_t ) + sf.data.size( );
+   return sizeof( size_t ) + sf.file_name.size( ) + sizeof( int64_t ) + file_size( sf.file_name.c_str( ) );
 }
 
 read_stream& operator >>( read_stream& rs, storable_file& sf )
 {
-   rs >> sf.name;
-   rs >> sf.data;
+   rs >> sf.file_name;
+
+   int64_t size;
+   rs >> size;
+
+   ofstream outf( sf.file_name.c_str( ), ios::out | ios::binary );
+   if( !outf )
+      throw runtime_error( "unable to open '" + sf.file_name + "' for output" );
+
+   unsigned char data[ c_buf_size ];
+   while( size )
+   {
+      size_t bytes = c_buf_size;
+      if( size < bytes )
+         bytes = size;
+
+      rs.read( &data[ 0 ], bytes );
+
+      outf.write( ( const char* )&data[ 0 ], bytes );
+
+      size -= bytes;
+   }
+
    return rs;
 }
 
 write_stream& operator <<( write_stream& ws, const storable_file& sf )
 {
-   ws << sf.name;
-   ws << sf.data;
+   string name( sf.file_name );
+#ifndef _WIN32
+   string::size_type pos = name.find_last_of( "/" );
+#else
+   string::size_type pos = name.find_last_of( ":/\\" );
+#endif
+
+   // NOTE: If a path was specified then don't store it.
+   if( pos == string::npos )
+      ws << name;
+   else
+      ws << name.substr( pos + 1 );
+
+   int64_t size = file_size( sf.file_name.c_str( ) );
+
+   ws << size;
+
+   ifstream inpf( sf.file_name.c_str( ), ios::in | ios::binary );
+   if( !inpf )
+      throw runtime_error( "unable to open '" + sf.file_name + "' for input" );
+
+   unsigned char data[ c_buf_size ];
+
+   while( size )
+   {
+      size_t bytes = c_buf_size;
+      if( size < bytes )
+         bytes = size;
+
+      if( !inpf.read( ( char* )&data[ 0 ], bytes ) )
+         throw runtime_error( "unexpected error reading '" + sf.file_name + "' for write_stream output" );
+
+      ws.write( &data[ 0 ], bytes );
+
+      size -= ( int64_t )bytes;
+   }
+
+   inpf.close( );
+
    return ws;
 }
 
