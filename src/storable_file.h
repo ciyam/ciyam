@@ -10,7 +10,6 @@
 #  include "ods.h"
 #  include "macros.h"
 #  include "utilities.h"
-#  include "file_buffer.h"
 
 #  ifdef CIYAM_BASE_IMPL
 #     define FILE_DECL_SPEC DYNAMIC_EXPORT
@@ -21,7 +20,7 @@
 class read_stream;
 class write_stream;
 
-class FILE_DECL_SPEC storable_file : public file_buffer, public storable_base
+class FILE_DECL_SPEC storable_file : public storable_base
 {
    friend int_t size_of( const storable_file& sf );
    friend read_stream& operator >>( read_stream& rs, storable_file& sf );
@@ -29,23 +28,16 @@ class FILE_DECL_SPEC storable_file : public file_buffer, public storable_base
 
    public:
    storable_file( ) { }
-   storable_file( const char* p_file_name ) : file_buffer( p_file_name ) { }
+   storable_file( const std::string& file_name ) : file_name( file_name ) { }
 
-   storable_file( const storable_file& src ) : file_buffer( src ) { }
-
-   storable_file& operator =( const storable_file& src )
-   {
-      file_buffer::operator =( src );
-      storable_base::operator =( src );
-
-      return *this;
-   }
+   std::string get_name( ) const { return file_name; }
 
    int_t get_size_of( ) const;
    void get_instance( read_stream& rs );
    void put_instance( write_stream& ws ) const;
 
-   void write_to_file( const char* p_file_name );
+   private:
+   std::string file_name;
 };
 
 #endif

@@ -625,7 +625,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       ods::bulk_write bulk( o );
       o >> node;
 
-      node.get_file( ).reset( new storable_file( name.c_str( ) ) );
+      node.get_file( ).reset( new storable_file( name ) );
 
       scoped_ods_instance so( o );
       node.get_file( ).store( );
@@ -633,8 +633,6 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_fetch )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_test_ods_fetch_name ) );
-
       o >> node;
 
       if( node.get_file( ).get_id( ).is_new( ) )
@@ -642,7 +640,7 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       else
       {
          scoped_ods_instance so( o );
-         node.get_file( )->write_to_file( name.c_str( ) );
+         cout << "fetched " << node.get_file( )->get_name( ) << endl;
       }
    }
    else if( command == c_cmd_test_ods_trans )
