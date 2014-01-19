@@ -828,6 +828,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
 
 #ifdef __GNUG__
    flock lock;
+   char* p_data;
 #endif
 
    protected:
