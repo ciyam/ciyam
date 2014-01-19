@@ -704,10 +704,18 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
     write_data_handle( 0 ),
     write_lock_handle( 0 )
    {
+#ifdef __GNUG__
+      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_data_entry_buffer ) );
+      if( !p_data )
+         throw runtime_error( "unexpected failure for posix_memalign" );
+#endif
    }
 
    ~ods_data_cache_buffer( )
    {
+#ifdef __GNUG__
+      free( p_data );
+#endif
 #ifndef ODS_DEBUG
       if( read_data_handle )
          _close( read_data_handle );
@@ -835,7 +843,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !read_data_handle )
       {
 #ifdef __GNUG__
-         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          read_data_handle = _sopen( fname.c_str( ),
           O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -848,7 +856,9 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( ( pos = _lseek( read_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) ) < 0 )
          throw ods_error( "unexpected _lseek at " STRINGIZE( __LINE__ ) " failed..." );
 
-      char* p_data( data.data );
+#ifndef __GNUG__
+      char* p_data( ( char* )&data.data );
+#endif
       int len = _read( read_data_handle, ( void* )p_data, sizeof( ods_data_entry_buffer ) );
       if( len != sizeof( ods_data_entry_buffer ) )
       {
@@ -861,6 +871,9 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          else
             throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed..." );
       }
+#ifdef __GNUG__
+      memcpy( &data, p_data, sizeof( ods_data_entry_buffer ) );
+#endif
    }
 
    void perform_store( const ods_data_entry_buffer& data, unsigned num )
@@ -875,7 +888,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !write_data_handle )
       {
 #ifdef __GNUG__
-         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_data_handle = _sopen( fname.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -887,9 +900,15 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( _lseek( write_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
-      if( _write( write_data_handle, ( void* )&data,
+#ifndef __GNUG__
+      char* p_data( ( char* )&data );
+#endif
+      if( _write( write_data_handle, ( void* )p_data,
        sizeof( ods_data_entry_buffer ) ) != sizeof( ods_data_entry_buffer ) )
          throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed..." );
+#ifdef __GNUG__
+      memcpy( &data, p_data, sizeof( ods_data_entry_buffer ) );
+#endif
    }
 };
 
@@ -915,6 +934,8 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
    {
 #ifdef __GNUG__
       posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
+      if( !p_data )
+         throw runtime_error( "unexpected failure for posix_memalign" );
 #endif
    }
 
@@ -1099,7 +1120,6 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #ifndef __GNUG__
       char* p_data( ( char* )&data );
 #endif
-
       int len = _read( read_index_handle, ( void* )p_data, sizeof( ods_index_entry_buffer ) );
       if( len != sizeof( ods_index_entry_buffer ) )
       {
@@ -1163,6 +1183,18 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
     tran_ops_handle( 0 ),
     has_begun_trans( false )
    {
+#ifdef __GNUG__
+      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_op_buffer ) );
+      if( !p_data )
+         throw runtime_error( "unexpected failure for posix_memalign" );
+#endif
+   }
+
+   ~ods_trans_op_cache_buffer( )
+   {
+#ifdef __GNUG__
+      free( p_data );
+#endif
    }
 
    void new_transaction( int_t tran_id )
@@ -1207,6 +1239,10 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
    string file_name;
    mutex trans_op_lock;
 
+#ifdef __GNUG__
+   char* p_data;
+#endif
+
    protected:
    void perform_fetch( trans_op_buffer& data, unsigned num )
    {
@@ -1223,9 +1259,15 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       if( _lseek( tran_ops_handle, ( num * sizeof( trans_op_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
+#ifndef __GNUG__
+      char* p_data( ( char* )&data );
+#endif
       if( _read( tran_ops_handle,
-       ( void* )&data, sizeof( trans_op_buffer ) ) != sizeof( trans_op_buffer ) )
+       ( void* )p_data, sizeof( trans_op_buffer ) ) != sizeof( trans_op_buffer ) )
          throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed..." );
+#ifdef __GNUG__
+      memcpy( &data, p_data, sizeof( trans_op_buffer ) );
+#endif
    }
 
    void perform_store( const trans_op_buffer& data, unsigned num )
@@ -1243,7 +1285,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
             throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          tran_ops_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1267,7 +1309,12 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
       if( _lseek( tran_ops_handle, ( num * sizeof( trans_op_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
-      if( _write( tran_ops_handle, ( void* )&data,
+#ifdef __GNUG__
+      memcpy( p_data, &data, sizeof( trans_op_buffer ) );
+#else
+      char* p_data( ( char* )&data );
+#endif
+      if( _write( tran_ops_handle, ( void* )p_data,
        sizeof( trans_op_buffer ) ) != sizeof( trans_op_buffer ) )
          throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed..." );
    }
@@ -1284,6 +1331,18 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
     tran_data_handle( 0 ),
     has_begun_trans( false )
    {
+#ifdef __GNUG__
+      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_data_buffer ) );
+      if( !p_data )
+         throw runtime_error( "unexpected failure for posix_memalign" );
+#endif
+   }
+
+   ~ods_trans_data_cache_buffer( )
+   {
+#ifdef __GNUG__
+      free( p_data );
+#endif
    }
 
    void new_transaction( int_t tran_id )
@@ -1328,6 +1387,10 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
    string file_name;
    mutex trans_data_lock;
 
+#ifdef __GNUG__
+   char* p_data;
+#endif
+
    protected:
    void perform_fetch( trans_data_buffer& data, unsigned num )
    {
@@ -1344,9 +1407,15 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       if( _lseek( tran_data_handle, ( num * sizeof( trans_data_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
+#ifndef __GNUG__
+      char* p_data( ( char* )&data );
+#endif
       if( _read( tran_data_handle,
-       ( void* )&data, sizeof( trans_data_buffer ) ) != sizeof( trans_data_buffer ) )
+       ( void* )p_data, sizeof( trans_data_buffer ) ) != sizeof( trans_data_buffer ) )
          throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed..." );
+#ifdef __GNUG__
+      memcpy( &data, p_data, sizeof( trans_data_buffer ) );
+#endif
    }
 
    void perform_store( const trans_data_buffer& data, unsigned num )
@@ -1364,7 +1433,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
             throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          tran_data_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1388,7 +1457,12 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
       if( _lseek( tran_data_handle, ( num * sizeof( trans_data_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
-      if( _write( tran_data_handle, ( void* )&data,
+#ifdef __GNUG__
+      memcpy( p_data, &data, sizeof( trans_data_buffer ) );
+#else
+      char* p_data( ( char* )&data );
+#endif
+      if( _write( tran_data_handle, ( void* )p_data,
        sizeof( trans_data_buffer ) ) != sizeof( trans_data_buffer ) )
          throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed..." );
    }
