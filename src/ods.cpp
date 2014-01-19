@@ -901,15 +901,14 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( _lseek( write_data_handle, ( num * sizeof( ods_data_entry_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
-#ifndef __GNUG__
+#ifdef __GNUG__
+      memcpy( p_data, &data, sizeof( ods_data_entry_buffer ) );
+#else
       char* p_data( ( char* )&data );
 #endif
       if( _write( write_data_handle, ( void* )p_data,
        sizeof( ods_data_entry_buffer ) ) != sizeof( ods_data_entry_buffer ) )
          throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed..." );
-#ifdef __GNUG__
-      memcpy( &data, p_data, sizeof( ods_data_entry_buffer ) );
-#endif
    }
 };
 
