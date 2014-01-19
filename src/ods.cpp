@@ -756,7 +756,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          string lock_file_name( fname );
          lock_file_name += c_lock_file_name_ext;
 #ifdef __GNUG__
-         write_lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         write_lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          write_lock_handle = _sopen( lock_file_name.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -835,7 +835,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !read_data_handle )
       {
 #ifdef __GNUG__
-         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          read_data_handle = _sopen( fname.c_str( ),
           O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -875,7 +875,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !write_data_handle )
       {
 #ifdef __GNUG__
-         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          write_data_handle = _sopen( fname.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -957,7 +957,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_SYNC | O_DIRECT );
+         read_index_handle = _open( file_name.c_str( ), O_RDONLY );
 #else
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY, SH_DENYNO );
 #endif
@@ -986,7 +986,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          string lock_file_name( file_name );
          lock_file_name += c_lock_file_name_ext;
 #ifdef __GNUG__
-         lock_index_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         lock_index_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          lock_index_handle = _sopen( lock_file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1077,7 +1077,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          read_index_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1116,7 +1116,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !write_index_handle )
       {
 #ifdef __GNUG__
-         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          write_index_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1225,7 +1225,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
             throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          tran_ops_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1346,7 +1346,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
             throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
+         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
 #else
          tran_data_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
