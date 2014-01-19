@@ -259,15 +259,12 @@ class ODS_DECL_SPEC char_buffer
 class oid
 {
    public:
-   oid( int_t num = -1, int_t ext = 0 ) : num( num ), ext( ext ) { }
+   oid( int_t num = -1 ) : num( num ), ver( 0 ), pad( 0 ) { }
 
    int_t get_num( ) const { return num; }
-   int_t get_ext( ) const { return ext; }
+   int32_t get_ver( ) const { return ver; }
 
-   void set_num( int_t val ) { num = val; }
-   void set_ext( int_t val ) { ext = val; }
-
-   void set_new( ) { num = -1; ext = 0; }
+   void set_new( ) { num = -1; ver = 0; }
 
    bool is_new( ) const { return num == -1; }
 
@@ -276,7 +273,8 @@ class oid
 
    private:
    int_t num;
-   int_t ext;
+   int32_t ver;
+   int32_t pad;
 
    friend class ods;
    friend ods ODS_DECL_SPEC& operator >>( ods& t, storable_base& s );
@@ -289,7 +287,7 @@ inline size_t size_determiner( const oid* p_o ) { return sizeof( oid ); }
 
 inline bool operator ==( const oid& lhs, const oid& rhs )
 {
-   return lhs.num == rhs.num && lhs.ext == rhs.ext;
+   return lhs.num == rhs.num && lhs.ver == rhs.ver;
 }
 
 inline bool operator !=( const oid& lhs, const oid& rhs )
@@ -315,12 +313,10 @@ class ODS_DECL_SPEC storable_base
    public:
    enum flag
    {
-      e_flag_user_ext = 0x1u,
-      e_flag_distinct_ext = 0x2u,
-      e_flag_interim_update = 0x4u
+      e_flag_interim_update = 0x1u
    };
 
-   storable_base( ) : p_ods( 0 ), flags( e_flag_distinct_ext ), last_size( 0 ), last_tran_id( -1 ) { };
+   storable_base( ) : p_ods( 0 ), flags( 0 ), last_size( 0 ), last_tran_id( -1 ) { };
 
    storable_base( const storable_base& src )
    {
@@ -347,7 +343,6 @@ class ODS_DECL_SPEC storable_base
       id.set_new( );
       last_size = 0;
       last_tran_id = -1;
-      flags &= e_flag_distinct_ext;
    }
 
    oid get_id( ) const { return id; }
@@ -357,35 +352,12 @@ class ODS_DECL_SPEC storable_base
       id = new_id;
       last_size = 0;
       last_tran_id = -1;
-      flags &= e_flag_distinct_ext;
    }
 
    short get_flags( ) const { return flags; }
 
    int_t get_last_size( ) const { return last_size; }
    int_t get_last_tran_id( ) const { return last_tran_id; }
-
-   int_t get_user_ext( ) const
-   {
-      if( !use_user_ext( ) )
-         throw ods_error( "invalid read of extended data" );
-
-      return id.get_ext( );
-   }
-
-   void set_user_ext( int_t val )
-   {
-      if( !use_user_ext( ) )
-         throw ods_error( "invalid write of extended data" );
-
-      id.set_ext( val );
-   }
-
-   bool use_user_ext( ) const { return flags & e_flag_user_ext; }
-   void use_user_ext( bool val ) { val ? flags |= e_flag_user_ext : flags &= ~e_flag_user_ext; }
-
-   bool use_distinct_ext( ) const { return ( flags & e_flag_distinct_ext ) ? true : false; }
-   void use_distinct_ext( bool val ) { val ? flags |= e_flag_distinct_ext : flags &= ~e_flag_distinct_ext; }
 
    bool had_interim_update( ) const { return ( flags & e_flag_interim_update ) ? true : false; }
 
@@ -549,7 +521,12 @@ struct transaction_op
       int_t pos;
       int_t size;
       int_t old_tran_id;
-      int_t old_tran_op;
+      int32_t old_tran_op;
+
+      // NOTE: Pad the data structure size to 64 bytes.
+      int32_t padding;
+      int_t padding_2;
+      int_t padding_3;
    } data;
 
    op_type type;
@@ -560,6 +537,8 @@ struct transaction_op
       data.size = 0;
       data.old_tran_id = 0;
       data.old_tran_op = 0;
+
+      data.padding = data.padding_2 = data.padding_3 = 0;
 
       type = e_op_type_none;
    }
@@ -578,13 +557,13 @@ struct transaction_level_info
 
    int_t size;
    int_t offset;
-   int_t op_count;
-   int_t op_offset;
+   int32_t op_count;
+   int32_t op_offset;
 };
 
 class ods_index_cache_buffer;
 
-const int_t c_trans_ops_per_node = 100;
+const int_t c_trans_ops_per_node = 16;
 const int_t c_trans_bytes_per_node = 1024;
 
 struct trans_op_buffer
