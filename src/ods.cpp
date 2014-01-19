@@ -117,7 +117,7 @@ const int c_data_max_cache_items = 500;
 const int c_data_items_per_region = 10000;
 const int c_data_num_cache_regions = 10;
 
-const int c_index_items_per_node = 50;
+const int c_index_items_per_node = 32;
 const int c_index_max_cache_items = 500;
 const int c_index_items_per_region = 10000;
 const int c_index_num_cache_regions = 10;
@@ -159,12 +159,15 @@ const int_t c_bit_2 = UINT64_C( 2 );
 // NOTE: It would be expected that if a "major" version change has occurred then any previous file
 // format would no longer be compatible, however, if a "minor" version change has occurred then it
 // should still be possible to operate on previous file formats (with the same "major" version).
-const int_t c_major_ver = UINT64_C( 2 );
-const int_t c_minor_ver = UINT64_C( 0 );
+const int32_t c_major_ver = 1;
+const int32_t c_minor_ver = 0;
 
-const int_t c_version_id = ( c_major_ver << 16 ) | c_minor_ver;
+const int32_t c_version_id = ( c_major_ver << 16 ) | c_minor_ver;
 
 const uint_t c_int_type_hi_bit = UINT64_C( 1 ) << ( std::numeric_limits< uint_t >::digits - 1 );
+
+const uint_t c_int_type_low_bits = UINT64_C( -1 ) >> ( std::numeric_limits< uint_t >::digits / 2 );
+const uint_t c_int_type_high_bits = c_int_type_low_bits << ( std::numeric_limits< uint_t >::digits / 2 );
 
 const int c_buffer_chunk_size = 1024;
 
@@ -402,8 +405,9 @@ void ods_error::init( const char* s )
 
 struct header_info
 {
-   int_t version_id;
-   int_t num_writers;
+   int32_t version_id;
+   int32_t num_writers;
+
    int_t total_entries;
    int_t index_free_list;
    int_t transaction_id;
@@ -442,13 +446,12 @@ class ods_index_entry
    public:
    struct data_t
    {
-      data_t( ) : pos( 0 ), ext( 0 ), size( 0 ), tran_id( 0 ), tran_op( 0 ) { }
+      data_t( ) : pos( 0 ), ext( 0 ), size( 0 ), tran_id( 0 ) { }
 
       int_t pos;
       int_t ext;
       int_t size;
       int_t tran_id;
-      int_t tran_op;
    } data;
 
    private:
@@ -474,19 +477,20 @@ class ods_index_entry
    int_t get_ext( ) const { return data.ext; }
    int_t get_size( ) const { return data.size; }
    int_t get_tran_id( ) const { return data.tran_id; }
-   int_t get_tran_op( ) const { return data.tran_op; }
 
-   bool is_extended( ) const { return extended; }
+   int32_t get_ver( ) const { return ver; }
+   int32_t get_tran_op( ) const { return tran_op; }
 
    lock get_lock_flag( ) const { return lock_flag; }
    trans get_trans_flag( ) const { return trans_flag; }
 
    static size_t get_size_of( ) { return sizeof( data_t ); }
 
-   bool extended;
-
    lock lock_flag;
    trans trans_flag;
+
+   int32_t ver;
+   int32_t tran_op;
 
    friend class ods;
    friend ods& operator >>( ods& o, storable_base& s );
@@ -752,7 +756,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
          string lock_file_name( fname );
          lock_file_name += c_lock_file_name_ext;
 #ifdef __GNUG__
-         write_lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         write_lock_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_lock_handle = _sopen( lock_file_name.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -831,7 +835,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !read_data_handle )
       {
 #ifdef __GNUG__
-         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         read_data_handle = _open( fname.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          read_data_handle = _sopen( fname.c_str( ),
           O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -871,7 +875,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
       if( !write_data_handle )
       {
 #ifdef __GNUG__
-         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         write_data_handle = _open( fname.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_data_handle = _sopen( fname.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -953,7 +957,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY );
+         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_SYNC | O_DIRECT );
 #else
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY, SH_DENYNO );
 #endif
@@ -982,7 +986,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
          string lock_file_name( file_name );
          lock_file_name += c_lock_file_name_ext;
 #ifdef __GNUG__
-         lock_index_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         lock_index_handle = _open( lock_file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          lock_index_handle = _sopen( lock_file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1073,7 +1077,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          read_index_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1112,7 +1116,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !write_index_handle )
       {
 #ifdef __GNUG__
-         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_index_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1221,7 +1225,7 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
             throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         tran_ops_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          tran_ops_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1342,7 +1346,7 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
             throw ods_error( "unexpected not in transaction at " STRINGIZE( __LINE__ ) );
 
 #ifdef __GNUG__
-         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT, ODS_DEFAULT_PERMS );
+         tran_data_handle = _open( file_name.c_str( ), O_RDWR | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          tran_data_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDWR | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1528,7 +1532,8 @@ struct ods_index_entry_pos
 
 ods_index_entry::ods_index_entry( )
  :
- extended( false ),
+ ver( 0 ),
+ tran_op( 0 ),
  lock_flag( e_lock_none ),
  trans_flag( e_trans_none )
 {
@@ -1538,11 +1543,10 @@ void ods_index_entry::dump_entry( ostream& os, int_t num )
 {
    os << "num: " << hex
     << setw( 16 ) << setfill( '0' ) << num
-    << "            ext: " << hex << setw( 16 ) << setfill( '0' )
-    << ( extended ? data.ext | c_int_type_hi_bit : data.ext )
+    << "            ver: " << hex << setw( 8 ) << setfill( '0' ) << ver
     << "\ntxi: " << hex << setw( 16 ) << setfill( '0' ) << data.tran_id
-    << "            txo: " << hex << setw( 16 ) << setfill( '0' ) << data.tran_op
-    << "             flags: lk=" << hex << setw( 1 ) << setfill( '0' ) << lock_flag
+    << "            txo: " << hex << setw( 8 ) << setfill( '0' ) << tran_op
+    << "                     flags: lk=" << hex << setw( 1 ) << setfill( '0' ) << lock_flag
     << " tx=" << hex << setw( 1 ) << setfill( '0' ) << trans_flag << dec << '\n';
 }
 
@@ -2155,7 +2159,7 @@ void ods::destroy( const oid& id )
                 && index_entry.trans_flag != ods_index_entry::e_trans_delete ) )
                {
                   if( index_entry.trans_flag == ods_index_entry::e_trans_none )
-                     index_entry.data.tran_op = 0;
+                     index_entry.tran_op = 0;
 
                   if( p_impl->trans_level )
                   {
@@ -2164,23 +2168,17 @@ void ods::destroy( const oid& id )
                      op.type = transaction_op::e_op_type_destroy;
 
                      op.data.id = id;
-                     op.data.old_tran_op = index_entry.data.tran_op;
+                     op.data.old_tran_op = index_entry.tran_op;
 
                      write_transaction_op( op );
 
-                     index_entry.data.tran_op = 0;
+                     index_entry.tran_op = 0;
                      index_entry.data.tran_id = p_impl->p_trans_buffer->tran_id;
 
                      index_entry.trans_flag = ods_index_entry::e_trans_delete;
                   }
                   else
                   {
-                     if( index_entry.extended )
-                     {
-                        index_entry.data.ext = 0;
-                        index_entry.extended = false;
-                     }
-
                      if( !p_impl->rp_header_info->index_free_list )
                         index_entry.data.pos = 0;
                      else
@@ -2188,7 +2186,7 @@ void ods::destroy( const oid& id )
 
                      index_entry.data.size = 0;
 
-                     index_entry.data.tran_op = 0;
+                     index_entry.tran_op = 0;
                      index_entry.data.tran_id = p_impl->rp_header_info->transaction_id;
 
                      index_entry.trans_flag = ods_index_entry::e_trans_free_list;
@@ -2386,7 +2384,7 @@ void ods::rollback_dead_transactions( )
 
             index_entry.data.size = 0;
 
-            index_entry.data.tran_op = 0;
+            index_entry.tran_op = 0;
             index_entry.trans_flag = ods_index_entry::e_trans_free_list;
 
             p_impl->rp_header_info->index_free_list = i + 1;
@@ -2396,7 +2394,7 @@ void ods::rollback_dead_transactions( )
          {
             ++( *p_impl->rp_session_update_total );
 
-            index_entry.data.tran_op = 0;
+            index_entry.tran_op = 0;
             index_entry.trans_flag = ods_index_entry::e_trans_none;
          }
 
@@ -2877,7 +2875,7 @@ void ods::transaction_commit( )
                      }
                   }
 
-                  index_entry.data.tran_op = 0;
+                  index_entry.tran_op = 0;
                   if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                      index_entry.trans_flag = ods_index_entry::e_trans_none;
 
@@ -2986,7 +2984,7 @@ void ods::transaction_rollback( )
                   ++( *p_impl->rp_session_delete_total );
                }
 
-               index_entry.data.tran_op = op.data.old_tran_op;
+               index_entry.tran_op = op.data.old_tran_op;
                if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                {
                   if( op.data.old_tran_op == 0 )
@@ -3172,7 +3170,7 @@ ods& operator >>( ods& o, storable_base& s )
                can_read = false;
             else
             {
-               if( s.use_distinct_ext( ) && index_entry.get_ext( ) != s.id.get_ext( ) )
+               if( index_entry.get_ver( ) != s.id.get_ver( ) )
                   throw ods_error( "invalid object reference" );
 
                if( !o.p_impl->trans_level
@@ -3215,7 +3213,7 @@ ods& operator >>( ods& o, storable_base& s )
                o.p_impl->read_from_trans = true;
 
                transaction_op op;
-               o.read_transaction_op( op, index_entry.data.tran_op - 1 );
+               o.read_transaction_op( op, index_entry.tran_op - 1 );
 
                s.last_size = op.data.size;
                trans_read_pos = op.data.pos;
@@ -3319,7 +3317,7 @@ ods& operator <<( ods& o, storable_base& s )
 
 #ifdef ODS_DEBUG
          ostringstream osstr;
-         osstr << "oid: num = " << s.id.get_num( ) << ", ext = " << s.id.get_ext( );
+         osstr << "oid: num = " << s.id.get_num( ) << ", ver = " << s.id.get_ver( );
          DEBUG_LOG( osstr.str( ) );
 #endif
 
@@ -3339,11 +3337,6 @@ ods& operator <<( ods& o, storable_base& s )
 
             is_new_object = false;
          }
-
-         if( s.flags & storable_base::e_flag_user_ext )
-            index_entry.extended = true;
-         else
-            index_entry.extended = false;
 
          int_t old_data_pos = -1;
          int_t old_total_size = o.p_impl->rp_header_info->total_size_of_data;
@@ -3369,8 +3362,7 @@ ods& operator <<( ods& o, storable_base& s )
                if( index_entry.trans_flag != ods_index_entry::e_trans_free_list )
                   throw ods_error( "unexpected trans flag value found in freelist entry" );
 
-               if( !index_entry.extended )
-                  ++index_entry.data.ext;
+               ++index_entry.ver;
 
                index_entry.trans_flag = ods_index_entry::e_trans_none;
                s.id.num = o.p_impl->rp_header_info->index_free_list - 1;
@@ -3383,13 +3375,10 @@ ods& operator <<( ods& o, storable_base& s )
 
 #ifdef ODS_DEBUG
             ostringstream osstr;
-            osstr << "oid (new): num = " << s.id.get_num( ) << ", ext = " << s.id.get_ext( );
+            osstr << "oid (new): num = " << s.id.get_num( ) << ", ver = " << s.id.get_ver( );
             DEBUG_LOG( osstr.str( ) );
 #endif
-            if( !index_entry.extended )
-               s.id.ext = index_entry.data.ext;
-            else
-               index_entry.data.ext = s.id.ext;
+            s.id.ver = index_entry.ver;
 
             can_write = true;
          }
@@ -3446,13 +3435,13 @@ ods& operator <<( ods& o, storable_base& s )
 
                op.data.old_tran_id = old_tran_id;
                if( index_entry.trans_flag != ods_index_entry::e_trans_none )
-                  op.data.old_tran_op = index_entry.data.tran_op;
+                  op.data.old_tran_op = index_entry.tran_op;
 
                op.data.pos =
                 o.p_impl->p_trans_buffer->levels.top( ).offset
                 + o.p_impl->p_trans_buffer->levels.top( ).size;
 
-               index_entry.data.tran_op =
+               index_entry.tran_op =
                 o.p_impl->p_trans_buffer->levels.top( ).op_offset
                 + o.p_impl->p_trans_buffer->levels.top( ).op_count + 1;
                index_entry.data.tran_id = o.p_impl->p_trans_buffer->tran_id;
@@ -3842,20 +3831,17 @@ void ods::read_index_entry( ods_index_entry& index_entry, int_t num )
    if( index_entry.data.size & c_int_type_hi_bit )
    {
       index_entry.data.size &= ~c_int_type_hi_bit;
-      index_entry.extended = true;
+      ( int& )index_entry.trans_flag |= c_bit_1;
    }
 
    if( index_entry.data.tran_id & c_int_type_hi_bit )
    {
       index_entry.data.tran_id &= ~c_int_type_hi_bit;
-      ( int& )index_entry.trans_flag |= c_bit_1;
-   }
-
-   if( index_entry.data.tran_op & c_int_type_hi_bit )
-   {
-      index_entry.data.tran_op &= ~c_int_type_hi_bit;
       ( int& )index_entry.trans_flag |= c_bit_2;
    }
+
+   index_entry.ver = ( index_entry.data.ext & c_int_type_low_bits );
+   index_entry.tran_op = ( index_entry.data.ext & c_int_type_high_bits ) >> ( std::numeric_limits< uint_t >::digits / 2 );
 }
 
 void ods::write_index_entry( const ods_index_entry& index_entry, int_t num, bool force_cache_write_back )
@@ -3880,20 +3866,20 @@ void ods::write_index_entry( const ods_index_entry& index_entry, int_t num, bool
 
    data = index_entry.data;
 
+   data.ext = index_entry.ver;
+   data.ext |= ( int_t )index_entry.tran_op << ( std::numeric_limits< uint_t >::digits / 2 );
+
    if( index_entry.lock_flag & c_bit_1 )
       data.pos |= c_int_type_hi_bit;
 
    if( index_entry.lock_flag & c_bit_2 )
       data.ext |= c_int_type_hi_bit;
 
-   if( index_entry.extended )
+   if( index_entry.trans_flag & c_bit_1 )
       data.size |= c_int_type_hi_bit;
 
-   if( index_entry.trans_flag & c_bit_1 )
-      data.tran_id |= c_int_type_hi_bit;
-
    if( index_entry.trans_flag & c_bit_2 )
-      data.tran_op |= c_int_type_hi_bit;
+      data.tran_id |= c_int_type_hi_bit;
 
    if( !force_cache_write_back )
       has_written_index_item = true;

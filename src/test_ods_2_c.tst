@@ -1,5 +1,5 @@
 ** File Info
-Version Id = 131072
+Version Id = 65536
 Num Writers = 0
 Total Entries = 20001
 Transaction Id = 30010
@@ -9,8 +9,8 @@ Data Transformation Id = 10011
 Index Transformation Id = 50013
 
 ** Entry Info for: 0
-num: 0000000000000000            ext: 0000000000000000
-txi: 0000000000007539            txo: 0000000000000000             flags: lk=0 tx=0
+num: 0000000000000000            ver: 00000000
+txi: 0000000000007539            txo: 00000000                     flags: lk=0 tx=0
 pos: 000000000008ae82            len: 0000000000000024
 000000000008ae82  04 00 00 00 00 00 00 00 72 6f 6f 74 ff ff ff ff  ........root....
 000000000008ae92  ff ff ff ff 00 00 00 00 00 00 00 00 00 00 00 00  ................
