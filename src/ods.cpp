@@ -913,10 +913,16 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
     read_index_handle( 0 ),
     write_index_handle( 0 )
    {
+#ifdef __GNUG__
+      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
+#endif
    }
 
    ~ods_index_cache_buffer( )
    {
+#ifdef __GNUG__
+      free( p_data );
+#endif
 #ifndef ODS_DEBUG
       if( lock_index_handle )
          _close( lock_index_handle );
@@ -957,7 +963,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY );
+         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_SYNC | O_DIRECT );
 #else
          read_index_handle = _sopen( file_name.c_str( ), O_BINARY | O_RDONLY, SH_DENYNO );
 #endif
@@ -1062,6 +1068,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 
 #ifdef __GNUG__
    flock lock;
+   char* p_data;
 #endif
 
    protected:
@@ -1077,7 +1084,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !read_index_handle )
       {
 #ifdef __GNUG__
-         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         read_index_handle = _open( file_name.c_str( ), O_RDONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          read_index_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_RDONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1089,7 +1096,10 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( _lseek( read_index_handle, ( num * sizeof( ods_index_entry_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
-      void* p_data( &data );
+#ifndef __GNUG__
+      char* p_data( ( char* )&data );
+#endif
+
       int len = _read( read_index_handle, ( void* )p_data, sizeof( ods_index_entry_buffer ) );
       if( len != sizeof( ods_index_entry_buffer ) )
       {
@@ -1098,10 +1108,13 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
 #else
          if( _lseek( read_index_handle, 0, SEEK_CUR ) >= _lseek( read_index_handle, 0, SEEK_END ) )
 #endif
-            memset( ( char* )p_data + len, 0, sizeof( ods_index_entry_buffer ) - len );
+            memset( p_data + len, 0, sizeof( ods_index_entry_buffer ) - len );
          else
             throw ods_error( "unexpected read at " STRINGIZE( __LINE__ ) " failed..." );
       }
+#ifdef __GNUG__
+      memcpy( &data, p_data, sizeof( ods_index_entry_buffer ) );
+#endif
    }
 
    void perform_store( const ods_index_entry_buffer& data, unsigned num )
@@ -1116,7 +1129,7 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( !write_index_handle )
       {
 #ifdef __GNUG__
-         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT, ODS_DEFAULT_PERMS );
+         write_index_handle = _open( file_name.c_str( ), O_WRONLY | O_CREAT | O_SYNC | O_DIRECT, ODS_DEFAULT_PERMS );
 #else
          write_index_handle = _sopen( file_name.c_str( ),
           O_BINARY | O_WRONLY | O_CREAT, SH_DENYNO, S_IREAD | S_IWRITE );
@@ -1128,7 +1141,12 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
       if( _lseek( write_index_handle, ( num * sizeof( ods_index_entry_buffer ) ), SEEK_SET ) < 0 )
          throw ods_error( "unexpected seek at " STRINGIZE( __LINE__ ) " failed..." );
 
-      if( _write( write_index_handle, ( void* )&data,
+#ifdef __GNUG__
+      memcpy( p_data, &data, sizeof( ods_index_entry_buffer ) );
+#else
+      char* p_data( ( char* )&data );
+#endif
+      if( _write( write_index_handle, ( void* )p_data,
        sizeof( ods_index_entry_buffer ) ) != sizeof( ods_index_entry_buffer ) )
          throw ods_error( "unexpected write at " STRINGIZE( __LINE__ ) " failed..." );
    }
