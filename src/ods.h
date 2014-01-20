@@ -563,8 +563,8 @@ struct transaction_level_info
 
 class ods_index_cache_buffer;
 
-const int_t c_trans_ops_per_node = 16;
-const int_t c_trans_bytes_per_node = 1024;
+const int_t c_trans_ops_per_node = 64;
+const int_t c_trans_bytes_per_node = 4096;
 
 struct trans_op_buffer
 {
