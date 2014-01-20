@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2013-2013 CIYAM Developers
+# Copyright (c) 2013-2014 CIYAM Developers
 #
 # Distributed under the MIT/X11 software license, please refer to the file license.txt
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
@@ -10,17 +10,18 @@
 DATEYEAR=""
 
 # NOTE: First some checks to ensure we are inside git repo.
-cat .git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
-GITCHECK=$?
-if [ "$GITCHECK" != "0" ]
-then
-	echo 'ERROR: the current directory isnt the ciyam git!'
-	exit 1
+if [ ! "$1" = "-skip_check" ]; then
+ cat .git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
+ GITCHECK=$?
+
+ if [ "$GITCHECK" != "0" ]; then
+  echo "Error: The current directory isn't the CIYAM git repo root directory!"
+  exit 1
+ fi
 fi
 
-if [ "$DATEYEAR" == "" ]
-then
-	DATEYEAR=`date +%Y`
+if [ "$DATEYEAR" == "" ]; then
+ DATEYEAR=`date +%Y`
 fi
 
 find . -type d -name .git -prune -o -print0 | xargs -0 --max-args=1 -I{} sed -i "s/Copyright (c) \([0-9]\{4\}\) CIYAM Developers/Copyright (c) \1-${DATEYEAR} CIYAM Developers/" "{}"
