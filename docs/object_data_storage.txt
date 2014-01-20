@@ -1,0 +1,194 @@
+Object Data Storage
+-------------------
+
+One of the less obvious features of the CIYAM platform is the Object Database named ODS (Object Data Storage)
+as it currently isn't being used for much other than keeping track of the transaction id for an application's
+storage log and holding some basic information about the storage and its modules.
+
+It is envisioned that the ODS will be used for other useful things down the track as being in-process and not
+being a SQL DB it can be a much more efficient method of storing and retrieving information.
+
+Implementing Peristence
+-----------------------
+
+The ODS system is a far more "low level" approach to data storage compared to something like a "SQL DB" which
+uses a functional language (SQL) in order to abstract the storage and query operations whereas ODS focuses on
+just making object streaming as simple as possible.
+
+The design for implementing class persistence is very non-intrusive allowing a non-persistent class to become
+persistent without having to make modifications to the class itself (other than adding some "friend" function
+declarations if required). This is achieved by declaring a "storable" template class and a simple example can
+be found in "ciyam_base.cpp" for the "identity" struct.
+
+The identity struct is a POD ("plain old data") struct as follows:
+
+struct identity
+{
+   identity( ) : next_id( 4 ), ceiling( 0 ) { }
+
+   int32_t next_id;
+   int32_t ceiling;
+};
+
+In order to support persistence for "identity" the first thing we do is create a "storable" template class:
+
+typedef storable< identity, 0, storable_base > storable_identity;
+
+The type of the first "storable" template type is the class we are wanting to make persistent while the third
+template type will always be "storable_base". The second template type is an integer which is used to specify
+an optional value to round up the storage size to be allocated for the object. For example if the value 50 is
+used then an object whose size is 40 bytes would be padded with an extra 10 bytes (set to 0) and an object of
+60 bytes would be rounded up to 100 bytes. This reduces the need for object data to have to be "moved" to the
+end of the data storage file too often (the ODS implementation always stores object data contiguously so once
+a second object is stored immediately following the first, then the first will have to be moved to the end of
+the DB if it grows any bigger).
+
+After creating the "storable" template there are only 3 functions that need to be implemented for persistence
+and they are as follows:
+
+int_t size_of( const identity& i )
+{
+   return size_determiner( &i.next_id );
+}
+
+read_stream& operator >>( read_stream& rs, identity& i )
+{
+   rs >> i.next_id;
+   return rs;
+}
+
+write_stream& operator <<( write_stream& ws, const identity& i )
+{
+   ws << i.next_id;
+   return ws;
+}
+
+The first function is required in order to determine the size of the object (for storing only) then streaming
+operators for "read_stream" and "write_stream" are required in order to stream the actual data. The streaming
+operations (unlike typical "iostream" ones) are binary so ODS DB files are platform specific.
+
+The "storable" template is found in "ods.h" whilst "size_determiner", "read_stream" and "write_stream" are in
+"read_write_stream.h". The "size_determiner" templates can determine sizes for various standard library types
+such as a "pair" as well as standard containers. Likewise "read_stream" and "write_stream" support "pair" and
+standard containers to make coding persistence very simple.
+
+To see how the "size_determiner" templates as well as "read_stream" and "write_stream" operators help to make
+persistence simple consider the following more complex example:
+
+struct storage_root
+{
+   storage_root( )
+    :
+    version( c_storage_format_version ),
+    identity( uuid( ).as_string( ) ),
+    cache_limit( c_default_cache_limit ),
+    web_root( c_default_web_root ),
+    truncation_count( 0 )
+   {
+   }
+
+   int32_t version;
+   string identity;
+
+   int32_t cache_limit;
+
+   string web_root;
+
+   string module_directory;
+
+   int32_t truncation_count;
+
+   vector< string > module_list;
+   storable_module_container modules;
+
+   oid_pointer< storable_identity > o_identity;
+};
+
+typedef storable< storage_root, 512, storable_base > storable_root;
+
+int_t size_of( const storage_root& sr )
+{
+   size_t size( 0 );
+
+   size += size_determiner( &sr.version );
+   size += size_determiner( &sr.identity );
+
+   size += size_determiner( &sr.cache_limit );
+
+   size += size_determiner( &sr.web_root );
+
+   size += size_determiner( &sr.module_directory );
+   size += size_determiner( &sr.truncation_count );
+
+   size += size_determiner( &sr.module_list );
+   size += size_determiner( &sr.modules );
+
+   size += size_determiner( &sr.o_identity );
+
+   return size;
+}
+
+read_stream& operator >>( read_stream& rs, storage_root& sr )
+{
+   rs
+    >> sr.version
+    >> sr.identity
+    >> sr.cache_limit
+    >> sr.web_root
+    >> sr.module_directory
+    >> sr.truncation_count
+    >> sr.module_list
+    >> sr.modules
+    >> sr.o_identity;
+
+   return rs;
+}
+
+write_stream& operator <<( write_stream& ws, const storage_root& sr )
+{
+   ws
+    << sr.version
+    << sr.identity
+    << sr.cache_limit
+    << sr.web_root
+    << sr.module_directory
+    << sr.truncation_count
+    << sr.module_list
+    << sr.modules
+    << sr.o_identity;
+
+   return ws;
+}
+
+In this example (also taken from "ciyam_base.cpp") the types of the various member variables being "streamed"
+includes strings, a vector and other separately storable objects.
+
+Cache Implementation
+--------------------
+
+Although actually a separate component the CIYAM cache implementation (cache.h) has been used by ODS in order
+to operate as efficiently as possible. There are four caches that are used by any one ODS instance. One cache
+is for the ODS index file, one for the ODS data file and one each for transaction operations and data.
+
+In order to prevent an ODS DB from being cached by the OS file caching system specific sizes has been set for
+each of the four caches. Relevant constants in ods.cpp are:
+
+const int c_data_bytes_per_node = 4096;
+...
+const int c_index_items_per_node = 128;
+
+and in ods.h:
+
+const int_t c_trans_ops_per_node = 64;
+const int_t c_trans_bytes_per_node = 4096;
+
+The "page" size being used here is 4K and an index entry takes 32 bytes (therefore c_index_items_per_node has
+been assigned 128). A transaction op entry requires 64 bytes thus c_trans_ops_per_node has been set to 64. If
+your OS page size is bigger than 4096 (say 8194) then these sizes should be doubled otherwise the I/O will be
+only half as efficient (if your page size is smaller than 4096 it shouldn't matter).
+
+As the cache implementation uses an "unsigned int" (i.e. still 32 bit even on 64 bit platforms) the number of
+objects currently storable is limited to approx 548 billion with a total data size of 16TB. Although it might
+be worthwhile changing the cache implementation to use a 64 bit integer down the track these limits currently
+are not likely to be a problem.
+
