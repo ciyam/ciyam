@@ -112,12 +112,12 @@ const int c_header_lock_attempt_sleep_time = 25;
 
 const int c_destruct_attempt_sleep_time = 50;
 
-const int c_data_bytes_per_node = 1024;
+const int c_data_bytes_per_node = 4096;
 const int c_data_max_cache_items = 500;
 const int c_data_items_per_region = 10000;
 const int c_data_num_cache_regions = 10;
 
-const int c_index_items_per_node = 32;
+const int c_index_items_per_node = 128;
 const int c_index_max_cache_items = 500;
 const int c_index_items_per_region = 10000;
 const int c_index_num_cache_regions = 10;
@@ -694,7 +694,7 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
    ods_data_cache_buffer( ods& o,
     const string& fname, unsigned max_cache_items,
     unsigned items_per_region, unsigned regions_in_cache = 1,
-    bool use_placement_new = true, bool allow_lazy_writes = false )
+    bool use_placement_new = true, bool allow_lazy_writes = true )
     :
     cache_base< ods_data_entry_buffer >( max_cache_items,
      items_per_region, regions_in_cache, use_placement_new, allow_lazy_writes ),
