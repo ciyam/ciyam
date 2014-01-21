@@ -601,12 +601,17 @@ class ODS_DECL_SPEC ods
 
    virtual ~ods( );
 
-   bool is_okay( ) { return okay; }
+   bool is_okay( ) const { return okay; }
 
    bool is_new( );
    bool is_corrupt( );
 
+   std::string get_string( ) const { return str; }
+   void set_string( const std::string& new_str ) { str = new_str; }
+
    void destroy( const oid& id );
+
+   int_t get_size( const oid& id );
 
    void move_free_data_to_end( );
 
@@ -696,6 +701,7 @@ class ODS_DECL_SPEC ods
 
    private:
    bool okay;
+   std::string str;
 
    struct impl;
    impl* p_impl;
