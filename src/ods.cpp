@@ -313,7 +313,10 @@ class ods::ods_stream : public read_write_stream
    explicit ods_stream( ods& o ) : o( o ) { }
 
    void read( unsigned char* p_buf, size_t len, read_write_type ) { o.read( p_buf, len ); }
+   void read_meta( string& s ) { s = o.get_string( ); }
+
    void write( const unsigned char* p_buf, size_t len, read_write_type ) { o.write( p_buf, len ); }
+   void write_meta( string& s ) { s = o.get_string( ); }
 
    private:
    ods& o;
@@ -2319,6 +2322,49 @@ void ods::destroy( const oid& id )
       has_written_trans_op = false;
       had_interim_trans_op_write = true;
    }
+}
+
+int_t ods::get_size( const oid& id )
+{
+   guard lock_read( read_lock );
+
+   if( !okay )
+      throw ods_error( "ods instance in bad state..." );
+
+   DEBUG_LOG( "ods::get_size( )" );
+   ods_index_entry index_entry;
+   if( id.get_num( ) < 0 )
+      return 0;
+
+   bool found = false;
+   int attempts = c_review_max_attempts;
+   while( attempts-- )
+   {
+      { // start of file lock section...
+         guard tmp_lock( *p_impl->rp_impl_lock );
+         ods::header_file_lock header_file_lock( *this );
+
+         auto_ptr< ods::file_scope > ap_file_scope;
+         if( !*p_impl->rp_bulk_level )
+            ap_file_scope.reset( new ods::file_scope( *this ) );
+
+         index_item_buffer_num = -1;
+
+         if( id.get_num( ) < p_impl->rp_header_info->total_entries )
+         {
+            read_index_entry( index_entry, id.get_num( ) );
+            found = true;
+            break;
+         }
+      } // end of file lock section...
+
+      msleep( c_review_attempt_sleep_time );
+   }
+
+   if( !found )
+      throw ods_error( "cannot get_size (max. attempts exceeded)..." );
+
+   return index_entry.data.size;
 }
 
 void ods::move_free_data_to_end( )

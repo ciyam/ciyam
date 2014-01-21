@@ -47,6 +47,8 @@ class read_stream
    public:
    virtual void read( unsigned char* p_buf, size_t len, read_write_type type = e_read_write_type_none ) = 0;
 
+   virtual void read_meta( std::string& ) { }
+
    read_stream& operator >>( bool& val )
    {
       read( ( unsigned char* )&val, sizeof( bool ), e_read_write_type_bool );
@@ -148,6 +150,8 @@ class write_stream
 {
    public:
    virtual void write( const unsigned char* p_buf, size_t len, read_write_type type = e_read_write_type_none ) = 0;
+
+   virtual void write_meta( std::string& ) { }
 
    write_stream& operator <<( bool val )
    {

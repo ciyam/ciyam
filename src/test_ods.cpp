@@ -30,6 +30,7 @@
 #define CIYAM_BASE_IMPL
 
 #include "ods.h"
+#include "format.h"
 #include "pointers.h"
 #include "utilities.h"
 #include "oid_pointer.h"
@@ -422,20 +423,44 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
       exit( 1 );
    else if( command == c_cmd_test_ods_list )
    {
+      bool sorted( has_parm_val( parameters, c_cmd_parm_test_ods_list_sorted ) );
       o >> node;
 
-      if( !node.get_file( ).get_id( ).is_new( ) )
-         cout << "<has stored file>" << endl;
+      set< string > folders;
+      set< string > file_info;
 
       temp_read_outline_description tmp_description( temp_node );
       for( node.iter( ); node.more( ); node.next( ) )
       {
          temp_node.set_id( node.child( ) );
          o >> temp_node;
-         cout << temp_node.get_description( );
-         if( !temp_node.get_file( ).get_id( ).is_new( ) )
-            cout << " *";
-         cout << '\n';
+
+         if( temp_node.get_file( ).get_id( ).is_new( ) )
+         {
+            if( !sorted )
+               cout << temp_node.get_description( ) << '\n';
+            else
+               folders.insert( temp_node.get_description( ) );
+         }
+         else
+         {
+            string name( temp_node.get_description( ) );
+            name += " (" + format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) + ')';
+
+            if( !sorted )
+               cout << name << '\n';
+            else
+               file_info.insert( name );
+         }
+      }
+
+      if( sorted )
+      {
+         for( set< string >::iterator i = folders.begin( ); i!= folders.end( ); ++i )
+            cout << *i << '\n';
+
+         for( set< string >::iterator i = file_info.begin( ); i!= file_info.end( ); ++i )
+            cout << *i << '\n';
       }
    }
    else if( command == c_cmd_test_ods_in )
@@ -451,6 +476,13 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
          o >> temp_node;
          if( temp_node.get_description( ) == name )
          {
+            if( !temp_node.get_file( ).get_id( ).is_new( ) )
+            {
+               cout << "'" << name << "' is a file not a folder" << endl;
+               found = true;
+               break;
+            }
+
             oid_stack.push( temp_node.get_id( ) );
             path_strings.push_back( temp_node.get_description( ) );
             found = true;
@@ -566,6 +598,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                {
                   found = true;
                   ++num_deleted;
+                  if( !temp_node.get_file( ).get_id( ).is_new( ) )
+                     o.destroy( temp_node.get_file( ).get_id( ) );
                   o.destroy( temp_node.get_id( ) );
                }
                else if( num_deleted )
@@ -595,6 +629,8 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
                break;
             }
             node.del_child( index );
+            if( !temp_node.get_file( ).get_id( ).is_new( ) )
+               o.destroy( temp_node.get_file( ).get_id( ) );
             o.destroy( temp_node.get_id( ) );
             o << node;
             break;
@@ -620,28 +656,79 @@ void test_ods_command_functor::operator ( )( const string& command, const parame
    }
    else if( command == c_cmd_test_ods_store )
    {
-      string name( get_parm_val( parameters, c_cmd_parm_test_ods_store_name ) );
+      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_store_file_name ) );
 
       ods::bulk_write bulk( o );
       o >> node;
 
-      node.get_file( ).reset( new storable_file( name ) );
+      // NOTE: (refer to the NOTE in "add" command above)
+      if( !trans_level )
+      {
+         temp_write_outline_description tmp_description( temp_node );
+         o << node;
+      }
+
+#ifndef _WIN32
+      string::size_type pos = file_name.find_last_of( "/" );
+#else
+      string::size_type pos = file_name.find_last_of( ":/\\" );
+#endif
+      temp_node.set_new( );
+
+      // NOTE: If a path was specified then don't store it.
+      if( pos == string::npos )
+         temp_node.set_description( file_name );
+      else
+         temp_node.set_description( file_name.substr( pos + 1 ) );
+
+      o << temp_node;
+
+      temp_node.get_file( ).reset( new storable_file( file_name ) );
 
       scoped_ods_instance so( o );
-      node.get_file( ).store( );
+      temp_node.get_file( ).store( );
+
+      o << temp_node;
+
+      node.add_child( temp_node );
       o << node;
    }
    else if( command == c_cmd_test_ods_fetch )
    {
+      string file_name( get_parm_val( parameters, c_cmd_parm_test_ods_fetch_file_name ) );
+      string output_name( get_parm_val( parameters, c_cmd_parm_test_ods_fetch_output_name ) );
+
+      if( output_name.empty( ) )
+         output_name = file_name;
+
       o >> node;
 
-      if( node.get_file( ).get_id( ).is_new( ) )
-         cout << "no file data was stored in this folder" << endl;
-      else
+      bool found = false;
+      for( node.iter( ); node.more( ); node.next( ) )
       {
-         scoped_ods_instance so( o );
-         cout << "fetched " << node.get_file( )->get_name( ) << endl;
+         temp_node.set_id( node.child( ) );
+         o >> temp_node;
+         if( temp_node.get_description( ) == file_name )
+         {
+            if( temp_node.get_file( ).get_id( ).is_new( ) )
+               cout << "no file data was stored in this folder" << endl;
+            else
+            {
+               scoped_ods_instance so( o );
+               o.set_string( output_name + ':' + to_string( o.get_size( temp_node.get_file( ).get_id( ) ) ));
+
+               *temp_node.get_file( );
+
+               cout << "saved " << temp_node.get_file( )->get_name( )
+                << " (" << format_bytes( o.get_size( temp_node.get_file( ).get_id( ) ) ) << ')' << endl;
+               found = true;
+               break;
+            }
+         }
       }
+
+      if( !found )
+         cout << "file '" << file_name << "' not found" << endl;
    }
    else if( command == c_cmd_test_ods_trans )
    {

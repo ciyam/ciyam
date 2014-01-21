@@ -47,15 +47,22 @@ void storable_file::put_instance( write_stream& ws ) const
 
 int_t size_of( const storable_file& sf )
 {
-   return sizeof( size_t ) + sf.file_name.size( ) + sizeof( int64_t ) + file_size( sf.file_name.c_str( ) );
+   return file_size( sf.file_name.c_str( ) );
 }
 
 read_stream& operator >>( read_stream& rs, storable_file& sf )
 {
-   rs >> sf.file_name;
+   rs.read_meta( sf.file_name );
 
-   int64_t size;
-   rs >> size;
+   if( sf.file_name.empty( ) )
+      throw runtime_error( "unexpected missing read_stream meta data for storable_file" );
+
+   string::size_type pos = sf.file_name.find_last_of( ':' );
+   if( pos == string::npos )
+      throw runtime_error( "unexpected file length missing from storable_file read_stream meta data" );
+
+   int64_t size = from_string< int64_t >( sf.file_name.substr( pos + 1 ) );
+   sf.file_name.erase( pos );
 
    ofstream outf( sf.file_name.c_str( ), ios::out | ios::binary );
    if( !outf )
@@ -87,15 +94,7 @@ write_stream& operator <<( write_stream& ws, const storable_file& sf )
    string::size_type pos = name.find_last_of( ":/\\" );
 #endif
 
-   // NOTE: If a path was specified then don't store it.
-   if( pos == string::npos )
-      ws << name;
-   else
-      ws << name.substr( pos + 1 );
-
    int64_t size = file_size( sf.file_name.c_str( ) );
-
-   ws << size;
 
    ifstream inpf( sf.file_name.c_str( ), ios::in | ios::binary );
    if( !inpf )

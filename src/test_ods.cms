@@ -1,10 +1,10 @@
-list "list child folders"
+list "list child folders" [<opt/-s/sorted>]
 in "enter child folder" <val//name>
 out "return to parent folder"
 add "add child folder [use name*n to add 'n' folders]" <val//name>
 del "del child folder [use name*n to del 'n' folders]" <val//name>
-fetch "fetch file content"
-store "store file content" <val//name>
+fetch "fetch a file" <val//file_name>[<val//output_name>]
+store "store a file" <val//file_name>
 trans "begin transaction"
 commit "commit transaction"
 rollback "rollback transaction"
