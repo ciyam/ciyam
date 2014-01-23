@@ -36,7 +36,7 @@
 using namespace std;
 
 const int c_buffer_size = 1024;
-const char* const c_title = "crypt v0.1g";
+const char* const c_title = "crypt v0.1h";
 
 void create_checksum_test_file( fstream& fs, const string& test_file_name )
 {
@@ -183,7 +183,9 @@ int main( int argc, char* argv[ ] )
             return 1;
          }
 
-         string password( get_password( "Password: " ) );
+         string password;
+         while( password.empty( ) )
+            password = get_password( "Password: " );
          if( use_confirm )
          {
             string confirm( get_password( " Confirm: " ) );
