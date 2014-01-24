@@ -75,6 +75,8 @@
 #include "crypt_stream.h"
 #include "fcgi_process.h"
 
+#define QUIETER_ERROR_LOGGING
+
 #define ALWAYS_REPLACE_SESSION
 //#define ALLOW_MULTIPLE_RECORD_ENTRY
 
@@ -676,7 +678,7 @@ void request_handler::process_request( )
    session_info* p_session_info = 0;
    ostringstream form_content, extra_content;
 
-   bool cookies_permitted( false );
+   bool cookies_permitted = false;
 
    DEBUG_TRACE( "[process request]" );
 
@@ -831,7 +833,7 @@ void request_handler::process_request( )
       }
 
       if( !get_storage_info( ).modules_index.count( module_name ) )
-         throw runtime_error( "cannot find information for module '" + module_name + "'" );
+         throw runtime_error( GDS( c_display_module_name_missing_or_invalid ) );
 
       set< string > login_opts;
       if( !get_storage_info( ).login_opts.empty( ) )
@@ -941,7 +943,7 @@ void request_handler::process_request( )
             else
             {
                if( chksum != get_checksum( c_cmd_activate + user + data ) )
-                  throw runtime_error( "Invalid URL" );
+                  throw runtime_error( GDS( c_display_invalid_url ) );
 
                string activate_html( g_activate_html );
                str_replace( activate_html, c_user_id, user );
@@ -1597,7 +1599,7 @@ void request_handler::process_request( )
                if( created_session && !using_anonymous )
                   throw runtime_error( GDS( c_display_your_session_has_been_timed_out ) );
                else
-                  throw runtime_error( "Invalid URL" );
+                  throw runtime_error( GDS( c_display_invalid_url ) );
             }
          }
 
@@ -2242,8 +2244,23 @@ void request_handler::process_request( )
    }
    catch( exception& x )
    {
-      LOG_TRACE( string( "error: " ) + x.what( )
-       + " (at " + date_time::local( ).as_string( true, false ) + " from " + raddr + ")" );
+#ifdef QUIETER_ERROR_LOGGING
+      bool log_error = true;
+
+      // NOTE: Filter out some of the more "noisy" (and less serious) error messages.
+      if( x.what( ) == GDS( c_display_invalid_url )
+       || x.what( ) == GDS( c_display_client_script_out_of_date )
+       || x.what( ) == GDS( c_display_unknown_or_invalid_user_id )
+       || x.what( ) == GDS( c_display_you_are_currently_logged_in )
+       || x.what( ) == GDS( c_display_module_name_missing_or_invalid ) )
+         log_error = false;
+
+      if( log_error )
+#endif
+      {
+         LOG_TRACE( string( "error: " ) + x.what( )
+          + " (at " + date_time::local( ).as_string( true, false ) + " from " + raddr + ")" );
+      }
 
       ostringstream osstr;
       osstr << "<p class=\"error\" align=\"center\">" << GDS( c_display_error ) << ": " << x.what( ) << "</p>\n";
