@@ -908,7 +908,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_id=$specification_\\0_id arg_rfield=$specification_\\0_rfield arg_rvalue=$specification_\\0_rvalue\
  arg_oprocedure=$specification_\\0_oprocedure arg_tfield=$specification_\\0_tfield arg_value=$specification_\\0_value\
  arg_var=$specification_\\0_var arg_quiet=$specification_\\0_quiet arg_no_trans=$specification_\\0_no_trans\
- arg_ofield=$specification_\\0_ofield arg_reverse=$specification_\\0_reverse arg_else_break=$specification_\\0_else_break`}\
+ arg_ofield=$specification_\\0_ofield arg_reverse=$specification_\\0_reverse arg_else_break=$specification_\\0_else_break\
+ arg_skip_restore=$specification_\\0_skip_restore`}\
 `,\
 `@eq`(`'\\1`'`,`'for_send_email_notification`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#for_send_email_notification.spec.xrep section=procedure module_name=$module_name class_name=$class_name\
