@@ -1,88 +1,94 @@
 `{`@eq`(`'procedure`'`,`$section`)\
    // [(start for_each_record)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`@eq`(`$arg_no_trans`,`'`'`)`$i`=`'   `'`}\
-`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
-   transaction_start( );
-   try
+`{`$j`=`'`'`}`{`@eq`(`$arg_skip_restore`,`'true`'`)`$j`=`'   `'`}\
+`{`@eq`(`$arg_skip_restore`,`'true`'`)\
+   if( !storage_locked_for_admin( ) )
    {
+`}`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
+`{`$j`}   transaction_start( );
+`{`$j`}   try
+`{`$j`}   {
 `}\
-`{`$i`}   size_t total( 0 );
-`{`$i`}   procedure_progress progress;
+`{`$i`}`{`$j`}   size_t total( 0 );
+`{`$i`}`{`$j`}   procedure_progress progress;
 `{`!`@eq`(`$arg_quiet`,`'`'`)\
-`{`$i`}   temporary_session_variable tmp_quiet( get_special_var_name( e_special_var_quiet ), "1" );
+`{`$i`}`{`$j`}   temporary_session_variable tmp_quiet( get_special_var_name( e_special_var_quiet ), "1" );
 `}`{`!`@eq`(`$arg_var`,`'`'`)
-`{`$i`}   get_obj( ).set_variable( "`{`$arg_var`}", "true" );
+`{`$i`}`{`$j`}   get_obj( ).set_variable( "`{`$arg_var`}", "true" );
 `}
 `{`@eq`(`$arg_rfield`,`'`'`)
 `{`@eq`(`$arg_ofield`,`'`'`)
-`{`$i`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( ) )
+`{`$i`}`{`$j`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( ) )
 `,\
-`{`$i`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
-`{`$i`}   key_info += " ";
+`{`$i`}`{`$j`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
+`{`$i`}`{`$j`}   key_info += " ";
 
-`{`$i`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( key_info ) )
+`{`$i`}`{`$j`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( key_info ) )
 `}\
-`{`$i`}   {
-`{`$i`}      do
-`{`$i`}      {
-`{`$i`}         ++total;
+`{`$i`}`{`$j`}   {
+`{`$i`}`{`$j`}      do
+`{`$i`}`{`$j`}      {
+`{`$i`}`{`$j`}         ++total;
 `{`@eq`(`$arg_tfield`,`'`'`)\
-`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( );
+`{`$i`}`{`$j`}         get_obj( ).`{`$arg_oprocedure`}( );
 `,\
 
-`{`$i`}         if( get_obj( ).`{`$arg_tfield`}( ) )
-`{`$i`}            get_obj( ).`{`$arg_oprocedure`}( );
+`{`$i`}`{`$j`}         if( get_obj( ).`{`$arg_tfield`}( ) )
+`{`$i`}`{`$j`}            get_obj( ).`{`$arg_oprocedure`}( );
 `{`@eq`(`$arg_else_break`,`'true`'`)\
-`{`$i`}         else
-`{`$i`}         {
-`{`$i`}            get_obj( ).iterate_stop( );
-`{`$i`}            break;
-`{`$i`}         }
+`{`$i`}`{`$j`}         else
+`{`$i`}`{`$j`}         {
+`{`$i`}`{`$j`}            get_obj( ).iterate_stop( );
+`{`$i`}`{`$j`}            break;
+`{`$i`}`{`$j`}         }
 `}`}\
 
-`{`$i`}         progress.check_progress( total );
+`{`$i`}`{`$j`}         progress.check_progress( total );
 
-`{`$i`}      } while( get_obj( ).iterate_next( ) );
-`{`$i`}   }
+`{`$i`}`{`$j`}      } while( get_obj( ).iterate_next( ) );
+`{`$i`}`{`$j`}   }
 `,\
-`{`$i`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_rfield`} ) );
+`{`$i`}`{`$j`}   string key_info( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_rfield`} ) );
 `{`!`@eq`(`$arg_ofield`,`'`'`)\
-`{`$i`}   key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
+`{`$i`}`{`$j`}   key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$class_name`}, `{`$arg_ofield`} ) );
 `}\
-`{`$i`}   key_info += "#1 ";
-`{`$i`}   key_info += "`{`!`@eq`(`$arg_value`,`'`'`)`$arg_value`,`$arg_rvalue`}";
+`{`$i`}`{`$j`}   key_info += "#1 ";
+`{`$i`}`{`$j`}   key_info += "`{`!`@eq`(`$arg_value`,`'`'`)`$arg_value`,`$arg_rvalue`}";
 
-`{`$i`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( key_info ) )
-`{`$i`}   {
-`{`$i`}      do
-`{`$i`}      {
-`{`$i`}         ++total;
+`{`$i`}`{`$j`}   if( get_obj( ).`{`@eq`(`$arg_reverse`,`'true`'`)iterate_backwards`,iterate_forwards`}( key_info ) )
+`{`$i`}`{`$j`}   {
+`{`$i`}`{`$j`}      do
+`{`$i`}`{`$j`}      {
+`{`$i`}`{`$j`}         ++total;
 `{`@eq`(`$arg_tfield`,`'`'`)\
-`{`$i`}         get_obj( ).`{`$arg_oprocedure`}( );
+`{`$i`}`{`$j`}         get_obj( ).`{`$arg_oprocedure`}( );
 `,\
 
-`{`$i`}         if( get_obj( ).`{`$arg_tfield`}( ) )
-`{`$i`}            get_obj( ).`{`$arg_oprocedure`}( );
+`{`$i`}`{`$j`}         if( get_obj( ).`{`$arg_tfield`}( ) )
+`{`$i`}`{`$j`}            get_obj( ).`{`$arg_oprocedure`}( );
 `{`@eq`(`$arg_else_break`,`'true`'`)\
-`{`$i`}         else
-`{`$i`}         {
-`{`$i`}            get_obj( ).iterate_stop( );
-`{`$i`}            break;
-`{`$i`}         }
+`{`$i`}`{`$j`}         else
+`{`$i`}`{`$j`}         {
+`{`$i`}`{`$j`}            get_obj( ).iterate_stop( );
+`{`$i`}`{`$j`}            break;
+`{`$i`}`{`$j`}         }
 `}`}\
 
-`{`$i`}         progress.check_progress( total );
+`{`$i`}`{`$j`}         progress.check_progress( total );
 
-`{`$i`}      } while( get_obj( ).iterate_next( ) );
-`{`$i`}   }
+`{`$i`}`{`$j`}      } while( get_obj( ).iterate_next( ) );
+`{`$i`}`{`$j`}   }
 `}`{`!`@eq`(`$arg_no_trans`,`'true`'`)\
 
-      transaction_commit( );
-   }
-   catch( ... )
-   {
-      transaction_rollback( );
-      throw;
+`{`$j`}      transaction_commit( );
+`{`$j`}   }
+`{`$j`}   catch( ... )
+`{`$j`}   {
+`{`$j`}      transaction_rollback( );
+`{`$j`}      throw;
+`{`$j`}   }
+`}`{`@eq`(`$arg_skip_restore`,`'true`'`)\
    }
 `}\
    // [(finish for_each_record)] `{`$arg_id`}
