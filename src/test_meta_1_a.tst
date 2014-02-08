@@ -63,17 +63,18 @@ Dummy_Self,M001C101F126
 > perform_fetch Meta Enum "Id " Name,Id -min
 primitive,E000
 primitive,E000
-Day_Type,E100
-Customary_Event,E101
-Month,E102
-Day_Of_Month,E103
-Day_Number,E104
-Day_Set,E105
-Date_Cycle,E106
-Day_Of_Week,E107
-Minutes,E108
-Occurrence,E109
-Orientation,E110
+Currency,E100
+Day_Type,E101
+Customary_Event,E102
+Month,E103
+Day_Of_Month,E104
+Day_Number,E105
+Day_Set,E106
+Date_Cycle,E107
+Day_Of_Week,E108
+Minutes,E109
+Occurrence,E110
+Orientation,E111
 
 > perform_fetch Meta Type "Id " Name,Id -min
 string,T000
@@ -110,5 +111,6 @@ std_datetime,T114
 std_timestamp,T115
 std_numeric,T116
 std_percentage,T117
+std_money,T118
 
 > 
