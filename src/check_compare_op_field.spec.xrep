@@ -23,23 +23,21 @@
 `{`@eq`(`$arg_not_pedit`,`'`'`)\
    if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$check_both`,`'`'`) )`}
-`{`!`@eq`(`$check_either`,`'`'`)\
-    && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
-    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`} )
+`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}\
+`{`!`@eq`(`$arg_not_null`,`'`'`)`{`!`@eq`(`$check_either`,`'`'`)
+    && `}!( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`}\
+`{`!`@eq`(`$check_either`,`'`'`)`|`!`@eq`(`$arg_not_null`,`'`'`)
+    && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) ) )
 `,\
    if( ( !get_obj( ).get_graph_parent( )
-    || !get_obj( ).get_graph_parent( )->get_is_editing( ) )
-`{`@eq`(`$arg_tfield`,`'`'`)\
-`{`@eq`(`$arg_create_only`,`'true`'`)\
-    && get_obj( ).get_is_creating( )
-`}`,\
+    || !get_obj( ).get_graph_parent( )->get_is_editing( ) )`{`@eq`(`$arg_tfield`,`'`'`)\
+`{`@eq`(`$arg_create_only`,`'true`'`)
+    && get_obj( ).get_is_creating( )`}`,
     && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
-get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}
-`}\
-    && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
-    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`} )
+get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$arg_not_null`,`'`'`)
+    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`}
+    && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) ) )
 `}\
       p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
        get_string_message( GS( c_str_field_must_be_`{`$arg_op`}_other ), make_pair(
