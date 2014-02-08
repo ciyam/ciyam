@@ -19,10 +19,10 @@
 `{`@eq`(`$arg_tvalue`,`'`'`)\
             if( `{`@eq`(`$arg_not_eq`,`'`'`)!`}is_null( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) ) )
                continue;
-`,\
+`,
             if( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) `{`@eq`(`$arg_not_eq`,`'`'`)!=`,==`} `{`$arg_tvalue`} )
                continue;
-`}\
+`}
 `}\
             string child_key( construct_key_from_int( get_obj( ).get_key( ), ++child_num ) );
             child_key += ' ';
