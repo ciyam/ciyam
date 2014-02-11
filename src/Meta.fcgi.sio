@@ -724,11 +724,11 @@
      <name>enum_font_size_larger
     </value>
     <value/>
-     <data>6
+     <data>5
      <name>enum_font_size_small
     </value>
     <value/>
-     <data>7
+     <data>6
      <name>enum_font_size_smaller
     </value>
    </values>

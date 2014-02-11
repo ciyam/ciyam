@@ -40,7 +40,7 @@ user_defined_enum_add -id=620 source_type int 0=string,1=datetime,2=date,3=time,
 ,20=Any_Text_Type,35=Any_Conditional,99=Any_Type
 user_defined_enum_add -id=630 test_field_type int 0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool\
 ,20=Any_Text_Type,30=Any_Scalar_Type,35=Any_Conditional,38=Any_Value_Or_Conditional,99=Any_Type
-user_defined_enum_add -id=635 font_size int 0=default,1=large,2=larger,6=small,7=smaller
+user_defined_enum_add -id=635 font_size int 0=default,1=large,2=larger,5=small,6=smaller
 user_defined_enum_add -id=640 procedure_arg_type int 0=in,1=out,99=Any_Type
 user_defined_enum_add -id=650 procedure_arg_primitive int 0=string,1=datetime,2=date,3=time,4=numeric,5=int,6=bool,99=Any_Primitive
 user_defined_enum_add -id=654 pdf_font_type int 0=Times_Roman,1=Helvetica,20=SimSun,21=SimHei

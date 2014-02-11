@@ -639,8 +639,8 @@ string get_enum_string_list_field_alignment( int val )
 const int c_enum_font_size_default( 0 );
 const int c_enum_font_size_large( 1 );
 const int c_enum_font_size_larger( 2 );
-const int c_enum_font_size_small( 6 );
-const int c_enum_font_size_smaller( 7 );
+const int c_enum_font_size_small( 5 );
+const int c_enum_font_size_smaller( 6 );
 
 string get_enum_string_font_size( int val )
 {
@@ -654,9 +654,9 @@ string get_enum_string_font_size( int val )
       string_name = "enum_font_size_large";
    else if( to_string( val ) == to_string( "2" ) )
       string_name = "enum_font_size_larger";
-   else if( to_string( val ) == to_string( "6" ) )
+   else if( to_string( val ) == to_string( "5" ) )
       string_name = "enum_font_size_small";
-   else if( to_string( val ) == to_string( "7" ) )
+   else if( to_string( val ) == to_string( "6" ) )
       string_name = "enum_font_size_smaller";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for font_size" );
@@ -8270,8 +8270,8 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_font_size_0", get_enum_string_font_size( 0 ) ) );
    pairs.push_back( make_pair( "enum_font_size_1", get_enum_string_font_size( 1 ) ) );
    pairs.push_back( make_pair( "enum_font_size_2", get_enum_string_font_size( 2 ) ) );
+   pairs.push_back( make_pair( "enum_font_size_5", get_enum_string_font_size( 5 ) ) );
    pairs.push_back( make_pair( "enum_font_size_6", get_enum_string_font_size( 6 ) ) );
-   pairs.push_back( make_pair( "enum_font_size_7", get_enum_string_font_size( 7 ) ) );
 
    pairs.push_back( make_pair( "enum_list_field_label_class_0", get_enum_string_list_field_label_class( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_field_label_class_1", get_enum_string_list_field_label_class( 1 ) ) );
@@ -8399,8 +8399,8 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_font_size_enum.insert( 0 );
    g_font_size_enum.insert( 1 );
    g_font_size_enum.insert( 2 );
+   g_font_size_enum.insert( 5 );
    g_font_size_enum.insert( 6 );
-   g_font_size_enum.insert( 7 );
 
    g_list_field_label_class_enum.insert( 0 );
    g_list_field_label_class_enum.insert( 1 );

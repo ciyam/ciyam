@@ -1,5 +1,7 @@
 error "{@error}."
 field_mismatch "{@field} does not match {@field2}."
+field_not_comaptible "This {@field} cannot be used with this {@field2}."
+field_must_not_be_zero "{@field} must not be zero."
 field_must_not_be_empty "{@field} must not be empty."
 field_must_be_eq_other "{@field} must be equal to {@field2}."
 field_must_be_neq_other "{@field} must be not equal to {@field2}."

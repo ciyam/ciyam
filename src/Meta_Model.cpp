@@ -5387,6 +5387,12 @@ void Meta_Model::impl::impl_Generate( )
 
                } while( get_obj( ).child_List( ).Class( ).child_Index( ).iterate_next( ) );
 
+               // NOTE: If a transient relationship was used for a "view_child" then there is no
+               // point searching for an Index starting with that field (as there can't be one).
+               string parent_field_id;
+               if( !get_obj( ).child_List( ).Parent_Field( ).Transient( ) )
+                  parent_field_id = pfield_id;
+
                for( size_t i = 0; i < column_ids.size( ); i++ )
                {
                   // NOTE: Only non-fk columns are considered for sorting so if a dummy
@@ -5395,7 +5401,7 @@ void Meta_Model::impl::impl_Generate( )
                   if( !column_index_info.count( column_ids[ i ] ) )
                      continue;
 
-                  string index_info( pfield_id );
+                  string index_info( parent_field_id );
 
                   for( size_t j = 0; j < rfield_ids.size( ); j++ )
                   {
