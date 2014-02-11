@@ -1,0 +1,18 @@
+`{`@eq`(`'after_fetch`'`,`$section`)\
+   // [(start transient_field_from_sum)] `{`$arg_id`}
+   if( get_obj( ).get_is_iterating( ) )
+   {
+      string sum_var( get_obj( ).get_variable( c_field_name_`{`$arg_field`} ) );
+      if( sum_var.empty( ) )
+         sum_var = "0";
+
+      typeof( get_obj( ).`{`$arg_sfield`}( ) ) sum = from_string< typeof( get_obj( ).`{`$arg_sfield`}( ) ) >( sum_var );
+      sum += get_obj( ).`{`$arg_sfield`}( );
+
+      get_obj( ).`{`$arg_field`}( sum );
+      get_obj( ).set_variable( c_field_name_`{`$arg_field`}, to_string( sum ) );
+   }
+   else
+      get_obj( ).set_variable( c_field_name_`{`$arg_field`}, "" );
+   // [(finish transient_field_from_sum)] `{`$arg_id`}
+`}

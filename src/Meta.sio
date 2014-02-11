@@ -33768,7 +33768,7 @@
     <id>635
     <name>font_size
     <type>int
-    <key_values>0=default,1=large,2=larger,6=small,7=smaller
+    <key_values>0=default,1=large,2=larger,5=small,6=smaller
    </user_defined_enum>
    <user_defined_enum/>
     <id>514
