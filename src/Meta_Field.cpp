@@ -1911,6 +1911,28 @@ struct Meta_Field::impl : public Meta_Field_command_handler
       return *cp_child_Specification_Test_Parent;
    }
 
+   Meta_List_Field& impl_child_List_Field_Use_Type( )
+   {
+      if( !cp_child_List_Field_Use_Type )
+      {
+         cp_child_List_Field_Use_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Field_Use_Type, "302176" );
+      }
+      return *cp_child_List_Field_Use_Type;
+   }
+
+   const Meta_List_Field& impl_child_List_Field_Use_Type( ) const
+   {
+      if( !cp_child_List_Field_Use_Type )
+      {
+         cp_child_List_Field_Use_Type.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Field_Use_Type, "302176" );
+      }
+      return *cp_child_List_Field_Use_Type;
+   }
+
    Meta_Initial_Record_Value& impl_child_Initial_Record_Value( )
    {
       if( !cp_child_Initial_Record_Value )
@@ -2100,6 +2122,7 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test_Child;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Test_Parent;
+   mutable class_pointer< Meta_List_Field > cp_child_List_Field_Use_Type;
    mutable class_pointer< Meta_Initial_Record_Value > cp_child_Initial_Record_Value;
    mutable class_pointer< Meta_Modifier_Affect > cp_child_Modifier_Affect;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
@@ -3824,6 +3847,16 @@ const Meta_Specification& Meta_Field::child_Specification_Test_Parent( ) const
    return p_impl->impl_child_Specification_Test_Parent( );
 }
 
+Meta_List_Field& Meta_Field::child_List_Field_Use_Type( )
+{
+   return p_impl->impl_child_List_Field_Use_Type( );
+}
+
+const Meta_List_Field& Meta_Field::child_List_Field_Use_Type( ) const
+{
+   return p_impl->impl_child_List_Field_Use_Type( );
+}
+
 Meta_Initial_Record_Value& Meta_Field::child_Initial_Record_Value( )
 {
    return p_impl->impl_child_Initial_Record_Value( );
@@ -4800,7 +4833,7 @@ void Meta_Field::set_total_child_relationships( size_t new_total_child_relations
 
 size_t Meta_Field::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 35;
+   size_t rc = 36;
 
    if( !is_internal )
    {
@@ -4833,7 +4866,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 35 )
+   if( child_num >= 36 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -5104,12 +5137,20 @@ class_base* Meta_Field::get_next_foreign_key_child(
          case 32:
          if( op == e_cascade_op_destroy )
          {
+            next_child_field = "302176";
+            p_class_base = &child_List_Field_Use_Type( );
+         }
+         break;
+
+         case 33:
+         if( op == e_cascade_op_destroy )
+         {
             next_child_field = "302520";
             p_class_base = &child_Initial_Record_Value( );
          }
          break;
 
-         case 33:
+         case 34:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301020";
@@ -5117,7 +5158,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 34:
+         case 35:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301430";
@@ -5261,6 +5302,8 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
       p_class_base = &child_Specification_Test( );
    else if( sub_context == "_301486" || sub_context == "child_Specification_Test_Parent" )
       p_class_base = &child_Specification_Test_Parent( );
+   else if( sub_context == "_302176" || sub_context == "child_List_Field_Use_Type" )
+      p_class_base = &child_List_Field_Use_Type( );
    else if( sub_context == "_302520" || sub_context == "child_Initial_Record_Value" )
       p_class_base = &child_Initial_Record_Value( );
    else if( sub_context == "_301020" || sub_context == "child_Modifier_Affect" )

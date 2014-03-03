@@ -1212,6 +1212,10 @@
      <name>enum_list_pdf_list_type_standard_columnar
     </value>
     <value/>
+     <data>2
+     <name>enum_list_pdf_list_type_simplified_columnar
+    </value>
+    <value/>
      <data>99
      <name>enum_list_pdf_list_type_customised
     </value>
@@ -3960,6 +3964,18 @@
      <extra>enum=696
      <mandatory>true
      <modifiers>400000:relegate,2000:relegate
+    </field>
+    <field/>
+     <name>field_list_field_use_type_field
+     <field>302176
+     <ftype>@class
+     <extra>link
+     <mandatory>false
+     <modifiers>400000:relegate,2000:relegate
+     <pclass>107100
+     <pfield>107101
+     <pfname>field_field_name
+     <pextra>@fkey1:300700+107108=0+107101
     </field>
     <field/>
      <name>field_list_field_label_class

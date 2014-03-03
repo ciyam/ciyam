@@ -998,6 +998,8 @@ std::string CLASS_BASE_DECL_SPEC quoted_literal( const std::string& s, char esc 
 
 inline std::string unquoted_literal( const std::string& s, char esc = '\\' ) { return quoted_literal( s, esc, false ); }
 
+std::string CLASS_BASE_DECL_SPEC replace_leading_cols_with_ws( const std::string& s, const std::string& sep, size_t num_spaces );
+
 void CLASS_BASE_DECL_SPEC check_with_regex( const std::string& r, const std::string& s, bool* p_rc = 0 );
 
 std::string CLASS_BASE_DECL_SPEC hash_sha1( const std::string& s );

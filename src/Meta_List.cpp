@@ -648,6 +648,7 @@ string get_enum_string_pdf_font_type( int val )
 
 const int c_enum_list_pdf_list_type_none( 0 );
 const int c_enum_list_pdf_list_type_Standard_Columnar( 1 );
+const int c_enum_list_pdf_list_type_Simplified_Columnar( 2 );
 const int c_enum_list_pdf_list_type_Customised( 99 );
 
 string get_enum_string_list_pdf_list_type( int val )
@@ -660,6 +661,8 @@ string get_enum_string_list_pdf_list_type( int val )
       string_name = "enum_list_pdf_list_type_none";
    else if( to_string( val ) == to_string( "1" ) )
       string_name = "enum_list_pdf_list_type_Standard_Columnar";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_list_pdf_list_type_Simplified_Columnar";
    else if( to_string( val ) == to_string( "99" ) )
       string_name = "enum_list_pdf_list_type_Customised";
    else
@@ -2086,7 +2089,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
    string vars_filename( get_obj( ).Model( ).Name( ) );
    vars_filename += "_" + get_obj( ).Class( ).Name( ) + list_ext + ".pdf.vars.xrep";
 
-   if( get_obj( ).PDF_List_Type( ) == 1 ) // i.e. Standard Columnar
+   if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar
+    || get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Simplified_Columnar )
    {
       string key_info( to_string( Meta_List_Field::static_get_field_id( Meta_List_Field::e_field_id_Order ) ) + ' ' );
       if( get_obj( ).child_List_Field( ).iterate_forwards( key_info ) )
@@ -2115,6 +2119,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
          set< string > wide_fields;
          set< string > notes_fields;
+         set< string > hidden_fields;
          set< string > narrow_fields;
 
          set< string > total_fields;
@@ -2147,8 +2152,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             if( get_obj( ).child_List_Field( ).Type( ).get_key( ) != "field" )
                continue;
 
-            if( get_obj( ).child_List_Field( ).Print_Type( ) == 1 // i.e. non_print
-             || get_obj( ).child_List_Field( ).Access_Restriction( ) == 4 ) // i.e. denied_always
+            if( get_obj( ).child_List_Field( ).Print_Type( ) == 1 ) // i.e. non_print
                continue;
 
             string name, cname;
@@ -2164,21 +2168,29 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                else
                {
                   field_names.push_back( name );
-                  headers.insert( make_pair( name, "@" + name ) );
+
+                  if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+                     headers.insert( make_pair( name, "@" + name ) );
                }
 
-               if( !is_null( get_obj( ).child_List_Field( ).Source_Field( ).Enum( ) ) )
+               Meta_Field* p_type_field = &get_obj( ).child_List_Field( ).Source_Field( );
+               if( !is_null( get_obj( ).child_List_Field( ).Use_Type_Field( ) ) )
+                  p_type_field = &get_obj( ).child_List_Field( ).Use_Type_Field( );
+
+               if( !is_null( p_type_field->Enum( ) ) )
                {
                   extras.insert( make_pair( name, "indirect" ) );
                   prefixes.insert( make_pair( name, "@enum_"
-                   + get_obj( ).child_List_Field( ).Source_Field( ).Enum( ).Name( ) + "_" ) );
+                   + p_type_field->Enum( ).Name( ) + "_" ) );
                }
 
-               if( get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
+               if( p_type_field->Extra( ) == 9 ) // i.e. html
                   html_fields.insert( name );
 
-               if( get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 4 // i.e. notes
-                || get_obj( ).child_List_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
+               if( get_obj( ).child_List_Field( ).Access_Restriction( ) == 4 ) // i.e. denied_always
+                  hidden_fields.insert( name );
+               else if( p_type_field->Extra( ) == 4 // i.e. notes
+                || p_type_field->Extra( ) == 9 ) // i.e. html
                {
                   wide_fields.insert( name );
                   notes_fields.insert( name );
@@ -2186,52 +2198,52 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                   trunc_fields.insert( make_pair( name,
                    to_string( get_obj( ).child_List_Field( ).Notes_Truncation( ) ) ) );
                }
-               else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 0 // i.e. string
-                && get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ) <= 10 )
+               else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
+                && p_type_field->Type( ).Max_Size( ) <= 10 )
                   narrow_fields.insert( name );
-               else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 0 // i.e. string
-                && get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ) >= 100 )
+               else if( p_type_field->Type( ).Primitive( ) == 0 // i.e. string
+                && p_type_field->Type( ).Max_Size( ) >= 100 )
                   wide_fields.insert( name );
-               else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 6 ) // i.e. bool
+               else if( p_type_field->Type( ).Primitive( ) == 6 ) // i.e. bool
                   narrow_fields.insert( name );
-               else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) >= 1 // i.e. datetime
-                || get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) <= 5 ) // i.e. int
+               else if( p_type_field->Type( ).Primitive( ) >= 1 // i.e. datetime
+                || p_type_field->Type( ).Primitive( ) <= 5 ) // i.e. int
                {
                   string domain_mask, tmask;
 
                   string domain_type( meta_field_domain_type(
-                   get_obj( ).child_List_Field( ).Source_Field( ).Enum( ).Id( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Primitive( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Min_Value( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Max_Value( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Numeric_Digits( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Numeric_Decimals( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).String_Domain( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Date_Precision( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Time_Precision( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Show_Plus_Sign( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Zero_Padding( ),
-                   get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Fraction_Limit( ), domain_mask, &tmask ) );
+                   p_type_field->Enum( ).Id( ),
+                   p_type_field->Primitive( ),
+                   p_type_field->Type( ).Max_Size( ),
+                   p_type_field->Type( ).Min_Value( ),
+                   p_type_field->Type( ).Max_Value( ),
+                   p_type_field->Type( ).Numeric_Digits( ),
+                   p_type_field->Type( ).Numeric_Decimals( ),
+                   p_type_field->Type( ).String_Domain( ),
+                   p_type_field->Type( ).Date_Precision( ),
+                   p_type_field->Type( ).Time_Precision( ),
+                   p_type_field->Type( ).Show_Plus_Sign( ),
+                   p_type_field->Type( ).Zero_Padding( ),
+                   p_type_field->Type( ).Fraction_Limit( ), domain_mask, &tmask ) );
 
-                  int uom = get_obj( ).child_List_Field( ).Source_Field( ).UOM( );
+                  int uom = p_type_field->UOM( );
 
                   if( uom == 999 )
                      uom_fields.insert( make_pair( name, "uom" ) );
                   else if( uom != 0 )
                      uom_fields.insert( make_pair( name, meta_field_uom( uom ) ) );
 
-                  if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) != 1 ) // i.e. datetime
+                  if( p_type_field->Type( ).Primitive( ) != 1 ) // i.e. datetime
                      narrow_fields.insert( name );
 
-                  if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 1 ) // i.e. datetime
+                  if( p_type_field->Type( ).Primitive( ) == 1 ) // i.e. datetime
                      datetime_fields.insert( make_pair( name, domain_mask ) );
-                  else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 2 ) // i.e. date
+                  else if( p_type_field->Type( ).Primitive( ) == 2 ) // i.e. date
                      date_fields.insert( make_pair( name, domain_mask ) );
-                  else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 3 ) // i.e. time
+                  else if( p_type_field->Type( ).Primitive( ) == 3 ) // i.e. time
                      time_fields.insert( make_pair( name, domain_mask ) );
-                  else if( get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 4 // i.e. numeric
-                   || get_obj( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ) == 5 ) // i.e. int
+                  else if( p_type_field->Type( ).Primitive( ) == 4 // i.e. numeric
+                   || p_type_field->Type( ).Primitive( ) == 5 ) // i.e. int
                   {
                      numeric_fields.insert( make_pair( name, domain_mask ) );
                      total_masks.insert( make_pair( name, tmask ) );
@@ -2256,11 +2268,14 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                   headers.insert( make_pair( name, "@" + name ) );
                }
 
-               if( !is_null( get_obj( ).child_List_Field( ).Source_Child( ).Enum( ) ) )
+               Meta_Field* p_type_field = &get_obj( ).child_List_Field( ).Source_Child( );
+               if( !is_null( get_obj( ).child_List_Field( ).Use_Type_Field( ) ) )
+                  p_type_field = &get_obj( ).child_List_Field( ).Use_Type_Field( );
+
+               if( !is_null( p_type_field->Enum( ) ) )
                {
                   extras.insert( make_pair( name, "indirect" ) );
-                  prefixes.insert( make_pair( name, "@enum_"
-                   + get_obj( ).child_List_Field( ).Source_Child( ).Enum( ).Name( ) + "_" ) );
+                  prefixes.insert( make_pair( name, "@enum_" + p_type_field->Enum( ).Name( ) + "_" ) );
                }
             }
             else
@@ -2272,7 +2287,10 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                if( !fields.empty( ) )
                   fields += " ";
                fields += "f" + to_string( ++num_fields );
-               fields += " f" + to_string( ++num_fields );
+
+               // NOTE: Double the number of fields to allow for their "headers".
+               if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+                  fields += " f" + to_string( ++num_fields );
             }
             else
             {
@@ -2286,9 +2304,12 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             {
                total_fields.insert( name );
 
-               if( !tfields.empty( ) )
-                  tfields += " ";
-               tfields += "tf" + to_string( ++num_tfields );
+               if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+               {
+                  if( !tfields.empty( ) )
+                     tfields += " ";
+                  tfields += "tf" + to_string( ++num_tfields );
+               }
 
                if( !stfields.empty( ) )
                   stfields += " ";
@@ -2332,6 +2353,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             switch( get_obj( ).child_List_Field( ).Access_Restriction( ) )
             {
                case 0:
+               case 4: // NOTE: Hidden fields are taken care of above.
                break;
 
                case 1:
@@ -2364,7 +2386,11 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             qfields += query_fields[ i ];
          }
 
-         int page_width = 800; // i.e. assumes A4 landscape reserving 50 for side padding
+         int page_width;
+         if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+            page_width = 800; // i.e. assumes A4 landscape reserving 50 for side padding
+         else
+            page_width = 550; // i.e. assumes A4 portrait reserving 50 for side padding
 
          int total_units = 0;
          for( size_t i = 0; i < field_names.size( ); i++ )
@@ -2383,15 +2409,24 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          switch( summary_fields.size( ) )
          {
             case 0:
-            pdf_sio_xrep_name = "Standard_A4_List.pdf.sio.xrep";
+            if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+               pdf_sio_xrep_name = "Standard_A4_List.pdf.sio.xrep";
+            else
+               pdf_sio_xrep_name = "Simplified_A4_List.pdf.sio.xrep";
             break;
 
             case 1:
-            pdf_sio_xrep_name = "Standard_A4_List_Summary1.pdf.sio.xrep";
+            if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+               pdf_sio_xrep_name = "Standard_A4_List_Summary1.pdf.sio.xrep";
+            else
+               pdf_sio_xrep_name = "Simplified_A4_List_Summary1.pdf.sio.xrep";
             break;
 
             case 2:
-            pdf_sio_xrep_name = "Standard_A4_List_Summary2.pdf.sio.xrep";
+            if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+               pdf_sio_xrep_name = "Standard_A4_List_Summary2.pdf.sio.xrep";
+            else
+               pdf_sio_xrep_name = "Simplified_A4_List_Summary2.pdf.sio.xrep";
             break;
 
             default:
@@ -2525,8 +2560,12 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                    << "_font\x60=\x60'value\x60'\x60}\n";
             }
 
-            varsf << "\x60{\x60$sf" << to_string( i + 1 )
-             << "_width\x60=\x60'200\x60'\x60}\n";
+            if( hidden_fields.count( next_field ) )
+               varsf << "\x60{\x60$sf" << to_string( i + 1 )
+                << "_width\x60=\x60'0\x60'\x60}\n";
+            else
+               varsf << "\x60{\x60$sf" << to_string( i + 1 )
+                << "_width\x60=\x60'200\x60'\x60}\n";
 
             varsf << "\x60{\x60$sf" << to_string( i + 1 )
              << "_height\x60=\x60'1\x60'\x60}\n";
@@ -2543,7 +2582,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                varsf << "\x60{\x60$sf" << to_string( i + 1 )
                 << "_assign\x60=\x60'@summary" << ( i + 1 ) << "\x60'\x60}\n";
 
-            shpos += 10;
+            if( !hidden_fields.count( next_field ) )
+               shpos += 10;
          }
 
          int fnum = 1;
@@ -2572,15 +2612,18 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
                int width = 0;
 
-               if( narrow_fields.count( next_field ) )
-                  width = unit_size;
-               else if( wide_fields.count( next_field ) )
-                  width = unit_size * 4;
-               else
-                  width = unit_size * 2;
+               if( !hidden_fields.count( next_field ) )
+               {
+                  if( narrow_fields.count( next_field ) )
+                     width = unit_size;
+                  else if( wide_fields.count( next_field ) )
+                     width = unit_size * 4;
+                  else
+                     width = unit_size * 2;
 
-               hpos += width;
-               width -= 10; // i.e. make sure there is some gap between fields
+                  hpos += width;
+                  width -= 10; // i.e. make sure there is some gap between fields
+               }
 
                varsf << "\x60{\x60$f" << to_string( fnum )
                 << "_size\x60=\x60'growable\x60'\x60}\n";
@@ -2639,15 +2682,18 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
 
             int width = 0;
 
-            if( narrow_fields.count( next_field ) )
-               width = unit_size;
-            else if( wide_fields.count( next_field ) )
-               width = unit_size * 4;
-            else
-               width = unit_size * 2;
+            if( !hidden_fields.count( next_field ) )
+            {
+               if( narrow_fields.count( next_field ) )
+                  width = unit_size;
+               else if( wide_fields.count( next_field ) )
+                  width = unit_size * 4;
+               else
+                  width = unit_size * 2;
 
-            hpos += width;
-            width -= 10; // i.e. make sure there is some gap between fields
+               hpos += width;
+               width -= 10; // i.e. make sure there is some gap between fields
+            }
 
             field_widths.insert( make_pair( next_field, width ) );
 
@@ -2763,8 +2809,13 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                      }
 
                      varsf << "\x60{\x60}\n";
-                     varsf << "\x60{\x60$" << prefix << to_string( fnum )
-                      << "_pos\x60=\x60'+" << field_hpos[ next_field ] << ",+0\x60'\x60}\n";
+
+                     if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+                        varsf << "\x60{\x60$" << prefix << to_string( fnum )
+                         << "_pos\x60=\x60'+" << field_hpos[ next_field ] << ",+0\x60'\x60}\n";
+                     else
+                        varsf << "\x60{\x60$" << prefix << to_string( fnum )
+                         << "_pos\x60=\x60'+" << field_hpos[ next_field ] << ",+10\x60'\x60}\n";
 
                      varsf << "\x60{\x60$" << prefix << to_string( fnum )
                       << "_name\x60=\x60'@@total_summary" << suffix << next_field << "\x60'\x60}\n";
@@ -2787,8 +2838,12 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                         varsf << "\x60{\x60$" << prefix << to_string( fnum )
                          << "_group\x60=\x60'subtotal" << to_string( i + 1 ) << "\x60'\x60}\n";
 
-                     varsf << "\x60{\x60$" << prefix << to_string( fnum )
-                      << "_font\x60=\x60'value\x60'\x60}\n";
+                     if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
+                        varsf << "\x60{\x60$" << prefix << to_string( fnum )
+                         << "_font\x60=\x60'value\x60'\x60}\n";
+                     else
+                        varsf << "\x60{\x60$" << prefix << to_string( fnum )
+                         << "_font\x60=\x60'label\x60'\x60}\n";
 
                      if( total_masks.count( next_field ) )
                         varsf << "\x60{\x60$" << prefix << to_string( fnum )
@@ -7324,6 +7379,7 @@ void Meta_List::static_get_all_enum_pairs( vector< pair< string, string > >& pai
 
    pairs.push_back( make_pair( "enum_list_pdf_list_type_0", get_enum_string_list_pdf_list_type( 0 ) ) );
    pairs.push_back( make_pair( "enum_list_pdf_list_type_1", get_enum_string_list_pdf_list_type( 1 ) ) );
+   pairs.push_back( make_pair( "enum_list_pdf_list_type_2", get_enum_string_list_pdf_list_type( 2 ) ) );
    pairs.push_back( make_pair( "enum_list_pdf_list_type_99", get_enum_string_list_pdf_list_type( 99 ) ) );
 
    pairs.push_back( make_pair( "enum_list_print_restrict_0", get_enum_string_list_print_restrict( 0 ) ) );
@@ -7427,6 +7483,7 @@ void Meta_List::static_class_init( const char* p_module_name )
 
    g_list_pdf_list_type_enum.insert( 0 );
    g_list_pdf_list_type_enum.insert( 1 );
+   g_list_pdf_list_type_enum.insert( 2 );
    g_list_pdf_list_type_enum.insert( 99 );
 
    g_list_print_restrict_enum.insert( 0 );

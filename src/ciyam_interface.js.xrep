@@ -271,7 +271,9 @@ function check_for_new_window_height( )
       windowHeight = currentWindowHeight;
 
       document.getElementById( 'extra_content' ).style.minHeight = currentWindowHeight + 'px';
-      document.getElementById( 'footer' ).style.visibility = 'visible';
+
+      if( document.getElementById( 'footer' ) != null )
+         document.getElementById( 'footer' ).style.visibility = 'visible';
    }
 
    setTimeout( "check_for_new_window_height( )", 100 );

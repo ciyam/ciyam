@@ -7525,6 +7525,32 @@
       </specifications>
      </field>
      <field/>
+      <id>302176
+      <name>Use_Type_Field
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>202176
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500877
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500878
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>124132
       <name>View_Parent_Extra
       <type>int
@@ -25776,6 +25802,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202176
+    <name>Use_Type_Field_{List_Field}
+    <parent_id>107100
+    <child_id>124100
+    <cascade_op>destroy
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>202210
     <name>{Application}_{Module}
     <parent_id>127100
@@ -28259,6 +28294,7 @@
      <field_info>124119;enum=691
      <field_info>124125;enum=697
      <field_info>124115;enum=696
+     <field_info>302176:107101!@fkey1:300700+107108=0+107101;link
      <field_info>124131;enum=699
      <field_info>124120;enum=693
      <field_info>124129
@@ -33864,7 +33900,7 @@
     <id>682
     <name>list_pdf_list_type
     <type>int
-    <key_values>0=none,1=Standard_Columnar,99=Customised
+    <key_values>0=none,1=Standard_Columnar,2=Simplified_Columnar,99=Customised
    </user_defined_enum>
    <user_defined_enum/>
     <id>681

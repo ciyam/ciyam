@@ -99,7 +99,8 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
       e_field_id_Use_Child_Rel_Source_Parent = 50,
       e_field_id_Use_In_Text_Search_Title = 51,
       e_field_id_Use_Source_Parent = 52,
-      e_field_id_View_Parent_Extra = 53
+      e_field_id_Use_Type_Field = 53,
+      e_field_id_View_Parent_Extra = 54
    };
 
    Meta_List_Field( );
@@ -285,6 +286,10 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
    Meta_List_Field_Type& Type( );
    const Meta_List_Field_Type& Type( ) const;
    void Type( const std::string& key );
+
+   Meta_Field& Use_Type_Field( );
+   const Meta_Field& Use_Type_Field( ) const;
+   void Use_Type_Field( const std::string& key );
 
    virtual void Move_Down( const std::string& Restrict_Fields, const std::string& Restrict_Values );
 
