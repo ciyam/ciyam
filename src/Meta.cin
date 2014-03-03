@@ -65,7 +65,7 @@ user_defined_enum_add -id=678 view_field_date_precision_option int 0=from\\_fiel
 user_defined_enum_add -id=679 view_field_enum_option int 0=none,1=enum1,2=enum2,3=enum3,4=enum4,5=enum5
 user_defined_enum_add -id=680 list_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=681 list_print_restrict int 0=none,1=admin\\_only,2=denied\\_always
-user_defined_enum_add -id=682 list_pdf_list_type int 0=none,1=Standard_Columnar,99=Customised
+user_defined_enum_add -id=682 list_pdf_list_type int 0=none,1=Standard_Columnar,2=Simplified_Columnar,99=Customised
 user_defined_enum_add -id=685 list_style int 0=simple,1=search
 user_defined_enum_add -id=686 list_search_opt_limit int 0=default,1=1,2=2,3=3,4=4,5=5,6=6,7=7
 user_defined_enum_add -id=687 list_display_row_limit int 0=default,1=1,2=2,3=3,4=4,5=5,6=6,7=7,8=8,9=9,10=10\
@@ -909,6 +909,7 @@ relationship_add -id=202160 -fid=302160 List_Field Source_Child Field opt destro
 relationship_add -id=202165 -fid=302165 List_Field Source_Grandchild Field opt destroy
 relationship_add -id=202170 -fid=302170 List_Field Source_Parent_Class Class opt destroy
 relationship_add -id=202175 -fid=302175 List_Field Source_Child_Class Class opt destroy
+relationship_add -id=202176 -fid=302176 List_Field Use_Type_Field Field opt destroy
 relationship_add -id=202180 -fid=302180 List_Field Restriction_Spec Specification opt restrict
 relationship_add -id=202185 -fid=302185 List_Field Restriction_Field Field opt destroy
 relationship_add -id=202190 -fid=302190 List_Field {Procedure} Procedure opt restrict
@@ -1112,13 +1113,13 @@ modifier_add -id=500876 List_Field Hide_Non_Procedure_Fields Source_Field:relega
 ,Child_Rel_Source_Field:relegate,Child_Rel_Source_Parent:relegate,Child_Rel_Source_Child:relegate,Label_Class:relegate\
 ,Source_Grandchild:relegate,Child_Relationship:relegate,Link_Type:relegate
 modifier_add -id=500877 List_Field Hide_Non_Simple_Fields Alignment:relegate\
-,Notes_Truncation:relegate,Print_Type:relegate,Label_Source:relegate,Label_Without_Prefix:relegate\
+,Notes_Truncation:relegate,Print_Type:relegate,Use_Type_Field:relegate,Label_Source:relegate,Label_Without_Prefix:relegate\
 ,Use_In_Text_Search_Title:relegate,Source_Grandchild:relegate
 modifier_add -id=500878 List_Field Hide_Fields_For_Trivial_Field Use_Source_Parent:relegate\
 ,Source_Parent:relegate,Source_Child:relegate,Source_Grandchild:relegate,Child_Relationship:relegate\
 ,Use_Child_Rel_Source_Parent:relegate,Child_Rel_Source_Field:relegate\
 ,Child_Rel_Source_Parent:relegate,Child_Rel_Source_Child:relegate\
-,Restriction_Spec:relegate,Print_Type:relegate,Label_Class:relegate,Label_Source:relegate\
+,Restriction_Spec:relegate,Print_Type:relegate,Label_Class:relegate,Use_Type_Field:relegate,Label_Source:relegate\
 ,Label_Without_Prefix:relegate,Use_In_Text_Search_Title:relegate\
 ,Link_Type:relegate,Exclude_In_Use_FK:relegate,Restriction_Value:relegate,{Procedure}:relegate\
 ,Procedure_Args:relegate,Omit_Versions:relegate,Reverse_Order:relegate,Retain_Selected_Rows:relegate\
@@ -1935,7 +1936,8 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
 ,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name\
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure\
-,Font_Size,Alignment,Notes_Truncation,Print_Type,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
+,Font_Size,Alignment,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
+,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
 ,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup}+Name,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Parent_Class;hidden+fkey6,Access_Parent_Modifier:Name!@fkey6:{Class}+Name,Link_Empty_Restriction,Allow_Anonymous_Access"
 specification_add -id=602860 {List_Field}_child_list0 list "@602860_* child:no_limit\

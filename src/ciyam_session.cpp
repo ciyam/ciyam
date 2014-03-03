@@ -1287,12 +1287,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             else
             {
-               ++non_inserts;
-
-               if( !normal_fields.empty( ) )
-                  normal_fields += ",";
-               normal_fields += field_list[ i ];
-
                if( !field_list[ i ].empty( ) && field_list[ i ][ 0 ] == '!' )
                {
                   field_list[ i ].erase( 0, 1 );
@@ -1307,6 +1301,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   summaries.push_back( info );
                }
+
+               ++non_inserts;
+
+               if( !normal_fields.empty( ) )
+                  normal_fields += ",";
+               normal_fields += field_list[ i ];
             }
          }
 

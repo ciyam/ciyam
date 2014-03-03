@@ -252,6 +252,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Specification& child_Specification_Test_Parent( );
    const Meta_Specification& child_Specification_Test_Parent( ) const;
 
+   Meta_List_Field& child_List_Field_Use_Type( );
+   const Meta_List_Field& child_List_Field_Use_Type( ) const;
+
    Meta_Initial_Record_Value& child_Initial_Record_Value( );
    const Meta_Initial_Record_Value& child_Initial_Record_Value( ) const;
 

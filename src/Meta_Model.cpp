@@ -3243,9 +3243,6 @@ void Meta_Model::impl::impl_Generate( )
          {
             get_obj( ).child_List( ).perform_fetch( li->second );
 
-            if( get_obj( ).child_List( ).Access_Restriction( ) == 4 ) // i.e. denied_always
-               continue;
-
             string specification_name( get_obj( ).child_List( ).Class( ).Name( ) + '_' );
 
             string list_type( "standard" );
@@ -3426,6 +3423,7 @@ void Meta_Model::impl::impl_Generate( )
 
             bool is_admin_list = false;
             bool is_owner_list = false;
+            bool is_no_access_list = false;
             bool is_admin_owner_list = false;
 
             if( get_obj( ).child_List( ).Access_Restriction( ) != 0 )
@@ -3436,6 +3434,8 @@ void Meta_Model::impl::impl_Generate( )
                   is_admin_list = true;
                else if( get_obj( ).child_List( ).Access_Restriction( ) == 3 )
                   is_admin_owner_list = true;
+               else if( get_obj( ).child_List( ).Access_Restriction( ) == 4 )
+                  is_no_access_list = true;
                else
                   throw runtime_error( "unexpected Access_Restriction #"
                    + to_string( get_obj( ).child_List( ).Access_Restriction( ) ) + " in Model::Generate" );
@@ -3583,6 +3583,8 @@ void Meta_Model::impl::impl_Generate( )
                   list_type = "admin";
                else if( is_owner_list )
                   throw runtime_error( "'owner' access is only applicable to 'view_child' lists" );
+               else if( is_no_access_list )
+                  list_type = "no_access";
                else if( is_admin_owner_list )
                   throw runtime_error( "'admin_owner' access is only applicable to 'view_child' lists" );
             }
@@ -3590,6 +3592,9 @@ void Meta_Model::impl::impl_Generate( )
             {
                list_type = "home";
                specification_name += "home_list";
+
+               if( is_no_access_list )
+                  throw runtime_error( "'home' list is not compatible with this access restriction" );
 
                if( !list_extra.empty( ) )
                   list_extra += ',';
@@ -3615,7 +3620,9 @@ void Meta_Model::impl::impl_Generate( )
                }
 
                // NOTE: Special allows a list to be generated but inaccessible if is "user" and "admin_only".
-               if( is_admin_list )
+               // KLUDGE: As 'denied_always' access is now used for this purpose this isn't needed but as it
+               // has been used in one or more packages these must be changed before changing this code.
+               if( is_admin_list || is_no_access_list )
                   list_type = "no_access";
                else if( is_admin_owner_list )
                   throw runtime_error( "'admin_owner' access is only applicable to 'view_child' lists" );
@@ -3655,9 +3662,10 @@ void Meta_Model::impl::impl_Generate( )
                   specification_name += "list";
                }
 
-               // NOTE: Special allows a list to be generated but inaccessible if is "group" and "admin_only".
-               if( is_admin_list )
+               if( is_no_access_list )
                   list_type = "no_access";
+               else if( is_admin_list )
+                  throw runtime_error( "'admin' access is not applicable to 'group' lists" );
                else if( is_owner_list )
                   throw runtime_error( "'owner' access is only applicable to 'view_child' lists" );
                else if( is_admin_owner_list )
@@ -3696,6 +3704,9 @@ void Meta_Model::impl::impl_Generate( )
                   list_type = "child_admin";
                else if( is_admin_owner_list )
                   list_type = "child_admin_owner";
+
+               if( is_no_access_list )
+                  throw runtime_error( "'view_child' list is not compatible with this access restriction" );
 
                pclass_id = get_obj( ).child_List( ).Parent_Field( ).Parent_Class( ).Id( );
                pclass_name = get_obj( ).child_List( ).Parent_Field( ).Parent_Class( ).Name( );
@@ -4243,29 +4254,32 @@ void Meta_Model::impl::impl_Generate( )
 
                         column_pids.push_back( "" );
 
+                        Meta_Field* p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Source_Field( );
+                        if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( ) ) )
+                           p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( );
+
                         column_types.push_back( meta_field_type_name(
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Primitive( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Mandatory( ), "", "" ) );
+                         p_type_field->Primitive( ), p_type_field->Mandatory( ), "", "" ) );
 
                         string other_extras( meta_field_extras(
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).UOM( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).UOM_Name( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Extra( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Transient( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Max_Size( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Enum( ).Id( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Primitive( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Min_Value( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Max_Value( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Numeric_Digits( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Numeric_Decimals( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).String_Domain( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Date_Precision( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Time_Precision( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Show_Plus_Sign( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Zero_Padding( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Int_Type( ),
-                         get_obj( ).child_List( ).child_List_Field( ).Source_Field( ).Type( ).Numeric_Type( ) ) );
+                         p_type_field->UOM( ),
+                         p_type_field->UOM_Name( ),
+                         p_type_field->Extra( ),
+                         p_type_field->Transient( ),
+                         p_type_field->Type( ).Max_Size( ),
+                         p_type_field->Enum( ).Id( ),
+                         p_type_field->Type( ).Primitive( ),
+                         p_type_field->Type( ).Min_Value( ),
+                         p_type_field->Type( ).Max_Value( ),
+                         p_type_field->Type( ).Numeric_Digits( ),
+                         p_type_field->Type( ).Numeric_Decimals( ),
+                         p_type_field->Type( ).String_Domain( ),
+                         p_type_field->Type( ).Date_Precision( ),
+                         p_type_field->Type( ).Time_Precision( ),
+                         p_type_field->Type( ).Show_Plus_Sign( ),
+                         p_type_field->Type( ).Zero_Padding( ),
+                         p_type_field->Type( ).Int_Type( ),
+                         p_type_field->Type( ).Numeric_Type( ) ) );
 
                         if( !other_extras.empty( ) )
                         {
@@ -4303,29 +4317,32 @@ void Meta_Model::impl::impl_Generate( )
 
                            column_pids.push_back( "" );
 
+                           Meta_Field* p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Source_Child( );
+                           if( !is_null( get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( ) ) )
+                              p_type_field = &get_obj( ).child_List( ).child_List_Field( ).Use_Type_Field( );
+
                            column_types.push_back( meta_field_type_name(
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Primitive( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Mandatory( ), "", "" ) );
+                            p_type_field->Primitive( ), p_type_field->Mandatory( ), "", "" ) );
 
                            other_extras = meta_field_extras(
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).UOM( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).UOM_Name( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Extra( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Transient( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Max_Size( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Enum( ).Id( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Primitive( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Min_Value( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Max_Value( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Numeric_Digits( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Numeric_Decimals( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).String_Domain( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Date_Precision( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Time_Precision( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Show_Plus_Sign( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Zero_Padding( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Int_Type( ),
-                            get_obj( ).child_List( ).child_List_Field( ).Source_Child( ).Type( ).Numeric_Type( ) );
+                            p_type_field->UOM( ),
+                            p_type_field->UOM_Name( ),
+                            p_type_field->Extra( ),
+                            p_type_field->Transient( ),
+                            p_type_field->Type( ).Max_Size( ),
+                            p_type_field->Enum( ).Id( ),
+                            p_type_field->Type( ).Primitive( ),
+                            p_type_field->Type( ).Min_Value( ),
+                            p_type_field->Type( ).Max_Value( ),
+                            p_type_field->Type( ).Numeric_Digits( ),
+                            p_type_field->Type( ).Numeric_Decimals( ),
+                            p_type_field->Type( ).String_Domain( ),
+                            p_type_field->Type( ).Date_Precision( ),
+                            p_type_field->Type( ).Time_Precision( ),
+                            p_type_field->Type( ).Show_Plus_Sign( ),
+                            p_type_field->Type( ).Zero_Padding( ),
+                            p_type_field->Type( ).Int_Type( ),
+                            p_type_field->Type( ).Numeric_Type( ) );
 
                            if( !get_obj( ).child_List( ).child_List_Field( ).Source_Parent( ).Transient( ) )
                               column_index_info.insert(

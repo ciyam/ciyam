@@ -204,6 +204,7 @@ const char* const c_field_id_Type = "302120";
 const char* const c_field_id_Use_Child_Rel_Source_Parent = "124123";
 const char* const c_field_id_Use_In_Text_Search_Title = "124116";
 const char* const c_field_id_Use_Source_Parent = "124104";
+const char* const c_field_id_Use_Type_Field = "302176";
 const char* const c_field_id_View_Parent_Extra = "124132";
 
 const char* const c_field_name_Access_Parent_Modifier = "Access_Parent_Modifier";
@@ -258,6 +259,7 @@ const char* const c_field_name_Type = "Type";
 const char* const c_field_name_Use_Child_Rel_Source_Parent = "Use_Child_Rel_Source_Parent";
 const char* const c_field_name_Use_In_Text_Search_Title = "Use_In_Text_Search_Title";
 const char* const c_field_name_Use_Source_Parent = "Use_Source_Parent";
+const char* const c_field_name_Use_Type_Field = "Use_Type_Field";
 const char* const c_field_name_View_Parent_Extra = "View_Parent_Extra";
 
 const char* const c_field_display_name_Access_Parent_Modifier = "field_list_field_access_parent_modifier";
@@ -312,9 +314,10 @@ const char* const c_field_display_name_Type = "field_list_field_type";
 const char* const c_field_display_name_Use_Child_Rel_Source_Parent = "field_list_field_use_child_rel_source_parent";
 const char* const c_field_display_name_Use_In_Text_Search_Title = "field_list_field_use_in_text_search_title";
 const char* const c_field_display_name_Use_Source_Parent = "field_list_field_use_source_parent";
+const char* const c_field_display_name_Use_Type_Field = "field_list_field_use_type_field";
 const char* const c_field_display_name_View_Parent_Extra = "field_list_field_view_parent_extra";
 
-const int c_num_fields = 53;
+const int c_num_fields = 54;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -361,6 +364,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "302165",
    "302170",
    "302175",
+   "302176",
    "302180",
    "302185",
    "302190",
@@ -427,6 +431,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Use_Child_Rel_Source_Parent",
    "Use_In_Text_Search_Title",
    "Use_Source_Parent",
+   "Use_Type_Field",
    "View_Parent_Extra"
 };
 
@@ -564,6 +569,7 @@ string g_default_Type = string( );
 bool g_default_Use_Child_Rel_Source_Parent = bool( 0 );
 bool g_default_Use_In_Text_Search_Title = bool( 0 );
 bool g_default_Use_Source_Parent = bool( 0 );
+string g_default_Use_Type_Field = string( );
 int g_default_View_Parent_Extra = int( 0 );
 
 set< int > g_list_field_restrict_enum;
@@ -1367,6 +1373,12 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
          string_getter< bool >( cmd_handler.p_Meta_List_Field->Use_Source_Parent( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Use_Type_Field || field_name == c_field_name_Use_Type_Field )
+      {
+         handled = true;
+         string_getter< Meta_Field >( cmd_handler.p_Meta_List_Field->Use_Type_Field( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
       {
          handled = true;
@@ -1749,6 +1761,13 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
           *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Use_Source_Parent, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Use_Type_Field || field_name == c_field_name_Use_Type_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_List_Field, Meta_Field >(
+          *cmd_handler.p_Meta_List_Field, &Meta_List_Field::Use_Type_Field, field_value );
+      }
+
       if( !handled && field_name == c_field_id_View_Parent_Extra || field_name == c_field_name_View_Parent_Extra )
       {
          handled = true;
@@ -1814,6 +1833,8 @@ void Meta_List_Field_command_functor::operator ( )( const string& command, const
          cmd_handler.retval = cmd_handler.p_Meta_List_Field->Source_Parent_Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Type || field_name == c_field_name_Type )
          cmd_handler.retval = cmd_handler.p_Meta_List_Field->Type( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Use_Type_Field || field_name == c_field_name_Use_Type_Field )
+         cmd_handler.retval = cmd_handler.p_Meta_List_Field->Use_Type_Field( ).execute( cmd_and_args );
       else
          throw runtime_error( "unknown field name '" + field_name + "' for command call" );
    }
@@ -2607,6 +2628,36 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
       cba.set_key( key );
    }
 
+   Meta_Field& impl_Use_Type_Field( )
+   {
+      if( !cp_Use_Type_Field )
+      {
+         cp_Use_Type_Field.init( );
+
+         p_obj->setup_graph_parent( *cp_Use_Type_Field, c_field_id_Use_Type_Field, v_Use_Type_Field );
+      }
+      return *cp_Use_Type_Field;
+   }
+
+   const Meta_Field& impl_Use_Type_Field( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Use_Type_Field )
+      {
+         cp_Use_Type_Field.init( );
+
+         p_obj->setup_graph_parent( *cp_Use_Type_Field, c_field_id_Use_Type_Field, v_Use_Type_Field );
+      }
+      return *cp_Use_Type_Field;
+   }
+
+   void impl_Use_Type_Field( const string& key )
+   {
+      class_base_accessor cba( impl_Use_Type_Field( ) );
+      cba.set_key( key );
+   }
+
    void impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values );
 
    void impl_Move_Up( const string& Restrict_Fields, const string& Restrict_Values );
@@ -2763,6 +2814,9 @@ struct Meta_List_Field::impl : public Meta_List_Field_command_handler
 
    string v_Type;
    mutable class_pointer< Meta_List_Field_Type > cp_Type;
+
+   string v_Use_Type_Field;
+   mutable class_pointer< Meta_Field > cp_Use_Type_Field;
 };
 
 void Meta_List_Field::impl::impl_Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
@@ -3112,6 +3166,10 @@ string Meta_List_Field::impl::get_field_value( int field ) const
       break;
 
       case 52:
+      retval = to_string( impl_Use_Type_Field( ) );
+      break;
+
+      case 53:
       retval = to_string( impl_View_Parent_Extra( ) );
       break;
 
@@ -3335,6 +3393,10 @@ void Meta_List_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 52:
+      func_string_setter< Meta_List_Field::impl, Meta_Field >( *this, &Meta_List_Field::impl::impl_Use_Type_Field, value );
+      break;
+
+      case 53:
       func_string_setter< Meta_List_Field::impl, int >( *this, &Meta_List_Field::impl::impl_View_Parent_Extra, value );
       break;
 
@@ -3537,6 +3599,8 @@ void Meta_List_Field::impl::clear_foreign_key( const string& field )
       impl_Source_Parent_Class( "" );
    else if( field == c_field_id_Type || field == c_field_name_Type )
       impl_Type( "" );
+   else if( field == c_field_id_Use_Type_Field || field == c_field_name_Use_Type_Field )
+      impl_Use_Type_Field( "" );
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
 }
@@ -3589,6 +3653,8 @@ void Meta_List_Field::impl::set_foreign_key_value( const string& field, const st
       v_Source_Parent_Class = value;
    else if( field == c_field_id_Type || field == c_field_name_Type )
       v_Type = value;
+   else if( field == c_field_id_Use_Type_Field || field == c_field_name_Use_Type_Field )
+      v_Use_Type_Field = value;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
 }
@@ -3641,6 +3707,8 @@ const string& Meta_List_Field::impl::get_foreign_key_value( const string& field 
       return v_Source_Parent_Class;
    else if( field == c_field_id_Type || field == c_field_name_Type )
       return v_Type;
+   else if( field == c_field_id_Use_Type_Field || field == c_field_name_Use_Type_Field )
+      return v_Use_Type_Field;
    else
       throw runtime_error( "unknown foreign key field '" + field + "'" );
 }
@@ -3669,6 +3737,7 @@ void Meta_List_Field::impl::get_foreign_key_values( foreign_key_data_container& 
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Parent, v_Source_Parent ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Parent_Class, v_Source_Parent_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Type, v_Type ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Use_Type_Field, v_Use_Type_Field ) );
 }
 
 void Meta_List_Field::impl::add_extra_fixed_info( vector< pair< string, string > >& fixed_info ) const
@@ -3808,6 +3877,10 @@ void Meta_List_Field::impl::clear( )
    v_Type = string( );
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
+
+   v_Use_Type_Field = string( );
+   if( cp_Use_Type_Field )
+      p_obj->setup_foreign_key( *cp_Use_Type_Field, v_Use_Type_Field );
 }
 
 bool Meta_List_Field::impl::value_will_be_provided( const string& field_name )
@@ -4124,6 +4197,9 @@ void Meta_List_Field::impl::after_fetch( )
 
    if( cp_Type )
       p_obj->setup_foreign_key( *cp_Type, v_Type );
+
+   if( cp_Use_Type_Field )
+      p_obj->setup_foreign_key( *cp_Use_Type_Field, v_Use_Type_Field );
 
    post_init( );
 
@@ -5038,6 +5114,21 @@ void Meta_List_Field::Type( const string& key )
    p_impl->impl_Type( key );
 }
 
+Meta_Field& Meta_List_Field::Use_Type_Field( )
+{
+   return p_impl->impl_Use_Type_Field( );
+}
+
+const Meta_Field& Meta_List_Field::Use_Type_Field( ) const
+{
+   return p_impl->impl_Use_Type_Field( );
+}
+
+void Meta_List_Field::Use_Type_Field( const string& key )
+{
+   p_impl->impl_Use_Type_Field( key );
+}
+
 void Meta_List_Field::Move_Down( const string& Restrict_Fields, const string& Restrict_Values )
 {
    p_impl->impl_Move_Down( Restrict_Fields, Restrict_Values );
@@ -5699,6 +5790,16 @@ const char* Meta_List_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Use_Type_Field )
+   {
+      p_id = c_field_id_Use_Type_Field;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_View_Parent_Extra )
    {
       p_id = c_field_id_View_Parent_Extra;
@@ -6240,6 +6341,16 @@ const char* Meta_List_Field::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Use_Type_Field )
+   {
+      p_name = c_field_name_Use_Type_Field;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_View_Parent_Extra )
    {
       p_name = c_field_name_View_Parent_Extra;
@@ -6539,6 +6650,11 @@ string Meta_List_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Use_Source_Parent );
       get_module_string( c_field_display_name_Use_Source_Parent, &next );
    }
+   else if( id_or_name == c_field_id_Use_Type_Field || id_or_name == c_field_name_Use_Type_Field )
+   {
+      name = string( c_field_display_name_Use_Type_Field );
+      get_module_string( c_field_display_name_Use_Type_Field, &next );
+   }
    else if( id_or_name == c_field_id_View_Parent_Extra || id_or_name == c_field_name_View_Parent_Extra )
    {
       name = string( c_field_display_name_View_Parent_Extra );
@@ -6663,6 +6779,8 @@ string Meta_List_Field::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Use_In_Text_Search_Title );
    else if( id_or_name == c_field_id_Use_Source_Parent || id_or_name == c_field_name_Use_Source_Parent )
       display_name = get_module_string( c_field_display_name_Use_Source_Parent );
+   else if( id_or_name == c_field_id_Use_Type_Field || id_or_name == c_field_name_Use_Type_Field )
+      display_name = get_module_string( c_field_display_name_Use_Type_Field );
    else if( id_or_name == c_field_id_View_Parent_Extra || id_or_name == c_field_name_View_Parent_Extra )
       display_name = get_module_string( c_field_display_name_View_Parent_Extra );
 
@@ -6960,6 +7078,8 @@ class_base& Meta_List_Field::get_or_create_graph_child( const string& context )
       p_class_base = &Source_Parent_Class( );
    else if( sub_context == c_field_id_Type || sub_context == c_field_name_Type )
       p_class_base = &Type( );
+   else if( sub_context == c_field_id_Use_Type_Field || sub_context == c_field_name_Use_Type_Field )
+      p_class_base = &Use_Type_Field( );
 
    if( !p_class_base )
       throw runtime_error( "unknown sub-context '" + sub_context + "'" );
@@ -7027,6 +7147,7 @@ void Meta_List_Field::get_sql_column_names(
    names.push_back( "C_Use_Child_Rel_Source_Parent" );
    names.push_back( "C_Use_In_Text_Search_Title" );
    names.push_back( "C_Use_Source_Parent" );
+   names.push_back( "C_Use_Type_Field" );
    names.push_back( "C_View_Parent_Extra" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -7090,6 +7211,7 @@ void Meta_List_Field::get_sql_column_values(
    values.push_back( to_string( Use_Child_Rel_Source_Parent( ) ) );
    values.push_back( to_string( Use_In_Text_Search_Title( ) ) );
    values.push_back( to_string( Use_Source_Parent( ) ) );
+   values.push_back( sql_quote( to_string( Use_Type_Field( ) ) ) );
    values.push_back( to_string( View_Parent_Extra( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -7557,6 +7679,7 @@ void Meta_List_Field::static_get_field_info( field_info_container& all_field_inf
    all_field_info.push_back( field_info( "124123", "Use_Child_Rel_Source_Parent", "bool", false ) );
    all_field_info.push_back( field_info( "124116", "Use_In_Text_Search_Title", "bool", false ) );
    all_field_info.push_back( field_info( "124104", "Use_Source_Parent", "bool", false ) );
+   all_field_info.push_back( field_info( "302176", "Use_Type_Field", "Meta_Field", false ) );
    all_field_info.push_back( field_info( "124132", "View_Parent_Extra", "int", false ) );
 }
 
@@ -7586,6 +7709,7 @@ void Meta_List_Field::static_get_foreign_key_info( foreign_key_info_container& f
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Parent, make_pair( "Meta.124100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Parent_Class, make_pair( "Meta.124100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Type, make_pair( "Meta.124100", "Meta_List_Field_Type" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Use_Type_Field, make_pair( "Meta.124100", "Meta_Field" ) ) );
 }
 
 int Meta_List_Field::static_get_num_fields( bool* p_done, const string* p_class_name )
@@ -7816,6 +7940,10 @@ const char* Meta_List_Field::static_get_field_id( field_id id )
       break;
 
       case 53:
+      p_id = "302176";
+      break;
+
+      case 54:
       p_id = "124132";
       break;
    }
@@ -8041,6 +8169,10 @@ const char* Meta_List_Field::static_get_field_name( field_id id )
       break;
 
       case 53:
+      p_id = "Use_Type_Field";
+      break;
+
+      case 54:
       p_id = "View_Parent_Extra";
       break;
    }
@@ -8161,8 +8293,10 @@ int Meta_List_Field::static_get_field_num( const string& field )
       rc += 51;
    else if( field == c_field_id_Use_Source_Parent || field == c_field_name_Use_Source_Parent )
       rc += 52;
-   else if( field == c_field_id_View_Parent_Extra || field == c_field_name_View_Parent_Extra )
+   else if( field == c_field_id_Use_Type_Field || field == c_field_name_Use_Type_Field )
       rc += 53;
+   else if( field == c_field_id_View_Parent_Extra || field == c_field_name_View_Parent_Extra )
+      rc += 54;
 
    return rc - 1;
 }
@@ -8242,6 +8376,7 @@ string Meta_List_Field::static_get_sql_columns( )
     "C_Use_Child_Rel_Source_Parent INTEGER NOT NULL,"
     "C_Use_In_Text_Search_Title INTEGER NOT NULL,"
     "C_Use_Source_Parent INTEGER NOT NULL,"
+    "C_Use_Type_Field VARCHAR(75) NOT NULL,"
     "C_View_Parent_Extra INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

@@ -258,6 +258,7 @@ struct pdf_gen_field_info
     has_line_spacing( false ),
     is_external_data( false ),
     is_indirect_data( false ),
+    blank_zero_numeric( false ),
     line_with_round_ends( false ),
     fill_and_square_top( false ),
     fill_and_square_bottom( false ),
@@ -322,6 +323,8 @@ struct pdf_gen_field_info
 
    bool is_external_data;
    bool is_indirect_data;
+
+   bool blank_zero_numeric;
 
    bool x_is_offset;
    bool y_is_offset;
@@ -511,6 +514,8 @@ const char* const c_extra_group_overflow = "group_overflow";
 
 const char* const c_extra_external = "external";
 const char* const c_extra_indirect = "indirect";
+
+const char* const c_extra_blank_zero = "blank_zero";
 
 const char* const c_link_extra_grow = "grow";
 const char* const c_link_extra_block = "block";
@@ -1954,6 +1959,8 @@ void read_pdf_gen_format( const string& file_name, pdf_gen_format& format )
                      field_info.is_external_data = true;
                   else if( next_extra == c_extra_indirect )
                      field_info.is_indirect_data = true;
+                  else if( next_extra == c_extra_blank_zero )
+                     field_info.blank_zero_numeric = true;
                   else if( next_extra == c_extra_round_top )
                   {
                      field_info.line_with_round_ends = true;
@@ -2768,8 +2775,12 @@ bool process_group(
             string total_dyn_var( "@@total_" + format.fields[ j ].data );
             if( dynamic_variables.count( total_dyn_var ) )
             {
-               numeric total( dynamic_variables.find( total_dyn_var )->second.c_str( ) );
-               total += numeric( data.c_str( ) );
+               string val( dynamic_variables.find( total_dyn_var )->second );
+               if( val.empty( ) )
+                  val = "0";
+
+               numeric total( val.c_str( ) );
+               total += numeric( data.empty( ) ? "0" : data.c_str( ) );
 
                dynamic_variables[ total_dyn_var ] = to_string( total );
             }
@@ -2781,8 +2792,12 @@ bool process_group(
 
                if( dynamic_variables.count( total_dyn_var ) )
                {
-                  numeric total( dynamic_variables.find( total_dyn_var )->second.c_str( ) );
-                  total += numeric( data.c_str( ) );
+                  string val( dynamic_variables.find( total_dyn_var )->second );
+                  if( val.empty( ) )
+                     val = "0";
+
+                  numeric total( val.c_str( ) );
+                  total += numeric( data.empty( ) ? "0" : data.c_str( ) );
 
                   dynamic_variables[ total_dyn_var ] = to_string( total );
                }
@@ -2813,6 +2828,13 @@ bool process_group(
          {
             if( variables.count( data ) )
                data = variables.find( data )->second;
+         }
+
+         if( format.fields[ j ].blank_zero_numeric )
+         {
+            if( data.find( '0' ) != string::npos
+             && data.find_first_of( "123456789" ) == string::npos )
+               data.erase( );
          }
 
          if( !format.fields[ j ].prefix.empty( ) )

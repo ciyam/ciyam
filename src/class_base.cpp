@@ -170,7 +170,7 @@ void remove_suffix( string& str, const string& suffix, const string& separator )
 }
 
 string get_mask( int numeric_digits,
- int numeric_decimals, bool is_numeric, bool show_plus_sign, int zero_padding )
+ int numeric_decimals, bool is_numeric, bool show_plus_sign, int zero_padding, bool include_commas = true )
 {
    string mask;
 
@@ -197,6 +197,21 @@ string get_mask( int numeric_digits,
          mask += string( numeric_decimals, '#' );
       else
          mask += string( numeric_decimals, '0' );
+   }
+
+   if( include_commas )
+   {
+      string::size_type pos = mask.find( '.' );
+      if( pos == string::npos )
+         pos = mask.length( ) - 1;
+      else if( pos > 0 )
+         --pos;
+
+      while( pos > 3 )
+      {
+         mask.insert( pos - 2, "," );
+         pos -= 3;
+      }
    }
 
    return mask;
@@ -2927,6 +2942,23 @@ string quoted_literal( const string& s, char esc, bool add_quotes )
       qs += '"';
 
    return qs;
+}
+
+string replace_leading_cols_with_ws( const string& s, const string& sep, size_t num_spaces )
+{
+   vector< string > vs;
+   split_string( s, vs, sep );
+
+   string retval, rep( num_spaces, ' ' );
+   for( size_t i = 0; i < vs.size( ); i++ )
+   {
+      if( i == vs.size( ) - 1 )
+         retval += vs[ i ];
+      else
+         retval += rep;
+   }
+
+   return retval;
 }
 
 void check_with_regex( const string& r, const string& s, bool* p_rc )
