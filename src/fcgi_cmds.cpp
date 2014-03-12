@@ -52,12 +52,19 @@ string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_n
          uid_info += ":" + sess_info.user_id;
       else
       {
-         string::size_type pos = sess_info.user_name.find( ' ' );
+         // NOTE: As the user name is not intended for anything other than
+         // internal display purposes rather than escaping quotes they are
+         // just changed (if escaping was to be used then it would require
+         // rework in the server code for session command handling).
+         string user_name( sess_info.user_name );
+         replace( user_name, "\"", "'" );
+
+         string::size_type pos = user_name.find( ' ' );
 
          if( pos == string::npos || !quote_if_has_space_in_name )
-            uid_info += ":" + sess_info.user_name;
+            uid_info += ":" + user_name;
          else
-            uid_info = "\"" + uid_info + ":" + sess_info.user_name + "\"";
+            uid_info = "\"" + uid_info + ":" + user_name + "\"";
       }
    }
    else
@@ -539,7 +546,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
    if( get_storage_info( ).embed_images )
       fetch_cmd += " -x=@embed=1";
 
-   fetch_cmd += " \"" + item_key + "\" #1";
+   fetch_cmd += " \"" + escaped( item_key, ",\"" ) + "\" #1";
 
    string field_values( set_field_values );
 
