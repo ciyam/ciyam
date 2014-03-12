@@ -19,8 +19,6 @@
 
 class tcp_socket;
 
-std::string get_uid_info( const session_info& sess_info );
-
 void read_module_strings( module_info& info, tcp_socket& socket );
 
 bool simple_command( session_info& sess_info, const std::string& cmd, std::string* p_response = 0 );
