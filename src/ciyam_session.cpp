@@ -139,11 +139,19 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
 
 string& remove_uid_extra_from_log_command( string& log_command )
 {
-
    string::size_type pos = log_command.find( ' ' );
    if( pos != string::npos )
    {
-      string::size_type npos = log_command.find( ' ', pos + 1 );
+      string::size_type npos;
+      if( log_command.size( ) > pos && log_command[ pos + 1 ] == '"' )
+      {
+         npos = log_command.find( '"', ++pos + 1 );
+         if( npos != string::npos )
+            ++npos;
+      }
+      else
+         npos = log_command.find( ' ', pos + 1 );
+
       if( npos != string::npos )
       {
          string uid_info( log_command.substr( pos + 1, npos - pos - 1 ) );
@@ -151,8 +159,11 @@ string& remove_uid_extra_from_log_command( string& log_command )
          string::size_type xpos = uid_info.find_first_of( "!:;@#" );
          if( xpos != string::npos )
          {
-            log_command = log_command.substr( 0, pos + 1 )
-             + uid_info.substr( 0, xpos ) + log_command.substr( npos );
+            string prefix = log_command.substr( 0, pos );
+            if( prefix[ prefix.size( ) - 1 ] != ' ' )
+               prefix += ' ';
+
+            log_command = prefix + uid_info.substr( 0, xpos ) + log_command.substr( npos );
          }
       }
    }
@@ -1652,7 +1663,13 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             // NOTE: The generated key is inserted into the "next_command" so an actual key value
             // will appear in the transaction log (otherwise log operations could not be restored).
-            string::size_type pos = next_command.find( "\"" );
+            string::size_type pos = next_command.find( "\"\"" );
+            if( pos == string::npos )
+               pos = next_command.find( "\" \"" );
+
+            if( pos == string::npos )
+               throw runtime_error( "unable to find empty key in: " + next_command );
+
             next_command.insert( pos + 1, new_key );
 
             if( key.size( ) == 1 )

@@ -242,7 +242,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             if( pos != string::npos )
             {
                found = true;
-               home_info_cmd.replace( pos, strlen( c_user_key_arg ), get_uid_info( *p_session_info ) );
+               home_info_cmd.replace( pos, strlen( c_user_key_arg ), p_session_info->user_key );
             }
 
             pos = home_info_cmd.find( c_user_perms_arg );

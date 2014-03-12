@@ -39,7 +39,7 @@ const char* const c_order_reverse = "reverse";
 
 }
 
-string get_uid_info( const session_info& sess_info )
+string get_uid_info( const session_info& sess_info, bool quote_if_has_space_in_name = true )
 {
    string uid_info( sess_info.user_key );
 
@@ -51,7 +51,14 @@ string get_uid_info( const session_info& sess_info )
       if( sess_info.user_name.empty( ) )
          uid_info += ":" + sess_info.user_id;
       else
-         uid_info += ":" + sess_info.user_name;
+      {
+         string::size_type pos = sess_info.user_name.find( ' ' );
+
+         if( pos == string::npos || !quote_if_has_space_in_name )
+            uid_info += ":" + sess_info.user_name;
+         else
+            uid_info = "\"" + uid_info + ":" + sess_info.user_name + "\"";
+      }
    }
    else
    {
@@ -491,7 +498,7 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
 
    string fetch_cmd( "perform_fetch " + module + " " + class_id );
 
-   string user_info( get_uid_info( sess_info ) );
+   string user_info( get_uid_info( sess_info, false ) );
    if( !user_info.empty( ) )
       fetch_cmd += " \"-u=" + user_info + "\"";
 
@@ -657,7 +664,7 @@ bool fetch_list_info( const string& module,
    if( is_reverse )
       fetch_cmd += " -rev";
 
-   string user_info( get_uid_info( sess_info ) );
+   string user_info( get_uid_info( sess_info, false ) );
    if( !user_info.empty( ) )
       fetch_cmd += " \"-u=" + user_info + "\"";
 
