@@ -9664,8 +9664,7 @@ bool perform_instance_iterate( class_base& instance,
     + "', fields = '" + fields + "', direction = " + to_string( direction ) );
 
    oid id;
-   string sql, key, key_value( key_info );
-
+   string sql, key;
    size_t num_fields = 0;
 
    string class_id( instance.get_class_id( ) );
@@ -9881,7 +9880,7 @@ bool perform_instance_iterate( class_base& instance,
                      string next_value;
                      if( i < extra_key_values.size( ) )
                      {
-                        next_value = extra_key_values[ i ];
+                        next_value = escaped( extra_key_values[ i ], "," );
 
                         // NOTE: If transients have been used as restricts, and no non-transient replacement
                         // was provided, then tests for record filtering based upon each and every transient
@@ -9902,7 +9901,7 @@ bool perform_instance_iterate( class_base& instance,
                         extra_key_info += ',';
 
                      first_extra = false;
-                     extra_key_info += extra_key_values[ i ];
+                     extra_key_info += escaped( extra_key_values[ i ], "," );
                   }
                }
             }
