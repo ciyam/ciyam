@@ -1065,13 +1065,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                      // NOTE: If a "modified" date/time field exists then update this to the current
                      // date/time.
                      if( !view.modify_datetime_field.empty( ) )
-                     {
-                        date_time dtm_modified;
-                        get_session_dtm( *p_session_info, dtm_modified );
-
                         field_value_pairs.push_back(
-                         make_pair( view.modify_datetime_field, dtm_modified.as_string( ) ) );
-                     }
+                         make_pair( view.modify_datetime_field, "U" + date_time::standard( ).as_string( ) ) );
 
                      // FUTURE: Need to and report an error if the update fails.
                      if( perform_update( view.module_id, view.cid, data, field_value_pairs, *p_session_info ) )

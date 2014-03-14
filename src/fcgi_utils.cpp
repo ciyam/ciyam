@@ -1246,12 +1246,19 @@ void replace_links_and_output( const string& s,
          string date_time_str( next_key.substr( dtpos + 1 ) );
          next_key.erase( dtpos );
 
+         // NOTE: If is expected that the application server will have adjusted
+         // to a local timezone if the user has one specified, but if they have
+         // not specified one then adjust according to their GMT offset.
+         date_time dt( date_time_str );
+         if( sess_info.tz_name.empty( ) )
+            dt += ( seconds )sess_info.gmt_offset;
+
          dtpos = display.find( ';' );
          if( dtpos == string::npos )
-            display = format_date_time( date_time( date_time_str ), display.c_str( ) );
+            display = format_date_time( dt, display.c_str( ) );
          else
          {
-            string formatted = format_date_time( date_time( date_time_str ), display.substr( 0, dtpos ).c_str( ) );
+            string formatted = format_date_time( dt, display.substr( 0, dtpos ).c_str( ) );
             display.erase( 0, dtpos + 1 );
 
             dtpos = display.find( '@' );
