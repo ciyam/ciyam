@@ -2542,7 +2542,7 @@ void save_record( const string& module_id,
          else if( view.datetime_fields.count( value_id ) )
          {
             if( view.defcurrent_fields.count( value_id ) )
-               next = dt_current.as_string( );
+               next = "U" + date_time::standard( ).as_string( );
          }
 
          if( !next.empty( ) )
