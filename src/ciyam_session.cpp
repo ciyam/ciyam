@@ -1661,19 +1661,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string new_key( gen_key( ) );
 
+            string::size_type spos = next_command.find( uid ) + uid.length( );
+
             // NOTE: The generated key is inserted into the "next_command" so an actual key value
             // will appear in the transaction log (otherwise log operations could not be restored).
-            string::size_type pos = next_command.find( "\"\"" );
-            if( pos == string::npos )
-               pos = next_command.find( "\" \"" );
+            string::size_type ipos = next_command.find( "\"\"", spos );
+            if( ipos == string::npos )
+               ipos = next_command.find( "\" ", spos );
 
-            if( pos == string::npos )
+            if( ipos == string::npos )
                throw runtime_error( "unable to find empty key in: " + next_command );
 
-            next_command.insert( pos + 1, new_key );
+            next_command.insert( ipos + 1, new_key );
 
             if( key.size( ) == 1 )
-               next_command.erase( pos + 1 + new_key.length( ), 1 );
+               next_command.erase( ipos + 1 + new_key.length( ), 1 );
 
             // NOTE: If there is a clone key then need to keep it.
             if( key.size( ) > 1 )
