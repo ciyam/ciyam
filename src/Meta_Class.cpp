@@ -356,7 +356,7 @@ string get_mapped_id( const string& model, const string& id )
 
 string expand_arg( const string& arg )
 {
-   string::size_type pos = arg.find_first_of( "\" " );
+   string::size_type pos = arg.find_first_of( "\" |<>&" );
    if( pos == string::npos )
       return arg;
 

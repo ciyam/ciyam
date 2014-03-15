@@ -138,6 +138,9 @@
 `{`@eq`(`$arg_default`,`'true`'`)\
       actions += '>';
 `}\
+`{`@eq`(`$arg_no_trans`,`'true`'`)\
+      actions += '-';
+`}\
       actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
       actions += "$" + get_obj( ).get_class_id( );
@@ -164,7 +167,10 @@
          actions += '<';
 `}\
 `{`@eq`(`$arg_default`,`'true`'`)\
-      actions += '>';
+         actions += '>';
+`}\
+`{`@eq`(`$arg_no_trans`,`'true`'`)\
+         actions += '-';
 `}\
          actions += c_procedure_id_`{`$arg_procedure`};
 `{`@eq`(`$arg_edit_record`,`'true`'`)`|`@eq`(`$arg_clone_record`,`'true`'`)
