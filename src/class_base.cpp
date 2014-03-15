@@ -3410,7 +3410,10 @@ string list_timezones( )
       if( !retval.empty( ) )
          retval += '\n';
 
-      retval += tci->first + " " + tci->second.description;
+      retval += tci->first + " " + tci->second.description + " " + g_timezone_abbrs[ tci->first ];
+
+      if( !tci->second.daylight_savings.years_info.empty( ) )
+         retval += "/" + tci->second.daylight_abbr;
    }
 
    return retval;
