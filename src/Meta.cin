@@ -511,6 +511,7 @@ field_add -id=118113 View Allow_Copy_Action bool mand -def=0
 field_add -id=118114 View Use_First_Row_As_Header bool mand -def=0
 field_add -id=118115 View Auto_Back_After_Save bool mand -def=0
 field_add -id=118116 View Ignore_Unactionable_Records bool mand -def=0
+field_add -id=118117 View File_Links_Always_As_Single bool mand -def=0
 procedure_add -id=118410 View Generate_PDF_View
 class_add -id=119100 View_Field_Type View_Field_Types
 field_add -id=119101 View_Field_Type Name str30 mand
@@ -599,6 +600,7 @@ field_add -id=122145 List Allow_Anonymous_Access bool mand -def=0
 field_add -id=122146 List Is_Not_Anonymous bool mand -def=0
 field_add -id=122147 List Is_Admin bool mand -def=0
 field_add -id=122148 List Ignore_State_For_Display bool mand -def=0
+field_add -id=122149 List File_Links_Always_As_Single bool mand -def=0
 procedure_add -id=122430 List Generate_PDF_List
 procedure_arg_add -id=122431 List Generate_PDF_List Variation_Num int in
 class_add -id=123100 List_Field_Type List_Field_Types
@@ -1087,7 +1089,8 @@ modifier_add -id=500830 List Is_Home Style:relegate,Limit_Scroll_And_New:relegat
 ,Is_Variation:relegate,Allow_Text_Search:relegate,Print_Without_Highlight:relegate,Multiline_Truncate_For_Print:relegate\
 ,PDF_List_Type:relegate,PDF_Font_Type:relegate,Number_Multiple_Pages:relegate\
 ,Ignore_User_Id_Filter:relegate,Ignore_Implicit_Ordering:relegate,Display_Security_Level:relegate\
-,Ignore_Uneditable_Parent:relegate,Ignore_State_For_Display:relegate,Ignore_Unactionable_Records:relegate,Create_Only_If_Default_Other:relegate\
+,Ignore_Uneditable_Parent:relegate,Ignore_State_For_Display:relegate,Ignore_Unactionable_Records:relegate\
+,File_Links_Always_As_Single:relegate,Create_Only_If_Default_Other:relegate\
 ,Destroy_Only_If_Default_Other:relegate,Display_Only_If_Default_Other:relegate,Create_Restriction:relegate,Create_{Permission}:relegate\
 ,Destroy_Restriction:relegate,Destroy_{Permission}:relegate
 modifier_add -id=500831 List PDF_List_Is_None PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
@@ -1891,7 +1894,7 @@ specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_e
 ,@tab:Security_Options,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
 ,@tab:Advanced_UI_Options,Allow_Copy_Action,Auto_Back_After_Save,Allow_Printable_Version;force\
-,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header,Ignore_Unactionable_Records"
+,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header,File_Links_Always_As_Single,Ignore_Unactionable_Records"
 specification_add -id=602620 {View}_child_list0 list "@602620_* child:sort_no_limit View Name,Access_Restriction {Model}"
 specification_add -id=602710 {View_Field}_view view "? standard View_Field {View}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
@@ -1920,7 +1923,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Print_Without_Highlight,Multiline_Truncate_For_Print,PDF_List_Type;force,PDF_Font_Type,Number_Multiple_Pages\
 ,@tab:Advanced_UI_Options\
 ,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\
-,Display_Security_Level,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
+,Display_Security_Level,File_Links_Always_As_Single,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
 specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction {Model}"
 specification_add -id=602850 {List_Field}_view view "? standard List_Field {List}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\

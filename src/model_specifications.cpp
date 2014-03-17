@@ -10249,6 +10249,7 @@ void transient_field_alias_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( "check_mod", "" ) );
    spec_data.data_pairs.push_back( make_pair( "func_arg1", "" ) );
    spec_data.data_pairs.push_back( make_pair( "func_arg2", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "post_init", "" ) );
 }
 
 string transient_field_alias_specification::static_class_name( ) { return "transient_field_alias"; }

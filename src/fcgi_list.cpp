@@ -3137,10 +3137,17 @@ void output_list_form( ostream& os,
                   string link_file_name( display_names[ source_field_id ] );
                   if( filename_col >= 0 )
                   {
-                     link_file_name = valid_file_name( columns[ filename_col ], &has_utf8_chars );
+                     // NOTE: If an empty filename is found then "file_ext" will end up becoming the name.
+                     if( columns[ filename_col ].empty( ) )
+                        link_file_name.erase( );
+                     else
+                     {
+                        link_file_name = valid_file_name( columns[ filename_col ], &has_utf8_chars );
 
-                     if( source.file_fields.size( ) + source.image_fields.size( ) > 1 )
-                        link_file_name += " " + source.display_names[ i ];
+                        if( source.file_fields.size( ) + source.image_fields.size( ) > 1
+                         && !extras.count( c_list_type_extra_file_links_always_as_single ) )
+                           link_file_name += " " + source.display_names[ i ];
+                     }
                   }
 
                   // NOTE: For the link file name in a list always append the row number just

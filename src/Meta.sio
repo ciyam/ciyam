@@ -4875,6 +4875,27 @@
       </specifications>
      </field>
      <field/>
+      <id>122149
+      <name>File_Links_Always_As_Single
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500830
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>122111
       <name>Id
       <type>1050
@@ -22641,6 +22662,23 @@
       </specifications>
      </field>
      <field/>
+      <id>118117
+      <name>File_Links_Always_As_Single
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>118105
       <name>Id
       <type>1050
@@ -28673,6 +28711,7 @@
      <field_info>122148
      <field_info>122120
      <field_info>122139
+     <field_info>122149
      <field_info>122140
      <field_info>122141
      <field_info>122142
@@ -33599,6 +33638,7 @@
      <field_info>118111;force+enum=658
      <field_info>118112;enum=654
      <field_info>118114
+     <field_info>118117
      <field_info>118116
     </data>
    </specification>

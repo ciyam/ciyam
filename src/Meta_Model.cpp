@@ -1853,6 +1853,13 @@ void Meta_Model::impl::impl_Generate( )
                extras += "ignore_unactionable";
             }
 
+            if( get_obj( ).child_View( ).File_Links_Always_As_Single( ) )
+            {
+               if( !extras.empty( ) )
+                  extras += ",";
+               extras += "file_links_always_as_single";
+            }
+
             if( !is_null( get_obj( ).child_View( ).Class( ).Static_Instance_Key( ) ) )
             {
                if( !extras.empty( ) )
@@ -3398,6 +3405,13 @@ void Meta_Model::impl::impl_Generate( )
                if( !list_extra.empty( ) )
                   list_extra += ',';
                list_extra += "ignore_unactionable";
+            }
+
+            if( get_obj( ).child_List( ).File_Links_Always_As_Single( ) )
+            {
+               if( !list_extra.empty( ) )
+                  list_extra += ',';
+               list_extra += "file_links_always_as_single";
             }
 
             if( get_obj( ).child_List( ).Create_Only_If_Default_Other( ) )

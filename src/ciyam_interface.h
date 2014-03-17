@@ -375,6 +375,7 @@ const char* const c_list_type_extra_ignore_display_state = "ignore_display_state
 const char* const c_list_type_extra_new_if_default_other = "new_if_default_other";
 const char* const c_list_type_extra_show_if_default_other = "show_if_default_other";
 const char* const c_list_type_extra_erase_if_default_other = "erase_if_default_other";
+const char* const c_list_type_extra_file_links_always_as_single = "file_links_always_as_single";
 
 const char* const c_list_field_extra_left = "left";
 const char* const c_list_field_extra_right = "right";
@@ -409,6 +410,7 @@ const char* const c_view_type_extra_print_no_highlight = "print_no_highlight";
 const char* const c_view_type_extra_ignore_unactionable = "ignore_unactionable";
 const char* const c_view_type_extra_static_instance_key = "static_instance_key";
 const char* const c_view_type_extra_use_first_row_as_header = "first_row_as_header";
+const char* const c_view_type_extra_file_links_always_as_single = "file_links_always_as_single";
 
 const char* const c_view_field_extra_key0 = "key0";
 const char* const c_view_field_extra_key1 = "key1";

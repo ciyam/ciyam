@@ -47,17 +47,18 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
       e_field_id_Change_Permission = 6,
       e_field_id_Change_Restriction = 7,
       e_field_id_Class = 8,
-      e_field_id_Id = 9,
-      e_field_id_Ignore_Unactionable_Records = 10,
-      e_field_id_Model = 11,
-      e_field_id_Name = 12,
-      e_field_id_PDF_Font_Type = 13,
-      e_field_id_PDF_View_Type = 14,
-      e_field_id_Print_Without_Highlight = 15,
-      e_field_id_Title = 16,
-      e_field_id_Type = 17,
-      e_field_id_Type_Key = 18,
-      e_field_id_Use_First_Row_As_Header = 19
+      e_field_id_File_Links_Always_As_Single = 9,
+      e_field_id_Id = 10,
+      e_field_id_Ignore_Unactionable_Records = 11,
+      e_field_id_Model = 12,
+      e_field_id_Name = 13,
+      e_field_id_PDF_Font_Type = 14,
+      e_field_id_PDF_View_Type = 15,
+      e_field_id_Print_Without_Highlight = 16,
+      e_field_id_Title = 17,
+      e_field_id_Type = 18,
+      e_field_id_Type_Key = 19,
+      e_field_id_Use_First_Row_As_Header = 20
    };
 
    Meta_View( );
@@ -77,6 +78,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
 
    int Change_Restriction( ) const;
    void Change_Restriction( int Change_Restriction );
+
+   bool File_Links_Always_As_Single( ) const;
+   void File_Links_Always_As_Single( bool File_Links_Always_As_Single );
 
    const std::string& Id( ) const;
    void Id( const std::string& Id );

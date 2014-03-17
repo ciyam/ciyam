@@ -2151,10 +2151,17 @@ bool output_view_form( ostream& os, const string& act,
                   string link_file_name( source.display_names[ i ] );
                   if( !source.filename_field.empty( ) && source.field_values.count( source.filename_field ) )
                   {
-                     link_file_name = valid_file_name( source.field_values.find( source.filename_field )->second, &has_utf8_chars );
+                     // NOTE: If an empty filename is found then "file_ext" will end up becoming the name.
+                     if( source.field_values.find( source.filename_field )->second.empty( ) )
+                        link_file_name.erase( );
+                     else
+                     {
+                        link_file_name = valid_file_name( source.field_values.find( source.filename_field )->second, &has_utf8_chars );
 
-                     if( source.file_fields.size( ) + source.image_fields.size( ) > 1 )
-                        link_file_name += " " + source.display_names[ i ];
+                        if( source.file_fields.size( ) + source.image_fields.size( ) > 1
+                         && !view_extras.count( c_view_type_extra_file_links_always_as_single ) )
+                           link_file_name += " " + source.display_names[ i ];
+                     }
                   }
 
                   // NOTE: If access is anonymous then no temporary session directory exists so
