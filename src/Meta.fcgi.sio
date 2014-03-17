@@ -3556,6 +3556,14 @@
      <modifiers>1000:relegate
     </field>
     <field/>
+     <name>field_list_file_links_always_as_single
+     <field>122149
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>1000:relegate
+    </field>
+    <field/>
      <name>field_list_create_only_if_default_other
      <field>122140
      <ftype>bool
@@ -6980,6 +6988,14 @@
     <field/>
      <name>field_view_use_first_row_as_header
      <field>118114
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_view_file_links_always_as_single
+     <field>118117
      <ftype>bool
      <extra>
      <mandatory>true

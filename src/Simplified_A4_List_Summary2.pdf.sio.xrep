@@ -17,7 +17,7 @@
   </font>
   <font/>
    <name>title
-   <details>`{`$font_name`},26
+   <details>`{`$font_name`},20
    <encoding>`{`$font_encoding`}
   </font>
   <font/>
@@ -110,8 +110,6 @@
    <font>title
    <width>-1
    <height>1
-   <border>0.5
-   <borderx>shadow
    <padding>5,2.5
    <alignment>center
    <data>@title

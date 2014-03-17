@@ -850,6 +850,9 @@ void create_tmp_file_link( string& tmp_link_path,
  const string& file_name, const string& file_ext, const string& dest_file_name )
 {
    string link_file_name( dest_file_name );
+   if( dest_file_name.empty( ) )
+      link_file_name = file_ext;
+      
 #ifndef _WIN32
    link_file_name = valid_file_name( link_file_name );
 #else
@@ -857,7 +860,10 @@ void create_tmp_file_link( string& tmp_link_path,
    link_file_name = valid_file_name( link_file_name, &has_wide_chars );
 #endif
 
-   tmp_link_path += "/" + link_file_name + "." + file_ext;
+   if( dest_file_name.empty( ) )
+      tmp_link_path += "/" + link_file_name;
+   else
+      tmp_link_path += "/" + link_file_name + "." + file_ext;
 
 #ifndef _WIN32
    file_remove( tmp_link_path );
