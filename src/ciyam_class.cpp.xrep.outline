@@ -1248,6 +1248,10 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `{`#default_to_uid.spec.xrep section=value_will_be_provided class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
+`@eq`(`'\1`'`,`'field_from_acyclic_path`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_ftransient`,`'0`'`)
+`{`#field_from_acyclic_path.spec.xrep section=value_will_be_provided class_name=$class_name\
+ arg_id=$specification_\0_id arg_dest_field=$specification_\0_dest_field`}\
+`,\
 `@eq`(`'\1`'`,`'field_from_changed_fk`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_changed_fk.spec.xrep section=value_will_be_provided class_name=$class_name\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield`}\

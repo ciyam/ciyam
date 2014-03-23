@@ -1,3 +1,9 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_acyclic_path)] `{`$arg_id`}
+   if( field_name == "`{`$arg_dest_field`}" )
+      return true;
+   // [(finish field_from_acyclic_path)] `{`$arg_id`}
+`}
 `{`@eq`(`'after_fetch_or_for_store`'`,`$section`)\
 `{`@eq`(`$arg_embed_links`,`'`'`)`$arg_ext_field`=`'`'`}\
 `{`!`@eq`(`$arg_ext_field`,`'`'`)`$arg_external`=`'`'`}\
