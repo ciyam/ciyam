@@ -1912,6 +1912,32 @@ bool populate_list_info( list_source& list,
    return okay;
 }
 
+void fetch_sys_record( const string& module_id, const module_info& mod_info, session_info& sess_info )
+{
+   string field_list( mod_info.sys_name_field_id );
+   field_list += "," + mod_info.sys_vendor_field_id;
+   field_list += "," + mod_info.sys_actions_field_id;
+   field_list += "," + mod_info.sys_message_field_id;
+   field_list += "," + mod_info.sys_reference_field_id;
+
+   // NOTE: It is being assumed that the System Information singleton's key is "system".
+   string key_info( "system" );
+
+   pair< string, string > sys_info;
+
+   if( !fetch_item_info( module_id, mod_info,
+    mod_info.sys_class_id, key_info, field_list, "", "", sess_info, sys_info ) )
+      throw runtime_error( "unexpected error occurred processing login" );
+
+   vector< string > sys_data;
+   split( sys_info.second, sys_data );
+
+   if( sys_data.size( ) < 5 )
+      throw runtime_error( "unexpected missing sys information" );
+
+   sess_info.sys_message = sys_data[ 3 ];
+}
+
 bool fetch_user_record(
  const string& gid, const string& module_id,
  const string& module_name, const module_info& mod_info,

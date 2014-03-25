@@ -69,6 +69,8 @@ bool populate_list_info( list_source& list,
  const session_info& sess_info, const std::string* p_pdf_spec_name = 0, const std::string* p_pdf_link_filename = 0,
  std::string* p_pdf_view_file_name = 0 );
 
+void fetch_sys_record( const std::string& module_id, const module_info& mod_info, session_info& sess_info );
+
 bool fetch_user_record( const std::string& gid,
  const std::string& module_id, const std::string& module_name,
  const module_info& mod_info, session_info& sess_info, bool is_authorised,

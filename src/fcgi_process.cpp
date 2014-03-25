@@ -219,6 +219,12 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
       bool issued_command = false;
 
+      if( !mod_info.sys_class_id.empty( ) )
+      {
+         issued_command = true;
+         fetch_sys_record( module_id, mod_info, *p_session_info );
+      }
+
       if( !temp_session && !mod_info.home_info.empty( )
        && ( !p_session_info->user_group.empty( ) || !p_session_info->is_admin_user ) )
       {
@@ -1306,7 +1312,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                
          if( using_anonymous )
          {
-            if( cmd != c_cmd_join && cmd != c_cmd_open )
+            if( cmd != c_cmd_join && cmd != c_cmd_open && !mod_info.user_class_id.empty( ) )
             {
                // FUTURE: Support for HTTPS should be an option and if not being used then Sign In/Up
                // should not be menus but just direct links to the "client crypto" implementations.
@@ -1947,6 +1953,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                         else
                            extra_content << "               <div class=\"home_slide clearfix invisible\">\n";
 
+                        if( !p_session_info->sys_message.empty( ) )
+                           extra_content << "               <p class=\"caption center\">" << p_session_info->sys_message << "</p>\n";
+
                         vector< string > columns;
                         raw_split( ( i->second ).row_data[ s ].second, columns );
 
@@ -1969,8 +1978,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             {
                extra_content << "            <div class=\"home_slides_container clearfix\" id=\"home_slides_container\">\n";
                extra_content << "               <div class=\"home_slide clearfix\">\n";
+
+               if( !p_session_info->sys_message.empty( ) )
+                  extra_content << "               <p class=\"caption center\">" << p_session_info->sys_message << "</p>\n";
+
                extra_content << "               <p class=\"title center\"><b>"
                 << GDS( c_display_welcome_to ) << ' ' << title << "</b></p>\n";
+
                extra_content << "               </div>\n";
             }
 
@@ -1978,6 +1992,11 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
             extra_content << "        </div>\n";
             extra_content << "    </div>\n";
+         }
+         else if( cmd == c_cmd_home )
+         {
+            if( !p_session_info->sys_message.empty( ) )
+               extra_content << "               <p class=\"caption center\">" << p_session_info->sys_message << "</p>\n";
          }
       }
 

@@ -208,11 +208,11 @@ field_add -id=105108 Model Next_View_Id identifier opt
 field_add -id=105109 Model Actions string opt -x=actions -transient
 field_add -id=105110 Model Source_File string opt -x=flink
 field_add -id=105111 Model Commands_File string opt -x=flink
-field_add -id=105112 Model Add_Packages int mand -def=2 -e=add_packages -transient
+field_add -id=105112 Model Add_Packages int mand -def=1 -e=add_packages -transient
 field_add -id=105113 Model Created bool mand -def=0
 field_add -id=105114 Model Status string opt -transient
-field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=0
-field_add -id=105116 Model Allow_Anonymous_Access bool mand -def=0
+field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=1
+field_add -id=105116 Model Allow_Anonymous_Access bool mand -def=1
 field_add -id=105117 Model Home_Title str100 opt
 procedure_add -id=105410 Model Generate
 procedure_add -id=105420 Model Create_Module
@@ -1145,6 +1145,7 @@ modifier_add -id=500888 List_Field Is_Restrict_Search Use_Source_Parent:relegate
 modifier_add -id=500888a List_Field Is_Not_Restrict_Search Exact_Match_Only:relegate
 modifier_add -id=500889 List_Field Hide_Link_Permission_Field Link_{Permission}:relegate
 modifier_add -id=500889a List_Field Hide_View_Parent_Extra View_Parent_Extra:relegate
+modifier_add -id=500889b List_Field Is_Non_Instance_Procedure Omit_Versions:relegate,Reverse_Order:relegate
 modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,Extra:protect\
 ,Static_Instance_Key:protect,@class:lowlight1,Delay_Initial_Records:relegate
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
@@ -1731,6 +1732,7 @@ specification_add -id=600496a {List_Field}_Is_Not_Restrict_Search modifier_field
 specification_add -id=600497 {List_Field}_Source_Parent_Class_2 field_from_other_field "List_Field Child_Rel_Source_Parent_Class Source_Parent_Class -check_null"
 specification_add -id=600498 {List_Field}_Hide_Link_Permission_Field modifier_field_value "List_Field Hide_Link_Permission_Field Type:Allow_Link_Permission false"
 specification_add -id=600499 {List_Field}_Hide_View_Parent_Extra modifier_field_value "List_Field Hide_View_Parent_Extra Type:Allow_View_Parent_Extra false"
+specification_add -id=600499a {List_Field}_Is_Non_Instance_Procedure modifier_field_value "List_Field Is_Non_Instance_Procedure Non_Instance_Procedure true"
 specification_add -id=600500 {Application}_Generate_protect state_protect "equal Application Actions \"\" -changing -scope=delete"
 specification_add -id=600510 {Application}_Generate_Details transient_field_from_file "Application Generate_Details Name .generate.log"
 specification_add -id=600520 {Application}_Is_Not_Full_Generate modifier_field_value "Application Is_Not_Full_Generate Generate_Type 0 -not_equal"
@@ -1938,7 +1940,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,Switch_Type\
 ,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
 ,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name\
-,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure\
+,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure;force\
 ,Font_Size,Alignment,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
 ,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\
 ,Link_Restriction;force+forced,Link_{Permission}:Name!@group:{Workgroup}+Name,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\

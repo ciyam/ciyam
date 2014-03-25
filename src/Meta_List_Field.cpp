@@ -491,9 +491,10 @@ const uint64_t c_modifier_Hide_Search_Option_Limit = UINT64_C( 0x8000000 );
 const uint64_t c_modifier_Hide_Select_Specifics = UINT64_C( 0x10000000 );
 const uint64_t c_modifier_Hide_Switch_Type = UINT64_C( 0x20000000 );
 const uint64_t c_modifier_Hide_View_Parent_Extra = UINT64_C( 0x40000000 );
-const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x80000000 );
-const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x100000000 );
-const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x200000000 );
+const uint64_t c_modifier_Is_Non_Instance_Procedure = UINT64_C( 0x80000000 );
+const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x100000000 );
+const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x200000000 );
+const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x400000000 );
 
 domain_string_max_size< 100 > g_Include_Key_Additions_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -3538,6 +3539,11 @@ uint64_t Meta_List_Field::impl::get_state( ) const
    if( get_obj( ).Type( ).Allow_View_Parent_Extra( ) == false )
       state |= c_modifier_Hide_View_Parent_Extra;
    // [(finish modifier_field_value)] 600499
+
+   // [(start modifier_field_value)] 600499a
+   if( get_obj( ).Non_Instance_Procedure( ) == true )
+      state |= c_modifier_Is_Non_Instance_Procedure;
+   // [(finish modifier_field_value)] 600499a
 
    // [<start get_state>]
    // [<finish get_state>]
@@ -7575,6 +7581,14 @@ void Meta_List_Field::get_always_required_field_names(
     || ( !use_transients && !is_field_transient( e_field_id_Type ) ) )
       names.insert( "Type" );
    // [(finish modifier_field_value)] 600499
+
+   // [(start modifier_field_value)] 600499a
+   dependents.insert( "Non_Instance_Procedure" ); // (for Is_Non_Instance_Procedure modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Non_Instance_Procedure ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Non_Instance_Procedure ) ) )
+      names.insert( "Non_Instance_Procedure" );
+   // [(finish modifier_field_value)] 600499a
 
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]

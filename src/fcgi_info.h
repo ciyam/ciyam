@@ -337,6 +337,13 @@ struct module_info
 
    std::string home_info;
 
+   std::string sys_class_id;
+   std::string sys_name_field_id;
+   std::string sys_vendor_field_id;
+   std::string sys_actions_field_id;
+   std::string sys_message_field_id;
+   std::string sys_reference_field_id;
+
    std::string user_class_id;
    std::string user_class_name;
 
@@ -492,6 +499,8 @@ struct session_info
    std::string ip_addr;
 
    std::string session_id;
+
+   std::string sys_message;
 
    std::string user_id;
    std::string user_key;
