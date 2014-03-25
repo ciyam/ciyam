@@ -99,6 +99,7 @@ const char* const c_attribute_filters = "filters";
 const char* const c_attribute_indexed = "indexed";
 const char* const c_attribute_reg_key = "reg_key";
 const char* const c_attribute_pdf_spec = "pdf_spec";
+const char* const c_attribute_sys_info = "sys_info";
 const char* const c_attribute_url_opts = "url_opts";
 const char* const c_attribute_home_info = "home_info";
 const char* const c_attribute_mandatory = "mandatory";
@@ -524,6 +525,31 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
       }
 
       info.title = reader.read_attribute( c_attribute_title );
+
+      string sys_info = reader.read_opt_attribute( c_attribute_sys_info );
+      if( !sys_info.empty( ) )
+      {
+         string str( sys_info );
+
+         string::size_type pos = str.find( ':' );
+         if( pos == string::npos )
+            throw runtime_error( "unexpected sys_info format '" + sys_info + "'" );
+
+         info.sys_class_id = str.substr( 0, pos );
+         str.erase( 0, pos + 1 );
+
+         vector< string > fields;
+         split( str, fields );
+
+         if( fields.size( ) != 5 )
+            throw runtime_error( "unexpected sys_info format '" + sys_info + "'" );
+
+         info.sys_name_field_id = fields[ 0 ];
+         info.sys_vendor_field_id = fields[ 1 ];
+         info.sys_actions_field_id = fields[ 2 ];
+         info.sys_message_field_id = fields[ 3 ];
+         info.sys_reference_field_id = fields[ 4 ];
+      }
 
       string user_info = reader.read_attribute( c_attribute_user_info );
 

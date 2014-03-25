@@ -5943,6 +5943,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600499a
+      <item>class
+     </specification>
+     <specification/>
       <id>602850
       <item>class
      </specification>
@@ -6603,6 +6607,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600499a
+        <item>field
+       </specification>
+       <specification/>
         <id>602850
         <item>field
        </specification>
@@ -6645,6 +6653,10 @@
        </modifier>
        <modifier/>
         <id>500878
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500889b
         <affect>relegate
        </modifier>
       </modifiers>
@@ -6880,6 +6892,10 @@
        </modifier>
        <modifier/>
         <id>500878
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500889b
         <affect>relegate
        </modifier>
       </modifiers>
@@ -7777,6 +7793,10 @@
       <name>Hide_View_Parent_Extra
      </modifier>
      <modifier/>
+      <id>500889b
+      <name>Is_Non_Instance_Procedure
+     </modifier>
+     <modifier/>
       <id>500888a
       <name>Is_Not_Restrict_Search
      </modifier>
@@ -8648,7 +8668,7 @@
       <mandatory>true
       <transient>true
       <enum_id>575
-      <default_value>2
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>
@@ -8665,7 +8685,7 @@
       <name>Allow_Anonymous_Access
       <type>bool
       <mandatory>true
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>
@@ -8975,7 +8995,7 @@
       <name>Use_Package_Demo_Data
       <type>bool
       <mandatory>true
-      <default_value>0
+      <default_value>1
       <indexes/>
       </indexes>
       <modifiers/>
@@ -27997,6 +28017,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600499a
+    <name>{List_Field}_Is_Non_Instance_Procedure
+    <type>modifier_field_value
+    <data/>
+     <class_id>124100
+     <modifier_id>500889b
+     <field_id>124127
+     <field_value>true
+    </data>
+   </specification>
+   <specification/>
     <id>600496a
     <name>{List_Field}_Is_Not_Restrict_Search
     <type>modifier_field_value
@@ -28327,7 +28358,7 @@
      <field_info>124110
      <field_info>124111
      <field_info>124126
-     <field_info>124127
+     <field_info>124127;force
      <field_info>124130;enum=635
      <field_info>124119;enum=691
      <field_info>124125;enum=697

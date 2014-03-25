@@ -295,8 +295,8 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 string g_default_Actions = string( );
-int g_default_Add_Packages = int( 2 );
-bool g_default_Allow_Anonymous_Access = bool( 0 );
+int g_default_Add_Packages = int( 1 );
+bool g_default_Allow_Anonymous_Access = bool( 1 );
 string g_default_Commands_File = string( );
 bool g_default_Created = bool( 0 );
 string g_default_Home_Title = string( );
@@ -309,7 +309,7 @@ string g_default_Next_View_Id = string( );
 string g_default_Permission = string( );
 string g_default_Source_File = string( );
 string g_default_Status = string( );
-bool g_default_Use_Package_Demo_Data = bool( 0 );
+bool g_default_Use_Package_Demo_Data = bool( 1 );
 string g_default_Version = string( "0.1" );
 string g_default_Workgroup = string( );
 int g_default_Year_Created = int( );
@@ -1606,6 +1606,9 @@ void Meta_Model::impl::impl_Generate( )
             {
                string specification_name( get_obj( ).child_Specification( ).Class( ).Name( ) );
                specification_name += "_" + get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( );
+
+               if( get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( ) == "sys_info" )
+                  specification_name = "sys_info";
 
                if( get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( ) == "user_info" )
                   specification_name = "user_info";

@@ -3647,7 +3647,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>200000:relegate,2000:relegate,4000:relegate,8000:relegate,200000000:relegate
+     <modifiers>200000:relegate,2000:relegate,4000:relegate,8000:relegate,400000000:relegate
     </field>
     <field/>
      <name>field_list_field_source_parent_class
@@ -3915,7 +3915,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,2000:relegate
+     <modifiers>800000:relegate,2000:relegate,80000000:relegate
     </field>
     <field/>
      <name>field_list_field_reverse_order
@@ -3923,7 +3923,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,2000:relegate
+     <modifiers>800000:relegate,2000:relegate,80000000:relegate
     </field>
     <field/>
      <name>field_list_field_retain_selected_rows
@@ -3937,7 +3937,7 @@
      <name>field_list_field_non_instance_procedure
      <field>124127
      <ftype>bool
-     <extra>
+     <extra>force
      <mandatory>true
      <modifiers>800000:relegate,2000:relegate
     </field>
@@ -4023,7 +4023,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>80000000:relegate
+     <modifiers>100000000:relegate
     </field>
     <field/>
      <name>field_list_field_link_type
@@ -4088,7 +4088,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>100000000:relegate
+     <modifiers>200000000:relegate
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name
