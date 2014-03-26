@@ -23,6 +23,7 @@ class Meta_List_Field;
 class Meta_Specification;
 class Meta_Class;
 class Meta_Model;
+class Meta_Field;
 class Meta_Relationship;
 
 class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
@@ -31,6 +32,7 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
    friend class Meta_Specification;
    friend class Meta_Class;
    friend class Meta_Model;
+   friend class Meta_Field;
 
    public:
    typedef Meta_Relationship class_type;
@@ -50,8 +52,10 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
       e_field_id_Model = 10,
       e_field_id_Name = 11,
       e_field_id_Parent_Class = 12,
-      e_field_id_Source_Relationship = 13,
-      e_field_id_Transient = 14
+      e_field_id_Parent_Field_For_List = 13,
+      e_field_id_Parent_Field_For_View = 14,
+      e_field_id_Source_Relationship = 15,
+      e_field_id_Transient = 16
    };
 
    Meta_Relationship( );
@@ -98,6 +102,14 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
    Meta_Class& Parent_Class( );
    const Meta_Class& Parent_Class( ) const;
    void Parent_Class( const std::string& key );
+
+   Meta_Field& Parent_Field_For_List( );
+   const Meta_Field& Parent_Field_For_List( ) const;
+   void Parent_Field_For_List( const std::string& key );
+
+   Meta_Field& Parent_Field_For_View( );
+   const Meta_Field& Parent_Field_For_View( ) const;
+   void Parent_Field_For_View( const std::string& key );
 
    Meta_Relationship& Source_Relationship( );
    const Meta_Relationship& Source_Relationship( ) const;
@@ -282,6 +294,7 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Relationship& o, const std::string& value );
 
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
@@ -292,6 +305,9 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
     const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Model& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
+   virtual void setup_graph_parent( Meta_Field& o,
     const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Relationship& o,

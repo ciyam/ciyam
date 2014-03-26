@@ -21,7 +21,7 @@ procedure_arg_add "add a new class procedure arg" [<val/-id=/id>]<val//class_nam
 procedure_arg_list "list class procedure args" <val//class_name><val//procedure_name>
 procedure_arg_remove "remove an existing class procedure arg" <val//class_name><val//procedure_name><val//arg_name>
 procedure_arg_rename "rename an existing class procedure arg" <val//class_name><val//procedure_name><val//old_arg_name><val//new_arg_name>
-relationship_add "add a new relationship" [<val/-id=/id>][<val/-fid=/fid>]<val//child_class_name><val//child_field_name><val//parent_class_name><opt/opt>|<opt/mand><opt/restrict>|<opt/unlink>|<opt/destroy>[<val/-x=/extra>]
+relationship_add "add a new relationship" [<val/-id=/id>][<val/-fid=/fid>]<val//child_class_name><val//child_field_name><val//parent_class_name><opt/opt>|<opt/mand><opt/restrict>|<opt/unlink>|<opt/destroy>[<opt/-transient/transient>][<val/-x=/extra>]
 relationship_list "list relationships"
 relationship_list_parents "list parent relationships for a child" <val//child_class_name>
 relationship_list_children "list child relationships for a parent" <val//parent_class_name>

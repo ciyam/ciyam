@@ -29,13 +29,13 @@
 #include "Meta_List_Field.h"
 #include "Meta_Specification.h"
 #include "Meta_Specification_Field_Action.h"
-#include "Meta_List.h"
 #include "Meta_View_Field.h"
 #include "Meta_Index.h"
 #include "Meta_Initial_Record.h"
 #include "Meta_Modifier_Affect.h"
 #include "Meta_Modifier.h"
 #include "Meta_Procedure.h"
+#include "Meta_List.h"
 #include "Meta_View.h"
 #include "Meta_Model.h"
 #include "Meta_Field.h"
@@ -63,6 +63,16 @@ using namespace std;
 // [<start namespaces>]
 // [<finish namespaces>]
 
+template< > inline string to_string( const Meta_List& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+template< > inline string to_string( const Meta_View& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_Model& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -76,6 +86,16 @@ template< > inline string to_string( const Meta_Field& c )
 template< > inline string to_string( const Meta_Class& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_List& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
+}
+
+inline void from_string( Meta_View& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
 }
 
 inline void from_string( Meta_Model& c, const string& s )
@@ -105,6 +125,10 @@ const int32_t c_version = 1;
 const char* const c_okay = "okay";
 
 const char* const c_field_id_Commands_File = "106110";
+const char* const c_field_id_Create_List = "106123";
+const char* const c_field_id_Create_View = "106122";
+const char* const c_field_id_Created_List = "300632";
+const char* const c_field_id_Created_View = "300631";
 const char* const c_field_id_Delay_Initial_Records = "106121";
 const char* const c_field_id_Extra = "106103";
 const char* const c_field_id_Header_File = "106109";
@@ -122,6 +146,10 @@ const char* const c_field_id_Static_Instance_Key = "106120";
 const char* const c_field_id_Type = "106107";
 
 const char* const c_field_name_Commands_File = "Commands_File";
+const char* const c_field_name_Create_List = "Create_List";
+const char* const c_field_name_Create_View = "Create_View";
+const char* const c_field_name_Created_List = "Created_List";
+const char* const c_field_name_Created_View = "Created_View";
 const char* const c_field_name_Delay_Initial_Records = "Delay_Initial_Records";
 const char* const c_field_name_Extra = "Extra";
 const char* const c_field_name_Header_File = "Header_File";
@@ -139,6 +167,10 @@ const char* const c_field_name_Static_Instance_Key = "Static_Instance_Key";
 const char* const c_field_name_Type = "Type";
 
 const char* const c_field_display_name_Commands_File = "field_class_commands_file";
+const char* const c_field_display_name_Create_List = "field_class_create_list";
+const char* const c_field_display_name_Create_View = "field_class_create_view";
+const char* const c_field_display_name_Created_List = "field_class_created_list";
+const char* const c_field_display_name_Created_View = "field_class_created_view";
 const char* const c_field_display_name_Delay_Initial_Records = "field_class_delay_initial_records";
 const char* const c_field_display_name_Extra = "field_class_extra";
 const char* const c_field_display_name_Header_File = "field_class_header_file";
@@ -155,7 +187,7 @@ const char* const c_field_display_name_Source_Model = "field_class_source_model"
 const char* const c_field_display_name_Static_Instance_Key = "field_class_static_instance_key";
 const char* const c_field_display_name_Type = "field_class_type";
 
-const int c_num_fields = 16;
+const int c_num_fields = 20;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -171,15 +203,23 @@ const char* const c_all_sorted_field_ids[ ] =
    "106110",
    "106120",
    "106121",
+   "106122",
+   "106123",
    "300600",
    "300610",
    "300620",
-   "300630"
+   "300630",
+   "300631",
+   "300632"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
    "Commands_File",
+   "Create_List",
+   "Create_View",
+   "Created_List",
+   "Created_View",
    "Delay_Initial_Records",
    "Extra",
    "Header_File",
@@ -205,9 +245,29 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 0;
+const int c_num_transient_fields = 2;
 
-bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
+const char* const c_transient_sorted_field_ids[ ] =
+{
+   "106122",
+   "106123"
+};
+
+const char* const c_transient_sorted_field_names[ ] =
+{
+   "Create_List",
+   "Create_View"
+};
+
+inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
+
+inline bool is_transient_field( const string& field )
+{
+   return binary_search( c_transient_sorted_field_ids,
+    c_transient_sorted_field_ids + c_num_transient_fields, field.c_str( ), transient_compare )
+    || binary_search( c_transient_sorted_field_names,
+    c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
+}
 
 const char* const c_procedure_id_Generate = "106410";
 
@@ -250,6 +310,10 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 string g_default_Commands_File = string( );
+bool g_default_Create_List = bool( 0 );
+bool g_default_Create_View = bool( 0 );
+string g_default_Created_List = string( );
+string g_default_Created_View = string( );
 bool g_default_Delay_Initial_Records = bool( 0 );
 int g_default_Extra = int( 0 );
 string g_default_Header_File = string( );
@@ -457,6 +521,30 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
          string_getter< string >( cmd_handler.p_Meta_Class->Commands_File( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Create_List || field_name == c_field_name_Create_List )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Class->Create_List( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Create_View || field_name == c_field_name_Create_View )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Class->Create_View( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Created_List || field_name == c_field_name_Created_List )
+      {
+         handled = true;
+         string_getter< Meta_List >( cmd_handler.p_Meta_Class->Created_List( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Created_View || field_name == c_field_name_Created_View )
+      {
+         handled = true;
+         string_getter< Meta_View >( cmd_handler.p_Meta_Class->Created_View( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Delay_Initial_Records || field_name == c_field_name_Delay_Initial_Records )
       {
          handled = true;
@@ -564,6 +652,34 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
          handled = true;
          func_string_setter< Meta_Class, string >(
           *cmd_handler.p_Meta_Class, &Meta_Class::Commands_File, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Create_List || field_name == c_field_name_Create_List )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, bool >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Create_List, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Create_View || field_name == c_field_name_Create_View )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, bool >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Create_View, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Created_List || field_name == c_field_name_Created_List )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, Meta_List >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Created_List, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Created_View || field_name == c_field_name_Created_View )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, Meta_View >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Created_View, field_value );
       }
 
       if( !handled && field_name == c_field_id_Delay_Initial_Records || field_name == c_field_name_Delay_Initial_Records )
@@ -685,6 +801,10 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Created_List || field_name == c_field_name_Created_List )
+         cmd_handler.retval = cmd_handler.p_Meta_Class->Created_List( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Created_View || field_name == c_field_name_Created_View )
+         cmd_handler.retval = cmd_handler.p_Meta_Class->Created_View( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
          cmd_handler.retval = cmd_handler.p_Meta_Class->Model( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Quick_Link_Field || field_name == c_field_name_Quick_Link_Field )
@@ -726,6 +846,12 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    const string& impl_Commands_File( ) const { return lazy_fetch( p_obj ), v_Commands_File; }
    void impl_Commands_File( const string& Commands_File ) { v_Commands_File = Commands_File; }
 
+   bool impl_Create_List( ) const { return lazy_fetch( p_obj ), v_Create_List; }
+   void impl_Create_List( bool Create_List ) { v_Create_List = Create_List; }
+
+   bool impl_Create_View( ) const { return lazy_fetch( p_obj ), v_Create_View; }
+   void impl_Create_View( bool Create_View ) { v_Create_View = Create_View; }
+
    bool impl_Delay_Initial_Records( ) const { return lazy_fetch( p_obj ), v_Delay_Initial_Records; }
    void impl_Delay_Initial_Records( bool Delay_Initial_Records ) { v_Delay_Initial_Records = Delay_Initial_Records; }
 
@@ -758,6 +884,66 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    int impl_Type( ) const { return lazy_fetch( p_obj ), v_Type; }
    void impl_Type( int Type ) { v_Type = Type; }
+
+   Meta_List& impl_Created_List( )
+   {
+      if( !cp_Created_List )
+      {
+         cp_Created_List.init( );
+
+         p_obj->setup_graph_parent( *cp_Created_List, c_field_id_Created_List, v_Created_List );
+      }
+      return *cp_Created_List;
+   }
+
+   const Meta_List& impl_Created_List( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Created_List )
+      {
+         cp_Created_List.init( );
+
+         p_obj->setup_graph_parent( *cp_Created_List, c_field_id_Created_List, v_Created_List );
+      }
+      return *cp_Created_List;
+   }
+
+   void impl_Created_List( const string& key )
+   {
+      class_base_accessor cba( impl_Created_List( ) );
+      cba.set_key( key );
+   }
+
+   Meta_View& impl_Created_View( )
+   {
+      if( !cp_Created_View )
+      {
+         cp_Created_View.init( );
+
+         p_obj->setup_graph_parent( *cp_Created_View, c_field_id_Created_View, v_Created_View );
+      }
+      return *cp_Created_View;
+   }
+
+   const Meta_View& impl_Created_View( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Created_View )
+      {
+         cp_Created_View.init( );
+
+         p_obj->setup_graph_parent( *cp_Created_View, c_field_id_Created_View, v_Created_View );
+      }
+      return *cp_Created_View;
+   }
+
+   void impl_Created_View( const string& key )
+   {
+      class_base_accessor cba( impl_Created_View( ) );
+      cba.set_key( key );
+   }
 
    Meta_Model& impl_Model( )
    {
@@ -1641,6 +1827,8 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    size_t total_child_relationships;
 
    string v_Commands_File;
+   bool v_Create_List;
+   bool v_Create_View;
    bool v_Delay_Initial_Records;
    int v_Extra;
    string v_Header_File;
@@ -1652,6 +1840,12 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    string v_Source_File;
    string v_Static_Instance_Key;
    int v_Type;
+
+   string v_Created_List;
+   mutable class_pointer< Meta_List > cp_Created_List;
+
+   string v_Created_View;
+   mutable class_pointer< Meta_View > cp_Created_View;
 
    string v_Model;
    mutable class_pointer< Meta_Model > cp_Model;
@@ -2765,62 +2959,78 @@ string Meta_Class::impl::get_field_value( int field ) const
       break;
 
       case 1:
-      retval = to_string( impl_Delay_Initial_Records( ) );
+      retval = to_string( impl_Create_List( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Create_View( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Header_File( ) );
+      retval = to_string( impl_Created_List( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Created_View( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Delay_Initial_Records( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Next_Field_Id( ) );
+      retval = to_string( impl_Header_File( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Next_Procedure_Id( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Plural( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Quick_Link_Field( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Source_Class( ) );
+      retval = to_string( impl_Next_Field_Id( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Source_File( ) );
+      retval = to_string( impl_Next_Procedure_Id( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Source_Model( ) );
+      retval = to_string( impl_Plural( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Static_Instance_Key( ) );
+      retval = to_string( impl_Quick_Link_Field( ) );
       break;
 
       case 15:
+      retval = to_string( impl_Source_Class( ) );
+      break;
+
+      case 16:
+      retval = to_string( impl_Source_File( ) );
+      break;
+
+      case 17:
+      retval = to_string( impl_Source_Model( ) );
+      break;
+
+      case 18:
+      retval = to_string( impl_Static_Instance_Key( ) );
+      break;
+
+      case 19:
       retval = to_string( impl_Type( ) );
       break;
 
@@ -2840,62 +3050,78 @@ void Meta_Class::impl::set_field_value( int field, const string& value )
       break;
 
       case 1:
-      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Delay_Initial_Records, value );
+      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Create_List, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Extra, value );
+      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Create_View, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Header_File, value );
+      func_string_setter< Meta_Class::impl, Meta_List >( *this, &Meta_Class::impl::impl_Created_List, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Id, value );
+      func_string_setter< Meta_Class::impl, Meta_View >( *this, &Meta_Class::impl::impl_Created_View, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Model, value );
+      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Delay_Initial_Records, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Name, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Extra, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Field_Id, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Header_File, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Procedure_Id, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Id, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Plural, value );
+      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Model, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Class::impl, Meta_Field >( *this, &Meta_Class::impl::impl_Quick_Link_Field, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Name, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Class::impl, Meta_Class >( *this, &Meta_Class::impl::impl_Source_Class, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Field_Id, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Source_File, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Procedure_Id, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Source_Model, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Plural, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Static_Instance_Key, value );
+      func_string_setter< Meta_Class::impl, Meta_Field >( *this, &Meta_Class::impl::impl_Quick_Link_Field, value );
       break;
 
       case 15:
+      func_string_setter< Meta_Class::impl, Meta_Class >( *this, &Meta_Class::impl::impl_Source_Class, value );
+      break;
+
+      case 16:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Source_File, value );
+      break;
+
+      case 17:
+      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Source_Model, value );
+      break;
+
+      case 18:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Static_Instance_Key, value );
+      break;
+
+      case 19:
       func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Type, value );
       break;
 
@@ -2939,6 +3165,10 @@ void Meta_Class::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
+      impl_Created_List( "" );
+   else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
+      impl_Created_View( "" );
    else if( field == c_field_id_Model || field == c_field_name_Model )
       impl_Model( "" );
    else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
@@ -2955,6 +3185,10 @@ void Meta_Class::impl::set_foreign_key_value( const string& field, const string&
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
+      v_Created_List = value;
+   else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
+      v_Created_View = value;
    else if( field == c_field_id_Model || field == c_field_name_Model )
       v_Model = value;
    else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
@@ -2971,6 +3205,10 @@ const string& Meta_Class::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
+      return v_Created_List;
+   else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
+      return v_Created_View;
    else if( field == c_field_id_Model || field == c_field_name_Model )
       return v_Model;
    else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
@@ -2985,6 +3223,8 @@ const string& Meta_Class::impl::get_foreign_key_value( const string& field )
 
 void Meta_Class::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Created_List, v_Created_List ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Created_View, v_Created_View ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Model, v_Model ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Quick_Link_Field, v_Quick_Link_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Class, v_Source_Class ) );
@@ -3010,6 +3250,8 @@ void Meta_Class::impl::add_extra_paging_info( vector< pair< string, string > >& 
 void Meta_Class::impl::clear( )
 {
    v_Commands_File = g_default_Commands_File;
+   v_Create_List = g_default_Create_List;
+   v_Create_View = g_default_Create_View;
    v_Delay_Initial_Records = g_default_Delay_Initial_Records;
    v_Extra = g_default_Extra;
    v_Header_File = g_default_Header_File;
@@ -3021,6 +3263,14 @@ void Meta_Class::impl::clear( )
    v_Source_File = g_default_Source_File;
    v_Static_Instance_Key = g_default_Static_Instance_Key;
    v_Type = g_default_Type;
+
+   v_Created_List = string( );
+   if( cp_Created_List )
+      p_obj->setup_foreign_key( *cp_Created_List, v_Created_List );
+
+   v_Created_View = string( );
+   if( cp_Created_View )
+      p_obj->setup_foreign_key( *cp_Created_View, v_Created_View );
 
    v_Model = string( );
    if( cp_Model )
@@ -3198,6 +3448,12 @@ void Meta_Class::impl::after_fetch( )
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
 
+   if( cp_Created_List )
+      p_obj->setup_foreign_key( *cp_Created_List, v_Created_List );
+
+   if( cp_Created_View )
+      p_obj->setup_foreign_key( *cp_Created_View, v_Created_View );
+
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
 
@@ -3257,6 +3513,20 @@ void Meta_Class::impl::to_store( bool is_create, bool is_internal )
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
       get_obj( ).Plural( get_obj( ).Source_Class( ).Plural( ) );
    // [(finish field_from_other_field)] 600026
+
+   // [(start default_to_global)] 600028a
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).Create_View( 1 );
+   // [(finish default_to_global)] 600028a
+
+   // [(start default_to_global)] 600028b
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).Create_List( 1 );
+   // [(finish default_to_global)] 600028b
 
    // [(start field_from_other_field)] 610026
    if( is_create && get_obj( ).get_clone_key( ).empty( ) && !is_null( get_obj( ).Source_Class( ) ) )
@@ -3455,6 +3725,24 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish file_link)] 640038
 
    // [<start for_store>]
+//nyi
+   if( get_obj( ).Create_View( ) )
+   {
+      get_obj( ).Created_View( ).op_create( get_obj( ).get_key( ) + "_V" );
+      get_obj( ).Created_View( ).Class( get_obj( ).get_key( ) );
+      get_obj( ).Created_View( ).Model( get_obj( ).Model( ) );
+      get_obj( ).Created_View( ).op_apply( );
+      get_obj( ).Created_View( get_obj( ).get_key( ) + "_V" );
+   }
+
+   if( get_obj( ).Create_List( ) )
+   {
+      get_obj( ).Created_List( ).op_create( get_obj( ).get_key( ) + "_L" );
+      get_obj( ).Created_List( ).Class( get_obj( ).get_key( ) );
+      get_obj( ).Created_List( ).Model( get_obj( ).Model( ) );
+      get_obj( ).Created_List( ).op_apply( );
+      get_obj( ).Created_List( get_obj( ).get_key( ) + "_L" );
+   }
    // [<finish for_store>]
 }
 
@@ -3789,6 +4077,26 @@ void Meta_Class::Commands_File( const string& Commands_File )
    p_impl->impl_Commands_File( Commands_File );
 }
 
+bool Meta_Class::Create_List( ) const
+{
+   return p_impl->impl_Create_List( );
+}
+
+void Meta_Class::Create_List( bool Create_List )
+{
+   p_impl->impl_Create_List( Create_List );
+}
+
+bool Meta_Class::Create_View( ) const
+{
+   return p_impl->impl_Create_View( );
+}
+
+void Meta_Class::Create_View( bool Create_View )
+{
+   p_impl->impl_Create_View( Create_View );
+}
+
 bool Meta_Class::Delay_Initial_Records( ) const
 {
    return p_impl->impl_Delay_Initial_Records( );
@@ -3897,6 +4205,36 @@ int Meta_Class::Type( ) const
 void Meta_Class::Type( int Type )
 {
    p_impl->impl_Type( Type );
+}
+
+Meta_List& Meta_Class::Created_List( )
+{
+   return p_impl->impl_Created_List( );
+}
+
+const Meta_List& Meta_Class::Created_List( ) const
+{
+   return p_impl->impl_Created_List( );
+}
+
+void Meta_Class::Created_List( const string& key )
+{
+   p_impl->impl_Created_List( key );
+}
+
+Meta_View& Meta_Class::Created_View( )
+{
+   return p_impl->impl_Created_View( );
+}
+
+const Meta_View& Meta_Class::Created_View( ) const
+{
+   return p_impl->impl_Created_View( );
+}
+
+void Meta_Class::Created_View( const string& key )
+{
+   p_impl->impl_Created_View( key );
 }
 
 Meta_Model& Meta_Class::Model( )
@@ -4425,6 +4763,46 @@ const char* Meta_Class::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Create_List )
+   {
+      p_id = c_field_id_Create_List;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Create_View )
+   {
+      p_id = c_field_id_Create_View;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Created_List )
+   {
+      p_id = c_field_id_Created_List;
+
+      if( p_type_name )
+         *p_type_name = "Meta_List";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Created_View )
+   {
+      p_id = c_field_id_Created_View;
+
+      if( p_type_name )
+         *p_type_name = "Meta_View";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Delay_Initial_Records )
    {
       p_id = c_field_id_Delay_Initial_Records;
@@ -4592,6 +4970,46 @@ const char* Meta_Class::get_field_name(
 
       if( p_type_name )
          *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Create_List )
+   {
+      p_name = c_field_name_Create_List;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Create_View )
+   {
+      p_name = c_field_name_Create_View;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Created_List )
+   {
+      p_name = c_field_name_Created_List;
+
+      if( p_type_name )
+         *p_type_name = "Meta_List";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Created_View )
+   {
+      p_name = c_field_name_Created_View;
+
+      if( p_type_name )
+         *p_type_name = "Meta_View";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -4780,6 +5198,26 @@ string Meta_Class::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Commands_File );
       get_module_string( c_field_display_name_Commands_File, &next );
    }
+   else if( id_or_name == c_field_id_Create_List || id_or_name == c_field_name_Create_List )
+   {
+      name = string( c_field_display_name_Create_List );
+      get_module_string( c_field_display_name_Create_List, &next );
+   }
+   else if( id_or_name == c_field_id_Create_View || id_or_name == c_field_name_Create_View )
+   {
+      name = string( c_field_display_name_Create_View );
+      get_module_string( c_field_display_name_Create_View, &next );
+   }
+   else if( id_or_name == c_field_id_Created_List || id_or_name == c_field_name_Created_List )
+   {
+      name = string( c_field_display_name_Created_List );
+      get_module_string( c_field_display_name_Created_List, &next );
+   }
+   else if( id_or_name == c_field_id_Created_View || id_or_name == c_field_name_Created_View )
+   {
+      name = string( c_field_display_name_Created_View );
+      get_module_string( c_field_display_name_Created_View, &next );
+   }
    else if( id_or_name == c_field_id_Delay_Initial_Records || id_or_name == c_field_name_Delay_Initial_Records )
    {
       name = string( c_field_display_name_Delay_Initial_Records );
@@ -4872,6 +5310,14 @@ string Meta_Class::get_field_display_name( const string& id_or_name ) const
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
    else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
       display_name = get_module_string( c_field_display_name_Commands_File );
+   else if( id_or_name == c_field_id_Create_List || id_or_name == c_field_name_Create_List )
+      display_name = get_module_string( c_field_display_name_Create_List );
+   else if( id_or_name == c_field_id_Create_View || id_or_name == c_field_name_Create_View )
+      display_name = get_module_string( c_field_display_name_Create_View );
+   else if( id_or_name == c_field_id_Created_List || id_or_name == c_field_name_Created_List )
+      display_name = get_module_string( c_field_display_name_Created_List );
+   else if( id_or_name == c_field_id_Created_View || id_or_name == c_field_name_Created_View )
+      display_name = get_module_string( c_field_display_name_Created_View );
    else if( id_or_name == c_field_id_Delay_Initial_Records || id_or_name == c_field_name_Delay_Initial_Records )
       display_name = get_module_string( c_field_display_name_Delay_Initial_Records );
    else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
@@ -4924,6 +5370,16 @@ const string& Meta_Class::get_foreign_key_value( const string& field )
 void Meta_Class::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_Class::setup_foreign_key( Meta_List& o, const string& value )
+{
+   static_cast< Meta_List& >( o ).set_key( value );
+}
+
+void Meta_Class::setup_foreign_key( Meta_View& o, const string& value )
+{
+   static_cast< Meta_View& >( o ).set_key( value );
 }
 
 void Meta_Class::setup_foreign_key( Meta_Model& o, const string& value )
@@ -5009,6 +5465,20 @@ void Meta_Class::setup_graph_parent( Meta_Procedure& o, const string& foreign_ke
 void Meta_Class::setup_graph_parent( Meta_View& o, const string& foreign_key_field )
 {
    static_cast< Meta_View& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Class::setup_graph_parent(
+ Meta_List& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_List& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_List& >( o ).set_key( init_value );
+}
+
+void Meta_Class::setup_graph_parent(
+ Meta_View& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_View& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_View& >( o ).set_key( init_value );
 }
 
 void Meta_Class::setup_graph_parent(
@@ -5481,6 +5951,10 @@ class_base& Meta_Class::get_or_create_graph_child( const string& context )
       p_class_base = &child_View_Field( );
    else if( sub_context == "_301820" || sub_context == "child_View" )
       p_class_base = &child_View( );
+   else if( sub_context == c_field_id_Created_List || sub_context == c_field_name_Created_List )
+      p_class_base = &Created_List( );
+   else if( sub_context == c_field_id_Created_View || sub_context == c_field_name_Created_View )
+      p_class_base = &Created_View( );
    else if( sub_context == c_field_id_Model || sub_context == c_field_name_Model )
       p_class_base = &Model( );
    else if( sub_context == c_field_id_Quick_Link_Field || sub_context == c_field_name_Quick_Link_Field )
@@ -5506,6 +5980,8 @@ void Meta_Class::get_sql_column_names(
       return;
 
    names.push_back( "C_Commands_File" );
+   names.push_back( "C_Created_List" );
+   names.push_back( "C_Created_View" );
    names.push_back( "C_Delay_Initial_Records" );
    names.push_back( "C_Extra" );
    names.push_back( "C_Header_File" );
@@ -5533,6 +6009,8 @@ void Meta_Class::get_sql_column_values(
       return;
 
    values.push_back( sql_quote( to_string( Commands_File( ) ) ) );
+   values.push_back( sql_quote( to_string( Created_List( ) ) ) );
+   values.push_back( sql_quote( to_string( Created_View( ) ) ) );
    values.push_back( to_string( Delay_Initial_Records( ) ) );
    values.push_back( to_string( Extra( ) ) );
    values.push_back( sql_quote( to_string( Header_File( ) ) ) );
@@ -5714,6 +6192,10 @@ void Meta_Class::static_get_class_info( class_info_container& class_info )
 void Meta_Class::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "106110", "Commands_File", "string", false ) );
+   all_field_info.push_back( field_info( "106123", "Create_List", "bool", false ) );
+   all_field_info.push_back( field_info( "106122", "Create_View", "bool", false ) );
+   all_field_info.push_back( field_info( "300632", "Created_List", "Meta_List", false ) );
+   all_field_info.push_back( field_info( "300631", "Created_View", "Meta_View", false ) );
    all_field_info.push_back( field_info( "106121", "Delay_Initial_Records", "bool", false ) );
    all_field_info.push_back( field_info( "106103", "Extra", "int", false ) );
    all_field_info.push_back( field_info( "106109", "Header_File", "string", false ) );
@@ -5735,6 +6217,8 @@ void Meta_Class::static_get_foreign_key_info( foreign_key_info_container& foreig
 {
    ( void )foreign_key_info;
 
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Created_List, make_pair( "Meta.106100", "Meta_List" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Created_View, make_pair( "Meta.106100", "Meta_View" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Model, make_pair( "Meta.106100", "Meta_Model" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Quick_Link_Field, make_pair( "Meta.106100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Class, make_pair( "Meta.106100", "Meta_Class" ) ) );
@@ -5765,62 +6249,78 @@ const char* Meta_Class::static_get_field_id( field_id id )
       break;
 
       case 2:
-      p_id = "106121";
+      p_id = "106123";
       break;
 
       case 3:
-      p_id = "106103";
+      p_id = "106122";
       break;
 
       case 4:
-      p_id = "106109";
+      p_id = "300632";
       break;
 
       case 5:
-      p_id = "106104";
+      p_id = "300631";
       break;
 
       case 6:
-      p_id = "300600";
+      p_id = "106121";
       break;
 
       case 7:
-      p_id = "106101";
+      p_id = "106103";
       break;
 
       case 8:
-      p_id = "106105";
+      p_id = "106109";
       break;
 
       case 9:
-      p_id = "106106";
+      p_id = "106104";
       break;
 
       case 10:
-      p_id = "106102";
+      p_id = "300600";
       break;
 
       case 11:
-      p_id = "300630";
+      p_id = "106101";
       break;
 
       case 12:
-      p_id = "300620";
+      p_id = "106105";
       break;
 
       case 13:
-      p_id = "106108";
+      p_id = "106106";
       break;
 
       case 14:
-      p_id = "300610";
+      p_id = "106102";
       break;
 
       case 15:
-      p_id = "106120";
+      p_id = "300630";
       break;
 
       case 16:
+      p_id = "300620";
+      break;
+
+      case 17:
+      p_id = "106108";
+      break;
+
+      case 18:
+      p_id = "300610";
+      break;
+
+      case 19:
+      p_id = "106120";
+      break;
+
+      case 20:
       p_id = "106107";
       break;
    }
@@ -5842,62 +6342,78 @@ const char* Meta_Class::static_get_field_name( field_id id )
       break;
 
       case 2:
-      p_id = "Delay_Initial_Records";
+      p_id = "Create_List";
       break;
 
       case 3:
-      p_id = "Extra";
+      p_id = "Create_View";
       break;
 
       case 4:
-      p_id = "Header_File";
+      p_id = "Created_List";
       break;
 
       case 5:
-      p_id = "Id";
+      p_id = "Created_View";
       break;
 
       case 6:
-      p_id = "Model";
+      p_id = "Delay_Initial_Records";
       break;
 
       case 7:
-      p_id = "Name";
+      p_id = "Extra";
       break;
 
       case 8:
-      p_id = "Next_Field_Id";
+      p_id = "Header_File";
       break;
 
       case 9:
-      p_id = "Next_Procedure_Id";
+      p_id = "Id";
       break;
 
       case 10:
-      p_id = "Plural";
+      p_id = "Model";
       break;
 
       case 11:
-      p_id = "Quick_Link_Field";
+      p_id = "Name";
       break;
 
       case 12:
-      p_id = "Source_Class";
+      p_id = "Next_Field_Id";
       break;
 
       case 13:
-      p_id = "Source_File";
+      p_id = "Next_Procedure_Id";
       break;
 
       case 14:
-      p_id = "Source_Model";
+      p_id = "Plural";
       break;
 
       case 15:
-      p_id = "Static_Instance_Key";
+      p_id = "Quick_Link_Field";
       break;
 
       case 16:
+      p_id = "Source_Class";
+      break;
+
+      case 17:
+      p_id = "Source_File";
+      break;
+
+      case 18:
+      p_id = "Source_Model";
+      break;
+
+      case 19:
+      p_id = "Static_Instance_Key";
+      break;
+
+      case 20:
       p_id = "Type";
       break;
    }
@@ -5916,36 +6432,44 @@ int Meta_Class::static_get_field_num( const string& field )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
    else if( field == c_field_id_Commands_File || field == c_field_name_Commands_File )
       rc += 1;
-   else if( field == c_field_id_Delay_Initial_Records || field == c_field_name_Delay_Initial_Records )
+   else if( field == c_field_id_Create_List || field == c_field_name_Create_List )
       rc += 2;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Create_View || field == c_field_name_Create_View )
       rc += 3;
-   else if( field == c_field_id_Header_File || field == c_field_name_Header_File )
+   else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
       rc += 4;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
       rc += 5;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Delay_Initial_Records || field == c_field_name_Delay_Initial_Records )
       rc += 6;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 7;
-   else if( field == c_field_id_Next_Field_Id || field == c_field_name_Next_Field_Id )
+   else if( field == c_field_id_Header_File || field == c_field_name_Header_File )
       rc += 8;
-   else if( field == c_field_id_Next_Procedure_Id || field == c_field_name_Next_Procedure_Id )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 9;
-   else if( field == c_field_id_Plural || field == c_field_name_Plural )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 10;
-   else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 11;
-   else if( field == c_field_id_Source_Class || field == c_field_name_Source_Class )
+   else if( field == c_field_id_Next_Field_Id || field == c_field_name_Next_Field_Id )
       rc += 12;
-   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+   else if( field == c_field_id_Next_Procedure_Id || field == c_field_name_Next_Procedure_Id )
       rc += 13;
-   else if( field == c_field_id_Source_Model || field == c_field_name_Source_Model )
+   else if( field == c_field_id_Plural || field == c_field_name_Plural )
       rc += 14;
-   else if( field == c_field_id_Static_Instance_Key || field == c_field_name_Static_Instance_Key )
+   else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
       rc += 15;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Source_Class || field == c_field_name_Source_Class )
       rc += 16;
+   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+      rc += 17;
+   else if( field == c_field_id_Source_Model || field == c_field_name_Source_Model )
+      rc += 18;
+   else if( field == c_field_id_Static_Instance_Key || field == c_field_name_Static_Instance_Key )
+      rc += 19;
+   else if( field == c_field_id_Type || field == c_field_name_Type )
+      rc += 20;
 
    return rc - 1;
 }
@@ -5974,6 +6498,8 @@ string Meta_Class::static_get_sql_columns( )
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
     "C_Commands_File VARCHAR(200) NOT NULL,"
+    "C_Created_List VARCHAR(75) NOT NULL,"
+    "C_Created_View VARCHAR(75) NOT NULL,"
     "C_Delay_Initial_Records INTEGER NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
     "C_Header_File VARCHAR(200) NOT NULL,"

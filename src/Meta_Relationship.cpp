@@ -29,6 +29,7 @@
 #include "Meta_Specification.h"
 #include "Meta_Class.h"
 #include "Meta_Model.h"
+#include "Meta_Field.h"
 #include "Meta_Relationship.h"
 
 #include "ciyam_base.h"
@@ -43,6 +44,14 @@
 #include "Meta_Field.h"
 #include "Meta_Workgroup.h"
 // [(finish meta_relationship_field)] 600095
+
+// [(start modifier_field_null)] 640101
+#include "Meta_View.h"
+// [(finish modifier_field_null)] 640101
+
+// [(start modifier_field_null)] 640102
+#include "Meta_List.h"
+// [(finish modifier_field_null)] 640102
 
 // [<start includes>]
 // [<finish includes>]
@@ -62,6 +71,11 @@ template< > inline string to_string( const Meta_Model& c )
    return ::to_string( static_cast< const class_base& >( c ) );
 }
 
+template< > inline string to_string( const Meta_Field& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_Relationship& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -73,6 +87,11 @@ inline void from_string( Meta_Class& c, const string& s )
 }
 
 inline void from_string( Meta_Model& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
+}
+
+inline void from_string( Meta_Field& c, const string& s )
 {
    ::from_string( static_cast< class_base& >( c ), s );
 }
@@ -105,6 +124,8 @@ const char* const c_field_id_Mandatory = "113102";
 const char* const c_field_id_Model = "301300";
 const char* const c_field_id_Name = "113101";
 const char* const c_field_id_Parent_Class = "301320";
+const char* const c_field_id_Parent_Field_For_List = "301330b";
+const char* const c_field_id_Parent_Field_For_View = "301330a";
 const char* const c_field_id_Source_Relationship = "301330";
 const char* const c_field_id_Transient = "113111";
 
@@ -120,6 +141,8 @@ const char* const c_field_name_Mandatory = "Mandatory";
 const char* const c_field_name_Model = "Model";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Parent_Class = "Parent_Class";
+const char* const c_field_name_Parent_Field_For_List = "Parent_Field_For_List";
+const char* const c_field_name_Parent_Field_For_View = "Parent_Field_For_View";
 const char* const c_field_name_Source_Relationship = "Source_Relationship";
 const char* const c_field_name_Transient = "Transient";
 
@@ -135,10 +158,12 @@ const char* const c_field_display_name_Mandatory = "field_relationship_mandatory
 const char* const c_field_display_name_Model = "field_relationship_model";
 const char* const c_field_display_name_Name = "field_relationship_name";
 const char* const c_field_display_name_Parent_Class = "field_relationship_parent_class";
+const char* const c_field_display_name_Parent_Field_For_List = "field_relationship_parent_field_for_list";
+const char* const c_field_display_name_Parent_Field_For_View = "field_relationship_parent_field_for_view";
 const char* const c_field_display_name_Source_Relationship = "field_relationship_source_relationship";
 const char* const c_field_display_name_Transient = "field_relationship_transient";
 
-const int c_num_fields = 14;
+const int c_num_fields = 16;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -155,7 +180,9 @@ const char* const c_all_sorted_field_ids[ ] =
    "301300",
    "301310",
    "301320",
-   "301330"
+   "301330",
+   "301330a",
+   "301330b"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -172,6 +199,8 @@ const char* const c_all_sorted_field_names[ ] =
    "Model",
    "Name",
    "Parent_Class",
+   "Parent_Field_For_List",
+   "Parent_Field_For_View",
    "Source_Relationship",
    "Transient"
 };
@@ -184,18 +213,22 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 2;
+const int c_num_transient_fields = 4;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "113105",
-   "113108"
+   "113108",
+   "301330a",
+   "301330b"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
    "Child_Class_Name",
-   "Child_Name"
+   "Child_Name",
+   "Parent_Field_For_List",
+   "Parent_Field_For_View"
 };
 
 inline bool transient_compare( const char* p_s1, const char* p_s2 ) { return strcmp( p_s1, p_s2 ) < 0; }
@@ -208,8 +241,10 @@ inline bool is_transient_field( const string& field )
     c_transient_sorted_field_names + c_num_transient_fields, field.c_str( ), transient_compare );
 }
 
-const uint64_t c_modifier_Is_Internal = UINT64_C( 0x100 );
-const uint64_t c_modifier_Is_Transient = UINT64_C( 0x200 );
+const uint64_t c_modifier_Hide_Parent_Field_For_List = UINT64_C( 0x100 );
+const uint64_t c_modifier_Hide_Parent_Field_For_View = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Internal = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Transient = UINT64_C( 0x800 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -250,6 +285,8 @@ bool g_default_Mandatory = bool( 1 );
 string g_default_Model = string( );
 string g_default_Name = string( );
 string g_default_Parent_Class = string( );
+string g_default_Parent_Field_For_List = string( );
+string g_default_Parent_Field_For_View = string( );
 string g_default_Source_Relationship = string( );
 bool g_default_Transient = bool( 0 );
 
@@ -465,6 +502,18 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
          string_getter< Meta_Class >( cmd_handler.p_Meta_Relationship->Parent_Class( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Parent_Field_For_List || field_name == c_field_name_Parent_Field_For_List )
+      {
+         handled = true;
+         string_getter< Meta_Field >( cmd_handler.p_Meta_Relationship->Parent_Field_For_List( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Field_For_View || field_name == c_field_name_Parent_Field_For_View )
+      {
+         handled = true;
+         string_getter< Meta_Field >( cmd_handler.p_Meta_Relationship->Parent_Field_For_View( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
       {
          handled = true;
@@ -573,6 +622,20 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Parent_Class, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Parent_Field_For_List || field_name == c_field_name_Parent_Field_For_List )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, Meta_Field >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Parent_Field_For_List, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Parent_Field_For_View || field_name == c_field_name_Parent_Field_For_View )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, Meta_Field >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Parent_Field_For_View, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
       {
          handled = true;
@@ -607,6 +670,10 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
          cmd_handler.retval = cmd_handler.p_Meta_Relationship->Model( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Parent_Class || field_name == c_field_name_Parent_Class )
          cmd_handler.retval = cmd_handler.p_Meta_Relationship->Parent_Class( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Parent_Field_For_List || field_name == c_field_name_Parent_Field_For_List )
+         cmd_handler.retval = cmd_handler.p_Meta_Relationship->Parent_Field_For_List( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Parent_Field_For_View || field_name == c_field_name_Parent_Field_For_View )
+         cmd_handler.retval = cmd_handler.p_Meta_Relationship->Parent_Field_For_View( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Source_Relationship || field_name == c_field_name_Source_Relationship )
          cmd_handler.retval = cmd_handler.p_Meta_Relationship->Source_Relationship( ).execute( cmd_and_args );
       else
@@ -750,6 +817,66 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    void impl_Parent_Class( const string& key )
    {
       class_base_accessor cba( impl_Parent_Class( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Field& impl_Parent_Field_For_List( )
+   {
+      if( !cp_Parent_Field_For_List )
+      {
+         cp_Parent_Field_For_List.init( );
+
+         p_obj->setup_graph_parent( *cp_Parent_Field_For_List, c_field_id_Parent_Field_For_List, v_Parent_Field_For_List );
+      }
+      return *cp_Parent_Field_For_List;
+   }
+
+   const Meta_Field& impl_Parent_Field_For_List( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Parent_Field_For_List )
+      {
+         cp_Parent_Field_For_List.init( );
+
+         p_obj->setup_graph_parent( *cp_Parent_Field_For_List, c_field_id_Parent_Field_For_List, v_Parent_Field_For_List );
+      }
+      return *cp_Parent_Field_For_List;
+   }
+
+   void impl_Parent_Field_For_List( const string& key )
+   {
+      class_base_accessor cba( impl_Parent_Field_For_List( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Field& impl_Parent_Field_For_View( )
+   {
+      if( !cp_Parent_Field_For_View )
+      {
+         cp_Parent_Field_For_View.init( );
+
+         p_obj->setup_graph_parent( *cp_Parent_Field_For_View, c_field_id_Parent_Field_For_View, v_Parent_Field_For_View );
+      }
+      return *cp_Parent_Field_For_View;
+   }
+
+   const Meta_Field& impl_Parent_Field_For_View( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Parent_Field_For_View )
+      {
+         cp_Parent_Field_For_View.init( );
+
+         p_obj->setup_graph_parent( *cp_Parent_Field_For_View, c_field_id_Parent_Field_For_View, v_Parent_Field_For_View );
+      }
+      return *cp_Parent_Field_For_View;
+   }
+
+   void impl_Parent_Field_For_View( const string& key )
+   {
+      class_base_accessor cba( impl_Parent_Field_For_View( ) );
       cba.set_key( key );
    }
 
@@ -924,6 +1051,12 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    string v_Parent_Class;
    mutable class_pointer< Meta_Class > cp_Parent_Class;
 
+   string v_Parent_Field_For_List;
+   mutable class_pointer< Meta_Field > cp_Parent_Field_For_List;
+
+   string v_Parent_Field_For_View;
+   mutable class_pointer< Meta_Field > cp_Parent_Field_For_View;
+
    string v_Source_Relationship;
    mutable class_pointer< Meta_Relationship > cp_Source_Relationship;
 
@@ -987,10 +1120,18 @@ string Meta_Relationship::impl::get_field_value( int field ) const
       break;
 
       case 12:
-      retval = to_string( impl_Source_Relationship( ) );
+      retval = to_string( impl_Parent_Field_For_List( ) );
       break;
 
       case 13:
+      retval = to_string( impl_Parent_Field_For_View( ) );
+      break;
+
+      case 14:
+      retval = to_string( impl_Source_Relationship( ) );
+      break;
+
+      case 15:
       retval = to_string( impl_Transient( ) );
       break;
 
@@ -1054,10 +1195,18 @@ void Meta_Relationship::impl::set_field_value( int field, const string& value )
       break;
 
       case 12:
-      func_string_setter< Meta_Relationship::impl, Meta_Relationship >( *this, &Meta_Relationship::impl::impl_Source_Relationship, value );
+      func_string_setter< Meta_Relationship::impl, Meta_Field >( *this, &Meta_Relationship::impl::impl_Parent_Field_For_List, value );
       break;
 
       case 13:
+      func_string_setter< Meta_Relationship::impl, Meta_Field >( *this, &Meta_Relationship::impl::impl_Parent_Field_For_View, value );
+      break;
+
+      case 14:
+      func_string_setter< Meta_Relationship::impl, Meta_Relationship >( *this, &Meta_Relationship::impl::impl_Source_Relationship, value );
+      break;
+
+      case 15:
       func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Transient, value );
       break;
 
@@ -1085,6 +1234,16 @@ uint64_t Meta_Relationship::impl::get_state( ) const
       state |= c_modifier_Is_Transient;
    // [(finish modifier_field_value)] 640100
 
+   // [(start modifier_field_null)] 640101
+   if( is_null( get_obj( ).Child_Class( ).Created_View( ) ) )
+      state |= c_modifier_Hide_Parent_Field_For_View;
+   // [(finish modifier_field_null)] 640101
+
+   // [(start modifier_field_null)] 640102
+   if( is_null( get_obj( ).Child_Class( ).Created_List( ) ) )
+      state |= c_modifier_Hide_Parent_Field_For_List;
+   // [(finish modifier_field_null)] 640102
+
    // [<start get_state>]
    // [<finish get_state>]
 
@@ -1107,6 +1266,10 @@ void Meta_Relationship::impl::clear_foreign_key( const string& field )
       impl_Model( "" );
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       impl_Parent_Class( "" );
+   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
+      impl_Parent_Field_For_List( "" );
+   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
+      impl_Parent_Field_For_View( "" );
    else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
       impl_Source_Relationship( "" );
    else
@@ -1123,6 +1286,10 @@ void Meta_Relationship::impl::set_foreign_key_value( const string& field, const 
       v_Model = value;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       v_Parent_Class = value;
+   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
+      v_Parent_Field_For_List = value;
+   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
+      v_Parent_Field_For_View = value;
    else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
       v_Source_Relationship = value;
    else
@@ -1139,6 +1306,10 @@ const string& Meta_Relationship::impl::get_foreign_key_value( const string& fiel
       return v_Model;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       return v_Parent_Class;
+   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
+      return v_Parent_Field_For_List;
+   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
+      return v_Parent_Field_For_View;
    else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
       return v_Source_Relationship;
    else
@@ -1150,6 +1321,8 @@ void Meta_Relationship::impl::get_foreign_key_values( foreign_key_data_container
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Child_Class, v_Child_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Model, v_Model ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Class, v_Parent_Class ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Field_For_List, v_Parent_Field_For_List ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Field_For_View, v_Parent_Field_For_View ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Relationship, v_Source_Relationship ) );
 }
 
@@ -1193,6 +1366,14 @@ void Meta_Relationship::impl::clear( )
    v_Parent_Class = string( );
    if( cp_Parent_Class )
       p_obj->setup_foreign_key( *cp_Parent_Class, v_Parent_Class );
+
+   v_Parent_Field_For_List = string( );
+   if( cp_Parent_Field_For_List )
+      p_obj->setup_foreign_key( *cp_Parent_Field_For_List, v_Parent_Field_For_List );
+
+   v_Parent_Field_For_View = string( );
+   if( cp_Parent_Field_For_View )
+      p_obj->setup_foreign_key( *cp_Parent_Field_For_View, v_Parent_Field_For_View );
 
    v_Source_Relationship = string( );
    if( cp_Source_Relationship )
@@ -1323,6 +1504,12 @@ void Meta_Relationship::impl::after_fetch( )
    if( cp_Parent_Class )
       p_obj->setup_foreign_key( *cp_Parent_Class, v_Parent_Class );
 
+   if( cp_Parent_Field_For_List )
+      p_obj->setup_foreign_key( *cp_Parent_Field_For_List, v_Parent_Field_For_List );
+
+   if( cp_Parent_Field_For_View )
+      p_obj->setup_foreign_key( *cp_Parent_Field_For_View, v_Parent_Field_For_View );
+
    if( cp_Source_Relationship )
       p_obj->setup_foreign_key( *cp_Source_Relationship, v_Source_Relationship );
 
@@ -1424,6 +1611,9 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    // [(finish modifier_set_field)] 650100
 
    // [<start to_store>]
+//nyi
+   set_session_variable( "meta_Parent_Field_For_View", get_obj( ).Parent_Field_For_View( ).get_key( ) );
+   set_session_variable( "meta_Parent_Field_For_List", get_obj( ).Parent_Field_For_List( ).get_key( ) );
    // [<finish to_store>]
 }
 
@@ -1806,6 +1996,36 @@ void Meta_Relationship::Parent_Class( const string& key )
    p_impl->impl_Parent_Class( key );
 }
 
+Meta_Field& Meta_Relationship::Parent_Field_For_List( )
+{
+   return p_impl->impl_Parent_Field_For_List( );
+}
+
+const Meta_Field& Meta_Relationship::Parent_Field_For_List( ) const
+{
+   return p_impl->impl_Parent_Field_For_List( );
+}
+
+void Meta_Relationship::Parent_Field_For_List( const string& key )
+{
+   p_impl->impl_Parent_Field_For_List( key );
+}
+
+Meta_Field& Meta_Relationship::Parent_Field_For_View( )
+{
+   return p_impl->impl_Parent_Field_For_View( );
+}
+
+const Meta_Field& Meta_Relationship::Parent_Field_For_View( ) const
+{
+   return p_impl->impl_Parent_Field_For_View( );
+}
+
+void Meta_Relationship::Parent_Field_For_View( const string& key )
+{
+   p_impl->impl_Parent_Field_For_View( key );
+}
+
 Meta_Relationship& Meta_Relationship::Source_Relationship( )
 {
    return p_impl->impl_Source_Relationship( );
@@ -2102,6 +2322,26 @@ const char* Meta_Relationship::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Parent_Field_For_List )
+   {
+      p_id = c_field_id_Parent_Field_For_List;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Parent_Field_For_View )
+   {
+      p_id = c_field_id_Parent_Field_For_View;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Source_Relationship )
    {
       p_id = c_field_id_Source_Relationship;
@@ -2253,6 +2493,26 @@ const char* Meta_Relationship::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Parent_Field_For_List )
+   {
+      p_name = c_field_name_Parent_Field_For_List;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Parent_Field_For_View )
+   {
+      p_name = c_field_name_Parent_Field_For_View;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Source_Relationship )
    {
       p_name = c_field_name_Source_Relationship;
@@ -2362,6 +2622,16 @@ string Meta_Relationship::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Parent_Class );
       get_module_string( c_field_display_name_Parent_Class, &next );
    }
+   else if( id_or_name == c_field_id_Parent_Field_For_List || id_or_name == c_field_name_Parent_Field_For_List )
+   {
+      name = string( c_field_display_name_Parent_Field_For_List );
+      get_module_string( c_field_display_name_Parent_Field_For_List, &next );
+   }
+   else if( id_or_name == c_field_id_Parent_Field_For_View || id_or_name == c_field_name_Parent_Field_For_View )
+   {
+      name = string( c_field_display_name_Parent_Field_For_View );
+      get_module_string( c_field_display_name_Parent_Field_For_View, &next );
+   }
    else if( id_or_name == c_field_id_Source_Relationship || id_or_name == c_field_name_Source_Relationship )
    {
       name = string( c_field_display_name_Source_Relationship );
@@ -2411,6 +2681,10 @@ string Meta_Relationship::get_field_display_name( const string& id_or_name ) con
       display_name = get_module_string( c_field_display_name_Name );
    else if( id_or_name == c_field_id_Parent_Class || id_or_name == c_field_name_Parent_Class )
       display_name = get_module_string( c_field_display_name_Parent_Class );
+   else if( id_or_name == c_field_id_Parent_Field_For_List || id_or_name == c_field_name_Parent_Field_For_List )
+      display_name = get_module_string( c_field_display_name_Parent_Field_For_List );
+   else if( id_or_name == c_field_id_Parent_Field_For_View || id_or_name == c_field_name_Parent_Field_For_View )
+      display_name = get_module_string( c_field_display_name_Parent_Field_For_View );
    else if( id_or_name == c_field_id_Source_Relationship || id_or_name == c_field_name_Source_Relationship )
       display_name = get_module_string( c_field_display_name_Source_Relationship );
    else if( id_or_name == c_field_id_Transient || id_or_name == c_field_name_Transient )
@@ -2449,6 +2723,11 @@ void Meta_Relationship::setup_foreign_key( Meta_Model& o, const string& value )
    static_cast< Meta_Model& >( o ).set_key( value );
 }
 
+void Meta_Relationship::setup_foreign_key( Meta_Field& o, const string& value )
+{
+   static_cast< Meta_Field& >( o ).set_key( value );
+}
+
 void Meta_Relationship::setup_foreign_key( Meta_Relationship& o, const string& value )
 {
    static_cast< Meta_Relationship& >( o ).set_key( value );
@@ -2481,6 +2760,13 @@ void Meta_Relationship::setup_graph_parent(
 {
    static_cast< Meta_Model& >( o ).set_graph_parent( this, foreign_key_field, true );
    static_cast< Meta_Model& >( o ).set_key( init_value );
+}
+
+void Meta_Relationship::setup_graph_parent(
+ Meta_Field& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Field& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Field& >( o ).set_key( init_value );
 }
 
 void Meta_Relationship::setup_graph_parent(
@@ -2655,6 +2941,10 @@ class_base& Meta_Relationship::get_or_create_graph_child( const string& context 
       p_class_base = &Model( );
    else if( sub_context == c_field_id_Parent_Class || sub_context == c_field_name_Parent_Class )
       p_class_base = &Parent_Class( );
+   else if( sub_context == c_field_id_Parent_Field_For_List || sub_context == c_field_name_Parent_Field_For_List )
+      p_class_base = &Parent_Field_For_List( );
+   else if( sub_context == c_field_id_Parent_Field_For_View || sub_context == c_field_name_Parent_Field_For_View )
+      p_class_base = &Parent_Field_For_View( );
    else if( sub_context == c_field_id_Source_Relationship || sub_context == c_field_name_Source_Relationship )
       p_class_base = &Source_Relationship( );
 
@@ -2796,6 +3086,22 @@ void Meta_Relationship::get_always_required_field_names(
       names.insert( "Transient" );
    // [(finish modifier_field_value)] 640100
 
+   // [(start modifier_field_null)] 640101
+   dependents.insert( "Child_Class" ); // (for Hide_Parent_Field_For_View modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Child_Class ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Child_Class ) ) )
+      names.insert( "Child_Class" );
+   // [(finish modifier_field_null)] 640101
+
+   // [(start modifier_field_null)] 640102
+   dependents.insert( "Child_Class" ); // (for Hide_Parent_Field_For_List modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Child_Class ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Child_Class ) ) )
+      names.insert( "Child_Class" );
+   // [(finish modifier_field_null)] 640102
+
    // [<start get_always_required_field_names>]
    // [<finish get_always_required_field_names>]
 }
@@ -2859,6 +3165,8 @@ void Meta_Relationship::static_get_field_info( field_info_container& all_field_i
    all_field_info.push_back( field_info( "301300", "Model", "Meta_Model", true ) );
    all_field_info.push_back( field_info( "113101", "Name", "string", false ) );
    all_field_info.push_back( field_info( "301320", "Parent_Class", "Meta_Class", true ) );
+   all_field_info.push_back( field_info( "301330b", "Parent_Field_For_List", "Meta_Field", false ) );
+   all_field_info.push_back( field_info( "301330a", "Parent_Field_For_View", "Meta_Field", false ) );
    all_field_info.push_back( field_info( "301330", "Source_Relationship", "Meta_Relationship", false ) );
    all_field_info.push_back( field_info( "113111", "Transient", "bool", false ) );
 }
@@ -2870,6 +3178,8 @@ void Meta_Relationship::static_get_foreign_key_info( foreign_key_info_container&
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Child_Class, make_pair( "Meta.113100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Model, make_pair( "Meta.113100", "Meta_Model" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Class, make_pair( "Meta.113100", "Meta_Class" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Field_For_List, make_pair( "Meta.113100", "Meta_Field" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Field_For_View, make_pair( "Meta.113100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Relationship, make_pair( "Meta.113100", "Meta_Relationship" ) ) );
 }
 
@@ -2941,10 +3251,18 @@ const char* Meta_Relationship::static_get_field_id( field_id id )
       break;
 
       case 13:
-      p_id = "301330";
+      p_id = "301330b";
       break;
 
       case 14:
+      p_id = "301330a";
+      break;
+
+      case 15:
+      p_id = "301330";
+      break;
+
+      case 16:
       p_id = "113111";
       break;
    }
@@ -3010,10 +3328,18 @@ const char* Meta_Relationship::static_get_field_name( field_id id )
       break;
 
       case 13:
-      p_id = "Source_Relationship";
+      p_id = "Parent_Field_For_List";
       break;
 
       case 14:
+      p_id = "Parent_Field_For_View";
+      break;
+
+      case 15:
+      p_id = "Source_Relationship";
+      break;
+
+      case 16:
       p_id = "Transient";
       break;
    }
@@ -3054,10 +3380,14 @@ int Meta_Relationship::static_get_field_num( const string& field )
       rc += 11;
    else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 12;
-   else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
+   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
       rc += 13;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
       rc += 14;
+   else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
+      rc += 15;
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+      rc += 16;
 
    return rc - 1;
 }

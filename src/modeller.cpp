@@ -578,6 +578,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
          bool is_restrict( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_restrict ) );
          bool is_unlink( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_unlink ) );
          string extra( get_parm_val( parameters, c_cmd_parm_modeller_relationship_add_extra ) );
+         bool is_transient( has_parm_val( parameters, c_cmd_parm_modeller_relationship_add_transient ) );
 
          cascade_operation cascade_op( e_cascade_operation_destroy );
          if( is_unlink )
@@ -592,7 +593,7 @@ void modeller_command_functor::operator ( )( const string& command, const parame
             fid = unique_id( );
 
          g_model.relationship_add( id,
-          fid, child_class_name, child_field_name, parent_class_name, is_mandatory, cascade_op, extra );
+          fid, child_class_name, child_field_name, parent_class_name, is_mandatory, is_transient, cascade_op, extra );
       }
       else if( command == c_cmd_modeller_relationship_list )
       {

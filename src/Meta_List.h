@@ -245,6 +245,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    const Meta_List_Type& Type( ) const;
    void Type( const std::string& key );
 
+   Meta_Class& child_Class_Created( );
+   const Meta_Class& child_Class_Created( ) const;
+
    Meta_List_Field& child_List_Field( );
    const Meta_List_Field& child_List_Field( ) const;
 
@@ -425,6 +428,7 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
    virtual void setup_foreign_key( Meta_List_Type& o, const std::string& value );
 
+   virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Modifier& o,

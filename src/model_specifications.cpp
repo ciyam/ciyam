@@ -391,6 +391,7 @@ const char* const c_data_pvchild = "pvchild";
 const char* const c_data_pwname2 = "pwname2";
 const char* const c_data_pwvalue = "pwvalue";
 const char* const c_data_reverse = "reverse";
+const char* const c_data_scclass = "scclass";
 const char* const c_data_scfield = "scfield";
 const char* const c_data_sfield1 = "sfield1";
 const char* const c_data_sfield2 = "sfield2";
@@ -8578,15 +8579,21 @@ void modifier_field_null_specification::add_specification_data( model& m, specif
    string modifier_name = get_modifier_name_for_id( m, class_name, modifier_id );
    spec_data.data_pairs.push_back( make_pair( c_data_modifier, modifier_name ) );
 
+   string scclass_name;
+
    if( !pclass_id.empty( ) )
    {
       string field_name = get_field_name_for_id( m, class_name, field_id, 0, true );
       spec_data.data_pairs.push_back( make_pair( c_data_pfield, field_name ) );
 
       string pclass_name = get_class_name_for_id( m, pclass_id );
-      string pfield_name = get_field_name_for_id( m, pclass_name, pfield_id );
+
+      string field_type;
+      string pfield_name = get_field_name_for_id( m, pclass_name, pfield_id, &field_type );
 
       spec_data.data_pairs.push_back( make_pair( c_data_field, pfield_name ) );
+
+      scclass_name = get_class_name_from_field_type( m, pclass_name, pfield_name, field_type );
    }
    else
    {
@@ -8598,6 +8605,8 @@ void modifier_field_null_specification::add_specification_data( model& m, specif
 
    spec_data.data_pairs.push_back( make_pair( string( c_data_is_neg ), is_negative ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( string( c_data_not_dflt ), not_default ? c_true : "" ) );
+
+   spec_data.data_pairs.push_back( make_pair( string( c_data_scclass ), scclass_name ) );
 
    spec_data.data_pairs.push_back( make_pair( string( c_data_tfield ), "" ) );
    spec_data.data_pairs.push_back( make_pair( string( c_data_tpfield ), "" ) );

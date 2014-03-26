@@ -2740,6 +2740,22 @@
      <modifiers>100:relegate
     </field>
     <field/>
+     <name>field_class_create_view
+     <field>106122
+     <ftype>bool
+     <extra>new_only
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_class_create_list
+     <field>106123
+     <ftype>bool
+     <extra>new_only
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_class_quick_link_field
      <field>300630
      <ftype>@class
@@ -2861,7 +2877,7 @@
    <name>601710_name
    <type>standard
    <extra>
-   <modifiers>800:lowlight1,200:lowlight
+   <modifiers>2000:lowlight1,800:lowlight
    <class>Field
    <bclass>
    <module>Meta
@@ -2920,7 +2936,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>100:protect
+     <modifiers>400:protect
     </field>
     <field/>
      <name>field_field_default
@@ -2976,7 +2992,7 @@
      <ftype>int
      <extra>force+enum=535
      <mandatory>true
-     <modifiers>1000:relegate
+     <modifiers>4000:relegate
     </field>
     <field/>
      <name>field_field_uom_name
@@ -2984,7 +3000,7 @@
      <ftype>string
      <extra>max_size=100
      <mandatory>false
-     <modifiers>400:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_field_uom_symbol
@@ -2992,7 +3008,7 @@
      <ftype>string
      <extra>max_size=10
      <mandatory>false
-     <modifiers>400:relegate
+     <modifiers>1000:relegate
     </field>
     <field/>
      <name>field_field_use_in_text_search
@@ -3000,7 +3016,23 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>100:relegate,800:relegate
+     <modifiers>400:relegate,2000:relegate
+    </field>
+    <field/>
+     <name>field_field_create_view_field
+     <field>107119
+     <ftype>bool
+     <extra>new_only
+     <mandatory>true
+     <modifiers>200:relegate
+    </field>
+    <field/>
+     <name>field_field_create_list_field
+     <field>107120
+     <ftype>bool
+     <extra>new_only
+     <mandatory>true
+     <modifiers>100:relegate
     </field>
    </fields>
   </view>
@@ -4762,7 +4794,7 @@
    <name>602300_name
    <type>standard
    <extra>
-   <modifiers>200:lowlight1,100:lowlight
+   <modifiers>800:lowlight1,400:lowlight
    <class>Relationship
    <bclass>
    <module>Meta
@@ -4803,13 +4835,37 @@
      <name>field_relationship_parent_class
      <field>301320
      <ftype>@class
-     <extra>link+force+new_edit
+     <extra>fkey2+link+force+new_edit
      <mandatory>true
      <modifiers>
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
      <pextra>@fkey1:300600+106101
+    </field>
+    <field/>
+     <name>field_relationship_parent_field_for_view
+     <field>301330a
+     <ftype>@class
+     <extra>new_only
+     <mandatory>false
+     <modifiers>200:relegate
+     <pclass>107100
+     <pfield>107101
+     <pfname>field_field_name
+     <pextra>@fkey2:300700+107101
+    </field>
+    <field/>
+     <name>field_relationship_parent_field_for_list
+     <field>301330b
+     <ftype>@class
+     <extra>new_only
+     <mandatory>false
+     <modifiers>100:relegate
+     <pclass>107100
+     <pfield>107101
+     <pfname>field_field_name
+     <pextra>@fkey2:300700+107101
     </field>
     <field/>
      <name>field_relationship_mandatory
@@ -4841,7 +4897,7 @@
      <ftype>int
      <extra>enum=580
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>800:relegate
     </field>
     <field/>
      <name>field_relationship_extra
@@ -4849,7 +4905,7 @@
      <ftype>int
      <extra>forced+enum=585
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>800:relegate
     </field>
    </fields>
   </view>
@@ -7648,7 +7704,7 @@
    <type>child
    <extra>no_limit
    <actions>
-   <modifiers>800:lowlight1,200:lowlight
+   <modifiers>2000:lowlight1,800:lowlight
    <view>601710
    <class>Field
    <bclass>
@@ -7693,7 +7749,7 @@
      <field>107105
      <ftype>bool
      <extra>
-     <modifiers>100:protect
+     <modifiers>400:protect
      <unique>false
      <indexed>false
     </column>
@@ -8436,7 +8492,7 @@
    <type>child
    <extra>sort_no_limit
    <actions>
-   <modifiers>200:lowlight1,100:lowlight
+   <modifiers>800:lowlight1,400:lowlight
    <view>602300
    <class>Relationship
    <bclass>
@@ -8493,7 +8549,7 @@
      <field>113103
      <ftype>int
      <extra>enum=580
-     <modifiers>200:relegate
+     <modifiers>800:relegate
      <unique>false
      <indexed>false
     </column>
@@ -8510,7 +8566,7 @@
    <type>child
    <extra>no_new,sort_no_limit
    <actions>
-   <modifiers>200:lowlight1,100:lowlight
+   <modifiers>800:lowlight1,400:lowlight
    <view>602300
    <class>Relationship
    <bclass>
@@ -8555,7 +8611,7 @@
      <field>113103
      <ftype>int
      <extra>enum=580
-     <modifiers>200:relegate
+     <modifiers>800:relegate
      <unique>false
      <indexed>false
     </column>

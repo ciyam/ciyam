@@ -268,6 +268,10 @@
 `{`#for_auto_code_user.spec.xrep section=includes module_name=$module_name\
  arg_id=$specification_\0_id arg_auto_class=$specification_\0_auto_class`}
 `,\
+`@eq`(`'\1`'`,`'modifier_field_null`'`)`&`!`@eq`(`$specification_\0_scclass`,`'`'`)\
+`{`#modifier_field_null.spec.xrep section=includes module_name=$module_name\
+ arg_id=$specification_\0_id arg_scclass=$specification_\0_scclass`}
+`,\
 `@eq`(`'\1`'`,`'meta_relationship_field`'`)\
 `{`#meta_relationship_field.spec.xrep section=includes module_name=$module_name\
  arg_id=$specification_\0_id arg_fclass=$specification_\0_fclass arg_gclass=$specification_\0_gclass`}

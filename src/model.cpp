@@ -658,7 +658,7 @@ struct model::impl
 
    void relationship_add( const string& relationship_id,
     const string& field_id, const string& child_class_name, const string& child_field_name,
-    const string& parent_class_name, bool is_mandatory, cascade_operation cascade_op, const string& extra );
+    const string& parent_class_name, bool is_mandatory, bool is_transient, cascade_operation cascade_op, const string& extra );
    void relationship_list( ostream& outs ) const;
    void relationship_list_parents( const string& child_class_name, ostream& outs ) const;
    void relationship_list_children( const string& parent_class_name, ostream& outs ) const;
@@ -2773,7 +2773,7 @@ void model::impl::procedure_arg_rename( const string& class_name,
 
 void model::impl::relationship_add( const string& relationship_id,
  const string& field_id, const string& child_class_name, const string& child_field_name,
- const string& parent_class_name, bool is_mandatory, cascade_operation cascade_op, const string& extra )
+ const string& parent_class_name, bool is_mandatory, bool is_transient, cascade_operation cascade_op, const string& extra )
 {
    string relationship_name( child_field_name );
 
@@ -2818,7 +2818,7 @@ void model::impl::relationship_add( const string& relationship_id,
    }
 
    field_add( field_id, child_class_name,
-    child_field_name, c_relationship_type, is_mandatory, false, false, "", extra, "", parent_id, relationship_id );
+    child_field_name, c_relationship_type, is_mandatory, is_transient, false, "", extra, "", parent_id, relationship_id );
 }
 
 void model::impl::relationship_list( ostream& outs ) const
@@ -4308,10 +4308,10 @@ void model::procedure_arg_rename( const string& class_name,
 
 void model::relationship_add( const string& relationship_id,
  const string& field_id, const string& child_class_name, const string& child_field_name,
- const string& parent_class_name, bool is_mandatory, cascade_operation cascade_op, const string& extra )
+ const string& parent_class_name, bool is_mandatory, bool is_transient, cascade_operation cascade_op, const string& extra )
 {
    p_impl->relationship_add( relationship_id, field_id,
-    child_class_name, child_field_name, parent_class_name, is_mandatory, cascade_op, extra );
+    child_class_name, child_field_name, parent_class_name, is_mandatory, is_transient, cascade_op, extra );
 }
 
 void model::relationship_list( ostream& outs ) const

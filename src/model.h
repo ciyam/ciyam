@@ -184,6 +184,7 @@ struct relationship_data
     :
     id( id ),
     name( name ),
+    is_transient( false ),
     child_class_name( child_class_name ),
     parent_class_name( parent_class_name )
    {
@@ -191,6 +192,9 @@ struct relationship_data
 
    std::string id;
    std::string name;
+
+   bool is_transient;
+
    std::string child_class_name;
    std::string parent_class_name;
 };
@@ -386,7 +390,7 @@ class model
 
    void relationship_add( const std::string& relationship_id,
     const std::string& field_id, const std::string& child_class_name, const std::string& child_field_name,
-    const std::string& parent_class_name, bool is_mandatory, cascade_operation cascade_op, const std::string& extra );
+    const std::string& parent_class_name, bool is_mandatory, bool is_transient, cascade_operation cascade_op, const std::string& extra );
    void relationship_list( std::ostream& outs ) const;
    void relationship_list_parents( const std::string& child_class_name, std::ostream& outs ) const;
    void relationship_list_children( const std::string& parent_class_name, std::ostream& outs ) const;

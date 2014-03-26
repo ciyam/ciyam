@@ -40,6 +40,10 @@
 #include "command_handler.h"
 #include "module_interface.h"
 
+// [(start modifier_field_null)] 600398
+#include "Meta_Enum.h"
+// [(finish modifier_field_null)] 600398
+
 // [<start includes>]
 //nyi
 #include "Meta_Enum.h"

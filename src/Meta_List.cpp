@@ -1928,6 +1928,28 @@ struct Meta_List::impl : public Meta_List_command_handler
       cba.set_key( key );
    }
 
+   Meta_Class& impl_child_Class_Created( )
+   {
+      if( !cp_child_Class_Created )
+      {
+         cp_child_Class_Created.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Created, "300632" );
+      }
+      return *cp_child_Class_Created;
+   }
+
+   const Meta_Class& impl_child_Class_Created( ) const
+   {
+      if( !cp_child_Class_Created )
+      {
+         cp_child_Class_Created.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Created, "300632" );
+      }
+      return *cp_child_Class_Created;
+   }
+
    Meta_List_Field& impl_child_List_Field( )
    {
       if( !cp_child_List_Field )
@@ -2073,6 +2095,7 @@ struct Meta_List::impl : public Meta_List_command_handler
    string v_Type;
    mutable class_pointer< Meta_List_Type > cp_Type;
 
+   mutable class_pointer< Meta_Class > cp_child_Class_Created;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field;
 };
 
@@ -4622,6 +4645,16 @@ void Meta_List::Type( const string& key )
    p_impl->impl_Type( key );
 }
 
+Meta_Class& Meta_List::child_Class_Created( )
+{
+   return p_impl->impl_child_Class_Created( );
+}
+
+const Meta_Class& Meta_List::child_Class_Created( ) const
+{
+   return p_impl->impl_child_Class_Created( );
+}
+
 Meta_List_Field& Meta_List::child_List_Field( )
 {
    return p_impl->impl_child_List_Field( );
@@ -6146,6 +6179,11 @@ void Meta_List::setup_foreign_key( Meta_List_Type& o, const string& value )
    static_cast< Meta_List_Type& >( o ).set_key( value );
 }
 
+void Meta_List::setup_graph_parent( Meta_Class& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Class& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_List::setup_graph_parent( Meta_List_Field& o, const string& foreign_key_field )
 {
    static_cast< Meta_List_Field& >( o ).set_graph_parent( this, foreign_key_field );
@@ -6205,7 +6243,7 @@ void Meta_List::set_total_child_relationships( size_t new_total_child_relationsh
 
 size_t Meta_List::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 1;
+   size_t rc = 2;
 
    if( !is_internal )
    {
@@ -6238,7 +6276,7 @@ class_base* Meta_List::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 1 )
+   if( child_num >= 2 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -6251,6 +6289,14 @@ class_base* Meta_List::get_next_foreign_key_child(
       switch( child_num )
       {
          case 0:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "300632";
+            p_class_base = &child_Class_Created( );
+         }
+         break;
+
+         case 1:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302100";
@@ -6330,6 +6376,8 @@ class_base& Meta_List::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_300632" || sub_context == "child_Class_Created" )
+      p_class_base = &child_Class_Created( );
    else if( sub_context == "_302100" || sub_context == "child_List_Field" )
       p_class_base = &child_List_Field( );
    else if( sub_context == c_field_id_Access_Parent_Modifier || sub_context == c_field_name_Access_Parent_Modifier )
