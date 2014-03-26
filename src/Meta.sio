@@ -858,6 +858,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600028a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600028b
+      <item>class
+     </specification>
+     <specification/>
       <id>600029
       <item>class
      </specification>
@@ -896,6 +904,14 @@
      <specification/>
       <id>600039
       <item>class
+     </specification>
+     <specification/>
+      <id>600052a
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>600052b
+      <item>pclass
      </specification>
      <specification/>
       <id>600053b
@@ -1053,6 +1069,14 @@
       <id>640038
       <item>class
      </specification>
+     <specification/>
+      <id>640101
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>640102
+      <item>pclass
+     </specification>
     </specifications>
     <fields/>
      <field/>
@@ -1073,6 +1097,94 @@
        <specification/>
         <id>640038
         <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>106123
+      <name>Create_List
+      <type>bool
+      <mandatory>true
+      <transient>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600028b
+        <item>field
+       </specification>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>106122
+      <name>Create_View
+      <type>bool
+      <mandatory>true
+      <transient>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600028a
+        <item>field
+       </specification>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300632
+      <name>Created_List
+      <type>@class
+      <mandatory>false
+      <class_id>122100
+      <relationship_id>200632
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600052b
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>640102
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300631
+      <name>Created_View
+      <type>@class
+      <mandatory>false
+      <class_id>118100
+      <relationship_id>200631
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600052a
+        <item>pfield
+       </specification>
+       <specification/>
+        <id>640101
+        <item>pfield
        </specification>
       </specifications>
      </field>
@@ -2322,6 +2434,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600046a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600046b
+      <item>class
+     </specification>
+     <specification/>
       <id>600047
       <item>class
      </specification>
@@ -2343,6 +2463,14 @@
      </specification>
      <specification/>
       <id>600052
+      <item>class
+     </specification>
+     <specification/>
+      <id>600052a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600052b
       <item>class
      </specification>
      <specification/>
@@ -2535,6 +2663,58 @@
      </specification>
     </specifications>
     <fields/>
+     <field/>
+      <id>107120
+      <name>Create_List_Field
+      <type>bool
+      <mandatory>true
+      <transient>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500402
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600046b
+        <item>field
+       </specification>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>107119
+      <name>Create_View_Field
+      <type>bool
+      <mandatory>true
+      <transient>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500401
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600046a
+        <item>field
+       </specification>
+       <specification/>
+        <id>601710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
      <field/>
       <id>107115
       <name>Def_Value
@@ -3430,6 +3610,14 @@
         <item>pfield
        </specification>
        <specification/>
+        <id>600052a
+        <item>field
+       </specification>
+       <specification/>
+        <id>600052b
+        <item>field
+       </specification>
+       <specification/>
         <id>600063
         <item>pfield
        </specification>
@@ -3557,6 +3745,14 @@
      </index>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>500402
+      <name>Hide_Create_List_Field
+     </modifier>
+     <modifier/>
+      <id>500401
+      <name>Hide_Create_View_Field
+     </modifier>
      <modifier/>
       <id>107315
       <name>Is_Any_Non_Text_Type
@@ -12134,6 +12330,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>640101
+      <item>class
+     </specification>
+     <specification/>
+      <id>640102
+      <item>class
+     </specification>
+     <specification/>
       <id>650100
       <item>class
      </specification>
@@ -12228,6 +12432,14 @@
        <specification/>
         <id>610096
         <item>sfield
+       </specification>
+       <specification/>
+        <id>640101
+        <item>field
+       </specification>
+       <specification/>
+        <id>640102
+        <item>field
        </specification>
       </specifications>
      </field>
@@ -12532,6 +12744,52 @@
       </specifications>
      </field>
      <field/>
+      <id>301330b
+      <name>Parent_Field_For_List
+      <type>@class
+      <mandatory>false
+      <transient>true
+      <class_id>107100
+      <relationship_id>201330b
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500582
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602300
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301330a
+      <name>Parent_Field_For_View
+      <type>@class
+      <mandatory>false
+      <transient>true
+      <class_id>107100
+      <relationship_id>201330a
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500581
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602300
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>301330
       <name>Source_{Relationship}
       <type>@class
@@ -12605,6 +12863,14 @@
      </index>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>500582
+      <name>Hide_Parent_Field_For_List
+     </modifier>
+     <modifier/>
+      <id>500581
+      <name>Hide_Parent_Field_For_View
+     </modifier>
      <modifier/>
       <id>500580
       <name>Is_Internal
@@ -25149,6 +25415,24 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>200632
+    <name>Created_List_{Class}
+    <parent_id>122100
+    <child_id>106100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>200631
+    <name>Created_View_{Class}
+    <parent_id>118100
+    <child_id>106100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201995
     <name>Destroy_{Permission}_{List}
     <parent_id>116100
@@ -25433,6 +25717,24 @@
     <parent_id>106100
     <child_id>113100
     <cascade_op>destroy
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201330b
+    <name>Parent_Field_For_List_{Relationship}
+    <parent_id>107100
+    <child_id>113100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201330a
+    <name>Parent_Field_For_View_{Relationship}
+    <parent_id>107100
+    <child_id>113100
+    <cascade_op>unlink
     <specifications/>
     </specifications>
    </relationship>
@@ -26438,6 +26740,28 @@
     </data>
    </specification>
    <specification/>
+    <id>600028b
+    <name>{Class}_Create_List_default_1
+    <type>default_to_global
+    <data/>
+     <class_id>106100
+     <field_id>106123
+     <field_value>1
+     <default_only>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600028a
+    <name>{Class}_Create_View_default_1
+    <type>default_to_global
+    <data/>
+     <class_id>106100
+     <field_id>106122
+     <field_value>1
+     <default_only>true
+    </data>
+   </specification>
+   <specification/>
     <id>630026
     <name>{Class}_Extra
     <type>field_from_other_field
@@ -26752,6 +27076,8 @@
      <field_info>106103;enum=520
      <field_info>106120
      <field_info>106121
+     <field_info>106122;new_only
+     <field_info>106123;new_only
      <field_info>300630:107101!@key:300700;non_new
      <field_info>106109
      <field_info>106108
@@ -26959,6 +27285,28 @@
     </data>
    </specification>
    <specification/>
+    <id>600046b
+    <name>{Field}_Create_List_Field_default_1
+    <type>default_to_global
+    <data/>
+     <class_id>107100
+     <field_id>107120
+     <field_value>1
+     <default_only>true
+    </data>
+   </specification>
+   <specification/>
+    <id>600046a
+    <name>{Field}_Create_View_Field_default_1
+    <type>default_to_global
+    <data/>
+     <class_id>107100
+     <field_id>107119
+     <field_value>1
+     <default_only>true
+    </data>
+   </specification>
+   <specification/>
     <id>600054a
     <name>{Field}_Def_Value
     <type>transient_field_alias
@@ -26966,6 +27314,30 @@
      <class_id>107100
      <field_id>107115
      <sfield_id>107102
+    </data>
+   </specification>
+   <specification/>
+    <id>600052b
+    <name>{Field}_Hide_Create_List_Field
+    <type>modifier_field_null
+    <data/>
+     <class_id>107100
+     <pclass_id>106100
+     <modifier_id>500402
+     <field_id>300700
+     <pfield_id>300632
+    </data>
+   </specification>
+   <specification/>
+    <id>600052a
+    <name>{Field}_Hide_Create_View_Field
+    <type>modifier_field_null
+    <data/>
+     <class_id>107100
+     <pclass_id>106100
+     <modifier_id>500401
+     <field_id>300700
+     <pfield_id>300631
     </data>
    </specification>
    <specification/>
@@ -27277,6 +27649,8 @@
      <field_info>107116
      <field_info>107117
      <field_info>107111
+     <field_info>107119;new_only
+     <field_info>107120;new_only
     </data>
    </specification>
    <specification/>
@@ -29894,6 +30268,30 @@
     </data>
    </specification>
    <specification/>
+    <id>640102
+    <name>{Relationship}_Hide_Parent_Field_For_List
+    <type>modifier_field_null
+    <data/>
+     <class_id>113100
+     <pclass_id>106100
+     <modifier_id>500582
+     <field_id>301310
+     <pfield_id>300632
+    </data>
+   </specification>
+   <specification/>
+    <id>640101
+    <name>{Relationship}_Hide_Parent_Field_For_View
+    <type>modifier_field_null
+    <data/>
+     <class_id>113100
+     <pclass_id>106100
+     <modifier_id>500581
+     <field_id>301310
+     <pfield_id>300631
+    </data>
+   </specification>
+   <specification/>
     <id>630100
     <name>{Relationship}_Internal_if_non_null
     <type>field_empty_action
@@ -29996,7 +30394,9 @@
      <field_info>301300:105101;no_edit+link+fkey1+filename+max_size=30
      <field_info>301310:106101!@fkey1:300600+106101;link+force+new_edit
      <field_info>113106;no_edit+non_new
-     <field_info>301320:106101!@fkey1:300600+106101;link+force+new_edit
+     <field_info>301320:106101!@fkey1:300600+106101;fkey2+link+force+new_edit
+     <field_info>301330a:107101!@fkey2:300700+107101;new_only
+     <field_info>301330b:107101!@fkey2:300700+107101;new_only
      <field_info>113102
      <field_info>113111;force
      <field_info>113101;forced

@@ -29,6 +29,7 @@
 #include "Meta_Index.h"
 #include "Meta_Specification_Field_Action.h"
 #include "Meta_Specification.h"
+#include "Meta_Relationship.h"
 #include "Meta_List.h"
 #include "Meta_View_Field.h"
 #include "Meta_Initial_Record_Value.h"
@@ -47,6 +48,14 @@
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
+
+// [(start modifier_field_null)] 600052a
+#include "Meta_View.h"
+// [(finish modifier_field_null)] 600052a
+
+// [(start modifier_field_null)] 600052b
+#include "Meta_List.h"
+// [(finish modifier_field_null)] 600052b
 
 // [(start clone_children_for_create)] 600064
 #include "Meta_Class.h"
@@ -117,6 +126,8 @@ const int32_t c_version = 1;
 const char* const c_okay = "okay";
 
 const char* const c_field_id_Class = "300700";
+const char* const c_field_id_Create_List_Field = "107120";
+const char* const c_field_id_Create_View_Field = "107119";
 const char* const c_field_id_Def_Value = "107115";
 const char* const c_field_id_Default = "107102";
 const char* const c_field_id_Dummy_1 = "107118";
@@ -141,6 +152,8 @@ const char* const c_field_id_UOM_Symbol = "107117";
 const char* const c_field_id_Use_In_Text_Search = "107111";
 
 const char* const c_field_name_Class = "Class";
+const char* const c_field_name_Create_List_Field = "Create_List_Field";
+const char* const c_field_name_Create_View_Field = "Create_View_Field";
 const char* const c_field_name_Def_Value = "Def_Value";
 const char* const c_field_name_Default = "Default";
 const char* const c_field_name_Dummy_1 = "Dummy_1";
@@ -165,6 +178,8 @@ const char* const c_field_name_UOM_Symbol = "UOM_Symbol";
 const char* const c_field_name_Use_In_Text_Search = "Use_In_Text_Search";
 
 const char* const c_field_display_name_Class = "field_field_class";
+const char* const c_field_display_name_Create_List_Field = "field_field_create_list_field";
+const char* const c_field_display_name_Create_View_Field = "field_field_create_view_field";
 const char* const c_field_display_name_Def_Value = "field_field_def_value";
 const char* const c_field_display_name_Default = "field_field_default";
 const char* const c_field_display_name_Dummy_1 = "field_field_dummy_1";
@@ -188,7 +203,7 @@ const char* const c_field_display_name_UOM_Name = "field_field_uom_name";
 const char* const c_field_display_name_UOM_Symbol = "field_field_uom_symbol";
 const char* const c_field_display_name_Use_In_Text_Search = "field_field_use_in_text_search";
 
-const int c_num_fields = 23;
+const int c_num_fields = 25;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -210,6 +225,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "107116",
    "107117",
    "107118",
+   "107119",
+   "107120",
    "300700",
    "300710",
    "300720",
@@ -220,6 +237,8 @@ const char* const c_all_sorted_field_ids[ ] =
 const char* const c_all_sorted_field_names[ ] =
 {
    "Class",
+   "Create_List_Field",
+   "Create_View_Field",
    "Def_Value",
    "Default",
    "Dummy_1",
@@ -252,18 +271,22 @@ inline bool has_field( const string& field )
     || binary_search( c_all_sorted_field_names, c_all_sorted_field_names + c_num_fields, field.c_str( ), compare );
 }
 
-const int c_num_transient_fields = 4;
+const int c_num_transient_fields = 6;
 
 const char* const c_transient_sorted_field_ids[ ] =
 {
    "107113",
    "107114",
    "107115",
-   "107118"
+   "107118",
+   "107119",
+   "107120"
 };
 
 const char* const c_transient_sorted_field_names[ ] =
 {
+   "Create_List_Field",
+   "Create_View_Field",
    "Def_Value",
    "Dummy_1",
    "Numeric_Decimals",
@@ -282,11 +305,13 @@ inline bool is_transient_field( const string& field )
 
 const char* const c_procedure_id_Get_Text_Type = "107410";
 
-const uint64_t c_modifier_Is_Any_Non_Text_Type = UINT64_C( 0x100 );
-const uint64_t c_modifier_Is_Internal = UINT64_C( 0x200 );
-const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x400 );
-const uint64_t c_modifier_Is_Transient = UINT64_C( 0x800 );
-const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Hide_Create_List_Field = UINT64_C( 0x100 );
+const uint64_t c_modifier_Hide_Create_View_Field = UINT64_C( 0x200 );
+const uint64_t c_modifier_Is_Any_Non_Text_Type = UINT64_C( 0x400 );
+const uint64_t c_modifier_Is_Internal = UINT64_C( 0x800 );
+const uint64_t c_modifier_Is_Non_Custom_UOM = UINT64_C( 0x1000 );
+const uint64_t c_modifier_Is_Transient = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Is_Type_bool = UINT64_C( 0x4000 );
 
 domain_string_max_size< 200 > g_Default_domain;
 aggregate_domain< string,
@@ -318,6 +343,8 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 string g_default_Class = string( );
+bool g_default_Create_List_Field = bool( 0 );
+bool g_default_Create_View_Field = bool( 0 );
 string g_default_Def_Value = string( );
 string g_default_Default = string( );
 bool g_default_Dummy_1 = bool( 1 );
@@ -636,6 +663,18 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          string_getter< Meta_Class >( cmd_handler.p_Meta_Field->Class( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Create_List_Field || field_name == c_field_name_Create_List_Field )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Field->Create_List_Field( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Create_View_Field || field_name == c_field_name_Create_View_Field )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Field->Create_View_Field( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
       {
          handled = true;
@@ -785,6 +824,20 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          handled = true;
          func_string_setter< Meta_Field, Meta_Class >(
           *cmd_handler.p_Meta_Field, &Meta_Field::Class, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Create_List_Field || field_name == c_field_name_Create_List_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, bool >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Create_List_Field, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Create_View_Field || field_name == c_field_name_Create_View_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, bool >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Create_View_Field, field_value );
       }
 
       if( !handled && field_name == c_field_id_Def_Value || field_name == c_field_name_Def_Value )
@@ -1002,6 +1055,12 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    {
       return *cp_obj;
    }
+
+   bool impl_Create_List_Field( ) const { return lazy_fetch( p_obj ), v_Create_List_Field; }
+   void impl_Create_List_Field( bool Create_List_Field ) { v_Create_List_Field = Create_List_Field; }
+
+   bool impl_Create_View_Field( ) const { return lazy_fetch( p_obj ), v_Create_View_Field; }
+   void impl_Create_View_Field( bool Create_View_Field ) { v_Create_View_Field = Create_View_Field; }
 
    const string& impl_Def_Value( ) const { return lazy_fetch( p_obj ), v_Def_Value; }
    void impl_Def_Value( const string& Def_Value ) { v_Def_Value = Def_Value; }
@@ -1491,6 +1550,50 @@ struct Meta_Field::impl : public Meta_Field_command_handler
          p_obj->setup_graph_parent( *cp_child_Specification_Other_Source_Child, "301496" );
       }
       return *cp_child_Specification_Other_Source_Child;
+   }
+
+   Meta_Relationship& impl_child_Relationship_Parent_Field_For_List( )
+   {
+      if( !cp_child_Relationship_Parent_Field_For_List )
+      {
+         cp_child_Relationship_Parent_Field_For_List.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Relationship_Parent_Field_For_List, "301330b" );
+      }
+      return *cp_child_Relationship_Parent_Field_For_List;
+   }
+
+   const Meta_Relationship& impl_child_Relationship_Parent_Field_For_List( ) const
+   {
+      if( !cp_child_Relationship_Parent_Field_For_List )
+      {
+         cp_child_Relationship_Parent_Field_For_List.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Relationship_Parent_Field_For_List, "301330b" );
+      }
+      return *cp_child_Relationship_Parent_Field_For_List;
+   }
+
+   Meta_Relationship& impl_child_Relationship_Parent_Field_For_View( )
+   {
+      if( !cp_child_Relationship_Parent_Field_For_View )
+      {
+         cp_child_Relationship_Parent_Field_For_View.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Relationship_Parent_Field_For_View, "301330a" );
+      }
+      return *cp_child_Relationship_Parent_Field_For_View;
+   }
+
+   const Meta_Relationship& impl_child_Relationship_Parent_Field_For_View( ) const
+   {
+      if( !cp_child_Relationship_Parent_Field_For_View )
+      {
+         cp_child_Relationship_Parent_Field_For_View.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Relationship_Parent_Field_For_View, "301330a" );
+      }
+      return *cp_child_Relationship_Parent_Field_For_View;
    }
 
    Meta_List& impl_child_List_Parent( )
@@ -2056,6 +2159,8 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    size_t total_child_relationships;
 
+   bool v_Create_List_Field;
+   bool v_Create_View_Field;
    string v_Def_Value;
    string v_Default;
    bool v_Dummy_1;
@@ -2103,6 +2208,8 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other_Source_Child_2;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other_Source_Child;
+   mutable class_pointer< Meta_Relationship > cp_child_Relationship_Parent_Field_For_List;
+   mutable class_pointer< Meta_Relationship > cp_child_Relationship_Parent_Field_For_View;
    mutable class_pointer< Meta_List > cp_child_List_Parent;
    mutable class_pointer< Meta_Class > cp_child_Class_Quick_Link;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Restriction;
@@ -2172,90 +2279,98 @@ string Meta_Field::impl::get_field_value( int field ) const
       break;
 
       case 1:
-      retval = to_string( impl_Def_Value( ) );
+      retval = to_string( impl_Create_List_Field( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Default( ) );
+      retval = to_string( impl_Create_View_Field( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Dummy_1( ) );
+      retval = to_string( impl_Def_Value( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Enum( ) );
+      retval = to_string( impl_Default( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Dummy_1( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Enum( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Is_Foreign_Key( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Is_Text_Type( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Mandatory( ) );
+      retval = to_string( impl_Is_Foreign_Key( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Is_Text_Type( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Numeric_Decimals( ) );
+      retval = to_string( impl_Mandatory( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Parent_Class_Name( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Parent_Class_Name( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Transient( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Source_Field( ) );
       break;
 
       case 19:
-      retval = to_string( impl_UOM( ) );
+      retval = to_string( impl_Transient( ) );
       break;
 
       case 20:
-      retval = to_string( impl_UOM_Name( ) );
+      retval = to_string( impl_Type( ) );
       break;
 
       case 21:
-      retval = to_string( impl_UOM_Symbol( ) );
+      retval = to_string( impl_UOM( ) );
       break;
 
       case 22:
+      retval = to_string( impl_UOM_Name( ) );
+      break;
+
+      case 23:
+      retval = to_string( impl_UOM_Symbol( ) );
+      break;
+
+      case 24:
       retval = to_string( impl_Use_In_Text_Search( ) );
       break;
 
@@ -2275,90 +2390,98 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
       break;
 
       case 1:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Def_Value, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Create_List_Field, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Default, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Create_View_Field, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Dummy_1, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Def_Value, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Default, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Dummy_1, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
+      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
+      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
+      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
+      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
       break;
 
       case 22:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      break;
+
+      case 23:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      break;
+
+      case 24:
       func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Use_In_Text_Search, value );
       break;
 
@@ -2400,6 +2523,16 @@ uint64_t Meta_Field::impl::get_state( ) const
    if( get_obj( ).Internal( ) == true )
       state |= c_modifier_Is_Internal;
    // [(finish modifier_field_value)] 600052
+
+   // [(start modifier_field_null)] 600052a
+   if( is_null( get_obj( ).Class( ).Created_View( ) ) )
+      state |= c_modifier_Hide_Create_View_Field;
+   // [(finish modifier_field_null)] 600052a
+
+   // [(start modifier_field_null)] 600052b
+   if( is_null( get_obj( ).Class( ).Created_List( ) ) )
+      state |= c_modifier_Hide_Create_List_Field;
+   // [(finish modifier_field_null)] 600052b
 
    // [(start modifier_field_value)] 610050
    if( get_obj( ).Transient( ) == true )
@@ -2504,6 +2637,8 @@ void Meta_Field::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Field::impl::clear( )
 {
+   v_Create_List_Field = g_default_Create_List_Field;
+   v_Create_View_Field = g_default_Create_View_Field;
    v_Def_Value = g_default_Def_Value;
    v_Default = g_default_Default;
    v_Dummy_1 = g_default_Dummy_1;
@@ -2852,6 +2987,20 @@ void Meta_Field::impl::to_store( bool is_create, bool is_internal )
    uint64_t state = p_obj->get_state( );
    ( void )state;
 
+   // [(start default_to_global)] 600046a
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).Create_View_Field( 1 );
+   // [(finish default_to_global)] 600046a
+
+   // [(start default_to_global)] 600046b
+   if( is_create
+    && get_obj( ).get_key( ).empty( )
+    && get_obj( ).get_clone_key( ).empty( ) )
+      get_obj( ).Create_List_Field( 1 );
+   // [(finish default_to_global)] 600046b
+
    // [(start field_from_other_field)] 600053
    get_obj( ).Primitive( get_obj( ).Type( ).Primitive( ) );
    // [(finish field_from_other_field)] 600053
@@ -2917,6 +3066,53 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
+   if( is_create && !is_internal && get_obj( ).Create_View_Field( ) )
+   {
+      get_obj( ).child_View_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
+      get_obj( ).child_View_Field_Source( ).Source_Field( get_obj( ).get_key( ) );
+      get_obj( ).child_View_Field_Source( ).Class( get_obj( ).Class( ) );
+      get_obj( ).child_View_Field_Source( ).View( get_obj( ).Class( ).Created_View( ) );
+      get_obj( ).child_View_Field_Source( ).op_apply( );
+   }
+
+   if( is_create && !is_internal && get_obj( ).Create_List_Field( ) )
+   {
+      get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_L" );
+      get_obj( ).child_List_Field_Source( ).Source_Field( get_obj( ).get_key( ) );
+      get_obj( ).child_List_Field_Source( ).Class( get_obj( ).Class( ) );
+      get_obj( ).child_List_Field_Source( ).List( get_obj( ).Class( ).Created_List( ) );
+      get_obj( ).child_List_Field_Source( ).op_apply( );
+   }
+
+   if( is_create && is_internal )
+   {
+      string parent_field_for_view = get_session_variable( "meta_Parent_Field_For_View" );
+
+      if( !parent_field_for_view.empty( ) )
+      {
+         get_obj( ).child_View_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
+         get_obj( ).child_View_Field_Source( ).Use_Source_Parent( true );
+         get_obj( ).child_View_Field_Source( ).Source_Parent( get_obj( ).get_key( ) );
+         get_obj( ).child_View_Field_Source( ).Source_Child( parent_field_for_view );
+         get_obj( ).child_View_Field_Source( ).Class( get_obj( ).Class( ) );
+         get_obj( ).child_View_Field_Source( ).View( get_obj( ).Class( ).Created_View( ) );
+         get_obj( ).child_View_Field_Source( ).op_apply( );
+      }
+
+      string parent_field_for_list = get_session_variable( "meta_Parent_Field_For_List" );
+
+      if( !parent_field_for_list.empty( ) )
+      {
+         get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
+         get_obj( ).child_List_Field_Source( ).Use_Source_Parent( true );
+         get_obj( ).child_List_Field_Source( ).Source_Parent( get_obj( ).get_key( ) );
+         get_obj( ).child_List_Field_Source( ).Source_Child( parent_field_for_list );
+         get_obj( ).child_List_Field_Source( ).Class( get_obj( ).Class( ) );
+         get_obj( ).child_List_Field_Source( ).List( get_obj( ).Class( ).Created_List( ) );
+         get_obj( ).child_List_Field_Source( ).op_apply( );
+      }
+   }
+
    if( !is_create && get_obj( ).Transient( ) && get_obj( ).has_field_changed( c_field_id_Transient ) )
    {
       bool okay = true;
@@ -3270,6 +3466,26 @@ Meta_Field::~Meta_Field( )
 {
    cleanup( );
    delete p_impl;
+}
+
+bool Meta_Field::Create_List_Field( ) const
+{
+   return p_impl->impl_Create_List_Field( );
+}
+
+void Meta_Field::Create_List_Field( bool Create_List_Field )
+{
+   p_impl->impl_Create_List_Field( Create_List_Field );
+}
+
+bool Meta_Field::Create_View_Field( ) const
+{
+   return p_impl->impl_Create_View_Field( );
+}
+
+void Meta_Field::Create_View_Field( bool Create_View_Field )
+{
+   p_impl->impl_Create_View_Field( Create_View_Field );
 }
 
 const string& Meta_Field::Def_Value( ) const
@@ -3657,6 +3873,26 @@ const Meta_Specification& Meta_Field::child_Specification_Other_Source_Child( ) 
    return p_impl->impl_child_Specification_Other_Source_Child( );
 }
 
+Meta_Relationship& Meta_Field::child_Relationship_Parent_Field_For_List( )
+{
+   return p_impl->impl_child_Relationship_Parent_Field_For_List( );
+}
+
+const Meta_Relationship& Meta_Field::child_Relationship_Parent_Field_For_List( ) const
+{
+   return p_impl->impl_child_Relationship_Parent_Field_For_List( );
+}
+
+Meta_Relationship& Meta_Field::child_Relationship_Parent_Field_For_View( )
+{
+   return p_impl->impl_child_Relationship_Parent_Field_For_View( );
+}
+
+const Meta_Relationship& Meta_Field::child_Relationship_Parent_Field_For_View( ) const
+{
+   return p_impl->impl_child_Relationship_Parent_Field_For_View( );
+}
+
 Meta_List& Meta_Field::child_List_Parent( )
 {
    return p_impl->impl_child_List_Parent( );
@@ -4033,6 +4269,26 @@ const char* Meta_Field::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Create_List_Field )
+   {
+      p_id = c_field_id_Create_List_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Create_View_Field )
+   {
+      p_id = c_field_id_Create_View_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Def_Value )
    {
       p_id = c_field_id_Def_Value;
@@ -4270,6 +4526,26 @@ const char* Meta_Field::get_field_name(
 
       if( p_type_name )
          *p_type_name = "Meta_Class";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Create_List_Field )
+   {
+      p_name = c_field_name_Create_List_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Create_View_Field )
+   {
+      p_name = c_field_name_Create_View_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -4528,6 +4804,16 @@ string Meta_Field::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Class );
       get_module_string( c_field_display_name_Class, &next );
    }
+   else if( id_or_name == c_field_id_Create_List_Field || id_or_name == c_field_name_Create_List_Field )
+   {
+      name = string( c_field_display_name_Create_List_Field );
+      get_module_string( c_field_display_name_Create_List_Field, &next );
+   }
+   else if( id_or_name == c_field_id_Create_View_Field || id_or_name == c_field_name_Create_View_Field )
+   {
+      name = string( c_field_display_name_Create_View_Field );
+      get_module_string( c_field_display_name_Create_View_Field, &next );
+   }
    else if( id_or_name == c_field_id_Def_Value || id_or_name == c_field_name_Def_Value )
    {
       name = string( c_field_display_name_Def_Value );
@@ -4655,6 +4941,10 @@ string Meta_Field::get_field_display_name( const string& id_or_name ) const
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
    else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
       display_name = get_module_string( c_field_display_name_Class );
+   else if( id_or_name == c_field_id_Create_List_Field || id_or_name == c_field_name_Create_List_Field )
+      display_name = get_module_string( c_field_display_name_Create_List_Field );
+   else if( id_or_name == c_field_id_Create_View_Field || id_or_name == c_field_name_Create_View_Field )
+      display_name = get_module_string( c_field_display_name_Create_View_Field );
    else if( id_or_name == c_field_id_Def_Value || id_or_name == c_field_name_Def_Value )
       display_name = get_module_string( c_field_display_name_Def_Value );
    else if( id_or_name == c_field_id_Default || id_or_name == c_field_name_Default )
@@ -4763,6 +5053,11 @@ void Meta_Field::setup_graph_parent( Meta_Specification& o, const string& foreig
    static_cast< Meta_Specification& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_Field::setup_graph_parent( Meta_Relationship& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Relationship& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Field::setup_graph_parent( Meta_List& o, const string& foreign_key_field )
 {
    static_cast< Meta_List& >( o ).set_graph_parent( this, foreign_key_field );
@@ -4833,7 +5128,7 @@ void Meta_Field::set_total_child_relationships( size_t new_total_child_relations
 
 size_t Meta_Field::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 36;
+   size_t rc = 38;
 
    if( !is_internal )
    {
@@ -4866,7 +5161,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 36 )
+   if( child_num >= 38 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -4983,6 +5278,22 @@ class_base* Meta_Field::get_next_foreign_key_child(
          break;
 
          case 13:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "301330b";
+            p_class_base = &child_Relationship_Parent_Field_For_List( );
+         }
+         break;
+
+         case 14:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "301330a";
+            p_class_base = &child_Relationship_Parent_Field_For_View( );
+         }
+         break;
+
+         case 15:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301996";
@@ -4990,7 +5301,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 14:
+         case 16:
          if( op == e_cascade_op_unlink )
          {
             next_child_field = "300630";
@@ -4998,7 +5309,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 15:
+         case 17:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302185";
@@ -5006,7 +5317,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 16:
+         case 18:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302160";
@@ -5014,7 +5325,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 17:
+         case 19:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301495";
@@ -5022,7 +5333,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 18:
+         case 20:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301960";
@@ -5030,7 +5341,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 19:
+         case 21:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301965";
@@ -5038,7 +5349,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 20:
+         case 22:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302140";
@@ -5046,7 +5357,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 21:
+         case 23:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301481";
@@ -5054,7 +5365,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 22:
+         case 24:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301940";
@@ -5062,7 +5373,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 23:
+         case 25:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302165";
@@ -5070,7 +5381,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 24:
+         case 26:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301476";
@@ -5078,7 +5389,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 25:
+         case 27:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302150";
@@ -5086,7 +5397,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 26:
+         case 28:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301480";
@@ -5094,7 +5405,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 27:
+         case 29:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301950";
@@ -5102,7 +5413,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 28:
+         case 30:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300740";
@@ -5110,7 +5421,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 29:
+         case 31:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301488";
@@ -5118,7 +5429,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 30:
+         case 32:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301485";
@@ -5126,7 +5437,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 31:
+         case 33:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301486";
@@ -5134,7 +5445,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 32:
+         case 34:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302176";
@@ -5142,7 +5453,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 33:
+         case 35:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "302520";
@@ -5150,7 +5461,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 34:
+         case 36:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301020";
@@ -5158,7 +5469,7 @@ class_base* Meta_Field::get_next_foreign_key_child(
          }
          break;
 
-         case 35:
+         case 37:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301430";
@@ -5264,6 +5575,10 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
       p_class_base = &child_Specification_Other_Source_Child_2( );
    else if( sub_context == "_301496" || sub_context == "child_Specification_Other_Source_Child" )
       p_class_base = &child_Specification_Other_Source_Child( );
+   else if( sub_context == "_301330b" || sub_context == "child_Relationship_Parent_Field_For_List" )
+      p_class_base = &child_Relationship_Parent_Field_For_List( );
+   else if( sub_context == "_301330a" || sub_context == "child_Relationship_Parent_Field_For_View" )
+      p_class_base = &child_Relationship_Parent_Field_For_View( );
    else if( sub_context == "_301996" || sub_context == "child_List_Parent" )
       p_class_base = &child_List_Parent( );
    else if( sub_context == "_300630" || sub_context == "child_Class_Quick_Link" )
@@ -5512,6 +5827,22 @@ void Meta_Field::get_always_required_field_names(
       names.insert( "Internal" );
    // [(finish modifier_field_value)] 600052
 
+   // [(start modifier_field_null)] 600052a
+   dependents.insert( "Class" ); // (for Hide_Create_View_Field modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Class ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Class ) ) )
+      names.insert( "Class" );
+   // [(finish modifier_field_null)] 600052a
+
+   // [(start modifier_field_null)] 600052b
+   dependents.insert( "Class" ); // (for Hide_Create_List_Field modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Class ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Class ) ) )
+      names.insert( "Class" );
+   // [(finish modifier_field_null)] 600052b
+
    // [(start modifier_field_value)] 610050
    dependents.insert( "Transient" ); // (for Is_Transient modifier)
 
@@ -5586,6 +5917,8 @@ void Meta_Field::static_get_class_info( class_info_container& class_info )
 void Meta_Field::static_get_field_info( field_info_container& all_field_info )
 {
    all_field_info.push_back( field_info( "300700", "Class", "Meta_Class", true ) );
+   all_field_info.push_back( field_info( "107120", "Create_List_Field", "bool", false ) );
+   all_field_info.push_back( field_info( "107119", "Create_View_Field", "bool", false ) );
    all_field_info.push_back( field_info( "107115", "Def_Value", "string", false ) );
    all_field_info.push_back( field_info( "107102", "Default", "string", false ) );
    all_field_info.push_back( field_info( "107118", "Dummy_1", "bool", false ) );
@@ -5645,90 +5978,98 @@ const char* Meta_Field::static_get_field_id( field_id id )
       break;
 
       case 2:
-      p_id = "107115";
+      p_id = "107120";
       break;
 
       case 3:
-      p_id = "107102";
+      p_id = "107119";
       break;
 
       case 4:
-      p_id = "107118";
+      p_id = "107115";
       break;
 
       case 5:
-      p_id = "300720";
+      p_id = "107102";
       break;
 
       case 6:
-      p_id = "107103";
+      p_id = "107118";
       break;
 
       case 7:
-      p_id = "107110";
+      p_id = "300720";
       break;
 
       case 8:
-      p_id = "107106";
+      p_id = "107103";
       break;
 
       case 9:
-      p_id = "107108";
+      p_id = "107110";
       break;
 
       case 10:
-      p_id = "107109";
+      p_id = "107106";
       break;
 
       case 11:
-      p_id = "107105";
+      p_id = "107108";
       break;
 
       case 12:
-      p_id = "107101";
+      p_id = "107109";
       break;
 
       case 13:
-      p_id = "107114";
+      p_id = "107105";
       break;
 
       case 14:
-      p_id = "300730";
+      p_id = "107101";
       break;
 
       case 15:
-      p_id = "107113";
+      p_id = "107114";
       break;
 
       case 16:
-      p_id = "107107";
+      p_id = "300730";
       break;
 
       case 17:
-      p_id = "300740";
+      p_id = "107113";
       break;
 
       case 18:
-      p_id = "107112";
+      p_id = "107107";
       break;
 
       case 19:
-      p_id = "300710";
+      p_id = "300740";
       break;
 
       case 20:
-      p_id = "107104";
+      p_id = "107112";
       break;
 
       case 21:
-      p_id = "107116";
+      p_id = "300710";
       break;
 
       case 22:
-      p_id = "107117";
+      p_id = "107104";
       break;
 
       case 23:
+      p_id = "107116";
+      break;
+
+      case 24:
+      p_id = "107117";
+      break;
+
+      case 25:
       p_id = "107111";
       break;
    }
@@ -5750,90 +6091,98 @@ const char* Meta_Field::static_get_field_name( field_id id )
       break;
 
       case 2:
-      p_id = "Def_Value";
+      p_id = "Create_List_Field";
       break;
 
       case 3:
-      p_id = "Default";
+      p_id = "Create_View_Field";
       break;
 
       case 4:
-      p_id = "Dummy_1";
+      p_id = "Def_Value";
       break;
 
       case 5:
-      p_id = "Enum";
+      p_id = "Default";
       break;
 
       case 6:
-      p_id = "Extra";
+      p_id = "Dummy_1";
       break;
 
       case 7:
-      p_id = "Id";
+      p_id = "Enum";
       break;
 
       case 8:
-      p_id = "Internal";
+      p_id = "Extra";
       break;
 
       case 9:
-      p_id = "Is_Foreign_Key";
+      p_id = "Id";
       break;
 
       case 10:
-      p_id = "Is_Text_Type";
+      p_id = "Internal";
       break;
 
       case 11:
-      p_id = "Mandatory";
+      p_id = "Is_Foreign_Key";
       break;
 
       case 12:
-      p_id = "Name";
+      p_id = "Is_Text_Type";
       break;
 
       case 13:
-      p_id = "Numeric_Decimals";
+      p_id = "Mandatory";
       break;
 
       case 14:
-      p_id = "Parent_Class";
+      p_id = "Name";
       break;
 
       case 15:
-      p_id = "Parent_Class_Name";
+      p_id = "Numeric_Decimals";
       break;
 
       case 16:
-      p_id = "Primitive";
+      p_id = "Parent_Class";
       break;
 
       case 17:
-      p_id = "Source_Field";
+      p_id = "Parent_Class_Name";
       break;
 
       case 18:
-      p_id = "Transient";
+      p_id = "Primitive";
       break;
 
       case 19:
-      p_id = "Type";
+      p_id = "Source_Field";
       break;
 
       case 20:
-      p_id = "UOM";
+      p_id = "Transient";
       break;
 
       case 21:
-      p_id = "UOM_Name";
+      p_id = "Type";
       break;
 
       case 22:
-      p_id = "UOM_Symbol";
+      p_id = "UOM";
       break;
 
       case 23:
+      p_id = "UOM_Name";
+      break;
+
+      case 24:
+      p_id = "UOM_Symbol";
+      break;
+
+      case 25:
       p_id = "Use_In_Text_Search";
       break;
    }
@@ -5852,50 +6201,54 @@ int Meta_Field::static_get_field_num( const string& field )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
    else if( field == c_field_id_Class || field == c_field_name_Class )
       rc += 1;
-   else if( field == c_field_id_Def_Value || field == c_field_name_Def_Value )
+   else if( field == c_field_id_Create_List_Field || field == c_field_name_Create_List_Field )
       rc += 2;
-   else if( field == c_field_id_Default || field == c_field_name_Default )
+   else if( field == c_field_id_Create_View_Field || field == c_field_name_Create_View_Field )
       rc += 3;
-   else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
+   else if( field == c_field_id_Def_Value || field == c_field_name_Def_Value )
       rc += 4;
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( field == c_field_id_Default || field == c_field_name_Default )
       rc += 5;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
       rc += 6;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
       rc += 7;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 8;
-   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 9;
-   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 10;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
       rc += 11;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
       rc += 12;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
       rc += 13;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 14;
-   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 15;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 16;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
       rc += 17;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 18;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 19;
-   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
       rc += 20;
-   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 21;
-   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+   else if( field == c_field_id_UOM || field == c_field_name_UOM )
       rc += 22;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
       rc += 23;
+   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+      rc += 24;
+   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+      rc += 25;
 
    return rc - 1;
 }

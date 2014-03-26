@@ -23,13 +23,13 @@ class Meta_Relationship;
 class Meta_List_Field;
 class Meta_Specification;
 class Meta_Specification_Field_Action;
-class Meta_List;
 class Meta_View_Field;
 class Meta_Index;
 class Meta_Initial_Record;
 class Meta_Modifier_Affect;
 class Meta_Modifier;
 class Meta_Procedure;
+class Meta_List;
 class Meta_View;
 class Meta_Model;
 class Meta_Field;
@@ -41,13 +41,13 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    friend class Meta_List_Field;
    friend class Meta_Specification;
    friend class Meta_Specification_Field_Action;
-   friend class Meta_List;
    friend class Meta_View_Field;
    friend class Meta_Index;
    friend class Meta_Initial_Record;
    friend class Meta_Modifier_Affect;
    friend class Meta_Modifier;
    friend class Meta_Procedure;
+   friend class Meta_List;
    friend class Meta_View;
    friend class Meta_Model;
    friend class Meta_Field;
@@ -59,21 +59,25 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    {
       e_field_id_none = 0,
       e_field_id_Commands_File = 1,
-      e_field_id_Delay_Initial_Records = 2,
-      e_field_id_Extra = 3,
-      e_field_id_Header_File = 4,
-      e_field_id_Id = 5,
-      e_field_id_Model = 6,
-      e_field_id_Name = 7,
-      e_field_id_Next_Field_Id = 8,
-      e_field_id_Next_Procedure_Id = 9,
-      e_field_id_Plural = 10,
-      e_field_id_Quick_Link_Field = 11,
-      e_field_id_Source_Class = 12,
-      e_field_id_Source_File = 13,
-      e_field_id_Source_Model = 14,
-      e_field_id_Static_Instance_Key = 15,
-      e_field_id_Type = 16
+      e_field_id_Create_List = 2,
+      e_field_id_Create_View = 3,
+      e_field_id_Created_List = 4,
+      e_field_id_Created_View = 5,
+      e_field_id_Delay_Initial_Records = 6,
+      e_field_id_Extra = 7,
+      e_field_id_Header_File = 8,
+      e_field_id_Id = 9,
+      e_field_id_Model = 10,
+      e_field_id_Name = 11,
+      e_field_id_Next_Field_Id = 12,
+      e_field_id_Next_Procedure_Id = 13,
+      e_field_id_Plural = 14,
+      e_field_id_Quick_Link_Field = 15,
+      e_field_id_Source_Class = 16,
+      e_field_id_Source_File = 17,
+      e_field_id_Source_Model = 18,
+      e_field_id_Static_Instance_Key = 19,
+      e_field_id_Type = 20
    };
 
    Meta_Class( );
@@ -81,6 +85,12 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    const std::string& Commands_File( ) const;
    void Commands_File( const std::string& Commands_File );
+
+   bool Create_List( ) const;
+   void Create_List( bool Create_List );
+
+   bool Create_View( ) const;
+   void Create_View( bool Create_View );
 
    bool Delay_Initial_Records( ) const;
    void Delay_Initial_Records( bool Delay_Initial_Records );
@@ -114,6 +124,14 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    int Type( ) const;
    void Type( int Type );
+
+   Meta_List& Created_List( );
+   const Meta_List& Created_List( ) const;
+   void Created_List( const std::string& key );
+
+   Meta_View& Created_View( );
+   const Meta_View& Created_View( ) const;
+   void Created_View( const std::string& key );
 
    Meta_Model& Model( );
    const Meta_Model& Model( ) const;
@@ -397,6 +415,8 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_List& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_View& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
@@ -415,6 +435,12 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    virtual void setup_graph_parent( Meta_Modifier& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Procedure& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_List& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
+   virtual void setup_graph_parent( Meta_View& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Model& o,
     const std::string& foreign_key_field, const std::string& init_value );

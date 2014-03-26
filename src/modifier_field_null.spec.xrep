@@ -1,3 +1,8 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start modifier_field_null)] `{`$arg_id`}
+#include "`{`$module_name`}_`{`$arg_scclass`}.h"
+// [(finish modifier_field_null)] `{`$arg_id`}
+`}
 `{`@eq`(`'get_state`'`,`$section`)\
    // [(start modifier_field_null)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\

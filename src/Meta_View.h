@@ -129,6 +129,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
    const Meta_View_Type& Type( ) const;
    void Type( const std::string& key );
 
+   Meta_Class& child_Class_Created( );
+   const Meta_Class& child_Class_Created( ) const;
+
    Meta_View_Field& child_View_Field( );
    const Meta_View_Field& child_View_Field( ) const;
 
@@ -307,6 +310,7 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
    virtual void setup_foreign_key( Meta_View_Type& o, const std::string& value );
 
+   virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Permission& o,

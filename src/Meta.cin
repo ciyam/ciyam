@@ -236,6 +236,8 @@ field_add -id=106109 Class Header_File string opt -x=flink
 field_add -id=106110 Class Commands_File string opt -x=flink
 field_add -id=106120 Class Static_Instance_Key label opt
 field_add -id=106121 Class Delay_Initial_Records bool mand -def=0
+field_add -id=106122 Class Create_View bool mand -def=0 -transient
+field_add -id=106123 Class Create_List bool mand -def=0 -transient
 procedure_add -id=106410 Class Generate
 class_add -id=107100 Field Fields
 field_add -id=107101 Field Name mid_identifier mand
@@ -256,6 +258,8 @@ field_add -id=107115 Field Def_Value string opt -transient
 field_add -id=107116 Field UOM_Name str100 opt
 field_add -id=107117 Field UOM_Symbol str10 opt
 field_add -id=107118 Field Dummy_1 bool mand -def=1 -transient
+field_add -id=107119 Field Create_View_Field bool mand -def=0 -transient
+field_add -id=107120 Field Create_List_Field bool mand -def=0 -transient
 modifier_add -id=107310 Field Is_Type_bool UOM:relegate
 modifier_add -id=107311 Field Is_Non_Custom_UOM UOM_Name:relegate,UOM_Symbol:relegate
 modifier_add -id=107315 Field Is_Any_Non_Text_Type Mandatory:protect,Use_In_Text_Search:relegate
@@ -797,6 +801,8 @@ relationship_add -id=200600 -fid=300600 Class {Model} Model mand destroy
 relationship_add -id=200610 -fid=300610 Class Source_{Model} Model opt restrict
 relationship_add -id=200620 -fid=300620 Class Source_{Class} Class opt destroy
 relationship_add -id=200630 -fid=300630 Class Quick_Link_Field Field opt unlink
+relationship_add -id=200631 -fid=300631 Class Created_View View opt unlink
+relationship_add -id=200632 -fid=300632 Class Created_List List opt unlink
 relationship_add -id=200700 -fid=300700 Field {Class} Class mand destroy
 relationship_add -id=200710 -fid=300710 Field {Type} Type mand restrict
 relationship_add -id=200720 -fid=300720 Field {Enum} Enum opt restrict
@@ -823,6 +829,8 @@ relationship_add -id=201300 -fid=301300 Relationship {Model} Model mand destroy
 relationship_add -id=201310 -fid=301310 Relationship Child_Class Class mand destroy
 relationship_add -id=201320 -fid=301320 Relationship Parent_Class Class mand destroy
 relationship_add -id=201330 -fid=301330 Relationship Source_{Relationship} Relationship opt destroy
+relationship_add -id=201330a -fid=301330a Relationship Parent_Field_For_View Field opt unlink -transient
+relationship_add -id=201330b -fid=301330b Relationship Parent_Field_For_List Field opt unlink -transient
 relationship_add -id=201331 -fid=301331 Specification Other_{Permission} Permission opt restrict
 relationship_add -id=201332 -fid=301332 Specification Other_{Permission}_2 Permission opt restrict
 relationship_add -id=201400 -fid=301400 Specification {Model} Model mand destroy
@@ -988,6 +996,8 @@ modifier_add -id=500100 Type Is_Internal @class:lowlight
 modifier_add -id=500200 Enum Is_Internal @class:lowlight
 modifier_add -id=500300 Enum_Item Is_Internal @class:lowlight
 modifier_add -id=500400 Field Is_Internal @class:lowlight
+modifier_add -id=500401 Field Hide_Create_View_Field Create_View_Field:relegate
+modifier_add -id=500402 Field Hide_Create_List_Field Create_List_Field:relegate
 modifier_add -id=500425 Index Is_Internal @class:lowlight
 modifier_add -id=500431 Model Is_Not_Busy Status:relegate
 modifier_add -id=500450 Modifier Is_Internal @class:lowlight
@@ -996,6 +1006,8 @@ modifier_add -id=500510 Modifier_Affect Is_Internal @class:lowlight
 modifier_add -id=500550 Procedure Is_Internal @class:lowlight
 modifier_add -id=500560 Procedure_Arg Is_Internal @class:lowlight
 modifier_add -id=500580 Relationship Is_Internal @class:lowlight
+modifier_add -id=500581 Relationship Hide_Parent_Field_For_View Parent_Field_For_View:relegate
+modifier_add -id=500582 Relationship Hide_Parent_Field_For_List Parent_Field_For_List:relegate
 modifier_add -id=500590 Specification Is_Comment @class:extralight1;list
 modifier_add -id=500600 Specification Hide_Field {Field}:relegate
 modifier_add -id=500601 Specification Hide_Other_Source_Child Other_Source_Child:relegate
@@ -1221,6 +1233,8 @@ specification_add -id=630026 {Class}_Extra field_from_other_field "Class Source_
 specification_add -id=640026 {Class}_Static_Instance_Key field_from_other_field "Class Source_{Class}:Static_Instance_Key Static_Instance_Key -create_only -check_null"
 specification_add -id=600027 {Class}_{Specification}_update_children update_children "Class Specification Name"
 specification_add -id=610027 {Class}_{Relationship}_update_children update_children "Class Relationship:Child_Class Name"
+specification_add -id=600028a {Class}_Create_View_default_1 default_to_global "Class Create_View 1 -default_only"
+specification_add -id=600028b {Class}_Create_List_default_1 default_to_global "Class Create_List 1 -default_only"
 specification_add -id=600029 {Class}_Name_{Relationship}_change child_field_change_cascade "Class Name Relationship:Parent_Class"
 specification_add -id=600030 {Class}_Source_{Class}_check check_null_match "Class Source_{Class} Source_{Model}"
 specification_add -id=600032 {Class}_Is_Alias modifier_field_null "Class Is_Alias Source_{Model} -negative"
@@ -1240,6 +1254,8 @@ specification_add -id=640038 {Class}_Commands_File_file_link file_link "Class Na
 specification_add -id=600039 {Class}_Next_Field_Id_Id_required field_required "Class Next_Field_Id"
 specification_add -id=610039 {Class}_Next_Procedure_Id_Id_required field_required "Class Next_Procedure_Id"
 specification_add -id=600045 {Field}_UOM_Name_cond_check check_cond_non_null "Field UOM_Name Dummy_1 -test=UOM=999"
+specification_add -id=600046a {Field}_Create_View_Field_default_1 default_to_global "Field Create_View_Field 1 -default_only"
+specification_add -id=600046b {Field}_Create_List_Field_default_1 default_to_global "Field Create_List_Field 1 -default_only"
 specification_add -id=600047 {Field}_Is_Non_Custom_UOM modifier_field_value "Field Is_Non_Custom_UOM UOM 999 -not_equal"
 specification_add -id=600048 {Field}_Is_Any_Non_Text_Type_int modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive int -enum=primitive"
 specification_add -id=600049 {Field}_Is_Any_Non_Text_Type_bool modifier_field_value "Field Is_Any_Non_Text_Type {Type}:Primitive bool -enum=primitive"
@@ -1248,6 +1264,8 @@ specification_add -id=610050 {Field}_Is_Transient modifier_field_value "Field Is
 specification_add -id=620050 {Field}_Is_Type_bool modifier_field_value "Field Is_Type_bool {Type}:Primitive bool -enum=primitive"
 specification_add -id=600051 {Field}_Internal_protect state_protect "equal Field Internal true"
 specification_add -id=600052 {Field}_Is_Internal modifier_field_value "Field Is_Internal Internal true"
+specification_add -id=600052a {Field}_Hide_Create_View_Field modifier_field_null "Field Hide_Create_View_Field {Class}:Created_View"
+specification_add -id=600052b {Field}_Hide_Create_List_Field modifier_field_null "Field Hide_Create_List_Field {Class}:Created_List"
 specification_add -id=600053 {Field}_Primitive_from_other_field field_from_other_field "Field {Type}:Primitive Primitive"
 specification_add -id=600053a {Field}_UOM_from_other_field default_to_field "Field UOM {Type}:Default_UOM"
 specification_add -id=600053b {Field}_Parent_Class_Name transient_field_alias "Field Parent_Class_Name Parent_Class:Name"
@@ -1325,6 +1343,8 @@ specification_add -id=610100 {Relationship}_Is_Internal modifier_field_value "Re
 specification_add -id=620100 {Relationship}_Internal_protect state_protect "equal Relationship Internal true"
 specification_add -id=630100 {Relationship}_Internal_if_non_null field_empty_action "Relationship Source_{Relationship} Internal true -no_clear"
 specification_add -id=640100 {Relationship}_Is_Transient modifier_field_value "Relationship Is_Transient Transient true"
+specification_add -id=640101 {Relationship}_Hide_Parent_Field_For_View modifier_field_null "Relationship Hide_Parent_Field_For_View Child_Class:Created_View"
+specification_add -id=640102 {Relationship}_Hide_Parent_Field_For_List modifier_field_null "Relationship Hide_Parent_Field_For_List Child_Class:Created_List"
 specification_add -id=650100 {Relationship}_Cascade_Not_Applicable_if_Is_Transient modifier_set_field "Relationship Is_Transient Cascade_Op -1"
 specification_add -id=600101 {Specification}_Is_Comment modifier_field_value "Specification Is_Comment {Specification_Type} comment"
 specification_add -id=600101a {Specification}_Hide_Other_Class modifier_field_value "Specification Hide_Other_Class {Specification_Type}:Allow_Other_Class false"
@@ -1798,13 +1818,13 @@ specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Pa
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\
 ,Source_{Model}:Name!@group:{Workgroup}+@xparent;new_edit+link+fkey1+force\
 ,Source_{Class}:Name!@fkey1:{Model}+Name;new_edit+force+link\
-,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra,Static_Instance_Key,Delay_Initial_Records\
+,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra,Static_Instance_Key,Delay_Initial_Records,Create_View;new_only,Create_List;new_only\
 ,Quick_Link_Field:Name!@key:{Class};non_new,Header_File,Source_File,Commands_File"
 specification_add -id=601620 {Class}_child_list0 list "@601620_* child:no_limit Class Name,Id {Model}"
 specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no_edit+link\
 ,Id;no_edit+non_new,{Type}:Name!@group:{Workgroup}+Name;force+link,Name,Transient;force,Mandatory,Default\
 ,Primitive;hidden+key1,Parent_Class:Name;no_edit+link,{Enum}:Name!@group:{Workgroup}+@key1:Primitive;link\
-,Extra,UOM;force,UOM_Name,UOM_Symbol,Use_In_Text_Search"
+,Extra,UOM;force,UOM_Name,UOM_Symbol,Use_In_Text_Search,Create_View_Field;new_only,Create_List_Field;new_only"
 specification_add -id=601720 {Field}_child_list0 list "@601720_* child:no_limit Field\
  Name,Id,{Type}:Name;link,Mandatory,Def_Value {Class}"
 specification_add -id=601810 {Index}_view view "? standard Index {Class}:Name;no_edit+link+fkey1\
@@ -1829,7 +1849,9 @@ specification_add -id=602250 {Permission}_view view "? standard Permission Name,
 specification_add -id=602260 {Permission}_group_list list "* group:no_limit Permission Name,Id {Workgroup}"
 specification_add -id=602300 {Relationship}_view view "? standard Relationship\
  {Model}:Name;no_edit+link+fkey1,Child_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Field_Id;no_edit+non_new\
-,Parent_Class:Name!@fkey1:{Model}+Name;link+force+new_edit,Mandatory,Transient;force,Name;forced,Cascade_Op,Extra;forced"
+,Parent_Class:Name!@fkey1:{Model}+Name;fkey2+link+force+new_edit\
+,Parent_Field_For_View:Name!@fkey2:{Class}+Name;new_only,Parent_Field_For_List:Name!@fkey2:{Class}+Name;new_only\
+,Mandatory,Transient;force,Name;forced,Cascade_Op,Extra;forced"
 specification_add -id=602320 {Relationship}_child_list0 list "@602320_* child:sort_no_limit Relationship\
  Child_Class:Name,Parent_Class:Name,Name,Mandatory,Cascade_Op {Model}"
 specification_add -id=602321 {Relationship}_child_list1 list "@602321_Child_* child:no_new,sort_no_limit Relationship\

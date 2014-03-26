@@ -23,6 +23,7 @@ class Meta_List_Field;
 class Meta_Index;
 class Meta_Specification_Field_Action;
 class Meta_Specification;
+class Meta_Relationship;
 class Meta_List;
 class Meta_View_Field;
 class Meta_Initial_Record_Value;
@@ -40,6 +41,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    friend class Meta_Index;
    friend class Meta_Specification_Field_Action;
    friend class Meta_Specification;
+   friend class Meta_Relationship;
    friend class Meta_List;
    friend class Meta_View_Field;
    friend class Meta_Initial_Record_Value;
@@ -55,32 +57,40 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    {
       e_field_id_none = 0,
       e_field_id_Class = 1,
-      e_field_id_Def_Value = 2,
-      e_field_id_Default = 3,
-      e_field_id_Dummy_1 = 4,
-      e_field_id_Enum = 5,
-      e_field_id_Extra = 6,
-      e_field_id_Id = 7,
-      e_field_id_Internal = 8,
-      e_field_id_Is_Foreign_Key = 9,
-      e_field_id_Is_Text_Type = 10,
-      e_field_id_Mandatory = 11,
-      e_field_id_Name = 12,
-      e_field_id_Numeric_Decimals = 13,
-      e_field_id_Parent_Class = 14,
-      e_field_id_Parent_Class_Name = 15,
-      e_field_id_Primitive = 16,
-      e_field_id_Source_Field = 17,
-      e_field_id_Transient = 18,
-      e_field_id_Type = 19,
-      e_field_id_UOM = 20,
-      e_field_id_UOM_Name = 21,
-      e_field_id_UOM_Symbol = 22,
-      e_field_id_Use_In_Text_Search = 23
+      e_field_id_Create_List_Field = 2,
+      e_field_id_Create_View_Field = 3,
+      e_field_id_Def_Value = 4,
+      e_field_id_Default = 5,
+      e_field_id_Dummy_1 = 6,
+      e_field_id_Enum = 7,
+      e_field_id_Extra = 8,
+      e_field_id_Id = 9,
+      e_field_id_Internal = 10,
+      e_field_id_Is_Foreign_Key = 11,
+      e_field_id_Is_Text_Type = 12,
+      e_field_id_Mandatory = 13,
+      e_field_id_Name = 14,
+      e_field_id_Numeric_Decimals = 15,
+      e_field_id_Parent_Class = 16,
+      e_field_id_Parent_Class_Name = 17,
+      e_field_id_Primitive = 18,
+      e_field_id_Source_Field = 19,
+      e_field_id_Transient = 20,
+      e_field_id_Type = 21,
+      e_field_id_UOM = 22,
+      e_field_id_UOM_Name = 23,
+      e_field_id_UOM_Symbol = 24,
+      e_field_id_Use_In_Text_Search = 25
    };
 
    Meta_Field( );
    ~Meta_Field( );
+
+   bool Create_List_Field( ) const;
+   void Create_List_Field( bool Create_List_Field );
+
+   bool Create_View_Field( ) const;
+   void Create_View_Field( bool Create_View_Field );
 
    const std::string& Def_Value( ) const;
    void Def_Value( const std::string& Def_Value );
@@ -194,6 +204,12 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_Specification& child_Specification_Other_Source_Child( );
    const Meta_Specification& child_Specification_Other_Source_Child( ) const;
+
+   Meta_Relationship& child_Relationship_Parent_Field_For_List( );
+   const Meta_Relationship& child_Relationship_Parent_Field_For_List( ) const;
+
+   Meta_Relationship& child_Relationship_Parent_Field_For_View( );
+   const Meta_Relationship& child_Relationship_Parent_Field_For_View( ) const;
 
    Meta_List& child_List_Parent( );
    const Meta_List& child_List_Parent( ) const;
@@ -443,6 +459,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    virtual void setup_graph_parent( Meta_Index& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification_Field_Action& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Relationship& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );
