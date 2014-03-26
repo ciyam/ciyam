@@ -1426,7 +1426,10 @@ void class_base::destroy( )
                      if( rc != e_op_destroy_rc_not_found )
                         p_class_base->op_apply( );
                   }
-                  else
+                  // NOTE: The model relationships may end up with instances being destroyed trying to
+                  // unlink themselves from parents which are also being destroyed so these unlink ops
+                  // are simply ignored.
+                  else if( !is_destroy_locked_by_own_session( *p_class_base ) )
                   {
                      op_update_rc rc;
                      p_class_base->op_update( &rc );
