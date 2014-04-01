@@ -754,6 +754,7 @@ field_add -id=135105 Package_Type Actions string opt -x=actions
 field_add -id=135106 Package_Type Installed bool mand -def=0
 field_add -id=135107 Package_Type Dependencies string opt -x=notes
 field_add -id=135108 Package_Type Plural identifier mand -def=New_Package_Type
+field_add -id=135109 Package_Type Single identifier mand -def=New_Package_Type
 index_add -id=135201 Package_Type Name unique
 index_add -id=135202 Package_Type Installed,Name unique
 procedure_add -id=135410 Package_Type Install
@@ -789,6 +790,23 @@ field_add -id=137113 Package_Option Numeric string opt
 field_add -id=137114 Package_Option Integer int mand -def=0
 field_add -id=137115 Package_Option Name str100 mand
 field_add -id=137116 Package_Option Actions string opt -def=137410$137100*@id -transient -x=actions
+field_add -id=137117 Package_Option Is_Class bool mand -def=0
+field_add -id=137118 Package_Option Is_Mandatory_Class bool mand -def=0
+field_add -id=137119 Package_Option Has_Field bool mand -def=0
+field_add -id=137120 Package_Option Is_Mandatory_Field bool mand -def=0
+field_add -id=137121 Package_Option Notes string opt -x=notes
+field_add -id=137122 Package_Option Has_View bool mand -def=0
+field_add -id=137123 Package_Option Is_Mandatory_View bool mand -def=0
+field_add -id=137124 Package_Option Has_Other_Field bool mand -def=0
+field_add -id=137125 Package_Option Is_Mandatory_Other_Field bool mand -def=0
+field_add -id=137126 Package_Option Has_Other_Field_2 bool mand -def=0
+field_add -id=137127 Package_Option Is_Mandatory_Other_Field_2 bool mand -def=0
+field_add -id=137128 Package_Option Has_List bool mand -def=0
+field_add -id=137129 Package_Option Is_Mandatory_List bool mand -def=0
+field_add -id=137130 Package_Option Has_Modifier bool mand -def=0
+field_add -id=137131 Package_Option Is_Mandatory_Modifier bool mand -def=0
+field_add -id=137132 Package_Option Has_Procedure bool mand -def=0
+field_add -id=137133 Package_Option Is_Mandatory_Procedure bool mand -def=0
 procedure_add -id=137410 Package_Option Edit
 procedure_add -id=137420 Package_Option Select
 procedure_add -id=137430 Package_Option Clear
@@ -943,6 +961,14 @@ relationship_add -id=202810 -fid=302810 Package {Package_Type} Package_Type mand
 relationship_add -id=202820 -fid=302820 Package_Option {Package} Package mand destroy
 relationship_add -id=202825 -fid=302825 Package_Option {Model} Model mand destroy
 relationship_add -id=202830 -fid=302830 Package_Option Other_Package Package opt unlink
+relationship_add -id=202830a -fid=302830a Package_Option {Class} Class opt unlink
+relationship_add -id=202830b -fid=302830b Package_Option {Field} Field opt unlink
+relationship_add -id=202830c -fid=302830c Package_Option {View} View opt unlink
+relationship_add -id=202830d -fid=302830d Package_Option Other_Field Field opt unlink
+relationship_add -id=202830e -fid=302830e Package_Option Other_Field_2 Field opt unlink
+relationship_add -id=202831 -fid=302831 Package_Option {List} List opt unlink
+relationship_add -id=202832 -fid=302832 Package_Option {Modifier} Modifier opt unlink
+relationship_add -id=202833 -fid=302833 Package_Option {Procedure} Procedure opt unlink
 relationship_add -id=202835 -fid=302835 Workgroup Standard_Package Package opt unlink
 index_add -id=400100 User {Workgroup},User_Id unique
 index_add -id=400101 User {Workgroup},Active,User_Id unique
@@ -1182,6 +1208,16 @@ modifier_add -id=500987 Package_Option Is_Int Use_Option:relegate\
 ,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate
 modifier_add -id=500988 Package_Option Is_Bool String:relegate,Datetime:relegate\
 ,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500989 Package_Option Is_Class_Option Use_Option:relegate\
+,String:relegate,Datetime:relegate,Date:relegate,Time:relegate,Numeric:relegate,Integer:relegate
+modifier_add -id=500990 Package_Option Is_Not_Class_Option {Class}:relegate,Notes:relegate
+modifier_add -id=500991a Package_Option Hide_Field {Field}:relegate
+modifier_add -id=500991b Package_Option Hide_Other_Field Other_Field:relegate
+modifier_add -id=500991c Package_Option Hide_Other_Field_2 Other_Field_2:relegate
+modifier_add -id=500992 Package_Option Hide_View {View}:relegate
+modifier_add -id=500993 Package_Option Hide_List {List}:relegate
+modifier_add -id=500994 Package_Option Hide_Modifier {Modifier}:relegate
+modifier_add -id=500995 Package_Option Hide_Procedure {Procedure}:relegate
 specification_add -id=600001 {User}_Clear_Permissions field_clear "User Permissions"
 specification_add -id=600002 {Workgroup}_Clone_{Type}_defaults clone_default_group_children "Workgroup Type {Workgroup}"
 specification_add -id=600003 {Workgroup}_Clone_{Enum}_defaults clone_default_group_children "Workgroup Enum {Workgroup}"
@@ -1767,7 +1803,7 @@ specification_add -id=600801 {Package_Type}_Installed_Actions_clear field_clear 
 specification_add -id=600802 {Package_Type}_Installed_protect state_protect "equal Package_Type Installed true -scope=edit"
 specification_add -id=600803 {Package_Type}_File file_attachment "Package_Type File"
 specification_add -id=600804 {Package_Type}_Is_Installed modifier_field_value "Package_Type Is_Installed Installed true"
-specification_add -id=600850 {Package}_Name field_from_changed_fk "Package {Package_Type} Name -new_only"
+specification_add -id=600850 {Package}_Name field_from_changed_fk "Package {Package_Type} Name:Single -new_only"
 specification_add -id=600851 {Package}_Plural field_from_changed_fk "Package {Package_Type} Plural -new_only"
 specification_add -id=600852 {Package}_Installed_protect state_protect "equal Package Installed true"
 specification_add -id=600854 {Package}_Install_protect state_protect "equal Package Actions \"\" -changing -scope=delete"
@@ -1785,6 +1821,15 @@ specification_add -id=600887 {Package_Option}_Is_Time modifier_field_value "Pack
 specification_add -id=600888 {Package_Option}_Is_Numeric modifier_field_value "Package_Option Is_Numeric Primitive numeric -enum=primitive"
 specification_add -id=600889 {Package_Option}_Is_Int modifier_field_value "Package_Option Is_Int Primitive int -enum=primitive"
 specification_add -id=600890 {Package_Option}_Is_Bool modifier_field_value "Package_Option Is_Bool Primitive bool -enum=primitive"
+specification_add -id=600891 {Package_Option}_Is_Class_Option modifier_field_value "Package_Option Is_Class_Option Is_Class true"
+specification_add -id=600892 {Package_Option}_Is_Not_Class_Option modifier_field_value "Package_Option Is_Not_Class_Option Is_Class false"
+specification_add -id=600893a {Package_Option}_Hide_Field modifier_field_value "Package_Option Hide_Field Has_Field false"
+specification_add -id=600893b {Package_Option}_Hide_Other_Field modifier_field_value "Package_Option Hide_Other_Field Has_Other_Field false"
+specification_add -id=600893c {Package_Option}_Hide_Other_Field_2 modifier_field_value "Package_Option Hide_Other_Field_2 Has_Other_Field_2 false"
+specification_add -id=600894 {Package_Option}_Hide_View modifier_field_value "Package_Option Hide_View Has_View false"
+specification_add -id=600895 {Package_Option}_Hide_List modifier_field_value "Package_Option Hide_List Has_List false"
+specification_add -id=600896 {Package_Option}_Hide_Modifier modifier_field_value "Package_Option Hide_Modifier Has_Modifier false"
+specification_add -id=600897 {Package_Option}_Hide_Procedure modifier_field_value "Package_Option Hide_Procedure Has_Procedure false"
 specification_add -id=600999 user_info user_info "User User_Id Password User_Hash -group={Workgroup} -active=Active -perm=Permissions"
 specification_add -id=601000 {User}_list list "* admin:no_erase User User_Id,Description,{Workgroup}:Name,Active Active,checked:1"
 specification_add -id=601010 {User}_child_list0 list "@601010_* child:no_erase User User_Id,Description,Active {Workgroup} Active,checked:1"
@@ -1814,6 +1859,9 @@ specification_add -id=601530 {Package}_view view "? standard:no_edit Package\
 specification_add -id=601550 {Package_Option}_child_list0 list "@601550_* child:no_limit Package_Option Name,Value,Actions;omit_label {Package}"
 specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Package_Option\
  {Package}:Name;no_edit+link,Name;no_edit,String,Datetime,Date,Time,Numeric,Integer,Use_Option\
+,Notes,{Class}:Name!@fkey1:{Model}+Name;fkey2+force,{View}:Name!@fkey2:{Class}+Name,{List}:Name!@fkey2:{Class}+Name\
+,{Field}:Name!@fkey2:{Class}+Name,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name\
+,{Modifier}:Name!@fkey2:{Class}+Name,{Procedure}:Name!@fkey2:{Class}+Name\
 ,Other_Package:Name!@fkey1:{Model}+@key1:{Package_Type},{Model};hidden+fkey1,Other_Package_Type;hidden+key1"
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\
 ,Source_{Model}:Name!@group:{Workgroup}+@xparent;new_edit+link+fkey1+force\
@@ -1999,5 +2047,5 @@ specification_add -id=603300 {Initial_Record_Value}_view view "? standard Initia
 specification_add -id=603310 {Initial_Record_Value}_child_list0 list "@603310_* child:no_new,no_erase,sort_no_limit Initial_Record_Value\
  {Field}:Name;non_fk_link,Value {Initial_Record}"
 specification_add -id=603500 {Package_Type}_list list "* admin Package_Type Name,Version"
-specification_add -id=603550 {Package_Type}_view view "? admin Package_Type Name;new_edit,Plural;no_edit,Version;no_edit,File,Multi;no_edit,Dependencies;no_edit,Actions"
+specification_add -id=603550 {Package_Type}_view view "? admin Package_Type Name;new_edit,Single;no_edit,Plural;no_edit,Version;no_edit,File,Multi;no_edit,Dependencies;no_edit,Actions"
 model_save

@@ -29,6 +29,7 @@
 #include "Meta_List.h"
 #include "Meta_Specification.h"
 #include "Meta_Modifier_Affect.h"
+#include "Meta_Package_Option.h"
 #include "Meta_Class.h"
 #include "Meta_Modifier.h"
 
@@ -540,6 +541,28 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
       return *cp_child_Modifier_Affect;
    }
 
+   Meta_Package_Option& impl_child_Package_Option( )
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302832" );
+      }
+      return *cp_child_Package_Option;
+   }
+
+   const Meta_Package_Option& impl_child_Package_Option( ) const
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302832" );
+      }
+      return *cp_child_Package_Option;
+   }
+
    Meta_Specification& impl_child_Specification( )
    {
       if( !cp_child_Specification )
@@ -632,6 +655,7 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
    mutable class_pointer< Meta_Modifier > cp_child_Modifier_Source;
    mutable class_pointer< Meta_Modifier_Affect > cp_child_Modifier_Affect;
+   mutable class_pointer< Meta_Package_Option > cp_child_Package_Option;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
 };
 
@@ -1194,6 +1218,16 @@ const Meta_Modifier_Affect& Meta_Modifier::child_Modifier_Affect( ) const
    return p_impl->impl_child_Modifier_Affect( );
 }
 
+Meta_Package_Option& Meta_Modifier::child_Package_Option( )
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
+const Meta_Package_Option& Meta_Modifier::child_Package_Option( ) const
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
 Meta_Specification& Meta_Modifier::child_Specification( )
 {
    return p_impl->impl_child_Specification( );
@@ -1557,6 +1591,11 @@ void Meta_Modifier::setup_graph_parent( Meta_Modifier_Affect& o, const string& f
    static_cast< Meta_Modifier_Affect& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_Modifier::setup_graph_parent( Meta_Package_Option& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Package_Option& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Modifier::setup_graph_parent(
  Meta_Class& o, const string& foreign_key_field, const string& init_value )
 {
@@ -1583,7 +1622,7 @@ void Meta_Modifier::set_total_child_relationships( size_t new_total_child_relati
 
 size_t Meta_Modifier::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 7;
+   size_t rc = 8;
 
    if( !is_internal )
    {
@@ -1616,7 +1655,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 7 )
+   if( child_num >= 8 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1677,6 +1716,14 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          break;
 
          case 6:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "302832";
+            p_class_base = &child_Package_Option( );
+         }
+         break;
+
+         case 7:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301440";
@@ -1768,6 +1815,8 @@ class_base& Meta_Modifier::get_or_create_graph_child( const string& context )
       p_class_base = &child_Modifier_Source( );
    else if( sub_context == "_301000" || sub_context == "child_Modifier_Affect" )
       p_class_base = &child_Modifier_Affect( );
+   else if( sub_context == "_302832" || sub_context == "child_Package_Option" )
+      p_class_base = &child_Package_Option( );
    else if( sub_context == "_301440" || sub_context == "child_Specification" )
       p_class_base = &child_Specification( );
    else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )

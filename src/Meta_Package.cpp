@@ -42,7 +42,9 @@
 //nyi
 #include "module_management.h"
 #include "Meta_Enum.h"
+#include "Meta_List.h"
 #include "Meta_Type.h"
+#include "Meta_View.h"
 #include "Meta_Class.h"
 #include "Meta_Field.h"
 #include "Meta_Index.h"
@@ -951,7 +953,47 @@ void Meta_Package::impl::impl_Install( )
       {
          do
          {
-            if( get_obj( ).child_Package_Option( ).Is_Other_Package( )
+            if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Class( )
+             && get_obj( ).child_Package_Option( ).Value( ).empty( ) )
+               throw runtime_error( "This package requires option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' to be provided." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_View( )
+             && is_null( get_obj( ).child_Package_Option( ).View( ) ) )
+               throw runtime_error( "This package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a View." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_List( )
+             && is_null( get_obj( ).child_Package_Option( ).List( ) ) )
+               throw runtime_error( "This package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a List." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Field( )
+             && is_null( get_obj( ).child_Package_Option( ).Field( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Field." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field( )
+             && is_null( get_obj( ).child_Package_Option( ).Other_Field( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field_2( )
+             && is_null( get_obj( ).child_Package_Option( ).Other_Field_2( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field 2." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Modifier( )
+             && is_null( get_obj( ).child_Package_Option( ).Modifier( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Modifier." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Procedure( )
+             && is_null( get_obj( ).child_Package_Option( ).Procedure( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires a Procedure." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Other_Package( )
              && get_obj( ).child_Package_Option( ).Other_Package_Required( )
              && is_null( get_obj( ).child_Package_Option( ).Other_Package( ) ) )
                throw runtime_error( "This package requires option '"
@@ -1015,24 +1057,80 @@ void Meta_Package::impl::impl_Install( )
          if( get_obj( ).Plural( ) != get_obj( ).Package_Type( ).Plural( ) )
             outf << get_obj( ).Package_Type( ).Plural( ) << "=" << get_obj( ).Plural( ) << '\n';
 
-         if( get_obj( ).Name( ) != get_obj( ).Package_Type( ).Name( ) )
-            outf << get_obj( ).Package_Type( ).Name( ) << "=" << get_obj( ).Name( ) << '\n';
+         if( get_obj( ).Name( ) != get_obj( ).Package_Type( ).Single( ) )
+            outf << get_obj( ).Package_Type( ).Single( ) << "=" << get_obj( ).Name( ) << '\n';
 
+         map< string, string > extras;
          map< string, string > options;
          if( get_obj( ).child_Package_Option( ).iterate_forwards( ) )
          {
             do
             {
-               if( get_obj( ).child_Package_Option( ).Primitive( ) == e_primitive_bool )
+               if( !get_obj( ).child_Package_Option( ).Is_Class( )
+                && get_obj( ).child_Package_Option( ).Primitive( ) == e_primitive_bool )
                   options.insert( make_pair(
                    get_obj( ).child_Package_Option( ).Id( ), get_obj( ).child_Package_Option( ).Use_Option( ) ? "1" : "" ) );
                else
+               {
                   options.insert( make_pair(
                    get_obj( ).child_Package_Option( ).Id( ), get_obj( ).child_Package_Option( ).Value( ) ) );
+
+                  if( get_obj( ).child_Package_Option( ).Is_Class( )
+                   && !is_null( get_obj( ).child_Package_Option( ).Class( ) ) )
+                  {
+                     string name( get_obj( ).child_Package_Option( ).Id( ) );
+                     string::size_type pos = name.rfind( "_class" );
+                     if( pos == string::npos )
+                        throw runtime_error( "unexpected class option id name '" + name + "'" );
+
+                     name.erase( pos + 1 );
+
+                     extras.insert( make_pair(
+                      name + "clskey", get_obj( ).child_Package_Option( ).Class( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "plural", get_obj( ).child_Package_Option( ).Class( ).Plural( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "vewkey", get_obj( ).child_Package_Option( ).View( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "lstkey", get_obj( ).child_Package_Option( ).List( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "fldnam", get_obj( ).child_Package_Option( ).Field( ).Name( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "fldkey", get_obj( ).child_Package_Option( ).Field( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "oflnam", get_obj( ).child_Package_Option( ).Other_Field( ).Name( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "oflkey", get_obj( ).child_Package_Option( ).Other_Field( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "of2nam", get_obj( ).child_Package_Option( ).Other_Field_2( ).Name( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "of2key", get_obj( ).child_Package_Option( ).Other_Field_2( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "modkey", get_obj( ).child_Package_Option( ).Modifier( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "prokey", get_obj( ).child_Package_Option( ).Procedure( ).get_key( ) ) );
+                  }
+               }
             } while( get_obj( ).child_Package_Option( ).iterate_next( ) );
          }
 
          string opt_prefix( "opt_" + lower( get_obj( ).Package_Type( ).Name( ) ) + "_" );
+
+         // NOTE: The "extras" need to preceed the normal keys so they can be used in conditional
+         // expressions.
+         for( map< string, string >::iterator i = extras.begin( ); i != extras.end( ); ++i )
+            outf << i->first << '=' << i->second << '\n';
 
          string next;
          set< string > options_processed;
@@ -1804,7 +1902,7 @@ void Meta_Package::impl::to_store( bool is_create, bool is_internal )
 
    // [(start field_from_changed_fk)] 600850
    if( get_obj( ).get_key( ).empty( ) && get_obj( ).Package_Type( ).has_changed( ) )
-      get_obj( ).Name( get_obj( ).Package_Type( ).Name( ) );
+      get_obj( ).Name( get_obj( ).Package_Type( ).Single( ) );
    // [(finish field_from_changed_fk)] 600850
 
    // [(start field_from_changed_fk)] 600851
@@ -1936,7 +2034,209 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
 
                      string value = next.substr( pos + 1 );
 
-                     if( type == "package" )
+                     if( type == "class" )
+                     {
+                        get_obj( ).child_Package_Option( ).Is_Class( true );
+
+                        vector< string > class_options;
+                        split_string( value, class_options, '+' );
+
+                        for( size_t i = 0; i < class_options.size( ); i++ )
+                        {
+                           bool valid = false;
+
+                           if( class_options[ i ] == "mandatory" )
+                           {
+                              valid = true;
+                              get_obj( ).child_Package_Option( ).Is_Mandatory_Class( true );
+                           }
+                           else if( class_options[ i ].find( "notes=" ) == 0 )
+                           {
+                              valid = true;
+                              get_obj( ).child_Package_Option( ).Notes( class_options[ i ].substr( 6 ) );
+                           }
+                           else if( class_options[ i ].find( "view" ) == 0 )
+                           {
+                              string view_info( class_options[ i ] );
+
+                              string::size_type pos = view_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( view_info == "view" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_View( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( view_info.substr( 0, pos ) );
+                                 string extra = view_info.substr( pos + 1 );
+                                 if( info == "view" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_View( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_View( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "list" ) == 0 )
+                           {
+                              string list_info( class_options[ i ] );
+
+                              string::size_type pos = list_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( list_info == "list" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_List( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( list_info.substr( 0, pos ) );
+                                 string extra = list_info.substr( pos + 1 );
+                                 if( info == "list" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_List( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_List( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "field" ) == 0 )
+                           {
+                              string field_info( class_options[ i ] );
+
+                              string::size_type pos = field_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( field_info == "field" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Field( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( field_info.substr( 0, pos ) );
+                                 string extra = field_info.substr( pos + 1 );
+                                 if( info == "field" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Field( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Field( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "ofield" ) == 0 )
+                           {
+                              string field_info( class_options[ i ] );
+
+                              string::size_type pos = field_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( field_info == "ofield" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Other_Field( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( field_info.substr( 0, pos ) );
+                                 string extra = field_info.substr( pos + 1 );
+                                 if( info == "ofield" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Other_Field( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "o2field" ) == 0 )
+                           {
+                              string field_info( class_options[ i ] );
+
+                              string::size_type pos = field_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( field_info == "o2field" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Other_Field_2( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( field_info.substr( 0, pos ) );
+                                 string extra = field_info.substr( pos + 1 );
+                                 if( info == "o2field" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Other_Field_2( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field_2( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "modifier" ) == 0 )
+                           {
+                              string modifier_info( class_options[ i ] );
+
+                              string::size_type pos = modifier_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( modifier_info == "modifier" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Modifier( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( modifier_info.substr( 0, pos ) );
+                                 string extra = modifier_info.substr( pos + 1 );
+                                 if( info == "modifier" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Modifier( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Modifier( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "procedure" ) == 0 )
+                           {
+                              string procedure_info( class_options[ i ] );
+
+                              string::size_type pos = procedure_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( procedure_info == "procedure" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Procedure( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( procedure_info.substr( 0, pos ) );
+                                 string extra = procedure_info.substr( pos + 1 );
+                                 if( info == "procedure" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Procedure( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Procedure( true );
+                                 }
+                              }
+                           }
+
+                           if( !valid )
+                              throw runtime_error( "unexpected class option value '"
+                               + class_options[ i ] + "' for " + get_obj( ).child_Package_Option( ).Name( ) );
+                        }
+                     }
+                     else if( type == "package" )
                      {
                         get_obj( ).child_Package_Option( ).Is_Other_Package( true );
                         get_obj( ).child_Package_Option( ).Other_Package_Type( package_types[ value ] );

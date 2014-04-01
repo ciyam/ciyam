@@ -22,6 +22,7 @@
 class Meta_List_Field;
 class Meta_Index;
 class Meta_Specification_Field_Action;
+class Meta_Package_Option;
 class Meta_Specification;
 class Meta_Relationship;
 class Meta_List;
@@ -40,6 +41,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    friend class Meta_List_Field;
    friend class Meta_Index;
    friend class Meta_Specification_Field_Action;
+   friend class Meta_Package_Option;
    friend class Meta_Specification;
    friend class Meta_Relationship;
    friend class Meta_List;
@@ -193,8 +195,14 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Specification_Field_Action& child_Specification_Field_Action_New_Record_FK( );
    const Meta_Specification_Field_Action& child_Specification_Field_Action_New_Record_FK( ) const;
 
+   Meta_Package_Option& child_Package_Option_Other_Field_2( );
+   const Meta_Package_Option& child_Package_Option_Other_Field_2( ) const;
+
    Meta_Specification& child_Specification_Other_Field_2( );
    const Meta_Specification& child_Specification_Other_Field_2( ) const;
+
+   Meta_Package_Option& child_Package_Option_Other( );
+   const Meta_Package_Option& child_Package_Option_Other( ) const;
 
    Meta_Specification& child_Specification_Other( );
    const Meta_Specification& child_Specification_Other( ) const;
@@ -276,6 +284,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_Modifier_Affect& child_Modifier_Affect( );
    const Meta_Modifier_Affect& child_Modifier_Affect( ) const;
+
+   Meta_Package_Option& child_Package_Option( );
+   const Meta_Package_Option& child_Package_Option( ) const;
 
    Meta_Specification& child_Specification( );
    const Meta_Specification& child_Specification( ) const;
@@ -458,6 +469,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Index& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification_Field_Action& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Relationship& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List& o, const std::string& foreign_key_field );

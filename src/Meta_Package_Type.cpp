@@ -61,6 +61,7 @@ const char* const c_field_id_Installed = "135106";
 const char* const c_field_id_Multi = "135102";
 const char* const c_field_id_Name = "135101";
 const char* const c_field_id_Plural = "135108";
+const char* const c_field_id_Single = "135109";
 const char* const c_field_id_Version = "135104";
 
 const char* const c_field_name_Actions = "Actions";
@@ -70,6 +71,7 @@ const char* const c_field_name_Installed = "Installed";
 const char* const c_field_name_Multi = "Multi";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Plural = "Plural";
+const char* const c_field_name_Single = "Single";
 const char* const c_field_name_Version = "Version";
 
 const char* const c_field_display_name_Actions = "field_package_type_actions";
@@ -79,9 +81,10 @@ const char* const c_field_display_name_Installed = "field_package_type_installed
 const char* const c_field_display_name_Multi = "field_package_type_multi";
 const char* const c_field_display_name_Name = "field_package_type_name";
 const char* const c_field_display_name_Plural = "field_package_type_plural";
+const char* const c_field_display_name_Single = "field_package_type_single";
 const char* const c_field_display_name_Version = "field_package_type_version";
 
-const int c_num_fields = 8;
+const int c_num_fields = 9;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -92,7 +95,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "135105",
    "135106",
    "135107",
-   "135108"
+   "135108",
+   "135109"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -104,6 +108,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Multi",
    "Name",
    "Plural",
+   "Single",
    "Version"
 };
 
@@ -129,6 +134,9 @@ aggregate_domain< string,
 aggregate_domain< string,
  domain_string_identifier_format,
  domain_string_max_size< 30 > > g_Plural_domain;
+aggregate_domain< string,
+ domain_string_identifier_format,
+ domain_string_max_size< 30 > > g_Single_domain;
 
 string g_order_field_name;
 
@@ -153,6 +161,7 @@ bool g_default_Installed = bool( 0 );
 bool g_default_Multi = bool( 0 );
 string g_default_Name = string( "New_Package_Type" );
 string g_default_Plural = string( "New_Package_Type" );
+string g_default_Single = string( "New_Package_Type" );
 int g_default_Version = int( 0 );
 
 // [<start anonymous>]
@@ -278,6 +287,12 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
          string_getter< string >( cmd_handler.p_Meta_Package_Type->Plural( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Single || field_name == c_field_name_Single )
+      {
+         handled = true;
+         string_getter< string >( cmd_handler.p_Meta_Package_Type->Single( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
       {
          handled = true;
@@ -343,6 +358,13 @@ void Meta_Package_Type_command_functor::operator ( )( const string& command, con
          handled = true;
          func_string_setter< Meta_Package_Type, string >(
           *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Plural, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Single || field_name == c_field_name_Single )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Type, string >(
+          *cmd_handler.p_Meta_Package_Type, &Meta_Package_Type::Single, field_value );
       }
 
       if( !handled && field_name == c_field_id_Version || field_name == c_field_name_Version )
@@ -416,6 +438,9 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
 
    const string& impl_Plural( ) const { return lazy_fetch( p_obj ), v_Plural; }
    void impl_Plural( const string& Plural ) { v_Plural = Plural; }
+
+   const string& impl_Single( ) const { return lazy_fetch( p_obj ), v_Single; }
+   void impl_Single( const string& Single ) { v_Single = Single; }
 
    int impl_Version( ) const { return lazy_fetch( p_obj ), v_Version; }
    void impl_Version( int Version ) { v_Version = Version; }
@@ -506,6 +531,7 @@ struct Meta_Package_Type::impl : public Meta_Package_Type_command_handler
    bool v_Multi;
    string v_Name;
    string v_Plural;
+   string v_Single;
    int v_Version;
 
    mutable class_pointer< Meta_Package > cp_child_Package;
@@ -589,7 +615,17 @@ void Meta_Package_Type::impl::impl_Install( )
 
    get_obj( ).op_update( key );
 
+   string single( name );
+
+   pos = name.find( ':' );
+   if( pos != string::npos )
+   {
+      single = name.substr( pos + 1 );
+      name.erase( pos );
+   }
+
    get_obj( ).Name( name );
+   get_obj( ).Single( single );
    get_obj( ).Plural( plural );
    get_obj( ).Multi( is_multi );
    get_obj( ).Version( version );
@@ -688,6 +724,10 @@ string Meta_Package_Type::impl::get_field_value( int field ) const
       break;
 
       case 7:
+      retval = to_string( impl_Single( ) );
+      break;
+
+      case 8:
       retval = to_string( impl_Version( ) );
       break;
 
@@ -731,6 +771,10 @@ void Meta_Package_Type::impl::set_field_value( int field, const string& value )
       break;
 
       case 7:
+      func_string_setter< Meta_Package_Type::impl, string >( *this, &Meta_Package_Type::impl::impl_Single, value );
+      break;
+
+      case 8:
       func_string_setter< Meta_Package_Type::impl, int >( *this, &Meta_Package_Type::impl::impl_Version, value );
       break;
 
@@ -819,6 +863,7 @@ void Meta_Package_Type::impl::clear( )
    v_Multi = g_default_Multi;
    v_Name = g_default_Name;
    v_Plural = g_default_Plural;
+   v_Single = g_default_Single;
    v_Version = g_default_Version;
 }
 
@@ -850,6 +895,11 @@ void Meta_Package_Type::impl::validate( unsigned state, bool is_internal, valida
        get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
        c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Plural ) ) ) ) );
 
+   if( is_null( v_Single ) && !value_will_be_provided( c_field_name_Single ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Single,
+       get_string_message( GS( c_str_field_must_not_be_empty ), make_pair(
+       c_str_parm_field_must_not_be_empty_field, get_module_string( c_field_display_name_Single ) ) ) ) );
+
    string error_message;
    if( !is_null( v_Name )
     && ( v_Name != g_default_Name
@@ -864,6 +914,13 @@ void Meta_Package_Type::impl::validate( unsigned state, bool is_internal, valida
     && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
        get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
+
+   if( !is_null( v_Single )
+    && ( v_Single != g_default_Single
+    || !value_will_be_provided( c_field_name_Single ) )
+    && !g_Single_domain.is_valid( v_Single, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Single,
+       get_module_string( c_field_display_name_Single ) + " " + error_message ) );
 
    // [<start validate>]
    // [<finish validate>]
@@ -889,6 +946,12 @@ void Meta_Package_Type::impl::validate_set_fields( set< string >& fields_set, va
     && !g_Plural_domain.is_valid( v_Plural, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Plural,
        get_module_string( c_field_display_name_Plural ) + " " + error_message ) );
+
+   if( !is_null( v_Single )
+    && ( fields_set.count( c_field_id_Single ) || fields_set.count( c_field_name_Single ) )
+    && !g_Single_domain.is_valid( v_Single, error_message = "" ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Single,
+       get_module_string( c_field_display_name_Single ) + " " + error_message ) );
 }
 
 void Meta_Package_Type::impl::after_fetch( )
@@ -1149,6 +1212,16 @@ void Meta_Package_Type::Plural( const string& Plural )
    p_impl->impl_Plural( Plural );
 }
 
+const string& Meta_Package_Type::Single( ) const
+{
+   return p_impl->impl_Single( );
+}
+
+void Meta_Package_Type::Single( const string& Single )
+{
+   p_impl->impl_Single( Single );
+}
+
 int Meta_Package_Type::Version( ) const
 {
    return p_impl->impl_Version( );
@@ -1375,6 +1448,16 @@ const char* Meta_Package_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Single )
+   {
+      p_id = c_field_id_Single;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Version )
    {
       p_id = c_field_id_Version;
@@ -1466,6 +1549,16 @@ const char* Meta_Package_Type::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Single )
+   {
+      p_name = c_field_name_Single;
+
+      if( p_type_name )
+         *p_type_name = "string";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Version )
    {
       p_name = c_field_name_Version;
@@ -1540,6 +1633,11 @@ string Meta_Package_Type::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Plural );
       get_module_string( c_field_display_name_Plural, &next );
    }
+   else if( id_or_name == c_field_id_Single || id_or_name == c_field_name_Single )
+   {
+      name = string( c_field_display_name_Single );
+      get_module_string( c_field_display_name_Single, &next );
+   }
    else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
    {
       name = string( c_field_display_name_Version );
@@ -1574,6 +1672,8 @@ string Meta_Package_Type::get_field_display_name( const string& id_or_name ) con
       display_name = get_module_string( c_field_display_name_Name );
    else if( id_or_name == c_field_id_Plural || id_or_name == c_field_name_Plural )
       display_name = get_module_string( c_field_display_name_Plural );
+   else if( id_or_name == c_field_id_Single || id_or_name == c_field_name_Single )
+      display_name = get_module_string( c_field_display_name_Single );
    else if( id_or_name == c_field_id_Version || id_or_name == c_field_name_Version )
       display_name = get_module_string( c_field_display_name_Version );
 
@@ -1767,6 +1867,7 @@ void Meta_Package_Type::get_sql_column_names(
    names.push_back( "C_Multi" );
    names.push_back( "C_Name" );
    names.push_back( "C_Plural" );
+   names.push_back( "C_Single" );
    names.push_back( "C_Version" );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -1786,6 +1887,7 @@ void Meta_Package_Type::get_sql_column_values(
    values.push_back( to_string( Multi( ) ) );
    values.push_back( sql_quote( to_string( Name( ) ) ) );
    values.push_back( sql_quote( to_string( Plural( ) ) ) );
+   values.push_back( sql_quote( to_string( Single( ) ) ) );
    values.push_back( to_string( Version( ) ) );
 
    if( p_done && p_class_name && *p_class_name == static_class_name( ) )
@@ -1885,6 +1987,7 @@ void Meta_Package_Type::static_get_field_info( field_info_container& all_field_i
    all_field_info.push_back( field_info( "135102", "Multi", "bool", false ) );
    all_field_info.push_back( field_info( "135101", "Name", "string", false ) );
    all_field_info.push_back( field_info( "135108", "Plural", "string", false ) );
+   all_field_info.push_back( field_info( "135109", "Single", "string", false ) );
    all_field_info.push_back( field_info( "135104", "Version", "int", false ) );
 }
 
@@ -1941,6 +2044,10 @@ const char* Meta_Package_Type::static_get_field_id( field_id id )
       break;
 
       case 8:
+      p_id = "135109";
+      break;
+
+      case 9:
       p_id = "135104";
       break;
    }
@@ -1986,6 +2093,10 @@ const char* Meta_Package_Type::static_get_field_name( field_id id )
       break;
 
       case 8:
+      p_id = "Single";
+      break;
+
+      case 9:
       p_id = "Version";
       break;
    }
@@ -2016,8 +2127,10 @@ int Meta_Package_Type::static_get_field_num( const string& field )
       rc += 6;
    else if( field == c_field_id_Plural || field == c_field_name_Plural )
       rc += 7;
-   else if( field == c_field_id_Version || field == c_field_name_Version )
+   else if( field == c_field_id_Single || field == c_field_name_Single )
       rc += 8;
+   else if( field == c_field_id_Version || field == c_field_name_Version )
+      rc += 9;
 
    return rc - 1;
 }
@@ -2052,6 +2165,7 @@ string Meta_Package_Type::static_get_sql_columns( )
     "C_Multi INTEGER NOT NULL,"
     "C_Name VARCHAR(200) NOT NULL,"
     "C_Plural VARCHAR(200) NOT NULL,"
+    "C_Single VARCHAR(200) NOT NULL,"
     "C_Version INTEGER NOT NULL,"
     "PRIMARY KEY(C_Key_)";
 

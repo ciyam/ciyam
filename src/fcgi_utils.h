@@ -140,7 +140,7 @@ std::string remove_links( const std::string& s );
 void replace_links_and_output( const std::string& s, const std::string& id,
  const std::string& module, const std::string& module_ref, std::ostream& os,
  bool is_content, bool output_hrefs, const std::string& session_id, const session_info& sess_info,
- const std::string& user_select_key, bool using_session_cookie, bool use_url_checksum );
+ const std::string& user_select_key, bool using_session_cookie, bool use_url_checksum, std::string* p_last_key = 0 );
 
 void output_login_logout( const std::string& module_name, std::ostream& os,
  const std::string& extra_details, const std::string& msg = "", bool is_activation = false );

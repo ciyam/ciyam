@@ -20,6 +20,7 @@
 #  endif
 
 class Meta_List_Field;
+class Meta_Package_Option;
 class Meta_Modifier;
 class Meta_Permission;
 class Meta_Class;
@@ -30,6 +31,7 @@ class Meta_List_Type;
 class META_LIST_DECL_SPEC Meta_List : public class_base
 {
    friend class Meta_List_Field;
+   friend class Meta_Package_Option;
    friend class Meta_Modifier;
    friend class Meta_Permission;
    friend class Meta_Class;
@@ -251,6 +253,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    Meta_List_Field& child_List_Field( );
    const Meta_List_Field& child_List_Field( ) const;
 
+   Meta_Package_Option& child_Package_Option( );
+   const Meta_Package_Option& child_Package_Option( ) const;
+
    virtual void Generate_PDF_List( int Variation_Num );
 
    std::string get_field_value( int field ) const;
@@ -430,6 +435,7 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Modifier& o,
     const std::string& foreign_key_field, const std::string& init_value );

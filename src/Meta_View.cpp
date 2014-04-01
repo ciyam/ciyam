@@ -25,6 +25,7 @@
 
 #include "Meta_View.h"
 
+#include "Meta_Package_Option.h"
 #include "Meta_View_Field.h"
 #include "Meta_Permission.h"
 #include "Meta_Class.h"
@@ -1025,6 +1026,28 @@ struct Meta_View::impl : public Meta_View_command_handler
       return *cp_child_Class_Created;
    }
 
+   Meta_Package_Option& impl_child_Package_Option( )
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302830c" );
+      }
+      return *cp_child_Package_Option;
+   }
+
+   const Meta_Package_Option& impl_child_Package_Option( ) const
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302830c" );
+      }
+      return *cp_child_Package_Option;
+   }
+
    Meta_View_Field& impl_child_View_Field( )
    {
       if( !cp_child_View_Field )
@@ -1136,6 +1159,7 @@ struct Meta_View::impl : public Meta_View_command_handler
    mutable class_pointer< Meta_View_Type > cp_Type;
 
    mutable class_pointer< Meta_Class > cp_child_Class_Created;
+   mutable class_pointer< Meta_Package_Option > cp_child_Package_Option;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field;
 };
 
@@ -2576,6 +2600,16 @@ const Meta_Class& Meta_View::child_Class_Created( ) const
    return p_impl->impl_child_Class_Created( );
 }
 
+Meta_Package_Option& Meta_View::child_Package_Option( )
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
+const Meta_Package_Option& Meta_View::child_Package_Option( ) const
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
 Meta_View_Field& Meta_View::child_View_Field( )
 {
    return p_impl->impl_child_View_Field( );
@@ -3366,6 +3400,11 @@ void Meta_View::setup_graph_parent( Meta_Class& o, const string& foreign_key_fie
    static_cast< Meta_Class& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_View::setup_graph_parent( Meta_Package_Option& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Package_Option& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_View::setup_graph_parent( Meta_View_Field& o, const string& foreign_key_field )
 {
    static_cast< Meta_View_Field& >( o ).set_graph_parent( this, foreign_key_field );
@@ -3411,7 +3450,7 @@ void Meta_View::set_total_child_relationships( size_t new_total_child_relationsh
 
 size_t Meta_View::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 2;
+   size_t rc = 3;
 
    if( !is_internal )
    {
@@ -3444,7 +3483,7 @@ class_base* Meta_View::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 2 )
+   if( child_num >= 3 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -3465,6 +3504,14 @@ class_base* Meta_View::get_next_foreign_key_child(
          break;
 
          case 1:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "302830c";
+            p_class_base = &child_Package_Option( );
+         }
+         break;
+
+         case 2:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301900";
@@ -3546,6 +3593,8 @@ class_base& Meta_View::get_or_create_graph_child( const string& context )
       throw runtime_error( "unexpected empty sub-context" );
    else if( sub_context == "_300631" || sub_context == "child_Class_Created" )
       p_class_base = &child_Class_Created( );
+   else if( sub_context == "_302830c" || sub_context == "child_Package_Option" )
+      p_class_base = &child_Package_Option( );
    else if( sub_context == "_301900" || sub_context == "child_View_Field" )
       p_class_base = &child_View_Field( );
    else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )

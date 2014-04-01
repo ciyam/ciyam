@@ -27,6 +27,7 @@
 
 #include "Meta_Specification.h"
 #include "Meta_List_Field.h"
+#include "Meta_Package_Option.h"
 #include "Meta_Procedure_Arg.h"
 #include "Meta_Class.h"
 #include "Meta_Procedure.h"
@@ -520,6 +521,28 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
       return *cp_child_List_Field;
    }
 
+   Meta_Package_Option& impl_child_Package_Option( )
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302833" );
+      }
+      return *cp_child_Package_Option;
+   }
+
+   const Meta_Package_Option& impl_child_Package_Option( ) const
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302833" );
+      }
+      return *cp_child_Package_Option;
+   }
+
    Meta_Procedure_Arg& impl_child_Procedure_Arg( )
    {
       if( !cp_child_Procedure_Arg )
@@ -633,6 +656,7 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
    mutable class_pointer< Meta_Procedure > cp_child_Procedure_Source;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field;
+   mutable class_pointer< Meta_Package_Option > cp_child_Package_Option;
    mutable class_pointer< Meta_Procedure_Arg > cp_child_Procedure_Arg;
    mutable class_pointer< Meta_Specification > cp_child_Specification;
 };
@@ -1233,6 +1257,16 @@ const Meta_List_Field& Meta_Procedure::child_List_Field( ) const
    return p_impl->impl_child_List_Field( );
 }
 
+Meta_Package_Option& Meta_Procedure::child_Package_Option( )
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
+const Meta_Package_Option& Meta_Procedure::child_Package_Option( ) const
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
 Meta_Procedure_Arg& Meta_Procedure::child_Procedure_Arg( )
 {
    return p_impl->impl_child_Procedure_Arg( );
@@ -1623,6 +1657,11 @@ void Meta_Procedure::setup_graph_parent( Meta_List_Field& o, const string& forei
    static_cast< Meta_List_Field& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_Procedure::setup_graph_parent( Meta_Package_Option& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Package_Option& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Procedure::setup_graph_parent( Meta_Procedure_Arg& o, const string& foreign_key_field )
 {
    static_cast< Meta_Procedure_Arg& >( o ).set_graph_parent( this, foreign_key_field );
@@ -1654,7 +1693,7 @@ void Meta_Procedure::set_total_child_relationships( size_t new_total_child_relat
 
 size_t Meta_Procedure::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 6;
+   size_t rc = 7;
 
    if( !is_internal )
    {
@@ -1687,7 +1726,7 @@ class_base* Meta_Procedure::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 6 )
+   if( child_num >= 7 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1732,6 +1771,14 @@ class_base* Meta_Procedure::get_next_foreign_key_child(
          break;
 
          case 4:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "302833";
+            p_class_base = &child_Package_Option( );
+         }
+         break;
+
+         case 5:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301200";
@@ -1739,7 +1786,7 @@ class_base* Meta_Procedure::get_next_foreign_key_child(
          }
          break;
 
-         case 5:
+         case 6:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301450";
@@ -1827,6 +1874,8 @@ class_base& Meta_Procedure::get_or_create_graph_child( const string& context )
       p_class_base = &child_Procedure_Source( );
    else if( sub_context == "_302190" || sub_context == "child_List_Field" )
       p_class_base = &child_List_Field( );
+   else if( sub_context == "_302833" || sub_context == "child_Package_Option" )
+      p_class_base = &child_Package_Option( );
    else if( sub_context == "_301200" || sub_context == "child_Procedure_Arg" )
       p_class_base = &child_Procedure_Arg( );
    else if( sub_context == "_301450" || sub_context == "child_Specification" )

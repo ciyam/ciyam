@@ -26,6 +26,7 @@
 #include "Meta_List.h"
 
 #include "Meta_List_Field.h"
+#include "Meta_Package_Option.h"
 #include "Meta_Modifier.h"
 #include "Meta_Permission.h"
 #include "Meta_Class.h"
@@ -1972,6 +1973,28 @@ struct Meta_List::impl : public Meta_List_command_handler
       return *cp_child_List_Field;
    }
 
+   Meta_Package_Option& impl_child_Package_Option( )
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302831" );
+      }
+      return *cp_child_Package_Option;
+   }
+
+   const Meta_Package_Option& impl_child_Package_Option( ) const
+   {
+      if( !cp_child_Package_Option )
+      {
+         cp_child_Package_Option.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Package_Option, "302831" );
+      }
+      return *cp_child_Package_Option;
+   }
+
    void impl_Generate_PDF_List( int Variation_Num );
 
    string get_field_value( int field ) const;
@@ -2097,6 +2120,7 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    mutable class_pointer< Meta_Class > cp_child_Class_Created;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field;
+   mutable class_pointer< Meta_Package_Option > cp_child_Package_Option;
 };
 
 void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
@@ -4665,6 +4689,16 @@ const Meta_List_Field& Meta_List::child_List_Field( ) const
    return p_impl->impl_child_List_Field( );
 }
 
+Meta_Package_Option& Meta_List::child_Package_Option( )
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
+const Meta_Package_Option& Meta_List::child_Package_Option( ) const
+{
+   return p_impl->impl_child_Package_Option( );
+}
+
 void Meta_List::Generate_PDF_List( int Variation_Num )
 {
    p_impl->impl_Generate_PDF_List( Variation_Num );
@@ -6189,6 +6223,11 @@ void Meta_List::setup_graph_parent( Meta_List_Field& o, const string& foreign_ke
    static_cast< Meta_List_Field& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_List::setup_graph_parent( Meta_Package_Option& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Package_Option& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_List::setup_graph_parent(
  Meta_Modifier& o, const string& foreign_key_field, const string& init_value )
 {
@@ -6243,7 +6282,7 @@ void Meta_List::set_total_child_relationships( size_t new_total_child_relationsh
 
 size_t Meta_List::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 2;
+   size_t rc = 3;
 
    if( !is_internal )
    {
@@ -6276,7 +6315,7 @@ class_base* Meta_List::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 2 )
+   if( child_num >= 3 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -6301,6 +6340,14 @@ class_base* Meta_List::get_next_foreign_key_child(
          {
             next_child_field = "302100";
             p_class_base = &child_List_Field( );
+         }
+         break;
+
+         case 2:
+         if( op == e_cascade_op_unlink )
+         {
+            next_child_field = "302831";
+            p_class_base = &child_Package_Option( );
          }
          break;
       }
@@ -6380,6 +6427,8 @@ class_base& Meta_List::get_or_create_graph_child( const string& context )
       p_class_base = &child_Class_Created( );
    else if( sub_context == "_302100" || sub_context == "child_List_Field" )
       p_class_base = &child_List_Field( );
+   else if( sub_context == "_302831" || sub_context == "child_Package_Option" )
+      p_class_base = &child_Package_Option( );
    else if( sub_context == c_field_id_Access_Parent_Modifier || sub_context == c_field_name_Access_Parent_Modifier )
       p_class_base = &Access_Parent_Modifier( );
    else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )

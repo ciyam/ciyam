@@ -21,6 +21,7 @@
 
 class Meta_Specification;
 class Meta_List_Field;
+class Meta_Package_Option;
 class Meta_Procedure_Arg;
 class Meta_Class;
 class Meta_Procedure;
@@ -29,6 +30,7 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
 {
    friend class Meta_Specification;
    friend class Meta_List_Field;
+   friend class Meta_Package_Option;
    friend class Meta_Procedure_Arg;
    friend class Meta_Class;
 
@@ -76,6 +78,9 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
 
    Meta_List_Field& child_List_Field( );
    const Meta_List_Field& child_List_Field( ) const;
+
+   Meta_Package_Option& child_Package_Option( );
+   const Meta_Package_Option& child_Package_Option( ) const;
 
    Meta_Procedure_Arg& child_Procedure_Arg( );
    const Meta_Procedure_Arg& child_Procedure_Arg( ) const;
@@ -257,6 +262,7 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Procedure& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Procedure_Arg& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Class& o,
