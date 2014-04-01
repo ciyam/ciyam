@@ -19,13 +19,25 @@
 #     define META_PACKAGE_OPTION_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+class Meta_Class;
+class Meta_Field;
+class Meta_List;
 class Meta_Model;
+class Meta_Modifier;
 class Meta_Package;
+class Meta_Procedure;
+class Meta_View;
 
 class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
 {
+   friend class Meta_Class;
+   friend class Meta_Field;
+   friend class Meta_List;
    friend class Meta_Model;
+   friend class Meta_Modifier;
    friend class Meta_Package;
+   friend class Meta_Procedure;
+   friend class Meta_View;
 
    public:
    typedef Meta_Package_Option class_type;
@@ -34,24 +46,49 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    {
       e_field_id_none = 0,
       e_field_id_Actions = 1,
-      e_field_id_Date = 2,
-      e_field_id_Datetime = 3,
-      e_field_id_Id = 4,
-      e_field_id_Installed = 5,
-      e_field_id_Integer = 6,
-      e_field_id_Is_Other_Package = 7,
-      e_field_id_Model = 8,
-      e_field_id_Name = 9,
-      e_field_id_Numeric = 10,
-      e_field_id_Other_Package = 11,
-      e_field_id_Other_Package_Required = 12,
-      e_field_id_Other_Package_Type = 13,
-      e_field_id_Package = 14,
-      e_field_id_Primitive = 15,
-      e_field_id_String = 16,
-      e_field_id_Time = 17,
-      e_field_id_Use_Option = 18,
-      e_field_id_Value = 19
+      e_field_id_Class = 2,
+      e_field_id_Date = 3,
+      e_field_id_Datetime = 4,
+      e_field_id_Field = 5,
+      e_field_id_Has_Field = 6,
+      e_field_id_Has_List = 7,
+      e_field_id_Has_Modifier = 8,
+      e_field_id_Has_Other_Field = 9,
+      e_field_id_Has_Other_Field_2 = 10,
+      e_field_id_Has_Procedure = 11,
+      e_field_id_Has_View = 12,
+      e_field_id_Id = 13,
+      e_field_id_Installed = 14,
+      e_field_id_Integer = 15,
+      e_field_id_Is_Class = 16,
+      e_field_id_Is_Mandatory_Class = 17,
+      e_field_id_Is_Mandatory_Field = 18,
+      e_field_id_Is_Mandatory_List = 19,
+      e_field_id_Is_Mandatory_Modifier = 20,
+      e_field_id_Is_Mandatory_Other_Field = 21,
+      e_field_id_Is_Mandatory_Other_Field_2 = 22,
+      e_field_id_Is_Mandatory_Procedure = 23,
+      e_field_id_Is_Mandatory_View = 24,
+      e_field_id_Is_Other_Package = 25,
+      e_field_id_List = 26,
+      e_field_id_Model = 27,
+      e_field_id_Modifier = 28,
+      e_field_id_Name = 29,
+      e_field_id_Notes = 30,
+      e_field_id_Numeric = 31,
+      e_field_id_Other_Field = 32,
+      e_field_id_Other_Field_2 = 33,
+      e_field_id_Other_Package = 34,
+      e_field_id_Other_Package_Required = 35,
+      e_field_id_Other_Package_Type = 36,
+      e_field_id_Package = 37,
+      e_field_id_Primitive = 38,
+      e_field_id_Procedure = 39,
+      e_field_id_String = 40,
+      e_field_id_Time = 41,
+      e_field_id_Use_Option = 42,
+      e_field_id_Value = 43,
+      e_field_id_View = 44
    };
 
    Meta_Package_Option( );
@@ -66,6 +103,27 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    const std::string& Datetime( ) const;
    void Datetime( const std::string& Datetime );
 
+   bool Has_Field( ) const;
+   void Has_Field( bool Has_Field );
+
+   bool Has_List( ) const;
+   void Has_List( bool Has_List );
+
+   bool Has_Modifier( ) const;
+   void Has_Modifier( bool Has_Modifier );
+
+   bool Has_Other_Field( ) const;
+   void Has_Other_Field( bool Has_Other_Field );
+
+   bool Has_Other_Field_2( ) const;
+   void Has_Other_Field_2( bool Has_Other_Field_2 );
+
+   bool Has_Procedure( ) const;
+   void Has_Procedure( bool Has_Procedure );
+
+   bool Has_View( ) const;
+   void Has_View( bool Has_View );
+
    const std::string& Id( ) const;
    void Id( const std::string& Id );
 
@@ -75,11 +133,41 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    int Integer( ) const;
    void Integer( int Integer );
 
+   bool Is_Class( ) const;
+   void Is_Class( bool Is_Class );
+
+   bool Is_Mandatory_Class( ) const;
+   void Is_Mandatory_Class( bool Is_Mandatory_Class );
+
+   bool Is_Mandatory_Field( ) const;
+   void Is_Mandatory_Field( bool Is_Mandatory_Field );
+
+   bool Is_Mandatory_List( ) const;
+   void Is_Mandatory_List( bool Is_Mandatory_List );
+
+   bool Is_Mandatory_Modifier( ) const;
+   void Is_Mandatory_Modifier( bool Is_Mandatory_Modifier );
+
+   bool Is_Mandatory_Other_Field( ) const;
+   void Is_Mandatory_Other_Field( bool Is_Mandatory_Other_Field );
+
+   bool Is_Mandatory_Other_Field_2( ) const;
+   void Is_Mandatory_Other_Field_2( bool Is_Mandatory_Other_Field_2 );
+
+   bool Is_Mandatory_Procedure( ) const;
+   void Is_Mandatory_Procedure( bool Is_Mandatory_Procedure );
+
+   bool Is_Mandatory_View( ) const;
+   void Is_Mandatory_View( bool Is_Mandatory_View );
+
    bool Is_Other_Package( ) const;
    void Is_Other_Package( bool Is_Other_Package );
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );
+
+   const std::string& Notes( ) const;
+   void Notes( const std::string& Notes );
 
    const std::string& Numeric( ) const;
    void Numeric( const std::string& Numeric );
@@ -105,9 +193,33 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    const std::string& Value( ) const;
    void Value( const std::string& Value );
 
+   Meta_Class& Class( );
+   const Meta_Class& Class( ) const;
+   void Class( const std::string& key );
+
+   Meta_Field& Field( );
+   const Meta_Field& Field( ) const;
+   void Field( const std::string& key );
+
+   Meta_List& List( );
+   const Meta_List& List( ) const;
+   void List( const std::string& key );
+
    Meta_Model& Model( );
    const Meta_Model& Model( ) const;
    void Model( const std::string& key );
+
+   Meta_Modifier& Modifier( );
+   const Meta_Modifier& Modifier( ) const;
+   void Modifier( const std::string& key );
+
+   Meta_Field& Other_Field( );
+   const Meta_Field& Other_Field( ) const;
+   void Other_Field( const std::string& key );
+
+   Meta_Field& Other_Field_2( );
+   const Meta_Field& Other_Field_2( ) const;
+   void Other_Field_2( const std::string& key );
 
    Meta_Package& Other_Package( );
    const Meta_Package& Other_Package( ) const;
@@ -116,6 +228,14 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    Meta_Package& Package( );
    const Meta_Package& Package( ) const;
    void Package( const std::string& key );
+
+   Meta_Procedure& Procedure( );
+   const Meta_Procedure& Procedure( ) const;
+   void Procedure( const std::string& key );
+
+   Meta_View& View( );
+   const Meta_View& View( ) const;
+   void View( const std::string& key );
 
    virtual void Clear( );
 
@@ -291,13 +411,37 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_List& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_Modifier& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Package& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_Procedure& o, const std::string& value );
+   virtual void setup_foreign_key( Meta_View& o, const std::string& value );
+
+   virtual void setup_graph_parent( Meta_Class& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
+   virtual void setup_graph_parent( Meta_Field& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
+   virtual void setup_graph_parent( Meta_List& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Model& o,
     const std::string& foreign_key_field, const std::string& init_value );
 
+   virtual void setup_graph_parent( Meta_Modifier& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
    virtual void setup_graph_parent( Meta_Package& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
+   virtual void setup_graph_parent( Meta_Procedure& o,
+    const std::string& foreign_key_field, const std::string& init_value );
+
+   virtual void setup_graph_parent( Meta_View& o,
     const std::string& foreign_key_field, const std::string& init_value );
 
    size_t get_total_child_relationships( ) const;

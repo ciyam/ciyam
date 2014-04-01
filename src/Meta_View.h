@@ -19,6 +19,7 @@
 #     define META_VIEW_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+class Meta_Package_Option;
 class Meta_View_Field;
 class Meta_Permission;
 class Meta_Class;
@@ -27,6 +28,7 @@ class Meta_View_Type;
 
 class META_VIEW_DECL_SPEC Meta_View : public class_base
 {
+   friend class Meta_Package_Option;
    friend class Meta_View_Field;
    friend class Meta_Permission;
    friend class Meta_Class;
@@ -131,6 +133,9 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
 
    Meta_Class& child_Class_Created( );
    const Meta_Class& child_Class_Created( ) const;
+
+   Meta_Package_Option& child_Package_Option( );
+   const Meta_Package_Option& child_Package_Option( ) const;
 
    Meta_View_Field& child_View_Field( );
    const Meta_View_Field& child_View_Field( ) const;
@@ -311,6 +316,7 @@ class META_VIEW_DECL_SPEC Meta_View : public class_base
    virtual void setup_foreign_key( Meta_View_Type& o, const std::string& value );
 
    virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Permission& o,

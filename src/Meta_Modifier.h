@@ -23,6 +23,7 @@ class Meta_List_Field;
 class Meta_List;
 class Meta_Specification;
 class Meta_Modifier_Affect;
+class Meta_Package_Option;
 class Meta_Class;
 class Meta_Modifier;
 
@@ -32,6 +33,7 @@ class META_MODIFIER_DECL_SPEC Meta_Modifier : public class_base
    friend class Meta_List;
    friend class Meta_Specification;
    friend class Meta_Modifier_Affect;
+   friend class Meta_Package_Option;
    friend class Meta_Class;
 
    public:
@@ -80,6 +82,9 @@ class META_MODIFIER_DECL_SPEC Meta_Modifier : public class_base
 
    Meta_Modifier_Affect& child_Modifier_Affect( );
    const Meta_Modifier_Affect& child_Modifier_Affect( ) const;
+
+   Meta_Package_Option& child_Package_Option( );
+   const Meta_Package_Option& child_Package_Option( ) const;
 
    Meta_Specification& child_Specification( );
    const Meta_Specification& child_Specification( ) const;
@@ -260,6 +265,7 @@ class META_MODIFIER_DECL_SPEC Meta_Modifier : public class_base
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Modifier& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Modifier_Affect& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
 
    virtual void setup_graph_parent( Meta_Class& o,
     const std::string& foreign_key_field, const std::string& init_value );

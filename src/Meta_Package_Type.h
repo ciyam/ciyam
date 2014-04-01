@@ -38,7 +38,8 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
       e_field_id_Multi = 5,
       e_field_id_Name = 6,
       e_field_id_Plural = 7,
-      e_field_id_Version = 8
+      e_field_id_Single = 8,
+      e_field_id_Version = 9
    };
 
    Meta_Package_Type( );
@@ -64,6 +65,9 @@ class META_PACKAGE_TYPE_DECL_SPEC Meta_Package_Type : public class_base
 
    const std::string& Plural( ) const;
    void Plural( const std::string& Plural );
+
+   const std::string& Single( ) const;
+   void Single( const std::string& Single );
 
    int Version( ) const;
    void Version( int Version );

@@ -10508,6 +10508,42 @@
       <item>class
      </specification>
      <specification/>
+      <id>600891
+      <item>class
+     </specification>
+     <specification/>
+      <id>600892
+      <item>class
+     </specification>
+     <specification/>
+      <id>600893a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600893b
+      <item>class
+     </specification>
+     <specification/>
+      <id>600893c
+      <item>class
+     </specification>
+     <specification/>
+      <id>600894
+      <item>class
+     </specification>
+     <specification/>
+      <id>600895
+      <item>class
+     </specification>
+     <specification/>
+      <id>600896
+      <item>class
+     </specification>
+     <specification/>
+      <id>600897
+      <item>class
+     </specification>
+     <specification/>
       <id>601550
       <item>class
      </specification>
@@ -10572,6 +10608,10 @@
         <id>500988
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500989
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -10616,10 +10656,133 @@
         <id>500988
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500989
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
         <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137119
+      <name>Has_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600893a
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137128
+      <name>Has_List
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600895
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137130
+      <name>Has_Modifier
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600896
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137124
+      <name>Has_Other_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600893b
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137126
+      <name>Has_Other_Field_2
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600893c
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137132
+      <name>Has_Procedure
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600897
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137122
+      <name>Has_View
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600894
         <item>field
        </specification>
       </specifications>
@@ -10690,12 +10853,141 @@
         <id>500988
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500989
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
         <id>601560
         <item>field
        </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137117
+      <name>Is_Class
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600891
+        <item>field
+       </specification>
+       <specification/>
+        <id>600892
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137118
+      <name>Is_Mandatory_Class
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137120
+      <name>Is_Mandatory_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137129
+      <name>Is_Mandatory_List
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137131
+      <name>Is_Mandatory_Modifier
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137125
+      <name>Is_Mandatory_Other_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137127
+      <name>Is_Mandatory_Other_Field_2
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137133
+      <name>Is_Mandatory_Procedure
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137123
+      <name>Is_Mandatory_View
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
       </specifications>
      </field>
      <field/>
@@ -10744,6 +11036,27 @@
       </specifications>
      </field>
      <field/>
+      <id>137121
+      <name>Notes
+      <type>string
+      <mandatory>false
+      <extra>notes
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500990
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>137113
       <name>Numeric
       <type>string
@@ -10773,6 +11086,54 @@
        </modifier>
        <modifier/>
         <id>500988
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500989
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302830d
+      <name>Other_Field
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>202830d
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500991b
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302830e
+      <name>Other_Field_2
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>202830e
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500991c
         <affect>relegate
        </modifier>
       </modifiers>
@@ -10912,6 +11273,10 @@
         <id>500988
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500989
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -10954,6 +11319,10 @@
        </modifier>
        <modifier/>
         <id>500988
+        <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500989
         <affect>relegate
        </modifier>
       </modifiers>
@@ -11001,6 +11370,10 @@
         <id>500987
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500989
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -11027,6 +11400,72 @@
       </specifications>
      </field>
      <field/>
+      <id>302830a
+      <name>{Class}
+      <type>@class
+      <mandatory>false
+      <class_id>106100
+      <relationship_id>202830a
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500990
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302830b
+      <name>{Field}
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>202830b
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500991a
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302831
+      <name>{List}
+      <type>@class
+      <mandatory>false
+      <class_id>122100
+      <relationship_id>202831
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500993
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>302825
       <name>{Model}
       <type>@class
@@ -11042,6 +11481,28 @@
         <id>600881
         <item>field
        </specification>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302832
+      <name>{Modifier}
+      <type>@class
+      <mandatory>false
+      <class_id>109100
+      <relationship_id>202832
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500994
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>601560
         <item>field
@@ -11074,6 +11535,50 @@
        </specification>
       </specifications>
      </field>
+     <field/>
+      <id>302833
+      <name>{Procedure}
+      <type>@class
+      <mandatory>false
+      <class_id>111100
+      <relationship_id>202833
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500995
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302830c
+      <name>{View}
+      <type>@class
+      <mandatory>false
+      <class_id>118100
+      <relationship_id>202830c
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500992
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
     </fields>
     <indexes/>
      <index/>
@@ -11084,8 +11589,40 @@
     </indexes>
     <modifiers/>
      <modifier/>
+      <id>500991a
+      <name>Hide_Field
+     </modifier>
+     <modifier/>
+      <id>500993
+      <name>Hide_List
+     </modifier>
+     <modifier/>
+      <id>500994
+      <name>Hide_Modifier
+     </modifier>
+     <modifier/>
+      <id>500991b
+      <name>Hide_Other_Field
+     </modifier>
+     <modifier/>
+      <id>500991c
+      <name>Hide_Other_Field_2
+     </modifier>
+     <modifier/>
+      <id>500995
+      <name>Hide_Procedure
+     </modifier>
+     <modifier/>
+      <id>500992
+      <name>Hide_View
+     </modifier>
+     <modifier/>
       <id>500988
       <name>Is_Bool
+     </modifier>
+     <modifier/>
+      <id>500989
+      <name>Is_Class_Option
      </modifier>
      <modifier/>
       <id>500984
@@ -11098,6 +11635,10 @@
      <modifier/>
       <id>500987
       <name>Is_Int
+     </modifier>
+     <modifier/>
+      <id>500990
+      <name>Is_Not_Class_Option
      </modifier>
      <modifier/>
       <id>500981
@@ -11336,10 +11877,6 @@
         <item>scfield
        </specification>
        <specification/>
-        <id>600850
-        <item>sfield
-       </specification>
-       <specification/>
         <id>603500
         <item>field
        </specification>
@@ -11362,6 +11899,27 @@
       <specifications/>
        <specification/>
         <id>600851
+        <item>sfield
+       </specification>
+       <specification/>
+        <id>603550
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>135109
+      <name>Single
+      <type>1050
+      <mandatory>true
+      <default_value>New_Package_Type
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600850
         <item>sfield
        </specification>
        <specification/>
@@ -25586,11 +26144,29 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202830e
+    <name>Other_Field_2_{Package_Option}
+    <parent_id>107100
+    <child_id>137100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201436
     <name>Other_Field_2_{Specification}
     <parent_id>107100
     <child_id>115100
     <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>202830d
+    <name>Other_Field_{Package_Option}
+    <parent_id>107100
+    <child_id>137100
+    <cascade_op>unlink
     <specifications/>
     </specifications>
    </relationship>
@@ -26243,6 +26819,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202830a
+    <name>{Class}_{Package_Option}
+    <parent_id>106100
+    <child_id>137100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201100
     <name>{Class}_{Procedure}
     <parent_id>106100
@@ -26333,6 +26918,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202830b
+    <name>{Field}_{Package_Option}
+    <parent_id>107100
+    <child_id>137100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201430
     <name>{Field}_{Specification}
     <parent_id>107100
@@ -26356,6 +26950,15 @@
     <parent_id>122100
     <child_id>124100
     <cascade_op>destroy
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>202831
+    <name>{List}_{Package_Option}
+    <parent_id>122100
+    <child_id>137100
+    <cascade_op>unlink
     <specifications/>
     </specifications>
    </relationship>
@@ -26441,6 +27044,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202832
+    <name>{Modifier}_{Package_Option}
+    <parent_id>109100
+    <child_id>137100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201440
     <name>{Modifier}_{Specification}
     <parent_id>109100
@@ -26504,6 +27116,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202833
+    <name>{Procedure}_{Package_Option}
+    <parent_id>111100
+    <child_id>137100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201200
     <name>{Procedure}_{Procedure_Arg}
     <parent_id>111100
@@ -26536,6 +27157,15 @@
     <parent_id>102100
     <child_id>107100
     <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>202830c
+    <name>{View}_{Package_Option}
+    <parent_id>118100
+    <child_id>137100
+    <cascade_op>unlink
     <specifications/>
     </specifications>
    </relationship>
@@ -29573,6 +30203,83 @@
     </data>
    </specification>
    <specification/>
+    <id>600893a
+    <name>{Package_Option}_Hide_Field
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500991a
+     <field_id>137119
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600895
+    <name>{Package_Option}_Hide_List
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500993
+     <field_id>137128
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600896
+    <name>{Package_Option}_Hide_Modifier
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500994
+     <field_id>137130
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600893b
+    <name>{Package_Option}_Hide_Other_Field
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500991b
+     <field_id>137124
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600893c
+    <name>{Package_Option}_Hide_Other_Field_2
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500991c
+     <field_id>137126
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600897
+    <name>{Package_Option}_Hide_Procedure
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500995
+     <field_id>137132
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600894
+    <name>{Package_Option}_Hide_View
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500992
+     <field_id>137122
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600880
     <name>{Package_Option}_Installed_protect
     <type>state_protect
@@ -29592,6 +30299,17 @@
      <field_id>137108
      <field_value>bool
      <enum_value_name>bool
+    </data>
+   </specification>
+   <specification/>
+    <id>600891
+    <name>{Package_Option}_Is_Class_Option
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500989
+     <field_id>137117
+     <field_value>true
     </data>
    </specification>
    <specification/>
@@ -29631,6 +30349,17 @@
      <field_id>137108
      <field_value>int
      <enum_value_name>int
+    </data>
+   </specification>
+   <specification/>
+    <id>600892
+    <name>{Package_Option}_Is_Not_Class_Option
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500990
+     <field_id>137117
+     <field_value>false
     </data>
    </specification>
    <specification/>
@@ -29729,6 +30458,15 @@
      <field_info>137113
      <field_info>137114
      <field_info>137102
+     <field_info>137121
+     <field_info>302830a:106101!@fkey1:300600+106101;fkey2+force
+     <field_info>302830c:118101!@fkey2:301820+118101
+     <field_info>302831:122101!@fkey2:301992+122101
+     <field_info>302830b:107101!@fkey2:300700+107101
+     <field_info>302830d:107101!@fkey2:300700+107101
+     <field_info>302830e:107101!@fkey2:300700+107101
+     <field_info>302832:109101!@fkey2:300900+109101
+     <field_info>302833:111101!@fkey2:301100+111101
      <field_info>302830:136101!@fkey1:302800+@key1:302810
      <field_info>302825;hidden+fkey1
      <field_info>137106;hidden+key1
@@ -29818,6 +30556,7 @@
      <type>admin
      <class_id>135100
      <field_info>135101;new_edit
+     <field_info>135109;no_edit
      <field_info>135108;no_edit
      <field_info>135104;no_edit
      <field_info>135103
@@ -29884,7 +30623,7 @@
      <pclass_id>135100
      <pfield_id>302810
      <dfield_id>136101
-     <sfield_id>135101
+     <sfield_id>135109
      <new_only>true
     </data>
    </specification>
