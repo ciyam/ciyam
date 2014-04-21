@@ -1577,7 +1577,8 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    if( is_create
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Parent_Class( ).Type( ) == 1 )
+    && get_obj( ).Parent_Class( ).Type( ) == 1
+    && get_obj( ).Extra( ) == g_default_Extra )
       get_obj( ).Extra( 1 );
    // [(finish default_to_global)] 600098
 
@@ -1585,7 +1586,8 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    if( is_create
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Parent_Class( ).Type( ) == 2 )
+    && get_obj( ).Parent_Class( ).Type( ) == 2
+    && get_obj( ).Extra( ) == g_default_Extra )
       get_obj( ).Extra( 2 );
    // [(finish default_to_global)] 600099
 
@@ -1593,7 +1595,8 @@ void Meta_Relationship::impl::to_store( bool is_create, bool is_internal )
    if( is_create
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
-    && get_obj( ).Parent_Class( ).Type( ) == 3 )
+    && get_obj( ).Parent_Class( ).Type( ) == 3
+    && get_obj( ).Extra( ) == g_default_Extra )
       get_obj( ).Extra( 3 );
    // [(finish default_to_global)] 600100
 

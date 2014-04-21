@@ -208,7 +208,7 @@ field_add -id=105108 Model Next_View_Id identifier opt
 field_add -id=105109 Model Actions string opt -x=actions -transient
 field_add -id=105110 Model Source_File string opt -x=flink
 field_add -id=105111 Model Commands_File string opt -x=flink
-field_add -id=105112 Model Add_Packages int mand -def=1 -e=add_packages -transient
+field_add -id=105112 Model Add_Packages int mand -def=2 -e=add_packages -transient
 field_add -id=105113 Model Created bool mand -def=0
 field_add -id=105114 Model Status string opt -transient
 field_add -id=105115 Model Use_Package_Demo_Data bool mand -def=1
@@ -807,6 +807,10 @@ field_add -id=137130 Package_Option Has_Modifier bool mand -def=0
 field_add -id=137131 Package_Option Is_Mandatory_Modifier bool mand -def=0
 field_add -id=137132 Package_Option Has_Procedure bool mand -def=0
 field_add -id=137133 Package_Option Is_Mandatory_Procedure bool mand -def=0
+field_add -id=137134 Package_Option Has_Source_Field bool mand -def=0
+field_add -id=137135 Package_Option Is_Mandatory_Source_Field bool mand -def=0
+field_add -id=137136 Package_Option Has_Other_Source_Field bool mand -def=0
+field_add -id=137137 Package_Option Is_Mandatory_Other_Source_Field bool mand -def=0
 procedure_add -id=137410 Package_Option Edit
 procedure_add -id=137420 Package_Option Select
 procedure_add -id=137430 Package_Option Clear
@@ -966,6 +970,8 @@ relationship_add -id=202830b -fid=302830b Package_Option {Field} Field opt unlin
 relationship_add -id=202830c -fid=302830c Package_Option {View} View opt unlink
 relationship_add -id=202830d -fid=302830d Package_Option Other_Field Field opt unlink
 relationship_add -id=202830e -fid=302830e Package_Option Other_Field_2 Field opt unlink
+relationship_add -id=202830f -fid=302830f Package_Option Source_Field Field opt unlink
+relationship_add -id=202830g -fid=302830g Package_Option Other_Source_Field Field opt unlink
 relationship_add -id=202831 -fid=302831 Package_Option {List} List opt unlink
 relationship_add -id=202832 -fid=302832 Package_Option {Modifier} Modifier opt unlink
 relationship_add -id=202833 -fid=302833 Package_Option {Procedure} Procedure opt unlink
@@ -1214,6 +1220,8 @@ modifier_add -id=500990 Package_Option Is_Not_Class_Option {Class}:relegate,Note
 modifier_add -id=500991a Package_Option Hide_Field {Field}:relegate
 modifier_add -id=500991b Package_Option Hide_Other_Field Other_Field:relegate
 modifier_add -id=500991c Package_Option Hide_Other_Field_2 Other_Field_2:relegate
+modifier_add -id=500991d Package_Option Hide_Source_Field Source_Field:relegate
+modifier_add -id=500991e Package_Option Hide_Other_Source_Field Other_Source_Field:relegate
 modifier_add -id=500992 Package_Option Hide_View {View}:relegate
 modifier_add -id=500993 Package_Option Hide_List {List}:relegate
 modifier_add -id=500994 Package_Option Hide_Modifier {Modifier}:relegate
@@ -1385,8 +1393,8 @@ specification_add -id=650100 {Relationship}_Cascade_Not_Applicable_if_Is_Transie
 specification_add -id=600101 {Specification}_Is_Comment modifier_field_value "Specification Is_Comment {Specification_Type} comment"
 specification_add -id=600101a {Specification}_Hide_Other_Class modifier_field_value "Specification Hide_Other_Class {Specification_Type}:Allow_Other_Class false"
 specification_add -id=600101b {Specification}_Hide_Field modifier_field_value "Specification Hide_Field {Specification_Type}:Allow_Field false"
-specification_add -id=600102 {Specification}_Hide_Other_Field modifier_field_value "Specification Hide_Other_Field {Specification_Type}:Allow_Other_Field false"
-specification_add -id=610102 {Specification}_Hide_Other_Field_2 modifier_field_value "Specification Hide_Other_Field_2 {Specification_Type}:Allow_Other_Field_2 false"
+specification_add -id=600102a {Specification}_Hide_Other_Field modifier_field_value "Specification Hide_Other_Field {Specification_Type}:Allow_Other_Field false"
+specification_add -id=610102b {Specification}_Hide_Other_Field_2 modifier_field_value "Specification Hide_Other_Field_2 {Specification_Type}:Allow_Other_Field_2 false"
 specification_add -id=600103 {Specification}_Hide_Procedure modifier_field_value "Specification Hide_Procedure {Specification_Type}:Allow_Procedure false"
 specification_add -id=600104 {Specification}_Hide_Procedure_Arg modifier_field_value "Specification Hide_Procedure_Arg {Specification_Type}:Allow_Procedure_Arg false"
 specification_add -id=600104a {Specification}_Hide_Procedure_Arg_2 modifier_field_value "Specification Hide_Procedure_Arg_2 {Specification_Type}:Needs_Procedure_Arg_2 false"
@@ -1826,6 +1834,8 @@ specification_add -id=600892 {Package_Option}_Is_Not_Class_Option modifier_field
 specification_add -id=600893a {Package_Option}_Hide_Field modifier_field_value "Package_Option Hide_Field Has_Field false"
 specification_add -id=600893b {Package_Option}_Hide_Other_Field modifier_field_value "Package_Option Hide_Other_Field Has_Other_Field false"
 specification_add -id=600893c {Package_Option}_Hide_Other_Field_2 modifier_field_value "Package_Option Hide_Other_Field_2 Has_Other_Field_2 false"
+specification_add -id=600893d {Package_Option}_Hide_Source_Field modifier_field_value "Package_Option Hide_Source_Field Has_Source_Field false"
+specification_add -id=600893e {Package_Option}_Hide_Other_Source_Field modifier_field_value "Package_Option Hide_Other_Source_Field Has_Other_Source_Field false"
 specification_add -id=600894 {Package_Option}_Hide_View modifier_field_value "Package_Option Hide_View Has_View false"
 specification_add -id=600895 {Package_Option}_Hide_List modifier_field_value "Package_Option Hide_List Has_List false"
 specification_add -id=600896 {Package_Option}_Hide_Modifier modifier_field_value "Package_Option Hide_Modifier Has_Modifier false"
@@ -1861,6 +1871,7 @@ specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Pa
  {Package}:Name;no_edit+link,Name;no_edit,String,Datetime,Date,Time,Numeric,Integer,Use_Option\
 ,Notes,{Class}:Name!@fkey1:{Model}+Name;fkey2+force,{View}:Name!@fkey2:{Class}+Name,{List}:Name!@fkey2:{Class}+Name\
 ,{Field}:Name!@fkey2:{Class}+Name,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name\
+,Source_Field:Name!@fkey2:{Class}+Name,Other_Source_Field:Name!@fkey2:{Class}+Name\
 ,{Modifier}:Name!@fkey2:{Class}+Name,{Procedure}:Name!@fkey2:{Class}+Name\
 ,Other_Package:Name!@fkey1:{Model}+@key1:{Package_Type},{Model};hidden+fkey1,Other_Package_Type;hidden+key1"
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\

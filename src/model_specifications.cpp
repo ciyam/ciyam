@@ -1092,6 +1092,7 @@ void append_opts_for_iter_specification::add_specification_data( model& m, speci
    spec_data.data_pairs.push_back( make_pair( string( c_data_cfield ), child_field_name ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_separator, separator ) );
+   spec_data.data_pairs.push_back( make_pair( "pfield", "" ) );
 }
 
 string append_opts_for_iter_specification::static_class_name( ) { return "append_opts_for_iter"; }
@@ -3117,13 +3118,6 @@ void default_to_field_specification::add( model& m, const vector< string >& args
    field_id = get_field_id_for_name( m, arg_class_name, arg_field_name, &field_type, true );
    if( field_id.empty( ) )
       throw runtime_error( "unknown field '" + arg_field_name + "' for class '" + arg_class_name + "'" );
-
-   if( !append_value.empty( ) )
-   {
-      bool is_non_string( is_non_string_type( field_type ) );
-      if( !is_non_string )
-         append_value = '"' + append_value + '"';
-   }
 
    string pfield_name;
    bool is_external_parent = false;

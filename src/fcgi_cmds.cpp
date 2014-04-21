@@ -198,6 +198,9 @@ bool perform_update( const string& module, const string& class_id,
    string cmd( "pu " + get_uid_info( sess_info ) + " "
     + date_time::standard( ).as_string( ) + " " + module + " " + class_id );
 
+   if( !sess_info.user_group.empty( ) )
+      cmd += " -g=" + sess_info.user_group;
+
    if( !sess_info.tz_name.empty( ) )
       cmd += " -tz=" + sess_info.tz_name;
 
@@ -402,6 +405,9 @@ bool perform_action( const string& module_name,
       {
          act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
+         if( !sess_info.user_group.empty( ) )
+            act_cmd += " -g=" + sess_info.user_group;
+
          if( !sess_info.tz_name.empty( ) )
             act_cmd += " -tz=" + sess_info.tz_name;
 
@@ -419,6 +425,9 @@ bool perform_action( const string& module_name,
          {
             act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
 
+            if( !sess_info.user_group.empty( ) )
+               act_cmd += " -g=" + sess_info.user_group;
+
             if( !sess_info.tz_name.empty( ) )
                act_cmd += " -tz=" + sess_info.tz_name;
 
@@ -435,6 +444,9 @@ bool perform_action( const string& module_name,
                next_code_and_version.erase( pos );
 
             act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + mod_info.id + " " + class_id;
+
+            if( !sess_info.user_group.empty( ) )
+               act_cmd += " -g=" + sess_info.user_group;
 
             if( !sess_info.tz_name.empty( ) )
                act_cmd += " -tz=" + sess_info.tz_name;
@@ -510,6 +522,9 @@ bool fetch_item_info( const string& module, const module_info& mod_info,
       fetch_cmd += " \"-u=" + user_info + "\"";
 
    fetch_cmd += " -d=" + date_time::standard( ).as_string( );
+
+   if( !sess_info.user_group.empty( ) )
+      fetch_cmd += " -g=" + sess_info.user_group;
 
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
@@ -676,6 +691,9 @@ bool fetch_list_info( const string& module,
       fetch_cmd += " \"-u=" + user_info + "\"";
 
    fetch_cmd += " -d=" + date_time::standard( ).as_string( );
+
+   if( !sess_info.user_group.empty( ) )
+      fetch_cmd += " -g=" + sess_info.user_group;
 
    if( !sess_info.user_id.empty( ) )
       fetch_cmd += " -td=tmp/" + sess_info.session_id;
@@ -914,6 +932,11 @@ bool fetch_parent_row_data( const string& module,
             if( key == c_parent_extra_key )
             {
                value = record_key;
+               found_special = true;
+            }
+            else if( key == c_parent_extra_null )
+            {
+               value.erase( );
                found_special = true;
             }
             else if( key == c_parent_extra_user )
@@ -2368,6 +2391,9 @@ void save_record( const string& module_id,
       act_cmd = "pu";
 
    act_cmd += " " + get_uid_info( sess_info ) + " " + current_dtm + " " + view.module_id + " " + view.cid;
+
+   if( !sess_info.user_group.empty( ) )
+      act_cmd += " -g=" + sess_info.user_group;
 
    if( !sess_info.tz_name.empty( ) )
       act_cmd += " -tz=" + sess_info.tz_name;

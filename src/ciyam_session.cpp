@@ -967,6 +967,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       issue_warning( "socket set_delay failure" );
 
    set_dtm( "" );
+   set_grp( "" );
    set_uid( "" );
    set_tz_name( "" );
    set_tmp_directory( "" );
@@ -1230,6 +1231,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          bool is_reverse( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_reverse ) );
          string uid( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_uid ) );
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_dtm ) );
+         string grp( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tz_name ) );
          string tmp_dir( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_tmp_dir ) );
          string filters( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_filters ) );
@@ -1243,6 +1245,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string set_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_set_values ) );
          string fields( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_fields ) );
          bool minimal( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_minimal ) );
+         bool no_default_values( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_no_default_values ) );
          string map_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_map_file ) );
          bool create_pdf( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_create_pdf ) );
          string format_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_format_file ) );
@@ -1358,6 +1361,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( pos == next.size( ) - 1 )
                   continue;
 
+               if( next.find( "tmp_" ) == 0 )
+                  continue;
+
                string key = next.substr( pos + 1 );
                string data = next.substr( 0, pos );
 
@@ -1383,6 +1389,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          // worth worrying about trying to optimise this behaviour).
          size_t handle = create_object_instance( module, mclass, 0,
           !context.empty( ) || get_module_class_has_derivations( module, mclass ) );
+
+         vector< string > default_values;
+         if( no_default_values )
+            get_field_values( handle, context, field_list, tz_name, true, false, &default_values );
 
          // NOTE: The purpose of using "extra_vars" is to set instance variables without
          // also requiring a "prepare" call (thus having no other possible side-effects).
@@ -1422,8 +1432,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          try
          {
-            set_uid( uid );
             set_dtm( dtm );
+            set_grp( grp );
+            set_uid( uid );
             set_tz_name( tz_name );
             set_tmp_directory( tmp_dir );
             
@@ -1563,7 +1574,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         string key_output( "[" + instance_key_info( handle, context ) + "]" );
 
                         string field_output( get_field_values( handle, context, field_list, tz_name,
-                         false, false, summaries.empty( ) ? 0 : &raw_values, &field_inserts, &search_replaces ) );
+                         false, false, summaries.empty( ) ? 0 : &raw_values, &field_inserts, &search_replaces,
+                         no_default_values ? &default_values : 0 ) );
 
                         if( minimal )
                            output = field_output;
@@ -1646,6 +1658,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_mclass ) );
+         string grp( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_tz_name ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_key ) );
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_field_values ) );
@@ -1763,8 +1776,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             try
             {
-               set_uid( uid );
                set_dtm( dtm );
+               set_grp( grp );
+               set_uid( uid );
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
@@ -1844,6 +1858,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_mclass ) );
+         string grp( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_tz_name ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_ver_info ) );
@@ -1941,8 +1956,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             try
             {
-               set_uid( uid );
                set_dtm( dtm );
+               set_grp( grp );
+               set_uid( uid );
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
@@ -2031,6 +2047,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_mclass ) );
+         string grp( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_tz_name ) );
          bool quiet( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_quiet ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_key ) );
@@ -2081,8 +2098,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             try
             {
-               set_uid( uid );
                set_dtm( dtm );
+               set_grp( grp );
+               set_uid( uid );
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
@@ -2122,6 +2140,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string dtm( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_dtm ) );
          string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_module ) );
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_mclass ) );
+         string grp( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_tz_name ) );
          string set_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_set_values ) );
          string keys( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_keys ) );
@@ -2270,8 +2289,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
             try
             {
-               set_uid( uid );
                set_dtm( dtm );
+               set_grp( grp );
+               set_uid( uid );
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );

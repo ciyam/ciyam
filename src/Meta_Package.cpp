@@ -984,6 +984,16 @@ void Meta_Package::impl::impl_Install( )
                throw runtime_error( "The package option '"
                 + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Field 2." ); // FUTURE: Should be a module string...
             else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Source_Field( )
+             && is_null( get_obj( ).child_Package_Option( ).Source_Field( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Source Field." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
+             && get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Source_Field( )
+             && is_null( get_obj( ).child_Package_Option( ).Other_Source_Field( ) ) )
+               throw runtime_error( "The package option '"
+                + get_obj( ).child_Package_Option( ).Name( ) + "' requires Other Source Field." ); // FUTURE: Should be a module string...
+            else if( get_obj( ).child_Package_Option( ).Is_Class( )
              && get_obj( ).child_Package_Option( ).Is_Mandatory_Modifier( )
              && is_null( get_obj( ).child_Package_Option( ).Modifier( ) ) )
                throw runtime_error( "The package option '"
@@ -1114,6 +1124,24 @@ void Meta_Package::impl::impl_Install( )
 
                      extras.insert( make_pair(
                       name + "of2key", get_obj( ).child_Package_Option( ).Other_Field_2( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "srcnam", get_obj( ).child_Package_Option( ).Source_Field( ).Name( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "srckey", get_obj( ).child_Package_Option( ).Source_Field( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "srcpcl", get_obj( ).child_Package_Option( ).Source_Field( ).Parent_Class( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "oscnam", get_obj( ).child_Package_Option( ).Other_Source_Field( ).Name( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "osckey", get_obj( ).child_Package_Option( ).Other_Source_Field( ).get_key( ) ) );
+
+                     extras.insert( make_pair(
+                      name + "oscpcl", get_obj( ).child_Package_Option( ).Other_Source_Field( ).Parent_Class( ).get_key( ) ) );
 
                      extras.insert( make_pair(
                       name + "modkey", get_obj( ).child_Package_Option( ).Modifier( ).get_key( ) ) );
@@ -2177,6 +2205,56 @@ void Meta_Package::impl::after_store( bool is_create, bool is_internal )
                                     valid = true;
                                     get_obj( ).child_Package_Option( ).Has_Other_Field_2( true );
                                     get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Field_2( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "sfield" ) == 0 )
+                           {
+                              string field_info( class_options[ i ] );
+
+                              string::size_type pos = field_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( field_info == "sfield" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Source_Field( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( field_info.substr( 0, pos ) );
+                                 string extra = field_info.substr( pos + 1 );
+                                 if( info == "sfield" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Source_Field( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Source_Field( true );
+                                 }
+                              }
+                           }
+                           else if( class_options[ i ].find( "osfield" ) == 0 )
+                           {
+                              string field_info( class_options[ i ] );
+
+                              string::size_type pos = field_info.find( '=' );
+                              if( pos == string::npos )
+                              {
+                                 if( field_info == "osfield" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Other_Source_Field( true );
+                                 }
+                              }
+                              else
+                              {
+                                 string info( field_info.substr( 0, pos ) );
+                                 string extra = field_info.substr( pos + 1 );
+                                 if( info == "osfield" && extra == "mandatory" )
+                                 {
+                                    valid = true;
+                                    get_obj( ).child_Package_Option( ).Has_Other_Source_Field( true );
+                                    get_obj( ).child_Package_Option( ).Is_Mandatory_Other_Source_Field( true );
                                  }
                               }
                            }

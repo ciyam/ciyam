@@ -4519,7 +4519,7 @@
      <ftype>string
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate,40000:relegate,20000:relegate,2000000:relegate,400000:relegate,80000:relegate,8000:relegate,10000:relegate
+     <modifiers>2000000:relegate,100000:relegate,80000:relegate,8000000:relegate,1000000:relegate,200000:relegate,20000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_datetime
@@ -4527,7 +4527,7 @@
      <ftype>string
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate,1000000:relegate,20000:relegate,2000000:relegate,400000:relegate,80000:relegate,8000:relegate,10000:relegate
+     <modifiers>2000000:relegate,4000000:relegate,80000:relegate,8000000:relegate,1000000:relegate,200000:relegate,20000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_date
@@ -4535,7 +4535,7 @@
      <ftype>string
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate,1000000:relegate,40000:relegate,2000000:relegate,400000:relegate,80000:relegate,8000:relegate,10000:relegate
+     <modifiers>2000000:relegate,4000000:relegate,100000:relegate,8000000:relegate,1000000:relegate,200000:relegate,20000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_time
@@ -4543,7 +4543,7 @@
      <ftype>string
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate,1000000:relegate,40000:relegate,20000:relegate,400000:relegate,80000:relegate,8000:relegate,10000:relegate
+     <modifiers>2000000:relegate,4000000:relegate,100000:relegate,80000:relegate,1000000:relegate,200000:relegate,20000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_numeric
@@ -4551,7 +4551,7 @@
      <ftype>string
      <extra>
      <mandatory>false
-     <modifiers>800000:relegate,1000000:relegate,20000:relegate,2000000:relegate,80000:relegate,8000:relegate,10000:relegate
+     <modifiers>2000000:relegate,4000000:relegate,80000:relegate,8000000:relegate,200000:relegate,20000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_integer
@@ -4559,7 +4559,7 @@
      <ftype>int
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,1000000:relegate,40000:relegate,20000:relegate,2000000:relegate,400000:relegate,8000:relegate,10000:relegate
+     <modifiers>2000000:relegate,4000000:relegate,100000:relegate,80000:relegate,8000000:relegate,1000000:relegate,20000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_use_option
@@ -4567,7 +4567,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,1000000:relegate,40000:relegate,20000:relegate,2000000:relegate,400000:relegate,80000:relegate,10000:relegate
+     <modifiers>2000000:relegate,4000000:relegate,100000:relegate,80000:relegate,8000000:relegate,1000000:relegate,200000:relegate,40000:relegate
     </field>
     <field/>
      <name>field_package_option_notes
@@ -4575,7 +4575,7 @@
      <ftype>string
      <extra>notes
      <mandatory>false
-     <modifiers>100000:relegate
+     <modifiers>400000:relegate
     </field>
     <field/>
      <name>field_package_option_class
@@ -4583,7 +4583,7 @@
      <ftype>@class
      <extra>fkey2+force
      <mandatory>false
-     <modifiers>100000:relegate
+     <modifiers>400000:relegate
      <pclass>106100
      <pfield>106101
      <pfname>field_class_name
@@ -4595,7 +4595,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>4000:relegate
+     <modifiers>10000:relegate
      <pclass>118100
      <pfield>118101
      <pfname>field_view_name
@@ -4650,6 +4650,30 @@
      <pextra>@fkey2:300700+107101
     </field>
     <field/>
+     <name>field_package_option_source_field
+     <field>302830f
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>8000:relegate
+     <pclass>107100
+     <pfield>107101
+     <pfname>field_field_name
+     <pextra>@fkey2:300700+107101
+    </field>
+    <field/>
+     <name>field_package_option_other_source_field
+     <field>302830g
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>2000:relegate
+     <pclass>107100
+     <pfield>107101
+     <pfname>field_field_name
+     <pextra>@fkey2:300700+107101
+    </field>
+    <field/>
      <name>field_package_option_modifier
      <field>302832
      <ftype>@class
@@ -4667,7 +4691,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>2000:relegate
+     <modifiers>4000:relegate
      <pclass>111100
      <pfield>111101
      <pfname>field_procedure_name
@@ -4679,7 +4703,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>200000:relegate
+     <modifiers>800000:relegate
      <pclass>136100
      <pfield>136101
      <pfname>field_package_name

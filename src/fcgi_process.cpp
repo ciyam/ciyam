@@ -223,6 +223,14 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       {
          issued_command = true;
          fetch_sys_record( module_id, mod_info, *p_session_info );
+
+         ostringstream osstr;
+
+         replace_links_and_output( p_session_info->sys_message, "",
+          mod_info.name, module_ref, osstr, true, true, session_id, *p_session_info,
+          uselect, cookies_permitted, use_url_checksum );
+
+         p_session_info->sys_message = osstr.str( );
       }
 
       if( !temp_session && !mod_info.home_info.empty( )
@@ -1731,7 +1739,13 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             // (to reduce unnecessary clutter as "admin" is not intended for "standard" usage).
             if( p_session_info->is_admin_user && lmci->second->type != c_list_type_admin
              && lmci->second->type != c_list_type_child_admin && lmci->second->type != c_list_type_child_admin_owner )
-               has_perm = false;
+            {
+               if( !lmci->second->extras.count( c_list_type_extra_admin_new )
+                && !lmci->second->extras.count( c_list_type_extra_admin_owner_new )
+                && !lmci->second->extras.count( c_list_type_extra_admin_erase )
+                && !lmci->second->extras.count( c_list_type_extra_admin_owner_erase ) )
+                  has_perm = false;
+            }
 
             if( using_anonymous && !lmci->second->extras.count( c_list_type_extra_allow_anonymous ) )
                has_perm = false;

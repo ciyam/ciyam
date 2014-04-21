@@ -151,7 +151,9 @@ const char* const c_field_id_Has_List = "137128";
 const char* const c_field_id_Has_Modifier = "137130";
 const char* const c_field_id_Has_Other_Field = "137124";
 const char* const c_field_id_Has_Other_Field_2 = "137126";
+const char* const c_field_id_Has_Other_Source_Field = "137136";
 const char* const c_field_id_Has_Procedure = "137132";
+const char* const c_field_id_Has_Source_Field = "137134";
 const char* const c_field_id_Has_View = "137122";
 const char* const c_field_id_Id = "137101";
 const char* const c_field_id_Installed = "137103";
@@ -163,7 +165,9 @@ const char* const c_field_id_Is_Mandatory_List = "137129";
 const char* const c_field_id_Is_Mandatory_Modifier = "137131";
 const char* const c_field_id_Is_Mandatory_Other_Field = "137125";
 const char* const c_field_id_Is_Mandatory_Other_Field_2 = "137127";
+const char* const c_field_id_Is_Mandatory_Other_Source_Field = "137137";
 const char* const c_field_id_Is_Mandatory_Procedure = "137133";
+const char* const c_field_id_Is_Mandatory_Source_Field = "137135";
 const char* const c_field_id_Is_Mandatory_View = "137123";
 const char* const c_field_id_Is_Other_Package = "137104";
 const char* const c_field_id_List = "302831";
@@ -177,9 +181,11 @@ const char* const c_field_id_Other_Field_2 = "302830e";
 const char* const c_field_id_Other_Package = "302830";
 const char* const c_field_id_Other_Package_Required = "137105";
 const char* const c_field_id_Other_Package_Type = "137106";
+const char* const c_field_id_Other_Source_Field = "302830g";
 const char* const c_field_id_Package = "302820";
 const char* const c_field_id_Primitive = "137108";
 const char* const c_field_id_Procedure = "302833";
+const char* const c_field_id_Source_Field = "302830f";
 const char* const c_field_id_String = "137109";
 const char* const c_field_id_Time = "137112";
 const char* const c_field_id_Use_Option = "137102";
@@ -196,7 +202,9 @@ const char* const c_field_name_Has_List = "Has_List";
 const char* const c_field_name_Has_Modifier = "Has_Modifier";
 const char* const c_field_name_Has_Other_Field = "Has_Other_Field";
 const char* const c_field_name_Has_Other_Field_2 = "Has_Other_Field_2";
+const char* const c_field_name_Has_Other_Source_Field = "Has_Other_Source_Field";
 const char* const c_field_name_Has_Procedure = "Has_Procedure";
+const char* const c_field_name_Has_Source_Field = "Has_Source_Field";
 const char* const c_field_name_Has_View = "Has_View";
 const char* const c_field_name_Id = "Id";
 const char* const c_field_name_Installed = "Installed";
@@ -208,7 +216,9 @@ const char* const c_field_name_Is_Mandatory_List = "Is_Mandatory_List";
 const char* const c_field_name_Is_Mandatory_Modifier = "Is_Mandatory_Modifier";
 const char* const c_field_name_Is_Mandatory_Other_Field = "Is_Mandatory_Other_Field";
 const char* const c_field_name_Is_Mandatory_Other_Field_2 = "Is_Mandatory_Other_Field_2";
+const char* const c_field_name_Is_Mandatory_Other_Source_Field = "Is_Mandatory_Other_Source_Field";
 const char* const c_field_name_Is_Mandatory_Procedure = "Is_Mandatory_Procedure";
+const char* const c_field_name_Is_Mandatory_Source_Field = "Is_Mandatory_Source_Field";
 const char* const c_field_name_Is_Mandatory_View = "Is_Mandatory_View";
 const char* const c_field_name_Is_Other_Package = "Is_Other_Package";
 const char* const c_field_name_List = "List";
@@ -222,9 +232,11 @@ const char* const c_field_name_Other_Field_2 = "Other_Field_2";
 const char* const c_field_name_Other_Package = "Other_Package";
 const char* const c_field_name_Other_Package_Required = "Other_Package_Required";
 const char* const c_field_name_Other_Package_Type = "Other_Package_Type";
+const char* const c_field_name_Other_Source_Field = "Other_Source_Field";
 const char* const c_field_name_Package = "Package";
 const char* const c_field_name_Primitive = "Primitive";
 const char* const c_field_name_Procedure = "Procedure";
+const char* const c_field_name_Source_Field = "Source_Field";
 const char* const c_field_name_String = "String";
 const char* const c_field_name_Time = "Time";
 const char* const c_field_name_Use_Option = "Use_Option";
@@ -241,7 +253,9 @@ const char* const c_field_display_name_Has_List = "field_package_option_has_list
 const char* const c_field_display_name_Has_Modifier = "field_package_option_has_modifier";
 const char* const c_field_display_name_Has_Other_Field = "field_package_option_has_other_field";
 const char* const c_field_display_name_Has_Other_Field_2 = "field_package_option_has_other_field_2";
+const char* const c_field_display_name_Has_Other_Source_Field = "field_package_option_has_other_source_field";
 const char* const c_field_display_name_Has_Procedure = "field_package_option_has_procedure";
+const char* const c_field_display_name_Has_Source_Field = "field_package_option_has_source_field";
 const char* const c_field_display_name_Has_View = "field_package_option_has_view";
 const char* const c_field_display_name_Id = "field_package_option_id";
 const char* const c_field_display_name_Installed = "field_package_option_installed";
@@ -253,7 +267,9 @@ const char* const c_field_display_name_Is_Mandatory_List = "field_package_option
 const char* const c_field_display_name_Is_Mandatory_Modifier = "field_package_option_is_mandatory_modifier";
 const char* const c_field_display_name_Is_Mandatory_Other_Field = "field_package_option_is_mandatory_other_field";
 const char* const c_field_display_name_Is_Mandatory_Other_Field_2 = "field_package_option_is_mandatory_other_field_2";
+const char* const c_field_display_name_Is_Mandatory_Other_Source_Field = "field_package_option_is_mandatory_other_source_field";
 const char* const c_field_display_name_Is_Mandatory_Procedure = "field_package_option_is_mandatory_procedure";
+const char* const c_field_display_name_Is_Mandatory_Source_Field = "field_package_option_is_mandatory_source_field";
 const char* const c_field_display_name_Is_Mandatory_View = "field_package_option_is_mandatory_view";
 const char* const c_field_display_name_Is_Other_Package = "field_package_option_is_other_package";
 const char* const c_field_display_name_List = "field_package_option_list";
@@ -267,16 +283,18 @@ const char* const c_field_display_name_Other_Field_2 = "field_package_option_oth
 const char* const c_field_display_name_Other_Package = "field_package_option_other_package";
 const char* const c_field_display_name_Other_Package_Required = "field_package_option_other_package_required";
 const char* const c_field_display_name_Other_Package_Type = "field_package_option_other_package_type";
+const char* const c_field_display_name_Other_Source_Field = "field_package_option_other_source_field";
 const char* const c_field_display_name_Package = "field_package_option_package";
 const char* const c_field_display_name_Primitive = "field_package_option_primitive";
 const char* const c_field_display_name_Procedure = "field_package_option_procedure";
+const char* const c_field_display_name_Source_Field = "field_package_option_source_field";
 const char* const c_field_display_name_String = "field_package_option_string";
 const char* const c_field_display_name_Time = "field_package_option_time";
 const char* const c_field_display_name_Use_Option = "field_package_option_use_option";
 const char* const c_field_display_name_Value = "field_package_option_value";
 const char* const c_field_display_name_View = "field_package_option_view";
 
-const int c_num_fields = 44;
+const int c_num_fields = 50;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -313,6 +331,10 @@ const char* const c_all_sorted_field_ids[ ] =
    "137131",
    "137132",
    "137133",
+   "137134",
+   "137135",
+   "137136",
+   "137137",
    "302820",
    "302825",
    "302830",
@@ -321,6 +343,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "302830c",
    "302830d",
    "302830e",
+   "302830f",
+   "302830g",
    "302831",
    "302832",
    "302833"
@@ -338,7 +362,9 @@ const char* const c_all_sorted_field_names[ ] =
    "Has_Modifier",
    "Has_Other_Field",
    "Has_Other_Field_2",
+   "Has_Other_Source_Field",
    "Has_Procedure",
+   "Has_Source_Field",
    "Has_View",
    "Id",
    "Installed",
@@ -350,7 +376,9 @@ const char* const c_all_sorted_field_names[ ] =
    "Is_Mandatory_Modifier",
    "Is_Mandatory_Other_Field",
    "Is_Mandatory_Other_Field_2",
+   "Is_Mandatory_Other_Source_Field",
    "Is_Mandatory_Procedure",
+   "Is_Mandatory_Source_Field",
    "Is_Mandatory_View",
    "Is_Other_Package",
    "List",
@@ -364,9 +392,11 @@ const char* const c_all_sorted_field_names[ ] =
    "Other_Package",
    "Other_Package_Required",
    "Other_Package_Type",
+   "Other_Source_Field",
    "Package",
    "Primitive",
    "Procedure",
+   "Source_Field",
    "String",
    "Time",
    "Use_Option",
@@ -415,19 +445,21 @@ const uint64_t c_modifier_Hide_List = UINT64_C( 0x200 );
 const uint64_t c_modifier_Hide_Modifier = UINT64_C( 0x400 );
 const uint64_t c_modifier_Hide_Other_Field = UINT64_C( 0x800 );
 const uint64_t c_modifier_Hide_Other_Field_2 = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Hide_Procedure = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Hide_View = UINT64_C( 0x4000 );
-const uint64_t c_modifier_Is_Bool = UINT64_C( 0x8000 );
-const uint64_t c_modifier_Is_Class_Option = UINT64_C( 0x10000 );
-const uint64_t c_modifier_Is_Date = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Is_Datetime = UINT64_C( 0x40000 );
-const uint64_t c_modifier_Is_Int = UINT64_C( 0x80000 );
-const uint64_t c_modifier_Is_Not_Class_Option = UINT64_C( 0x100000 );
-const uint64_t c_modifier_Is_Not_Other_Package_Option = UINT64_C( 0x200000 );
-const uint64_t c_modifier_Is_Numeric = UINT64_C( 0x400000 );
-const uint64_t c_modifier_Is_Other_Package_Option = UINT64_C( 0x800000 );
-const uint64_t c_modifier_Is_String = UINT64_C( 0x1000000 );
-const uint64_t c_modifier_Is_Time = UINT64_C( 0x2000000 );
+const uint64_t c_modifier_Hide_Other_Source_Field = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Hide_Procedure = UINT64_C( 0x4000 );
+const uint64_t c_modifier_Hide_Source_Field = UINT64_C( 0x8000 );
+const uint64_t c_modifier_Hide_View = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Is_Bool = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Is_Class_Option = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Is_Date = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Is_Datetime = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Is_Int = UINT64_C( 0x200000 );
+const uint64_t c_modifier_Is_Not_Class_Option = UINT64_C( 0x400000 );
+const uint64_t c_modifier_Is_Not_Other_Package_Option = UINT64_C( 0x800000 );
+const uint64_t c_modifier_Is_Numeric = UINT64_C( 0x1000000 );
+const uint64_t c_modifier_Is_Other_Package_Option = UINT64_C( 0x2000000 );
+const uint64_t c_modifier_Is_String = UINT64_C( 0x4000000 );
+const uint64_t c_modifier_Is_Time = UINT64_C( 0x8000000 );
 
 domain_string_max_size< 100 > g_Id_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -458,7 +490,9 @@ bool g_default_Has_List = bool( 0 );
 bool g_default_Has_Modifier = bool( 0 );
 bool g_default_Has_Other_Field = bool( 0 );
 bool g_default_Has_Other_Field_2 = bool( 0 );
+bool g_default_Has_Other_Source_Field = bool( 0 );
 bool g_default_Has_Procedure = bool( 0 );
+bool g_default_Has_Source_Field = bool( 0 );
 bool g_default_Has_View = bool( 0 );
 string g_default_Id = string( );
 bool g_default_Installed = bool( 0 );
@@ -470,7 +504,9 @@ bool g_default_Is_Mandatory_List = bool( 0 );
 bool g_default_Is_Mandatory_Modifier = bool( 0 );
 bool g_default_Is_Mandatory_Other_Field = bool( 0 );
 bool g_default_Is_Mandatory_Other_Field_2 = bool( 0 );
+bool g_default_Is_Mandatory_Other_Source_Field = bool( 0 );
 bool g_default_Is_Mandatory_Procedure = bool( 0 );
+bool g_default_Is_Mandatory_Source_Field = bool( 0 );
 bool g_default_Is_Mandatory_View = bool( 0 );
 bool g_default_Is_Other_Package = bool( 0 );
 string g_default_List = string( );
@@ -484,9 +520,11 @@ string g_default_Other_Field_2 = string( );
 string g_default_Other_Package = string( );
 bool g_default_Other_Package_Required = bool( 0 );
 string g_default_Other_Package_Type = string( );
+string g_default_Other_Source_Field = string( );
 string g_default_Package = string( );
 int g_default_Primitive = int( 6 );
 string g_default_Procedure = string( );
+string g_default_Source_Field = string( );
 string g_default_String = string( );
 string g_default_Time = string( );
 bool g_default_Use_Option = bool( 0 );
@@ -670,10 +708,22 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Has_Other_Field_2( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Has_Other_Source_Field || field_name == c_field_name_Has_Other_Source_Field )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Package_Option->Has_Other_Source_Field( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Has_Procedure || field_name == c_field_name_Has_Procedure )
       {
          handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Has_Procedure( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Has_Source_Field || field_name == c_field_name_Has_Source_Field )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Package_Option->Has_Source_Field( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Has_View || field_name == c_field_name_Has_View )
@@ -742,10 +792,22 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Is_Mandatory_Other_Field_2( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Is_Mandatory_Other_Source_Field || field_name == c_field_name_Is_Mandatory_Other_Source_Field )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Package_Option->Is_Mandatory_Other_Source_Field( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Is_Mandatory_Procedure || field_name == c_field_name_Is_Mandatory_Procedure )
       {
          handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Package_Option->Is_Mandatory_Procedure( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Is_Mandatory_Source_Field || field_name == c_field_name_Is_Mandatory_Source_Field )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_Package_Option->Is_Mandatory_Source_Field( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Is_Mandatory_View || field_name == c_field_name_Is_Mandatory_View )
@@ -826,6 +888,12 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
          string_getter< string >( cmd_handler.p_Meta_Package_Option->Other_Package_Type( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Other_Source_Field || field_name == c_field_name_Other_Source_Field )
+      {
+         handled = true;
+         string_getter< Meta_Field >( cmd_handler.p_Meta_Package_Option->Other_Source_Field( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Package || field_name == c_field_name_Package )
       {
          handled = true;
@@ -842,6 +910,12 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
       {
          handled = true;
          string_getter< Meta_Procedure >( cmd_handler.p_Meta_Package_Option->Procedure( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
+         string_getter< Meta_Field >( cmd_handler.p_Meta_Package_Option->Source_Field( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_String || field_name == c_field_name_String )
@@ -956,11 +1030,25 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Has_Other_Field_2, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Has_Other_Source_Field || field_name == c_field_name_Has_Other_Source_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Option, bool >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Has_Other_Source_Field, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Has_Procedure || field_name == c_field_name_Has_Procedure )
       {
          handled = true;
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Has_Procedure, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Has_Source_Field || field_name == c_field_name_Has_Source_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Option, bool >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Has_Source_Field, field_value );
       }
 
       if( !handled && field_name == c_field_id_Has_View || field_name == c_field_name_Has_View )
@@ -1040,11 +1128,25 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Is_Mandatory_Other_Field_2, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Is_Mandatory_Other_Source_Field || field_name == c_field_name_Is_Mandatory_Other_Source_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Option, bool >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Is_Mandatory_Other_Source_Field, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Is_Mandatory_Procedure || field_name == c_field_name_Is_Mandatory_Procedure )
       {
          handled = true;
          func_string_setter< Meta_Package_Option, bool >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Is_Mandatory_Procedure, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Is_Mandatory_Source_Field || field_name == c_field_name_Is_Mandatory_Source_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Option, bool >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Is_Mandatory_Source_Field, field_value );
       }
 
       if( !handled && field_name == c_field_id_Is_Mandatory_View || field_name == c_field_name_Is_Mandatory_View )
@@ -1138,6 +1240,13 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Other_Package_Type, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Other_Source_Field || field_name == c_field_name_Other_Source_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Option, Meta_Field >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Other_Source_Field, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Package || field_name == c_field_name_Package )
       {
          handled = true;
@@ -1157,6 +1266,13 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
          handled = true;
          func_string_setter< Meta_Package_Option, Meta_Procedure >(
           *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Procedure, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+      {
+         handled = true;
+         func_string_setter< Meta_Package_Option, Meta_Field >(
+          *cmd_handler.p_Meta_Package_Option, &Meta_Package_Option::Source_Field, field_value );
       }
 
       if( !handled && field_name == c_field_id_String || field_name == c_field_name_String )
@@ -1224,10 +1340,14 @@ void Meta_Package_Option_command_functor::operator ( )( const string& command, c
          cmd_handler.retval = cmd_handler.p_Meta_Package_Option->Other_Field_2( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Other_Package || field_name == c_field_name_Other_Package )
          cmd_handler.retval = cmd_handler.p_Meta_Package_Option->Other_Package( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Other_Source_Field || field_name == c_field_name_Other_Source_Field )
+         cmd_handler.retval = cmd_handler.p_Meta_Package_Option->Other_Source_Field( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Package || field_name == c_field_name_Package )
          cmd_handler.retval = cmd_handler.p_Meta_Package_Option->Package( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Procedure || field_name == c_field_name_Procedure )
          cmd_handler.retval = cmd_handler.p_Meta_Package_Option->Procedure( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Source_Field || field_name == c_field_name_Source_Field )
+         cmd_handler.retval = cmd_handler.p_Meta_Package_Option->Source_Field( ).execute( cmd_and_args );
       else if( field_name == c_field_id_View || field_name == c_field_name_View )
          cmd_handler.retval = cmd_handler.p_Meta_Package_Option->View( ).execute( cmd_and_args );
       else
@@ -1296,8 +1416,14 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    bool impl_Has_Other_Field_2( ) const { return lazy_fetch( p_obj ), v_Has_Other_Field_2; }
    void impl_Has_Other_Field_2( bool Has_Other_Field_2 ) { v_Has_Other_Field_2 = Has_Other_Field_2; }
 
+   bool impl_Has_Other_Source_Field( ) const { return lazy_fetch( p_obj ), v_Has_Other_Source_Field; }
+   void impl_Has_Other_Source_Field( bool Has_Other_Source_Field ) { v_Has_Other_Source_Field = Has_Other_Source_Field; }
+
    bool impl_Has_Procedure( ) const { return lazy_fetch( p_obj ), v_Has_Procedure; }
    void impl_Has_Procedure( bool Has_Procedure ) { v_Has_Procedure = Has_Procedure; }
+
+   bool impl_Has_Source_Field( ) const { return lazy_fetch( p_obj ), v_Has_Source_Field; }
+   void impl_Has_Source_Field( bool Has_Source_Field ) { v_Has_Source_Field = Has_Source_Field; }
 
    bool impl_Has_View( ) const { return lazy_fetch( p_obj ), v_Has_View; }
    void impl_Has_View( bool Has_View ) { v_Has_View = Has_View; }
@@ -1332,8 +1458,14 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    bool impl_Is_Mandatory_Other_Field_2( ) const { return lazy_fetch( p_obj ), v_Is_Mandatory_Other_Field_2; }
    void impl_Is_Mandatory_Other_Field_2( bool Is_Mandatory_Other_Field_2 ) { v_Is_Mandatory_Other_Field_2 = Is_Mandatory_Other_Field_2; }
 
+   bool impl_Is_Mandatory_Other_Source_Field( ) const { return lazy_fetch( p_obj ), v_Is_Mandatory_Other_Source_Field; }
+   void impl_Is_Mandatory_Other_Source_Field( bool Is_Mandatory_Other_Source_Field ) { v_Is_Mandatory_Other_Source_Field = Is_Mandatory_Other_Source_Field; }
+
    bool impl_Is_Mandatory_Procedure( ) const { return lazy_fetch( p_obj ), v_Is_Mandatory_Procedure; }
    void impl_Is_Mandatory_Procedure( bool Is_Mandatory_Procedure ) { v_Is_Mandatory_Procedure = Is_Mandatory_Procedure; }
+
+   bool impl_Is_Mandatory_Source_Field( ) const { return lazy_fetch( p_obj ), v_Is_Mandatory_Source_Field; }
+   void impl_Is_Mandatory_Source_Field( bool Is_Mandatory_Source_Field ) { v_Is_Mandatory_Source_Field = Is_Mandatory_Source_Field; }
 
    bool impl_Is_Mandatory_View( ) const { return lazy_fetch( p_obj ), v_Is_Mandatory_View; }
    void impl_Is_Mandatory_View( bool Is_Mandatory_View ) { v_Is_Mandatory_View = Is_Mandatory_View; }
@@ -1611,6 +1743,36 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
       cba.set_key( key );
    }
 
+   Meta_Field& impl_Other_Source_Field( )
+   {
+      if( !cp_Other_Source_Field )
+      {
+         cp_Other_Source_Field.init( );
+
+         p_obj->setup_graph_parent( *cp_Other_Source_Field, c_field_id_Other_Source_Field, v_Other_Source_Field );
+      }
+      return *cp_Other_Source_Field;
+   }
+
+   const Meta_Field& impl_Other_Source_Field( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Other_Source_Field )
+      {
+         cp_Other_Source_Field.init( );
+
+         p_obj->setup_graph_parent( *cp_Other_Source_Field, c_field_id_Other_Source_Field, v_Other_Source_Field );
+      }
+      return *cp_Other_Source_Field;
+   }
+
+   void impl_Other_Source_Field( const string& key )
+   {
+      class_base_accessor cba( impl_Other_Source_Field( ) );
+      cba.set_key( key );
+   }
+
    Meta_Package& impl_Package( )
    {
       if( !cp_Package )
@@ -1668,6 +1830,36 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    void impl_Procedure( const string& key )
    {
       class_base_accessor cba( impl_Procedure( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Field& impl_Source_Field( )
+   {
+      if( !cp_Source_Field )
+      {
+         cp_Source_Field.init( );
+
+         p_obj->setup_graph_parent( *cp_Source_Field, c_field_id_Source_Field, v_Source_Field );
+      }
+      return *cp_Source_Field;
+   }
+
+   const Meta_Field& impl_Source_Field( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Source_Field )
+      {
+         cp_Source_Field.init( );
+
+         p_obj->setup_graph_parent( *cp_Source_Field, c_field_id_Source_Field, v_Source_Field );
+      }
+      return *cp_Source_Field;
+   }
+
+   void impl_Source_Field( const string& key )
+   {
+      class_base_accessor cba( impl_Source_Field( ) );
       cba.set_key( key );
    }
 
@@ -1770,7 +1962,9 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    bool v_Has_Modifier;
    bool v_Has_Other_Field;
    bool v_Has_Other_Field_2;
+   bool v_Has_Other_Source_Field;
    bool v_Has_Procedure;
+   bool v_Has_Source_Field;
    bool v_Has_View;
    string v_Id;
    bool v_Installed;
@@ -1782,7 +1976,9 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    bool v_Is_Mandatory_Modifier;
    bool v_Is_Mandatory_Other_Field;
    bool v_Is_Mandatory_Other_Field_2;
+   bool v_Is_Mandatory_Other_Source_Field;
    bool v_Is_Mandatory_Procedure;
+   bool v_Is_Mandatory_Source_Field;
    bool v_Is_Mandatory_View;
    bool v_Is_Other_Package;
    string v_Name;
@@ -1820,11 +2016,17 @@ struct Meta_Package_Option::impl : public Meta_Package_Option_command_handler
    string v_Other_Package;
    mutable class_pointer< Meta_Package > cp_Other_Package;
 
+   string v_Other_Source_Field;
+   mutable class_pointer< Meta_Field > cp_Other_Source_Field;
+
    string v_Package;
    mutable class_pointer< Meta_Package > cp_Package;
 
    string v_Procedure;
    mutable class_pointer< Meta_Procedure > cp_Procedure;
+
+   string v_Source_Field;
+   mutable class_pointer< Meta_Field > cp_Source_Field;
 
    string v_View;
    mutable class_pointer< Meta_View > cp_View;
@@ -1903,138 +2105,162 @@ string Meta_Package_Option::impl::get_field_value( int field ) const
       break;
 
       case 10:
-      retval = to_string( impl_Has_Procedure( ) );
+      retval = to_string( impl_Has_Other_Source_Field( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Has_View( ) );
+      retval = to_string( impl_Has_Procedure( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Has_Source_Field( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Installed( ) );
+      retval = to_string( impl_Has_View( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Integer( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Is_Class( ) );
+      retval = to_string( impl_Installed( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Is_Mandatory_Class( ) );
+      retval = to_string( impl_Integer( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Is_Mandatory_Field( ) );
+      retval = to_string( impl_Is_Class( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Is_Mandatory_List( ) );
+      retval = to_string( impl_Is_Mandatory_Class( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Is_Mandatory_Modifier( ) );
+      retval = to_string( impl_Is_Mandatory_Field( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Is_Mandatory_Other_Field( ) );
+      retval = to_string( impl_Is_Mandatory_List( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Is_Mandatory_Other_Field_2( ) );
+      retval = to_string( impl_Is_Mandatory_Modifier( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Is_Mandatory_Procedure( ) );
+      retval = to_string( impl_Is_Mandatory_Other_Field( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Is_Mandatory_View( ) );
+      retval = to_string( impl_Is_Mandatory_Other_Field_2( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Is_Other_Package( ) );
+      retval = to_string( impl_Is_Mandatory_Other_Source_Field( ) );
       break;
 
       case 25:
-      retval = to_string( impl_List( ) );
+      retval = to_string( impl_Is_Mandatory_Procedure( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Is_Mandatory_Source_Field( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Modifier( ) );
+      retval = to_string( impl_Is_Mandatory_View( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Is_Other_Package( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Notes( ) );
+      retval = to_string( impl_List( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Numeric( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Other_Field( ) );
+      retval = to_string( impl_Modifier( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Other_Field_2( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Other_Package( ) );
+      retval = to_string( impl_Notes( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Other_Package_Required( ) );
+      retval = to_string( impl_Numeric( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Other_Package_Type( ) );
+      retval = to_string( impl_Other_Field( ) );
       break;
 
       case 36:
-      retval = to_string( impl_Package( ) );
+      retval = to_string( impl_Other_Field_2( ) );
       break;
 
       case 37:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Other_Package( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Procedure( ) );
+      retval = to_string( impl_Other_Package_Required( ) );
       break;
 
       case 39:
-      retval = to_string( impl_String( ) );
+      retval = to_string( impl_Other_Package_Type( ) );
       break;
 
       case 40:
-      retval = to_string( impl_Time( ) );
+      retval = to_string( impl_Other_Source_Field( ) );
       break;
 
       case 41:
-      retval = to_string( impl_Use_Option( ) );
+      retval = to_string( impl_Package( ) );
       break;
 
       case 42:
-      retval = to_string( impl_Value( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 43:
+      retval = to_string( impl_Procedure( ) );
+      break;
+
+      case 44:
+      retval = to_string( impl_Source_Field( ) );
+      break;
+
+      case 45:
+      retval = to_string( impl_String( ) );
+      break;
+
+      case 46:
+      retval = to_string( impl_Time( ) );
+      break;
+
+      case 47:
+      retval = to_string( impl_Use_Option( ) );
+      break;
+
+      case 48:
+      retval = to_string( impl_Value( ) );
+      break;
+
+      case 49:
       retval = to_string( impl_View( ) );
       break;
 
@@ -2090,138 +2316,162 @@ void Meta_Package_Option::impl::set_field_value( int field, const string& value 
       break;
 
       case 10:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Has_Procedure, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Has_Other_Source_Field, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Has_View, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Has_Procedure, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Id, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Has_Source_Field, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Installed, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Has_View, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Package_Option::impl, int >( *this, &Meta_Package_Option::impl::impl_Integer, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Id, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Class, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Installed, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Class, value );
+      func_string_setter< Meta_Package_Option::impl, int >( *this, &Meta_Package_Option::impl::impl_Integer, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Field, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Class, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_List, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Class, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Modifier, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Field, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Other_Field, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_List, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Other_Field_2, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Modifier, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Procedure, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Other_Field, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_View, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Other_Field_2, value );
       break;
 
       case 24:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Other_Package, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Other_Source_Field, value );
       break;
 
       case 25:
-      func_string_setter< Meta_Package_Option::impl, Meta_List >( *this, &Meta_Package_Option::impl::impl_List, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Procedure, value );
       break;
 
       case 26:
-      func_string_setter< Meta_Package_Option::impl, Meta_Model >( *this, &Meta_Package_Option::impl::impl_Model, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_Source_Field, value );
       break;
 
       case 27:
-      func_string_setter< Meta_Package_Option::impl, Meta_Modifier >( *this, &Meta_Package_Option::impl::impl_Modifier, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Mandatory_View, value );
       break;
 
       case 28:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Name, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Is_Other_Package, value );
       break;
 
       case 29:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Notes, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_List >( *this, &Meta_Package_Option::impl::impl_List, value );
       break;
 
       case 30:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Numeric, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Model >( *this, &Meta_Package_Option::impl::impl_Model, value );
       break;
 
       case 31:
-      func_string_setter< Meta_Package_Option::impl, Meta_Field >( *this, &Meta_Package_Option::impl::impl_Other_Field, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Modifier >( *this, &Meta_Package_Option::impl::impl_Modifier, value );
       break;
 
       case 32:
-      func_string_setter< Meta_Package_Option::impl, Meta_Field >( *this, &Meta_Package_Option::impl::impl_Other_Field_2, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Name, value );
       break;
 
       case 33:
-      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Other_Package, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Notes, value );
       break;
 
       case 34:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Other_Package_Required, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Numeric, value );
       break;
 
       case 35:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Other_Package_Type, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Field >( *this, &Meta_Package_Option::impl::impl_Other_Field, value );
       break;
 
       case 36:
-      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Package, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Field >( *this, &Meta_Package_Option::impl::impl_Other_Field_2, value );
       break;
 
       case 37:
-      func_string_setter< Meta_Package_Option::impl, int >( *this, &Meta_Package_Option::impl::impl_Primitive, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Other_Package, value );
       break;
 
       case 38:
-      func_string_setter< Meta_Package_Option::impl, Meta_Procedure >( *this, &Meta_Package_Option::impl::impl_Procedure, value );
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Other_Package_Required, value );
       break;
 
       case 39:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_String, value );
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Other_Package_Type, value );
       break;
 
       case 40:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Time, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Field >( *this, &Meta_Package_Option::impl::impl_Other_Source_Field, value );
       break;
 
       case 41:
-      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Use_Option, value );
+      func_string_setter< Meta_Package_Option::impl, Meta_Package >( *this, &Meta_Package_Option::impl::impl_Package, value );
       break;
 
       case 42:
-      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Value, value );
+      func_string_setter< Meta_Package_Option::impl, int >( *this, &Meta_Package_Option::impl::impl_Primitive, value );
       break;
 
       case 43:
+      func_string_setter< Meta_Package_Option::impl, Meta_Procedure >( *this, &Meta_Package_Option::impl::impl_Procedure, value );
+      break;
+
+      case 44:
+      func_string_setter< Meta_Package_Option::impl, Meta_Field >( *this, &Meta_Package_Option::impl::impl_Source_Field, value );
+      break;
+
+      case 45:
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_String, value );
+      break;
+
+      case 46:
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Time, value );
+      break;
+
+      case 47:
+      func_string_setter< Meta_Package_Option::impl, bool >( *this, &Meta_Package_Option::impl::impl_Use_Option, value );
+      break;
+
+      case 48:
+      func_string_setter< Meta_Package_Option::impl, string >( *this, &Meta_Package_Option::impl::impl_Value, value );
+      break;
+
+      case 49:
       func_string_setter< Meta_Package_Option::impl, Meta_View >( *this, &Meta_Package_Option::impl::impl_View, value );
       break;
 
@@ -2309,6 +2559,16 @@ uint64_t Meta_Package_Option::impl::get_state( ) const
       state |= c_modifier_Hide_Other_Field_2;
    // [(finish modifier_field_value)] 600893c
 
+   // [(start modifier_field_value)] 600893d
+   if( get_obj( ).Has_Source_Field( ) == false )
+      state |= c_modifier_Hide_Source_Field;
+   // [(finish modifier_field_value)] 600893d
+
+   // [(start modifier_field_value)] 600893e
+   if( get_obj( ).Has_Other_Source_Field( ) == false )
+      state |= c_modifier_Hide_Other_Source_Field;
+   // [(finish modifier_field_value)] 600893e
+
    // [(start modifier_field_value)] 600894
    if( get_obj( ).Has_View( ) == false )
       state |= c_modifier_Hide_View;
@@ -2364,10 +2624,14 @@ void Meta_Package_Option::impl::clear_foreign_key( const string& field )
       impl_Other_Field_2( "" );
    else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
       impl_Other_Package( "" );
+   else if( field == c_field_id_Other_Source_Field || field == c_field_name_Other_Source_Field )
+      impl_Other_Source_Field( "" );
    else if( field == c_field_id_Package || field == c_field_name_Package )
       impl_Package( "" );
    else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
       impl_Procedure( "" );
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+      impl_Source_Field( "" );
    else if( field == c_field_id_View || field == c_field_name_View )
       impl_View( "" );
    else
@@ -2394,10 +2658,14 @@ void Meta_Package_Option::impl::set_foreign_key_value( const string& field, cons
       v_Other_Field_2 = value;
    else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
       v_Other_Package = value;
+   else if( field == c_field_id_Other_Source_Field || field == c_field_name_Other_Source_Field )
+      v_Other_Source_Field = value;
    else if( field == c_field_id_Package || field == c_field_name_Package )
       v_Package = value;
    else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
       v_Procedure = value;
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+      v_Source_Field = value;
    else if( field == c_field_id_View || field == c_field_name_View )
       v_View = value;
    else
@@ -2424,10 +2692,14 @@ const string& Meta_Package_Option::impl::get_foreign_key_value( const string& fi
       return v_Other_Field_2;
    else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
       return v_Other_Package;
+   else if( field == c_field_id_Other_Source_Field || field == c_field_name_Other_Source_Field )
+      return v_Other_Source_Field;
    else if( field == c_field_id_Package || field == c_field_name_Package )
       return v_Package;
    else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
       return v_Procedure;
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+      return v_Source_Field;
    else if( field == c_field_id_View || field == c_field_name_View )
       return v_View;
    else
@@ -2444,8 +2716,10 @@ void Meta_Package_Option::impl::get_foreign_key_values( foreign_key_data_contain
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Other_Field, v_Other_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Other_Field_2, v_Other_Field_2 ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Other_Package, v_Other_Package ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Other_Source_Field, v_Other_Source_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Package, v_Package ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Procedure, v_Procedure ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Field, v_Source_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_View, v_View ) );
 }
 
@@ -2475,7 +2749,9 @@ void Meta_Package_Option::impl::clear( )
    v_Has_Modifier = g_default_Has_Modifier;
    v_Has_Other_Field = g_default_Has_Other_Field;
    v_Has_Other_Field_2 = g_default_Has_Other_Field_2;
+   v_Has_Other_Source_Field = g_default_Has_Other_Source_Field;
    v_Has_Procedure = g_default_Has_Procedure;
+   v_Has_Source_Field = g_default_Has_Source_Field;
    v_Has_View = g_default_Has_View;
    v_Id = g_default_Id;
    v_Installed = g_default_Installed;
@@ -2487,7 +2763,9 @@ void Meta_Package_Option::impl::clear( )
    v_Is_Mandatory_Modifier = g_default_Is_Mandatory_Modifier;
    v_Is_Mandatory_Other_Field = g_default_Is_Mandatory_Other_Field;
    v_Is_Mandatory_Other_Field_2 = g_default_Is_Mandatory_Other_Field_2;
+   v_Is_Mandatory_Other_Source_Field = g_default_Is_Mandatory_Other_Source_Field;
    v_Is_Mandatory_Procedure = g_default_Is_Mandatory_Procedure;
+   v_Is_Mandatory_Source_Field = g_default_Is_Mandatory_Source_Field;
    v_Is_Mandatory_View = g_default_Is_Mandatory_View;
    v_Is_Other_Package = g_default_Is_Other_Package;
    v_Name = g_default_Name;
@@ -2533,6 +2811,10 @@ void Meta_Package_Option::impl::clear( )
    if( cp_Other_Package )
       p_obj->setup_foreign_key( *cp_Other_Package, v_Other_Package );
 
+   v_Other_Source_Field = string( );
+   if( cp_Other_Source_Field )
+      p_obj->setup_foreign_key( *cp_Other_Source_Field, v_Other_Source_Field );
+
    v_Package = string( );
    if( cp_Package )
       p_obj->setup_foreign_key( *cp_Package, v_Package );
@@ -2540,6 +2822,10 @@ void Meta_Package_Option::impl::clear( )
    v_Procedure = string( );
    if( cp_Procedure )
       p_obj->setup_foreign_key( *cp_Procedure, v_Procedure );
+
+   v_Source_Field = string( );
+   if( cp_Source_Field )
+      p_obj->setup_foreign_key( *cp_Source_Field, v_Source_Field );
 
    v_View = string( );
    if( cp_View )
@@ -2659,11 +2945,17 @@ void Meta_Package_Option::impl::after_fetch( )
    if( cp_Other_Package )
       p_obj->setup_foreign_key( *cp_Other_Package, v_Other_Package );
 
+   if( cp_Other_Source_Field )
+      p_obj->setup_foreign_key( *cp_Other_Source_Field, v_Other_Source_Field );
+
    if( cp_Package )
       p_obj->setup_foreign_key( *cp_Package, v_Package );
 
    if( cp_Procedure )
       p_obj->setup_foreign_key( *cp_Procedure, v_Procedure );
+
+   if( cp_Source_Field )
+      p_obj->setup_foreign_key( *cp_Source_Field, v_Source_Field );
 
    if( cp_View )
       p_obj->setup_foreign_key( *cp_View, v_View );
@@ -2959,6 +3251,16 @@ void Meta_Package_Option::Has_Other_Field_2( bool Has_Other_Field_2 )
    p_impl->impl_Has_Other_Field_2( Has_Other_Field_2 );
 }
 
+bool Meta_Package_Option::Has_Other_Source_Field( ) const
+{
+   return p_impl->impl_Has_Other_Source_Field( );
+}
+
+void Meta_Package_Option::Has_Other_Source_Field( bool Has_Other_Source_Field )
+{
+   p_impl->impl_Has_Other_Source_Field( Has_Other_Source_Field );
+}
+
 bool Meta_Package_Option::Has_Procedure( ) const
 {
    return p_impl->impl_Has_Procedure( );
@@ -2967,6 +3269,16 @@ bool Meta_Package_Option::Has_Procedure( ) const
 void Meta_Package_Option::Has_Procedure( bool Has_Procedure )
 {
    p_impl->impl_Has_Procedure( Has_Procedure );
+}
+
+bool Meta_Package_Option::Has_Source_Field( ) const
+{
+   return p_impl->impl_Has_Source_Field( );
+}
+
+void Meta_Package_Option::Has_Source_Field( bool Has_Source_Field )
+{
+   p_impl->impl_Has_Source_Field( Has_Source_Field );
 }
 
 bool Meta_Package_Option::Has_View( ) const
@@ -3079,6 +3391,16 @@ void Meta_Package_Option::Is_Mandatory_Other_Field_2( bool Is_Mandatory_Other_Fi
    p_impl->impl_Is_Mandatory_Other_Field_2( Is_Mandatory_Other_Field_2 );
 }
 
+bool Meta_Package_Option::Is_Mandatory_Other_Source_Field( ) const
+{
+   return p_impl->impl_Is_Mandatory_Other_Source_Field( );
+}
+
+void Meta_Package_Option::Is_Mandatory_Other_Source_Field( bool Is_Mandatory_Other_Source_Field )
+{
+   p_impl->impl_Is_Mandatory_Other_Source_Field( Is_Mandatory_Other_Source_Field );
+}
+
 bool Meta_Package_Option::Is_Mandatory_Procedure( ) const
 {
    return p_impl->impl_Is_Mandatory_Procedure( );
@@ -3087,6 +3409,16 @@ bool Meta_Package_Option::Is_Mandatory_Procedure( ) const
 void Meta_Package_Option::Is_Mandatory_Procedure( bool Is_Mandatory_Procedure )
 {
    p_impl->impl_Is_Mandatory_Procedure( Is_Mandatory_Procedure );
+}
+
+bool Meta_Package_Option::Is_Mandatory_Source_Field( ) const
+{
+   return p_impl->impl_Is_Mandatory_Source_Field( );
+}
+
+void Meta_Package_Option::Is_Mandatory_Source_Field( bool Is_Mandatory_Source_Field )
+{
+   p_impl->impl_Is_Mandatory_Source_Field( Is_Mandatory_Source_Field );
 }
 
 bool Meta_Package_Option::Is_Mandatory_View( ) const
@@ -3329,6 +3661,21 @@ void Meta_Package_Option::Other_Package( const string& key )
    p_impl->impl_Other_Package( key );
 }
 
+Meta_Field& Meta_Package_Option::Other_Source_Field( )
+{
+   return p_impl->impl_Other_Source_Field( );
+}
+
+const Meta_Field& Meta_Package_Option::Other_Source_Field( ) const
+{
+   return p_impl->impl_Other_Source_Field( );
+}
+
+void Meta_Package_Option::Other_Source_Field( const string& key )
+{
+   p_impl->impl_Other_Source_Field( key );
+}
+
 Meta_Package& Meta_Package_Option::Package( )
 {
    return p_impl->impl_Package( );
@@ -3357,6 +3704,21 @@ const Meta_Procedure& Meta_Package_Option::Procedure( ) const
 void Meta_Package_Option::Procedure( const string& key )
 {
    p_impl->impl_Procedure( key );
+}
+
+Meta_Field& Meta_Package_Option::Source_Field( )
+{
+   return p_impl->impl_Source_Field( );
+}
+
+const Meta_Field& Meta_Package_Option::Source_Field( ) const
+{
+   return p_impl->impl_Source_Field( );
+}
+
+void Meta_Package_Option::Source_Field( const string& key )
+{
+   p_impl->impl_Source_Field( key );
 }
 
 Meta_View& Meta_Package_Option::View( )
@@ -3620,9 +3982,29 @@ const char* Meta_Package_Option::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Has_Other_Source_Field )
+   {
+      p_id = c_field_id_Has_Other_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Has_Procedure )
    {
       p_id = c_field_id_Has_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Has_Source_Field )
+   {
+      p_id = c_field_id_Has_Source_Field;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -3740,9 +4122,29 @@ const char* Meta_Package_Option::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Is_Mandatory_Other_Source_Field )
+   {
+      p_id = c_field_id_Is_Mandatory_Other_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Is_Mandatory_Procedure )
    {
       p_id = c_field_id_Is_Mandatory_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Is_Mandatory_Source_Field )
+   {
+      p_id = c_field_id_Is_Mandatory_Source_Field;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -3880,6 +4282,16 @@ const char* Meta_Package_Option::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( name == c_field_name_Other_Source_Field )
+   {
+      p_id = c_field_id_Other_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( name == c_field_name_Package )
    {
       p_id = c_field_id_Package;
@@ -3906,6 +4318,16 @@ const char* Meta_Package_Option::get_field_id(
 
       if( p_type_name )
          *p_type_name = "Meta_Procedure";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Source_Field )
+   {
+      p_id = c_field_id_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -4071,9 +4493,29 @@ const char* Meta_Package_Option::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Has_Other_Source_Field )
+   {
+      p_name = c_field_name_Has_Other_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Has_Procedure )
    {
       p_name = c_field_name_Has_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Has_Source_Field )
+   {
+      p_name = c_field_name_Has_Source_Field;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -4191,9 +4633,29 @@ const char* Meta_Package_Option::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Is_Mandatory_Other_Source_Field )
+   {
+      p_name = c_field_name_Is_Mandatory_Other_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Is_Mandatory_Procedure )
    {
       p_name = c_field_name_Is_Mandatory_Procedure;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Is_Mandatory_Source_Field )
+   {
+      p_name = c_field_name_Is_Mandatory_Source_Field;
 
       if( p_type_name )
          *p_type_name = "bool";
@@ -4331,6 +4793,16 @@ const char* Meta_Package_Option::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = false;
    }
+   else if( id == c_field_id_Other_Source_Field )
+   {
+      p_name = c_field_name_Other_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
    else if( id == c_field_id_Package )
    {
       p_name = c_field_name_Package;
@@ -4357,6 +4829,16 @@ const char* Meta_Package_Option::get_field_name(
 
       if( p_type_name )
          *p_type_name = "Meta_Procedure";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Source_Field )
+   {
+      p_name = c_field_name_Source_Field;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Field";
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
@@ -4490,10 +4972,20 @@ string Meta_Package_Option::get_field_uom_symbol( const string& id_or_name ) con
       name = string( c_field_display_name_Has_Other_Field_2 );
       get_module_string( c_field_display_name_Has_Other_Field_2, &next );
    }
+   else if( id_or_name == c_field_id_Has_Other_Source_Field || id_or_name == c_field_name_Has_Other_Source_Field )
+   {
+      name = string( c_field_display_name_Has_Other_Source_Field );
+      get_module_string( c_field_display_name_Has_Other_Source_Field, &next );
+   }
    else if( id_or_name == c_field_id_Has_Procedure || id_or_name == c_field_name_Has_Procedure )
    {
       name = string( c_field_display_name_Has_Procedure );
       get_module_string( c_field_display_name_Has_Procedure, &next );
+   }
+   else if( id_or_name == c_field_id_Has_Source_Field || id_or_name == c_field_name_Has_Source_Field )
+   {
+      name = string( c_field_display_name_Has_Source_Field );
+      get_module_string( c_field_display_name_Has_Source_Field, &next );
    }
    else if( id_or_name == c_field_id_Has_View || id_or_name == c_field_name_Has_View )
    {
@@ -4550,10 +5042,20 @@ string Meta_Package_Option::get_field_uom_symbol( const string& id_or_name ) con
       name = string( c_field_display_name_Is_Mandatory_Other_Field_2 );
       get_module_string( c_field_display_name_Is_Mandatory_Other_Field_2, &next );
    }
+   else if( id_or_name == c_field_id_Is_Mandatory_Other_Source_Field || id_or_name == c_field_name_Is_Mandatory_Other_Source_Field )
+   {
+      name = string( c_field_display_name_Is_Mandatory_Other_Source_Field );
+      get_module_string( c_field_display_name_Is_Mandatory_Other_Source_Field, &next );
+   }
    else if( id_or_name == c_field_id_Is_Mandatory_Procedure || id_or_name == c_field_name_Is_Mandatory_Procedure )
    {
       name = string( c_field_display_name_Is_Mandatory_Procedure );
       get_module_string( c_field_display_name_Is_Mandatory_Procedure, &next );
+   }
+   else if( id_or_name == c_field_id_Is_Mandatory_Source_Field || id_or_name == c_field_name_Is_Mandatory_Source_Field )
+   {
+      name = string( c_field_display_name_Is_Mandatory_Source_Field );
+      get_module_string( c_field_display_name_Is_Mandatory_Source_Field, &next );
    }
    else if( id_or_name == c_field_id_Is_Mandatory_View || id_or_name == c_field_name_Is_Mandatory_View )
    {
@@ -4620,6 +5122,11 @@ string Meta_Package_Option::get_field_uom_symbol( const string& id_or_name ) con
       name = string( c_field_display_name_Other_Package_Type );
       get_module_string( c_field_display_name_Other_Package_Type, &next );
    }
+   else if( id_or_name == c_field_id_Other_Source_Field || id_or_name == c_field_name_Other_Source_Field )
+   {
+      name = string( c_field_display_name_Other_Source_Field );
+      get_module_string( c_field_display_name_Other_Source_Field, &next );
+   }
    else if( id_or_name == c_field_id_Package || id_or_name == c_field_name_Package )
    {
       name = string( c_field_display_name_Package );
@@ -4634,6 +5141,11 @@ string Meta_Package_Option::get_field_uom_symbol( const string& id_or_name ) con
    {
       name = string( c_field_display_name_Procedure );
       get_module_string( c_field_display_name_Procedure, &next );
+   }
+   else if( id_or_name == c_field_id_Source_Field || id_or_name == c_field_name_Source_Field )
+   {
+      name = string( c_field_display_name_Source_Field );
+      get_module_string( c_field_display_name_Source_Field, &next );
    }
    else if( id_or_name == c_field_id_String || id_or_name == c_field_name_String )
    {
@@ -4695,8 +5207,12 @@ string Meta_Package_Option::get_field_display_name( const string& id_or_name ) c
       display_name = get_module_string( c_field_display_name_Has_Other_Field );
    else if( id_or_name == c_field_id_Has_Other_Field_2 || id_or_name == c_field_name_Has_Other_Field_2 )
       display_name = get_module_string( c_field_display_name_Has_Other_Field_2 );
+   else if( id_or_name == c_field_id_Has_Other_Source_Field || id_or_name == c_field_name_Has_Other_Source_Field )
+      display_name = get_module_string( c_field_display_name_Has_Other_Source_Field );
    else if( id_or_name == c_field_id_Has_Procedure || id_or_name == c_field_name_Has_Procedure )
       display_name = get_module_string( c_field_display_name_Has_Procedure );
+   else if( id_or_name == c_field_id_Has_Source_Field || id_or_name == c_field_name_Has_Source_Field )
+      display_name = get_module_string( c_field_display_name_Has_Source_Field );
    else if( id_or_name == c_field_id_Has_View || id_or_name == c_field_name_Has_View )
       display_name = get_module_string( c_field_display_name_Has_View );
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
@@ -4719,8 +5235,12 @@ string Meta_Package_Option::get_field_display_name( const string& id_or_name ) c
       display_name = get_module_string( c_field_display_name_Is_Mandatory_Other_Field );
    else if( id_or_name == c_field_id_Is_Mandatory_Other_Field_2 || id_or_name == c_field_name_Is_Mandatory_Other_Field_2 )
       display_name = get_module_string( c_field_display_name_Is_Mandatory_Other_Field_2 );
+   else if( id_or_name == c_field_id_Is_Mandatory_Other_Source_Field || id_or_name == c_field_name_Is_Mandatory_Other_Source_Field )
+      display_name = get_module_string( c_field_display_name_Is_Mandatory_Other_Source_Field );
    else if( id_or_name == c_field_id_Is_Mandatory_Procedure || id_or_name == c_field_name_Is_Mandatory_Procedure )
       display_name = get_module_string( c_field_display_name_Is_Mandatory_Procedure );
+   else if( id_or_name == c_field_id_Is_Mandatory_Source_Field || id_or_name == c_field_name_Is_Mandatory_Source_Field )
+      display_name = get_module_string( c_field_display_name_Is_Mandatory_Source_Field );
    else if( id_or_name == c_field_id_Is_Mandatory_View || id_or_name == c_field_name_Is_Mandatory_View )
       display_name = get_module_string( c_field_display_name_Is_Mandatory_View );
    else if( id_or_name == c_field_id_Is_Other_Package || id_or_name == c_field_name_Is_Other_Package )
@@ -4747,12 +5267,16 @@ string Meta_Package_Option::get_field_display_name( const string& id_or_name ) c
       display_name = get_module_string( c_field_display_name_Other_Package_Required );
    else if( id_or_name == c_field_id_Other_Package_Type || id_or_name == c_field_name_Other_Package_Type )
       display_name = get_module_string( c_field_display_name_Other_Package_Type );
+   else if( id_or_name == c_field_id_Other_Source_Field || id_or_name == c_field_name_Other_Source_Field )
+      display_name = get_module_string( c_field_display_name_Other_Source_Field );
    else if( id_or_name == c_field_id_Package || id_or_name == c_field_name_Package )
       display_name = get_module_string( c_field_display_name_Package );
    else if( id_or_name == c_field_id_Primitive || id_or_name == c_field_name_Primitive )
       display_name = get_module_string( c_field_display_name_Primitive );
    else if( id_or_name == c_field_id_Procedure || id_or_name == c_field_name_Procedure )
       display_name = get_module_string( c_field_display_name_Procedure );
+   else if( id_or_name == c_field_id_Source_Field || id_or_name == c_field_name_Source_Field )
+      display_name = get_module_string( c_field_display_name_Source_Field );
    else if( id_or_name == c_field_id_String || id_or_name == c_field_name_String )
       display_name = get_module_string( c_field_display_name_String );
    else if( id_or_name == c_field_id_Time || id_or_name == c_field_name_Time )
@@ -5018,10 +5542,14 @@ class_base& Meta_Package_Option::get_or_create_graph_child( const string& contex
       p_class_base = &Other_Field_2( );
    else if( sub_context == c_field_id_Other_Package || sub_context == c_field_name_Other_Package )
       p_class_base = &Other_Package( );
+   else if( sub_context == c_field_id_Other_Source_Field || sub_context == c_field_name_Other_Source_Field )
+      p_class_base = &Other_Source_Field( );
    else if( sub_context == c_field_id_Package || sub_context == c_field_name_Package )
       p_class_base = &Package( );
    else if( sub_context == c_field_id_Procedure || sub_context == c_field_name_Procedure )
       p_class_base = &Procedure( );
+   else if( sub_context == c_field_id_Source_Field || sub_context == c_field_name_Source_Field )
+      p_class_base = &Source_Field( );
    else if( sub_context == c_field_id_View || sub_context == c_field_name_View )
       p_class_base = &View( );
 
@@ -5049,7 +5577,9 @@ void Meta_Package_Option::get_sql_column_names(
    names.push_back( "C_Has_Modifier" );
    names.push_back( "C_Has_Other_Field" );
    names.push_back( "C_Has_Other_Field_2" );
+   names.push_back( "C_Has_Other_Source_Field" );
    names.push_back( "C_Has_Procedure" );
+   names.push_back( "C_Has_Source_Field" );
    names.push_back( "C_Has_View" );
    names.push_back( "C_Id" );
    names.push_back( "C_Installed" );
@@ -5061,7 +5591,9 @@ void Meta_Package_Option::get_sql_column_names(
    names.push_back( "C_Is_Mandatory_Modifier" );
    names.push_back( "C_Is_Mandatory_Other_Field" );
    names.push_back( "C_Is_Mandatory_Other_Field_2" );
+   names.push_back( "C_Is_Mandatory_Other_Source_Field" );
    names.push_back( "C_Is_Mandatory_Procedure" );
+   names.push_back( "C_Is_Mandatory_Source_Field" );
    names.push_back( "C_Is_Mandatory_View" );
    names.push_back( "C_Is_Other_Package" );
    names.push_back( "C_List" );
@@ -5075,9 +5607,11 @@ void Meta_Package_Option::get_sql_column_names(
    names.push_back( "C_Other_Package" );
    names.push_back( "C_Other_Package_Required" );
    names.push_back( "C_Other_Package_Type" );
+   names.push_back( "C_Other_Source_Field" );
    names.push_back( "C_Package" );
    names.push_back( "C_Primitive" );
    names.push_back( "C_Procedure" );
+   names.push_back( "C_Source_Field" );
    names.push_back( "C_String" );
    names.push_back( "C_Time" );
    names.push_back( "C_Use_Option" );
@@ -5102,7 +5636,9 @@ void Meta_Package_Option::get_sql_column_values(
    values.push_back( to_string( Has_Modifier( ) ) );
    values.push_back( to_string( Has_Other_Field( ) ) );
    values.push_back( to_string( Has_Other_Field_2( ) ) );
+   values.push_back( to_string( Has_Other_Source_Field( ) ) );
    values.push_back( to_string( Has_Procedure( ) ) );
+   values.push_back( to_string( Has_Source_Field( ) ) );
    values.push_back( to_string( Has_View( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
    values.push_back( to_string( Installed( ) ) );
@@ -5114,7 +5650,9 @@ void Meta_Package_Option::get_sql_column_values(
    values.push_back( to_string( Is_Mandatory_Modifier( ) ) );
    values.push_back( to_string( Is_Mandatory_Other_Field( ) ) );
    values.push_back( to_string( Is_Mandatory_Other_Field_2( ) ) );
+   values.push_back( to_string( Is_Mandatory_Other_Source_Field( ) ) );
    values.push_back( to_string( Is_Mandatory_Procedure( ) ) );
+   values.push_back( to_string( Is_Mandatory_Source_Field( ) ) );
    values.push_back( to_string( Is_Mandatory_View( ) ) );
    values.push_back( to_string( Is_Other_Package( ) ) );
    values.push_back( sql_quote( to_string( List( ) ) ) );
@@ -5128,9 +5666,11 @@ void Meta_Package_Option::get_sql_column_values(
    values.push_back( sql_quote( to_string( Other_Package( ) ) ) );
    values.push_back( to_string( Other_Package_Required( ) ) );
    values.push_back( sql_quote( to_string( Other_Package_Type( ) ) ) );
+   values.push_back( sql_quote( to_string( Other_Source_Field( ) ) ) );
    values.push_back( sql_quote( to_string( Package( ) ) ) );
    values.push_back( to_string( Primitive( ) ) );
    values.push_back( sql_quote( to_string( Procedure( ) ) ) );
+   values.push_back( sql_quote( to_string( Source_Field( ) ) ) );
    values.push_back( sql_quote( to_string( String( ) ) ) );
    values.push_back( sql_quote( to_string( Time( ) ) ) );
    values.push_back( to_string( Use_Option( ) ) );
@@ -5378,6 +5918,22 @@ void Meta_Package_Option::get_always_required_field_names(
       names.insert( "Has_Other_Field_2" );
    // [(finish modifier_field_value)] 600893c
 
+   // [(start modifier_field_value)] 600893d
+   dependents.insert( "Has_Source_Field" ); // (for Hide_Source_Field modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Has_Source_Field ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Has_Source_Field ) ) )
+      names.insert( "Has_Source_Field" );
+   // [(finish modifier_field_value)] 600893d
+
+   // [(start modifier_field_value)] 600893e
+   dependents.insert( "Has_Other_Source_Field" ); // (for Hide_Other_Source_Field modifier)
+
+   if( ( use_transients && is_field_transient( e_field_id_Has_Other_Source_Field ) )
+    || ( !use_transients && !is_field_transient( e_field_id_Has_Other_Source_Field ) ) )
+      names.insert( "Has_Other_Source_Field" );
+   // [(finish modifier_field_value)] 600893e
+
    // [(start modifier_field_value)] 600894
    dependents.insert( "Has_View" ); // (for Hide_View modifier)
 
@@ -5471,7 +6027,9 @@ void Meta_Package_Option::static_get_field_info( field_info_container& all_field
    all_field_info.push_back( field_info( "137130", "Has_Modifier", "bool", false ) );
    all_field_info.push_back( field_info( "137124", "Has_Other_Field", "bool", false ) );
    all_field_info.push_back( field_info( "137126", "Has_Other_Field_2", "bool", false ) );
+   all_field_info.push_back( field_info( "137136", "Has_Other_Source_Field", "bool", false ) );
    all_field_info.push_back( field_info( "137132", "Has_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "137134", "Has_Source_Field", "bool", false ) );
    all_field_info.push_back( field_info( "137122", "Has_View", "bool", false ) );
    all_field_info.push_back( field_info( "137101", "Id", "string", false ) );
    all_field_info.push_back( field_info( "137103", "Installed", "bool", false ) );
@@ -5483,7 +6041,9 @@ void Meta_Package_Option::static_get_field_info( field_info_container& all_field
    all_field_info.push_back( field_info( "137131", "Is_Mandatory_Modifier", "bool", false ) );
    all_field_info.push_back( field_info( "137125", "Is_Mandatory_Other_Field", "bool", false ) );
    all_field_info.push_back( field_info( "137127", "Is_Mandatory_Other_Field_2", "bool", false ) );
+   all_field_info.push_back( field_info( "137137", "Is_Mandatory_Other_Source_Field", "bool", false ) );
    all_field_info.push_back( field_info( "137133", "Is_Mandatory_Procedure", "bool", false ) );
+   all_field_info.push_back( field_info( "137135", "Is_Mandatory_Source_Field", "bool", false ) );
    all_field_info.push_back( field_info( "137123", "Is_Mandatory_View", "bool", false ) );
    all_field_info.push_back( field_info( "137104", "Is_Other_Package", "bool", false ) );
    all_field_info.push_back( field_info( "302831", "List", "Meta_List", false ) );
@@ -5497,9 +6057,11 @@ void Meta_Package_Option::static_get_field_info( field_info_container& all_field
    all_field_info.push_back( field_info( "302830", "Other_Package", "Meta_Package", false ) );
    all_field_info.push_back( field_info( "137105", "Other_Package_Required", "bool", false ) );
    all_field_info.push_back( field_info( "137106", "Other_Package_Type", "string", false ) );
+   all_field_info.push_back( field_info( "302830g", "Other_Source_Field", "Meta_Field", false ) );
    all_field_info.push_back( field_info( "302820", "Package", "Meta_Package", true ) );
    all_field_info.push_back( field_info( "137108", "Primitive", "int", false ) );
    all_field_info.push_back( field_info( "302833", "Procedure", "Meta_Procedure", false ) );
+   all_field_info.push_back( field_info( "302830f", "Source_Field", "Meta_Field", false ) );
    all_field_info.push_back( field_info( "137109", "String", "string", false ) );
    all_field_info.push_back( field_info( "137112", "Time", "string", false ) );
    all_field_info.push_back( field_info( "137102", "Use_Option", "bool", false ) );
@@ -5519,8 +6081,10 @@ void Meta_Package_Option::static_get_foreign_key_info( foreign_key_info_containe
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Other_Field, make_pair( "Meta.137100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Other_Field_2, make_pair( "Meta.137100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Other_Package, make_pair( "Meta.137100", "Meta_Package" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Other_Source_Field, make_pair( "Meta.137100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Package, make_pair( "Meta.137100", "Meta_Package" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Procedure, make_pair( "Meta.137100", "Meta_Procedure" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Field, make_pair( "Meta.137100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_View, make_pair( "Meta.137100", "Meta_View" ) ) );
 }
 
@@ -5584,138 +6148,162 @@ const char* Meta_Package_Option::static_get_field_id( field_id id )
       break;
 
       case 11:
-      p_id = "137132";
+      p_id = "137136";
       break;
 
       case 12:
-      p_id = "137122";
+      p_id = "137132";
       break;
 
       case 13:
-      p_id = "137101";
+      p_id = "137134";
       break;
 
       case 14:
-      p_id = "137103";
+      p_id = "137122";
       break;
 
       case 15:
-      p_id = "137114";
+      p_id = "137101";
       break;
 
       case 16:
-      p_id = "137117";
+      p_id = "137103";
       break;
 
       case 17:
-      p_id = "137118";
+      p_id = "137114";
       break;
 
       case 18:
-      p_id = "137120";
+      p_id = "137117";
       break;
 
       case 19:
-      p_id = "137129";
+      p_id = "137118";
       break;
 
       case 20:
-      p_id = "137131";
+      p_id = "137120";
       break;
 
       case 21:
-      p_id = "137125";
+      p_id = "137129";
       break;
 
       case 22:
-      p_id = "137127";
+      p_id = "137131";
       break;
 
       case 23:
-      p_id = "137133";
+      p_id = "137125";
       break;
 
       case 24:
-      p_id = "137123";
+      p_id = "137127";
       break;
 
       case 25:
-      p_id = "137104";
+      p_id = "137137";
       break;
 
       case 26:
-      p_id = "302831";
+      p_id = "137133";
       break;
 
       case 27:
-      p_id = "302825";
+      p_id = "137135";
       break;
 
       case 28:
-      p_id = "302832";
+      p_id = "137123";
       break;
 
       case 29:
-      p_id = "137115";
+      p_id = "137104";
       break;
 
       case 30:
-      p_id = "137121";
+      p_id = "302831";
       break;
 
       case 31:
-      p_id = "137113";
+      p_id = "302825";
       break;
 
       case 32:
-      p_id = "302830d";
+      p_id = "302832";
       break;
 
       case 33:
-      p_id = "302830e";
+      p_id = "137115";
       break;
 
       case 34:
-      p_id = "302830";
+      p_id = "137121";
       break;
 
       case 35:
-      p_id = "137105";
+      p_id = "137113";
       break;
 
       case 36:
-      p_id = "137106";
+      p_id = "302830d";
       break;
 
       case 37:
-      p_id = "302820";
+      p_id = "302830e";
       break;
 
       case 38:
-      p_id = "137108";
+      p_id = "302830";
       break;
 
       case 39:
-      p_id = "302833";
+      p_id = "137105";
       break;
 
       case 40:
-      p_id = "137109";
+      p_id = "137106";
       break;
 
       case 41:
-      p_id = "137112";
+      p_id = "302830g";
       break;
 
       case 42:
-      p_id = "137102";
+      p_id = "302820";
       break;
 
       case 43:
-      p_id = "137107";
+      p_id = "137108";
       break;
 
       case 44:
+      p_id = "302833";
+      break;
+
+      case 45:
+      p_id = "302830f";
+      break;
+
+      case 46:
+      p_id = "137109";
+      break;
+
+      case 47:
+      p_id = "137112";
+      break;
+
+      case 48:
+      p_id = "137102";
+      break;
+
+      case 49:
+      p_id = "137107";
+      break;
+
+      case 50:
       p_id = "302830c";
       break;
    }
@@ -5773,138 +6361,162 @@ const char* Meta_Package_Option::static_get_field_name( field_id id )
       break;
 
       case 11:
-      p_id = "Has_Procedure";
+      p_id = "Has_Other_Source_Field";
       break;
 
       case 12:
-      p_id = "Has_View";
+      p_id = "Has_Procedure";
       break;
 
       case 13:
-      p_id = "Id";
+      p_id = "Has_Source_Field";
       break;
 
       case 14:
-      p_id = "Installed";
+      p_id = "Has_View";
       break;
 
       case 15:
-      p_id = "Integer";
+      p_id = "Id";
       break;
 
       case 16:
-      p_id = "Is_Class";
+      p_id = "Installed";
       break;
 
       case 17:
-      p_id = "Is_Mandatory_Class";
+      p_id = "Integer";
       break;
 
       case 18:
-      p_id = "Is_Mandatory_Field";
+      p_id = "Is_Class";
       break;
 
       case 19:
-      p_id = "Is_Mandatory_List";
+      p_id = "Is_Mandatory_Class";
       break;
 
       case 20:
-      p_id = "Is_Mandatory_Modifier";
+      p_id = "Is_Mandatory_Field";
       break;
 
       case 21:
-      p_id = "Is_Mandatory_Other_Field";
+      p_id = "Is_Mandatory_List";
       break;
 
       case 22:
-      p_id = "Is_Mandatory_Other_Field_2";
+      p_id = "Is_Mandatory_Modifier";
       break;
 
       case 23:
-      p_id = "Is_Mandatory_Procedure";
+      p_id = "Is_Mandatory_Other_Field";
       break;
 
       case 24:
-      p_id = "Is_Mandatory_View";
+      p_id = "Is_Mandatory_Other_Field_2";
       break;
 
       case 25:
-      p_id = "Is_Other_Package";
+      p_id = "Is_Mandatory_Other_Source_Field";
       break;
 
       case 26:
-      p_id = "List";
+      p_id = "Is_Mandatory_Procedure";
       break;
 
       case 27:
-      p_id = "Model";
+      p_id = "Is_Mandatory_Source_Field";
       break;
 
       case 28:
-      p_id = "Modifier";
+      p_id = "Is_Mandatory_View";
       break;
 
       case 29:
-      p_id = "Name";
+      p_id = "Is_Other_Package";
       break;
 
       case 30:
-      p_id = "Notes";
+      p_id = "List";
       break;
 
       case 31:
-      p_id = "Numeric";
+      p_id = "Model";
       break;
 
       case 32:
-      p_id = "Other_Field";
+      p_id = "Modifier";
       break;
 
       case 33:
-      p_id = "Other_Field_2";
+      p_id = "Name";
       break;
 
       case 34:
-      p_id = "Other_Package";
+      p_id = "Notes";
       break;
 
       case 35:
-      p_id = "Other_Package_Required";
+      p_id = "Numeric";
       break;
 
       case 36:
-      p_id = "Other_Package_Type";
+      p_id = "Other_Field";
       break;
 
       case 37:
-      p_id = "Package";
+      p_id = "Other_Field_2";
       break;
 
       case 38:
-      p_id = "Primitive";
+      p_id = "Other_Package";
       break;
 
       case 39:
-      p_id = "Procedure";
+      p_id = "Other_Package_Required";
       break;
 
       case 40:
-      p_id = "String";
+      p_id = "Other_Package_Type";
       break;
 
       case 41:
-      p_id = "Time";
+      p_id = "Other_Source_Field";
       break;
 
       case 42:
-      p_id = "Use_Option";
+      p_id = "Package";
       break;
 
       case 43:
-      p_id = "Value";
+      p_id = "Primitive";
       break;
 
       case 44:
+      p_id = "Procedure";
+      break;
+
+      case 45:
+      p_id = "Source_Field";
+      break;
+
+      case 46:
+      p_id = "String";
+      break;
+
+      case 47:
+      p_id = "Time";
+      break;
+
+      case 48:
+      p_id = "Use_Option";
+      break;
+
+      case 49:
+      p_id = "Value";
+      break;
+
+      case 50:
       p_id = "View";
       break;
    }
@@ -5941,74 +6553,86 @@ int Meta_Package_Option::static_get_field_num( const string& field )
       rc += 9;
    else if( field == c_field_id_Has_Other_Field_2 || field == c_field_name_Has_Other_Field_2 )
       rc += 10;
-   else if( field == c_field_id_Has_Procedure || field == c_field_name_Has_Procedure )
+   else if( field == c_field_id_Has_Other_Source_Field || field == c_field_name_Has_Other_Source_Field )
       rc += 11;
-   else if( field == c_field_id_Has_View || field == c_field_name_Has_View )
+   else if( field == c_field_id_Has_Procedure || field == c_field_name_Has_Procedure )
       rc += 12;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Has_Source_Field || field == c_field_name_Has_Source_Field )
       rc += 13;
-   else if( field == c_field_id_Installed || field == c_field_name_Installed )
+   else if( field == c_field_id_Has_View || field == c_field_name_Has_View )
       rc += 14;
-   else if( field == c_field_id_Integer || field == c_field_name_Integer )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 15;
-   else if( field == c_field_id_Is_Class || field == c_field_name_Is_Class )
+   else if( field == c_field_id_Installed || field == c_field_name_Installed )
       rc += 16;
-   else if( field == c_field_id_Is_Mandatory_Class || field == c_field_name_Is_Mandatory_Class )
+   else if( field == c_field_id_Integer || field == c_field_name_Integer )
       rc += 17;
-   else if( field == c_field_id_Is_Mandatory_Field || field == c_field_name_Is_Mandatory_Field )
+   else if( field == c_field_id_Is_Class || field == c_field_name_Is_Class )
       rc += 18;
-   else if( field == c_field_id_Is_Mandatory_List || field == c_field_name_Is_Mandatory_List )
+   else if( field == c_field_id_Is_Mandatory_Class || field == c_field_name_Is_Mandatory_Class )
       rc += 19;
-   else if( field == c_field_id_Is_Mandatory_Modifier || field == c_field_name_Is_Mandatory_Modifier )
+   else if( field == c_field_id_Is_Mandatory_Field || field == c_field_name_Is_Mandatory_Field )
       rc += 20;
-   else if( field == c_field_id_Is_Mandatory_Other_Field || field == c_field_name_Is_Mandatory_Other_Field )
+   else if( field == c_field_id_Is_Mandatory_List || field == c_field_name_Is_Mandatory_List )
       rc += 21;
-   else if( field == c_field_id_Is_Mandatory_Other_Field_2 || field == c_field_name_Is_Mandatory_Other_Field_2 )
+   else if( field == c_field_id_Is_Mandatory_Modifier || field == c_field_name_Is_Mandatory_Modifier )
       rc += 22;
-   else if( field == c_field_id_Is_Mandatory_Procedure || field == c_field_name_Is_Mandatory_Procedure )
+   else if( field == c_field_id_Is_Mandatory_Other_Field || field == c_field_name_Is_Mandatory_Other_Field )
       rc += 23;
-   else if( field == c_field_id_Is_Mandatory_View || field == c_field_name_Is_Mandatory_View )
+   else if( field == c_field_id_Is_Mandatory_Other_Field_2 || field == c_field_name_Is_Mandatory_Other_Field_2 )
       rc += 24;
-   else if( field == c_field_id_Is_Other_Package || field == c_field_name_Is_Other_Package )
+   else if( field == c_field_id_Is_Mandatory_Other_Source_Field || field == c_field_name_Is_Mandatory_Other_Source_Field )
       rc += 25;
-   else if( field == c_field_id_List || field == c_field_name_List )
+   else if( field == c_field_id_Is_Mandatory_Procedure || field == c_field_name_Is_Mandatory_Procedure )
       rc += 26;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Is_Mandatory_Source_Field || field == c_field_name_Is_Mandatory_Source_Field )
       rc += 27;
-   else if( field == c_field_id_Modifier || field == c_field_name_Modifier )
+   else if( field == c_field_id_Is_Mandatory_View || field == c_field_name_Is_Mandatory_View )
       rc += 28;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Is_Other_Package || field == c_field_name_Is_Other_Package )
       rc += 29;
-   else if( field == c_field_id_Notes || field == c_field_name_Notes )
+   else if( field == c_field_id_List || field == c_field_name_List )
       rc += 30;
-   else if( field == c_field_id_Numeric || field == c_field_name_Numeric )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 31;
-   else if( field == c_field_id_Other_Field || field == c_field_name_Other_Field )
+   else if( field == c_field_id_Modifier || field == c_field_name_Modifier )
       rc += 32;
-   else if( field == c_field_id_Other_Field_2 || field == c_field_name_Other_Field_2 )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 33;
-   else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
+   else if( field == c_field_id_Notes || field == c_field_name_Notes )
       rc += 34;
-   else if( field == c_field_id_Other_Package_Required || field == c_field_name_Other_Package_Required )
+   else if( field == c_field_id_Numeric || field == c_field_name_Numeric )
       rc += 35;
-   else if( field == c_field_id_Other_Package_Type || field == c_field_name_Other_Package_Type )
+   else if( field == c_field_id_Other_Field || field == c_field_name_Other_Field )
       rc += 36;
-   else if( field == c_field_id_Package || field == c_field_name_Package )
+   else if( field == c_field_id_Other_Field_2 || field == c_field_name_Other_Field_2 )
       rc += 37;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Other_Package || field == c_field_name_Other_Package )
       rc += 38;
-   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
+   else if( field == c_field_id_Other_Package_Required || field == c_field_name_Other_Package_Required )
       rc += 39;
-   else if( field == c_field_id_String || field == c_field_name_String )
+   else if( field == c_field_id_Other_Package_Type || field == c_field_name_Other_Package_Type )
       rc += 40;
-   else if( field == c_field_id_Time || field == c_field_name_Time )
+   else if( field == c_field_id_Other_Source_Field || field == c_field_name_Other_Source_Field )
       rc += 41;
-   else if( field == c_field_id_Use_Option || field == c_field_name_Use_Option )
+   else if( field == c_field_id_Package || field == c_field_name_Package )
       rc += 42;
-   else if( field == c_field_id_Value || field == c_field_name_Value )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 43;
-   else if( field == c_field_id_View || field == c_field_name_View )
+   else if( field == c_field_id_Procedure || field == c_field_name_Procedure )
       rc += 44;
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+      rc += 45;
+   else if( field == c_field_id_String || field == c_field_name_String )
+      rc += 46;
+   else if( field == c_field_id_Time || field == c_field_name_Time )
+      rc += 47;
+   else if( field == c_field_id_Use_Option || field == c_field_name_Use_Option )
+      rc += 48;
+   else if( field == c_field_id_Value || field == c_field_name_Value )
+      rc += 49;
+   else if( field == c_field_id_View || field == c_field_name_View )
+      rc += 50;
 
    return rc - 1;
 }
@@ -6047,7 +6671,9 @@ string Meta_Package_Option::static_get_sql_columns( )
     "C_Has_Modifier INTEGER NOT NULL,"
     "C_Has_Other_Field INTEGER NOT NULL,"
     "C_Has_Other_Field_2 INTEGER NOT NULL,"
+    "C_Has_Other_Source_Field INTEGER NOT NULL,"
     "C_Has_Procedure INTEGER NOT NULL,"
+    "C_Has_Source_Field INTEGER NOT NULL,"
     "C_Has_View INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
     "C_Installed INTEGER NOT NULL,"
@@ -6059,7 +6685,9 @@ string Meta_Package_Option::static_get_sql_columns( )
     "C_Is_Mandatory_Modifier INTEGER NOT NULL,"
     "C_Is_Mandatory_Other_Field INTEGER NOT NULL,"
     "C_Is_Mandatory_Other_Field_2 INTEGER NOT NULL,"
+    "C_Is_Mandatory_Other_Source_Field INTEGER NOT NULL,"
     "C_Is_Mandatory_Procedure INTEGER NOT NULL,"
+    "C_Is_Mandatory_Source_Field INTEGER NOT NULL,"
     "C_Is_Mandatory_View INTEGER NOT NULL,"
     "C_Is_Other_Package INTEGER NOT NULL,"
     "C_List VARCHAR(75) NOT NULL,"
@@ -6073,9 +6701,11 @@ string Meta_Package_Option::static_get_sql_columns( )
     "C_Other_Package VARCHAR(75) NOT NULL,"
     "C_Other_Package_Required INTEGER NOT NULL,"
     "C_Other_Package_Type VARCHAR(200) NOT NULL,"
+    "C_Other_Source_Field VARCHAR(75) NOT NULL,"
     "C_Package VARCHAR(75) NOT NULL,"
     "C_Primitive INTEGER NOT NULL,"
     "C_Procedure VARCHAR(75) NOT NULL,"
+    "C_Source_Field VARCHAR(75) NOT NULL,"
     "C_String VARCHAR(200) NOT NULL,"
     "C_Time VARCHAR(200) NOT NULL,"
     "C_Use_Option INTEGER NOT NULL,"

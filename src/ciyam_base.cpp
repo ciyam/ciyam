@@ -287,6 +287,7 @@ struct session
    size_t slot;
 
    string dtm;
+   string grp;
    string uid;
    string sec;
 
@@ -6174,6 +6175,22 @@ bool has_sec_level( const string& level )
       return false;
 }
 
+string get_grp( )
+{
+   string grp;
+
+   if( gtp_session )
+      grp = gtp_session->grp;
+
+   return grp;
+}
+
+void set_grp( const string& grp )
+{
+   if( gtp_session )
+      gtp_session->grp = grp;
+}
+
 string get_dtm( )
 {
    return gtp_session->dtm;
@@ -6926,10 +6943,14 @@ void inline add_next_value( bool as_csv, const string& next_value, string& field
 string get_field_values( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  const string& tz_name, bool is_default, bool as_csv, vector< string >* p_raw_values,
- const map< int, string >* p_inserts, const map< string, string >* p_package_map )
+ const map< int, string >* p_inserts, const map< string, string >* p_replace_map,
+ const vector< string >* p_omit_matching )
 {
    string field_values;
    string key_value( instance_key_info( handle, parent_context, true ) );
+
+   if( p_omit_matching && p_omit_matching->size( ) != field_list.size( ) )
+      throw runtime_error( "unexpected 'omit matching' vector size mismatch" );
 
    for( size_t i = 0; i < field_list.size( ); i++ )
    {
@@ -6945,9 +6966,6 @@ string get_field_values( size_t handle,
       else
          field = next_field;
 
-      if( i > 0 )
-         field_values += ',';
-
       string context( parent_context );
       if( !field_context.empty( ) )
       {
@@ -6960,17 +6978,18 @@ string get_field_values( size_t handle,
 
       if( p_inserts && p_inserts->count( i ) )
       {
+         if( !field_values.empty( ) || ( i > 0 && !p_omit_matching ) )
+            field_values += ',';
+
          if( p_inserts->find( i )->second == c_key_field )
          {
-            if( !p_package_map || p_package_map->find( key_value ) == p_package_map->end( ) )
+            if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
                add_next_value( as_csv, key_value, field_values );
             else
-               add_next_value( as_csv, p_package_map->find( key_value )->second, field_values );
+               add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
          }
          else
             add_next_value( as_csv, p_inserts->find( i )->second, field_values );
-
-         field_values += ',';
       }
 
       if( field == c_key_field )
@@ -6978,9 +6997,9 @@ string get_field_values( size_t handle,
       else if( field != c_ignore_field )
          next_value = execute_object_command( handle, context, "get " + field );
 
-      if( p_package_map && !next_value.empty( ) )
+      if( p_replace_map && !next_value.empty( ) )
       {
-         for( map< string, string >::const_iterator ci = p_package_map->begin( ); ci != p_package_map->end( ); ++ci )
+         for( map< string, string >::const_iterator ci = p_replace_map->begin( ); ci != p_replace_map->end( ); ++ci )
          {
             while( true )
             {
@@ -7001,38 +7020,48 @@ string get_field_values( size_t handle,
       if( p_raw_values )
          p_raw_values->push_back( next_value );
 
-      if( field != c_key_field && !next_value.empty( ) )
+      if( !p_omit_matching || ( *p_omit_matching )[ i ] != next_value )
       {
-         string type_name = get_field_type_name( handle, context, field );
-         if( type_name == "date_time" || type_name == "tdatetime" )
-         {
-            date_time dt( next_value );
+         if( !field_values.empty( ) || ( i > 0 && !p_omit_matching ) )
+            field_values += ',';
 
-            if( tz_name.empty( ) )
-               next_value = 'U' + dt.as_string( );
-            else
+         if( field != c_key_field && !next_value.empty( ) )
+         {
+            string type_name = get_field_type_name( handle, context, field );
+            if( type_name == "date_time" || type_name == "tdatetime" )
             {
-               // NOTE: For mandatory date_time's the "default" date_time (for default or
-               // "new" records) is not adjusted so it can be used in order to identify a
-               // "default" value (which may in a UI be displayed as blank instead).
-               if( !is_default || dt != date_time( ) )
-                  next_value = utc_to_local( dt, tz_name ).as_string( );
+               date_time dt( next_value );
+
+               if( tz_name.empty( ) )
+                  next_value = 'U' + dt.as_string( );
+               else
+               {
+                  // NOTE: For mandatory date_time's the "default" date_time (for default or
+                  // "new" records) is not adjusted so it can be used in order to identify a
+                  // "default" value (which may in a UI be displayed as blank instead).
+                  if( !is_default || dt != date_time( ) )
+                     next_value = utc_to_local( dt, tz_name ).as_string( );
+               }
             }
          }
-      }
 
-      add_next_value( as_csv, next_value, field_values );
+         if( p_omit_matching )
+            field_values += field_list[ i ] + '=';
+
+         add_next_value( as_csv, next_value, field_values );
+      }
    }
 
    if( p_inserts && p_inserts->count( field_list.size( ) ) )
    {
       field_values += ',';
+
       if( p_inserts->find( field_list.size( ) )->second == c_key_field )
       {
-         if( !p_package_map || p_package_map->find( key_value ) == p_package_map->end( ) )
+         if( !p_replace_map || p_replace_map->find( key_value ) == p_replace_map->end( ) )
             add_next_value( as_csv, key_value, field_values );
          else
-            add_next_value( as_csv, p_package_map->find( key_value )->second, field_values );
+            add_next_value( as_csv, p_replace_map->find( key_value )->second, field_values );
       }
       else
          add_next_value( as_csv, p_inserts->find( field_list.size( ) )->second, field_values );

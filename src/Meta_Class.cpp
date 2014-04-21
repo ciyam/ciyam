@@ -3541,14 +3541,16 @@ void Meta_Class::impl::to_store( bool is_create, bool is_internal )
    // [(start default_to_global)] 600028a
    if( is_create
     && get_obj( ).get_key( ).empty( )
-    && get_obj( ).get_clone_key( ).empty( ) )
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Create_View( ) == g_default_Create_View )
       get_obj( ).Create_View( 1 );
    // [(finish default_to_global)] 600028a
 
    // [(start default_to_global)] 600028b
    if( is_create
     && get_obj( ).get_key( ).empty( )
-    && get_obj( ).get_clone_key( ).empty( ) )
+    && get_obj( ).get_clone_key( ).empty( )
+    && get_obj( ).Create_List( ) == g_default_Create_List )
       get_obj( ).Create_List( 1 );
    // [(finish default_to_global)] 600028b
 

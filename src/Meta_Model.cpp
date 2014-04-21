@@ -295,7 +295,7 @@ external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
 string g_default_Actions = string( );
-int g_default_Add_Packages = int( 1 );
+int g_default_Add_Packages = int( 2 );
 bool g_default_Allow_Anonymous_Access = bool( 1 );
 string g_default_Commands_File = string( );
 bool g_default_Created = bool( 0 );
@@ -4632,6 +4632,12 @@ void Meta_Model::impl::impl_Generate( )
 
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
+
+                     set< string > pextra_items;
+                     split_string( pextras, pextra_items, '+' );
+
+                     if( pextra_items.count( "@sort" ) && p_field->Extra( ) == 13 ) // i.e. "manual_link"
+                        pextras = search_replace( pextras, "@sort", "@sortlinks" );
 
                      if( is_restricted && !get_obj( ).child_List( ).child_List_Field( ).Restriction_Value( ).empty( ) )
                         pextras += "#" + get_obj( ).child_List( ).child_List_Field( ).Restriction_Value( );

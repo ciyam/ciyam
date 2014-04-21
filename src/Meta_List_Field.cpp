@@ -4348,7 +4348,8 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
     && is_null( get_obj( ).Source_Field( ) )
-    && get_obj( ).Use_Source_Parent( ) == 0 )
+    && get_obj( ).Use_Source_Parent( ) == 0
+    && get_obj( ).Link_Restriction( ) == g_default_Link_Restriction )
       get_obj( ).Link_Restriction( 0 );
    // [(finish default_to_global)] 600492
 
@@ -4357,7 +4358,8 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
     && get_obj( ).get_key( ).empty( )
     && get_obj( ).get_clone_key( ).empty( )
     && is_null( get_obj( ).Source_Parent( ) )
-    && get_obj( ).Use_Source_Parent( ) == 1 )
+    && get_obj( ).Use_Source_Parent( ) == 1
+    && get_obj( ).Link_Restriction( ) == g_default_Link_Restriction )
       get_obj( ).Link_Restriction( 2 );
    // [(finish default_to_global)] 600493
 

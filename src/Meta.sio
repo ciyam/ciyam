@@ -8864,7 +8864,7 @@
       <mandatory>true
       <transient>true
       <enum_id>575
-      <default_value>1
+      <default_value>2
       <indexes/>
       </indexes>
       <modifiers/>
@@ -10528,6 +10528,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600893d
+      <item>class
+     </specification>
+     <specification/>
+      <id>600893e
+      <item>class
+     </specification>
+     <specification/>
       <id>600894
       <item>class
      </specification>
@@ -10754,6 +10762,23 @@
       </specifications>
      </field>
      <field/>
+      <id>137136
+      <name>Has_Other_Source_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600893e
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>137132
       <name>Has_Procedure
       <type>bool
@@ -10766,6 +10791,23 @@
       <specifications/>
        <specification/>
         <id>600897
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>137134
+      <name>Has_Source_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600893d
         <item>field
        </specification>
       </specifications>
@@ -10965,8 +11007,34 @@
       </specifications>
      </field>
      <field/>
+      <id>137137
+      <name>Is_Mandatory_Other_Source_Field
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
       <id>137133
       <name>Is_Mandatory_Procedure
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+      </specifications>
+     </field>
+     <field/>
+      <id>137135
+      <name>Is_Mandatory_Source_Field
       <type>bool
       <mandatory>true
       <default_value>0
@@ -11196,6 +11264,28 @@
       </specifications>
      </field>
      <field/>
+      <id>302830g
+      <name>Other_Source_Field
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>202830g
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500991e
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>137108
       <name>Primitive
       <type>int
@@ -11233,6 +11323,28 @@
        </specification>
        <specification/>
         <id>600890
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>302830f
+      <name>Source_Field
+      <type>@class
+      <mandatory>false
+      <class_id>107100
+      <relationship_id>202830f
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500991d
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601560
         <item>field
        </specification>
       </specifications>
@@ -11609,8 +11721,16 @@
       <name>Hide_Other_Field_2
      </modifier>
      <modifier/>
+      <id>500991e
+      <name>Hide_Other_Source_Field
+     </modifier>
+     <modifier/>
       <id>500995
       <name>Hide_Procedure
+     </modifier>
+     <modifier/>
+      <id>500991d
+      <name>Hide_Source_Field
      </modifier>
      <modifier/>
       <id>500992
@@ -13515,7 +13635,7 @@
       <item>class
      </specification>
      <specification/>
-      <id>600102
+      <id>600102a
       <item>class
      </specification>
      <specification/>
@@ -14087,7 +14207,7 @@
       <item>cclass
      </specification>
      <specification/>
-      <id>610102
+      <id>610102b
       <item>class
      </specification>
      <specification/>
@@ -17305,7 +17425,7 @@
         <item>field
        </specification>
        <specification/>
-        <id>600102
+        <id>600102a
         <item>field
        </specification>
        <specification/>
@@ -17725,7 +17845,7 @@
         <item>field
        </specification>
        <specification/>
-        <id>610102
+        <id>610102b
         <item>field
        </specification>
        <specification/>
@@ -18587,7 +18707,7 @@
       <item>pclass
      </specification>
      <specification/>
-      <id>600102
+      <id>600102a
       <item>pclass
      </specification>
      <specification/>
@@ -19043,7 +19163,7 @@
       <item>new_class
      </specification>
      <specification/>
-      <id>610102
+      <id>610102b
       <item>pclass
      </specification>
      <specification/>
@@ -19393,7 +19513,7 @@
       </modifiers>
       <specifications/>
        <specification/>
-        <id>600102
+        <id>600102a
         <item>pfield
        </specification>
        <specification/>
@@ -19418,7 +19538,7 @@
         <item>field
        </specification>
        <specification/>
-        <id>610102
+        <id>610102b
         <item>pfield
        </specification>
       </specifications>
@@ -26207,6 +26327,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>202830g
+    <name>Other_Source_Field_{Package_Option}
+    <parent_id>107100
+    <child_id>137100
+    <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201442
     <name>Other_{Modifier}_2_{Specification}
     <parent_id>109100
@@ -26473,6 +26602,15 @@
     <parent_id>107100
     <child_id>124100
     <cascade_op>destroy
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>202830f
+    <name>Source_Field_{Package_Option}
+    <parent_id>107100
+    <child_id>137100
+    <cascade_op>unlink
     <specifications/>
     </specifications>
    </relationship>
@@ -27510,7 +27648,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>106104
-     <append_value>"F100"
+     <append_value>F100
      <for_store>true
     </data>
    </specification>
@@ -27531,7 +27669,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>106104
-     <append_value>"P100"
+     <append_value>P100
      <for_store>true
     </data>
    </specification>
@@ -29786,7 +29924,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>105104
-     <append_value>"C100"
+     <append_value>C100
      <for_store>true
     </data>
    </specification>
@@ -29807,7 +29945,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>105104
-     <append_value>"L100"
+     <append_value>L100
      <for_store>true
     </data>
    </specification>
@@ -29828,7 +29966,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>105104
-     <append_value>"S1000"
+     <append_value>S1000
      <for_store>true
     </data>
    </specification>
@@ -29849,7 +29987,7 @@
      <pclass_id>
      <pfield_id>
      <sfield_id>105104
-     <append_value>"V100"
+     <append_value>V100
      <for_store>true
     </data>
    </specification>
@@ -30258,6 +30396,17 @@
     </data>
    </specification>
    <specification/>
+    <id>600893e
+    <name>{Package_Option}_Hide_Other_Source_Field
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500991e
+     <field_id>137136
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600897
     <name>{Package_Option}_Hide_Procedure
     <type>modifier_field_value
@@ -30265,6 +30414,17 @@
      <class_id>137100
      <modifier_id>500995
      <field_id>137132
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
+    <id>600893d
+    <name>{Package_Option}_Hide_Source_Field
+    <type>modifier_field_value
+    <data/>
+     <class_id>137100
+     <modifier_id>500991d
+     <field_id>137134
      <field_value>false
     </data>
    </specification>
@@ -30465,6 +30625,8 @@
      <field_info>302830b:107101!@fkey2:300700+107101
      <field_info>302830d:107101!@fkey2:300700+107101
      <field_info>302830e:107101!@fkey2:300700+107101
+     <field_info>302830f:107101!@fkey2:300700+107101
+     <field_info>302830g:107101!@fkey2:300700+107101
      <field_info>302832:109101!@fkey2:300900+109101
      <field_info>302833:111101!@fkey2:301100+111101
      <field_info>302830:136101!@fkey1:302800+@key1:302810
@@ -31939,7 +32101,7 @@
     </data>
    </specification>
    <specification/>
-    <id>600102
+    <id>600102a
     <name>{Specification}_Hide_Other_Field
     <type>modifier_field_value
     <data/>
@@ -31952,7 +32114,7 @@
     </data>
    </specification>
    <specification/>
-    <id>610102
+    <id>610102b
     <name>{Specification}_Hide_Other_Field_2
     <type>modifier_field_value
     <data/>
