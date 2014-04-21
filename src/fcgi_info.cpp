@@ -1146,17 +1146,22 @@ bool read_module_info( const string& name, module_info& info, storage_info& sinf
 
 void sort_row_data_manually( data_container& row_data, bool remove_manual_links )
 {
-   map< string, string > sorted_items;
+   map< string, pair< string, string > > sorted_items;
    for( size_t i = 0; i < row_data.size( ); i++ )
    {
       if( !remove_manual_links )
-         sorted_items.insert( make_pair( row_data[ i ].second, row_data[ i ].first ) );
+         sorted_items.insert( make_pair( row_data[ i ].second,
+          make_pair( row_data[ i ].first, row_data[ i ].second ) ) );
       else
-         sorted_items.insert( make_pair( remove_links( row_data[ i ].second ), row_data[ i ].first ) );
+         sorted_items.insert(
+          make_pair( remove_links( row_data[ i ].second ),
+          make_pair( row_data[ i ].first, row_data[ i ].second ) ) );
    }
 
    row_data.clear( );
-   for( map< string, string >::iterator i = sorted_items.begin( ), end = sorted_items.end( ); i != end; ++i )
-      row_data.push_back( make_pair( i->second, i->first ) );
+
+   for( map< string, pair< string, string > >::iterator i
+    = sorted_items.begin( ), end = sorted_items.end( ); i != end; ++i )
+      row_data.push_back( make_pair( i->second.first, i->second.second ) );
 }
 

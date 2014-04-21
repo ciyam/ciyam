@@ -1875,14 +1875,16 @@ bool output_view_form( ostream& os, const string& act,
                if( key == data && source.self_relationships.count( source_field_id ) )
                   continue;
 
-               string last_key;
+               string original_display( display );
                if( source.manual_link_fields.count( source_value_id ) )
                {
                   stringstream ss;
 
-                  replace_links_and_output( cell_data, source.vici->second->id,
+                  replace_links_and_output( display, source.vici->second->id,
                    source.module, source.module_ref, ss, false, false, session_id,
-                   sess_info, user_select_key, using_session_cookie, use_url_checksum, &last_key );
+                   sess_info, user_select_key, using_session_cookie, use_url_checksum );
+
+                  display = ss.str( );
                }
 
                // NOTE: The "default" selection is based upon name rather than key (unless values have been submitted).
@@ -1892,8 +1894,7 @@ bool output_view_form( ostream& os, const string& act,
                   if( key == cell_data )
                      os << " selected";
                }
-               else if( ( !last_key.empty( ) && key == last_key )
-                || ( has_value && key == cell_data ) || ( !has_value && unescaped( display ) == cell_data ) )
+               else if( ( has_value && key == cell_data ) || ( !has_value && original_display == cell_data ) )
                   os << " selected";
 
                os << " value=\"" << key << "\">";

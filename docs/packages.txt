@@ -57,7 +57,7 @@ Package Options:
 @use_home_list - Use this option to display the last published blog entry as a "home" list.
 
 group_for_home - If using the "group" package then this will determine the group to use for the "home" list.
-group_package - Optional "group" package to divide blogs between workgroups.
+group_package - Optional "group" package to divide blogs between groups.
 
 use_comments - Use this option to allow other users to leave comments.
 use_comments_publishing - Use this option to only display comments the author chooses to publish.
@@ -74,21 +74,57 @@ package before it was installed.
 Event
 -------------------------------------------------------------------------------------------------------------
 
-Other Package Dependencies: Standard User
+Other Package Dependencies: Standard
 
 This package provides an Event implementation in which each record has a date and time (as well as optionally
 a duration) and a status. Such records can be treated like a list of public events, but also could be handled
 more like private appointments, reminders or tasks and as such can be generated from a Schedule.
 
+Package Options:
+
 @use_demo_data - Use this option to create demo events.
 
-group_package - Optional "group" package to divide events between workgroups.
-message_package - Optional "message" package to provide support for event notifications and automatic closing.
+group_package - Optional "group" package to restrict users and optionally divide events between groups.
+message_package - Optional "message" package to provide support for notifications (needs "user" to work).
 
 use_duration - Use this option to give an event a duration (and to allow overlap detection).
-use_tz_name - Use this option to be able to tie a timezone name to an event.
+use_group - This option needs to be set true in order to to tie events to specific groups.
 
+use_tz_name - Use this option to be able to tie a timezone name to an event.
 use_user - This option needs to be set true in order to to tie events to specific users.
+
+user_package - Optional "user" package to allow messages or tying events to users.
+
+-------------------------------------------------------------------------------------------------------------
+Folder (generic)
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides a Folder implementation for a given "item class". This is perhaps easiest understood in
+the way that an OS will typically have "files" within "folders". The folders form an acyclical graph from the
+parent folder relationship.
+
+Package Options:
+
+@use_demo_data - Use this option to create demo folders.
+
+folder_item_class.Class - Use this option to identify the "item" to which folders are being added.
+folder_item_class.View - Use this option to identify the item "view".
+folder_item_class.List - Use this option to optionally identify a "search list" for the item.
+folder_item_class.Field - Identifies the field to display in the child item list for the folder "view".
+folder_item_class.Other_Field - An optional second column for displaying in the child item list.
+folder_item_class.Other_Field_2 - An optional "active" check restriction for the child item list.
+folder_item_class.Source_Field - Identifies the "group" field for the item (if is applicable).
+folder_item_class.Other_Source_Field* - Identifies the "owner" field for the item (if is applicable).
+
+is_mandatory - Use this option to determine with each item "must be in a folder" (default is "yes").
+no_top_level_maint - Use this option to prevent normal maintenance of the "top level folder(s)".
+
+user_package - If is provided and folder_item_class.Other_Source_Field is not then will result in permissions
+being added for folder assignment and maintenance to the User.
+
+* It should be noted that if this field is provided then the "user_package" must also be provided.
 
 -------------------------------------------------------------------------------------------------------------
 Forum
@@ -144,16 +180,16 @@ Group (default)
 
 Other Package Dependencies: Standard User
 
-This package provides a Workgroup class and implements the Relationship between a User and its Workgroup. The
-Relationship is optional although typically only the "admin" or "guest" user would not belong to a Workgroup.
+This package provides a "Group" class and implements the Relationship between a User and its Group. Although
+the Relationship is optional typically only the "admin" user would not belong to a Group.
 
-The Workgroup (or renamed as Department if preferred) is used as a simple means of slicing DB records between
+The Group (or renamed as Department if preferred) is used as a simple means of slicing the DB records between
 different users. Various other Packages will accept the Group Package as an option where it can make sense to
-be dividing records between different Workgroups.
+be dividing records between different Groups.
 
 Package Options:
 
-@use_demo_data - Use this option to create demo Workgroups (and demo Users belonging to them).
+@use_demo_data - Use this option to create demo Groups (and demo Users belonging to them).
 
 -------------------------------------------------------------------------------------------------------------
 Itinerary
@@ -169,6 +205,21 @@ Package Options:
 @use_demo_data - Use this option to create a demo Itinerary.
 
 use_permission - Use this option to require a permission to access Itineraries.
+
+-------------------------------------------------------------------------------------------------------------
+Ledger
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides a basic General Ledger system. Each ledger is intended for a single financial year with
+every account being classified as either Assets, Equity, Expenses, Income or Liabilities (these can be nested
+to a maximum of three or four levels). Balance Sheet and Income Statement reports are easily generated in PDF
+format.
+
+Package Options:
+
+@use_demo_data - Use this option to create a demo Ledger.
 
 -------------------------------------------------------------------------------------------------------------
 Photo
@@ -226,7 +277,7 @@ Package Options:
 cash_demonimation - Use this option to specify the currency code for amounts in cash.
 funds_demonimation - Use this option to specify the currency code for non-cash funds.
 
-group_package - Optional "group" package to divide projects between workgroups.
+group_package - Optional "group" package to divide projects between groups.
 message_package - Optional "message" package used for providing task notifications.
 
 use_external_funds - Use this option to use an external API for checking fund balances.
@@ -256,11 +307,42 @@ Package Options:
 @use_demo_data - Use this option to create a demo schedule.
 
 event_package - This needs to be linked to an installed "event" package.
-group_package - Optional "group" package to divide schedules between workgroups.
+group_package - Optional "group" package to divide schedules between groups.
 
 timezone_package - Optional "timezone" package to be able to tie a timezone to a schedule.
 
 use_user_package - Use this option to be able to tie schedules to specific users.
+
+-------------------------------------------------------------------------------------------------------------
+Tag (generic)
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
+
+This package provides a Tag implementation for a given "item class". Such tags can either be "system wide" or
+"group wide" to be more useful for a "librarian" type situation or can instead be tied to individual users as
+a means for creating "personal tags".
+
+Package Options:
+
+group_package - Optional "group" package to tie tags to groups.
+
+tag_item_class.Class - Use this option to identify the "item" to which tags will be added.
+tag_item_class.View - This is the View for the item.
+tag_item_class.List - The search list to which tag searching will be added.
+tag_item_class.Field - If creating a child list of items below a tag then this is the first column.
+tag_item_class.Other_Field - An optional second column for this child list.
+tag_item_class.Source_Field - An optional "actions" field for the item (if not provided then will be added).
+
+use_item_list_for_tags - Use this option to be able to see an item list below each tag.
+
+use_user_specific_tags - Use this option to have "user specific" tags rather than ones that are either system
+wide or "group" specific.*
+
+user_package - Optional "user" package. If not using "user specific" tags then instead permisssions for usage
+and maintenance of tags will be added to the user class.
+
+* If the "user" package is not provided then this option is ignored.
 
 -------------------------------------------------------------------------------------------------------------
 Timezone
@@ -271,6 +353,12 @@ Other Package Dependencies: Standard
 This package provides the ability to manage records for different timezones that can include daylight savings
 adjustments and historical changes for such. The "timezones.sio" file used by the application server can also
 be generated from the timezone records.
+
+-------------------------------------------------------------------------------------------------------------
+Transaction
+-------------------------------------------------------------------------------------------------------------
+
+Other Package Dependencies: Standard
 
 -------------------------------------------------------------------------------------------------------------
 User (default)

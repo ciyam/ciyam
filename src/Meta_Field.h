@@ -213,6 +213,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    Meta_Specification& child_Specification_Other_Source_Child( );
    const Meta_Specification& child_Specification_Other_Source_Child( ) const;
 
+   Meta_Package_Option& child_Package_Option_Other_Source( );
+   const Meta_Package_Option& child_Package_Option_Other_Source( ) const;
+
    Meta_Relationship& child_Relationship_Parent_Field_For_List( );
    const Meta_Relationship& child_Relationship_Parent_Field_For_List( ) const;
 
@@ -242,6 +245,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    Meta_List_Field& child_List_Field_Source( );
    const Meta_List_Field& child_List_Field_Source( ) const;
+
+   Meta_Package_Option& child_Package_Option_Source( );
+   const Meta_Package_Option& child_Package_Option_Source( ) const;
 
    Meta_Specification& child_Specification_Source( );
    const Meta_Specification& child_Specification_Source( ) const;

@@ -4947,10 +4947,10 @@ uint64_t Meta_Specification::impl::get_state( ) const
       state |= c_modifier_Hide_Field;
    // [(finish modifier_field_value)] 600101b
 
-   // [(start modifier_field_value)] 600102
+   // [(start modifier_field_value)] 600102a
    if( get_obj( ).Specification_Type( ).Allow_Other_Field( ) == false )
       state |= c_modifier_Hide_Other_Field;
-   // [(finish modifier_field_value)] 600102
+   // [(finish modifier_field_value)] 600102a
 
    // [(start modifier_field_value)] 600103
    if( get_obj( ).Specification_Type( ).Allow_Procedure( ) == false )
@@ -5142,10 +5142,10 @@ uint64_t Meta_Specification::impl::get_state( ) const
       state |= c_modifier_Protect_Child_Relationship;
    // [(finish modifier_field_value)] 600128
 
-   // [(start modifier_field_value)] 610102
+   // [(start modifier_field_value)] 610102b
    if( get_obj( ).Specification_Type( ).Allow_Other_Field_2( ) == false )
       state |= c_modifier_Hide_Other_Field_2;
-   // [(finish modifier_field_value)] 610102
+   // [(finish modifier_field_value)] 610102b
 
    // [(start modifier_field_value)] 610114
    if( get_obj( ).Specification_Type( ).Allow_Other_Source_Child( ) == false )
@@ -13207,13 +13207,13 @@ void Meta_Specification::get_always_required_field_names(
       names.insert( "Specification_Type" );
    // [(finish modifier_field_value)] 600101b
 
-   // [(start modifier_field_value)] 600102
+   // [(start modifier_field_value)] 600102a
    dependents.insert( "Specification_Type" ); // (for Hide_Other_Field modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
       names.insert( "Specification_Type" );
-   // [(finish modifier_field_value)] 600102
+   // [(finish modifier_field_value)] 600102a
 
    // [(start modifier_field_value)] 600103
    dependents.insert( "Specification_Type" ); // (for Hide_Procedure modifier)
@@ -13563,13 +13563,13 @@ void Meta_Specification::get_always_required_field_names(
       names.insert( "Order" );
    // [(finish move_up_and_down)] 600169
 
-   // [(start modifier_field_value)] 610102
+   // [(start modifier_field_value)] 610102b
    dependents.insert( "Specification_Type" ); // (for Hide_Other_Field_2 modifier)
 
    if( ( use_transients && is_field_transient( e_field_id_Specification_Type ) )
     || ( !use_transients && !is_field_transient( e_field_id_Specification_Type ) ) )
       names.insert( "Specification_Type" );
-   // [(finish modifier_field_value)] 610102
+   // [(finish modifier_field_value)] 610102b
 
    // [(start modifier_field_value)] 610114
    dependents.insert( "Specification_Type" ); // (for Hide_Other_Source_Child modifier)

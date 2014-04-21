@@ -55,40 +55,46 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
       e_field_id_Has_Modifier = 8,
       e_field_id_Has_Other_Field = 9,
       e_field_id_Has_Other_Field_2 = 10,
-      e_field_id_Has_Procedure = 11,
-      e_field_id_Has_View = 12,
-      e_field_id_Id = 13,
-      e_field_id_Installed = 14,
-      e_field_id_Integer = 15,
-      e_field_id_Is_Class = 16,
-      e_field_id_Is_Mandatory_Class = 17,
-      e_field_id_Is_Mandatory_Field = 18,
-      e_field_id_Is_Mandatory_List = 19,
-      e_field_id_Is_Mandatory_Modifier = 20,
-      e_field_id_Is_Mandatory_Other_Field = 21,
-      e_field_id_Is_Mandatory_Other_Field_2 = 22,
-      e_field_id_Is_Mandatory_Procedure = 23,
-      e_field_id_Is_Mandatory_View = 24,
-      e_field_id_Is_Other_Package = 25,
-      e_field_id_List = 26,
-      e_field_id_Model = 27,
-      e_field_id_Modifier = 28,
-      e_field_id_Name = 29,
-      e_field_id_Notes = 30,
-      e_field_id_Numeric = 31,
-      e_field_id_Other_Field = 32,
-      e_field_id_Other_Field_2 = 33,
-      e_field_id_Other_Package = 34,
-      e_field_id_Other_Package_Required = 35,
-      e_field_id_Other_Package_Type = 36,
-      e_field_id_Package = 37,
-      e_field_id_Primitive = 38,
-      e_field_id_Procedure = 39,
-      e_field_id_String = 40,
-      e_field_id_Time = 41,
-      e_field_id_Use_Option = 42,
-      e_field_id_Value = 43,
-      e_field_id_View = 44
+      e_field_id_Has_Other_Source_Field = 11,
+      e_field_id_Has_Procedure = 12,
+      e_field_id_Has_Source_Field = 13,
+      e_field_id_Has_View = 14,
+      e_field_id_Id = 15,
+      e_field_id_Installed = 16,
+      e_field_id_Integer = 17,
+      e_field_id_Is_Class = 18,
+      e_field_id_Is_Mandatory_Class = 19,
+      e_field_id_Is_Mandatory_Field = 20,
+      e_field_id_Is_Mandatory_List = 21,
+      e_field_id_Is_Mandatory_Modifier = 22,
+      e_field_id_Is_Mandatory_Other_Field = 23,
+      e_field_id_Is_Mandatory_Other_Field_2 = 24,
+      e_field_id_Is_Mandatory_Other_Source_Field = 25,
+      e_field_id_Is_Mandatory_Procedure = 26,
+      e_field_id_Is_Mandatory_Source_Field = 27,
+      e_field_id_Is_Mandatory_View = 28,
+      e_field_id_Is_Other_Package = 29,
+      e_field_id_List = 30,
+      e_field_id_Model = 31,
+      e_field_id_Modifier = 32,
+      e_field_id_Name = 33,
+      e_field_id_Notes = 34,
+      e_field_id_Numeric = 35,
+      e_field_id_Other_Field = 36,
+      e_field_id_Other_Field_2 = 37,
+      e_field_id_Other_Package = 38,
+      e_field_id_Other_Package_Required = 39,
+      e_field_id_Other_Package_Type = 40,
+      e_field_id_Other_Source_Field = 41,
+      e_field_id_Package = 42,
+      e_field_id_Primitive = 43,
+      e_field_id_Procedure = 44,
+      e_field_id_Source_Field = 45,
+      e_field_id_String = 46,
+      e_field_id_Time = 47,
+      e_field_id_Use_Option = 48,
+      e_field_id_Value = 49,
+      e_field_id_View = 50
    };
 
    Meta_Package_Option( );
@@ -118,8 +124,14 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    bool Has_Other_Field_2( ) const;
    void Has_Other_Field_2( bool Has_Other_Field_2 );
 
+   bool Has_Other_Source_Field( ) const;
+   void Has_Other_Source_Field( bool Has_Other_Source_Field );
+
    bool Has_Procedure( ) const;
    void Has_Procedure( bool Has_Procedure );
+
+   bool Has_Source_Field( ) const;
+   void Has_Source_Field( bool Has_Source_Field );
 
    bool Has_View( ) const;
    void Has_View( bool Has_View );
@@ -154,8 +166,14 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    bool Is_Mandatory_Other_Field_2( ) const;
    void Is_Mandatory_Other_Field_2( bool Is_Mandatory_Other_Field_2 );
 
+   bool Is_Mandatory_Other_Source_Field( ) const;
+   void Is_Mandatory_Other_Source_Field( bool Is_Mandatory_Other_Source_Field );
+
    bool Is_Mandatory_Procedure( ) const;
    void Is_Mandatory_Procedure( bool Is_Mandatory_Procedure );
+
+   bool Is_Mandatory_Source_Field( ) const;
+   void Is_Mandatory_Source_Field( bool Is_Mandatory_Source_Field );
 
    bool Is_Mandatory_View( ) const;
    void Is_Mandatory_View( bool Is_Mandatory_View );
@@ -225,6 +243,10 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    const Meta_Package& Other_Package( ) const;
    void Other_Package( const std::string& key );
 
+   Meta_Field& Other_Source_Field( );
+   const Meta_Field& Other_Source_Field( ) const;
+   void Other_Source_Field( const std::string& key );
+
    Meta_Package& Package( );
    const Meta_Package& Package( ) const;
    void Package( const std::string& key );
@@ -232,6 +254,10 @@ class META_PACKAGE_OPTION_DECL_SPEC Meta_Package_Option : public class_base
    Meta_Procedure& Procedure( );
    const Meta_Procedure& Procedure( ) const;
    void Procedure( const std::string& key );
+
+   Meta_Field& Source_Field( );
+   const Meta_Field& Source_Field( ) const;
+   void Source_Field( const std::string& key );
 
    Meta_View& View( );
    const Meta_View& View( ) const;

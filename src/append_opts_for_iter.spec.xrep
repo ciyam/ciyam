@@ -1,40 +1,73 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
+`{`$is_user`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@user`'`)`$is_user`=`'1`'`}\
+`{`$is_group`=`'`'`}`{`@eq`(`$arg_rvalue`,`'@group`'`)`$is_group`=`'1`'`}\
    // [(start append_opts_for_iter)] `{`$arg_id`}
-   if( !get_obj( ).get_key( ).empty( )
-    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" )
-    || required_transients.count( "`{`$arg_field`}" ) ) )
+   if( !get_obj( ).get_key( ).empty( )`{`@eq`(`$is_user`,`'1`'`) && !get_uid( ).empty( )`}`{`@eq`(`$is_group`,`'1`'`) && !get_grp( ).empty( )`}
+    && ( get_obj( ).needs_field_value( "`{`$arg_field`}" ) || required_transients.count( "`{`$arg_field`}" ) ) )
    {
+      map< string, string > parts;
+
 `{`@eq`(`$arg_ofield`,`'`'`)\
+`{`@eq`(`$arg_rfield`,`'`'`)\
       string key_info;
 `,\
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_rfield`} ) );
+`{`@eq`(`$is_user`,`'`'`)`&`@eq`(`$is_group`,`'`'`)
+      key_info += "#1 `{`$arg_rvalue`}";
+`,\
+      key_info += "#1 " + `{`@eq`(`$is_user`,`'`'`)get_grp( )`,get_uid( )`};
+`}`}`,\
+`{`@eq`(`$arg_rfield`,`'`'`)\
       string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_ofield`} ) );
       key_info += " ";
-`}
+`,\
+      string key_info( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_rfield`} ) );
+      key_info += "," + string( FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_ofield`} ) );
+`{`@eq`(`$is_user`,`'`'`)`&`@eq`(`$is_group`,`'`'`)
+      key_info += "#1 `{`$arg_rvalue`}";
+`,\
+      key_info += "#1 " + `{`@eq`(`$is_user`,`'`'`)get_grp( )`,get_uid( )`};
+`}`}`}
       // NOTE: Perform child iteration only if parent is not iterating to avoid infinite recusion
       // in case of the child or a foreign key of the child is the same class type as this class.
       if( ( !get_obj( ).get_graph_parent( )
        || !get_obj( ).get_graph_parent( )->get_is_iterating( ) )
-`{`@eq`(`$arg_cfield`,`'`'`)\
-       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, string( "@key" ) ) )
+`{`!`@eq`(`$arg_cfield`,`'`'`)\
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info ) )
 `,\
-       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, FIELD_ID( `{`$module_name`}, `{`$arg_cclass`}, `{`$arg_cfield`} ) ) )
+       && get_obj( ).child_`{`$arg_child`}( ).iterate_forwards( key_info, string( "@key" ) ) )
 `}\
       {
+         do
+         {
+            string order, display;
+
+`{`!`@eq`(`$arg_ofield`,`'`'`)\
+            order = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ofield`}( );
+`,`{`@eq`(`$arg_cfield`,`'`'`)\
+            order = get_obj( ).child_`{`$arg_child`}( ).get_key( );
+`,\
+            order = get_obj( ).child_`{`$arg_child`}( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_cfield`}( );
+`}`}
+`{`@eq`(`$arg_embed_links`,`'`'`)\
+            display = get_obj( ).child_`{`$arg_child`}( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`{`$arg_cfield`}`}( );
+`,\
+            display = "{" +  get_obj( ).child_`{`$arg_child`}( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}get_class_id( )
+             + "$" + get_obj( ).child_`{`$arg_child`}( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}get_key( ) + ":" + get_obj( ).child_`{`$arg_child`}( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_cfield`}( ) + "}";
+`}
+            parts.insert( make_pair( order, display ) );
+
+         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+
          string str( get_obj( ).`{`$arg_field`}( ) );
 
-         do
+         for( map< string, string >::iterator i = parts.begin( ); i!= parts.end( ); ++i )
          {
             if( !str.empty( ) )
                str += "`{`$arg_separator`}";
 
-`{`@eq`(`$arg_embed_links`,`'`'`)\
-            str += get_obj( ).child_`{`$arg_child`}( ).`{`@eq`(`$arg_cfield`,`'`'`)get_key`,`{`$arg_cfield`}`}( );
-`,\
-            str += "{" +  get_obj( ).child_`{`$arg_child`}( ).get_class_id( )
-             + "$" + get_obj( ).child_`{`$arg_child`}( ).get_key( ) + ":" + get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cfield`}( ) + "}";
-`}\
-
-         } while( get_obj( ).child_`{`$arg_child`}( ).iterate_next( ) );
+            str += i->second;
+         }      
 
          get_obj( ).`{`$arg_field`}( str );
       }

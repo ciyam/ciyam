@@ -291,6 +291,9 @@ bool CIYAM_BASE_DECL_SPEC is_uid_not_self_and_not_in_set( const std::string& key
 
 bool CIYAM_BASE_DECL_SPEC has_sec_level( const std::string& level );
 
+std::string CIYAM_BASE_DECL_SPEC get_grp( );
+void CIYAM_BASE_DECL_SPEC set_grp( const std::string& grp );
+
 std::string CIYAM_BASE_DECL_SPEC get_dtm( );
 void CIYAM_BASE_DECL_SPEC set_dtm( const std::string& dtm );
 
@@ -371,7 +374,8 @@ std::string CIYAM_BASE_DECL_SPEC get_field_values(
  size_t handle, const std::string& parent_context,
  const std::vector< std::string >& field_list, const std::string& tz_name,
  bool is_default = false, bool as_csv = false, std::vector< std::string >* p_raw_values = 0,
- const std::map< int, std::string >* p_inserts = 0, const std::map< std::string, std::string >* p_package_map = 0 );
+ const std::map< int, std::string >* p_inserts = 0, const std::map< std::string, std::string >* p_replace_map = 0,
+ const std::vector< std::string >* p_omit_matching = 0 );
 
 void CIYAM_BASE_DECL_SPEC set_any_field_ids_to_names( size_t handle,
  const std::string& context, std::vector< std::string >& fields );

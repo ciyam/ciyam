@@ -273,6 +273,7 @@ const char* const c_parent_extra_key6 = "@key6";
 const char* const c_parent_extra_key7 = "@key7";
 const char* const c_parent_extra_key8 = "@key8";
 const char* const c_parent_extra_key9 = "@key9";
+const char* const c_parent_extra_null = "@null";
 const char* const c_parent_extra_sort = "@sort";
 const char* const c_parent_extra_user = "@user";
 const char* const c_parent_extra_view = "@view";
