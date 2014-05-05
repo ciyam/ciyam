@@ -42,7 +42,11 @@
          {
             string order, display;
 
-`{`!`@eq`(`$arg_ofield`,`'`'`)\
+`{`!`@eq`(`$arg_ctfield`,`'`'`)\
+            if( `{`@eq`(`$arg_ctvalue`,`'`'`)!`}get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ctfield`}( )`{`!`@eq`(`$arg_ctvalue`,`'`'`) != `{`$arg_ctvalue`}`} )
+               continue;
+               
+`}`{`!`@eq`(`$arg_ofield`,`'`'`)\
             order = get_obj( ).child_`{`$arg_child`}( ).`{`$arg_ofield`}( );
 `,`{`@eq`(`$arg_cfield`,`'`'`)\
             order = get_obj( ).child_`{`$arg_child`}( ).get_key( );

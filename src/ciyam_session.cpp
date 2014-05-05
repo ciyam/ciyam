@@ -3117,6 +3117,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   set_transaction_id( 2 );
                   record_initialiser init( new_logf );
 
+                  bool old_skip_fetches = session_skip_fk_fetches( );
+                  session_skip_fk_fetches( true );
+
                   for( size_t i = 0; i < module_list.size( ); i++ )
                   {
                      string module_init_list( module_list[ i ] + ".init.lst" );
@@ -3142,6 +3145,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         }
                      }
                   }
+
+                  session_skip_fk_fetches( old_skip_fetches );
                }
 
                // NOTE: Any operations whose transaction id is less than five is skipped during a restore.

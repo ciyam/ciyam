@@ -7507,6 +7507,7 @@ string exec_bulk_ops( const string& module,
 
             string next_log_line;
             bool found_instance = false;
+            bool skipping_fk_checks = false;
             if( can_fetch )
             {
                string key_info;

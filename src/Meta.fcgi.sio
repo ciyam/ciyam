@@ -3837,7 +3837,7 @@
      <name>field_list_field_restriction_spec
      <field>302180
      <ftype>@class
-     <extra>
+     <extra>link
      <mandatory>false
      <modifiers>2000000:relegate,2000:relegate
      <pclass>115100
@@ -7335,7 +7335,7 @@
      <name>field_view_field_restriction_spec
      <field>301980
      <ftype>@class
-     <extra>
+     <extra>link
      <mandatory>false
      <modifiers>8000:relegate,10000:relegate,1000:relegate,100:relegate
      <pclass>115100
@@ -8130,7 +8130,19 @@
      <field>122103
      <ftype>int
      <extra>enum=680
+     <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_list_access_permission
+     <field>301993
+     <ftype>@class
+     <extra>max_size=100
      <modifiers>400:relegate
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
      <unique>false
      <indexed>false
     </column>
@@ -9213,6 +9225,18 @@
      <ftype>int
      <extra>enum=655
      <modifiers>
+     <unique>false
+     <indexed>false
+    </column>
+    <column/>
+     <name>field_view_access_permission
+     <field>301825
+     <ftype>@class
+     <extra>max_size=100
+     <modifiers>
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
      <unique>false
      <indexed>false
     </column>

@@ -44,8 +44,6 @@
 #include "Meta_Field.h"
 #include "Meta_Model.h"
 #include "Meta_Package.h"
-#include "Meta_Initial_Record.h"
-#include "Meta_Initial_Record_Value.h"
 #ifndef _WIN32
 #  include <sys/stat.h>
 #endif

@@ -1612,7 +1612,9 @@ bool populate_list_info( list_source& list,
       class_info = ( list.lici->second )->pclass;
       class_info += ":_" + ( list.lici->second )->pfield;
 
-      field_list += "," + ( list.lici->second )->pfield;
+      if( !field_list.empty( ) )
+         field_list += ",";
+      field_list += ( list.lici->second )->pfield;
    }
    else if( list.type == c_list_type_user || list.type == c_list_type_nonuser || list.type == c_list_type_user_child )
    {
@@ -1624,12 +1626,16 @@ bool populate_list_info( list_source& list,
       class_info = mod_info.user_class_id;
       if( list.type != c_list_type_user_child )
       {
-         field_list += "," + ( list.lici->second )->pfield;
+         if( !field_list.empty( ) )
+            field_list += ",";
+         field_list += ( list.lici->second )->pfield;
          class_info += ":_" + ( list.lici->second )->pfield;
       }
       else
       {
-         field_list += "," + ( list.lici->second )->ufield;
+         if( !field_list.empty( ) )
+            field_list += ",";
+         field_list += ( list.lici->second )->ufield;
          class_info += ":_" + ( list.lici->second )->ufield;
       }
    }

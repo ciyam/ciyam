@@ -1139,7 +1139,7 @@ modifier_add -id=500830 List Is_Home Style:relegate,Limit_Scroll_And_New:relegat
 ,Destroy_Restriction:relegate,Destroy_{Permission}:relegate
 modifier_add -id=500831 List PDF_List_Is_None PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
 modifier_add -id=500832 List PDF_List_Is_Custom PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
-modifier_add -id=500833 List Is_Admin Access_Restriction:relegate,Access_{Permission}:relegate\
+modifier_add -id=500833 List Is_Admin Access_Restriction:relegate;view,Access_{Permission}:relegate\
 ,Create_Restriction:relegate,Create_{Permission}:relegate,Destroy_Restriction:relegate,Destroy_{Permission}:relegate,Allow_Quick_Link:relegate
 modifier_add -id=500850 List_Field Hide_Non_FK_Field Source_Field:relegate
 modifier_add -id=500855 List_Field Hide_Child_Rel_Non_FK_Field Child_Rel_Source_Field:relegate
@@ -1978,14 +1978,14 @@ specification_add -id=602610 {View}_view view "? standard View {Model}:Name;no_e
 ,Change_Restriction;force,Change_{Permission}:Name!@group:{Workgroup}+Name\
 ,@tab:Advanced_UI_Options,Allow_Copy_Action,Auto_Back_After_Save,Allow_Printable_Version;force\
 ,Print_Without_Highlight,PDF_View_Type;force,PDF_Font_Type,Use_First_Row_As_Header,File_Links_Always_As_Single,Ignore_Unactionable_Records"
-specification_add -id=602620 {View}_child_list0 list "@602620_* child:sort_no_limit View Name,Access_Restriction {Model}"
+specification_add -id=602620 {View}_child_list0 list "@602620_* child:sort_no_limit View Name,Access_Restriction,Access_{Permission}:Name {Model}"
 specification_add -id=602710 {View_Field}_view view "? standard View_Field {View}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
 ,Source_Parent_Class:Name;hidden+fkey2+forced,Source_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
 ,Source_Parent:Name!@fkey1:{Class}+Is_Foreign_Key=1+Name;link+force+forced\
 ,Source_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link+force\
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
-,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,New_Source;force\
+,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
 ,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Use_Full_Height,Ignore_Manual_Links\
 ,Label_Without_Prefix,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
@@ -2007,7 +2007,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,@tab:Advanced_UI_Options\
 ,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\
 ,Display_Security_Level,File_Links_Always_As_Single,Create_Only_If_Default_Other,Display_Only_If_Default_Other,Destroy_Only_If_Default_Other"
-specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction {Model}"
+specification_add -id=602810 {List}_child_list0 list "@602810_* child:sort_no_limit List Name,Access_Restriction,Access_{Permission}:Name {Model}"
 specification_add -id=602850 {List_Field}_view view "? standard List_Field {List}:Name;no_edit+link\
 ,{Class};hidden+fkey1,Name;no_edit,Type:Name;force+new_edit,Use_Source_Parent;force\
 ,Source_Parent_Class:Name;hidden+fkey2,Source_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link+force\
@@ -2018,7 +2018,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Use_Child_Rel_Source_Parent;force,Child_Rel_Source_Field:Name!@fkey4:{Class}+Is_Foreign_Key=0+Name;link\
 ,Child_Rel_Source_Parent:Name!@fkey4:{Class}+Is_Foreign_Key=1+Name;link+force\
 ,Child_Rel_Source_Parent_Class:Name;hidden+fkey5,Child_Rel_Source_Child:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link\
-,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction,Switch_Type\
+,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,Switch_Type\
 ,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
 ,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name\
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure;force\

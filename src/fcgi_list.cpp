@@ -1897,6 +1897,10 @@ void output_list_form( ostream& os,
                else
                   os << "&nbsp;&nbsp;";
 
+               set< string > parent_extras;
+               if( !( source.lici->second )->parents[ i ].pextra.empty( ) )
+                  split( ( source.lici->second )->parents[ i ].pextra, parent_extras, '+' );
+
                string sel_id( source.id );
                sel_id += c_prnt_suffix;
                sel_id += ( '0' + i );
@@ -1967,6 +1971,17 @@ void output_list_form( ostream& os,
 
                   if( display.empty( ) )
                      display = key;
+
+                  if( parent_extras.count( c_parent_extra_manuallink ) )
+                  {
+                     stringstream ss;
+
+                     replace_links_and_output( display, "",
+                      source.module, source.module_ref, ss, false, false, session_id,
+                      sess_info, user_select_key, using_session_cookie, use_url_checksum );
+
+                     display = ss.str( );
+                  }
 
                   os << "<option value=\"" << key << "\"";
                   if( key == selected_value )
