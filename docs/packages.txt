@@ -64,8 +64,8 @@ use_comments_publishing - Use this option to only display comments the author ch
 
 use_tags - Use this option to add "tags" to blog entries useful for searching.
 
-use_user_access_level* - Use this to apply the user access level to blogs and blog entries.
-use_user_ignore_users* - Use this option to filter blog and blog entries from users in the ignore set.
+use_user_access_level - Use this to apply the user access level to blogs and blog entries. *
+use_user_ignore_users - Use this option to filter blog and blog entries from users in the ignore set. *
 
 * It should be noted that these options will have no effect if the relevant options were not set for the User
 package before it was installed.
@@ -111,18 +111,22 @@ Package Options:
 
 folder_item_class.Class - Use this option to identify the "item" to which folders are being added.
 folder_item_class.View - Use this option to identify the item "view".
-folder_item_class.List - Use this option to optionally identify a "search list" for the item.
+folder_item_class.List - Use this option to optionally identify a "list" to add folder restrict selection.
 folder_item_class.Field - Identifies the field to display in the child item list for the folder "view".
 folder_item_class.Other_Field - An optional second column for displaying in the child item list.
 folder_item_class.Other_Field_2 - An optional "active" check restriction for the child item list.
-folder_item_class.Source_Field - Identifies the "group" field for the item (if is applicable).
-folder_item_class.Other_Source_Field* - Identifies the "owner" field for the item (if is applicable).
+folder_item_class.Source_Field - Identifies the "owner" field for the item (if is applicable). *
+
+group_package - Optional "group" package to tie folders to groups.
 
 is_mandatory - Use this option to determine with each item "must be in a folder" (default is "yes").
 no_top_level_maint - Use this option to prevent normal maintenance of the "top level folder(s)".
 
-user_package - If is provided and folder_item_class.Other_Source_Field is not then will result in permissions
-being added for folder assignment and maintenance to the User.
+use_folder_status - Use this option to add "folder status" class support (so folders can be set "inactive").
+
+user_package - If is provided and folder_item_class.Source_Field has not been then will result in permissions
+being added for folder assignment and maintenance to the User. If folder_item_class.Source_Field is not empty
+and the "group package" has also been provided then the permissions will also be added.
 
 * It should be noted that if this field is provided then the "user_package" must also be provided.
 
@@ -165,9 +169,9 @@ permission to access them.
 use_tags - Use this option to allow users to create tags which they can apply to specific posts (for mods and
 admin these can be used in order to split or merge threads).
 
-use_user_access_level* - Use this option to apply the user access level to boards, threads and posts.
-use_user_ignore_users* - Use this option to filter posts and threads out from users in the ignore set.
-use_user_reputation* - Use this option to allow adding/subtracting reputation ratings from users for posts.
+use_user_access_level - Use this option to apply the user access level to boards, threads and posts. *
+use_user_ignore_users - Use this option to filter posts and threads out from users in the ignore set. *
+use_user_reputation - Use this option to allow adding/subtracting reputation ratings from users for posts. *
 
 very_hot_topic_posts - As per the hot_topic_posts option.
 
@@ -279,6 +283,7 @@ funds_demonimation - Use this option to specify the currency code for non-cash f
 
 group_package - Optional "group" package to divide projects between groups.
 message_package - Optional "message" package used for providing task notifications.
+transaction_package - Optional "transaction" package used to help create raw Bitcoin (or clone) transactions.
 
 use_external_funds - Use this option to use an external API for checking fund balances.
 use_external_funds_escrow - Use this option to use an external API for checking escrow fund balances.
@@ -321,11 +326,11 @@ Other Package Dependencies: Standard
 
 This package provides a Tag implementation for a given "item class". Such tags can either be "system wide" or
 "group wide" to be more useful for a "librarian" type situation or can instead be tied to individual users as
-a means for creating "personal tags".
+a means for creating "personal tags". Tags are most useful when "searching" for items.
 
 Package Options:
 
-group_package - Optional "group" package to tie tags to groups.
+group_package - Optional "group" package to tie tags to groups. *
 
 tag_item_class.Class - Use this option to identify the "item" to which tags will be added.
 tag_item_class.View - This is the View for the item.
@@ -336,13 +341,20 @@ tag_item_class.Source_Field - An optional "actions" field for the item (if not p
 
 use_item_list_for_tags - Use this option to be able to see an item list below each tag.
 
+use_tag_status - Use this option to add "tag status" class support (so tags can be set "inactive").
+
 use_user_specific_tags - Use this option to have "user specific" tags rather than ones that are either system
-wide or "group" specific.*
+wide or "group" specific. **
+
+use_user_tags_child_list - Use this option to use a "user view child list" for the user specific tags (rather
+than a My Item Tags list - default is "yes"). ***
 
 user_package - Optional "user" package. If not using "user specific" tags then instead permisssions for usage
 and maintenance of tags will be added to the user class.
 
-* If the "user" package is not provided then this option is ignored.
+* If the "user" package is provided and "use_user_specific_tags" is set true then this is ignored.
+** If the "user" package isn't provided then this option is ignored.
+*** If the "user" package isn't provided and "use_user_specific_tags" is not set then this option is ignored.
 
 -------------------------------------------------------------------------------------------------------------
 Timezone
@@ -358,7 +370,11 @@ be generated from the timezone records.
 Transaction
 -------------------------------------------------------------------------------------------------------------
 
-Other Package Dependencies: Standard
+Other Package Dependencies: Standard User
+
+This package provides the ability to help users to construct "raw transactions" for Bitcoin or its clones. It
+can also be used in conjunction with the Project package to help in creating transactions for moving external
+funds between a Project and its Project Areas and Project Tasks.
 
 -------------------------------------------------------------------------------------------------------------
 User (default)
@@ -368,7 +384,9 @@ Other Package Dependencies: Standard
 
 This package provides the User class which is required for an application to support "logging in". To be able
 to create the User instances an "admin" user is automatically created when an application is generated. To be
-sure a system is secured the password for "admin" must be changed (the default password is "admin").
+sure a system is secured the password for "admin" must be changed (the default password is "admin"). There is
+also a "guest" user created with the password "guest" so this user should be either set to "inactive" or have
+its password changed as well for production systems.
 
 Package Options:
 

@@ -4031,6 +4031,9 @@ void Meta_List::impl::for_store( bool is_create, bool is_internal )
    // [(finish parent_auto_int_inc)] 600418
 
    // [<start for_store>]
+//nyi
+   if( get_obj( ).Is_Admin( ) )
+      get_obj( ).Access_Restriction( 2 ); // i.e. admin_only
    // [<finish for_store>]
 }
 

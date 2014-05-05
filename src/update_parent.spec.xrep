@@ -21,7 +21,7 @@
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start update_parent)] `{`$arg_id`}
-   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( )`.`{`$arg_tfield`}( )`} )
+   if( !is_null( get_obj( ).`{`$arg_spfield`}( ) )`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
    {
       get_obj( ).`{`$arg_spfield`}( ).op_update( );
       get_obj( ).`{`$arg_spfield`}( ).op_apply( );

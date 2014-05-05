@@ -5821,7 +5821,7 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
                         if( !get_obj( ).child_Class( ).child_Field( ).Mandatory( ) )
                         {
                            bool found_value = false;
-                           if( Check_Initial_Data
+                           if( Check_Initial_Data && !get_obj( ).child_Class( ).Delay_Initial_Records( )
                             && get_obj( ).child_Class( ).child_Field( ).child_Initial_Record_Value( ).iterate_forwards( ) )
                            {
                               do

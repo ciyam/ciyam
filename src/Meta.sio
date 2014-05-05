@@ -4723,7 +4723,7 @@
       <modifiers/>
        <modifier/>
         <id>500833
-        <affect>relegate
+        <affect>relegate;view
        </modifier>
       </modifiers>
       <specifications/>
@@ -4763,6 +4763,10 @@
        </specification>
        <specification/>
         <id>602800
+        <item>field
+       </specification>
+       <specification/>
+        <id>602810
         <item>field
        </specification>
       </specifications>
@@ -23520,6 +23524,10 @@
         <id>602610
         <item>field
        </specification>
+       <specification/>
+        <id>602620
+        <item>field
+       </specification>
       </specifications>
      </field>
      <field/>
@@ -29485,7 +29493,7 @@
      <field_info>302196:107101!@fkey4:300700+107108=1+107101;link+force
      <field_info>302197:106101;hidden+fkey5+filename+max_size=30
      <field_info>302198:107101!@fkey5:300700+107108=0+107101;link
-     <field_info>302180:115101!@fkey2:301420+301410=restriction
+     <field_info>302180:115101!@fkey2:301420+301410=restriction;link
      <field_info>124105;enum=695
      <field_info>302185:107101!@fkey1:300700+107101;link
      <field_info>124106
@@ -29833,6 +29841,7 @@
      <pfield_id>301990
      <field_info>122101
      <field_info>122103;enum=680
+     <field_info>301993:116101;max_size=100
     </data>
    </specification>
    <specification/>
@@ -34770,7 +34779,7 @@
      <field_info>301960:107101!@fkey2:300700+107108=0+107101;link+force
      <field_info>301965:107101!@fkey2:300700+107108=0+107101;link
      <field_info>120115
-     <field_info>301980:115101!@fkey2:301420+301410=restriction
+     <field_info>301980:115101!@fkey2:301420+301410=restriction;link
      <field_info>120109;force+enum=670
      <field_info>120117
      <field_info>120123;enum=674
@@ -34941,6 +34950,7 @@
      <pfield_id>301800
      <field_info>118101
      <field_info>118102;enum=655
+     <field_info>301825:116101;max_size=100
     </data>
    </specification>
    <specification/>
