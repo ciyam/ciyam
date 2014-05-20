@@ -2264,7 +2264,7 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_id=$specification_\0_id arg_pfield=$specification_\0_pfield arg_dfield=$specification_\0_dfield\
  arg_sfield=$specification_\0_sfield arg_new_only=$specification_\0_new_only\
  arg_not_create=$specification_\0_not_create arg_inc_dflt=$specification_\0_inc_dflt\
- arg_not_null=$specification_\0_not_null arg_trigger_only=$specification_\0_trigger_only`}\
+ arg_not_null=$specification_\0_not_null arg_trigger_only=$specification_\0_trigger_only arg_append=$specification_\0_append`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_child_concat`'`)`&`?`$specification_\0_field`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_child_concat.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\
