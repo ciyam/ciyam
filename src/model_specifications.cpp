@@ -4357,6 +4357,7 @@ void field_from_changed_fk_specification::add_specification_data( model& m, spec
    spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_inc_dflt, include_default ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( "trigger_only", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "append", "" ) );
 }
 
 string field_from_changed_fk_specification::static_class_name( ) { return "field_from_changed_fk"; }

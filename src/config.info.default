@@ -1,5 +1,6 @@
 `{`$port`=`'12345`'`}
 `{`$use_ssl`=`'false`'`}
+`{`$use_hpdf`=`'false`'`}
 `{`$use_zlib`=`'true`'`}
 `{`$use_iconv`=`'true`'`}
 `{`$use_rdline`=`'false`'`}

@@ -6,7 +6,8 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_from_uid)] `{`$arg_id`}
-   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}!get_uid( ).empty( ) && !is_system_uid( ) )
-      get_obj( ).`{`$arg_field`}( get_uid( ) );
+   if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( ) && `}\
+`{`!`@eq`(`$arg_check`,`'`'`)get_obj( ).`{`$arg_field`}( ) `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_field`} && `}!get_uid( ).empty( ) && !is_system_uid( ) )
+      get_obj( ).`{`$arg_field`}( get_uid( )`{`!`@eq`(`$arg_append`,`'`'`) + "`{`$arg_append`}"`} );
    // [(finish field_from_uid)] `{`$arg_id`}
 `}

@@ -283,8 +283,12 @@ void setup_view_fields( view_source& view,
          if( fld.pclass.empty( ) )
          {
             // NOTE: It is expected that only one actions and hpassword salt field will exist in a view.
-            if( extra_data.count( c_view_field_extra_actions ) )
+            if( extra_data.count( c_view_field_extra_actions )
+             && !has_perm_extra( c_field_extra_hidden, extra_data, sess_info ) )
+            {
                view.actions_field = field_id;
+               view.actions_extra = fld.extra;
+            }
 
             if( extra_data.count( c_view_field_extra_hpassword_salt ) )
                view.hpassword_salt_field = field_id;
@@ -674,6 +678,25 @@ bool output_view_form( ostream& os, const string& act,
                is_editable = false;
 
             string all_actions( source.actions_value );
+
+            // NOTE: Check for access restriction/permission to actions.
+            if( !source.actions_extra.empty( ) )
+            {
+               map< string, string > extra_data;
+               parse_field_extra( source.actions_extra, extra_data );
+
+               if( !sess_info.is_admin_user
+                && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) )
+                  all_actions.erase( );
+
+               if( !is_record_owner
+                && has_perm_extra( c_view_field_extra_owner_only, extra_data, sess_info ) )
+                  all_actions.erase( );
+
+               if( !sess_info.is_admin_user && !is_record_owner
+                && has_perm_extra( c_view_field_extra_admin_owner_only, extra_data, sess_info ) )
+                  all_actions.erase( );
+            }
 
             if( view_extras.count( c_view_type_extra_can_copy ) && !( source.state & c_state_is_changing ) )
             {

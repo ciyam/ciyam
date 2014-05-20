@@ -689,6 +689,7 @@ struct view_source : source
    std::string root_folder;
    std::string new_file_name;
 
+   std::string actions_extra;
    std::string actions_field;
    std::string owning_user_field;
    std::string hpassword_salt_field;

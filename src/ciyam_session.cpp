@@ -34,7 +34,9 @@
 #include "sha1.h"
 #include "config.h"
 #include "format.h"
-#include "pdf_gen.h"
+#ifdef HPDF_SUPPORT
+#  include "pdf_gen.h"
+#endif
 #include "threads.h"
 #include "utilities.h"
 #include "date_time.h"
@@ -269,6 +271,7 @@ struct summary_info
    string value;
 };
 
+#ifdef HPDF_SUPPORT
 void add_pdf_variables( size_t handle,
  const string& parent_context, const vector< string >& field_list,
  vector< summary_info >& summaries, map< string, string >& pdf_variables,
@@ -512,6 +515,7 @@ void add_final_pdf_variables( const map< string, string >& variables,
       }
    }
 }
+#endif
 
 void parse_field_values( const string& module,
  const string& class_id, const string& field_values,
@@ -1252,6 +1256,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string output_file( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_output_file ) );
          string title_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_fetch_title_name ) );
 
+#ifndef HPDF_SUPPORT
+         if( create_pdf )
+            throw runtime_error( "pdf generation has not been compiled into this server" );
+#endif
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
@@ -1506,6 +1514,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                map< string, string > pdf_gen_variables;
                multimap< string, string > summary_sorted_values;
 
+#ifdef HPDF_SUPPORT
                if( create_pdf )
                {
                   pdf_gen_variables.insert( make_pair( "@page", GS( c_str_page ) ) );
@@ -1532,7 +1541,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                      pdf_gen_variables.insert( make_pair( "@subtotal", "  " + GS( c_str_subtotal ) ) );
                   }
                }
-
+#endif
                if( !set_value_items.empty( ) )
                   instance_set_variable( handle, context, get_special_var_name( e_special_var_skip_after_fetch ), "1" );
 
@@ -1563,10 +1572,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                       && instance_filtered( handle, context ) )
                         continue;
 
+#ifdef HPDF_SUPPORT
                      if( create_pdf )
                         add_pdf_variables( handle, context,
                          field_list, summaries, pdf_gen_variables, tz_name, num_limit == 1, num_found );
                      else
+#endif
                      {
                         string output;
                         vector< string > raw_values;
@@ -1612,6 +1623,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( create_pdf )
                {
+#ifdef HPDF_SUPPORT
                   if( !num_found )
                   {
                      add_pdf_variables( handle, context,
@@ -1627,6 +1639,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                      generate_pdf_doc( format_file, output_file, pdf_final_variables );
                   }
+#endif
                }
                else if( !summaries.empty( ) )
                {

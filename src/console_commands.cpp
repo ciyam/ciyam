@@ -174,8 +174,10 @@ console_command_handler::console_command_handler( )
  handling_startup_options( false )
 {
 #ifdef __GNUG__
+#  ifdef RDLINE_SUPPORT
    if( isatty( STDIN_FILENO ) )
       using_history( );
+#  endif
 #endif
    add_option( c_prompt_prefix_option );
 

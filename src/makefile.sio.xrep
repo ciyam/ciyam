@@ -30,8 +30,10 @@
      <filename>mime.cpp
      <filename>numeric.cpp
      <filename>ods.cpp
+`{`(`?`$use_hpdf`)`&`(`@eq`(`$use_hpdf`,`'1`'`)`|`@eq`(`$use_hpdf`,`'true`'`)`)\
      <filename>pdf.cpp
-     <filename>pdf_gen.cpp
+     <filename>pdf_gen.cpp\
+`}
      <filename>pop3.cpp
      <filename>ptypes.cpp
      <filename>read_write_buffer.cpp
@@ -528,6 +530,7 @@
     <cms_files/>
     </cms_files>
    </executable>
+`{`(`?`$use_hpdf`)`&`(`@eq`(`$use_hpdf`,`'1`'`)`|`@eq`(`$use_hpdf`,`'true`'`)`)\
    <executable/>
     <name>test_pdf_gen
     <gen_ext>
@@ -549,7 +552,8 @@
     <cms_files/>
      <filename>test_pdf_gen.cms
     </cms_files>
-   </executable>
+   </executable>\
+`}
    <executable/>
     <name>test_sql
     <gen_ext>
