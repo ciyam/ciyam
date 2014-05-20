@@ -14,6 +14,6 @@
     && `}`{`@eq`(`$arg_trigger_only`,`'true`'`)( get_obj( ).get_variable( get_special_var_name( e_special_var_trigger ) ) == c_field_id_`{`$arg_pfield`} )
     && `}`{`@eq`(`$arg_inc_dflt`,`'true`'`)( get_obj( ).get_key( ).empty( ) || `}\
 get_obj( ).`{`$arg_pfield`}( ).has_changed( )`{`@eq`(`$arg_inc_dflt`,`'true`'`) )`} )
-      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_sfield`}( ) );
+      get_obj( ).`{`$arg_dfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_sfield`}( )`{`!`@eq`(`$arg_append`,`'`'`) + "`{`$arg_append`}"`} );
    // [(finish field_from_changed_fk)] `{`$arg_id`}
 `}

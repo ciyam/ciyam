@@ -4707,7 +4707,7 @@
      <pclass>136100
      <pfield>136101
      <pfname>field_package_name
-     <pextra>@fkey1:302800+@key1:302810
+     <pextra>@fkey1:302800+@key1:302810+136103=1+136101
     </field>
     <field/>
      <name>field_package_option_model

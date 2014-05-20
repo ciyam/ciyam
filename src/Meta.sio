@@ -30638,7 +30638,7 @@
      <field_info>302830g:107101!@fkey2:300700+107101
      <field_info>302832:109101!@fkey2:300900+109101
      <field_info>302833:111101!@fkey2:301100+111101
-     <field_info>302830:136101!@fkey1:302800+@key1:302810
+     <field_info>302830:136101!@fkey1:302800+@key1:302810+136103=1+136101
      <field_info>302825;hidden+fkey1
      <field_info>137106;hidden+key1
     </data>

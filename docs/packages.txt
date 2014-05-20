@@ -93,7 +93,7 @@ use_group - This option needs to be set true in order to to tie events to specif
 use_tz_name - Use this option to be able to tie a timezone name to an event.
 use_user - This option needs to be set true in order to to tie events to specific users.
 
-user_package - Optional "user" package to allow messages or tying events to users.
+user_package - Optional "user" package for permissions and allowing messages or tying events to users.
 
 -------------------------------------------------------------------------------------------------------------
 Folder (generic)
@@ -116,6 +116,7 @@ folder_item_class.Field - Identifies the field to display in the child item list
 folder_item_class.Other_Field - An optional second column for displaying in the child item list.
 folder_item_class.Other_Field_2 - An optional "active" check restriction for the child item list.
 folder_item_class.Source_Field - Identifies the "owner" field for the item (if is applicable). *
+folder_item_class.Other_Source_Field - Identifies the "group" field for the item (if is applicable). **
 
 group_package - Optional "group" package to tie folders to groups.
 
@@ -129,6 +130,7 @@ being added for folder assignment and maintenance to the User. If folder_item_cl
 and the "group package" has also been provided then the permissions will also be added.
 
 * It should be noted that if this field is provided then the "user_package" must also be provided.
+** It should be noted that if this field is provided then the "group_package" must also be provided.
 
 -------------------------------------------------------------------------------------------------------------
 Forum
@@ -199,16 +201,23 @@ Package Options:
 Itinerary
 -------------------------------------------------------------------------------------------------------------
 
-Other Package Dependencies: Standard User Event
+Other Package Dependencies: Standard Event
 
-This package provides a simple Itinerary imlementation that allows users to generate a "day by day" itinerary
-of events for a specified date range.
+This package provides a simple Itinerary implementation that supports generating "day by day" itineraries for
+events within a specified date range.
 
 Package Options:
 
 @use_demo_data - Use this option to create a demo Itinerary.
 
-use_permission - Use this option to require a permission to access Itineraries.
+event_package - Mandatory "event" package that itineraries are generated for.
+user_package - Optional "user" package for either ownerership or permission.
+
+use_active - Use this option to allow itinerary records to have an "active" status (default is "yes").
+
+use_user - Set this option in order to tie itineraries to "users". *
+
+* If the "user" package isn't provided then this option is ignored.
 
 -------------------------------------------------------------------------------------------------------------
 Ledger
@@ -272,7 +281,7 @@ Other Package Dependencies: Standard User
 
 This package provides a project management system which breaks individual projects into individual tasks that
 are groups by areas (which can be nested). Task management "workflow" is added via the option "use_task_dibs"
-(this controls task allocation and completion in a strictly stepped manner).
+(this controls task allocation and completion in a strict step by step manner).
 
 Package Options:
 
@@ -301,22 +310,24 @@ use_user_access_level - Use this option to integrate "user access level" to proj
 Schedule
 -------------------------------------------------------------------------------------------------------------
 
-Other Package Dependencies: Standard User Event
+Other Package Dependencies: Standard Event
 
 This package allows for the scheduling of events in advance for a cycle (weekly, monthly or annually). Within
 the schedule one creates separate schedule items which will be used to create the specific events. The design
-is intended for scheduling meetings or regular tasks.
+is intended for scheduling cyclical tasks such as meetings or other recurring activity reminders.
 
 Package Options:
 
 @use_demo_data - Use this option to create a demo schedule.
 
 event_package - This needs to be linked to an installed "event" package.
-group_package - Optional "group" package to divide schedules between groups.
 
+user_package - Optional "user" package for either ownerership or permission.
 timezone_package - Optional "timezone" package to be able to tie a timezone to a schedule.
 
-use_user_package - Use this option to be able to tie schedules to specific users.
+use_user - Use this option to be able to tie schedules to specific users. *
+
+* If the "user" package isn't provided then this option is ignored.
 
 -------------------------------------------------------------------------------------------------------------
 Tag (generic)

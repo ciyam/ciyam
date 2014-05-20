@@ -857,6 +857,11 @@ bool storage_handler::obtain_lock( size_t& handle,
                continue;
             }
 
+            // NOTE: No lock conflicts can be permitted to occur during a storage restore (but due to the way
+            // that DB txs are performed during a restore they could occur without this check being present).
+            if( storage_locked_for_admin( ) )
+               break;
+
             // NOTE: Cascade locks will be ignored within the same session as it can sometimes be necessary for
             // update or delete operations to occur on an already cascade locked instance. Locks that are being
             // held for the duration of a transaction are ignored within the same session.

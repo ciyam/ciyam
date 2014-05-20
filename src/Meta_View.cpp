@@ -1247,7 +1247,7 @@ void Meta_View::impl::impl_Generate_PDF_View( )
                 || get_obj( ).child_View_Field( ).Source_Field( ).Extra( ) == 9 ) // i.e. html
                   notes_fields.insert( name );
                else if( get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Primitive( ) == 0 // i.e. string
-                && get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Max_Size( ) >= 100 )
+                && get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Max_Size( ) >= 50 )
                   wide_fields.insert( name );
                else if( get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Primitive( ) >= 1 // i.e. datetime
                 && get_obj( ).child_View_Field( ).Source_Field( ).Type( ).Primitive( ) <= 5 ) // i.e. int
