@@ -2662,8 +2662,8 @@ void output_list_form( ostream& os,
          // NOTE: Subtotals are normally output when a change to a summary field is detected (i.e. when
          // the next row is being processed), however, if we are processing the last column of the last
          // row then need to prepare the subtotals here so they can be output before the totals.
-         if( ( is_first_column && i != source.row_data.size( ) - 1 && !print_summary_col_nums.empty( ) )
-          || ( i == source.row_data.size( ) - 1 && !print_summary_col_nums.empty( ) && j == last_j_val ) )
+         if( ( is_first_column && !print_summary_col_nums.empty( ) )
+          || ( j == last_j_val && i == source.row_data.size( ) - 1 && !print_summary_col_nums.empty( ) ) )
          {
             ostringstream osx;
             deque< string > subtotals;
@@ -2674,7 +2674,7 @@ void output_list_form( ostream& os,
                if( i > 0 )
                   raw_split( source.row_data[ i - 1 ].second, last_columns );
 
-               if( i == 0 || i == source.row_data.size( ) - 1
+               if( i == 0 || ( j == last_j_val && i == source.row_data.size( ) - 1 )
                 || columns.at( print_summary_col_nums[ k ] ) != last_columns.at( print_summary_col_nums[ k ] ) )
                {
                   string cell_data( columns.at( print_summary_col_nums[ k ] ) );
@@ -2722,7 +2722,7 @@ void output_list_form( ostream& os,
                         osxs << "<b>" << GDS( c_display_subtotal ) << "</b>";
 
                      size_t count( print_summary_counts[ k ] );
-                     if( i != source.row_data.size( ) - 1 )
+                     if( j != last_j_val || i != source.row_data.size( ) - 1 )
                         --count;
 
                      osxs << "&nbsp;&nbsp;" << count << " " << GDS( c_display_records ) << "</td>\n";
@@ -2759,7 +2759,7 @@ void output_list_form( ostream& os,
                      subtotals.push_front( osxs.str( ) );
                   }
 
-                  if( i != source.row_data.size( ) - 1 )
+                  if( j != last_j_val || i != source.row_data.size( ) - 1 )
                   {
                      if( row++ % 2 == 0 )
                         osx << "<tr class=\"data\">\n";
@@ -2784,7 +2784,7 @@ void output_list_form( ostream& os,
                }
             }
 
-            if( i == source.row_data.size( ) - 1 )
+            if( j == last_j_val && i == source.row_data.size( ) - 1 )
             {
                for( size_t k = 0; k < subtotals.size( ); k++ )
                   final_subtotals.push_back( subtotals[ k ] );

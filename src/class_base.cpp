@@ -83,6 +83,8 @@ const string g_empty_fixed_key;
 const int c_max_graph_depth = 50;
 const int c_max_email_text_line = 8192;
 
+const size_t c_cascade_progress_seconds = 10;
+
 const char* const c_files_directory = "files";
 
 const char* const c_email_subject_script_marker = "[CIYAM]";
@@ -1393,6 +1395,12 @@ void class_base::destroy( )
    // NOTE: Perform any applicable cascade operations to the child instances.
    if( num_children > 0 )
    {
+      time_t ts = time( 0 );
+      bool output_progress = false;
+
+      if( !get_variable( get_special_var_name( e_special_var_progress ) ).empty( ) )
+         output_progress = true;
+
       for( int pass = 0; pass < 2; ++pass )
       {
          cascade_op next_op;
@@ -1418,6 +1426,13 @@ void class_base::destroy( )
                p_class_base->set_dynamic_if_class_has_derivations( );
                do
                {
+                  if( output_progress && time( 0 ) - ts > c_cascade_progress_seconds )
+                  {
+                     ts = time( 0 );
+                     // FUTURE: This message should be handled as a server string message.
+                     output_progress_message( "Cascaded " + to_string( i ) + " children..." );
+                  }
+
                   if( next_op == e_cascade_op_destroy )
                   {
                      op_destroy_rc rc;

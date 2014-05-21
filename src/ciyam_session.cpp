@@ -2062,6 +2062,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string mclass( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_mclass ) );
          string grp( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_grp ) );
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_tz_name ) );
+         bool progress( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_progress ) );
          bool quiet( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_quiet ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_destroy_ver_info ) );
@@ -2117,6 +2118,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
+
+               if( progress )
+                  instance_set_variable( handle, "", get_special_var_name( e_special_var_progress ), "1" );
 
                op_destroy_rc rc;
                op_instance_destroy( handle, "", key, ver_info, false, &rc );
