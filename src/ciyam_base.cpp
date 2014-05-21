@@ -176,6 +176,7 @@ const char* const c_special_variable_tz_name = "@tz_name";
 const char* const c_special_variable_trigger = "@trigger";
 const char* const c_special_variable_cmd_hash = "@cmd_hash";
 const char* const c_special_variable_executed = "@executed";
+const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_allow_async = "@allow_async";
@@ -5015,6 +5016,10 @@ string get_special_var_name( special_var var )
 
       case e_special_var_executed:
       s = string( c_special_variable_executed );
+      break;
+
+      case e_special_var_progress:
+      s = string( c_special_variable_progress );
       break;
 
       case e_special_var_image_dir:

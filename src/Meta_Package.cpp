@@ -1457,7 +1457,7 @@ void Meta_Package::impl::impl_Remove( )
                   {
                      outf << "@ifndef %ERROR%\n";
                      outf << ".pd " << get_uid( ) << " @now "
-                      << get_obj( ).get_module_name( ) << ' ' << next_cid << " -q " << class_keys[ next_cid ][ j ] << '\n';
+                      << get_obj( ).get_module_name( ) << ' ' << next_cid << " -p -q " << class_keys[ next_cid ][ j ] << '\n';
                      outf << "@ifdef %ERROR%\n";
                      outf << "#(failed to delete " << ordered[ i ] << " record " << class_keys[ next_cid ][ j ] << ")\n";
                      outf << "@endif\n";
