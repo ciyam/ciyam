@@ -4284,7 +4284,7 @@ void Meta_List_Field::impl::to_store( bool is_create, bool is_internal )
    // [(finish default_to_field)] 600446
 
    // [(start default_from_key)] 600447
-   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Order( ) ) ) )
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && get_obj( ).Order( ) == g_default_Order ) )
       get_obj( ).Order( get_obj( ).get_key( ) );
    // [(finish default_from_key)] 600447
 

@@ -6,7 +6,8 @@
 `}
 `{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start default_to_dtm)] `{`$arg_id`}
-   if( is_create`{`@eq`(`$arg_inc_clones`,`'`'`) && get_obj( ).get_clone_key( ).empty( )`}
+   if( is_create`{`@eq`(`$arg_inc_clones`,`'`'`)
+    && get_obj( ).get_clone_key( ).empty( )`}
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && get_obj( ).`{`$arg_tfield`}( )
 `}\

@@ -1399,7 +1399,7 @@ void Meta_Index::impl::to_store( bool is_create, bool is_internal )
    ( void )state;
 
    // [(start default_from_key)] 600070
-   if( is_create && is_null( get_obj( ).Order( ) ) )
+   if( is_create && get_obj( ).Order( ) == g_default_Order )
       get_obj( ).Order( get_obj( ).get_key( ) );
    // [(finish default_from_key)] 600070
 

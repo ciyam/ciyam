@@ -8,8 +8,7 @@
    // [(start default_to_uid)] `{`$arg_id`}
    if( is_create && !is_system_uid( )
 `{`@eq`(`$arg_inc_clones`,`'true`'`)\
-    && !get_obj( ).get_clone_key( ).empty( )
-    || ( get_obj( ).get_clone_key( ).empty( ) && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} ) )
+    && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
 `,\
     && get_obj( ).get_clone_key( ).empty( ) && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
 `}\

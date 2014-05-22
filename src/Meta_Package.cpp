@@ -1939,7 +1939,7 @@ void Meta_Package::impl::to_store( bool is_create, bool is_internal )
    // [(finish field_from_changed_fk)] 600851
 
    // [(start default_from_key)] 600856
-   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && is_null( get_obj( ).Key( ) ) ) )
+   if( !get_obj( ).get_clone_key( ).empty( ) || ( is_create && get_obj( ).Key( ) == g_default_Key ) )
       get_obj( ).Key( get_obj( ).get_key( ) );
    // [(finish default_from_key)] 600856
 
