@@ -284,7 +284,8 @@ void setup_view_fields( view_source& view,
          {
             // NOTE: It is expected that only one actions and hpassword salt field will exist in a view.
             if( extra_data.count( c_view_field_extra_actions )
-             && !has_perm_extra( c_field_extra_hidden, extra_data, sess_info ) )
+             && ( extra_data.count( c_field_extra_hidden )
+             || !has_perm_extra( c_field_extra_hidden, extra_data, sess_info ) ) )
             {
                view.actions_field = field_id;
                view.actions_extra = fld.extra;
