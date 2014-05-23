@@ -86,6 +86,10 @@
 
 #define USE_MULTIPLE_REQUEST_HANDLERS
 
+#ifdef IS_TRADITIONAL_PLATFORM
+#  define RELEASE_SOCKET_AFTER_EACH_REQUEST
+#endif
+
 using namespace std;
 
 namespace
@@ -238,6 +242,27 @@ void release_socket( tcp_socket* p_socket )
       if( g_sockets[ i ].second == p_socket )
       {
          g_sockets[ i ].first = false;
+         break;
+      }
+   }
+}
+
+void disconnect_socket( tcp_socket* p_socket )
+{
+   guard g( g_socket_mutex );
+
+   for( size_t i = 0; i < g_sockets.size( ); i++ )
+   {
+      if( g_sockets[ i ].second == p_socket )
+      {
+         if( g_sockets[ i ].second && g_sockets[ i ].second->okay( ) )
+         {
+            g_sockets[ i ].second->close( );
+            delete g_sockets[ i ].second;
+         }
+
+         g_sockets[ i ].first = false;
+         g_sockets[ i ].second = 0;
          break;
       }
    }
@@ -526,6 +551,13 @@ void timeout_handler::on_start( )
                 + ( si->second->user_name.empty( ) ? si->second->user_id : si->second->user_name )
                 + " at " + date_time::local( ).as_string( true, false ) + " from " + si->second->ip_addr + "]" );
             }
+
+            if( si->second->p_socket )
+#ifdef RELEASE_SOCKET_AFTER_EACH_REQUEST
+               release_socket( si->second->p_socket );
+#else
+               disconnect_socket( si->second->p_socket );
+#endif
 
             remove_session_temp_directory( si->second->session_id );
 
@@ -2352,7 +2384,11 @@ void request_handler::process_request( )
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
          if( p_session_info->p_socket )
+#  ifdef RELEASE_SOCKET_AFTER_EACH_REQUEST
             release_socket( p_session_info->p_socket );
+#  else
+            disconnect_socket( p_session_info->p_socket );
+#  endif
 #endif
          remove_non_persistent( session_id );
 
@@ -2458,15 +2494,23 @@ void request_handler::process_request( )
 #endif
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
+#  ifdef RELEASE_SOCKET_AFTER_EACH_REQUEST
    if( p_session_info && p_session_info->p_socket )
    {
       release_socket( p_session_info->p_socket );
       p_session_info->p_socket = 0;
    }
+#  endif
 #endif
 
    if( finished_session )
+   {
+#ifndef RELEASE_SOCKET_AFTER_EACH_REQUEST
+      if( p_session_info && p_session_info->p_socket )
+         disconnect_socket( p_session_info->p_socket );
+#endif
       destroy_session( session_id );
+   }
    else if( p_session_info )
       p_session_info->locked = false;
 }
