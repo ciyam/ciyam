@@ -2979,7 +2979,7 @@ string replace_leading_cols_with_ws( const string& s, const string& sep, size_t 
    return retval;
 }
 
-void check_with_regex( const string& r, const string& s, bool* p_rc )
+string check_with_regex( const string& r, const string& s, bool* p_rc )
 {
    string re( r );
 
@@ -2991,7 +2991,8 @@ void check_with_regex( const string& r, const string& s, bool* p_rc )
    if( p_rc )
       *p_rc = true;
 
-   if( expr.search( s ) == string::npos )
+   vector< string > refs;
+   if( expr.search( s, 0, &refs ) == string::npos )
    {
       if( !s.empty( ) )
       {
@@ -3003,6 +3004,17 @@ void check_with_regex( const string& r, const string& s, bool* p_rc )
       else
          throw runtime_error( "unexpected check for empty string" );
    }
+
+   string retval( s );
+
+   if( !refs.empty( ) )
+   {
+      retval.clear( );
+      for( size_t i = 0; i < refs.size( ); i++ )
+         retval += refs[ i ];
+   }
+
+   return retval;
 }
 
 string hash_sha1( const string& s )

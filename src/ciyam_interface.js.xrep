@@ -263,7 +263,7 @@ function check_for_new_window_height( )
       currentWindowHeight = document.documentElement.clientHeight || document.body.clientHeight;
 
    // KLUDGE: This value should be determined according to the footer height;
-   currentWindowHeight -= 50;
+   currentWindowHeight -= 165;
 
    if( isFirst || windowHeight != currentWindowHeight )
    {
