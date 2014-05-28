@@ -434,7 +434,7 @@ regex::impl::impl( const string& expr )
             if( is_in_ref )
                throw runtime_error( "invalid nested ref in: " + expr );
 
-            if( i != start && !next_part.literal.empty( ) )
+            if( i != start && ( last_ch == '.' || !next_part.literal.empty( ) ) )
             {
 #ifdef DEBUG
                ostringstream osstr;
@@ -1273,7 +1273,11 @@ string::size_type regex::impl::do_search(
             matched_last_part = -1;
 
             bool force_repeat = false;
-            if( found && j < parts.size( ) - 1 && parts[ j + 1 ].inverted )
+
+            // NOTE: If the next part is an *inverted* match or will match anything then force
+            // repeat matching to occur rather than proceeding.
+            if( found && j < parts.size( ) - 1 && ( parts[ j + 1 ].inverted
+             || ( parts[ j + 1 ].type == e_part_type_lit && parts[ j + 1 ].literal.empty( ) ) ) )
                force_repeat = true;
 
             // NOTE: If we need to match at the end and have matched the last unlimited part in
@@ -1371,7 +1375,7 @@ string::size_type regex::impl::do_search(
                         ++i;
                   }
 
-                  if( was_last_part && i == text.size( ) )
+                  if( was_last_part && ( !match_at_finish || i == text.size( ) ) )
                      done = true;
 
                   if( last_ref_finish )
@@ -1423,7 +1427,7 @@ string::size_type regex::impl::do_search(
                         {
                            --j;
 
-                           if( was_last_part && i == text.size( ) - 1 )
+                           if( was_last_part && ( !match_at_finish || i == text.size( ) - 1 ) )
                               done = true;
                         }
 

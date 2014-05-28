@@ -25,8 +25,7 @@ const char* const c_regex_floating_point_number = "[-+]?[0-9]+\\.[0-9]+";
 // would normally indicate that a group does not create a back reference. Nested groups are not
 // supported and alternations (such as: one|two|three) are also not supported (the latter could
 // be added without too much difficulty). The design choices were made in order to do the least
-// number of comparisons while still supporting non-trivial expressions. To have more extensive
-// regular expressions it would be recommended to use a 3rd party library (such as PCRE).
+// number of comparisons while still supporting non-trivial expressions.
 class regex
 {
    public:

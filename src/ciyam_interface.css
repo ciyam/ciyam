@@ -388,7 +388,7 @@ td a
    width: 990px;
    height: 90px;
    margin: 0px auto;
-   background: url(logo.png) center left no-repeat;
+   background: url(name_small.png) center left no-repeat;
    display: block;
    position: relative;
 }
@@ -1895,6 +1895,18 @@ table table th
    left: 0;
    bottom: 0;
    visibility: hidden;
+}
+
+#footer .footer-icon
+{
+   width: 128px;
+   height: 128px;
+   margin: 0 auto;
+}
+
+#footer .footer-icon img,  #footer a.footer-icon
+{
+   border: 0;
 }
 
 .wrapper

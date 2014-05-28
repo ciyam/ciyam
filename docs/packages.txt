@@ -287,8 +287,8 @@ Package Options:
 
 @use_demo_data - Use this option to create a demo project.
 
-cash_demonimation - Use this option to specify the currency code for amounts in cash.
-funds_demonimation - Use this option to specify the currency code for non-cash funds.
+cash_demonimation - Use this option to specify the currency code for amounts in cash. *
+funds_demonimation - Use this option to specify the currency code for non-cash funds. **
 
 group_package - Optional "group" package to divide projects between groups.
 message_package - Optional "message" package used for providing task notifications.
@@ -296,6 +296,7 @@ transaction_package - Optional "transaction" package used to help create raw Bit
 
 use_external_funds - Use this option to use an external API for checking fund balances.
 use_external_funds_escrow - Use this option to use an external API for checking escrow fund balances.
+use_external_funds_type - Use this option to enable the use of different external funds types. **
 
 use_open_projects_list - Use this option for all users to be able to see a list of open projects.
 
@@ -305,6 +306,9 @@ use_task_dibs - Use this option to add task management workflow.
 use_task_dibs_with_skills - Use this option to add "project skills" to the task management workflow.
 
 use_user_access_level - Use this option to integrate "user access level" to projects, areas and tasks.
+
+* If left empty then the funds in cash amount is not used.
+** If the "use_external_funds_type" option is used then "funds_denomination" is ignored.
 
 -------------------------------------------------------------------------------------------------------------
 Schedule
@@ -408,7 +412,7 @@ timezone_package - Optional "timezone" package to be able to tie a timezone to a
 use_access_level - Use this option to be able to assign users a specific "access" level.
 use_access_level_ten_deep - If using "access level" then this option will extend the number of levels to ten.
 
-use_account - Use this option to allow users to create accounts** that are aliases for other users.
+use_account - Use this option to allow users to create accounts that are aliases for other users. *
 use_account_invitation - Use this option to enable emailing of invitations to accounts for new users.
 
 use_authenticator - Use this option to let users optionally use 2FA at login via an RFC 6238 TOTP.
@@ -420,7 +424,7 @@ use_ignore_users - Use this option to support the maintenance of a set of users 
 
 use_personalisation - Use this option to add additional personal information (such as photo and signature).
 
-use_quick_link - Use this option to allow the user to maintain quick link*** records.
+use_quick_link - Use this option to allow the user to maintain quick link records. **
 use_quick_link_active - Use this option to allow quick link records to have an "active" status.
 
 use_reputation - Use this option to allow other packages to award or subtract reputation ratings.
@@ -428,11 +432,11 @@ use_reputation - Use this option to allow other packages to award or subtract re
 use_templates - Use this option to support the creation of users from a user template (this is most useful if
 the application has a need for different user "types" that have different permissions).
 
-** An "account" is effectively an alias that one user can give to another user. The purpose of creating these
+* An "account" is effectively an alias that one user can give to another user. The purpose for creating these
 accounts is for a user to be able to provide restricted access to their personal information to another user.
 These accounts can be tied with the usage of other packages (such as the Photo package) which can be used for
 the construction of "social network" type applications.
 
-*** A "quick link" is a method for extending the standard menu for an application to include menu items which
-are either links to a specific record or to a specific record search (and are also known as "user links").
+** A "quick link" is a method for extending the standard menu so applications can include menu items that are
+either links to a specific record or to a specific record search (and are also known as "user links").
 
