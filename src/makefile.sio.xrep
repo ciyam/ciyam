@@ -24,6 +24,7 @@
      <filename>file_utils.cpp
      <filename>format.cpp
      <filename>fs_iterator.cpp
+     <filename>hash_chain.cpp
      <filename>hashcash.cpp
      <filename>mac.cpp
      <filename>md5.cpp
@@ -461,6 +462,27 @@
     <dlink_libs>
     <cpp_files/>
      <filename>test_fcgi.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>
+   <executable/>
+    <name>test_hash_chain
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>false
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>test_hash_chain.cpp
     </cpp_files>
     <cms_files/>
     </cms_files>
