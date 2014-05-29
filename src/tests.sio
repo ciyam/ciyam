@@ -513,6 +513,21 @@
    </tests>
   </group>
   <group/>
+   <name>test_hash_chain
+   <tests/>
+    <test/>
+     <name>1
+     <description>Perform hash chain tests.
+     <test_step/>
+      <name>a
+      <exec>test_hash_chain
+      <input>false
+      <output>generate
+     </test_step>
+    </test>
+   </tests>
+  </group>
+  <group/>
    <name>test_numeric
    <tests/>
     <test/>
