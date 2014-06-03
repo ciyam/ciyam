@@ -18,7 +18,7 @@ class hash_chain
 
    bool has_been_depleted( ) const;
 
-   bool check_and_update_if_good( const std::string& new_hash, unsigned int check_limit = 10000 );
+   bool check_and_update_if_good( const std::string& new_hash, unsigned int check_limit = 1 );
 
    std::string get_next_hash_to_publish( const std::string& password );
 

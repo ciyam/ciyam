@@ -1225,7 +1225,13 @@ bool command_parser::impl::parse_command_expression( node* p_node, size_t& argnu
             if( !refs.empty( ) )
             {
                for( size_t i = 0; i < refs.size( ); i++ )
-                  p_parameters->insert( parameter_value_type( parameter + "_" + to_string( i + 1 ), refs[ i ] ) );
+               {
+                  string prefix( "_" );
+                  if( refs.size( ) > 9 && i < 9 )
+                     prefix += "0";
+
+                  p_parameters->insert( parameter_value_type( parameter + prefix + to_string( i + 1 ), refs[ i ] ) );
+               }
             }
          }
       }

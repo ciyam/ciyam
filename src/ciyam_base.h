@@ -501,6 +501,7 @@ size_t CIYAM_BASE_DECL_SPEC transaction_level( );
 size_t CIYAM_BASE_DECL_SPEC set_transaction_id( size_t tx_id );
 size_t CIYAM_BASE_DECL_SPEC next_transaction_id( );
 
+std::string CIYAM_BASE_DECL_SPEC transaction_log_command( );
 void CIYAM_BASE_DECL_SPEC transaction_log_command( const std::string& log_command );
 
 class CIYAM_BASE_DECL_SPEC transaction

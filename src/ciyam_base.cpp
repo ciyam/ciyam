@@ -7484,7 +7484,7 @@ string exec_bulk_ops( const string& module,
                continuation_offset = next.size( ) + 2;
 
                ++line;
-               next += "\r\n" + continuation;
+               next += '\n' + continuation;
             }
 
             if( num_values != fields.size( ) )
@@ -7657,17 +7657,28 @@ string exec_bulk_ops( const string& module,
                      }
                   }
 
-                  string method_name_and_args( "set " );
-                  method_name_and_args += fields[ i ] + " ";
-                  method_name_and_args += "\"" + escaped( escaped( values[ i ] ), "\"", c_nul ) + "\"";
+#ifndef IS_TRADITIONAL_PLATFORM
+                  string method_name_and_args( "get " );
+                  method_name_and_args += fields[ i ];
 
-                  if( !log_field_value_pairs.empty( ) )
-                     log_field_value_pairs += ",";
+                  string value = execute_object_command( handle, "", method_name_and_args );
+                  if( value != values[ i ] )
+                  {
+#endif
+                     string method_name_and_args( "set " );
+                     method_name_and_args += fields[ i ] + " ";
+                     method_name_and_args += "\"" + escaped( escaped( values[ i ] ), "\"", c_nul ) + "\"";
 
-                  log_field_value_pairs += fields[ i ] + "="
-                   + search_replace( escaped( escaped( values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
+                     execute_object_command( handle, "", method_name_and_args );
 
-                  execute_object_command( handle, "", method_name_and_args );
+                     if( !log_field_value_pairs.empty( ) )
+                        log_field_value_pairs += ",";
+
+                     log_field_value_pairs += fields[ i ] + "="
+                      + search_replace( escaped( escaped( values[ i ] ), "\"", c_esc, "rn\r\n" ), ",", "\\\\," );
+#ifndef IS_TRADITIONAL_PLATFORM
+                  }
+#endif
                }
 
                for( size_t i = 0; i < fixed_fields.size( ); i++ )
@@ -8451,17 +8462,28 @@ void import_package( const string& module,
                          && prefixed_class_keys[ foreign_field_and_class_ids[ fields[ i ] ] ].count( field_values[ i ] ) )
                            field_values[ i ] = key_prefix + field_values[ i ];
 
-                        string method_name_and_args( "set " );
-                        method_name_and_args += fields[ i ] + " ";
-                        method_name_and_args += "\"" + escaped( unescaped( field_values[ i ], "rn\r\n" ), "\"" ) + "\"";
+#ifndef IS_TRADITIONAL_PLATFORM
+                        string method_name_and_args( "get " );
+                        method_name_and_args += fields[ i ];
 
-                        if( !log_field_value_pairs.empty( ) )
-                           log_field_value_pairs += ",";
+                        string value = execute_object_command( handle, "", method_name_and_args );
+                        if( value != field_values[ i ] )
+                        {
+#endif
+                           string method_name_and_args( "set " );
+                           method_name_and_args += fields[ i ] + " ";
+                           method_name_and_args += "\"" + escaped( unescaped( field_values[ i ], "rn\r\n" ), "\"" ) + "\"";
 
-                        log_field_value_pairs += fields[ i ]
-                         + "=" + search_replace( field_values[ i ], "\\\\", "\\\\\\\\", ",", "\\\\," );
+                           if( !log_field_value_pairs.empty( ) )
+                              log_field_value_pairs += ",";
 
-                        execute_object_command( handle, "", method_name_and_args );
+                           log_field_value_pairs += fields[ i ]
+                            + "=" + search_replace( field_values[ i ], "\\\\", "\\\\\\\\", ",", "\\\\," );
+
+                           execute_object_command( handle, "", method_name_and_args );
+#ifndef IS_TRADITIONAL_PLATFORM
+                        }
+#endif
                      }
 
                      next_log_line += log_field_value_pairs + "\"";
@@ -8956,6 +8978,11 @@ size_t next_transaction_id( )
    storable_identity& identity( *handler.get_root( ).o_identity );
 
    return identity.next_id;
+}
+
+string transaction_log_command( )
+{
+   return gtp_session->transaction_log_command;
 }
 
 void transaction_log_command( const string& log_command )

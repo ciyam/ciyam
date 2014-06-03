@@ -149,7 +149,7 @@
 `{`$specification_Application_view_field003`=`'127129`'`}
 `{`$specification_Application_view_ftype003`=`'bool`'`}
 `{`$specification_Application_view_extra003`=`'non_new+always_editable`'`}
-`{`$specification_Application_view_fmods003`=`'100:relegate`'`}
+`{`$specification_Application_view_fmods003`=`'200:relegate,100:relegate`'`}
 `{`$specification_Application_view_fname003`=`'field_application_keep_existing_data`'`}
 `{`$specification_Application_view_fmand003`=`'true`'`}
 `{`$specification_Application_view_field004`=`'127125`'`}
@@ -161,7 +161,7 @@
 `{`$specification_Application_view_field005`=`'127128`'`}
 `{`$specification_Application_view_ftype005`=`'bool`'`}
 `{`$specification_Application_view_extra005`=`'new_only`'`}
-`{`$specification_Application_view_fmods005`=`'200:relegate`'`}
+`{`$specification_Application_view_fmods005`=`'400:relegate`'`}
 `{`$specification_Application_view_fname005`=`'field_application_add_modules_automatically`'`}
 `{`$specification_Application_view_fmand005`=`'true`'`}
 `{`$specification_Application_view_field006`=`'@tab`'`}
@@ -179,7 +179,7 @@
 `{`$specification_Application_view_field008`=`'127106`'`}
 `{`$specification_Application_view_ftype008`=`'string`'`}
 `{`$specification_Application_view_extra008`=`'show+no_edit+full_height+notes`'`}
-`{`$specification_Application_view_fmods008`=`'200:relegate`'`}
+`{`$specification_Application_view_fmods008`=`'400:relegate`'`}
 `{`$specification_Application_view_fname008`=`'field_application_generate_details`'`}
 `{`$specification_Application_view_fmand008`=`'false`'`}
 `{`$specification_Application_view_field009`=`'@tab`'`}
