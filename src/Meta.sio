@@ -419,6 +419,10 @@
         <id>500920
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500922
+        <affect>relegate
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -654,6 +658,10 @@
      </index>
     </indexes>
     <modifiers/>
+     <modifier/>
+      <id>500922
+      <name>Has_No_Application_Log
+     </modifier>
      <modifier/>
       <id>500920
       <name>Is_Not_Full_Generate

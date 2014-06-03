@@ -294,8 +294,9 @@ const char* const c_procedure_id_Generate_Upgrade_DDL = "127440";
 const char* const c_procedure_id_Test_Proc_1 = "127495";
 const char* const c_procedure_id_Test_Proc_2 = "127497";
 
-const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x100 );
-const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x200 );
+const uint64_t c_modifier_Has_No_Application_Log = UINT64_C( 0x100 );
+const uint64_t c_modifier_Is_Not_Full_Generate = UINT64_C( 0x200 );
+const uint64_t c_modifier_Was_Cloned = UINT64_C( 0x400 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -2508,6 +2509,9 @@ uint64_t Meta_Application::impl::get_state( ) const
    if( !get_obj( ).get_clone_key( ).empty( )
     || !get_obj( ).get_variable( get_special_var_name( e_special_var_cloned ) ).empty( ) )
       state |= c_modifier_Was_Cloned;
+
+   if( !exists_file( get_obj( ).Name( ) + ".log" ) )
+      state |= c_modifier_Has_No_Application_Log;
    // [<finish get_state>]
 
    return state;

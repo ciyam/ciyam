@@ -1,7 +1,7 @@
 User Interface Technical Design and Implementation
 --------------------------------------------------
 
-The UI (beyond the the console only "ciyam_client") is provided by the FCGI server "ciyam_interface" which is
+The UI (apart from the console only "ciyam_client") is provided by the FCGI server "ciyam_interface" which is
 suitable for any web server that supports FCGI. For a development environment only use an FCGI implementation
 that will launch the FCGI server "on demand" (such as "mod_fcgid" for Apache).
 

@@ -139,6 +139,39 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+void replace_field_values_to_log( string& next_command, const string& field_values_to_log )
+{
+   string::size_type pos = next_command.find( '"' );
+   if( pos != string::npos )
+   {
+      string::size_type rpos = next_command.rfind( '"' );
+      if( rpos == string::npos )
+         throw runtime_error( "invalid next_command: " + next_command );
+
+      bool okay = false;
+      string::size_type npos = next_command.find( '"', pos + 1 );
+
+      // NOTE: The first pair of quotes might be around the key info so skip if that is the case.
+      for( size_t i = pos + 1; i != npos; i++ )
+      {
+         if( next_command[ i ] == '=' )
+         {
+            okay = true;
+            break;
+         }
+      }
+
+      if( !okay )
+         pos = next_command.find( '"', npos + 1 );
+
+      if( pos != string::npos )
+         next_command = next_command.substr( 0, pos + 1 )
+          + field_values_to_log + next_command.substr( rpos );
+   }
+}
+#endif
+
 string& remove_uid_extra_from_log_command( string& log_command )
 {
    string::size_type pos = log_command.find( ' ' );
@@ -522,7 +555,9 @@ void parse_field_values( const string& module,
  map< string, string >& field_value_items, const map< string, string >* p_transformations = 0 )
 {
    vector< string > field_value_pairs;
-   raw_split( field_values, field_value_pairs );
+
+   if( !field_values.empty( ) )
+      raw_split( field_values, field_value_pairs );
 
    field_value_items.clear( );
 
@@ -1677,6 +1712,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_field_values ) );
          string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_method_name ) );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         string field_values_to_log;
+#endif
+
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
@@ -1687,21 +1726,29 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string new_key( gen_key( ) );
 
+            size_t remove_length = 2;
             string::size_type spos = next_command.find( uid ) + uid.length( );
 
             // NOTE: The generated key is inserted into the "next_command" so an actual key value
             // will appear in the transaction log (otherwise log operations could not be restored).
             string::size_type ipos = next_command.find( "\"\"", spos );
             if( ipos == string::npos )
+            {
+               remove_length = 3;
                ipos = next_command.find( "\" ", spos );
+            }
 
             if( ipos == string::npos )
                throw runtime_error( "unable to find empty key in: " + next_command );
 
-            next_command.insert( ipos + 1, new_key );
+            // NOTE: If there is a clone key then insert after the first quote otherwise
+            // remove the quotes (as well as the space if the key was provided as that).
+            if( key.size( ) > 1 )
+               ++ipos;
+            else
+               next_command.erase( ipos, remove_length );
 
-            if( key.size( ) == 1 )
-               next_command.erase( ipos + 1 + new_key.length( ), 1 );
+            next_command.insert( ipos, new_key );
 
             // NOTE: If there is a clone key then need to keep it.
             if( key.size( ) > 1 )
@@ -1709,8 +1756,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             else
                key = new_key;
          }
-
-         transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
          set_last_session_cmd_and_hash( command, next_command );
 
@@ -1818,15 +1863,42 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            i->second = convert_local_to_utc( i->second, tz_name );
                      }
 
-                     string method_name_and_args( "set " );
-                     method_name_and_args += i->first + " ";
-                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+#ifndef IS_TRADITIONAL_PLATFORM
+                     string method_name_and_args( "get " );
+                     method_name_and_args += i->first;
 
-                     execute_object_command( handle, "", method_name_and_args );
+                     string value = execute_object_command( handle, "", method_name_and_args );
 
-                     fields_set.insert( i->first );
+                     // NOTE: Field values that are the same as the default ones are omitted from the log.
+                     if( value != i->second )
+#endif
+                     {
+                        string method_name_and_args( "set " );
+                        method_name_and_args += i->first + " ";
+                        method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+
+                        execute_object_command( handle, "", method_name_and_args );
+
+                        fields_set.insert( i->first );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                        if( !field_values_to_log.empty( ) )
+                           field_values_to_log += ",";
+
+                        field_values_to_log += i->first + '=';
+                        field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+#endif
+                     }
                   }
                }
+
+               remove_uid_extra_from_log_command( next_command );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               replace_field_values_to_log( next_command, field_values_to_log );
+#endif
+
+               transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 
@@ -1843,6 +1915,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                destroy_object_instance( handle );
+
             }
             catch( exception& )
             {
@@ -1879,6 +1952,10 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_method_name ) );
          string check_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_check_values ) );
 
+#ifndef IS_TRADITIONAL_PLATFORM
+         string field_values_to_log;
+#endif
+
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
@@ -1887,8 +1964,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             ver_info.erase( );
 
          set_dtm_if_now( dtm, next_command );
-
-         transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
 
          set_last_session_cmd_and_hash( command, next_command );
 
@@ -2009,15 +2084,42 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                            i->second = convert_local_to_utc( i->second, tz_name );
                      }
 
-                     string method_name_and_args( "set " );
-                     method_name_and_args += i->first + " ";
-                     method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+#ifndef IS_TRADITIONAL_PLATFORM
+                     string method_name_and_args( "get " );
+                     method_name_and_args += i->first;
 
-                     execute_object_command( handle, "", method_name_and_args );
+                     string value = execute_object_command( handle, "", method_name_and_args );
 
-                     fields_set.insert( i->first );
+                     // NOTE: Field values that are the same as the current ones are omitted from the log.
+                     if( value != i->second )
+#endif
+                     {
+                        string method_name_and_args( "set " );
+                        method_name_and_args += i->first + " ";
+                        method_name_and_args += "\"" + escaped( i->second, "\"", c_nul ) + "\"";
+
+                        execute_object_command( handle, "", method_name_and_args );
+
+                        fields_set.insert( i->first );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+                        if( !field_values_to_log.empty( ) )
+                           field_values_to_log += ",";
+
+                        field_values_to_log += i->first + '=';
+                        field_values_to_log += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+#endif
+                     }
                   }
                }
+
+               remove_uid_extra_from_log_command( next_command );
+
+#ifndef IS_TRADITIONAL_PLATFORM
+               replace_field_values_to_log( next_command, field_values_to_log );
+#endif
+
+               transaction_log_command( next_command );
 
                op_instance_apply( handle, "", false, 0, &fields_set );
 

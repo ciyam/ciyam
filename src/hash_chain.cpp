@@ -218,7 +218,10 @@ string hash_chain::impl::get_next_hash_to_publish( const string& password )
 
    // NOTE: If password is not what was used originally then "external" users will not match
    // the next hash, however, provided the correct password is used within the "check limit"
-   // range this won't be a disastor (just part of the chain will have been "burned").
+   // range this won't be a disastor (just part of the chain will have been "burned"). While
+   // this can make a chain more "fault resistent" it also supports *gaming* for what can be
+   // considered a "better next hash" so by default is not being used (thus "check limit" is
+   // defaulted to 1 in "check_and_update_if_good").
    sha256 hash( password );
    hash.update( seedbuf, c_hash_buf_size );
 

@@ -1195,6 +1195,7 @@ modifier_add -id=500900 Class Is_Alias Name:protect,Plural:protect,Type:protect,
 modifier_add -id=500910 Class Is_Not_Alias Source_{Class}:relegate
 modifier_add -id=500920 Application Is_Not_Full_Generate Keep_Existing_Data:relegate
 modifier_add -id=500921 Application Was_Cloned Add_Modules_Automatically:relegate,Generate_Details:relegate
+modifier_add -id=500922 Application Has_No_Application_Log Keep_Existing_Data:relegate
 modifier_add -id=500950 Package_Type Is_Installed File:relegate
 modifier_add -id=500961 Package Is_Not_Installed @class:lowlight;list
 modifier_add -id=500980 Package_Option Is_Other_Package_Option Use_Option:relegate\

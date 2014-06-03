@@ -9,7 +9,7 @@ The goal in itself is not really much different to what you would expect from ne
 what is most different about CIYAM's Software Manufacturing approach is that applications that are constructed
 with it will not contain any manually written source code.
 
-This perhaps requires repeating to undeline its importance - there simply is *no* manually written source code
+This perhaps requires repeating to underline its importance, there simply is *no* manually written source code
 in a completed software application that is constructed using CIYAM's Software Manufacturing methodology.
 
 No manual source code - really?

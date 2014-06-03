@@ -2392,7 +2392,7 @@
      <ftype>bool
      <extra>non_new+always_editable
      <mandatory>true
-     <modifiers>100:relegate
+     <modifiers>200:relegate,100:relegate
     </field>
     <field/>
      <name>field_application_create_database
@@ -2408,7 +2408,7 @@
      <ftype>bool
      <extra>new_only
      <mandatory>true
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>tab_generate_details
@@ -2432,7 +2432,7 @@
      <ftype>string
      <extra>show+no_edit+full_height+notes
      <mandatory>false
-     <modifiers>200:relegate
+     <modifiers>400:relegate
     </field>
     <field/>
      <name>tab_display_settings
