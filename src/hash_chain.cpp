@@ -249,9 +249,9 @@ string hash_chain::impl::get_next_hash_to_publish( const string& password )
    return lower( hash.get_digest_as_string( ) );
 }
 
-hash_chain::hash_chain( const string& name, bool is_new, size_t rounds, bool use_seed )
+hash_chain::hash_chain( const string& name, bool is_new, unsigned int size, bool use_seed )
 {
-   p_impl = new impl( name, is_new, rounds, use_seed );
+   p_impl = new impl( name, is_new, size, use_seed );
 }
 
 hash_chain::~hash_chain( )

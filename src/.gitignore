@@ -33,6 +33,7 @@ modeller
 test
 test_cache
 test_fcgi
+test_hash_chain
 test_numeric
 test_ods
 test_parser
