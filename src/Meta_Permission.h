@@ -19,6 +19,7 @@
 #     define META_PERMISSION_DECL_SPEC DYNAMIC_IMPORT
 #  endif
 
+class Meta_Class;
 class Meta_List_Field;
 class Meta_List;
 class Meta_View_Field;
@@ -29,6 +30,7 @@ class Meta_Workgroup;
 
 class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
 {
+   friend class Meta_Class;
    friend class Meta_List_Field;
    friend class Meta_List;
    friend class Meta_View_Field;
@@ -61,6 +63,9 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    const Meta_Workgroup& Workgroup( ) const;
    void Workgroup( const std::string& key );
 
+   Meta_Class& child_Class_Access( );
+   const Meta_Class& child_Class_Access( ) const;
+
    Meta_List_Field& child_List_Field_Access( );
    const Meta_List_Field& child_List_Field_Access( ) const;
 
@@ -73,14 +78,23 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    Meta_View& child_View_Access( );
    const Meta_View& child_View_Access( ) const;
 
+   Meta_Class& child_Class_Change( );
+   const Meta_Class& child_Class_Change( ) const;
+
    Meta_View_Field& child_View_Field_Change( );
    const Meta_View_Field& child_View_Field_Change( ) const;
 
    Meta_View& child_View_Change( );
    const Meta_View& child_View_Change( ) const;
 
+   Meta_Class& child_Class_Create( );
+   const Meta_Class& child_Class_Create( ) const;
+
    Meta_List& child_List_Create( );
    const Meta_List& child_List_Create( ) const;
+
+   Meta_Class& child_Class_Destroy( );
+   const Meta_Class& child_Class_Destroy( ) const;
 
    Meta_List& child_List_Destroy( );
    const Meta_List& child_List_Destroy( ) const;
@@ -273,6 +287,7 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
 
    virtual void setup_foreign_key( Meta_Workgroup& o, const std::string& value );
 
+   virtual void setup_graph_parent( Meta_Class& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );

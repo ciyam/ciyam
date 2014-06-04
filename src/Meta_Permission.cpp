@@ -25,6 +25,7 @@
 
 #include "Meta_Permission.h"
 
+#include "Meta_Class.h"
 #include "Meta_List_Field.h"
 #include "Meta_List.h"
 #include "Meta_View_Field.h"
@@ -343,6 +344,28 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
       cba.set_key( key );
    }
 
+   Meta_Class& impl_child_Class_Access( )
+   {
+      if( !cp_child_Class_Access )
+      {
+         cp_child_Class_Access.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Access, "300633" );
+      }
+      return *cp_child_Class_Access;
+   }
+
+   const Meta_Class& impl_child_Class_Access( ) const
+   {
+      if( !cp_child_Class_Access )
+      {
+         cp_child_Class_Access.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Access, "300633" );
+      }
+      return *cp_child_Class_Access;
+   }
+
    Meta_List_Field& impl_child_List_Field_Access( )
    {
       if( !cp_child_List_Field_Access )
@@ -431,6 +454,28 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
       return *cp_child_View_Access;
    }
 
+   Meta_Class& impl_child_Class_Change( )
+   {
+      if( !cp_child_Class_Change )
+      {
+         cp_child_Class_Change.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Change, "300634" );
+      }
+      return *cp_child_Class_Change;
+   }
+
+   const Meta_Class& impl_child_Class_Change( ) const
+   {
+      if( !cp_child_Class_Change )
+      {
+         cp_child_Class_Change.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Change, "300634" );
+      }
+      return *cp_child_Class_Change;
+   }
+
    Meta_View_Field& impl_child_View_Field_Change( )
    {
       if( !cp_child_View_Field_Change )
@@ -475,6 +520,28 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
       return *cp_child_View_Change;
    }
 
+   Meta_Class& impl_child_Class_Create( )
+   {
+      if( !cp_child_Class_Create )
+      {
+         cp_child_Class_Create.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Create, "300635" );
+      }
+      return *cp_child_Class_Create;
+   }
+
+   const Meta_Class& impl_child_Class_Create( ) const
+   {
+      if( !cp_child_Class_Create )
+      {
+         cp_child_Class_Create.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Create, "300635" );
+      }
+      return *cp_child_Class_Create;
+   }
+
    Meta_List& impl_child_List_Create( )
    {
       if( !cp_child_List_Create )
@@ -495,6 +562,28 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
          p_obj->setup_graph_parent( *cp_child_List_Create, "301994" );
       }
       return *cp_child_List_Create;
+   }
+
+   Meta_Class& impl_child_Class_Destroy( )
+   {
+      if( !cp_child_Class_Destroy )
+      {
+         cp_child_Class_Destroy.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Destroy, "300636" );
+      }
+      return *cp_child_Class_Destroy;
+   }
+
+   const Meta_Class& impl_child_Class_Destroy( ) const
+   {
+      if( !cp_child_Class_Destroy )
+      {
+         cp_child_Class_Destroy.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Class_Destroy, "300636" );
+      }
+      return *cp_child_Class_Destroy;
    }
 
    Meta_List& impl_child_List_Destroy( )
@@ -712,13 +801,17 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
    string v_Workgroup;
    mutable class_pointer< Meta_Workgroup > cp_Workgroup;
 
+   mutable class_pointer< Meta_Class > cp_child_Class_Access;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Access;
    mutable class_pointer< Meta_List > cp_child_List_Access;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Access;
    mutable class_pointer< Meta_View > cp_child_View_Access;
+   mutable class_pointer< Meta_Class > cp_child_Class_Change;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Change;
    mutable class_pointer< Meta_View > cp_child_View_Change;
+   mutable class_pointer< Meta_Class > cp_child_Class_Create;
    mutable class_pointer< Meta_List > cp_child_List_Create;
+   mutable class_pointer< Meta_Class > cp_child_Class_Destroy;
    mutable class_pointer< Meta_List > cp_child_List_Destroy;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Link;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Link;
@@ -1149,6 +1242,16 @@ void Meta_Permission::Workgroup( const string& key )
    p_impl->impl_Workgroup( key );
 }
 
+Meta_Class& Meta_Permission::child_Class_Access( )
+{
+   return p_impl->impl_child_Class_Access( );
+}
+
+const Meta_Class& Meta_Permission::child_Class_Access( ) const
+{
+   return p_impl->impl_child_Class_Access( );
+}
+
 Meta_List_Field& Meta_Permission::child_List_Field_Access( )
 {
    return p_impl->impl_child_List_Field_Access( );
@@ -1189,6 +1292,16 @@ const Meta_View& Meta_Permission::child_View_Access( ) const
    return p_impl->impl_child_View_Access( );
 }
 
+Meta_Class& Meta_Permission::child_Class_Change( )
+{
+   return p_impl->impl_child_Class_Change( );
+}
+
+const Meta_Class& Meta_Permission::child_Class_Change( ) const
+{
+   return p_impl->impl_child_Class_Change( );
+}
+
 Meta_View_Field& Meta_Permission::child_View_Field_Change( )
 {
    return p_impl->impl_child_View_Field_Change( );
@@ -1209,6 +1322,16 @@ const Meta_View& Meta_Permission::child_View_Change( ) const
    return p_impl->impl_child_View_Change( );
 }
 
+Meta_Class& Meta_Permission::child_Class_Create( )
+{
+   return p_impl->impl_child_Class_Create( );
+}
+
+const Meta_Class& Meta_Permission::child_Class_Create( ) const
+{
+   return p_impl->impl_child_Class_Create( );
+}
+
 Meta_List& Meta_Permission::child_List_Create( )
 {
    return p_impl->impl_child_List_Create( );
@@ -1217,6 +1340,16 @@ Meta_List& Meta_Permission::child_List_Create( )
 const Meta_List& Meta_Permission::child_List_Create( ) const
 {
    return p_impl->impl_child_List_Create( );
+}
+
+Meta_Class& Meta_Permission::child_Class_Destroy( )
+{
+   return p_impl->impl_child_Class_Destroy( );
+}
+
+const Meta_Class& Meta_Permission::child_Class_Destroy( ) const
+{
+   return p_impl->impl_child_Class_Destroy( );
 }
 
 Meta_List& Meta_Permission::child_List_Destroy( )
@@ -1585,6 +1718,11 @@ void Meta_Permission::setup_foreign_key( Meta_Workgroup& o, const string& value 
    static_cast< Meta_Workgroup& >( o ).set_key( value );
 }
 
+void Meta_Permission::setup_graph_parent( Meta_Class& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Class& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Permission::setup_graph_parent( Meta_List_Field& o, const string& foreign_key_field )
 {
    static_cast< Meta_List_Field& >( o ).set_graph_parent( this, foreign_key_field );
@@ -1634,7 +1772,7 @@ void Meta_Permission::set_total_child_relationships( size_t new_total_child_rela
 
 size_t Meta_Permission::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 14;
+   size_t rc = 18;
 
    if( !is_internal )
    {
@@ -1667,7 +1805,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 14 )
+   if( child_num >= 18 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1682,12 +1820,20 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          case 0:
          if( op == e_cascade_op_restrict )
          {
+            next_child_field = "300633";
+            p_class_base = &child_Class_Access( );
+         }
+         break;
+
+         case 1:
+         if( op == e_cascade_op_restrict )
+         {
             next_child_field = "302130";
             p_class_base = &child_List_Field_Access( );
          }
          break;
 
-         case 1:
+         case 2:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301993";
@@ -1695,7 +1841,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 2:
+         case 3:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301920";
@@ -1703,7 +1849,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 3:
+         case 4:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301825";
@@ -1711,7 +1857,15 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 4:
+         case 5:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "300634";
+            p_class_base = &child_Class_Change( );
+         }
+         break;
+
+         case 6:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301930";
@@ -1719,7 +1873,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 5:
+         case 7:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301830";
@@ -1727,7 +1881,15 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 6:
+         case 8:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "300635";
+            p_class_base = &child_Class_Create( );
+         }
+         break;
+
+         case 9:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301994";
@@ -1735,7 +1897,15 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 7:
+         case 10:
+         if( op == e_cascade_op_restrict )
+         {
+            next_child_field = "300636";
+            p_class_base = &child_Class_Destroy( );
+         }
+         break;
+
+         case 11:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301995";
@@ -1743,7 +1913,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 8:
+         case 12:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "302135";
@@ -1751,7 +1921,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 9:
+         case 13:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301915";
@@ -1759,7 +1929,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 10:
+         case 14:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301332";
@@ -1767,7 +1937,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 11:
+         case 15:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301331";
@@ -1775,7 +1945,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 12:
+         case 16:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301600";
@@ -1783,7 +1953,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 13:
+         case 17:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301499";
@@ -1863,6 +2033,8 @@ class_base& Meta_Permission::get_or_create_graph_child( const string& context )
 
    if( sub_context.empty( ) )
       throw runtime_error( "unexpected empty sub-context" );
+   else if( sub_context == "_300633" || sub_context == "child_Class_Access" )
+      p_class_base = &child_Class_Access( );
    else if( sub_context == "_302130" || sub_context == "child_List_Field_Access" )
       p_class_base = &child_List_Field_Access( );
    else if( sub_context == "_301993" || sub_context == "child_List_Access" )
@@ -1871,12 +2043,18 @@ class_base& Meta_Permission::get_or_create_graph_child( const string& context )
       p_class_base = &child_View_Field_Access( );
    else if( sub_context == "_301825" || sub_context == "child_View_Access" )
       p_class_base = &child_View_Access( );
+   else if( sub_context == "_300634" || sub_context == "child_Class_Change" )
+      p_class_base = &child_Class_Change( );
    else if( sub_context == "_301930" || sub_context == "child_View_Field_Change" )
       p_class_base = &child_View_Field_Change( );
    else if( sub_context == "_301830" || sub_context == "child_View_Change" )
       p_class_base = &child_View_Change( );
+   else if( sub_context == "_300635" || sub_context == "child_Class_Create" )
+      p_class_base = &child_Class_Create( );
    else if( sub_context == "_301994" || sub_context == "child_List_Create" )
       p_class_base = &child_List_Create( );
+   else if( sub_context == "_300636" || sub_context == "child_Class_Destroy" )
+      p_class_base = &child_Class_Destroy( );
    else if( sub_context == "_301995" || sub_context == "child_List_Destroy" )
       p_class_base = &child_List_Destroy( );
    else if( sub_context == "_302135" || sub_context == "child_List_Field_Link" )

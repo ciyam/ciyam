@@ -1798,7 +1798,12 @@ void Meta_Model::impl::impl_Generate( )
             }
 
             if( !is_null( get_obj( ).child_View( ).Access_Permission( ) ) )
-               type += "=" + get_obj( ).child_View( ).Access_Permission( ).Id( );
+            {
+               if( type == "standard" )
+                  type += "=" + get_obj( ).child_View( ).Access_Permission( ).Id( );
+               else
+                  type += "=!" + get_obj( ).child_View( ).Access_Permission( ).Id( );
+            }
 
             if( !is_null( get_obj( ).child_View( ).Change_Permission( ) ) )
             {

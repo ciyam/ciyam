@@ -36,6 +36,7 @@
 #include "Meta_Modifier.h"
 #include "Meta_Package_Option.h"
 #include "Meta_Procedure.h"
+#include "Meta_Permission.h"
 #include "Meta_List.h"
 #include "Meta_View.h"
 #include "Meta_Model.h"
@@ -64,6 +65,11 @@ using namespace std;
 // [<start namespaces>]
 // [<finish namespaces>]
 
+template< > inline string to_string( const Meta_Permission& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_List& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -87,6 +93,11 @@ template< > inline string to_string( const Meta_Field& c )
 template< > inline string to_string( const Meta_Class& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Permission& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
 }
 
 inline void from_string( Meta_List& c, const string& s )
@@ -125,12 +136,20 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Access_Permission = "300633";
+const char* const c_field_id_Access_Restriction = "106124";
+const char* const c_field_id_Change_Permission = "300634";
+const char* const c_field_id_Change_Restriction = "106125";
 const char* const c_field_id_Commands_File = "106110";
 const char* const c_field_id_Create_List = "106123";
+const char* const c_field_id_Create_Permission = "300635";
+const char* const c_field_id_Create_Restriction = "106126";
 const char* const c_field_id_Create_View = "106122";
 const char* const c_field_id_Created_List = "300632";
 const char* const c_field_id_Created_View = "300631";
 const char* const c_field_id_Delay_Initial_Records = "106121";
+const char* const c_field_id_Destroy_Permission = "300636";
+const char* const c_field_id_Destroy_Restriction = "106127";
 const char* const c_field_id_Extra = "106103";
 const char* const c_field_id_Header_File = "106109";
 const char* const c_field_id_Id = "106104";
@@ -146,12 +165,20 @@ const char* const c_field_id_Source_Model = "300610";
 const char* const c_field_id_Static_Instance_Key = "106120";
 const char* const c_field_id_Type = "106107";
 
+const char* const c_field_name_Access_Permission = "Access_Permission";
+const char* const c_field_name_Access_Restriction = "Access_Restriction";
+const char* const c_field_name_Change_Permission = "Change_Permission";
+const char* const c_field_name_Change_Restriction = "Change_Restriction";
 const char* const c_field_name_Commands_File = "Commands_File";
 const char* const c_field_name_Create_List = "Create_List";
+const char* const c_field_name_Create_Permission = "Create_Permission";
+const char* const c_field_name_Create_Restriction = "Create_Restriction";
 const char* const c_field_name_Create_View = "Create_View";
 const char* const c_field_name_Created_List = "Created_List";
 const char* const c_field_name_Created_View = "Created_View";
 const char* const c_field_name_Delay_Initial_Records = "Delay_Initial_Records";
+const char* const c_field_name_Destroy_Permission = "Destroy_Permission";
+const char* const c_field_name_Destroy_Restriction = "Destroy_Restriction";
 const char* const c_field_name_Extra = "Extra";
 const char* const c_field_name_Header_File = "Header_File";
 const char* const c_field_name_Id = "Id";
@@ -167,12 +194,20 @@ const char* const c_field_name_Source_Model = "Source_Model";
 const char* const c_field_name_Static_Instance_Key = "Static_Instance_Key";
 const char* const c_field_name_Type = "Type";
 
+const char* const c_field_display_name_Access_Permission = "field_class_access_permission";
+const char* const c_field_display_name_Access_Restriction = "field_class_access_restriction";
+const char* const c_field_display_name_Change_Permission = "field_class_change_permission";
+const char* const c_field_display_name_Change_Restriction = "field_class_change_restriction";
 const char* const c_field_display_name_Commands_File = "field_class_commands_file";
 const char* const c_field_display_name_Create_List = "field_class_create_list";
+const char* const c_field_display_name_Create_Permission = "field_class_create_permission";
+const char* const c_field_display_name_Create_Restriction = "field_class_create_restriction";
 const char* const c_field_display_name_Create_View = "field_class_create_view";
 const char* const c_field_display_name_Created_List = "field_class_created_list";
 const char* const c_field_display_name_Created_View = "field_class_created_view";
 const char* const c_field_display_name_Delay_Initial_Records = "field_class_delay_initial_records";
+const char* const c_field_display_name_Destroy_Permission = "field_class_destroy_permission";
+const char* const c_field_display_name_Destroy_Restriction = "field_class_destroy_restriction";
 const char* const c_field_display_name_Extra = "field_class_extra";
 const char* const c_field_display_name_Header_File = "field_class_header_file";
 const char* const c_field_display_name_Id = "field_class_id";
@@ -188,7 +223,7 @@ const char* const c_field_display_name_Source_Model = "field_class_source_model"
 const char* const c_field_display_name_Static_Instance_Key = "field_class_static_instance_key";
 const char* const c_field_display_name_Type = "field_class_type";
 
-const int c_num_fields = 20;
+const int c_num_fields = 28;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -206,22 +241,38 @@ const char* const c_all_sorted_field_ids[ ] =
    "106121",
    "106122",
    "106123",
+   "106124",
+   "106125",
+   "106126",
+   "106127",
    "300600",
    "300610",
    "300620",
    "300630",
    "300631",
-   "300632"
+   "300632",
+   "300633",
+   "300634",
+   "300635",
+   "300636"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Access_Permission",
+   "Access_Restriction",
+   "Change_Permission",
+   "Change_Restriction",
    "Commands_File",
    "Create_List",
+   "Create_Permission",
+   "Create_Restriction",
    "Create_View",
    "Created_List",
    "Created_View",
    "Delay_Initial_Records",
+   "Destroy_Permission",
+   "Destroy_Restriction",
    "Extra",
    "Header_File",
    "Id",
@@ -310,12 +361,20 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+string g_default_Change_Permission = string( );
+int g_default_Change_Restriction = int( 0 );
 string g_default_Commands_File = string( );
 bool g_default_Create_List = bool( 0 );
+string g_default_Create_Permission = string( );
+int g_default_Create_Restriction = int( 0 );
 bool g_default_Create_View = bool( 0 );
 string g_default_Created_List = string( );
 string g_default_Created_View = string( );
 bool g_default_Delay_Initial_Records = bool( 0 );
+string g_default_Destroy_Permission = string( );
+int g_default_Destroy_Restriction = int( 0 );
 int g_default_Extra = int( 0 );
 string g_default_Header_File = string( );
 string g_default_Id = string( );
@@ -331,8 +390,92 @@ string g_default_Source_Model = string( );
 string g_default_Static_Instance_Key = string( );
 int g_default_Type = int( 0 );
 
+set< int > g_view_access_restrict_enum;
+set< int > g_view_change_restrict_enum;
+set< int > g_list_restrict_enum;
 set< int > g_class_extra_enum;
 set< int > g_class_type_enum;
+
+const int c_enum_view_access_restrict_none( 0 );
+const int c_enum_view_access_restrict_owner_only( 1 );
+const int c_enum_view_access_restrict_admin_only( 2 );
+const int c_enum_view_access_restrict_admin_owner( 3 );
+
+string get_enum_string_view_access_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_access_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_access_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_access_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_access_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_access_restrict_admin_owner";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_access_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_change_restrict_none( 0 );
+const int c_enum_view_change_restrict_owner_only( 1 );
+const int c_enum_view_change_restrict_admin_only( 2 );
+const int c_enum_view_change_restrict_admin_owner( 3 );
+const int c_enum_view_change_restrict_denied_always( 4 );
+
+string get_enum_string_view_change_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_change_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_change_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_change_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_change_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_change_restrict_admin_owner";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_view_change_restrict_denied_always";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_change_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_list_restrict_none( 0 );
+const int c_enum_list_restrict_owner_only( 1 );
+const int c_enum_list_restrict_admin_only( 2 );
+const int c_enum_list_restrict_admin_owner( 3 );
+const int c_enum_list_restrict_denied_always( 4 );
+
+string get_enum_string_list_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for list_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_list_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_list_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_list_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_list_restrict_admin_owner";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_list_restrict_denied_always";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 const int c_enum_class_extra_none( 0 );
 const int c_enum_class_extra_ordered( 1 );
@@ -516,6 +659,30 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Class->Access_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Class->Access_Restriction( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Class->Change_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Class->Change_Restriction( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
       {
          handled = true;
@@ -526,6 +693,18 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
       {
          handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Class->Create_List( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Class->Create_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Class->Create_Restriction( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Create_View || field_name == c_field_name_Create_View )
@@ -550,6 +729,18 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
       {
          handled = true;
          string_getter< bool >( cmd_handler.p_Meta_Class->Delay_Initial_Records( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Class->Destroy_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Class->Destroy_Restriction( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
@@ -648,6 +839,34 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, Meta_Permission >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Access_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, int >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Access_Restriction, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, Meta_Permission >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Change_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, int >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Change_Restriction, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Commands_File || field_name == c_field_name_Commands_File )
       {
          handled = true;
@@ -660,6 +879,20 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
          handled = true;
          func_string_setter< Meta_Class, bool >(
           *cmd_handler.p_Meta_Class, &Meta_Class::Create_List, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, Meta_Permission >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Create_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Create_Restriction || field_name == c_field_name_Create_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, int >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Create_Restriction, field_value );
       }
 
       if( !handled && field_name == c_field_id_Create_View || field_name == c_field_name_Create_View )
@@ -688,6 +921,20 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
          handled = true;
          func_string_setter< Meta_Class, bool >(
           *cmd_handler.p_Meta_Class, &Meta_Class::Delay_Initial_Records, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, Meta_Permission >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Destroy_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Destroy_Restriction || field_name == c_field_name_Destroy_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Class, int >(
+          *cmd_handler.p_Meta_Class, &Meta_Class::Destroy_Restriction, field_value );
       }
 
       if( !handled && field_name == c_field_id_Extra || field_name == c_field_name_Extra )
@@ -802,10 +1049,18 @@ void Meta_Class_command_functor::operator ( )( const string& command, const para
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Class->Access_Permission( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Class->Change_Permission( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Create_Permission || field_name == c_field_name_Create_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Class->Create_Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Created_List || field_name == c_field_name_Created_List )
          cmd_handler.retval = cmd_handler.p_Meta_Class->Created_List( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Created_View || field_name == c_field_name_Created_View )
          cmd_handler.retval = cmd_handler.p_Meta_Class->Created_View( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Destroy_Permission || field_name == c_field_name_Destroy_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Class->Destroy_Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
          cmd_handler.retval = cmd_handler.p_Meta_Class->Model( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Quick_Link_Field || field_name == c_field_name_Quick_Link_Field )
@@ -844,17 +1099,29 @@ struct Meta_Class::impl : public Meta_Class_command_handler
       return *cp_obj;
    }
 
+   int impl_Access_Restriction( ) const { return lazy_fetch( p_obj ), v_Access_Restriction; }
+   void impl_Access_Restriction( int Access_Restriction ) { v_Access_Restriction = Access_Restriction; }
+
+   int impl_Change_Restriction( ) const { return lazy_fetch( p_obj ), v_Change_Restriction; }
+   void impl_Change_Restriction( int Change_Restriction ) { v_Change_Restriction = Change_Restriction; }
+
    const string& impl_Commands_File( ) const { return lazy_fetch( p_obj ), v_Commands_File; }
    void impl_Commands_File( const string& Commands_File ) { v_Commands_File = Commands_File; }
 
    bool impl_Create_List( ) const { return lazy_fetch( p_obj ), v_Create_List; }
    void impl_Create_List( bool Create_List ) { v_Create_List = Create_List; }
 
+   int impl_Create_Restriction( ) const { return lazy_fetch( p_obj ), v_Create_Restriction; }
+   void impl_Create_Restriction( int Create_Restriction ) { v_Create_Restriction = Create_Restriction; }
+
    bool impl_Create_View( ) const { return lazy_fetch( p_obj ), v_Create_View; }
    void impl_Create_View( bool Create_View ) { v_Create_View = Create_View; }
 
    bool impl_Delay_Initial_Records( ) const { return lazy_fetch( p_obj ), v_Delay_Initial_Records; }
    void impl_Delay_Initial_Records( bool Delay_Initial_Records ) { v_Delay_Initial_Records = Delay_Initial_Records; }
+
+   int impl_Destroy_Restriction( ) const { return lazy_fetch( p_obj ), v_Destroy_Restriction; }
+   void impl_Destroy_Restriction( int Destroy_Restriction ) { v_Destroy_Restriction = Destroy_Restriction; }
 
    int impl_Extra( ) const { return lazy_fetch( p_obj ), v_Extra; }
    void impl_Extra( int Extra ) { v_Extra = Extra; }
@@ -885,6 +1152,96 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    int impl_Type( ) const { return lazy_fetch( p_obj ), v_Type; }
    void impl_Type( int Type ) { v_Type = Type; }
+
+   Meta_Permission& impl_Access_Permission( )
+   {
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   const Meta_Permission& impl_Access_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   void impl_Access_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Access_Permission( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Permission& impl_Change_Permission( )
+   {
+      if( !cp_Change_Permission )
+      {
+         cp_Change_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Change_Permission, c_field_id_Change_Permission, v_Change_Permission );
+      }
+      return *cp_Change_Permission;
+   }
+
+   const Meta_Permission& impl_Change_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Change_Permission )
+      {
+         cp_Change_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Change_Permission, c_field_id_Change_Permission, v_Change_Permission );
+      }
+      return *cp_Change_Permission;
+   }
+
+   void impl_Change_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Change_Permission( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Permission& impl_Create_Permission( )
+   {
+      if( !cp_Create_Permission )
+      {
+         cp_Create_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Create_Permission, c_field_id_Create_Permission, v_Create_Permission );
+      }
+      return *cp_Create_Permission;
+   }
+
+   const Meta_Permission& impl_Create_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Create_Permission )
+      {
+         cp_Create_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Create_Permission, c_field_id_Create_Permission, v_Create_Permission );
+      }
+      return *cp_Create_Permission;
+   }
+
+   void impl_Create_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Create_Permission( ) );
+      cba.set_key( key );
+   }
 
    Meta_List& impl_Created_List( )
    {
@@ -943,6 +1300,36 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    void impl_Created_View( const string& key )
    {
       class_base_accessor cba( impl_Created_View( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Permission& impl_Destroy_Permission( )
+   {
+      if( !cp_Destroy_Permission )
+      {
+         cp_Destroy_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Destroy_Permission, c_field_id_Destroy_Permission, v_Destroy_Permission );
+      }
+      return *cp_Destroy_Permission;
+   }
+
+   const Meta_Permission& impl_Destroy_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Destroy_Permission )
+      {
+         cp_Destroy_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Destroy_Permission, c_field_id_Destroy_Permission, v_Destroy_Permission );
+      }
+      return *cp_Destroy_Permission;
+   }
+
+   void impl_Destroy_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Destroy_Permission( ) );
       cba.set_key( key );
    }
 
@@ -1849,10 +2236,14 @@ struct Meta_Class::impl : public Meta_Class_command_handler
 
    size_t total_child_relationships;
 
+   int v_Access_Restriction;
+   int v_Change_Restriction;
    string v_Commands_File;
    bool v_Create_List;
+   int v_Create_Restriction;
    bool v_Create_View;
    bool v_Delay_Initial_Records;
+   int v_Destroy_Restriction;
    int v_Extra;
    string v_Header_File;
    string v_Id;
@@ -1864,11 +2255,23 @@ struct Meta_Class::impl : public Meta_Class_command_handler
    string v_Static_Instance_Key;
    int v_Type;
 
+   string v_Access_Permission;
+   mutable class_pointer< Meta_Permission > cp_Access_Permission;
+
+   string v_Change_Permission;
+   mutable class_pointer< Meta_Permission > cp_Change_Permission;
+
+   string v_Create_Permission;
+   mutable class_pointer< Meta_Permission > cp_Create_Permission;
+
    string v_Created_List;
    mutable class_pointer< Meta_List > cp_Created_List;
 
    string v_Created_View;
    mutable class_pointer< Meta_View > cp_Created_View;
+
+   string v_Destroy_Permission;
+   mutable class_pointer< Meta_Permission > cp_Destroy_Permission;
 
    string v_Model;
    mutable class_pointer< Meta_Model > cp_Model;
@@ -2979,82 +3382,114 @@ string Meta_Class::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Commands_File( ) );
+      retval = to_string( impl_Access_Permission( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Create_List( ) );
+      retval = to_string( impl_Access_Restriction( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Create_View( ) );
+      retval = to_string( impl_Change_Permission( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Created_List( ) );
+      retval = to_string( impl_Change_Restriction( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Created_View( ) );
+      retval = to_string( impl_Commands_File( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Delay_Initial_Records( ) );
+      retval = to_string( impl_Create_List( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Create_Permission( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Header_File( ) );
+      retval = to_string( impl_Create_Restriction( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Create_View( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Created_List( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Created_View( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Next_Field_Id( ) );
+      retval = to_string( impl_Delay_Initial_Records( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Next_Procedure_Id( ) );
+      retval = to_string( impl_Destroy_Permission( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Plural( ) );
+      retval = to_string( impl_Destroy_Restriction( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Quick_Link_Field( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Source_Class( ) );
+      retval = to_string( impl_Header_File( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Source_File( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Source_Model( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Static_Instance_Key( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 19:
+      retval = to_string( impl_Next_Field_Id( ) );
+      break;
+
+      case 20:
+      retval = to_string( impl_Next_Procedure_Id( ) );
+      break;
+
+      case 21:
+      retval = to_string( impl_Plural( ) );
+      break;
+
+      case 22:
+      retval = to_string( impl_Quick_Link_Field( ) );
+      break;
+
+      case 23:
+      retval = to_string( impl_Source_Class( ) );
+      break;
+
+      case 24:
+      retval = to_string( impl_Source_File( ) );
+      break;
+
+      case 25:
+      retval = to_string( impl_Source_Model( ) );
+      break;
+
+      case 26:
+      retval = to_string( impl_Static_Instance_Key( ) );
+      break;
+
+      case 27:
       retval = to_string( impl_Type( ) );
       break;
 
@@ -3070,82 +3505,114 @@ void Meta_Class::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Commands_File, value );
+      func_string_setter< Meta_Class::impl, Meta_Permission >( *this, &Meta_Class::impl::impl_Access_Permission, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Create_List, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Access_Restriction, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Create_View, value );
+      func_string_setter< Meta_Class::impl, Meta_Permission >( *this, &Meta_Class::impl::impl_Change_Permission, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Class::impl, Meta_List >( *this, &Meta_Class::impl::impl_Created_List, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Change_Restriction, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Class::impl, Meta_View >( *this, &Meta_Class::impl::impl_Created_View, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Commands_File, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Delay_Initial_Records, value );
+      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Create_List, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Extra, value );
+      func_string_setter< Meta_Class::impl, Meta_Permission >( *this, &Meta_Class::impl::impl_Create_Permission, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Header_File, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Create_Restriction, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Id, value );
+      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Create_View, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Model, value );
+      func_string_setter< Meta_Class::impl, Meta_List >( *this, &Meta_Class::impl::impl_Created_List, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Name, value );
+      func_string_setter< Meta_Class::impl, Meta_View >( *this, &Meta_Class::impl::impl_Created_View, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Field_Id, value );
+      func_string_setter< Meta_Class::impl, bool >( *this, &Meta_Class::impl::impl_Delay_Initial_Records, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Procedure_Id, value );
+      func_string_setter< Meta_Class::impl, Meta_Permission >( *this, &Meta_Class::impl::impl_Destroy_Permission, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Plural, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Destroy_Restriction, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Class::impl, Meta_Field >( *this, &Meta_Class::impl::impl_Quick_Link_Field, value );
+      func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Extra, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Class::impl, Meta_Class >( *this, &Meta_Class::impl::impl_Source_Class, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Header_File, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Source_File, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Id, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Source_Model, value );
+      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Model, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Static_Instance_Key, value );
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Name, value );
       break;
 
       case 19:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Field_Id, value );
+      break;
+
+      case 20:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Next_Procedure_Id, value );
+      break;
+
+      case 21:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Plural, value );
+      break;
+
+      case 22:
+      func_string_setter< Meta_Class::impl, Meta_Field >( *this, &Meta_Class::impl::impl_Quick_Link_Field, value );
+      break;
+
+      case 23:
+      func_string_setter< Meta_Class::impl, Meta_Class >( *this, &Meta_Class::impl::impl_Source_Class, value );
+      break;
+
+      case 24:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Source_File, value );
+      break;
+
+      case 25:
+      func_string_setter< Meta_Class::impl, Meta_Model >( *this, &Meta_Class::impl::impl_Source_Model, value );
+      break;
+
+      case 26:
+      func_string_setter< Meta_Class::impl, string >( *this, &Meta_Class::impl::impl_Static_Instance_Key, value );
+      break;
+
+      case 27:
       func_string_setter< Meta_Class::impl, int >( *this, &Meta_Class::impl::impl_Type, value );
       break;
 
@@ -3189,10 +3656,18 @@ void Meta_Class::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      impl_Access_Permission( "" );
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      impl_Change_Permission( "" );
+   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+      impl_Create_Permission( "" );
    else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
       impl_Created_List( "" );
    else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
       impl_Created_View( "" );
+   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+      impl_Destroy_Permission( "" );
    else if( field == c_field_id_Model || field == c_field_name_Model )
       impl_Model( "" );
    else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
@@ -3209,10 +3684,18 @@ void Meta_Class::impl::set_foreign_key_value( const string& field, const string&
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      v_Access_Permission = value;
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      v_Change_Permission = value;
+   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+      v_Create_Permission = value;
    else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
       v_Created_List = value;
    else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
       v_Created_View = value;
+   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+      v_Destroy_Permission = value;
    else if( field == c_field_id_Model || field == c_field_name_Model )
       v_Model = value;
    else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
@@ -3229,10 +3712,18 @@ const string& Meta_Class::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      return v_Access_Permission;
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      return v_Change_Permission;
+   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
+      return v_Create_Permission;
    else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
       return v_Created_List;
    else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
       return v_Created_View;
+   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
+      return v_Destroy_Permission;
    else if( field == c_field_id_Model || field == c_field_name_Model )
       return v_Model;
    else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
@@ -3247,8 +3738,12 @@ const string& Meta_Class::impl::get_foreign_key_value( const string& field )
 
 void Meta_Class::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Access_Permission, v_Access_Permission ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Change_Permission, v_Change_Permission ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Create_Permission, v_Create_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Created_List, v_Created_List ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Created_View, v_Created_View ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Destroy_Permission, v_Destroy_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Model, v_Model ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Quick_Link_Field, v_Quick_Link_Field ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Class, v_Source_Class ) );
@@ -3273,10 +3768,14 @@ void Meta_Class::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Class::impl::clear( )
 {
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Change_Restriction = g_default_Change_Restriction;
    v_Commands_File = g_default_Commands_File;
    v_Create_List = g_default_Create_List;
+   v_Create_Restriction = g_default_Create_Restriction;
    v_Create_View = g_default_Create_View;
    v_Delay_Initial_Records = g_default_Delay_Initial_Records;
+   v_Destroy_Restriction = g_default_Destroy_Restriction;
    v_Extra = g_default_Extra;
    v_Header_File = g_default_Header_File;
    v_Id = g_default_Id;
@@ -3288,6 +3787,18 @@ void Meta_Class::impl::clear( )
    v_Static_Instance_Key = g_default_Static_Instance_Key;
    v_Type = g_default_Type;
 
+   v_Access_Permission = string( );
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
+
+   v_Change_Permission = string( );
+   if( cp_Change_Permission )
+      p_obj->setup_foreign_key( *cp_Change_Permission, v_Change_Permission );
+
+   v_Create_Permission = string( );
+   if( cp_Create_Permission )
+      p_obj->setup_foreign_key( *cp_Create_Permission, v_Create_Permission );
+
    v_Created_List = string( );
    if( cp_Created_List )
       p_obj->setup_foreign_key( *cp_Created_List, v_Created_List );
@@ -3295,6 +3806,10 @@ void Meta_Class::impl::clear( )
    v_Created_View = string( );
    if( cp_Created_View )
       p_obj->setup_foreign_key( *cp_Created_View, v_Created_View );
+
+   v_Destroy_Permission = string( );
+   if( cp_Destroy_Permission )
+      p_obj->setup_foreign_key( *cp_Destroy_Permission, v_Destroy_Permission );
 
    v_Model = string( );
    if( cp_Model )
@@ -3399,6 +3914,26 @@ void Meta_Class::impl::validate( unsigned state, bool is_internal, validation_er
       p_validation_errors->insert( validation_error_value_type( c_field_name_Static_Instance_Key,
        get_module_string( c_field_display_name_Static_Instance_Key ) + " " + error_message ) );
 
+   if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
+
+   if( !g_view_change_restrict_enum.count( v_Change_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Restriction ) ) ) ) );
+
+   if( !g_list_restrict_enum.count( v_Create_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Create_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Create_Restriction ) ) ) ) );
+
+   if( !g_list_restrict_enum.count( v_Destroy_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Destroy_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Destroy_Restriction ) ) ) ) );
+
    if( !g_class_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
@@ -3472,11 +4007,23 @@ void Meta_Class::impl::after_fetch( )
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
 
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
+
+   if( cp_Change_Permission )
+      p_obj->setup_foreign_key( *cp_Change_Permission, v_Change_Permission );
+
+   if( cp_Create_Permission )
+      p_obj->setup_foreign_key( *cp_Create_Permission, v_Create_Permission );
+
    if( cp_Created_List )
       p_obj->setup_foreign_key( *cp_Created_List, v_Created_List );
 
    if( cp_Created_View )
       p_obj->setup_foreign_key( *cp_Created_View, v_Created_View );
+
+   if( cp_Destroy_Permission )
+      p_obj->setup_foreign_key( *cp_Destroy_Permission, v_Destroy_Permission );
 
    if( cp_Model )
       p_obj->setup_foreign_key( *cp_Model, v_Model );
@@ -4093,6 +4640,26 @@ Meta_Class::~Meta_Class( )
    delete p_impl;
 }
 
+int Meta_Class::Access_Restriction( ) const
+{
+   return p_impl->impl_Access_Restriction( );
+}
+
+void Meta_Class::Access_Restriction( int Access_Restriction )
+{
+   p_impl->impl_Access_Restriction( Access_Restriction );
+}
+
+int Meta_Class::Change_Restriction( ) const
+{
+   return p_impl->impl_Change_Restriction( );
+}
+
+void Meta_Class::Change_Restriction( int Change_Restriction )
+{
+   p_impl->impl_Change_Restriction( Change_Restriction );
+}
+
 const string& Meta_Class::Commands_File( ) const
 {
    return p_impl->impl_Commands_File( );
@@ -4113,6 +4680,16 @@ void Meta_Class::Create_List( bool Create_List )
    p_impl->impl_Create_List( Create_List );
 }
 
+int Meta_Class::Create_Restriction( ) const
+{
+   return p_impl->impl_Create_Restriction( );
+}
+
+void Meta_Class::Create_Restriction( int Create_Restriction )
+{
+   p_impl->impl_Create_Restriction( Create_Restriction );
+}
+
 bool Meta_Class::Create_View( ) const
 {
    return p_impl->impl_Create_View( );
@@ -4131,6 +4708,16 @@ bool Meta_Class::Delay_Initial_Records( ) const
 void Meta_Class::Delay_Initial_Records( bool Delay_Initial_Records )
 {
    p_impl->impl_Delay_Initial_Records( Delay_Initial_Records );
+}
+
+int Meta_Class::Destroy_Restriction( ) const
+{
+   return p_impl->impl_Destroy_Restriction( );
+}
+
+void Meta_Class::Destroy_Restriction( int Destroy_Restriction )
+{
+   p_impl->impl_Destroy_Restriction( Destroy_Restriction );
 }
 
 int Meta_Class::Extra( ) const
@@ -4233,6 +4820,51 @@ void Meta_Class::Type( int Type )
    p_impl->impl_Type( Type );
 }
 
+Meta_Permission& Meta_Class::Access_Permission( )
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+const Meta_Permission& Meta_Class::Access_Permission( ) const
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+void Meta_Class::Access_Permission( const string& key )
+{
+   p_impl->impl_Access_Permission( key );
+}
+
+Meta_Permission& Meta_Class::Change_Permission( )
+{
+   return p_impl->impl_Change_Permission( );
+}
+
+const Meta_Permission& Meta_Class::Change_Permission( ) const
+{
+   return p_impl->impl_Change_Permission( );
+}
+
+void Meta_Class::Change_Permission( const string& key )
+{
+   p_impl->impl_Change_Permission( key );
+}
+
+Meta_Permission& Meta_Class::Create_Permission( )
+{
+   return p_impl->impl_Create_Permission( );
+}
+
+const Meta_Permission& Meta_Class::Create_Permission( ) const
+{
+   return p_impl->impl_Create_Permission( );
+}
+
+void Meta_Class::Create_Permission( const string& key )
+{
+   p_impl->impl_Create_Permission( key );
+}
+
 Meta_List& Meta_Class::Created_List( )
 {
    return p_impl->impl_Created_List( );
@@ -4261,6 +4893,21 @@ const Meta_View& Meta_Class::Created_View( ) const
 void Meta_Class::Created_View( const string& key )
 {
    p_impl->impl_Created_View( key );
+}
+
+Meta_Permission& Meta_Class::Destroy_Permission( )
+{
+   return p_impl->impl_Destroy_Permission( );
+}
+
+const Meta_Permission& Meta_Class::Destroy_Permission( ) const
+{
+   return p_impl->impl_Destroy_Permission( );
+}
+
+void Meta_Class::Destroy_Permission( const string& key )
+{
+   p_impl->impl_Destroy_Permission( key );
 }
 
 Meta_Model& Meta_Class::Model( )
@@ -4789,6 +5436,46 @@ const char* Meta_Class::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Access_Permission )
+   {
+      p_id = c_field_id_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Access_Restriction )
+   {
+      p_id = c_field_id_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Change_Permission )
+   {
+      p_id = c_field_id_Change_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Change_Restriction )
+   {
+      p_id = c_field_id_Change_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Commands_File )
    {
       p_id = c_field_id_Commands_File;
@@ -4808,6 +5495,26 @@ const char* Meta_Class::get_field_id(
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Create_Permission )
+   {
+      p_id = c_field_id_Create_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Create_Restriction )
+   {
+      p_id = c_field_id_Create_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
    }
    else if( name == c_field_name_Create_View )
    {
@@ -4845,6 +5552,26 @@ const char* Meta_Class::get_field_id(
 
       if( p_type_name )
          *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Destroy_Permission )
+   {
+      p_id = c_field_id_Destroy_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Destroy_Restriction )
+   {
+      p_id = c_field_id_Destroy_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -5000,6 +5727,46 @@ const char* Meta_Class::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Access_Permission )
+   {
+      p_name = c_field_name_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Access_Restriction )
+   {
+      p_name = c_field_name_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Change_Permission )
+   {
+      p_name = c_field_name_Change_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Change_Restriction )
+   {
+      p_name = c_field_name_Change_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Commands_File )
    {
       p_name = c_field_name_Commands_File;
@@ -5019,6 +5786,26 @@ const char* Meta_Class::get_field_name(
 
       if( p_sql_numeric )
          *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Create_Permission )
+   {
+      p_name = c_field_name_Create_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Create_Restriction )
+   {
+      p_name = c_field_name_Create_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
    }
    else if( id == c_field_id_Create_View )
    {
@@ -5056,6 +5843,26 @@ const char* Meta_Class::get_field_name(
 
       if( p_type_name )
          *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Destroy_Permission )
+   {
+      p_name = c_field_name_Destroy_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Destroy_Restriction )
+   {
+      p_name = c_field_name_Destroy_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
 
       if( p_sql_numeric )
          *p_sql_numeric = true;
@@ -5229,6 +6036,26 @@ string Meta_Class::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+   {
+      name = string( c_field_display_name_Change_Permission );
+      get_module_string( c_field_display_name_Change_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+   {
+      name = string( c_field_display_name_Change_Restriction );
+      get_module_string( c_field_display_name_Change_Restriction, &next );
+   }
    else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
    {
       name = string( c_field_display_name_Commands_File );
@@ -5238,6 +6065,16 @@ string Meta_Class::get_field_uom_symbol( const string& id_or_name ) const
    {
       name = string( c_field_display_name_Create_List );
       get_module_string( c_field_display_name_Create_List, &next );
+   }
+   else if( id_or_name == c_field_id_Create_Permission || id_or_name == c_field_name_Create_Permission )
+   {
+      name = string( c_field_display_name_Create_Permission );
+      get_module_string( c_field_display_name_Create_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Create_Restriction || id_or_name == c_field_name_Create_Restriction )
+   {
+      name = string( c_field_display_name_Create_Restriction );
+      get_module_string( c_field_display_name_Create_Restriction, &next );
    }
    else if( id_or_name == c_field_id_Create_View || id_or_name == c_field_name_Create_View )
    {
@@ -5258,6 +6095,16 @@ string Meta_Class::get_field_uom_symbol( const string& id_or_name ) const
    {
       name = string( c_field_display_name_Delay_Initial_Records );
       get_module_string( c_field_display_name_Delay_Initial_Records, &next );
+   }
+   else if( id_or_name == c_field_id_Destroy_Permission || id_or_name == c_field_name_Destroy_Permission )
+   {
+      name = string( c_field_display_name_Destroy_Permission );
+      get_module_string( c_field_display_name_Destroy_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Destroy_Restriction || id_or_name == c_field_name_Destroy_Restriction )
+   {
+      name = string( c_field_display_name_Destroy_Restriction );
+      get_module_string( c_field_display_name_Destroy_Restriction, &next );
    }
    else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
    {
@@ -5344,10 +6191,22 @@ string Meta_Class::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+      display_name = get_module_string( c_field_display_name_Access_Permission );
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+      display_name = get_module_string( c_field_display_name_Access_Restriction );
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+      display_name = get_module_string( c_field_display_name_Change_Permission );
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+      display_name = get_module_string( c_field_display_name_Change_Restriction );
    else if( id_or_name == c_field_id_Commands_File || id_or_name == c_field_name_Commands_File )
       display_name = get_module_string( c_field_display_name_Commands_File );
    else if( id_or_name == c_field_id_Create_List || id_or_name == c_field_name_Create_List )
       display_name = get_module_string( c_field_display_name_Create_List );
+   else if( id_or_name == c_field_id_Create_Permission || id_or_name == c_field_name_Create_Permission )
+      display_name = get_module_string( c_field_display_name_Create_Permission );
+   else if( id_or_name == c_field_id_Create_Restriction || id_or_name == c_field_name_Create_Restriction )
+      display_name = get_module_string( c_field_display_name_Create_Restriction );
    else if( id_or_name == c_field_id_Create_View || id_or_name == c_field_name_Create_View )
       display_name = get_module_string( c_field_display_name_Create_View );
    else if( id_or_name == c_field_id_Created_List || id_or_name == c_field_name_Created_List )
@@ -5356,6 +6215,10 @@ string Meta_Class::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Created_View );
    else if( id_or_name == c_field_id_Delay_Initial_Records || id_or_name == c_field_name_Delay_Initial_Records )
       display_name = get_module_string( c_field_display_name_Delay_Initial_Records );
+   else if( id_or_name == c_field_id_Destroy_Permission || id_or_name == c_field_name_Destroy_Permission )
+      display_name = get_module_string( c_field_display_name_Destroy_Permission );
+   else if( id_or_name == c_field_id_Destroy_Restriction || id_or_name == c_field_name_Destroy_Restriction )
+      display_name = get_module_string( c_field_display_name_Destroy_Restriction );
    else if( id_or_name == c_field_id_Extra || id_or_name == c_field_name_Extra )
       display_name = get_module_string( c_field_display_name_Extra );
    else if( id_or_name == c_field_id_Header_File || id_or_name == c_field_name_Header_File )
@@ -5406,6 +6269,11 @@ const string& Meta_Class::get_foreign_key_value( const string& field )
 void Meta_Class::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_Class::setup_foreign_key( Meta_Permission& o, const string& value )
+{
+   static_cast< Meta_Permission& >( o ).set_key( value );
 }
 
 void Meta_Class::setup_foreign_key( Meta_List& o, const string& value )
@@ -5506,6 +6374,13 @@ void Meta_Class::setup_graph_parent( Meta_Procedure& o, const string& foreign_ke
 void Meta_Class::setup_graph_parent( Meta_View& o, const string& foreign_key_field )
 {
    static_cast< Meta_View& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Class::setup_graph_parent(
+ Meta_Permission& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Permission& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Permission& >( o ).set_key( init_value );
 }
 
 void Meta_Class::setup_graph_parent(
@@ -6002,10 +6877,18 @@ class_base& Meta_Class::get_or_create_graph_child( const string& context )
       p_class_base = &child_View_Field( );
    else if( sub_context == "_301820" || sub_context == "child_View" )
       p_class_base = &child_View( );
+   else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )
+      p_class_base = &Access_Permission( );
+   else if( sub_context == c_field_id_Change_Permission || sub_context == c_field_name_Change_Permission )
+      p_class_base = &Change_Permission( );
+   else if( sub_context == c_field_id_Create_Permission || sub_context == c_field_name_Create_Permission )
+      p_class_base = &Create_Permission( );
    else if( sub_context == c_field_id_Created_List || sub_context == c_field_name_Created_List )
       p_class_base = &Created_List( );
    else if( sub_context == c_field_id_Created_View || sub_context == c_field_name_Created_View )
       p_class_base = &Created_View( );
+   else if( sub_context == c_field_id_Destroy_Permission || sub_context == c_field_name_Destroy_Permission )
+      p_class_base = &Destroy_Permission( );
    else if( sub_context == c_field_id_Model || sub_context == c_field_name_Model )
       p_class_base = &Model( );
    else if( sub_context == c_field_id_Quick_Link_Field || sub_context == c_field_name_Quick_Link_Field )
@@ -6030,10 +6913,18 @@ void Meta_Class::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Access_Permission" );
+   names.push_back( "C_Access_Restriction" );
+   names.push_back( "C_Change_Permission" );
+   names.push_back( "C_Change_Restriction" );
    names.push_back( "C_Commands_File" );
+   names.push_back( "C_Create_Permission" );
+   names.push_back( "C_Create_Restriction" );
    names.push_back( "C_Created_List" );
    names.push_back( "C_Created_View" );
    names.push_back( "C_Delay_Initial_Records" );
+   names.push_back( "C_Destroy_Permission" );
+   names.push_back( "C_Destroy_Restriction" );
    names.push_back( "C_Extra" );
    names.push_back( "C_Header_File" );
    names.push_back( "C_Id" );
@@ -6059,10 +6950,18 @@ void Meta_Class::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( sql_quote( to_string( Access_Permission( ) ) ) );
+   values.push_back( to_string( Access_Restriction( ) ) );
+   values.push_back( sql_quote( to_string( Change_Permission( ) ) ) );
+   values.push_back( to_string( Change_Restriction( ) ) );
    values.push_back( sql_quote( to_string( Commands_File( ) ) ) );
+   values.push_back( sql_quote( to_string( Create_Permission( ) ) ) );
+   values.push_back( to_string( Create_Restriction( ) ) );
    values.push_back( sql_quote( to_string( Created_List( ) ) ) );
    values.push_back( sql_quote( to_string( Created_View( ) ) ) );
    values.push_back( to_string( Delay_Initial_Records( ) ) );
+   values.push_back( sql_quote( to_string( Destroy_Permission( ) ) ) );
+   values.push_back( to_string( Destroy_Restriction( ) ) );
    values.push_back( to_string( Extra( ) ) );
    values.push_back( sql_quote( to_string( Header_File( ) ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
@@ -6242,12 +7141,20 @@ void Meta_Class::static_get_class_info( class_info_container& class_info )
 
 void Meta_Class::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "300633", "Access_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "106124", "Access_Restriction", "int", false ) );
+   all_field_info.push_back( field_info( "300634", "Change_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "106125", "Change_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "106110", "Commands_File", "string", false ) );
    all_field_info.push_back( field_info( "106123", "Create_List", "bool", false ) );
+   all_field_info.push_back( field_info( "300635", "Create_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "106126", "Create_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "106122", "Create_View", "bool", false ) );
    all_field_info.push_back( field_info( "300632", "Created_List", "Meta_List", false ) );
    all_field_info.push_back( field_info( "300631", "Created_View", "Meta_View", false ) );
    all_field_info.push_back( field_info( "106121", "Delay_Initial_Records", "bool", false ) );
+   all_field_info.push_back( field_info( "300636", "Destroy_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "106127", "Destroy_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "106103", "Extra", "int", false ) );
    all_field_info.push_back( field_info( "106109", "Header_File", "string", false ) );
    all_field_info.push_back( field_info( "106104", "Id", "string", false ) );
@@ -6268,8 +7175,12 @@ void Meta_Class::static_get_foreign_key_info( foreign_key_info_container& foreig
 {
    ( void )foreign_key_info;
 
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Access_Permission, make_pair( "Meta.106100", "Meta_Permission" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Change_Permission, make_pair( "Meta.106100", "Meta_Permission" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Create_Permission, make_pair( "Meta.106100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Created_List, make_pair( "Meta.106100", "Meta_List" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Created_View, make_pair( "Meta.106100", "Meta_View" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Destroy_Permission, make_pair( "Meta.106100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Model, make_pair( "Meta.106100", "Meta_Model" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Quick_Link_Field, make_pair( "Meta.106100", "Meta_Field" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Class, make_pair( "Meta.106100", "Meta_Class" ) ) );
@@ -6296,82 +7207,114 @@ const char* Meta_Class::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "106110";
+      p_id = "300633";
       break;
 
       case 2:
-      p_id = "106123";
+      p_id = "106124";
       break;
 
       case 3:
-      p_id = "106122";
+      p_id = "300634";
       break;
 
       case 4:
-      p_id = "300632";
+      p_id = "106125";
       break;
 
       case 5:
-      p_id = "300631";
+      p_id = "106110";
       break;
 
       case 6:
-      p_id = "106121";
+      p_id = "106123";
       break;
 
       case 7:
-      p_id = "106103";
+      p_id = "300635";
       break;
 
       case 8:
-      p_id = "106109";
+      p_id = "106126";
       break;
 
       case 9:
-      p_id = "106104";
+      p_id = "106122";
       break;
 
       case 10:
-      p_id = "300600";
+      p_id = "300632";
       break;
 
       case 11:
-      p_id = "106101";
+      p_id = "300631";
       break;
 
       case 12:
-      p_id = "106105";
+      p_id = "106121";
       break;
 
       case 13:
-      p_id = "106106";
+      p_id = "300636";
       break;
 
       case 14:
-      p_id = "106102";
+      p_id = "106127";
       break;
 
       case 15:
-      p_id = "300630";
+      p_id = "106103";
       break;
 
       case 16:
-      p_id = "300620";
+      p_id = "106109";
       break;
 
       case 17:
-      p_id = "106108";
+      p_id = "106104";
       break;
 
       case 18:
-      p_id = "300610";
+      p_id = "300600";
       break;
 
       case 19:
-      p_id = "106120";
+      p_id = "106101";
       break;
 
       case 20:
+      p_id = "106105";
+      break;
+
+      case 21:
+      p_id = "106106";
+      break;
+
+      case 22:
+      p_id = "106102";
+      break;
+
+      case 23:
+      p_id = "300630";
+      break;
+
+      case 24:
+      p_id = "300620";
+      break;
+
+      case 25:
+      p_id = "106108";
+      break;
+
+      case 26:
+      p_id = "300610";
+      break;
+
+      case 27:
+      p_id = "106120";
+      break;
+
+      case 28:
       p_id = "106107";
       break;
    }
@@ -6389,82 +7332,114 @@ const char* Meta_Class::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Commands_File";
+      p_id = "Access_Permission";
       break;
 
       case 2:
-      p_id = "Create_List";
+      p_id = "Access_Restriction";
       break;
 
       case 3:
-      p_id = "Create_View";
+      p_id = "Change_Permission";
       break;
 
       case 4:
-      p_id = "Created_List";
+      p_id = "Change_Restriction";
       break;
 
       case 5:
-      p_id = "Created_View";
+      p_id = "Commands_File";
       break;
 
       case 6:
-      p_id = "Delay_Initial_Records";
+      p_id = "Create_List";
       break;
 
       case 7:
-      p_id = "Extra";
+      p_id = "Create_Permission";
       break;
 
       case 8:
-      p_id = "Header_File";
+      p_id = "Create_Restriction";
       break;
 
       case 9:
-      p_id = "Id";
+      p_id = "Create_View";
       break;
 
       case 10:
-      p_id = "Model";
+      p_id = "Created_List";
       break;
 
       case 11:
-      p_id = "Name";
+      p_id = "Created_View";
       break;
 
       case 12:
-      p_id = "Next_Field_Id";
+      p_id = "Delay_Initial_Records";
       break;
 
       case 13:
-      p_id = "Next_Procedure_Id";
+      p_id = "Destroy_Permission";
       break;
 
       case 14:
-      p_id = "Plural";
+      p_id = "Destroy_Restriction";
       break;
 
       case 15:
-      p_id = "Quick_Link_Field";
+      p_id = "Extra";
       break;
 
       case 16:
-      p_id = "Source_Class";
+      p_id = "Header_File";
       break;
 
       case 17:
-      p_id = "Source_File";
+      p_id = "Id";
       break;
 
       case 18:
-      p_id = "Source_Model";
+      p_id = "Model";
       break;
 
       case 19:
-      p_id = "Static_Instance_Key";
+      p_id = "Name";
       break;
 
       case 20:
+      p_id = "Next_Field_Id";
+      break;
+
+      case 21:
+      p_id = "Next_Procedure_Id";
+      break;
+
+      case 22:
+      p_id = "Plural";
+      break;
+
+      case 23:
+      p_id = "Quick_Link_Field";
+      break;
+
+      case 24:
+      p_id = "Source_Class";
+      break;
+
+      case 25:
+      p_id = "Source_File";
+      break;
+
+      case 26:
+      p_id = "Source_Model";
+      break;
+
+      case 27:
+      p_id = "Static_Instance_Key";
+      break;
+
+      case 28:
       p_id = "Type";
       break;
    }
@@ -6481,46 +7456,62 @@ int Meta_Class::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Commands_File || field == c_field_name_Commands_File )
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       rc += 1;
-   else if( field == c_field_id_Create_List || field == c_field_name_Create_List )
+   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
       rc += 2;
-   else if( field == c_field_id_Create_View || field == c_field_name_Create_View )
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
       rc += 3;
-   else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
+   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
       rc += 4;
-   else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
+   else if( field == c_field_id_Commands_File || field == c_field_name_Commands_File )
       rc += 5;
-   else if( field == c_field_id_Delay_Initial_Records || field == c_field_name_Delay_Initial_Records )
+   else if( field == c_field_id_Create_List || field == c_field_name_Create_List )
       rc += 6;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Create_Permission || field == c_field_name_Create_Permission )
       rc += 7;
-   else if( field == c_field_id_Header_File || field == c_field_name_Header_File )
+   else if( field == c_field_id_Create_Restriction || field == c_field_name_Create_Restriction )
       rc += 8;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Create_View || field == c_field_name_Create_View )
       rc += 9;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Created_List || field == c_field_name_Created_List )
       rc += 10;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Created_View || field == c_field_name_Created_View )
       rc += 11;
-   else if( field == c_field_id_Next_Field_Id || field == c_field_name_Next_Field_Id )
+   else if( field == c_field_id_Delay_Initial_Records || field == c_field_name_Delay_Initial_Records )
       rc += 12;
-   else if( field == c_field_id_Next_Procedure_Id || field == c_field_name_Next_Procedure_Id )
+   else if( field == c_field_id_Destroy_Permission || field == c_field_name_Destroy_Permission )
       rc += 13;
-   else if( field == c_field_id_Plural || field == c_field_name_Plural )
+   else if( field == c_field_id_Destroy_Restriction || field == c_field_name_Destroy_Restriction )
       rc += 14;
-   else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 15;
-   else if( field == c_field_id_Source_Class || field == c_field_name_Source_Class )
+   else if( field == c_field_id_Header_File || field == c_field_name_Header_File )
       rc += 16;
-   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 17;
-   else if( field == c_field_id_Source_Model || field == c_field_name_Source_Model )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 18;
-   else if( field == c_field_id_Static_Instance_Key || field == c_field_name_Static_Instance_Key )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 19;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Next_Field_Id || field == c_field_name_Next_Field_Id )
       rc += 20;
+   else if( field == c_field_id_Next_Procedure_Id || field == c_field_name_Next_Procedure_Id )
+      rc += 21;
+   else if( field == c_field_id_Plural || field == c_field_name_Plural )
+      rc += 22;
+   else if( field == c_field_id_Quick_Link_Field || field == c_field_name_Quick_Link_Field )
+      rc += 23;
+   else if( field == c_field_id_Source_Class || field == c_field_name_Source_Class )
+      rc += 24;
+   else if( field == c_field_id_Source_File || field == c_field_name_Source_File )
+      rc += 25;
+   else if( field == c_field_id_Source_Model || field == c_field_name_Source_Model )
+      rc += 26;
+   else if( field == c_field_id_Static_Instance_Key || field == c_field_name_Static_Instance_Key )
+      rc += 27;
+   else if( field == c_field_id_Type || field == c_field_name_Type )
+      rc += 28;
 
    return rc - 1;
 }
@@ -6548,10 +7539,18 @@ string Meta_Class::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Access_Permission VARCHAR(75) NOT NULL,"
+    "C_Access_Restriction INTEGER NOT NULL,"
+    "C_Change_Permission VARCHAR(75) NOT NULL,"
+    "C_Change_Restriction INTEGER NOT NULL,"
     "C_Commands_File VARCHAR(200) NOT NULL,"
+    "C_Create_Permission VARCHAR(75) NOT NULL,"
+    "C_Create_Restriction INTEGER NOT NULL,"
     "C_Created_List VARCHAR(75) NOT NULL,"
     "C_Created_View VARCHAR(75) NOT NULL,"
     "C_Delay_Initial_Records INTEGER NOT NULL,"
+    "C_Destroy_Permission VARCHAR(75) NOT NULL,"
+    "C_Destroy_Restriction INTEGER NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
     "C_Header_File VARCHAR(200) NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
@@ -6578,6 +7577,23 @@ void Meta_Class::static_get_text_search_fields( vector< string >& fields )
 
 void Meta_Class::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "enum_view_access_restrict_0", get_enum_string_view_access_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_1", get_enum_string_view_access_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_2", get_enum_string_view_access_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_3", get_enum_string_view_access_restrict( 3 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_change_restrict_0", get_enum_string_view_change_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_1", get_enum_string_view_change_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_2", get_enum_string_view_change_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_3", get_enum_string_view_change_restrict( 3 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_4", get_enum_string_view_change_restrict( 4 ) ) );
+
+   pairs.push_back( make_pair( "enum_list_restrict_0", get_enum_string_list_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_list_restrict_1", get_enum_string_list_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_list_restrict_2", get_enum_string_list_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_list_restrict_3", get_enum_string_list_restrict( 3 ) ) );
+   pairs.push_back( make_pair( "enum_list_restrict_4", get_enum_string_list_restrict( 4 ) ) );
+
    pairs.push_back( make_pair( "enum_class_extra_0", get_enum_string_class_extra( 0 ) ) );
    pairs.push_back( make_pair( "enum_class_extra_1", get_enum_string_class_extra( 1 ) ) );
 
@@ -6629,6 +7645,23 @@ void Meta_Class::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_view_access_restrict_enum.insert( 0 );
+   g_view_access_restrict_enum.insert( 1 );
+   g_view_access_restrict_enum.insert( 2 );
+   g_view_access_restrict_enum.insert( 3 );
+
+   g_view_change_restrict_enum.insert( 0 );
+   g_view_change_restrict_enum.insert( 1 );
+   g_view_change_restrict_enum.insert( 2 );
+   g_view_change_restrict_enum.insert( 3 );
+   g_view_change_restrict_enum.insert( 4 );
+
+   g_list_restrict_enum.insert( 0 );
+   g_list_restrict_enum.insert( 1 );
+   g_list_restrict_enum.insert( 2 );
+   g_list_restrict_enum.insert( 3 );
+   g_list_restrict_enum.insert( 4 );
 
    g_class_extra_enum.insert( 0 );
    g_class_extra_enum.insert( 1 );

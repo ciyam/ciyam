@@ -1088,6 +1088,78 @@
     </specifications>
     <fields/>
      <field/>
+      <id>106124
+      <name>Access_Restriction
+      <type>int
+      <mandatory>true
+      <enum_id>655
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300633
+      <name>Access_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>200633
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>106125
+      <name>Change_Restriction
+      <type>int
+      <mandatory>true
+      <enum_id>657
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300634
+      <name>Change_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>200634
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>106110
       <name>Commands_File
       <type>string
@@ -1131,6 +1203,24 @@
       </specifications>
      </field>
      <field/>
+      <id>106126
+      <name>Create_Restriction
+      <type>int
+      <mandatory>true
+      <enum_id>680
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>106122
       <name>Create_View
       <type>bool
@@ -1146,6 +1236,24 @@
         <id>600028a
         <item>field
        </specification>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300635
+      <name>Create_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>200635
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
        <specification/>
         <id>601610
         <item>field
@@ -1209,6 +1317,42 @@
         <id>500900
         <affect>relegate
        </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>106127
+      <name>Destroy_Restriction
+      <type>int
+      <mandatory>true
+      <enum_id>680
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>601610
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>300636
+      <name>Destroy_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>200636
+      <indexes/>
+      </indexes>
+      <modifiers/>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4733,6 +4877,10 @@
         <id>500833
         <affect>relegate;view
        </modifier>
+       <modifier/>
+        <id>500834
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4762,6 +4910,10 @@
        <modifier/>
         <id>500833
         <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500838
+        <affect>protect
        </modifier>
       </modifiers>
       <specifications/>
@@ -4893,6 +5045,10 @@
         <id>500833
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500836
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4918,6 +5074,10 @@
        <modifier/>
         <id>500833
         <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500839
+        <affect>protect
        </modifier>
       </modifiers>
       <specifications/>
@@ -4966,6 +5126,10 @@
         <id>500833
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500837
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -4991,6 +5155,10 @@
        <modifier/>
         <id>500833
         <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500840
+        <affect>protect
        </modifier>
       </modifiers>
       <specifications/>
@@ -5902,6 +6070,30 @@
      <modifier/>
       <id>500831
       <name>PDF_List_Is_None
+     </modifier>
+     <modifier/>
+      <id>500838
+      <name>Protect_Access_Permission
+     </modifier>
+     <modifier/>
+      <id>500834
+      <name>Protect_Access_Restriction
+     </modifier>
+     <modifier/>
+      <id>500839
+      <name>Protect_Create_Permission
+     </modifier>
+     <modifier/>
+      <id>500836
+      <name>Protect_Create_Restriction
+     </modifier>
+     <modifier/>
+      <id>500840
+      <name>Protect_Destroy_Permission
+     </modifier>
+     <modifier/>
+      <id>500837
+      <name>Protect_Destroy_Restriction
      </modifier>
      <modifier/>
       <id>500825
@@ -23504,6 +23696,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500704a
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -23526,6 +23722,10 @@
       <indexes/>
       </indexes>
       <modifiers/>
+       <modifier/>
+        <id>500704c
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -23611,6 +23811,10 @@
         <id>500700
         <affect>relegate
        </modifier>
+       <modifier/>
+        <id>500704b
+        <affect>protect
+       </modifier>
       </modifiers>
       <specifications/>
        <specification/>
@@ -23632,6 +23836,10 @@
        <modifier/>
         <id>500700
         <affect>relegate
+       </modifier>
+       <modifier/>
+        <id>500704d
+        <affect>protect
        </modifier>
       </modifiers>
       <specifications/>
@@ -23985,6 +24193,22 @@
      <modifier/>
       <id>500702
       <name>Printing_Disallowed
+     </modifier>
+     <modifier/>
+      <id>500704c
+      <name>Protect_Access_Permission
+     </modifier>
+     <modifier/>
+      <id>500704a
+      <name>Protect_Access_Restriction
+     </modifier>
+     <modifier/>
+      <id>500704d
+      <name>Protect_Change_Permission
+     </modifier>
+     <modifier/>
+      <id>500704b
+      <name>Protect_Change_Restriction
      </modifier>
     </modifiers>
     <procedures/>
@@ -25947,6 +26171,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>200633
+    <name>Access_{Permission}_{Class}
+    <parent_id>116100
+    <child_id>106100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>202130
     <name>Access_{Permission}_{List_Field}
     <parent_id>116100
@@ -25978,6 +26211,15 @@
     <name>Access_{Permission}_{View}
     <parent_id>116100
     <child_id>118100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>200634
+    <name>Change_{Permission}_{Class}
+    <parent_id>116100
+    <child_id>106100
     <cascade_op>restrict
     <specifications/>
     </specifications>
@@ -26100,6 +26342,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>200635
+    <name>Create_{Permission}_{Class}
+    <parent_id>116100
+    <child_id>106100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201994
     <name>Create_{Permission}_{List}
     <parent_id>116100
@@ -26123,6 +26374,15 @@
     <parent_id>118100
     <child_id>106100
     <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>200636
+    <name>Destroy_{Permission}_{Class}
+    <parent_id>116100
+    <child_id>106100
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -27862,6 +28122,14 @@
      <field_info>106121
      <field_info>106122;new_only
      <field_info>106123;new_only
+     <field_info>106124;enum=655
+     <field_info>300633:116101!@group:301500+116101
+     <field_info>106126;enum=680
+     <field_info>300635:116101!@group:301500+116101
+     <field_info>106125;enum=657
+     <field_info>300634:116101!@group:301500+116101
+     <field_info>106127;enum=680
+     <field_info>300636:116101!@group:301500+116101
      <field_info>300630:107101!@key:300700;non_new
      <field_info>106109
      <field_info>106108
