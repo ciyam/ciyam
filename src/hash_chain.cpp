@@ -37,7 +37,7 @@ struct hash_chain::impl
 
    bool check_and_update_if_good( const string& new_hash, unsigned int check_limit );
 
-   string get_next_hash_to_publish( const string& password );
+   string get_next_hashes_to_publish( const string& password, unsigned int num_hashes );
 
    string name;
    uint32_t rounds;
@@ -208,12 +208,12 @@ bool hash_chain::impl::check_and_update_if_good( const string& new_hash, unsigne
    return true;
 }
 
-string hash_chain::impl::get_next_hash_to_publish( const string& password )
+string hash_chain::impl::get_next_hashes_to_publish( const string& password, unsigned int num_hashes )
 {
    if( !rounds )
-      throw runtime_error( "invalid 'get_next_hash_to_publish' call for external hash chain '" + name + "'" );
+      throw runtime_error( "invalid 'get_next_hashes_to_publish' call for external hash chain '" + name + "'" );
 
-   if( rounds == 1 )
+   if( rounds <= num_hashes )
       throw runtime_error( "hash chain '" + name + "' has been depleted" );
 
    // NOTE: If password is not what was used originally then "external" users will not match
@@ -225,10 +225,19 @@ string hash_chain::impl::get_next_hash_to_publish( const string& password )
    sha256 hash( password );
    hash.update( seedbuf, c_hash_buf_size );
 
+   string retval;
    for( uint32_t i = 0; i < rounds; i++ )
    {
       hash.copy_digest_to_buffer( buffer );
       hash.update( buffer, sizeof( buffer ) );
+
+      if( i >= rounds - num_hashes )
+      {
+         if( !retval.empty( ) )
+            retval += ',';
+
+         retval += lower( hash.get_digest_as_string( ) );
+      }
    }
 
    --rounds;
@@ -246,7 +255,7 @@ string hash_chain::impl::get_next_hash_to_publish( const string& password )
    if( !outf.good( ) )
       throw runtime_error( "unexpected bad output stream for hash chain '" + name + "'" );
 
-   return lower( hash.get_digest_as_string( ) );
+   return retval;
 }
 
 hash_chain::hash_chain( const string& name, bool is_new, unsigned int size, bool use_seed )
@@ -269,8 +278,8 @@ bool hash_chain::check_and_update_if_good( const string& new_hash, unsigned int 
    return p_impl->check_and_update_if_good( new_hash, check_limit );
 }
 
-string hash_chain::get_next_hash_to_publish( const string& password )
+string hash_chain::get_next_hashes_to_publish( const string& password, unsigned int num_hashes )
 {
-   return p_impl->get_next_hash_to_publish( password );
+   return p_impl->get_next_hashes_to_publish( password, num_hashes );
 }
 

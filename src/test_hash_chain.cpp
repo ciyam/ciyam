@@ -10,6 +10,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <memory.h>
+#  include <vector>
 #  include <iostream>
 #  include <exception>
 #endif
@@ -37,12 +38,12 @@ int main( )
 
    try
    {
-      cout << "1. create seedless internal hash chain and get the last hash\n";
+      cout << "01. create seedless internal hash chain and get the last hash\n";
       hash_chain chain_internal( c_test_hash_chain_internal, true, c_test_rounds, false );
 
-      cout << chain_internal.get_next_hash_to_publish( c_test_hash_chain_password ) << '\n';
+      cout << chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password ) << '\n';
 
-      cout << "\n2. manually verify the last hash in the chain matches expected\n";
+      cout << "\n02. manually verify the last hash in the chain matches expected\n";
       sha256 seed_hash( "" );
       seed_hash.copy_digest_to_buffer( buffer );
 
@@ -66,9 +67,9 @@ int main( )
       hash_chain chain_external( c_test_hash_chain_external, true );
       chain_external.check_and_update_if_good( lower( hash.get_digest_as_string( ) ) );
 
-      string new_hash_value( chain_internal.get_next_hash_to_publish( c_test_hash_chain_password ) );
+      string new_hash_value( chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password ) );
 
-      cout << "\n3. create external hash chain and verify the next internal hash is valid\n";
+      cout << "\n03. create external hash chain and verify the next internal hash is valid\n";
       if( chain_external.check_and_update_if_good( new_hash_value ) )
          cout << "pass\n";
       else
@@ -76,40 +77,55 @@ int main( )
 
       cout << new_hash_value << '\n';
 
-      cout << "\n4. check manually calculated next hash matches this new internal hash value\n";
+      cout << "\n04. check manually calculated next hash matches this new internal hash value\n";
       cout << next << '\n';
 
-      cout << "\n5. verify an internal hash generated with the wrong password is not accepted\n";
-      new_hash_value = chain_internal.get_next_hash_to_publish( "" );
+      cout << "\n05. verify an internal hash generated with the wrong password is not accepted\n";
+      new_hash_value = chain_internal.get_next_hashes_to_publish( "" );
       if( chain_external.check_and_update_if_good( new_hash_value ) )
          cout << "fail\n";
       else
          cout << "pass\n";
 
-      cout << "\n6. check with limit one that external chain will not accept a now correct hash\n";
-      new_hash_value = chain_internal.get_next_hash_to_publish( c_test_hash_chain_password );
+      cout << "\n06. check with limit one that external chain will not accept a now correct hash\n";
+      new_hash_value = chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password );
       if( chain_external.check_and_update_if_good( new_hash_value, 1 ) )
          cout << "fail\n";
       else
          cout << "pass\n";
 
-      cout << "\n7. check with limit three the external chain now accepts the next correct hash\n";
-      new_hash_value = chain_internal.get_next_hash_to_publish( c_test_hash_chain_password );
+      cout << "\n07. check with limit three the external chain now accepts the next correct hash\n";
+      new_hash_value = chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password );
       if( chain_external.check_and_update_if_good( new_hash_value, 3 ) )
+         cout << "pass\n";
+      else
+         cout << "fail\n";
+
+      cout << "\n08. check fetching two hashes at once are both verified by the external chain\n";
+      new_hash_value = chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password, 2 );
+
+      vector< string > new_hashes;
+      split( new_hash_value, new_hashes );
+
+      if( new_hashes.size( ) != 2 )
+         throw runtime_error( "did not return 2 hashes when expected to" );
+
+      if( chain_external.check_and_update_if_good( new_hashes[ 1 ] )
+       && chain_external.check_and_update_if_good( new_hashes[ 0 ] ) )
          cout << "pass\n";
       else
          cout << "fail\n";
 
       while( !chain_internal.has_been_depleted( ) )
       {
-         new_hash_value = chain_internal.get_next_hash_to_publish( c_test_hash_chain_password );
+         new_hash_value = chain_internal.get_next_hashes_to_publish( c_test_hash_chain_password );
          chain_external.check_and_update_if_good( new_hash_value );
       }
 
-      cout << "\n8. check all remaining internal chain hashes are verified by the external chain\n";
+      cout << "\n09. check all remaining internal chain hashes are verified by the external chain\n";
       cout << new_hash_value << '\n';
 
-      cout << "\n9. check that the last hash matches what was manually calculated\n";
+      cout << "\n10. check that the last hash matches what was manually calculated\n";
       cout << new_hash_value << '\n';
 
       file_remove( c_test_hash_chain_internal );
