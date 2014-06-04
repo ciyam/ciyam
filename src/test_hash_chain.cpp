@@ -12,7 +12,7 @@
 #  include <memory.h>
 #  include <vector>
 #  include <iostream>
-#  include <exception>
+#  include <stdexcept>
 #endif
 
 #include "sha256.h"
