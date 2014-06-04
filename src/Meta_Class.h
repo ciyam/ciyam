@@ -30,6 +30,7 @@ class Meta_Modifier_Affect;
 class Meta_Modifier;
 class Meta_Package_Option;
 class Meta_Procedure;
+class Meta_Permission;
 class Meta_List;
 class Meta_View;
 class Meta_Model;
@@ -49,6 +50,7 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    friend class Meta_Modifier;
    friend class Meta_Package_Option;
    friend class Meta_Procedure;
+   friend class Meta_Permission;
    friend class Meta_List;
    friend class Meta_View;
    friend class Meta_Model;
@@ -60,30 +62,44 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Commands_File = 1,
-      e_field_id_Create_List = 2,
-      e_field_id_Create_View = 3,
-      e_field_id_Created_List = 4,
-      e_field_id_Created_View = 5,
-      e_field_id_Delay_Initial_Records = 6,
-      e_field_id_Extra = 7,
-      e_field_id_Header_File = 8,
-      e_field_id_Id = 9,
-      e_field_id_Model = 10,
-      e_field_id_Name = 11,
-      e_field_id_Next_Field_Id = 12,
-      e_field_id_Next_Procedure_Id = 13,
-      e_field_id_Plural = 14,
-      e_field_id_Quick_Link_Field = 15,
-      e_field_id_Source_Class = 16,
-      e_field_id_Source_File = 17,
-      e_field_id_Source_Model = 18,
-      e_field_id_Static_Instance_Key = 19,
-      e_field_id_Type = 20
+      e_field_id_Access_Permission = 1,
+      e_field_id_Access_Restriction = 2,
+      e_field_id_Change_Permission = 3,
+      e_field_id_Change_Restriction = 4,
+      e_field_id_Commands_File = 5,
+      e_field_id_Create_List = 6,
+      e_field_id_Create_Permission = 7,
+      e_field_id_Create_Restriction = 8,
+      e_field_id_Create_View = 9,
+      e_field_id_Created_List = 10,
+      e_field_id_Created_View = 11,
+      e_field_id_Delay_Initial_Records = 12,
+      e_field_id_Destroy_Permission = 13,
+      e_field_id_Destroy_Restriction = 14,
+      e_field_id_Extra = 15,
+      e_field_id_Header_File = 16,
+      e_field_id_Id = 17,
+      e_field_id_Model = 18,
+      e_field_id_Name = 19,
+      e_field_id_Next_Field_Id = 20,
+      e_field_id_Next_Procedure_Id = 21,
+      e_field_id_Plural = 22,
+      e_field_id_Quick_Link_Field = 23,
+      e_field_id_Source_Class = 24,
+      e_field_id_Source_File = 25,
+      e_field_id_Source_Model = 26,
+      e_field_id_Static_Instance_Key = 27,
+      e_field_id_Type = 28
    };
 
    Meta_Class( );
    ~Meta_Class( );
+
+   int Access_Restriction( ) const;
+   void Access_Restriction( int Access_Restriction );
+
+   int Change_Restriction( ) const;
+   void Change_Restriction( int Change_Restriction );
 
    const std::string& Commands_File( ) const;
    void Commands_File( const std::string& Commands_File );
@@ -91,11 +107,17 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    bool Create_List( ) const;
    void Create_List( bool Create_List );
 
+   int Create_Restriction( ) const;
+   void Create_Restriction( int Create_Restriction );
+
    bool Create_View( ) const;
    void Create_View( bool Create_View );
 
    bool Delay_Initial_Records( ) const;
    void Delay_Initial_Records( bool Delay_Initial_Records );
+
+   int Destroy_Restriction( ) const;
+   void Destroy_Restriction( int Destroy_Restriction );
 
    int Extra( ) const;
    void Extra( int Extra );
@@ -127,6 +149,18 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    int Type( ) const;
    void Type( int Type );
 
+   Meta_Permission& Access_Permission( );
+   const Meta_Permission& Access_Permission( ) const;
+   void Access_Permission( const std::string& key );
+
+   Meta_Permission& Change_Permission( );
+   const Meta_Permission& Change_Permission( ) const;
+   void Change_Permission( const std::string& key );
+
+   Meta_Permission& Create_Permission( );
+   const Meta_Permission& Create_Permission( ) const;
+   void Create_Permission( const std::string& key );
+
    Meta_List& Created_List( );
    const Meta_List& Created_List( ) const;
    void Created_List( const std::string& key );
@@ -134,6 +168,10 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    Meta_View& Created_View( );
    const Meta_View& Created_View( ) const;
    void Created_View( const std::string& key );
+
+   Meta_Permission& Destroy_Permission( );
+   const Meta_Permission& Destroy_Permission( ) const;
+   void Destroy_Permission( const std::string& key );
 
    Meta_Model& Model( );
    const Meta_Model& Model( ) const;
@@ -420,6 +458,7 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
    virtual void setup_foreign_key( Meta_List& o, const std::string& value );
    virtual void setup_foreign_key( Meta_View& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
@@ -441,6 +480,9 @@ class META_CLASS_DECL_SPEC Meta_Class : public class_base
    virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Procedure& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_Permission& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_List& o,
     const std::string& foreign_key_field, const std::string& init_value );

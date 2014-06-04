@@ -238,6 +238,10 @@ field_add -id=106120 Class Static_Instance_Key label opt
 field_add -id=106121 Class Delay_Initial_Records bool mand -def=0
 field_add -id=106122 Class Create_View bool mand -def=0 -transient
 field_add -id=106123 Class Create_List bool mand -def=0 -transient
+field_add -id=106124 Class Access_Restriction int mand -def=0 -e=view_access_restrict
+field_add -id=106125 Class Change_Restriction int mand -def=0 -e=view_change_restrict
+field_add -id=106126 Class Create_Restriction int mand -def=0 -e=list_restrict
+field_add -id=106127 Class Destroy_Restriction int mand -def=0 -e=list_restrict
 procedure_add -id=106410 Class Generate
 class_add -id=107100 Field Fields
 field_add -id=107101 Field Name mid_identifier mand
@@ -825,6 +829,10 @@ relationship_add -id=200620 -fid=300620 Class Source_{Class} Class opt destroy
 relationship_add -id=200630 -fid=300630 Class Quick_Link_Field Field opt unlink
 relationship_add -id=200631 -fid=300631 Class Created_View View opt unlink
 relationship_add -id=200632 -fid=300632 Class Created_List List opt unlink
+relationship_add -id=200633 -fid=300633 Class Access_{Permission} Permission opt restrict
+relationship_add -id=200634 -fid=300634 Class Change_{Permission} Permission opt restrict
+relationship_add -id=200635 -fid=300635 Class Create_{Permission} Permission opt restrict
+relationship_add -id=200636 -fid=300636 Class Destroy_{Permission} Permission opt restrict
 relationship_add -id=200700 -fid=300700 Field {Class} Class mand destroy
 relationship_add -id=200710 -fid=300710 Field {Type} Type mand restrict
 relationship_add -id=200720 -fid=300720 Field {Enum} Enum opt restrict
@@ -1093,6 +1101,10 @@ modifier_add -id=500701 View Is_Not_Print_Version PDF_View_Type:relegate,PDF_Fon
 modifier_add -id=500702 View Printing_Disallowed Print_Without_Highlight:relegate
 modifier_add -id=500703 View PDF_View_Is_None PDF_Font_Type:relegate
 modifier_add -id=500704 View PDF_View_Is_Custom PDF_Font_Type:relegate
+modifier_add -id=500704a View Protect_Access_Restriction Access_Restriction:protect
+modifier_add -id=500704b View Protect_Change_Restriction Change_Restriction:protect
+modifier_add -id=500704c View Protect_Access_Permission Access_{Permission}:protect
+modifier_add -id=500704d View Protect_Change_Permission Change_{Permission}:protect
 modifier_add -id=500705 View_Field Is_Field Tab_Name:relegate
 modifier_add -id=500706 View_Field Is_Print_Version Type:relegate,Source_Edit_Child:relegate,Sort_Manually:relegate\
 ,Restriction_Spec:relegate,New_Source:relegate,Trigger_Option:relegate,Trigger_Behaviour:relegate,Trigger_For_State:relegate\
@@ -1141,6 +1153,12 @@ modifier_add -id=500831 List PDF_List_Is_None PDF_Font_Type:relegate,Number_Mult
 modifier_add -id=500832 List PDF_List_Is_Custom PDF_Font_Type:relegate,Number_Multiple_Pages:relegate
 modifier_add -id=500833 List Is_Admin Access_Restriction:relegate;view,Access_{Permission}:relegate\
 ,Create_Restriction:relegate,Create_{Permission}:relegate,Destroy_Restriction:relegate,Destroy_{Permission}:relegate,Allow_Quick_Link:relegate
+modifier_add -id=500834 List Protect_Access_Restriction Access_Restriction:protect
+modifier_add -id=500836 List Protect_Create_Restriction Create_Restriction:protect
+modifier_add -id=500837 List Protect_Destroy_Restriction Destroy_Restriction:protect
+modifier_add -id=500838 List Protect_Access_Permission Access_{Permission}:protect
+modifier_add -id=500839 List Protect_Create_Permission Create_{Permission}:protect
+modifier_add -id=500840 List Protect_Destroy_Permission Destroy_{Permission}:protect
 modifier_add -id=500850 List_Field Hide_Non_FK_Field Source_Field:relegate
 modifier_add -id=500855 List_Field Hide_Child_Rel_Non_FK_Field Child_Rel_Source_Field:relegate
 modifier_add -id=500860 List_Field Hide_FK_Fields Source_Parent:relegate\
@@ -1878,7 +1896,12 @@ specification_add -id=601560 {Package_Option}_view view "? standard:auto_back Pa
 specification_add -id=601610 {Class}_view view "? standard Class {Model}:Name;no_edit+link\
 ,Source_{Model}:Name!@group:{Workgroup}+@xparent;new_edit+link+fkey1+force\
 ,Source_{Class}:Name!@fkey1:{Model}+Name;new_edit+force+link\
-,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra,Static_Instance_Key,Delay_Initial_Records,Create_View;new_only,Create_List;new_only\
+,Name;forced,Plural;forced,Id;no_edit+non_new,Type;show,Extra\
+,Static_Instance_Key,Delay_Initial_Records,Create_View;new_only,Create_List;new_only\
+,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
+,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name\
+,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name\
+,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name\
 ,Quick_Link_Field:Name!@key:{Class};non_new,Header_File,Source_File,Commands_File"
 specification_add -id=601620 {Class}_child_list0 list "@601620_* child:no_limit Class Name,Id {Model}"
 specification_add -id=601710 {Field}_view view "? standard Field {Class}:Name;no_edit+link\

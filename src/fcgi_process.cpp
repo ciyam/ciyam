@@ -2610,6 +2610,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          else
             user_slevel = p_session_info->other_slevels.find( p_session_info->user_other )->second;
 
+         string view_perm( view.perm );
+         if( !view_perm.empty( ) && view_perm[ 0 ] == '!' )
+            view_perm.erase( 0, 1 );
+
          if( record_not_found_error )
          {
             // NOTE: If a "jump back" is to occur after an action then don't display
@@ -2621,8 +2625,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             }
          }
          else if( !p_session_info->is_admin_user // NOTE: "admin" is always permitted access
-          && ( ( !view.perm.empty( ) && !p_session_info->user_perms.count( view.perm ) )
-          || ( view.type == c_view_type_admin || view.type == c_view_type_admin_print )
+          && ( ( !view_perm.empty( ) && !p_session_info->user_perms.count( view_perm ) )
+          || ( view_perm.empty( ) && ( view.type == c_view_type_admin || view.type == c_view_type_admin_print ) )
           || ( !view.permission_field.empty( ) && !has_permission( view_permission_value, *p_session_info ) )
           || ( !view.security_level_field.empty( ) && view_security_level_value.length( ) < user_slevel.length( ) ) ) )
             extra_content << "<p align=\"center\" class=\"error\">"

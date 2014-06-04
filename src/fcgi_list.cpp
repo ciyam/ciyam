@@ -3053,7 +3053,21 @@ void output_list_form( ostream& os,
                if( vici == mod_info.view_info.end( ) )
                   throw runtime_error( "unknown view '" + view_id + "' for link" );
 
-               if( !( vici->second )->perm.empty( ) && !sess_info.user_perms.count( ( vici->second )->perm ) )
+               string perm( ( vici->second )->perm );
+               if( !perm.empty( ) && perm[ 0 ] == '!' )
+                  perm.erase( 0, 1 );
+
+               bool has_perm = false;
+               if( ( vici->second )->type == c_view_type_admin )
+               {
+                  if( sess_info.is_admin_user
+                   || ( !sess_info.is_admin_user && !perm.empty( ) && sess_info.user_perms.count( perm ) ) )
+                     has_perm = true;
+               }
+               else if( perm.empty( ) || sess_info.user_perms.count( perm ) )
+                  has_perm = true;
+
+               if( !has_perm )
                   view_id.erase( );
             }
 
