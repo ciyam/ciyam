@@ -20,7 +20,7 @@ class hash_chain
 
    bool check_and_update_if_good( const std::string& new_hash, unsigned int check_limit = 1 );
 
-   std::string get_next_hash_to_publish( const std::string& password );
+   std::string get_next_hashes_to_publish( const std::string& password, unsigned int num_hashes = 1 );
 
    private:
    hash_chain( const hash_chain& );
