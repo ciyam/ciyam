@@ -29,6 +29,7 @@ class Meta_List;
 class Meta_View_Field;
 class Meta_Initial_Record_Value;
 class Meta_Modifier_Affect;
+class Meta_Permission;
 class Meta_Class;
 class Meta_Enum;
 class Meta_Field;
@@ -48,6 +49,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    friend class Meta_View_Field;
    friend class Meta_Initial_Record_Value;
    friend class Meta_Modifier_Affect;
+   friend class Meta_Permission;
    friend class Meta_Class;
    friend class Meta_Enum;
    friend class Meta_Type;
@@ -58,35 +60,53 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Class = 1,
-      e_field_id_Create_List_Field = 2,
-      e_field_id_Create_View_Field = 3,
-      e_field_id_Def_Value = 4,
-      e_field_id_Default = 5,
-      e_field_id_Dummy_1 = 6,
-      e_field_id_Enum = 7,
-      e_field_id_Extra = 8,
-      e_field_id_Id = 9,
-      e_field_id_Internal = 10,
-      e_field_id_Is_Foreign_Key = 11,
-      e_field_id_Is_Text_Type = 12,
-      e_field_id_Mandatory = 13,
-      e_field_id_Name = 14,
-      e_field_id_Numeric_Decimals = 15,
-      e_field_id_Parent_Class = 16,
-      e_field_id_Parent_Class_Name = 17,
-      e_field_id_Primitive = 18,
-      e_field_id_Source_Field = 19,
-      e_field_id_Transient = 20,
-      e_field_id_Type = 21,
-      e_field_id_UOM = 22,
-      e_field_id_UOM_Name = 23,
-      e_field_id_UOM_Symbol = 24,
-      e_field_id_Use_In_Text_Search = 25
+      e_field_id_Access_Permission = 1,
+      e_field_id_Access_Restriction = 2,
+      e_field_id_Access_Scope = 3,
+      e_field_id_Change_Permission = 4,
+      e_field_id_Change_Restriction = 5,
+      e_field_id_Change_Scope = 6,
+      e_field_id_Class = 7,
+      e_field_id_Create_List_Field = 8,
+      e_field_id_Create_View_Field = 9,
+      e_field_id_Def_Value = 10,
+      e_field_id_Default = 11,
+      e_field_id_Dummy_1 = 12,
+      e_field_id_Enum = 13,
+      e_field_id_Extra = 14,
+      e_field_id_Id = 15,
+      e_field_id_Internal = 16,
+      e_field_id_Is_Foreign_Key = 17,
+      e_field_id_Is_Text_Type = 18,
+      e_field_id_Mandatory = 19,
+      e_field_id_Name = 20,
+      e_field_id_Numeric_Decimals = 21,
+      e_field_id_Parent_Class = 22,
+      e_field_id_Parent_Class_Name = 23,
+      e_field_id_Primitive = 24,
+      e_field_id_Source_Field = 25,
+      e_field_id_Transient = 26,
+      e_field_id_Type = 27,
+      e_field_id_UOM = 28,
+      e_field_id_UOM_Name = 29,
+      e_field_id_UOM_Symbol = 30,
+      e_field_id_Use_In_Text_Search = 31
    };
 
    Meta_Field( );
    ~Meta_Field( );
+
+   int Access_Restriction( ) const;
+   void Access_Restriction( int Access_Restriction );
+
+   int Access_Scope( ) const;
+   void Access_Scope( int Access_Scope );
+
+   int Change_Restriction( ) const;
+   void Change_Restriction( int Change_Restriction );
+
+   int Change_Scope( ) const;
+   void Change_Scope( int Change_Scope );
 
    bool Create_List_Field( ) const;
    void Create_List_Field( bool Create_List_Field );
@@ -147,6 +167,14 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    bool Use_In_Text_Search( ) const;
    void Use_In_Text_Search( bool Use_In_Text_Search );
+
+   Meta_Permission& Access_Permission( );
+   const Meta_Permission& Access_Permission( ) const;
+   void Access_Permission( const std::string& key );
+
+   Meta_Permission& Change_Permission( );
+   const Meta_Permission& Change_Permission( ) const;
+   void Change_Permission( const std::string& key );
 
    Meta_Class& Class( );
    const Meta_Class& Class( ) const;
@@ -467,6 +495,7 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Enum& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
@@ -484,6 +513,9 @@ class META_FIELD_DECL_SPEC Meta_Field : public class_base
    virtual void setup_graph_parent( Meta_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Initial_Record_Value& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Modifier_Affect& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_Permission& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Class& o,
     const std::string& foreign_key_field, const std::string& init_value );

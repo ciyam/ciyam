@@ -253,10 +253,8 @@ const uint64_t c_modifier_Is_Print_Version = UINT64_C( 0x200 );
 const uint64_t c_modifier_PDF_View_Is_Custom = UINT64_C( 0x400 );
 const uint64_t c_modifier_PDF_View_Is_None = UINT64_C( 0x800 );
 const uint64_t c_modifier_Printing_Disallowed = UINT64_C( 0x1000 );
-const uint64_t c_modifier_Protect_Access_Permission = UINT64_C( 0x2000 );
-const uint64_t c_modifier_Protect_Access_Restriction = UINT64_C( 0x4000 );
-const uint64_t c_modifier_Protect_Change_Permission = UINT64_C( 0x8000 );
-const uint64_t c_modifier_Protect_Change_Restriction = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Protect_Access = UINT64_C( 0x2000 );
+const uint64_t c_modifier_Protect_Change = UINT64_C( 0x4000 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -1877,17 +1875,13 @@ uint64_t Meta_View::impl::get_state( ) const
 
    // [<start get_state>]
 //nyi
-   if( get_obj( ).Class( ).Access_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Access_Restriction;
+   if( get_obj( ).Class( ).Access_Restriction( ) != 0
+    || !is_null( get_obj( ).Class( ).Access_Permission( ) ) )
+      state |= c_modifier_Protect_Access;
 
-   if( get_obj( ).Class( ).Change_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Change_Restriction;
-
-   if( !is_null( get_obj( ).Class( ).Access_Permission( ) ) )
-      state |= c_modifier_Protect_Access_Permission;
-
-   if( !is_null( get_obj( ).Class( ).Change_Permission( ) ) )
-      state |= c_modifier_Protect_Change_Permission;
+   if( get_obj( ).Class( ).Change_Restriction( ) != 0
+    || !is_null( get_obj( ).Class( ).Change_Permission( ) ) )
+      state |= c_modifier_Protect_Change;
    // [<finish get_state>]
 
    return state;

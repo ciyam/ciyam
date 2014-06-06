@@ -27,6 +27,7 @@
 
 #include "Meta_List_Field.h"
 #include "Meta_Specification.h"
+#include "Meta_Permission.h"
 #include "Meta_Class.h"
 #include "Meta_Model.h"
 #include "Meta_Field.h"
@@ -61,6 +62,11 @@ using namespace std;
 // [<start namespaces>]
 // [<finish namespaces>]
 
+template< > inline string to_string( const Meta_Permission& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_Class& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -79,6 +85,11 @@ template< > inline string to_string( const Meta_Field& c )
 template< > inline string to_string( const Meta_Relationship& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Permission& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
 }
 
 inline void from_string( Meta_Class& c, const string& s )
@@ -112,7 +123,13 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Access_Permission = "301330c";
+const char* const c_field_id_Access_Restriction = "113114";
+const char* const c_field_id_Access_Scope = "113112";
 const char* const c_field_id_Cascade_Op = "113103";
+const char* const c_field_id_Change_Permission = "301330d";
+const char* const c_field_id_Change_Restriction = "113115";
+const char* const c_field_id_Change_Scope = "113113";
 const char* const c_field_id_Child_Class = "301310";
 const char* const c_field_id_Child_Class_Name = "113108";
 const char* const c_field_id_Child_Name = "113105";
@@ -129,7 +146,13 @@ const char* const c_field_id_Parent_Field_For_View = "301330a";
 const char* const c_field_id_Source_Relationship = "301330";
 const char* const c_field_id_Transient = "113111";
 
+const char* const c_field_name_Access_Permission = "Access_Permission";
+const char* const c_field_name_Access_Restriction = "Access_Restriction";
+const char* const c_field_name_Access_Scope = "Access_Scope";
 const char* const c_field_name_Cascade_Op = "Cascade_Op";
+const char* const c_field_name_Change_Permission = "Change_Permission";
+const char* const c_field_name_Change_Restriction = "Change_Restriction";
+const char* const c_field_name_Change_Scope = "Change_Scope";
 const char* const c_field_name_Child_Class = "Child_Class";
 const char* const c_field_name_Child_Class_Name = "Child_Class_Name";
 const char* const c_field_name_Child_Name = "Child_Name";
@@ -146,7 +169,13 @@ const char* const c_field_name_Parent_Field_For_View = "Parent_Field_For_View";
 const char* const c_field_name_Source_Relationship = "Source_Relationship";
 const char* const c_field_name_Transient = "Transient";
 
+const char* const c_field_display_name_Access_Permission = "field_relationship_access_permission";
+const char* const c_field_display_name_Access_Restriction = "field_relationship_access_restriction";
+const char* const c_field_display_name_Access_Scope = "field_relationship_access_scope";
 const char* const c_field_display_name_Cascade_Op = "field_relationship_cascade_op";
+const char* const c_field_display_name_Change_Permission = "field_relationship_change_permission";
+const char* const c_field_display_name_Change_Restriction = "field_relationship_change_restriction";
+const char* const c_field_display_name_Change_Scope = "field_relationship_change_scope";
 const char* const c_field_display_name_Child_Class = "field_relationship_child_class";
 const char* const c_field_display_name_Child_Class_Name = "field_relationship_child_class_name";
 const char* const c_field_display_name_Child_Name = "field_relationship_child_name";
@@ -163,7 +192,7 @@ const char* const c_field_display_name_Parent_Field_For_View = "field_relationsh
 const char* const c_field_display_name_Source_Relationship = "field_relationship_source_relationship";
 const char* const c_field_display_name_Transient = "field_relationship_transient";
 
-const int c_num_fields = 16;
+const int c_num_fields = 22;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -177,17 +206,29 @@ const char* const c_all_sorted_field_ids[ ] =
    "113108",
    "113110",
    "113111",
+   "113112",
+   "113113",
+   "113114",
+   "113115",
    "301300",
    "301310",
    "301320",
    "301330",
    "301330a",
-   "301330b"
+   "301330b",
+   "301330c",
+   "301330d"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Access_Permission",
+   "Access_Restriction",
+   "Access_Scope",
    "Cascade_Op",
+   "Change_Permission",
+   "Change_Restriction",
+   "Change_Scope",
    "Child_Class",
    "Child_Class_Name",
    "Child_Name",
@@ -273,7 +314,13 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+int g_default_Access_Scope = int( 0 );
 int g_default_Cascade_Op = int( 0 );
+string g_default_Change_Permission = string( );
+int g_default_Change_Restriction = int( 0 );
+int g_default_Change_Scope = int( 0 );
 string g_default_Child_Class = string( );
 string g_default_Child_Class_Name = string( );
 string g_default_Child_Name = string( );
@@ -290,8 +337,68 @@ string g_default_Parent_Field_For_View = string( );
 string g_default_Source_Relationship = string( );
 bool g_default_Transient = bool( 0 );
 
+set< int > g_view_access_restrict_enum;
+set< int > g_view_field_access_scope_enum;
 set< int > g_cascade_op_enum;
+set< int > g_view_change_restrict_enum;
+set< int > g_view_field_change_scope_enum;
 set< int > g_relationship_extra_enum;
+
+const int c_enum_view_access_restrict_none( 0 );
+const int c_enum_view_access_restrict_owner_only( 1 );
+const int c_enum_view_access_restrict_admin_only( 2 );
+const int c_enum_view_access_restrict_admin_owner( 3 );
+
+string get_enum_string_view_access_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_access_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_access_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_access_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_access_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_access_restrict_admin_owner";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_access_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_field_access_scope_all( 0 );
+const int c_enum_view_field_access_scope_create_only( 1 );
+const int c_enum_view_field_access_scope_post_create( 2 );
+const int c_enum_view_field_access_scope_editing_only( 3 );
+const int c_enum_view_field_access_scope_viewing_only( 4 );
+const int c_enum_view_field_access_scope_updating_only( 5 );
+
+string get_enum_string_view_field_access_scope( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_field_access_scope" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_field_access_scope_all";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_field_access_scope_create_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_field_access_scope_post_create";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_field_access_scope_editing_only";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_view_field_access_scope_viewing_only";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_view_field_access_scope_updating_only";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_access_scope" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 const int c_enum_cascade_op_restrict( 0 );
 const int c_enum_cascade_op_unlink( 1 );
@@ -314,6 +421,59 @@ string get_enum_string_cascade_op( int val )
       string_name = "enum_cascade_op_not_applicable";
    else
       throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for cascade_op" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_change_restrict_none( 0 );
+const int c_enum_view_change_restrict_owner_only( 1 );
+const int c_enum_view_change_restrict_admin_only( 2 );
+const int c_enum_view_change_restrict_admin_owner( 3 );
+const int c_enum_view_change_restrict_denied_always( 4 );
+
+string get_enum_string_view_change_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_change_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_change_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_change_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_change_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_change_restrict_admin_owner";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_view_change_restrict_denied_always";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_change_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_field_change_scope_all( 0 );
+const int c_enum_view_field_change_scope_create_only( 1 );
+const int c_enum_view_field_change_scope_update_only( 2 );
+const int c_enum_view_field_change_scope_always_editable( 3 );
+
+string get_enum_string_view_field_change_scope( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_field_change_scope" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_field_change_scope_all";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_field_change_scope_create_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_field_change_scope_update_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_field_change_scope_always_editable";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_change_scope" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -430,10 +590,46 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Relationship->Access_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Relationship->Access_Restriction( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Scope || field_name == c_field_name_Access_Scope )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Relationship->Access_Scope( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Cascade_Op || field_name == c_field_name_Cascade_Op )
       {
          handled = true;
          string_getter< int >( cmd_handler.p_Meta_Relationship->Cascade_Op( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Relationship->Change_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Relationship->Change_Restriction( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Scope || field_name == c_field_name_Change_Scope )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Relationship->Change_Scope( ), cmd_handler.retval );
       }
 
       if( !handled && field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
@@ -538,11 +734,53 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
 
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, Meta_Permission >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Access_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, int >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Access_Restriction, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Scope || field_name == c_field_name_Access_Scope )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, int >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Access_Scope, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Cascade_Op || field_name == c_field_name_Cascade_Op )
       {
          handled = true;
          func_string_setter< Meta_Relationship, int >(
           *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Cascade_Op, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, Meta_Permission >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Change_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, int >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Change_Restriction, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Scope || field_name == c_field_name_Change_Scope )
+      {
+         handled = true;
+         func_string_setter< Meta_Relationship, int >(
+          *cmd_handler.p_Meta_Relationship, &Meta_Relationship::Change_Scope, field_value );
       }
 
       if( !handled && field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
@@ -664,6 +902,10 @@ void Meta_Relationship_command_functor::operator ( )( const string& command, con
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Relationship->Access_Permission( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Relationship->Change_Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Child_Class || field_name == c_field_name_Child_Class )
          cmd_handler.retval = cmd_handler.p_Meta_Relationship->Child_Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Model || field_name == c_field_name_Model )
@@ -700,8 +942,20 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
       return *cp_obj;
    }
 
+   int impl_Access_Restriction( ) const { return lazy_fetch( p_obj ), v_Access_Restriction; }
+   void impl_Access_Restriction( int Access_Restriction ) { v_Access_Restriction = Access_Restriction; }
+
+   int impl_Access_Scope( ) const { return lazy_fetch( p_obj ), v_Access_Scope; }
+   void impl_Access_Scope( int Access_Scope ) { v_Access_Scope = Access_Scope; }
+
    int impl_Cascade_Op( ) const { return lazy_fetch( p_obj ), v_Cascade_Op; }
    void impl_Cascade_Op( int Cascade_Op ) { v_Cascade_Op = Cascade_Op; }
+
+   int impl_Change_Restriction( ) const { return lazy_fetch( p_obj ), v_Change_Restriction; }
+   void impl_Change_Restriction( int Change_Restriction ) { v_Change_Restriction = Change_Restriction; }
+
+   int impl_Change_Scope( ) const { return lazy_fetch( p_obj ), v_Change_Scope; }
+   void impl_Change_Scope( int Change_Scope ) { v_Change_Scope = Change_Scope; }
 
    const string& impl_Child_Class_Name( ) const { return lazy_fetch( p_obj ), v_Child_Class_Name; }
    void impl_Child_Class_Name( const string& Child_Class_Name ) { v_Child_Class_Name = Child_Class_Name; }
@@ -729,6 +983,66 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    bool impl_Transient( ) const { return lazy_fetch( p_obj ), v_Transient; }
    void impl_Transient( bool Transient ) { v_Transient = Transient; }
+
+   Meta_Permission& impl_Access_Permission( )
+   {
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   const Meta_Permission& impl_Access_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   void impl_Access_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Access_Permission( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Permission& impl_Change_Permission( )
+   {
+      if( !cp_Change_Permission )
+      {
+         cp_Change_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Change_Permission, c_field_id_Change_Permission, v_Change_Permission );
+      }
+      return *cp_Change_Permission;
+   }
+
+   const Meta_Permission& impl_Change_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Change_Permission )
+      {
+         cp_Change_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Change_Permission, c_field_id_Change_Permission, v_Change_Permission );
+      }
+      return *cp_Change_Permission;
+   }
+
+   void impl_Change_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Change_Permission( ) );
+      cba.set_key( key );
+   }
 
    Meta_Class& impl_Child_Class( )
    {
@@ -1031,7 +1345,11 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
 
    size_t total_child_relationships;
 
+   int v_Access_Restriction;
+   int v_Access_Scope;
    int v_Cascade_Op;
+   int v_Change_Restriction;
+   int v_Change_Scope;
    string v_Child_Class_Name;
    string v_Child_Name;
    int v_Extra;
@@ -1041,6 +1359,12 @@ struct Meta_Relationship::impl : public Meta_Relationship_command_handler
    bool v_Mandatory;
    string v_Name;
    bool v_Transient;
+
+   string v_Access_Permission;
+   mutable class_pointer< Meta_Permission > cp_Access_Permission;
+
+   string v_Change_Permission;
+   mutable class_pointer< Meta_Permission > cp_Change_Permission;
 
    string v_Child_Class;
    mutable class_pointer< Meta_Class > cp_Child_Class;
@@ -1072,66 +1396,90 @@ string Meta_Relationship::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Cascade_Op( ) );
+      retval = to_string( impl_Access_Permission( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Child_Class( ) );
+      retval = to_string( impl_Access_Restriction( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Child_Class_Name( ) );
+      retval = to_string( impl_Access_Scope( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Child_Name( ) );
+      retval = to_string( impl_Cascade_Op( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Change_Permission( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Field_Id( ) );
+      retval = to_string( impl_Change_Restriction( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Field_Key( ) );
+      retval = to_string( impl_Change_Scope( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Child_Class( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Mandatory( ) );
+      retval = to_string( impl_Child_Class_Name( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Child_Name( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Field_Id( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Parent_Field_For_List( ) );
+      retval = to_string( impl_Field_Key( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Parent_Field_For_View( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Source_Relationship( ) );
+      retval = to_string( impl_Mandatory( ) );
       break;
 
       case 15:
+      retval = to_string( impl_Model( ) );
+      break;
+
+      case 16:
+      retval = to_string( impl_Name( ) );
+      break;
+
+      case 17:
+      retval = to_string( impl_Parent_Class( ) );
+      break;
+
+      case 18:
+      retval = to_string( impl_Parent_Field_For_List( ) );
+      break;
+
+      case 19:
+      retval = to_string( impl_Parent_Field_For_View( ) );
+      break;
+
+      case 20:
+      retval = to_string( impl_Source_Relationship( ) );
+      break;
+
+      case 21:
       retval = to_string( impl_Transient( ) );
       break;
 
@@ -1147,66 +1495,90 @@ void Meta_Relationship::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Cascade_Op, value );
+      func_string_setter< Meta_Relationship::impl, Meta_Permission >( *this, &Meta_Relationship::impl::impl_Access_Permission, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Relationship::impl, Meta_Class >( *this, &Meta_Relationship::impl::impl_Child_Class, value );
+      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Access_Restriction, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Class_Name, value );
+      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Access_Scope, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Name, value );
+      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Cascade_Op, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Extra, value );
+      func_string_setter< Meta_Relationship::impl, Meta_Permission >( *this, &Meta_Relationship::impl::impl_Change_Permission, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Field_Id, value );
+      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Change_Restriction, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Field_Key, value );
+      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Change_Scope, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Internal, value );
+      func_string_setter< Meta_Relationship::impl, Meta_Class >( *this, &Meta_Relationship::impl::impl_Child_Class, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Mandatory, value );
+      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Class_Name, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Relationship::impl, Meta_Model >( *this, &Meta_Relationship::impl::impl_Model, value );
+      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Child_Name, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Name, value );
+      func_string_setter< Meta_Relationship::impl, int >( *this, &Meta_Relationship::impl::impl_Extra, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Relationship::impl, Meta_Class >( *this, &Meta_Relationship::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Field_Id, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Relationship::impl, Meta_Field >( *this, &Meta_Relationship::impl::impl_Parent_Field_For_List, value );
+      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Field_Key, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Relationship::impl, Meta_Field >( *this, &Meta_Relationship::impl::impl_Parent_Field_For_View, value );
+      func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Internal, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Relationship::impl, Meta_Relationship >( *this, &Meta_Relationship::impl::impl_Source_Relationship, value );
+      func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Mandatory, value );
       break;
 
       case 15:
+      func_string_setter< Meta_Relationship::impl, Meta_Model >( *this, &Meta_Relationship::impl::impl_Model, value );
+      break;
+
+      case 16:
+      func_string_setter< Meta_Relationship::impl, string >( *this, &Meta_Relationship::impl::impl_Name, value );
+      break;
+
+      case 17:
+      func_string_setter< Meta_Relationship::impl, Meta_Class >( *this, &Meta_Relationship::impl::impl_Parent_Class, value );
+      break;
+
+      case 18:
+      func_string_setter< Meta_Relationship::impl, Meta_Field >( *this, &Meta_Relationship::impl::impl_Parent_Field_For_List, value );
+      break;
+
+      case 19:
+      func_string_setter< Meta_Relationship::impl, Meta_Field >( *this, &Meta_Relationship::impl::impl_Parent_Field_For_View, value );
+      break;
+
+      case 20:
+      func_string_setter< Meta_Relationship::impl, Meta_Relationship >( *this, &Meta_Relationship::impl::impl_Source_Relationship, value );
+      break;
+
+      case 21:
       func_string_setter< Meta_Relationship::impl, bool >( *this, &Meta_Relationship::impl::impl_Transient, value );
       break;
 
@@ -1260,6 +1632,10 @@ void Meta_Relationship::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      impl_Access_Permission( "" );
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      impl_Change_Permission( "" );
    else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
       impl_Child_Class( "" );
    else if( field == c_field_id_Model || field == c_field_name_Model )
@@ -1280,6 +1656,10 @@ void Meta_Relationship::impl::set_foreign_key_value( const string& field, const 
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      v_Access_Permission = value;
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      v_Change_Permission = value;
    else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
       v_Child_Class = value;
    else if( field == c_field_id_Model || field == c_field_name_Model )
@@ -1300,6 +1680,10 @@ const string& Meta_Relationship::impl::get_foreign_key_value( const string& fiel
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      return v_Access_Permission;
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      return v_Change_Permission;
    else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
       return v_Child_Class;
    else if( field == c_field_id_Model || field == c_field_name_Model )
@@ -1318,6 +1702,8 @@ const string& Meta_Relationship::impl::get_foreign_key_value( const string& fiel
 
 void Meta_Relationship::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Access_Permission, v_Access_Permission ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Change_Permission, v_Change_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Child_Class, v_Child_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Model, v_Model ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Class, v_Parent_Class ) );
@@ -1344,7 +1730,11 @@ void Meta_Relationship::impl::add_extra_paging_info( vector< pair< string, strin
 
 void Meta_Relationship::impl::clear( )
 {
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Access_Scope = g_default_Access_Scope;
    v_Cascade_Op = g_default_Cascade_Op;
+   v_Change_Restriction = g_default_Change_Restriction;
+   v_Change_Scope = g_default_Change_Scope;
    v_Child_Class_Name = g_default_Child_Class_Name;
    v_Child_Name = g_default_Child_Name;
    v_Extra = g_default_Extra;
@@ -1354,6 +1744,14 @@ void Meta_Relationship::impl::clear( )
    v_Mandatory = g_default_Mandatory;
    v_Name = g_default_Name;
    v_Transient = g_default_Transient;
+
+   v_Access_Permission = string( );
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
+
+   v_Change_Permission = string( );
+   if( cp_Change_Permission )
+      p_obj->setup_foreign_key( *cp_Change_Permission, v_Change_Permission );
 
    v_Child_Class = string( );
    if( cp_Child_Class )
@@ -1442,10 +1840,30 @@ void Meta_Relationship::impl::validate( unsigned state, bool is_internal, valida
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
+   if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
+
+   if( !g_view_field_access_scope_enum.count( v_Access_Scope ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Scope,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Scope ) ) ) ) );
+
    if( !g_cascade_op_enum.count( v_Cascade_Op ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Cascade_Op,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Cascade_Op ) ) ) ) );
+
+   if( !g_view_change_restrict_enum.count( v_Change_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Restriction ) ) ) ) );
+
+   if( !g_view_field_change_scope_enum.count( v_Change_Scope ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Scope,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Scope ) ) ) ) );
 
    if( !g_relationship_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
@@ -1494,6 +1912,12 @@ void Meta_Relationship::impl::after_fetch( )
 {
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
+
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
+
+   if( cp_Change_Permission )
+      p_obj->setup_foreign_key( *cp_Change_Permission, v_Change_Permission );
 
    if( cp_Child_Class )
       p_obj->setup_foreign_key( *cp_Child_Class, v_Child_Class );
@@ -1641,6 +2065,12 @@ void Meta_Relationship::impl::for_store( bool is_create, bool is_internal )
       rel_field.Mandatory( get_obj( ).Mandatory( ) );
       rel_field.Transient( get_obj( ).Transient( ) );
       rel_field.Parent_Class( get_obj( ).Parent_Class( ) );
+      rel_field.Access_Scope( get_obj( ).Access_Scope( ) );
+      rel_field.Change_Scope( get_obj( ).Change_Scope( ) );
+      rel_field.Access_Restriction( get_obj( ).Access_Restriction( ) );
+      rel_field.Change_Restriction( get_obj( ).Change_Restriction( ) );
+      rel_field.Access_Permission( get_obj( ).Access_Permission( ) );
+      rel_field.Change_Permission( get_obj( ).Change_Permission( ) );
 
       rel_field.Type( get_obj( ).Model( ).Workgroup( ).get_key( ) + "_foreign_key" );
       rel_field.Extra( get_obj( ).Extra( ) * -1 );
@@ -1854,6 +2284,26 @@ Meta_Relationship::~Meta_Relationship( )
    delete p_impl;
 }
 
+int Meta_Relationship::Access_Restriction( ) const
+{
+   return p_impl->impl_Access_Restriction( );
+}
+
+void Meta_Relationship::Access_Restriction( int Access_Restriction )
+{
+   p_impl->impl_Access_Restriction( Access_Restriction );
+}
+
+int Meta_Relationship::Access_Scope( ) const
+{
+   return p_impl->impl_Access_Scope( );
+}
+
+void Meta_Relationship::Access_Scope( int Access_Scope )
+{
+   p_impl->impl_Access_Scope( Access_Scope );
+}
+
 int Meta_Relationship::Cascade_Op( ) const
 {
    return p_impl->impl_Cascade_Op( );
@@ -1862,6 +2312,26 @@ int Meta_Relationship::Cascade_Op( ) const
 void Meta_Relationship::Cascade_Op( int Cascade_Op )
 {
    p_impl->impl_Cascade_Op( Cascade_Op );
+}
+
+int Meta_Relationship::Change_Restriction( ) const
+{
+   return p_impl->impl_Change_Restriction( );
+}
+
+void Meta_Relationship::Change_Restriction( int Change_Restriction )
+{
+   p_impl->impl_Change_Restriction( Change_Restriction );
+}
+
+int Meta_Relationship::Change_Scope( ) const
+{
+   return p_impl->impl_Change_Scope( );
+}
+
+void Meta_Relationship::Change_Scope( int Change_Scope )
+{
+   p_impl->impl_Change_Scope( Change_Scope );
 }
 
 const string& Meta_Relationship::Child_Class_Name( ) const
@@ -1952,6 +2422,36 @@ bool Meta_Relationship::Transient( ) const
 void Meta_Relationship::Transient( bool Transient )
 {
    p_impl->impl_Transient( Transient );
+}
+
+Meta_Permission& Meta_Relationship::Access_Permission( )
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+const Meta_Permission& Meta_Relationship::Access_Permission( ) const
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+void Meta_Relationship::Access_Permission( const string& key )
+{
+   p_impl->impl_Access_Permission( key );
+}
+
+Meta_Permission& Meta_Relationship::Change_Permission( )
+{
+   return p_impl->impl_Change_Permission( );
+}
+
+const Meta_Permission& Meta_Relationship::Change_Permission( ) const
+{
+   return p_impl->impl_Change_Permission( );
+}
+
+void Meta_Relationship::Change_Permission( const string& key )
+{
+   p_impl->impl_Change_Permission( key );
 }
 
 Meta_Class& Meta_Relationship::Child_Class( )
@@ -2205,9 +2705,69 @@ const char* Meta_Relationship::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Access_Permission )
+   {
+      p_id = c_field_id_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Access_Restriction )
+   {
+      p_id = c_field_id_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Access_Scope )
+   {
+      p_id = c_field_id_Access_Scope;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Cascade_Op )
    {
       p_id = c_field_id_Cascade_Op;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Change_Permission )
+   {
+      p_id = c_field_id_Change_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Change_Restriction )
+   {
+      p_id = c_field_id_Change_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Change_Scope )
+   {
+      p_id = c_field_id_Change_Scope;
 
       if( p_type_name )
          *p_type_name = "int";
@@ -2376,9 +2936,69 @@ const char* Meta_Relationship::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Access_Permission )
+   {
+      p_name = c_field_name_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Access_Restriction )
+   {
+      p_name = c_field_name_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Access_Scope )
+   {
+      p_name = c_field_name_Access_Scope;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Cascade_Op )
    {
       p_name = c_field_name_Cascade_Op;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Change_Permission )
+   {
+      p_name = c_field_name_Change_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Change_Restriction )
+   {
+      p_name = c_field_name_Change_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Change_Scope )
+   {
+      p_name = c_field_name_Change_Scope;
 
       if( p_type_name )
          *p_type_name = "int";
@@ -2565,10 +3185,40 @@ string Meta_Relationship::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Scope || id_or_name == c_field_name_Access_Scope )
+   {
+      name = string( c_field_display_name_Access_Scope );
+      get_module_string( c_field_display_name_Access_Scope, &next );
+   }
    else if( id_or_name == c_field_id_Cascade_Op || id_or_name == c_field_name_Cascade_Op )
    {
       name = string( c_field_display_name_Cascade_Op );
       get_module_string( c_field_display_name_Cascade_Op, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+   {
+      name = string( c_field_display_name_Change_Permission );
+      get_module_string( c_field_display_name_Change_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+   {
+      name = string( c_field_display_name_Change_Restriction );
+      get_module_string( c_field_display_name_Change_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Scope || id_or_name == c_field_name_Change_Scope )
+   {
+      name = string( c_field_display_name_Change_Scope );
+      get_module_string( c_field_display_name_Change_Scope, &next );
    }
    else if( id_or_name == c_field_id_Child_Class || id_or_name == c_field_name_Child_Class )
    {
@@ -2660,8 +3310,20 @@ string Meta_Relationship::get_field_display_name( const string& id_or_name ) con
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+      display_name = get_module_string( c_field_display_name_Access_Permission );
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+      display_name = get_module_string( c_field_display_name_Access_Restriction );
+   else if( id_or_name == c_field_id_Access_Scope || id_or_name == c_field_name_Access_Scope )
+      display_name = get_module_string( c_field_display_name_Access_Scope );
    else if( id_or_name == c_field_id_Cascade_Op || id_or_name == c_field_name_Cascade_Op )
       display_name = get_module_string( c_field_display_name_Cascade_Op );
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+      display_name = get_module_string( c_field_display_name_Change_Permission );
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+      display_name = get_module_string( c_field_display_name_Change_Restriction );
+   else if( id_or_name == c_field_id_Change_Scope || id_or_name == c_field_name_Change_Scope )
+      display_name = get_module_string( c_field_display_name_Change_Scope );
    else if( id_or_name == c_field_id_Child_Class || id_or_name == c_field_name_Child_Class )
       display_name = get_module_string( c_field_display_name_Child_Class );
    else if( id_or_name == c_field_id_Child_Class_Name || id_or_name == c_field_name_Child_Class_Name )
@@ -2716,6 +3378,11 @@ void Meta_Relationship::get_foreign_key_values( foreign_key_data_container& fore
    p_impl->get_foreign_key_values( foreign_key_values );
 }
 
+void Meta_Relationship::setup_foreign_key( Meta_Permission& o, const string& value )
+{
+   static_cast< Meta_Permission& >( o ).set_key( value );
+}
+
 void Meta_Relationship::setup_foreign_key( Meta_Class& o, const string& value )
 {
    static_cast< Meta_Class& >( o ).set_key( value );
@@ -2749,6 +3416,13 @@ void Meta_Relationship::setup_graph_parent( Meta_Specification& o, const string&
 void Meta_Relationship::setup_graph_parent( Meta_Relationship& o, const string& foreign_key_field )
 {
    static_cast< Meta_Relationship& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Relationship::setup_graph_parent(
+ Meta_Permission& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Permission& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Permission& >( o ).set_key( init_value );
 }
 
 void Meta_Relationship::setup_graph_parent(
@@ -2938,6 +3612,10 @@ class_base& Meta_Relationship::get_or_create_graph_child( const string& context 
       p_class_base = &child_Specification_Child( );
    else if( sub_context == "_301330" || sub_context == "child_Relationship_Source" )
       p_class_base = &child_Relationship_Source( );
+   else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )
+      p_class_base = &Access_Permission( );
+   else if( sub_context == c_field_id_Change_Permission || sub_context == c_field_name_Change_Permission )
+      p_class_base = &Change_Permission( );
    else if( sub_context == c_field_id_Child_Class || sub_context == c_field_name_Child_Class )
       p_class_base = &Child_Class( );
    else if( sub_context == c_field_id_Model || sub_context == c_field_name_Model )
@@ -2966,7 +3644,13 @@ void Meta_Relationship::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Access_Permission" );
+   names.push_back( "C_Access_Restriction" );
+   names.push_back( "C_Access_Scope" );
    names.push_back( "C_Cascade_Op" );
+   names.push_back( "C_Change_Permission" );
+   names.push_back( "C_Change_Restriction" );
+   names.push_back( "C_Change_Scope" );
    names.push_back( "C_Child_Class" );
    names.push_back( "C_Extra" );
    names.push_back( "C_Field_Id" );
@@ -2989,7 +3673,13 @@ void Meta_Relationship::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( sql_quote( to_string( Access_Permission( ) ) ) );
+   values.push_back( to_string( Access_Restriction( ) ) );
+   values.push_back( to_string( Access_Scope( ) ) );
    values.push_back( to_string( Cascade_Op( ) ) );
+   values.push_back( sql_quote( to_string( Change_Permission( ) ) ) );
+   values.push_back( to_string( Change_Restriction( ) ) );
+   values.push_back( to_string( Change_Scope( ) ) );
    values.push_back( sql_quote( to_string( Child_Class( ) ) ) );
    values.push_back( to_string( Extra( ) ) );
    values.push_back( sql_quote( to_string( Field_Id( ) ) ) );
@@ -3156,7 +3846,13 @@ void Meta_Relationship::static_get_class_info( class_info_container& class_info 
 
 void Meta_Relationship::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "301330c", "Access_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "113114", "Access_Restriction", "int", false ) );
+   all_field_info.push_back( field_info( "113112", "Access_Scope", "int", false ) );
    all_field_info.push_back( field_info( "113103", "Cascade_Op", "int", false ) );
+   all_field_info.push_back( field_info( "301330d", "Change_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "113115", "Change_Restriction", "int", false ) );
+   all_field_info.push_back( field_info( "113113", "Change_Scope", "int", false ) );
    all_field_info.push_back( field_info( "301310", "Child_Class", "Meta_Class", true ) );
    all_field_info.push_back( field_info( "113108", "Child_Class_Name", "string", false ) );
    all_field_info.push_back( field_info( "113105", "Child_Name", "string", false ) );
@@ -3178,6 +3874,8 @@ void Meta_Relationship::static_get_foreign_key_info( foreign_key_info_container&
 {
    ( void )foreign_key_info;
 
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Access_Permission, make_pair( "Meta.113100", "Meta_Permission" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Change_Permission, make_pair( "Meta.113100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Child_Class, make_pair( "Meta.113100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Model, make_pair( "Meta.113100", "Meta_Model" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Class, make_pair( "Meta.113100", "Meta_Class" ) ) );
@@ -3206,66 +3904,90 @@ const char* Meta_Relationship::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "113103";
+      p_id = "301330c";
       break;
 
       case 2:
-      p_id = "301310";
+      p_id = "113114";
       break;
 
       case 3:
-      p_id = "113108";
+      p_id = "113112";
       break;
 
       case 4:
-      p_id = "113105";
+      p_id = "113103";
       break;
 
       case 5:
-      p_id = "113104";
+      p_id = "301330d";
       break;
 
       case 6:
-      p_id = "113106";
+      p_id = "113115";
       break;
 
       case 7:
-      p_id = "113107";
+      p_id = "113113";
       break;
 
       case 8:
-      p_id = "113110";
+      p_id = "301310";
       break;
 
       case 9:
-      p_id = "113102";
+      p_id = "113108";
       break;
 
       case 10:
-      p_id = "301300";
+      p_id = "113105";
       break;
 
       case 11:
-      p_id = "113101";
+      p_id = "113104";
       break;
 
       case 12:
-      p_id = "301320";
+      p_id = "113106";
       break;
 
       case 13:
-      p_id = "301330b";
+      p_id = "113107";
       break;
 
       case 14:
-      p_id = "301330a";
+      p_id = "113110";
       break;
 
       case 15:
-      p_id = "301330";
+      p_id = "113102";
       break;
 
       case 16:
+      p_id = "301300";
+      break;
+
+      case 17:
+      p_id = "113101";
+      break;
+
+      case 18:
+      p_id = "301320";
+      break;
+
+      case 19:
+      p_id = "301330b";
+      break;
+
+      case 20:
+      p_id = "301330a";
+      break;
+
+      case 21:
+      p_id = "301330";
+      break;
+
+      case 22:
       p_id = "113111";
       break;
    }
@@ -3283,66 +4005,90 @@ const char* Meta_Relationship::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Cascade_Op";
+      p_id = "Access_Permission";
       break;
 
       case 2:
-      p_id = "Child_Class";
+      p_id = "Access_Restriction";
       break;
 
       case 3:
-      p_id = "Child_Class_Name";
+      p_id = "Access_Scope";
       break;
 
       case 4:
-      p_id = "Child_Name";
+      p_id = "Cascade_Op";
       break;
 
       case 5:
-      p_id = "Extra";
+      p_id = "Change_Permission";
       break;
 
       case 6:
-      p_id = "Field_Id";
+      p_id = "Change_Restriction";
       break;
 
       case 7:
-      p_id = "Field_Key";
+      p_id = "Change_Scope";
       break;
 
       case 8:
-      p_id = "Internal";
+      p_id = "Child_Class";
       break;
 
       case 9:
-      p_id = "Mandatory";
+      p_id = "Child_Class_Name";
       break;
 
       case 10:
-      p_id = "Model";
+      p_id = "Child_Name";
       break;
 
       case 11:
-      p_id = "Name";
+      p_id = "Extra";
       break;
 
       case 12:
-      p_id = "Parent_Class";
+      p_id = "Field_Id";
       break;
 
       case 13:
-      p_id = "Parent_Field_For_List";
+      p_id = "Field_Key";
       break;
 
       case 14:
-      p_id = "Parent_Field_For_View";
+      p_id = "Internal";
       break;
 
       case 15:
-      p_id = "Source_Relationship";
+      p_id = "Mandatory";
       break;
 
       case 16:
+      p_id = "Model";
+      break;
+
+      case 17:
+      p_id = "Name";
+      break;
+
+      case 18:
+      p_id = "Parent_Class";
+      break;
+
+      case 19:
+      p_id = "Parent_Field_For_List";
+      break;
+
+      case 20:
+      p_id = "Parent_Field_For_View";
+      break;
+
+      case 21:
+      p_id = "Source_Relationship";
+      break;
+
+      case 22:
       p_id = "Transient";
       break;
    }
@@ -3359,38 +4105,50 @@ int Meta_Relationship::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Cascade_Op || field == c_field_name_Cascade_Op )
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       rc += 1;
-   else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
+   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
       rc += 2;
-   else if( field == c_field_id_Child_Class_Name || field == c_field_name_Child_Class_Name )
+   else if( field == c_field_id_Access_Scope || field == c_field_name_Access_Scope )
       rc += 3;
-   else if( field == c_field_id_Child_Name || field == c_field_name_Child_Name )
+   else if( field == c_field_id_Cascade_Op || field == c_field_name_Cascade_Op )
       rc += 4;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
       rc += 5;
-   else if( field == c_field_id_Field_Id || field == c_field_name_Field_Id )
+   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
       rc += 6;
-   else if( field == c_field_id_Field_Key || field == c_field_name_Field_Key )
+   else if( field == c_field_id_Change_Scope || field == c_field_name_Change_Scope )
       rc += 7;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Child_Class || field == c_field_name_Child_Class )
       rc += 8;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( field == c_field_id_Child_Class_Name || field == c_field_name_Child_Class_Name )
       rc += 9;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Child_Name || field == c_field_name_Child_Name )
       rc += 10;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 11;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Field_Id || field == c_field_name_Field_Id )
       rc += 12;
-   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
+   else if( field == c_field_id_Field_Key || field == c_field_name_Field_Key )
       rc += 13;
-   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 14;
-   else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
+   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
       rc += 15;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 16;
+   else if( field == c_field_id_Name || field == c_field_name_Name )
+      rc += 17;
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+      rc += 18;
+   else if( field == c_field_id_Parent_Field_For_List || field == c_field_name_Parent_Field_For_List )
+      rc += 19;
+   else if( field == c_field_id_Parent_Field_For_View || field == c_field_name_Parent_Field_For_View )
+      rc += 20;
+   else if( field == c_field_id_Source_Relationship || field == c_field_name_Source_Relationship )
+      rc += 21;
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+      rc += 22;
 
    return rc - 1;
 }
@@ -3411,7 +4169,13 @@ string Meta_Relationship::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Access_Permission VARCHAR(75) NOT NULL,"
+    "C_Access_Restriction INTEGER NOT NULL,"
+    "C_Access_Scope INTEGER NOT NULL,"
     "C_Cascade_Op INTEGER NOT NULL,"
+    "C_Change_Permission VARCHAR(75) NOT NULL,"
+    "C_Change_Restriction INTEGER NOT NULL,"
+    "C_Change_Scope INTEGER NOT NULL,"
     "C_Child_Class VARCHAR(75) NOT NULL,"
     "C_Extra INTEGER NOT NULL,"
     "C_Field_Id VARCHAR(200) NOT NULL,"
@@ -3435,10 +4199,33 @@ void Meta_Relationship::static_get_text_search_fields( vector< string >& fields 
 
 void Meta_Relationship::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "enum_view_access_restrict_0", get_enum_string_view_access_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_1", get_enum_string_view_access_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_2", get_enum_string_view_access_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_3", get_enum_string_view_access_restrict( 3 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_field_access_scope_0", get_enum_string_view_field_access_scope( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_1", get_enum_string_view_field_access_scope( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_2", get_enum_string_view_field_access_scope( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_3", get_enum_string_view_field_access_scope( 3 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_4", get_enum_string_view_field_access_scope( 4 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_5", get_enum_string_view_field_access_scope( 5 ) ) );
+
    pairs.push_back( make_pair( "enum_cascade_op_0", get_enum_string_cascade_op( 0 ) ) );
    pairs.push_back( make_pair( "enum_cascade_op_1", get_enum_string_cascade_op( 1 ) ) );
    pairs.push_back( make_pair( "enum_cascade_op_2", get_enum_string_cascade_op( 2 ) ) );
    pairs.push_back( make_pair( "enum_cascade_op_-1", get_enum_string_cascade_op( -1 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_change_restrict_0", get_enum_string_view_change_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_1", get_enum_string_view_change_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_2", get_enum_string_view_change_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_3", get_enum_string_view_change_restrict( 3 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_4", get_enum_string_view_change_restrict( 4 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_field_change_scope_0", get_enum_string_view_field_change_scope( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_change_scope_1", get_enum_string_view_field_change_scope( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_change_scope_2", get_enum_string_view_field_change_scope( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_change_scope_3", get_enum_string_view_field_change_scope( 3 ) ) );
 
    pairs.push_back( make_pair( "enum_relationship_extra_0", get_enum_string_relationship_extra( 0 ) ) );
    pairs.push_back( make_pair( "enum_relationship_extra_2", get_enum_string_relationship_extra( 2 ) ) );
@@ -3488,10 +4275,33 @@ void Meta_Relationship::static_class_init( const char* p_module_name )
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
 
+   g_view_access_restrict_enum.insert( 0 );
+   g_view_access_restrict_enum.insert( 1 );
+   g_view_access_restrict_enum.insert( 2 );
+   g_view_access_restrict_enum.insert( 3 );
+
+   g_view_field_access_scope_enum.insert( 0 );
+   g_view_field_access_scope_enum.insert( 1 );
+   g_view_field_access_scope_enum.insert( 2 );
+   g_view_field_access_scope_enum.insert( 3 );
+   g_view_field_access_scope_enum.insert( 4 );
+   g_view_field_access_scope_enum.insert( 5 );
+
    g_cascade_op_enum.insert( 0 );
    g_cascade_op_enum.insert( 1 );
    g_cascade_op_enum.insert( 2 );
    g_cascade_op_enum.insert( -1 );
+
+   g_view_change_restrict_enum.insert( 0 );
+   g_view_change_restrict_enum.insert( 1 );
+   g_view_change_restrict_enum.insert( 2 );
+   g_view_change_restrict_enum.insert( 3 );
+   g_view_change_restrict_enum.insert( 4 );
+
+   g_view_field_change_scope_enum.insert( 0 );
+   g_view_field_change_scope_enum.insert( 1 );
+   g_view_field_change_scope_enum.insert( 2 );
+   g_view_field_change_scope_enum.insert( 3 );
 
    g_relationship_extra_enum.insert( 0 );
    g_relationship_extra_enum.insert( 2 );

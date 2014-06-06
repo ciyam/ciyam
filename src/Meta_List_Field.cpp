@@ -495,6 +495,7 @@ const uint64_t c_modifier_Is_Non_Instance_Procedure = UINT64_C( 0x80000000 );
 const uint64_t c_modifier_Is_Not_Restrict_Search = UINT64_C( 0x100000000 );
 const uint64_t c_modifier_Is_Not_View_Child = UINT64_C( 0x200000000 );
 const uint64_t c_modifier_Is_Restrict_Search = UINT64_C( 0x400000000 );
+const uint64_t c_modifier_Proect_Access = UINT64_C( 0x800000000 );
 
 domain_string_max_size< 100 > g_Include_Key_Additions_domain;
 domain_string_max_size< 100 > g_Name_domain;
@@ -3546,6 +3547,10 @@ uint64_t Meta_List_Field::impl::get_state( ) const
    // [(finish modifier_field_value)] 600499a
 
    // [<start get_state>]
+//nyi
+   if( get_obj( ).Source_Field( ).Access_Restriction( ) != 0
+    || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
+      state |= c_modifier_Proect_Access;
    // [<finish get_state>]
 
    return state;
@@ -4239,6 +4244,12 @@ void Meta_List_Field::impl::after_fetch( )
    // [(finish field_from_search_replace)] 600459
 
    // [<start after_fetch>]
+//nyi
+   if( get_obj( ).Source_Field( ).Access_Restriction( ) != 0 )
+      get_obj( ).Access_Restriction( get_obj( ).Source_Field( ).Access_Restriction( ) );
+
+   if( get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
+      get_obj( ).Access_Restriction( get_obj( ).Source_Parent( ).Access_Restriction( ) );
    // [<finish after_fetch>]
 }
 

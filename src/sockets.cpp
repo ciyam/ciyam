@@ -307,7 +307,7 @@ bool tcp_socket::has_input( size_t timeout ) const
    FD_ZERO( &rfds );
    FD_SET( socket, &rfds );
 
-   // NOTE: This function will indicate success eve   n if the "select" return code has
+   // NOTE: This function will indicate success even if the "select" return code has
    // an error as it is expected that the error will occur during the receive itself.
    okay = ::select( socket + 1, &rfds, 0, 0, &tv ) != 0;
 
