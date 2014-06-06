@@ -385,6 +385,8 @@ const uint64_t c_modifier_Is_Not_Date = UINT64_C( 0x2000 );
 const uint64_t c_modifier_Is_Not_Enum = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Is_Print_Version = UINT64_C( 0x8000 );
 const uint64_t c_modifier_Is_Tab = UINT64_C( 0x10000 );
+const uint64_t c_modifier_Proect_Access = UINT64_C( 0x20000 );
+const uint64_t c_modifier_Proect_Change = UINT64_C( 0x40000 );
 
 domain_string_max_size< 100 > g_Name_domain;
 domain_string_max_size< 100 > g_New_Value_domain;
@@ -2754,6 +2756,18 @@ uint64_t Meta_View_Field::impl::get_state( ) const
    // [(finish modifier_field_value)] 610394
 
    // [<start get_state>]
+//nyi
+   if( get_obj( ).Source_Field( ).Access_Scope( ) != 0
+    || get_obj( ).Source_Field( ).Access_Restriction( ) != 0
+    || get_obj( ).Source_Parent( ).Access_Scope( ) != 0
+    || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
+      state |= c_modifier_Proect_Access;
+
+   if( get_obj( ).Source_Field( ).Change_Scope( ) != 0
+    || get_obj( ).Source_Field( ).Change_Restriction( ) != 0
+    || get_obj( ).Source_Parent( ).Change_Scope( ) != 0
+    || get_obj( ).Source_Parent( ).Change_Restriction( ) != 0 )
+      state |= c_modifier_Proect_Change;
    // [<finish get_state>]
 
    return state;
@@ -3240,6 +3254,30 @@ void Meta_View_Field::impl::after_fetch( )
    // [(finish field_from_search_replace)] 600385
 
    // [<start after_fetch>]
+//nyi
+   if( get_obj( ).Source_Field( ).Access_Scope( ) != 0 )
+      get_obj( ).Access_Scope( get_obj( ).Source_Field( ).Access_Scope( ) );
+
+   if( get_obj( ).Source_Parent( ).Access_Scope( ) != 0 )
+      get_obj( ).Access_Scope( get_obj( ).Source_Parent( ).Access_Scope( ) );
+
+   if( get_obj( ).Source_Field( ).Access_Restriction( ) != 0 )
+      get_obj( ).Access_Restriction( get_obj( ).Source_Field( ).Access_Restriction( ) );
+
+   if( get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
+      get_obj( ).Access_Restriction( get_obj( ).Source_Parent( ).Access_Restriction( ) );
+
+   if( get_obj( ).Source_Field( ).Change_Scope( ) != 0 )
+      get_obj( ).Change_Scope( get_obj( ).Source_Field( ).Change_Scope( ) );
+
+   if( get_obj( ).Source_Parent( ).Change_Scope( ) != 0 )
+      get_obj( ).Change_Scope( get_obj( ).Source_Parent( ).Change_Scope( ) );
+
+   if( get_obj( ).Source_Field( ).Change_Restriction( ) != 0 )
+      get_obj( ).Change_Restriction( get_obj( ).Source_Field( ).Change_Restriction( ) );
+
+   if( get_obj( ).Source_Parent( ).Change_Restriction( ) != 0 )
+      get_obj( ).Change_Restriction( get_obj( ).Source_Parent( ).Change_Restriction( ) );
    // [<finish after_fetch>]
 }
 

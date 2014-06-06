@@ -416,13 +416,10 @@ const uint64_t c_modifier_Is_Not_Search_Style = UINT64_C( 0x4000 );
 const uint64_t c_modifier_Is_Not_Unlimited = UINT64_C( 0x8000 );
 const uint64_t c_modifier_PDF_List_Is_Custom = UINT64_C( 0x10000 );
 const uint64_t c_modifier_PDF_List_Is_None = UINT64_C( 0x20000 );
-const uint64_t c_modifier_Protect_Access_Permission = UINT64_C( 0x40000 );
-const uint64_t c_modifier_Protect_Access_Restriction = UINT64_C( 0x80000 );
-const uint64_t c_modifier_Protect_Create_Permission = UINT64_C( 0x100000 );
-const uint64_t c_modifier_Protect_Create_Restriction = UINT64_C( 0x200000 );
-const uint64_t c_modifier_Protect_Destroy_Permission = UINT64_C( 0x400000 );
-const uint64_t c_modifier_Protect_Destroy_Restriction = UINT64_C( 0x800000 );
-const uint64_t c_modifier_Will_Sort_Rows_In_UI = UINT64_C( 0x1000000 );
+const uint64_t c_modifier_Protect_Access = UINT64_C( 0x40000 );
+const uint64_t c_modifier_Protect_Create = UINT64_C( 0x80000 );
+const uint64_t c_modifier_Protect_Destroy = UINT64_C( 0x100000 );
+const uint64_t c_modifier_Will_Sort_Rows_In_UI = UINT64_C( 0x200000 );
 
 aggregate_domain< string,
  domain_string_identifier_format,
@@ -3513,23 +3510,17 @@ uint64_t Meta_List::impl::get_state( ) const
 
    // [<start get_state>]
 //nyi
-   if( get_obj( ).Class( ).Access_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Access_Restriction;
+   if( get_obj( ).Class( ).Access_Restriction( ) != 0
+    || !is_null( get_obj( ).Class( ).Access_Permission( ) ) )
+      state |= c_modifier_Protect_Access;
 
-   if( get_obj( ).Class( ).Create_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Create_Restriction;
+   if( get_obj( ).Class( ).Create_Restriction( ) != 0
+    || !is_null( get_obj( ).Class( ).Create_Permission( ) ) )
+      state |= c_modifier_Protect_Create;
 
-   if( get_obj( ).Class( ).Destroy_Restriction( ) != 0 )
-      state |= c_modifier_Protect_Destroy_Restriction;
-
-   if( !is_null( get_obj( ).Class( ).Access_Permission( ) ) )
-      state |= c_modifier_Protect_Access_Permission;
-
-   if( !is_null( get_obj( ).Class( ).Create_Permission( ) ) )
-      state |= c_modifier_Protect_Create_Permission;
-
-   if( !is_null( get_obj( ).Class( ).Destroy_Permission( ) ) )
-      state |= c_modifier_Protect_Destroy_Permission;
+   if( get_obj( ).Class( ).Destroy_Restriction( ) != 0
+    || !is_null( get_obj( ).Class( ).Destroy_Permission( ) ) )
+      state |= c_modifier_Protect_Destroy;
    // [<finish get_state>]
 
    return state;

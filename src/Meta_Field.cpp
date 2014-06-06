@@ -35,6 +35,7 @@
 #include "Meta_View_Field.h"
 #include "Meta_Initial_Record_Value.h"
 #include "Meta_Modifier_Affect.h"
+#include "Meta_Permission.h"
 #include "Meta_Class.h"
 #include "Meta_Enum.h"
 #include "Meta_Field.h"
@@ -75,6 +76,11 @@ using namespace std;
 // [<start namespaces>]
 // [<finish namespaces>]
 
+template< > inline string to_string( const Meta_Permission& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_Class& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -93,6 +99,11 @@ template< > inline string to_string( const Meta_Field& c )
 template< > inline string to_string( const Meta_Type& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Permission& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
 }
 
 inline void from_string( Meta_Class& c, const string& s )
@@ -126,6 +137,12 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Access_Permission = "300750";
+const char* const c_field_id_Access_Restriction = "107121";
+const char* const c_field_id_Access_Scope = "107123";
+const char* const c_field_id_Change_Permission = "300760";
+const char* const c_field_id_Change_Restriction = "107122";
+const char* const c_field_id_Change_Scope = "107124";
 const char* const c_field_id_Class = "300700";
 const char* const c_field_id_Create_List_Field = "107120";
 const char* const c_field_id_Create_View_Field = "107119";
@@ -152,6 +169,12 @@ const char* const c_field_id_UOM_Name = "107116";
 const char* const c_field_id_UOM_Symbol = "107117";
 const char* const c_field_id_Use_In_Text_Search = "107111";
 
+const char* const c_field_name_Access_Permission = "Access_Permission";
+const char* const c_field_name_Access_Restriction = "Access_Restriction";
+const char* const c_field_name_Access_Scope = "Access_Scope";
+const char* const c_field_name_Change_Permission = "Change_Permission";
+const char* const c_field_name_Change_Restriction = "Change_Restriction";
+const char* const c_field_name_Change_Scope = "Change_Scope";
 const char* const c_field_name_Class = "Class";
 const char* const c_field_name_Create_List_Field = "Create_List_Field";
 const char* const c_field_name_Create_View_Field = "Create_View_Field";
@@ -178,6 +201,12 @@ const char* const c_field_name_UOM_Name = "UOM_Name";
 const char* const c_field_name_UOM_Symbol = "UOM_Symbol";
 const char* const c_field_name_Use_In_Text_Search = "Use_In_Text_Search";
 
+const char* const c_field_display_name_Access_Permission = "field_field_access_permission";
+const char* const c_field_display_name_Access_Restriction = "field_field_access_restriction";
+const char* const c_field_display_name_Access_Scope = "field_field_access_scope";
+const char* const c_field_display_name_Change_Permission = "field_field_change_permission";
+const char* const c_field_display_name_Change_Restriction = "field_field_change_restriction";
+const char* const c_field_display_name_Change_Scope = "field_field_change_scope";
 const char* const c_field_display_name_Class = "field_field_class";
 const char* const c_field_display_name_Create_List_Field = "field_field_create_list_field";
 const char* const c_field_display_name_Create_View_Field = "field_field_create_view_field";
@@ -204,7 +233,7 @@ const char* const c_field_display_name_UOM_Name = "field_field_uom_name";
 const char* const c_field_display_name_UOM_Symbol = "field_field_uom_symbol";
 const char* const c_field_display_name_Use_In_Text_Search = "field_field_use_in_text_search";
 
-const int c_num_fields = 25;
+const int c_num_fields = 31;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -228,15 +257,27 @@ const char* const c_all_sorted_field_ids[ ] =
    "107118",
    "107119",
    "107120",
+   "107121",
+   "107122",
+   "107123",
+   "107124",
    "300700",
    "300710",
    "300720",
    "300730",
-   "300740"
+   "300740",
+   "300750",
+   "300760"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Access_Permission",
+   "Access_Restriction",
+   "Access_Scope",
+   "Change_Permission",
+   "Change_Restriction",
+   "Change_Scope",
    "Class",
    "Create_List_Field",
    "Create_View_Field",
@@ -343,6 +384,12 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
+int g_default_Access_Scope = int( 0 );
+string g_default_Change_Permission = string( );
+int g_default_Change_Restriction = int( 0 );
+int g_default_Change_Scope = int( 0 );
 string g_default_Class = string( );
 bool g_default_Create_List_Field = bool( 0 );
 bool g_default_Create_View_Field = bool( 0 );
@@ -369,9 +416,122 @@ string g_default_UOM_Name = string( );
 string g_default_UOM_Symbol = string( );
 bool g_default_Use_In_Text_Search = bool( 0 );
 
+set< int > g_view_access_restrict_enum;
+set< int > g_view_field_access_scope_enum;
+set< int > g_view_change_restrict_enum;
+set< int > g_view_field_change_scope_enum;
 set< int > g_field_extra_enum;
 set< int > g_primitive_enum;
 set< int > g_uom_enum;
+
+const int c_enum_view_access_restrict_none( 0 );
+const int c_enum_view_access_restrict_owner_only( 1 );
+const int c_enum_view_access_restrict_admin_only( 2 );
+const int c_enum_view_access_restrict_admin_owner( 3 );
+
+string get_enum_string_view_access_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_access_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_access_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_access_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_access_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_access_restrict_admin_owner";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_access_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_field_access_scope_all( 0 );
+const int c_enum_view_field_access_scope_create_only( 1 );
+const int c_enum_view_field_access_scope_post_create( 2 );
+const int c_enum_view_field_access_scope_editing_only( 3 );
+const int c_enum_view_field_access_scope_viewing_only( 4 );
+const int c_enum_view_field_access_scope_updating_only( 5 );
+
+string get_enum_string_view_field_access_scope( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_field_access_scope" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_field_access_scope_all";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_field_access_scope_create_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_field_access_scope_post_create";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_field_access_scope_editing_only";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_view_field_access_scope_viewing_only";
+   else if( to_string( val ) == to_string( "5" ) )
+      string_name = "enum_view_field_access_scope_updating_only";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_access_scope" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_change_restrict_none( 0 );
+const int c_enum_view_change_restrict_owner_only( 1 );
+const int c_enum_view_change_restrict_admin_only( 2 );
+const int c_enum_view_change_restrict_admin_owner( 3 );
+const int c_enum_view_change_restrict_denied_always( 4 );
+
+string get_enum_string_view_change_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_change_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_change_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_change_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_change_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_change_restrict_admin_owner";
+   else if( to_string( val ) == to_string( "4" ) )
+      string_name = "enum_view_change_restrict_denied_always";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_change_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
+
+const int c_enum_view_field_change_scope_all( 0 );
+const int c_enum_view_field_change_scope_create_only( 1 );
+const int c_enum_view_field_change_scope_update_only( 2 );
+const int c_enum_view_field_change_scope_always_editable( 3 );
+
+string get_enum_string_view_field_change_scope( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_field_change_scope" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_field_change_scope_all";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_field_change_scope_create_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_field_change_scope_update_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_field_change_scope_always_editable";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_field_change_scope" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 const int c_enum_field_extra_none( 0 );
 const int c_enum_field_extra_file( 1 );
@@ -658,6 +818,42 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Field->Access_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Field->Access_Restriction( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Scope || field_name == c_field_name_Access_Scope )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Field->Access_Scope( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Field->Change_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Field->Change_Restriction( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Scope || field_name == c_field_name_Change_Scope )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Field->Change_Scope( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
       {
          handled = true;
@@ -819,6 +1015,48 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
       bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, Meta_Permission >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Access_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, int >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Access_Restriction, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Scope || field_name == c_field_name_Access_Scope )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, int >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Access_Scope, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, Meta_Permission >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Change_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Restriction || field_name == c_field_name_Change_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, int >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Change_Restriction, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Change_Scope || field_name == c_field_name_Change_Scope )
+      {
+         handled = true;
+         func_string_setter< Meta_Field, int >(
+          *cmd_handler.p_Meta_Field, &Meta_Field::Change_Scope, field_value );
+      }
 
       if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
       {
@@ -1015,6 +1253,10 @@ void Meta_Field_command_functor::operator ( )( const string& command, const para
          execute_command( Numeric_Decimals, cmd_and_args, cmd_handler.retval );
          cmd_handler.p_Meta_Field->Numeric_Decimals( Numeric_Decimals );
       }
+      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Field->Access_Permission( ).execute( cmd_and_args );
+      else if( field_name == c_field_id_Change_Permission || field_name == c_field_name_Change_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Field->Change_Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
          cmd_handler.retval = cmd_handler.p_Meta_Field->Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Enum || field_name == c_field_name_Enum )
@@ -1056,6 +1298,18 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    {
       return *cp_obj;
    }
+
+   int impl_Access_Restriction( ) const { return lazy_fetch( p_obj ), v_Access_Restriction; }
+   void impl_Access_Restriction( int Access_Restriction ) { v_Access_Restriction = Access_Restriction; }
+
+   int impl_Access_Scope( ) const { return lazy_fetch( p_obj ), v_Access_Scope; }
+   void impl_Access_Scope( int Access_Scope ) { v_Access_Scope = Access_Scope; }
+
+   int impl_Change_Restriction( ) const { return lazy_fetch( p_obj ), v_Change_Restriction; }
+   void impl_Change_Restriction( int Change_Restriction ) { v_Change_Restriction = Change_Restriction; }
+
+   int impl_Change_Scope( ) const { return lazy_fetch( p_obj ), v_Change_Scope; }
+   void impl_Change_Scope( int Change_Scope ) { v_Change_Scope = Change_Scope; }
 
    bool impl_Create_List_Field( ) const { return lazy_fetch( p_obj ), v_Create_List_Field; }
    void impl_Create_List_Field( bool Create_List_Field ) { v_Create_List_Field = Create_List_Field; }
@@ -1116,6 +1370,66 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    bool impl_Use_In_Text_Search( ) const { return lazy_fetch( p_obj ), v_Use_In_Text_Search; }
    void impl_Use_In_Text_Search( bool Use_In_Text_Search ) { v_Use_In_Text_Search = Use_In_Text_Search; }
+
+   Meta_Permission& impl_Access_Permission( )
+   {
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   const Meta_Permission& impl_Access_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   void impl_Access_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Access_Permission( ) );
+      cba.set_key( key );
+   }
+
+   Meta_Permission& impl_Change_Permission( )
+   {
+      if( !cp_Change_Permission )
+      {
+         cp_Change_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Change_Permission, c_field_id_Change_Permission, v_Change_Permission );
+      }
+      return *cp_Change_Permission;
+   }
+
+   const Meta_Permission& impl_Change_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Change_Permission )
+      {
+         cp_Change_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Change_Permission, c_field_id_Change_Permission, v_Change_Permission );
+      }
+      return *cp_Change_Permission;
+   }
+
+   void impl_Change_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Change_Permission( ) );
+      cba.set_key( key );
+   }
 
    Meta_Class& impl_Class( )
    {
@@ -2270,6 +2584,10 @@ struct Meta_Field::impl : public Meta_Field_command_handler
 
    size_t total_child_relationships;
 
+   int v_Access_Restriction;
+   int v_Access_Scope;
+   int v_Change_Restriction;
+   int v_Change_Scope;
    bool v_Create_List_Field;
    bool v_Create_View_Field;
    string v_Def_Value;
@@ -2290,6 +2608,12 @@ struct Meta_Field::impl : public Meta_Field_command_handler
    string v_UOM_Name;
    string v_UOM_Symbol;
    bool v_Use_In_Text_Search;
+
+   string v_Access_Permission;
+   mutable class_pointer< Meta_Permission > cp_Access_Permission;
+
+   string v_Change_Permission;
+   mutable class_pointer< Meta_Permission > cp_Change_Permission;
 
    string v_Class;
    mutable class_pointer< Meta_Class > cp_Class;
@@ -2391,102 +2715,126 @@ string Meta_Field::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Class( ) );
+      retval = to_string( impl_Access_Permission( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Create_List_Field( ) );
+      retval = to_string( impl_Access_Restriction( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Create_View_Field( ) );
+      retval = to_string( impl_Access_Scope( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Def_Value( ) );
+      retval = to_string( impl_Change_Permission( ) );
       break;
 
       case 4:
-      retval = to_string( impl_Default( ) );
+      retval = to_string( impl_Change_Restriction( ) );
       break;
 
       case 5:
-      retval = to_string( impl_Dummy_1( ) );
+      retval = to_string( impl_Change_Scope( ) );
       break;
 
       case 6:
-      retval = to_string( impl_Enum( ) );
+      retval = to_string( impl_Class( ) );
       break;
 
       case 7:
-      retval = to_string( impl_Extra( ) );
+      retval = to_string( impl_Create_List_Field( ) );
       break;
 
       case 8:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Create_View_Field( ) );
       break;
 
       case 9:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Def_Value( ) );
       break;
 
       case 10:
-      retval = to_string( impl_Is_Foreign_Key( ) );
+      retval = to_string( impl_Default( ) );
       break;
 
       case 11:
-      retval = to_string( impl_Is_Text_Type( ) );
+      retval = to_string( impl_Dummy_1( ) );
       break;
 
       case 12:
-      retval = to_string( impl_Mandatory( ) );
+      retval = to_string( impl_Enum( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Extra( ) );
       break;
 
       case 14:
-      retval = to_string( impl_Numeric_Decimals( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_Internal( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Parent_Class_Name( ) );
+      retval = to_string( impl_Is_Foreign_Key( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Primitive( ) );
+      retval = to_string( impl_Is_Text_Type( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Source_Field( ) );
+      retval = to_string( impl_Mandatory( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Transient( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Numeric_Decimals( ) );
       break;
 
       case 21:
-      retval = to_string( impl_UOM( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 22:
-      retval = to_string( impl_UOM_Name( ) );
+      retval = to_string( impl_Parent_Class_Name( ) );
       break;
 
       case 23:
-      retval = to_string( impl_UOM_Symbol( ) );
+      retval = to_string( impl_Primitive( ) );
       break;
 
       case 24:
+      retval = to_string( impl_Source_Field( ) );
+      break;
+
+      case 25:
+      retval = to_string( impl_Transient( ) );
+      break;
+
+      case 26:
+      retval = to_string( impl_Type( ) );
+      break;
+
+      case 27:
+      retval = to_string( impl_UOM( ) );
+      break;
+
+      case 28:
+      retval = to_string( impl_UOM_Name( ) );
+      break;
+
+      case 29:
+      retval = to_string( impl_UOM_Symbol( ) );
+      break;
+
+      case 30:
       retval = to_string( impl_Use_In_Text_Search( ) );
       break;
 
@@ -2502,102 +2850,126 @@ void Meta_Field::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Class, value );
+      func_string_setter< Meta_Field::impl, Meta_Permission >( *this, &Meta_Field::impl::impl_Access_Permission, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Create_List_Field, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Access_Restriction, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Create_View_Field, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Access_Scope, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Def_Value, value );
+      func_string_setter< Meta_Field::impl, Meta_Permission >( *this, &Meta_Field::impl::impl_Change_Permission, value );
       break;
 
       case 4:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Default, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Change_Restriction, value );
       break;
 
       case 5:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Dummy_1, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Change_Scope, value );
       break;
 
       case 6:
-      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
+      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Class, value );
       break;
 
       case 7:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Create_List_Field, value );
       break;
 
       case 8:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Create_View_Field, value );
       break;
 
       case 9:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Def_Value, value );
       break;
 
       case 10:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Default, value );
       break;
 
       case 11:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Dummy_1, value );
       break;
 
       case 12:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
+      func_string_setter< Meta_Field::impl, Meta_Enum >( *this, &Meta_Field::impl::impl_Enum, value );
       break;
 
       case 13:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Extra, value );
       break;
 
       case 14:
-      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Id, value );
       break;
 
       case 15:
-      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Internal, value );
       break;
 
       case 16:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Foreign_Key, value );
       break;
 
       case 17:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Is_Text_Type, value );
       break;
 
       case 18:
-      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Mandatory, value );
       break;
 
       case 19:
-      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Name, value );
       break;
 
       case 20:
-      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
+      func_string_setter< Meta_Field::impl, numeric >( *this, &Meta_Field::impl::impl_Numeric_Decimals, value );
       break;
 
       case 21:
-      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      func_string_setter< Meta_Field::impl, Meta_Class >( *this, &Meta_Field::impl::impl_Parent_Class, value );
       break;
 
       case 22:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_Parent_Class_Name, value );
       break;
 
       case 23:
-      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_Primitive, value );
       break;
 
       case 24:
+      func_string_setter< Meta_Field::impl, Meta_Field >( *this, &Meta_Field::impl::impl_Source_Field, value );
+      break;
+
+      case 25:
+      func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Transient, value );
+      break;
+
+      case 26:
+      func_string_setter< Meta_Field::impl, Meta_Type >( *this, &Meta_Field::impl::impl_Type, value );
+      break;
+
+      case 27:
+      func_string_setter< Meta_Field::impl, int >( *this, &Meta_Field::impl::impl_UOM, value );
+      break;
+
+      case 28:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Name, value );
+      break;
+
+      case 29:
+      func_string_setter< Meta_Field::impl, string >( *this, &Meta_Field::impl::impl_UOM_Symbol, value );
+      break;
+
+      case 30:
       func_string_setter< Meta_Field::impl, bool >( *this, &Meta_Field::impl::impl_Use_In_Text_Search, value );
       break;
 
@@ -2676,6 +3048,10 @@ void Meta_Field::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      impl_Access_Permission( "" );
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      impl_Change_Permission( "" );
    else if( field == c_field_id_Class || field == c_field_name_Class )
       impl_Class( "" );
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
@@ -2694,6 +3070,10 @@ void Meta_Field::impl::set_foreign_key_value( const string& field, const string&
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      v_Access_Permission = value;
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      v_Change_Permission = value;
    else if( field == c_field_id_Class || field == c_field_name_Class )
       v_Class = value;
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
@@ -2712,6 +3092,10 @@ const string& Meta_Field::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      return v_Access_Permission;
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
+      return v_Change_Permission;
    else if( field == c_field_id_Class || field == c_field_name_Class )
       return v_Class;
    else if( field == c_field_id_Enum || field == c_field_name_Enum )
@@ -2728,6 +3112,8 @@ const string& Meta_Field::impl::get_foreign_key_value( const string& field )
 
 void Meta_Field::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Access_Permission, v_Access_Permission ) );
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Change_Permission, v_Change_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Class, v_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Enum, v_Enum ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Parent_Class, v_Parent_Class ) );
@@ -2753,6 +3139,10 @@ void Meta_Field::impl::add_extra_paging_info( vector< pair< string, string > >& 
 
 void Meta_Field::impl::clear( )
 {
+   v_Access_Restriction = g_default_Access_Restriction;
+   v_Access_Scope = g_default_Access_Scope;
+   v_Change_Restriction = g_default_Change_Restriction;
+   v_Change_Scope = g_default_Change_Scope;
    v_Create_List_Field = g_default_Create_List_Field;
    v_Create_View_Field = g_default_Create_View_Field;
    v_Def_Value = g_default_Def_Value;
@@ -2773,6 +3163,14 @@ void Meta_Field::impl::clear( )
    v_UOM_Name = g_default_UOM_Name;
    v_UOM_Symbol = g_default_UOM_Symbol;
    v_Use_In_Text_Search = g_default_Use_In_Text_Search;
+
+   v_Access_Permission = string( );
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
+
+   v_Change_Permission = string( );
+   if( cp_Change_Permission )
+      p_obj->setup_foreign_key( *cp_Change_Permission, v_Change_Permission );
 
    v_Class = string( );
    if( cp_Class )
@@ -2880,6 +3278,26 @@ void Meta_Field::impl::validate( unsigned state, bool is_internal, validation_er
     && !g_UOM_Symbol_domain.is_valid( v_UOM_Symbol, error_message = "" ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_UOM_Symbol,
        get_module_string( c_field_display_name_UOM_Symbol ) + " " + error_message ) );
+
+   if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
+
+   if( !g_view_field_access_scope_enum.count( v_Access_Scope ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Scope,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Scope ) ) ) ) );
+
+   if( !g_view_change_restrict_enum.count( v_Change_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Restriction ) ) ) ) );
+
+   if( !g_view_field_change_scope_enum.count( v_Change_Scope ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Change_Scope,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Change_Scope ) ) ) ) );
 
    if( !g_field_extra_enum.count( v_Extra ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Extra,
@@ -3010,6 +3428,12 @@ void Meta_Field::impl::after_fetch( )
 {
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
+
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
+
+   if( cp_Change_Permission )
+      p_obj->setup_foreign_key( *cp_Change_Permission, v_Change_Permission );
 
    if( cp_Class )
       p_obj->setup_foreign_key( *cp_Class, v_Class );
@@ -3586,6 +4010,46 @@ Meta_Field::~Meta_Field( )
    delete p_impl;
 }
 
+int Meta_Field::Access_Restriction( ) const
+{
+   return p_impl->impl_Access_Restriction( );
+}
+
+void Meta_Field::Access_Restriction( int Access_Restriction )
+{
+   p_impl->impl_Access_Restriction( Access_Restriction );
+}
+
+int Meta_Field::Access_Scope( ) const
+{
+   return p_impl->impl_Access_Scope( );
+}
+
+void Meta_Field::Access_Scope( int Access_Scope )
+{
+   p_impl->impl_Access_Scope( Access_Scope );
+}
+
+int Meta_Field::Change_Restriction( ) const
+{
+   return p_impl->impl_Change_Restriction( );
+}
+
+void Meta_Field::Change_Restriction( int Change_Restriction )
+{
+   p_impl->impl_Change_Restriction( Change_Restriction );
+}
+
+int Meta_Field::Change_Scope( ) const
+{
+   return p_impl->impl_Change_Scope( );
+}
+
+void Meta_Field::Change_Scope( int Change_Scope )
+{
+   p_impl->impl_Change_Scope( Change_Scope );
+}
+
 bool Meta_Field::Create_List_Field( ) const
 {
    return p_impl->impl_Create_List_Field( );
@@ -3784,6 +4248,36 @@ bool Meta_Field::Use_In_Text_Search( ) const
 void Meta_Field::Use_In_Text_Search( bool Use_In_Text_Search )
 {
    p_impl->impl_Use_In_Text_Search( Use_In_Text_Search );
+}
+
+Meta_Permission& Meta_Field::Access_Permission( )
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+const Meta_Permission& Meta_Field::Access_Permission( ) const
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+void Meta_Field::Access_Permission( const string& key )
+{
+   p_impl->impl_Access_Permission( key );
+}
+
+Meta_Permission& Meta_Field::Change_Permission( )
+{
+   return p_impl->impl_Change_Permission( );
+}
+
+const Meta_Permission& Meta_Field::Change_Permission( ) const
+{
+   return p_impl->impl_Change_Permission( );
+}
+
+void Meta_Field::Change_Permission( const string& key )
+{
+   p_impl->impl_Change_Permission( key );
 }
 
 Meta_Class& Meta_Field::Class( )
@@ -4427,6 +4921,66 @@ const char* Meta_Field::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Access_Permission )
+   {
+      p_id = c_field_id_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Access_Restriction )
+   {
+      p_id = c_field_id_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Access_Scope )
+   {
+      p_id = c_field_id_Access_Scope;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Change_Permission )
+   {
+      p_id = c_field_id_Change_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Change_Restriction )
+   {
+      p_id = c_field_id_Change_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( name == c_field_name_Change_Scope )
+   {
+      p_id = c_field_id_Change_Scope;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Class )
    {
       p_id = c_field_id_Class;
@@ -4688,6 +5242,66 @@ const char* Meta_Field::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Access_Permission )
+   {
+      p_name = c_field_name_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Access_Restriction )
+   {
+      p_name = c_field_name_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Access_Scope )
+   {
+      p_name = c_field_name_Access_Scope;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Change_Permission )
+   {
+      p_name = c_field_name_Change_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Change_Restriction )
+   {
+      p_name = c_field_name_Change_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
+   else if( id == c_field_id_Change_Scope )
+   {
+      p_name = c_field_name_Change_Scope;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Class )
    {
       p_name = c_field_name_Class;
@@ -4967,6 +5581,36 @@ string Meta_Field::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Scope || id_or_name == c_field_name_Access_Scope )
+   {
+      name = string( c_field_display_name_Access_Scope );
+      get_module_string( c_field_display_name_Access_Scope, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+   {
+      name = string( c_field_display_name_Change_Permission );
+      get_module_string( c_field_display_name_Change_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+   {
+      name = string( c_field_display_name_Change_Restriction );
+      get_module_string( c_field_display_name_Change_Restriction, &next );
+   }
+   else if( id_or_name == c_field_id_Change_Scope || id_or_name == c_field_name_Change_Scope )
+   {
+      name = string( c_field_display_name_Change_Scope );
+      get_module_string( c_field_display_name_Change_Scope, &next );
+   }
    else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
    {
       name = string( c_field_display_name_Class );
@@ -5107,6 +5751,18 @@ string Meta_Field::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+      display_name = get_module_string( c_field_display_name_Access_Permission );
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+      display_name = get_module_string( c_field_display_name_Access_Restriction );
+   else if( id_or_name == c_field_id_Access_Scope || id_or_name == c_field_name_Access_Scope )
+      display_name = get_module_string( c_field_display_name_Access_Scope );
+   else if( id_or_name == c_field_id_Change_Permission || id_or_name == c_field_name_Change_Permission )
+      display_name = get_module_string( c_field_display_name_Change_Permission );
+   else if( id_or_name == c_field_id_Change_Restriction || id_or_name == c_field_name_Change_Restriction )
+      display_name = get_module_string( c_field_display_name_Change_Restriction );
+   else if( id_or_name == c_field_id_Change_Scope || id_or_name == c_field_name_Change_Scope )
+      display_name = get_module_string( c_field_display_name_Change_Scope );
    else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
       display_name = get_module_string( c_field_display_name_Class );
    else if( id_or_name == c_field_id_Create_List_Field || id_or_name == c_field_name_Create_List_Field )
@@ -5179,6 +5835,11 @@ const string& Meta_Field::get_foreign_key_value( const string& field )
 void Meta_Field::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_Field::setup_foreign_key( Meta_Permission& o, const string& value )
+{
+   static_cast< Meta_Permission& >( o ).set_key( value );
 }
 
 void Meta_Field::setup_foreign_key( Meta_Class& o, const string& value )
@@ -5259,6 +5920,13 @@ void Meta_Field::setup_graph_parent( Meta_Initial_Record_Value& o, const string&
 void Meta_Field::setup_graph_parent( Meta_Modifier_Affect& o, const string& foreign_key_field )
 {
    static_cast< Meta_Modifier_Affect& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Field::setup_graph_parent(
+ Meta_Permission& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Permission& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Permission& >( o ).set_key( init_value );
 }
 
 void Meta_Field::setup_graph_parent(
@@ -5848,6 +6516,10 @@ class_base& Meta_Field::get_or_create_graph_child( const string& context )
       p_class_base = &child_Package_Option( );
    else if( sub_context == "_301430" || sub_context == "child_Specification" )
       p_class_base = &child_Specification( );
+   else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )
+      p_class_base = &Access_Permission( );
+   else if( sub_context == c_field_id_Change_Permission || sub_context == c_field_name_Change_Permission )
+      p_class_base = &Change_Permission( );
    else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )
       p_class_base = &Class( );
    else if( sub_context == c_field_id_Enum || sub_context == c_field_name_Enum )
@@ -5874,6 +6546,12 @@ void Meta_Field::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Access_Permission" );
+   names.push_back( "C_Access_Restriction" );
+   names.push_back( "C_Access_Scope" );
+   names.push_back( "C_Change_Permission" );
+   names.push_back( "C_Change_Restriction" );
+   names.push_back( "C_Change_Scope" );
    names.push_back( "C_Class" );
    names.push_back( "C_Default" );
    names.push_back( "C_Enum" );
@@ -5904,6 +6582,12 @@ void Meta_Field::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( sql_quote( to_string( Access_Permission( ) ) ) );
+   values.push_back( to_string( Access_Restriction( ) ) );
+   values.push_back( to_string( Access_Scope( ) ) );
+   values.push_back( sql_quote( to_string( Change_Permission( ) ) ) );
+   values.push_back( to_string( Change_Restriction( ) ) );
+   values.push_back( to_string( Change_Scope( ) ) );
    values.push_back( sql_quote( to_string( Class( ) ) ) );
    values.push_back( sql_quote( to_string( Default( ) ) ) );
    values.push_back( sql_quote( to_string( Enum( ) ) ) );
@@ -6139,6 +6823,12 @@ void Meta_Field::static_get_class_info( class_info_container& class_info )
 
 void Meta_Field::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "300750", "Access_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "107121", "Access_Restriction", "int", false ) );
+   all_field_info.push_back( field_info( "107123", "Access_Scope", "int", false ) );
+   all_field_info.push_back( field_info( "300760", "Change_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "107122", "Change_Restriction", "int", false ) );
+   all_field_info.push_back( field_info( "107124", "Change_Scope", "int", false ) );
    all_field_info.push_back( field_info( "300700", "Class", "Meta_Class", true ) );
    all_field_info.push_back( field_info( "107120", "Create_List_Field", "bool", false ) );
    all_field_info.push_back( field_info( "107119", "Create_View_Field", "bool", false ) );
@@ -6170,6 +6860,8 @@ void Meta_Field::static_get_foreign_key_info( foreign_key_info_container& foreig
 {
    ( void )foreign_key_info;
 
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Access_Permission, make_pair( "Meta.107100", "Meta_Permission" ) ) );
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Change_Permission, make_pair( "Meta.107100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Class, make_pair( "Meta.107100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Enum, make_pair( "Meta.107100", "Meta_Enum" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Parent_Class, make_pair( "Meta.107100", "Meta_Class" ) ) );
@@ -6197,102 +6889,126 @@ const char* Meta_Field::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "300700";
+      p_id = "300750";
       break;
 
       case 2:
-      p_id = "107120";
+      p_id = "107121";
       break;
 
       case 3:
-      p_id = "107119";
+      p_id = "107123";
       break;
 
       case 4:
-      p_id = "107115";
+      p_id = "300760";
       break;
 
       case 5:
-      p_id = "107102";
+      p_id = "107122";
       break;
 
       case 6:
-      p_id = "107118";
+      p_id = "107124";
       break;
 
       case 7:
-      p_id = "300720";
+      p_id = "300700";
       break;
 
       case 8:
-      p_id = "107103";
+      p_id = "107120";
       break;
 
       case 9:
-      p_id = "107110";
+      p_id = "107119";
       break;
 
       case 10:
-      p_id = "107106";
+      p_id = "107115";
       break;
 
       case 11:
-      p_id = "107108";
+      p_id = "107102";
       break;
 
       case 12:
-      p_id = "107109";
+      p_id = "107118";
       break;
 
       case 13:
-      p_id = "107105";
+      p_id = "300720";
       break;
 
       case 14:
-      p_id = "107101";
+      p_id = "107103";
       break;
 
       case 15:
-      p_id = "107114";
+      p_id = "107110";
       break;
 
       case 16:
-      p_id = "300730";
+      p_id = "107106";
       break;
 
       case 17:
-      p_id = "107113";
+      p_id = "107108";
       break;
 
       case 18:
-      p_id = "107107";
+      p_id = "107109";
       break;
 
       case 19:
-      p_id = "300740";
+      p_id = "107105";
       break;
 
       case 20:
-      p_id = "107112";
+      p_id = "107101";
       break;
 
       case 21:
-      p_id = "300710";
+      p_id = "107114";
       break;
 
       case 22:
-      p_id = "107104";
+      p_id = "300730";
       break;
 
       case 23:
-      p_id = "107116";
+      p_id = "107113";
       break;
 
       case 24:
-      p_id = "107117";
+      p_id = "107107";
       break;
 
       case 25:
+      p_id = "300740";
+      break;
+
+      case 26:
+      p_id = "107112";
+      break;
+
+      case 27:
+      p_id = "300710";
+      break;
+
+      case 28:
+      p_id = "107104";
+      break;
+
+      case 29:
+      p_id = "107116";
+      break;
+
+      case 30:
+      p_id = "107117";
+      break;
+
+      case 31:
       p_id = "107111";
       break;
    }
@@ -6310,102 +7026,126 @@ const char* Meta_Field::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Class";
+      p_id = "Access_Permission";
       break;
 
       case 2:
-      p_id = "Create_List_Field";
+      p_id = "Access_Restriction";
       break;
 
       case 3:
-      p_id = "Create_View_Field";
+      p_id = "Access_Scope";
       break;
 
       case 4:
-      p_id = "Def_Value";
+      p_id = "Change_Permission";
       break;
 
       case 5:
-      p_id = "Default";
+      p_id = "Change_Restriction";
       break;
 
       case 6:
-      p_id = "Dummy_1";
+      p_id = "Change_Scope";
       break;
 
       case 7:
-      p_id = "Enum";
+      p_id = "Class";
       break;
 
       case 8:
-      p_id = "Extra";
+      p_id = "Create_List_Field";
       break;
 
       case 9:
-      p_id = "Id";
+      p_id = "Create_View_Field";
       break;
 
       case 10:
-      p_id = "Internal";
+      p_id = "Def_Value";
       break;
 
       case 11:
-      p_id = "Is_Foreign_Key";
+      p_id = "Default";
       break;
 
       case 12:
-      p_id = "Is_Text_Type";
+      p_id = "Dummy_1";
       break;
 
       case 13:
-      p_id = "Mandatory";
+      p_id = "Enum";
       break;
 
       case 14:
-      p_id = "Name";
+      p_id = "Extra";
       break;
 
       case 15:
-      p_id = "Numeric_Decimals";
+      p_id = "Id";
       break;
 
       case 16:
-      p_id = "Parent_Class";
+      p_id = "Internal";
       break;
 
       case 17:
-      p_id = "Parent_Class_Name";
+      p_id = "Is_Foreign_Key";
       break;
 
       case 18:
-      p_id = "Primitive";
+      p_id = "Is_Text_Type";
       break;
 
       case 19:
-      p_id = "Source_Field";
+      p_id = "Mandatory";
       break;
 
       case 20:
-      p_id = "Transient";
+      p_id = "Name";
       break;
 
       case 21:
-      p_id = "Type";
+      p_id = "Numeric_Decimals";
       break;
 
       case 22:
-      p_id = "UOM";
+      p_id = "Parent_Class";
       break;
 
       case 23:
-      p_id = "UOM_Name";
+      p_id = "Parent_Class_Name";
       break;
 
       case 24:
-      p_id = "UOM_Symbol";
+      p_id = "Primitive";
       break;
 
       case 25:
+      p_id = "Source_Field";
+      break;
+
+      case 26:
+      p_id = "Transient";
+      break;
+
+      case 27:
+      p_id = "Type";
+      break;
+
+      case 28:
+      p_id = "UOM";
+      break;
+
+      case 29:
+      p_id = "UOM_Name";
+      break;
+
+      case 30:
+      p_id = "UOM_Symbol";
+      break;
+
+      case 31:
       p_id = "Use_In_Text_Search";
       break;
    }
@@ -6422,56 +7162,68 @@ int Meta_Field::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       rc += 1;
-   else if( field == c_field_id_Create_List_Field || field == c_field_name_Create_List_Field )
+   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
       rc += 2;
-   else if( field == c_field_id_Create_View_Field || field == c_field_name_Create_View_Field )
+   else if( field == c_field_id_Access_Scope || field == c_field_name_Access_Scope )
       rc += 3;
-   else if( field == c_field_id_Def_Value || field == c_field_name_Def_Value )
+   else if( field == c_field_id_Change_Permission || field == c_field_name_Change_Permission )
       rc += 4;
-   else if( field == c_field_id_Default || field == c_field_name_Default )
+   else if( field == c_field_id_Change_Restriction || field == c_field_name_Change_Restriction )
       rc += 5;
-   else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
+   else if( field == c_field_id_Change_Scope || field == c_field_name_Change_Scope )
       rc += 6;
-   else if( field == c_field_id_Enum || field == c_field_name_Enum )
+   else if( field == c_field_id_Class || field == c_field_name_Class )
       rc += 7;
-   else if( field == c_field_id_Extra || field == c_field_name_Extra )
+   else if( field == c_field_id_Create_List_Field || field == c_field_name_Create_List_Field )
       rc += 8;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Create_View_Field || field == c_field_name_Create_View_Field )
       rc += 9;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Def_Value || field == c_field_name_Def_Value )
       rc += 10;
-   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
+   else if( field == c_field_id_Default || field == c_field_name_Default )
       rc += 11;
-   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
+   else if( field == c_field_id_Dummy_1 || field == c_field_name_Dummy_1 )
       rc += 12;
-   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
+   else if( field == c_field_id_Enum || field == c_field_name_Enum )
       rc += 13;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Extra || field == c_field_name_Extra )
       rc += 14;
-   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 15;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 16;
-   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
+   else if( field == c_field_id_Is_Foreign_Key || field == c_field_name_Is_Foreign_Key )
       rc += 17;
-   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
+   else if( field == c_field_id_Is_Text_Type || field == c_field_name_Is_Text_Type )
       rc += 18;
-   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
+   else if( field == c_field_id_Mandatory || field == c_field_name_Mandatory )
       rc += 19;
-   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 20;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Numeric_Decimals || field == c_field_name_Numeric_Decimals )
       rc += 21;
-   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 22;
-   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
+   else if( field == c_field_id_Parent_Class_Name || field == c_field_name_Parent_Class_Name )
       rc += 23;
-   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+   else if( field == c_field_id_Primitive || field == c_field_name_Primitive )
       rc += 24;
-   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+   else if( field == c_field_id_Source_Field || field == c_field_name_Source_Field )
       rc += 25;
+   else if( field == c_field_id_Transient || field == c_field_name_Transient )
+      rc += 26;
+   else if( field == c_field_id_Type || field == c_field_name_Type )
+      rc += 27;
+   else if( field == c_field_id_UOM || field == c_field_name_UOM )
+      rc += 28;
+   else if( field == c_field_id_UOM_Name || field == c_field_name_UOM_Name )
+      rc += 29;
+   else if( field == c_field_id_UOM_Symbol || field == c_field_name_UOM_Symbol )
+      rc += 30;
+   else if( field == c_field_id_Use_In_Text_Search || field == c_field_name_Use_In_Text_Search )
+      rc += 31;
 
    return rc - 1;
 }
@@ -6499,6 +7251,12 @@ string Meta_Field::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Access_Permission VARCHAR(75) NOT NULL,"
+    "C_Access_Restriction INTEGER NOT NULL,"
+    "C_Access_Scope INTEGER NOT NULL,"
+    "C_Change_Permission VARCHAR(75) NOT NULL,"
+    "C_Change_Restriction INTEGER NOT NULL,"
+    "C_Change_Scope INTEGER NOT NULL,"
     "C_Class VARCHAR(75) NOT NULL,"
     "C_Default VARCHAR(200) NOT NULL,"
     "C_Enum VARCHAR(75) NOT NULL,"
@@ -6530,6 +7288,29 @@ void Meta_Field::static_get_text_search_fields( vector< string >& fields )
 
 void Meta_Field::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
+   pairs.push_back( make_pair( "enum_view_access_restrict_0", get_enum_string_view_access_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_1", get_enum_string_view_access_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_2", get_enum_string_view_access_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_3", get_enum_string_view_access_restrict( 3 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_field_access_scope_0", get_enum_string_view_field_access_scope( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_1", get_enum_string_view_field_access_scope( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_2", get_enum_string_view_field_access_scope( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_3", get_enum_string_view_field_access_scope( 3 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_4", get_enum_string_view_field_access_scope( 4 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_access_scope_5", get_enum_string_view_field_access_scope( 5 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_change_restrict_0", get_enum_string_view_change_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_1", get_enum_string_view_change_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_2", get_enum_string_view_change_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_3", get_enum_string_view_change_restrict( 3 ) ) );
+   pairs.push_back( make_pair( "enum_view_change_restrict_4", get_enum_string_view_change_restrict( 4 ) ) );
+
+   pairs.push_back( make_pair( "enum_view_field_change_scope_0", get_enum_string_view_field_change_scope( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_change_scope_1", get_enum_string_view_field_change_scope( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_change_scope_2", get_enum_string_view_field_change_scope( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_field_change_scope_3", get_enum_string_view_field_change_scope( 3 ) ) );
+
    pairs.push_back( make_pair( "enum_field_extra_0", get_enum_string_field_extra( 0 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_1", get_enum_string_field_extra( 1 ) ) );
    pairs.push_back( make_pair( "enum_field_extra_2", get_enum_string_field_extra( 2 ) ) );
@@ -6630,6 +7411,29 @@ void Meta_Field::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_view_access_restrict_enum.insert( 0 );
+   g_view_access_restrict_enum.insert( 1 );
+   g_view_access_restrict_enum.insert( 2 );
+   g_view_access_restrict_enum.insert( 3 );
+
+   g_view_field_access_scope_enum.insert( 0 );
+   g_view_field_access_scope_enum.insert( 1 );
+   g_view_field_access_scope_enum.insert( 2 );
+   g_view_field_access_scope_enum.insert( 3 );
+   g_view_field_access_scope_enum.insert( 4 );
+   g_view_field_access_scope_enum.insert( 5 );
+
+   g_view_change_restrict_enum.insert( 0 );
+   g_view_change_restrict_enum.insert( 1 );
+   g_view_change_restrict_enum.insert( 2 );
+   g_view_change_restrict_enum.insert( 3 );
+   g_view_change_restrict_enum.insert( 4 );
+
+   g_view_field_change_scope_enum.insert( 0 );
+   g_view_field_change_scope_enum.insert( 1 );
+   g_view_field_change_scope_enum.insert( 2 );
+   g_view_field_change_scope_enum.insert( 3 );
 
    g_field_extra_enum.insert( 0 );
    g_field_extra_enum.insert( 1 );

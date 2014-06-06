@@ -21,6 +21,7 @@
 
 class Meta_List_Field;
 class Meta_Specification;
+class Meta_Permission;
 class Meta_Class;
 class Meta_Model;
 class Meta_Field;
@@ -30,6 +31,7 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 {
    friend class Meta_List_Field;
    friend class Meta_Specification;
+   friend class Meta_Permission;
    friend class Meta_Class;
    friend class Meta_Model;
    friend class Meta_Field;
@@ -40,29 +42,47 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Cascade_Op = 1,
-      e_field_id_Child_Class = 2,
-      e_field_id_Child_Class_Name = 3,
-      e_field_id_Child_Name = 4,
-      e_field_id_Extra = 5,
-      e_field_id_Field_Id = 6,
-      e_field_id_Field_Key = 7,
-      e_field_id_Internal = 8,
-      e_field_id_Mandatory = 9,
-      e_field_id_Model = 10,
-      e_field_id_Name = 11,
-      e_field_id_Parent_Class = 12,
-      e_field_id_Parent_Field_For_List = 13,
-      e_field_id_Parent_Field_For_View = 14,
-      e_field_id_Source_Relationship = 15,
-      e_field_id_Transient = 16
+      e_field_id_Access_Permission = 1,
+      e_field_id_Access_Restriction = 2,
+      e_field_id_Access_Scope = 3,
+      e_field_id_Cascade_Op = 4,
+      e_field_id_Change_Permission = 5,
+      e_field_id_Change_Restriction = 6,
+      e_field_id_Change_Scope = 7,
+      e_field_id_Child_Class = 8,
+      e_field_id_Child_Class_Name = 9,
+      e_field_id_Child_Name = 10,
+      e_field_id_Extra = 11,
+      e_field_id_Field_Id = 12,
+      e_field_id_Field_Key = 13,
+      e_field_id_Internal = 14,
+      e_field_id_Mandatory = 15,
+      e_field_id_Model = 16,
+      e_field_id_Name = 17,
+      e_field_id_Parent_Class = 18,
+      e_field_id_Parent_Field_For_List = 19,
+      e_field_id_Parent_Field_For_View = 20,
+      e_field_id_Source_Relationship = 21,
+      e_field_id_Transient = 22
    };
 
    Meta_Relationship( );
    ~Meta_Relationship( );
 
+   int Access_Restriction( ) const;
+   void Access_Restriction( int Access_Restriction );
+
+   int Access_Scope( ) const;
+   void Access_Scope( int Access_Scope );
+
    int Cascade_Op( ) const;
    void Cascade_Op( int Cascade_Op );
+
+   int Change_Restriction( ) const;
+   void Change_Restriction( int Change_Restriction );
+
+   int Change_Scope( ) const;
+   void Change_Scope( int Change_Scope );
 
    const std::string& Child_Class_Name( ) const;
    void Child_Class_Name( const std::string& Child_Class_Name );
@@ -90,6 +110,14 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    bool Transient( ) const;
    void Transient( bool Transient );
+
+   Meta_Permission& Access_Permission( );
+   const Meta_Permission& Access_Permission( ) const;
+   void Access_Permission( const std::string& key );
+
+   Meta_Permission& Change_Permission( );
+   const Meta_Permission& Change_Permission( ) const;
+   void Change_Permission( const std::string& key );
 
    Meta_Class& Child_Class( );
    const Meta_Class& Child_Class( ) const;
@@ -292,6 +320,7 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Model& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Field& o, const std::string& value );
@@ -300,6 +329,9 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Specification& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Relationship& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_Permission& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Class& o,
     const std::string& foreign_key_field, const std::string& init_value );

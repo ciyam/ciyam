@@ -3114,6 +3114,62 @@
      <mandatory>true
      <modifiers>100:relegate
     </field>
+    <field/>
+     <name>field_field_access_scope
+     <field>107123
+     <ftype>int
+     <extra>enum=661
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_field_access_restriction
+     <field>107121
+     <ftype>int
+     <extra>enum=655
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_field_access_permission
+     <field>300750
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
+    </field>
+    <field/>
+     <name>field_field_change_scope
+     <field>107124
+     <ftype>int
+     <extra>enum=662
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_field_change_restriction
+     <field>107122
+     <ftype>int
+     <extra>enum=657
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_field_change_permission
+     <field>300760
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
+    </field>
    </fields>
   </view>
   <view/>
@@ -3417,7 +3473,7 @@
      <ftype>int
      <extra>force+enum=680
      <mandatory>true
-     <modifiers>400:relegate,80000:protect
+     <modifiers>400:relegate,40000:protect
     </field>
     <field/>
      <name>field_list_access_permission
@@ -3449,7 +3505,7 @@
      <ftype>int
      <extra>enum=680
      <mandatory>true
-     <modifiers>1000:relegate,400:relegate,200000:protect
+     <modifiers>1000:relegate,400:relegate,80000:protect
     </field>
     <field/>
      <name>field_list_create_permission
@@ -3457,7 +3513,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>1000:relegate,400:relegate,100000:protect
+     <modifiers>1000:relegate,400:relegate,80000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -3469,7 +3525,7 @@
      <ftype>int
      <extra>enum=680
      <mandatory>true
-     <modifiers>1000:relegate,400:relegate,800000:protect
+     <modifiers>1000:relegate,400:relegate,100000:protect
     </field>
     <field/>
      <name>field_list_destroy_permission
@@ -3477,7 +3533,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>1000:relegate,400:relegate,400000:protect
+     <modifiers>1000:relegate,400:relegate,100000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -3633,7 +3689,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>1000000:relegate,1000:relegate
+     <modifiers>200000:relegate,1000:relegate
     </field>
     <field/>
      <name>field_list_ignore_uneditable_parent
@@ -4171,7 +4227,7 @@
      <ftype>int
      <extra>enum=690
      <mandatory>true
-     <modifiers>
+     <modifiers>800000000:protect
     </field>
     <field/>
      <name>field_list_field_access_permission
@@ -4179,7 +4235,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>
+     <modifiers>800000000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -5122,6 +5178,62 @@
      <extra>forced+enum=585
      <mandatory>true
      <modifiers>800:relegate
+    </field>
+    <field/>
+     <name>field_relationship_access_scope
+     <field>113112
+     <ftype>int
+     <extra>enum=661
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_relationship_access_restriction
+     <field>113114
+     <ftype>int
+     <extra>enum=655
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_relationship_access_permission
+     <field>301330c
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
+    </field>
+    <field/>
+     <name>field_relationship_change_scope
+     <field>113113
+     <ftype>int
+     <extra>enum=662
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_relationship_change_restriction
+     <field>113115
+     <ftype>int
+     <extra>enum=657
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
+     <name>field_relationship_change_permission
+     <field>301330d
+     <ftype>@class
+     <extra>
+     <mandatory>false
+     <modifiers>
+     <pclass>116100
+     <pfield>116101
+     <pfname>field_permission_name
+     <pextra>@group:301500+116101
     </field>
    </fields>
   </view>
@@ -7167,7 +7279,7 @@
      <ftype>int
      <extra>enum=655
      <mandatory>true
-     <modifiers>4000:protect
+     <modifiers>2000:protect
     </field>
     <field/>
      <name>field_view_access_permission
@@ -7187,7 +7299,7 @@
      <ftype>int
      <extra>force+enum=657
      <mandatory>true
-     <modifiers>200:relegate,10000:protect
+     <modifiers>200:relegate,4000:protect
     </field>
     <field/>
      <name>field_view_change_permission
@@ -7195,7 +7307,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>200:relegate,8000:protect
+     <modifiers>200:relegate,4000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -7593,7 +7705,7 @@
      <ftype>int
      <extra>enum=661
      <mandatory>true
-     <modifiers>8000:relegate,10000:relegate,1000:relegate
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,20000:protect
     </field>
     <field/>
      <name>field_view_field_access_restriction
@@ -7601,7 +7713,7 @@
      <ftype>int
      <extra>enum=660
      <mandatory>true
-     <modifiers>1000:relegate
+     <modifiers>1000:relegate,20000:protect
     </field>
     <field/>
      <name>field_view_field_access_permission
@@ -7609,7 +7721,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>1000:relegate
+     <modifiers>1000:relegate,20000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -7621,7 +7733,7 @@
      <ftype>int
      <extra>enum=662
      <mandatory>true
-     <modifiers>8000:relegate,10000:relegate,1000:relegate
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
     </field>
     <field/>
      <name>field_view_field_change_restriction
@@ -7629,7 +7741,7 @@
      <ftype>int
      <extra>enum=660
      <mandatory>true
-     <modifiers>8000:relegate,10000:relegate,1000:relegate
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
     </field>
     <field/>
      <name>field_view_field_change_permission
@@ -7637,7 +7749,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>8000:relegate,10000:relegate,1000:relegate
+     <modifiers>8000:relegate,10000:relegate,1000:relegate,40000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -8210,7 +8322,7 @@
      <field>122103
      <ftype>int
      <extra>enum=680
-     <modifiers>80000:protect
+     <modifiers>40000:protect
      <unique>false
      <indexed>false
     </column>
@@ -9304,7 +9416,7 @@
      <field>118102
      <ftype>int
      <extra>enum=655
-     <modifiers>4000:protect
+     <modifiers>2000:protect
      <unique>false
      <indexed>false
     </column>
