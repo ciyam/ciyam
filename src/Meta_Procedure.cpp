@@ -29,6 +29,7 @@
 #include "Meta_List_Field.h"
 #include "Meta_Package_Option.h"
 #include "Meta_Procedure_Arg.h"
+#include "Meta_Permission.h"
 #include "Meta_Class.h"
 #include "Meta_Procedure.h"
 
@@ -52,6 +53,11 @@ using namespace std;
 // [<start namespaces>]
 // [<finish namespaces>]
 
+template< > inline string to_string( const Meta_Permission& c )
+{
+   return ::to_string( static_cast< const class_base& >( c ) );
+}
+
 template< > inline string to_string( const Meta_Class& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
@@ -60,6 +66,11 @@ template< > inline string to_string( const Meta_Class& c )
 template< > inline string to_string( const Meta_Procedure& c )
 {
    return ::to_string( static_cast< const class_base& >( c ) );
+}
+
+inline void from_string( Meta_Permission& c, const string& s )
+{
+   ::from_string( static_cast< class_base& >( c ), s );
 }
 
 inline void from_string( Meta_Class& c, const string& s )
@@ -83,37 +94,47 @@ const int32_t c_version = 1;
 
 const char* const c_okay = "okay";
 
+const char* const c_field_id_Access_Permission = "301120";
+const char* const c_field_id_Access_Restriction = "111104";
 const char* const c_field_id_Class = "301100";
 const char* const c_field_id_Id = "111103";
 const char* const c_field_id_Internal = "111102";
 const char* const c_field_id_Name = "111101";
 const char* const c_field_id_Source_Procedure = "301110";
 
+const char* const c_field_name_Access_Permission = "Access_Permission";
+const char* const c_field_name_Access_Restriction = "Access_Restriction";
 const char* const c_field_name_Class = "Class";
 const char* const c_field_name_Id = "Id";
 const char* const c_field_name_Internal = "Internal";
 const char* const c_field_name_Name = "Name";
 const char* const c_field_name_Source_Procedure = "Source_Procedure";
 
+const char* const c_field_display_name_Access_Permission = "field_procedure_access_permission";
+const char* const c_field_display_name_Access_Restriction = "field_procedure_access_restriction";
 const char* const c_field_display_name_Class = "field_procedure_class";
 const char* const c_field_display_name_Id = "field_procedure_id";
 const char* const c_field_display_name_Internal = "field_procedure_internal";
 const char* const c_field_display_name_Name = "field_procedure_name";
 const char* const c_field_display_name_Source_Procedure = "field_procedure_source_procedure";
 
-const int c_num_fields = 5;
+const int c_num_fields = 7;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
    "111101",
    "111102",
    "111103",
+   "111104",
    "301100",
-   "301110"
+   "301110",
+   "301120"
 };
 
 const char* const c_all_sorted_field_names[ ] =
 {
+   "Access_Permission",
+   "Access_Restriction",
    "Class",
    "Id",
    "Internal",
@@ -158,11 +179,40 @@ typedef external_aliases_lookup_container::const_iterator external_aliases_looku
 external_aliases_container g_external_aliases;
 external_aliases_lookup_container g_external_aliases_lookup;
 
+string g_default_Access_Permission = string( );
+int g_default_Access_Restriction = int( 0 );
 string g_default_Class = string( );
 string g_default_Id = string( );
 bool g_default_Internal = bool( 0 );
 string g_default_Name = string( );
 string g_default_Source_Procedure = string( );
+
+set< int > g_view_access_restrict_enum;
+
+const int c_enum_view_access_restrict_none( 0 );
+const int c_enum_view_access_restrict_owner_only( 1 );
+const int c_enum_view_access_restrict_admin_only( 2 );
+const int c_enum_view_access_restrict_admin_owner( 3 );
+
+string get_enum_string_view_access_restrict( int val )
+{
+   string string_name;
+
+   if( to_string( val ) == "" )
+      throw runtime_error( "unexpected empty enum value for view_access_restrict" );
+   else if( to_string( val ) == to_string( "0" ) )
+      string_name = "enum_view_access_restrict_none";
+   else if( to_string( val ) == to_string( "1" ) )
+      string_name = "enum_view_access_restrict_owner_only";
+   else if( to_string( val ) == to_string( "2" ) )
+      string_name = "enum_view_access_restrict_admin_only";
+   else if( to_string( val ) == to_string( "3" ) )
+      string_name = "enum_view_access_restrict_admin_owner";
+   else
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for view_access_restrict" );
+
+   return get_module_string( lower( string_name ) );
+}
 
 // [<start anonymous>]
 // [<finish anonymous>]
@@ -245,6 +295,18 @@ void Meta_Procedure_command_functor::operator ( )( const string& command, const 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for getter call" );
 
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         string_getter< Meta_Permission >( cmd_handler.p_Meta_Procedure->Access_Permission( ), cmd_handler.retval );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         string_getter< int >( cmd_handler.p_Meta_Procedure->Access_Restriction( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
       {
          handled = true;
@@ -286,6 +348,20 @@ void Meta_Procedure_command_functor::operator ( )( const string& command, const 
       bool handled = false;
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for setter call" );
+
+      if( !handled && field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+      {
+         handled = true;
+         func_string_setter< Meta_Procedure, Meta_Permission >(
+          *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Access_Permission, field_value );
+      }
+
+      if( !handled && field_name == c_field_id_Access_Restriction || field_name == c_field_name_Access_Restriction )
+      {
+         handled = true;
+         func_string_setter< Meta_Procedure, int >(
+          *cmd_handler.p_Meta_Procedure, &Meta_Procedure::Access_Restriction, field_value );
+      }
 
       if( !handled && field_name == c_field_id_Class || field_name == c_field_name_Class )
       {
@@ -336,6 +412,8 @@ void Meta_Procedure_command_functor::operator ( )( const string& command, const 
 
       if( field_name.empty( ) )
          throw runtime_error( "field name must not be empty for command call" );
+      else if( field_name == c_field_id_Access_Permission || field_name == c_field_name_Access_Permission )
+         cmd_handler.retval = cmd_handler.p_Meta_Procedure->Access_Permission( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Class || field_name == c_field_name_Class )
          cmd_handler.retval = cmd_handler.p_Meta_Procedure->Class( ).execute( cmd_and_args );
       else if( field_name == c_field_id_Source_Procedure || field_name == c_field_name_Source_Procedure )
@@ -364,6 +442,9 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
       return *cp_obj;
    }
 
+   int impl_Access_Restriction( ) const { return lazy_fetch( p_obj ), v_Access_Restriction; }
+   void impl_Access_Restriction( int Access_Restriction ) { v_Access_Restriction = Access_Restriction; }
+
    const string& impl_Id( ) const { return lazy_fetch( p_obj ), v_Id; }
    void impl_Id( const string& Id ) { v_Id = Id; }
 
@@ -372,6 +453,36 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
 
    const string& impl_Name( ) const { return lazy_fetch( p_obj ), v_Name; }
    void impl_Name( const string& Name ) { v_Name = Name; }
+
+   Meta_Permission& impl_Access_Permission( )
+   {
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   const Meta_Permission& impl_Access_Permission( ) const
+   {
+      lazy_fetch( p_obj );
+
+      if( !cp_Access_Permission )
+      {
+         cp_Access_Permission.init( );
+
+         p_obj->setup_graph_parent( *cp_Access_Permission, c_field_id_Access_Permission, v_Access_Permission );
+      }
+      return *cp_Access_Permission;
+   }
+
+   void impl_Access_Permission( const string& key )
+   {
+      class_base_accessor cba( impl_Access_Permission( ) );
+      cba.set_key( key );
+   }
 
    Meta_Class& impl_Class( )
    {
@@ -642,9 +753,13 @@ struct Meta_Procedure::impl : public Meta_Procedure_command_handler
 
    size_t total_child_relationships;
 
+   int v_Access_Restriction;
    string v_Id;
    bool v_Internal;
    string v_Name;
+
+   string v_Access_Permission;
+   mutable class_pointer< Meta_Permission > cp_Access_Permission;
 
    string v_Class;
    mutable class_pointer< Meta_Class > cp_Class;
@@ -668,22 +783,30 @@ string Meta_Procedure::impl::get_field_value( int field ) const
    switch( field )
    {
       case 0:
-      retval = to_string( impl_Class( ) );
+      retval = to_string( impl_Access_Permission( ) );
       break;
 
       case 1:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_Access_Restriction( ) );
       break;
 
       case 2:
-      retval = to_string( impl_Internal( ) );
+      retval = to_string( impl_Class( ) );
       break;
 
       case 3:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 4:
+      retval = to_string( impl_Internal( ) );
+      break;
+
+      case 5:
+      retval = to_string( impl_Name( ) );
+      break;
+
+      case 6:
       retval = to_string( impl_Source_Procedure( ) );
       break;
 
@@ -699,22 +822,30 @@ void Meta_Procedure::impl::set_field_value( int field, const string& value )
    switch( field )
    {
       case 0:
-      func_string_setter< Meta_Procedure::impl, Meta_Class >( *this, &Meta_Procedure::impl::impl_Class, value );
+      func_string_setter< Meta_Procedure::impl, Meta_Permission >( *this, &Meta_Procedure::impl::impl_Access_Permission, value );
       break;
 
       case 1:
-      func_string_setter< Meta_Procedure::impl, string >( *this, &Meta_Procedure::impl::impl_Id, value );
+      func_string_setter< Meta_Procedure::impl, int >( *this, &Meta_Procedure::impl::impl_Access_Restriction, value );
       break;
 
       case 2:
-      func_string_setter< Meta_Procedure::impl, bool >( *this, &Meta_Procedure::impl::impl_Internal, value );
+      func_string_setter< Meta_Procedure::impl, Meta_Class >( *this, &Meta_Procedure::impl::impl_Class, value );
       break;
 
       case 3:
-      func_string_setter< Meta_Procedure::impl, string >( *this, &Meta_Procedure::impl::impl_Name, value );
+      func_string_setter< Meta_Procedure::impl, string >( *this, &Meta_Procedure::impl::impl_Id, value );
       break;
 
       case 4:
+      func_string_setter< Meta_Procedure::impl, bool >( *this, &Meta_Procedure::impl::impl_Internal, value );
+      break;
+
+      case 5:
+      func_string_setter< Meta_Procedure::impl, string >( *this, &Meta_Procedure::impl::impl_Name, value );
+      break;
+
+      case 6:
       func_string_setter< Meta_Procedure::impl, Meta_Procedure >( *this, &Meta_Procedure::impl::impl_Source_Procedure, value );
       break;
 
@@ -753,6 +884,8 @@ void Meta_Procedure::impl::clear_foreign_key( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      impl_Access_Permission( "" );
    else if( field == c_field_id_Class || field == c_field_name_Class )
       impl_Class( "" );
    else if( field == c_field_id_Source_Procedure || field == c_field_name_Source_Procedure )
@@ -765,6 +898,8 @@ void Meta_Procedure::impl::set_foreign_key_value( const string& field, const str
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for value: " + value );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      v_Access_Permission = value;
    else if( field == c_field_id_Class || field == c_field_name_Class )
       v_Class = value;
    else if( field == c_field_id_Source_Procedure || field == c_field_name_Source_Procedure )
@@ -777,6 +912,8 @@ const string& Meta_Procedure::impl::get_foreign_key_value( const string& field )
 {
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id" );
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
+      return v_Access_Permission;
    else if( field == c_field_id_Class || field == c_field_name_Class )
       return v_Class;
    else if( field == c_field_id_Source_Procedure || field == c_field_name_Source_Procedure )
@@ -787,6 +924,7 @@ const string& Meta_Procedure::impl::get_foreign_key_value( const string& field )
 
 void Meta_Procedure::impl::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
+   foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Access_Permission, v_Access_Permission ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Class, v_Class ) );
    foreign_key_values.insert( foreign_key_data_value_type( c_field_id_Source_Procedure, v_Source_Procedure ) );
 }
@@ -809,9 +947,14 @@ void Meta_Procedure::impl::add_extra_paging_info( vector< pair< string, string >
 
 void Meta_Procedure::impl::clear( )
 {
+   v_Access_Restriction = g_default_Access_Restriction;
    v_Id = g_default_Id;
    v_Internal = g_default_Internal;
    v_Name = g_default_Name;
+
+   v_Access_Permission = string( );
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
 
    v_Class = string( );
    if( cp_Class )
@@ -875,6 +1018,11 @@ void Meta_Procedure::impl::validate( unsigned state, bool is_internal, validatio
       p_validation_errors->insert( validation_error_value_type( c_field_name_Name,
        get_module_string( c_field_display_name_Name ) + " " + error_message ) );
 
+   if( !g_view_access_restrict_enum.count( v_Access_Restriction ) )
+      p_validation_errors->insert( validation_error_value_type( c_field_name_Access_Restriction,
+       get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
+       c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
+
    // [<start validate>]
    // [<finish validate>]
 }
@@ -905,6 +1053,9 @@ void Meta_Procedure::impl::after_fetch( )
 {
    if( !get_obj( ).get_is_iterating( ) || get_obj( ).get_is_starting_iteration( ) )
       get_required_transients( );
+
+   if( cp_Access_Permission )
+      p_obj->setup_foreign_key( *cp_Access_Permission, v_Access_Permission );
 
    if( cp_Class )
       p_obj->setup_foreign_key( *cp_Class, v_Class );
@@ -1157,6 +1308,16 @@ Meta_Procedure::~Meta_Procedure( )
    delete p_impl;
 }
 
+int Meta_Procedure::Access_Restriction( ) const
+{
+   return p_impl->impl_Access_Restriction( );
+}
+
+void Meta_Procedure::Access_Restriction( int Access_Restriction )
+{
+   p_impl->impl_Access_Restriction( Access_Restriction );
+}
+
 const string& Meta_Procedure::Id( ) const
 {
    return p_impl->impl_Id( );
@@ -1185,6 +1346,21 @@ const string& Meta_Procedure::Name( ) const
 void Meta_Procedure::Name( const string& Name )
 {
    p_impl->impl_Name( Name );
+}
+
+Meta_Permission& Meta_Procedure::Access_Permission( )
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+const Meta_Permission& Meta_Procedure::Access_Permission( ) const
+{
+   return p_impl->impl_Access_Permission( );
+}
+
+void Meta_Procedure::Access_Permission( const string& key )
+{
+   p_impl->impl_Access_Permission( key );
 }
 
 Meta_Class& Meta_Procedure::Class( )
@@ -1418,6 +1594,26 @@ const char* Meta_Procedure::get_field_id(
 
    if( name.empty( ) )
       throw runtime_error( "unexpected empty field name for get_field_id" );
+   else if( name == c_field_name_Access_Permission )
+   {
+      p_id = c_field_id_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( name == c_field_name_Access_Restriction )
+   {
+      p_id = c_field_id_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Class )
    {
       p_id = c_field_id_Class;
@@ -1479,6 +1675,26 @@ const char* Meta_Procedure::get_field_name(
 
    if( id.empty( ) )
       throw runtime_error( "unexpected empty field id for get_field_name" );
+   else if( id == c_field_id_Access_Permission )
+   {
+      p_name = c_field_name_Access_Permission;
+
+      if( p_type_name )
+         *p_type_name = "Meta_Permission";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = false;
+   }
+   else if( id == c_field_id_Access_Restriction )
+   {
+      p_name = c_field_name_Access_Restriction;
+
+      if( p_type_name )
+         *p_type_name = "int";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Class )
    {
       p_name = c_field_name_Class;
@@ -1558,6 +1774,16 @@ string Meta_Procedure::get_field_uom_symbol( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_uom_symbol" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+   {
+      name = string( c_field_display_name_Access_Permission );
+      get_module_string( c_field_display_name_Access_Permission, &next );
+   }
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+   {
+      name = string( c_field_display_name_Access_Restriction );
+      get_module_string( c_field_display_name_Access_Restriction, &next );
+   }
    else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
    {
       name = string( c_field_display_name_Class );
@@ -1598,6 +1824,10 @@ string Meta_Procedure::get_field_display_name( const string& id_or_name ) const
 
    if( id_or_name.empty( ) )
       throw runtime_error( "unexpected empty field id_or_name for get_field_display_name" );
+   else if( id_or_name == c_field_id_Access_Permission || id_or_name == c_field_name_Access_Permission )
+      display_name = get_module_string( c_field_display_name_Access_Permission );
+   else if( id_or_name == c_field_id_Access_Restriction || id_or_name == c_field_name_Access_Restriction )
+      display_name = get_module_string( c_field_display_name_Access_Restriction );
    else if( id_or_name == c_field_id_Class || id_or_name == c_field_name_Class )
       display_name = get_module_string( c_field_display_name_Class );
    else if( id_or_name == c_field_id_Id || id_or_name == c_field_name_Id )
@@ -1630,6 +1860,11 @@ const string& Meta_Procedure::get_foreign_key_value( const string& field )
 void Meta_Procedure::get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const
 {
    p_impl->get_foreign_key_values( foreign_key_values );
+}
+
+void Meta_Procedure::setup_foreign_key( Meta_Permission& o, const string& value )
+{
+   static_cast< Meta_Permission& >( o ).set_key( value );
 }
 
 void Meta_Procedure::setup_foreign_key( Meta_Class& o, const string& value )
@@ -1665,6 +1900,13 @@ void Meta_Procedure::setup_graph_parent( Meta_Package_Option& o, const string& f
 void Meta_Procedure::setup_graph_parent( Meta_Procedure_Arg& o, const string& foreign_key_field )
 {
    static_cast< Meta_Procedure_Arg& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
+void Meta_Procedure::setup_graph_parent(
+ Meta_Permission& o, const string& foreign_key_field, const string& init_value )
+{
+   static_cast< Meta_Permission& >( o ).set_graph_parent( this, foreign_key_field, true );
+   static_cast< Meta_Permission& >( o ).set_key( init_value );
 }
 
 void Meta_Procedure::setup_graph_parent(
@@ -1880,6 +2122,8 @@ class_base& Meta_Procedure::get_or_create_graph_child( const string& context )
       p_class_base = &child_Procedure_Arg( );
    else if( sub_context == "_301450" || sub_context == "child_Specification" )
       p_class_base = &child_Specification( );
+   else if( sub_context == c_field_id_Access_Permission || sub_context == c_field_name_Access_Permission )
+      p_class_base = &Access_Permission( );
    else if( sub_context == c_field_id_Class || sub_context == c_field_name_Class )
       p_class_base = &Class( );
    else if( sub_context == c_field_id_Source_Procedure || sub_context == c_field_name_Source_Procedure )
@@ -1900,6 +2144,8 @@ void Meta_Procedure::get_sql_column_names(
    if( p_done && *p_done )
       return;
 
+   names.push_back( "C_Access_Permission" );
+   names.push_back( "C_Access_Restriction" );
    names.push_back( "C_Class" );
    names.push_back( "C_Id" );
    names.push_back( "C_Internal" );
@@ -1916,6 +2162,8 @@ void Meta_Procedure::get_sql_column_values(
    if( p_done && *p_done )
       return;
 
+   values.push_back( sql_quote( to_string( Access_Permission( ) ) ) );
+   values.push_back( to_string( Access_Restriction( ) ) );
    values.push_back( sql_quote( to_string( Class( ) ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
    values.push_back( to_string( Internal( ) ) );
@@ -2012,6 +2260,8 @@ void Meta_Procedure::static_get_class_info( class_info_container& class_info )
 
 void Meta_Procedure::static_get_field_info( field_info_container& all_field_info )
 {
+   all_field_info.push_back( field_info( "301120", "Access_Permission", "Meta_Permission", false ) );
+   all_field_info.push_back( field_info( "111104", "Access_Restriction", "int", false ) );
    all_field_info.push_back( field_info( "301100", "Class", "Meta_Class", true ) );
    all_field_info.push_back( field_info( "111103", "Id", "string", false ) );
    all_field_info.push_back( field_info( "111102", "Internal", "bool", false ) );
@@ -2023,6 +2273,7 @@ void Meta_Procedure::static_get_foreign_key_info( foreign_key_info_container& fo
 {
    ( void )foreign_key_info;
 
+   foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Access_Permission, make_pair( "Meta.111100", "Meta_Permission" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Class, make_pair( "Meta.111100", "Meta_Class" ) ) );
    foreign_key_info.insert( foreign_key_info_value_type( c_field_id_Source_Procedure, make_pair( "Meta.111100", "Meta_Procedure" ) ) );
 }
@@ -2047,22 +2298,30 @@ const char* Meta_Procedure::static_get_field_id( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "301100";
+      p_id = "301120";
       break;
 
       case 2:
-      p_id = "111103";
+      p_id = "111104";
       break;
 
       case 3:
-      p_id = "111102";
+      p_id = "301100";
       break;
 
       case 4:
-      p_id = "111101";
+      p_id = "111103";
       break;
 
       case 5:
+      p_id = "111102";
+      break;
+
+      case 6:
+      p_id = "111101";
+      break;
+
+      case 7:
       p_id = "301110";
       break;
    }
@@ -2080,22 +2339,30 @@ const char* Meta_Procedure::static_get_field_name( field_id id )
    switch( id )
    {
       case 1:
-      p_id = "Class";
+      p_id = "Access_Permission";
       break;
 
       case 2:
-      p_id = "Id";
+      p_id = "Access_Restriction";
       break;
 
       case 3:
-      p_id = "Internal";
+      p_id = "Class";
       break;
 
       case 4:
-      p_id = "Name";
+      p_id = "Id";
       break;
 
       case 5:
+      p_id = "Internal";
+      break;
+
+      case 6:
+      p_id = "Name";
+      break;
+
+      case 7:
       p_id = "Source_Procedure";
       break;
    }
@@ -2112,16 +2379,20 @@ int Meta_Procedure::static_get_field_num( const string& field )
 
    if( field.empty( ) )
       throw runtime_error( "unexpected empty field name/id for static_get_field_num( )" );
-   else if( field == c_field_id_Class || field == c_field_name_Class )
+   else if( field == c_field_id_Access_Permission || field == c_field_name_Access_Permission )
       rc += 1;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_Access_Restriction || field == c_field_name_Access_Restriction )
       rc += 2;
-   else if( field == c_field_id_Internal || field == c_field_name_Internal )
+   else if( field == c_field_id_Class || field == c_field_name_Class )
       rc += 3;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 4;
-   else if( field == c_field_id_Source_Procedure || field == c_field_name_Source_Procedure )
+   else if( field == c_field_id_Internal || field == c_field_name_Internal )
       rc += 5;
+   else if( field == c_field_id_Name || field == c_field_name_Name )
+      rc += 6;
+   else if( field == c_field_id_Source_Procedure || field == c_field_name_Source_Procedure )
+      rc += 7;
 
    return rc - 1;
 }
@@ -2142,6 +2413,8 @@ string Meta_Procedure::static_get_sql_columns( )
     "C_Ver_ INTEGER NOT NULL,"
     "C_Rev_ INTEGER NOT NULL,"
     "C_Typ_ VARCHAR(24) NOT NULL,"
+    "C_Access_Permission VARCHAR(75) NOT NULL,"
+    "C_Access_Restriction INTEGER NOT NULL,"
     "C_Class VARCHAR(75) NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
     "C_Internal INTEGER NOT NULL,"
@@ -2159,7 +2432,10 @@ void Meta_Procedure::static_get_text_search_fields( vector< string >& fields )
 
 void Meta_Procedure::static_get_all_enum_pairs( vector< pair< string, string > >& pairs )
 {
-   ( void )pairs;
+   pairs.push_back( make_pair( "enum_view_access_restrict_0", get_enum_string_view_access_restrict( 0 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_1", get_enum_string_view_access_restrict( 1 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_2", get_enum_string_view_access_restrict( 2 ) ) );
+   pairs.push_back( make_pair( "enum_view_access_restrict_3", get_enum_string_view_access_restrict( 3 ) ) );
 }
 
 void Meta_Procedure::static_get_sql_indexes( vector< string >& indexes )
@@ -2203,6 +2479,11 @@ void Meta_Procedure::static_class_init( const char* p_module_name )
 {
    if( !p_module_name )
       throw runtime_error( "unexpected null module name pointer for init" );
+
+   g_view_access_restrict_enum.insert( 0 );
+   g_view_access_restrict_enum.insert( 1 );
+   g_view_access_restrict_enum.insert( 2 );
+   g_view_access_restrict_enum.insert( 3 );
 
    // [<start static_class_init>]
    // [<finish static_class_init>]

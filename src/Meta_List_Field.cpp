@@ -3548,8 +3548,12 @@ uint64_t Meta_List_Field::impl::get_state( ) const
 
    // [<start get_state>]
 //nyi
-   if( get_obj( ).Source_Field( ).Access_Restriction( ) != 0
-    || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
+   if( get_obj( ).Procedure( ).Access_Restriction( ) != 0
+    || !is_null( get_obj( ).Procedure( ).Access_Permission( ) )
+    || get_obj( ).Source_Field( ).Access_Restriction( ) != 0
+    || !is_null( get_obj( ).Source_Field( ).Access_Permission( ) )
+    || get_obj( ).Source_Parent( ).Access_Restriction( ) != 0
+    || !is_null( get_obj( ).Source_Parent( ).Access_Permission( ) ) )
       state |= c_modifier_Proect_Access;
    // [<finish get_state>]
 
@@ -4245,11 +4249,23 @@ void Meta_List_Field::impl::after_fetch( )
 
    // [<start after_fetch>]
 //nyi
+   if( get_obj( ).Procedure( ).Access_Restriction( ) != 0 )
+      get_obj( ).Access_Restriction( get_obj( ).Procedure( ).Access_Restriction( ) );
+
+   if( !is_null( get_obj( ).Procedure( ).Access_Permission( ) ) )
+      get_obj( ).Access_Permission( get_obj( ).Procedure( ).Access_Permission( ) );
+
    if( get_obj( ).Source_Field( ).Access_Restriction( ) != 0 )
       get_obj( ).Access_Restriction( get_obj( ).Source_Field( ).Access_Restriction( ) );
 
+   if( !is_null( get_obj( ).Source_Field( ).Access_Permission( ) ) )
+      get_obj( ).Access_Permission( get_obj( ).Source_Field( ).Access_Permission( ) );
+
    if( get_obj( ).Source_Parent( ).Access_Restriction( ) != 0 )
       get_obj( ).Access_Restriction( get_obj( ).Source_Parent( ).Access_Restriction( ) );
+
+   if( !is_null( get_obj( ).Source_Parent( ).Access_Permission( ) ) )
+      get_obj( ).Access_Permission( get_obj( ).Source_Parent( ).Access_Permission( ) );
    // [<finish after_fetch>]
 }
 

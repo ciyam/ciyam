@@ -23,6 +23,7 @@ class Meta_Specification;
 class Meta_List_Field;
 class Meta_Package_Option;
 class Meta_Procedure_Arg;
+class Meta_Permission;
 class Meta_Class;
 class Meta_Procedure;
 
@@ -32,6 +33,7 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    friend class Meta_List_Field;
    friend class Meta_Package_Option;
    friend class Meta_Procedure_Arg;
+   friend class Meta_Permission;
    friend class Meta_Class;
 
    public:
@@ -40,15 +42,20 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    enum field_id
    {
       e_field_id_none = 0,
-      e_field_id_Class = 1,
-      e_field_id_Id = 2,
-      e_field_id_Internal = 3,
-      e_field_id_Name = 4,
-      e_field_id_Source_Procedure = 5
+      e_field_id_Access_Permission = 1,
+      e_field_id_Access_Restriction = 2,
+      e_field_id_Class = 3,
+      e_field_id_Id = 4,
+      e_field_id_Internal = 5,
+      e_field_id_Name = 6,
+      e_field_id_Source_Procedure = 7
    };
 
    Meta_Procedure( );
    ~Meta_Procedure( );
+
+   int Access_Restriction( ) const;
+   void Access_Restriction( int Access_Restriction );
 
    const std::string& Id( ) const;
    void Id( const std::string& Id );
@@ -58,6 +65,10 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
 
    const std::string& Name( ) const;
    void Name( const std::string& Name );
+
+   Meta_Permission& Access_Permission( );
+   const Meta_Permission& Access_Permission( ) const;
+   void Access_Permission( const std::string& key );
 
    Meta_Class& Class( );
    const Meta_Class& Class( ) const;
@@ -256,6 +267,7 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
 
    void get_foreign_key_values( foreign_key_data_container& foreign_key_values ) const;
 
+   virtual void setup_foreign_key( Meta_Permission& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Class& o, const std::string& value );
    virtual void setup_foreign_key( Meta_Procedure& o, const std::string& value );
 
@@ -264,6 +276,9 @@ class META_PROCEDURE_DECL_SPEC Meta_Procedure : public class_base
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Package_Option& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Procedure_Arg& o, const std::string& foreign_key_field );
+
+   virtual void setup_graph_parent( Meta_Permission& o,
+    const std::string& foreign_key_field, const std::string& init_value );
 
    virtual void setup_graph_parent( Meta_Class& o,
     const std::string& foreign_key_field, const std::string& init_value );
