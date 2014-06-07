@@ -104,6 +104,36 @@ function is_leap_year( year )
    return year % 4 == 0 && ( year % 100 != 0 || year % 400 == 0 );
 }
 
+function can_write_to_storage( use_local )
+{
+   var test = 'test', storage = use_local ? localStorage : sessionStorage;
+
+   if( typeof storage != 'object' )
+      return false;
+
+   try
+   {
+      storage.setItem( test, '1' );
+      storage.removeItem( test );
+
+      return true;
+   }
+   catch( error )
+   {
+      return false;
+   }
+}
+
+function can_write_to_local_storage( )
+{
+   return can_write_to_storage( true );
+}
+
+function can_write_to_session_storage( )
+{
+   return can_write_to_storage( false );
+}
+
 function refresh( back )
 {
    if( isIE )
@@ -366,7 +396,7 @@ function trim( str )
 
 function load( )
 {
-   if( typeof sessionStorage == 'object' )
+   if( can_write_to_session_storage( ) )
    {
       sessionStorage.setItem( 'app', '`{`@lower`(`$storage_name`)`}' );
       if( !isDynamicLoad && sessionStorage.getItem( 'old_content' ) != null )
@@ -435,7 +465,7 @@ function load2( )
       {
          is_login = true;
 
-         if( typeof localStorage == 'object' )
+         if( can_write_to_local_storage( ) )
             localStorage.setItem( 'hash', qvars[ i ].substring( uhash.length ) );
       }
 
@@ -444,7 +474,7 @@ function load2( )
       {
          is_login = true;
 
-         if( typeof localStorage == 'object' )
+         if( can_write_to_local_storage( ) )
             localStorage.setItem( 'user', qvars[ i ].substring( uname.length ) );
       }
 
@@ -453,7 +483,7 @@ function load2( )
       {
          persistent = 'true';
 
-         if( typeof localStorage == 'object' )
+         if( can_write_to_local_storage( ) )
             localStorage.setItem( 'key', localStorage.getItem( 'skey' ) );
       }
 
@@ -493,7 +523,7 @@ function load2( )
       full_context += '&' + qsFurther;
 
    if( !is_login
-    && typeof sessionStorage == 'object' && sessionStorage.getItem( 'newhash' ) != null )
+    && can_write_to_session_storage( ) && sessionStorage.getItem( 'newhash' ) != null )
    {
       full_context += '&newhash=' + sessionStorage.getItem( 'newhash' );
 
@@ -503,7 +533,7 @@ function load2( )
    if( dataFieldList != '' )
       full_context += '&fieldlist=' + dataFieldList;
 
-   if( typeof localStorage == 'object' )
+   if( can_write_to_local_storage( ) )
    {
       if( localStorage.getItem( 'skey' ) == null && localStorage.getItem( 'key' ) != null )
       {
@@ -668,14 +698,14 @@ function after_force( )
    if( document.getElementById( 'extra_content_func' ) != null )
       eval( document.getElementById( 'extra_content_func' ).value );
 
-   if( !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
+   if( !loggedIn && encryptPosts && can_write_to_session_storage( ) )
       sessionStorage.removeItem( 'key' );
 
    if( loggedIn && encryptPosts && source[ 0 ] == 'https'
-    && typeof sessionStorage == 'object' && localStorage.getItem( 'skey' ) == null )
+    && can_write_to_local_storage( ) && localStorage.getItem( 'skey' ) == null )
       localStorage.setItem( 'skey', '' );
 
-   if( uniqueId != '' && typeof sessionStorage == 'object' )
+   if( uniqueId != '' && can_write_to_session_storage( ) )
       sessionStorage.setItem( 'unique', uniqueId );
 
    if( jump_back && !had_act_error )
@@ -798,7 +828,7 @@ function process( )
          document.getElementById( 'content' ).innerHTML = str;
    }
 
-   if( typeof sessionStorage == 'object' )
+   if( can_write_to_session_storage( ) )
       sessionStorage.setItem( 'old_content', document.getElementById( 'content' ).innerHTML );
 
    force_update( );
@@ -1047,11 +1077,11 @@ function hash_password( salt, pwd, skip_id )
    {
       retval = hash_value( serverId + pwd + salt, hashRounds ).toLowerCase( );
 
-      if( !loggedIn && hashRounds != newHashRounds && typeof sessionStorage == 'object' )
+      if( !loggedIn && hashRounds != newHashRounds && can_write_to_session_storage( ) )
          sessionStorage.setItem( 'newhash', hash_value( serverId + pwd + salt, newHashRounds ).toLowerCase( ) );
    }
 
-   if( !skip_id && !loggedIn && encryptPosts && typeof sessionStorage == 'object' )
+   if( !skip_id && !loggedIn && encryptPosts && can_write_to_session_storage( ) )
       localStorage.setItem( 'skey', retval );
 
    return retval;
