@@ -296,6 +296,7 @@ class_add -id=111100 Procedure Procedures
 field_add -id=111101 Procedure Name identifier mand
 field_add -id=111102 Procedure Internal bool mand -def=0
 field_add -id=111103 Procedure Id identifier mand
+field_add -id=111104 Procedure Access_Restriction int mand -def=0 -e=view_access_restrict
 class_add -id=112100 Procedure_Arg Procedure_Args -x=ordered
 field_add -id=112101 Procedure_Arg Name identifier mand
 field_add -id=112102 Procedure_Arg Type int mand -def=0 -e=arg_type
@@ -863,6 +864,7 @@ relationship_add -id=201020 -fid=301020 Modifier_Affect {Field} Field opt destro
 relationship_add -id=201030 -fid=301030 Modifier_Affect Source_{Modifier_Affect} Modifier_Affect opt destroy
 relationship_add -id=201100 -fid=301100 Procedure {Class} Class mand destroy
 relationship_add -id=201110 -fid=301110 Procedure Source_{Procedure} Procedure opt destroy
+relationship_add -id=201120 -fid=301120 Procedure Access_{Permission} Permission opt restrict
 relationship_add -id=201200 -fid=301200 Procedure_Arg {Procedure} Procedure mand destroy
 relationship_add -id=201210 -fid=301210 Procedure_Arg Source_{Procedure_Arg} Procedure_Arg opt destroy
 relationship_add -id=201300 -fid=301300 Relationship {Model} Model mand destroy
@@ -1936,7 +1938,7 @@ specification_add -id=602010 {Modifier_Affect}_view view "? standard:auto_back M
 specification_add -id=602020 {Modifier_Affect}_child_list0 list "@602020_* child:sort_no_limit Modifier_Affect\
  Scope,Type,{Field}:Name -n=Scope {Modifier}"
 specification_add -id=602100 {Procedure}_view view "? standard Procedure\
- {Class}:Name;no_edit+link,Name,Id;no_edit+non_new"
+ {Class}:Name;no_edit+link,Name,Id;no_edit+non_new,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name"
 specification_add -id=602120 {Procedure}_child_list0 list "@602120_* child:no_limit Procedure Name,Id {Class}"
 specification_add -id=602200 {Procedure_Arg}_view view "? standard Procedure_Arg\
  {Procedure}:Name;no_edit+link,Name,Type,Primitive"
@@ -2058,7 +2060,7 @@ specification_add -id=602850 {List_Field}_view view "? standard List_Field {List
 ,Child_Rel_Source_Parent_Class:Name;hidden+fkey5,Child_Rel_Source_Child:Name!@fkey5:{Class}+Is_Foreign_Key=0+Name;link\
 ,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,Switch_Type\
 ,Restriction_Field:Name!@fkey1:{Class}+Name;link,Restriction_Value,Trigger_Option,View_Parent_Extra,Search_Option_Limit\
-,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name\
+,Select_Key_Exclusions,Include_Key_Additions,Exclude_In_Use_FK,{Procedure}:Name!@fkey1:{Class}+Name;link\
 ,Procedure_Args,Omit_Versions,Reverse_Order,Retain_Selected_Rows,Non_Instance_Procedure;force\
 ,Font_Size,Alignment,Notes_Truncation,Print_Type,Use_Type_Field:Name!@fkey1:{Class}+Is_Foreign_Key=0+Name;link\
 ,Label_Class,Label_Source,Label_Without_Prefix,Use_In_Text_Search_Title,Exact_Match_Only,Link_Type\

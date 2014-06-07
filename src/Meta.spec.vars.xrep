@@ -1879,7 +1879,7 @@
 `{`$specification_List_Field_view_fmand027`=`'true`'`}
 `{`$specification_List_Field_view_field028`=`'302190`'`}
 `{`$specification_List_Field_view_ftype028`=`'@class`'`}
-`{`$specification_List_Field_view_extra028`=`'`'`}
+`{`$specification_List_Field_view_extra028`=`'link`'`}
 `{`$specification_List_Field_view_fmods028`=`'800000:relegate,2000:relegate`'`}
 `{`$specification_List_Field_view_fname028`=`'field_list_field_procedure`'`}
 `{`$specification_List_Field_view_fmand028`=`'false`'`}
@@ -2907,7 +2907,7 @@
 `{`$specification_Procedure_view_extra`=`'`'`}
 `{`$specification_Procedure_view_mods`=`'100:lowlight`'`}
 `{`$specification_Procedure_view_binfo`=`'`'`}
-`{`$specification_Procedure_view_fnums`=`'000 001 002`'`}
+`{`$specification_Procedure_view_fnums`=`'000 001 002 003 004`'`}
 `{`$specification_Procedure_view_field000`=`'301100`'`}
 `{`$specification_Procedure_view_ftype000`=`'@class`'`}
 `{`$specification_Procedure_view_extra000`=`'no_edit+link+filename+max_size=30`'`}
@@ -2932,6 +2932,24 @@
 `{`$specification_Procedure_view_fmods002`=`'`'`}
 `{`$specification_Procedure_view_fname002`=`'field_procedure_id`'`}
 `{`$specification_Procedure_view_fmand002`=`'true`'`}
+`{`$specification_Procedure_view_field003`=`'111104`'`}
+`{`$specification_Procedure_view_ftype003`=`'int`'`}
+`{`$specification_Procedure_view_extra003`=`'enum=655`'`}
+`{`$specification_Procedure_view_fmods003`=`'`'`}
+`{`$specification_Procedure_view_fname003`=`'field_procedure_access_restriction`'`}
+`{`$specification_Procedure_view_fmand003`=`'true`'`}
+`{`$specification_Procedure_view_field004`=`'301120`'`}
+`{`$specification_Procedure_view_ftype004`=`'@class`'`}
+`{`$specification_Procedure_view_extra004`=`'`'`}
+`{`$specification_Procedure_view_fmods004`=`'`'`}
+`{`$specification_Procedure_view_fname004`=`'field_procedure_access_permission`'`}
+`{`$specification_Procedure_view_fmand004`=`'false`'`}
+`{`$specification_Procedure_view_prcls004`=`'116100`'`}
+`{`$specification_Procedure_view_prcnm004`=`'Permission`'`}
+`{`$specification_Procedure_view_prfld004`=`'116101`'`}
+`{`$specification_Procedure_view_prfnm004`=`'Name`'`}
+`{`$specification_Procedure_view_prxtr004`=`'@group:301500+116101`'`}
+`{`$specification_Procedure_view_pridx004`=`'false`'`}
 `{`}
 `{`$specification_Procedure_child_list0_id`=`'602120`'`}
 `{`$specification_Procedure_child_list0_cid`=`'111100`'`}

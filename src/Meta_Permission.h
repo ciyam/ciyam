@@ -23,6 +23,7 @@ class Meta_Class;
 class Meta_Field;
 class Meta_List_Field;
 class Meta_List;
+class Meta_Procedure;
 class Meta_Relationship;
 class Meta_View_Field;
 class Meta_View;
@@ -36,6 +37,7 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    friend class Meta_Field;
    friend class Meta_List_Field;
    friend class Meta_List;
+   friend class Meta_Procedure;
    friend class Meta_Relationship;
    friend class Meta_View_Field;
    friend class Meta_View;
@@ -78,6 +80,9 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
 
    Meta_List& child_List_Access( );
    const Meta_List& child_List_Access( ) const;
+
+   Meta_Procedure& child_Procedure_Access( );
+   const Meta_Procedure& child_Procedure_Access( ) const;
 
    Meta_Relationship& child_Relationship_Access( );
    const Meta_Relationship& child_Relationship_Access( ) const;
@@ -307,6 +312,7 @@ class META_PERMISSION_DECL_SPEC Meta_Permission : public class_base
    virtual void setup_graph_parent( Meta_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_List& o, const std::string& foreign_key_field );
+   virtual void setup_graph_parent( Meta_Procedure& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_Relationship& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View_Field& o, const std::string& foreign_key_field );
    virtual void setup_graph_parent( Meta_View& o, const std::string& foreign_key_field );

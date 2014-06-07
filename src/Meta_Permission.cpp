@@ -29,6 +29,7 @@
 #include "Meta_Field.h"
 #include "Meta_List_Field.h"
 #include "Meta_List.h"
+#include "Meta_Procedure.h"
 #include "Meta_Relationship.h"
 #include "Meta_View_Field.h"
 #include "Meta_View.h"
@@ -432,6 +433,28 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
          p_obj->setup_graph_parent( *cp_child_List_Access, "301993" );
       }
       return *cp_child_List_Access;
+   }
+
+   Meta_Procedure& impl_child_Procedure_Access( )
+   {
+      if( !cp_child_Procedure_Access )
+      {
+         cp_child_Procedure_Access.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Procedure_Access, "301120" );
+      }
+      return *cp_child_Procedure_Access;
+   }
+
+   const Meta_Procedure& impl_child_Procedure_Access( ) const
+   {
+      if( !cp_child_Procedure_Access )
+      {
+         cp_child_Procedure_Access.init( );
+
+         p_obj->setup_graph_parent( *cp_child_Procedure_Access, "301120" );
+      }
+      return *cp_child_Procedure_Access;
    }
 
    Meta_Relationship& impl_child_Relationship_Access( )
@@ -895,6 +918,7 @@ struct Meta_Permission::impl : public Meta_Permission_command_handler
    mutable class_pointer< Meta_Field > cp_child_Field_Access;
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Access;
    mutable class_pointer< Meta_List > cp_child_List_Access;
+   mutable class_pointer< Meta_Procedure > cp_child_Procedure_Access;
    mutable class_pointer< Meta_Relationship > cp_child_Relationship_Access;
    mutable class_pointer< Meta_View_Field > cp_child_View_Field_Access;
    mutable class_pointer< Meta_View > cp_child_View_Access;
@@ -1374,6 +1398,16 @@ Meta_List& Meta_Permission::child_List_Access( )
 const Meta_List& Meta_Permission::child_List_Access( ) const
 {
    return p_impl->impl_child_List_Access( );
+}
+
+Meta_Procedure& Meta_Permission::child_Procedure_Access( )
+{
+   return p_impl->impl_child_Procedure_Access( );
+}
+
+const Meta_Procedure& Meta_Permission::child_Procedure_Access( ) const
+{
+   return p_impl->impl_child_Procedure_Access( );
 }
 
 Meta_Relationship& Meta_Permission::child_Relationship_Access( )
@@ -1872,6 +1906,11 @@ void Meta_Permission::setup_graph_parent( Meta_List& o, const string& foreign_ke
    static_cast< Meta_List& >( o ).set_graph_parent( this, foreign_key_field );
 }
 
+void Meta_Permission::setup_graph_parent( Meta_Procedure& o, const string& foreign_key_field )
+{
+   static_cast< Meta_Procedure& >( o ).set_graph_parent( this, foreign_key_field );
+}
+
 void Meta_Permission::setup_graph_parent( Meta_Relationship& o, const string& foreign_key_field )
 {
    static_cast< Meta_Relationship& >( o ).set_graph_parent( this, foreign_key_field );
@@ -1916,7 +1955,7 @@ void Meta_Permission::set_total_child_relationships( size_t new_total_child_rela
 
 size_t Meta_Permission::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 22;
+   size_t rc = 23;
 
    if( !is_internal )
    {
@@ -1949,7 +1988,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 22 )
+   if( child_num >= 23 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1996,12 +2035,20 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          case 4:
          if( op == e_cascade_op_restrict )
          {
+            next_child_field = "301120";
+            p_class_base = &child_Procedure_Access( );
+         }
+         break;
+
+         case 5:
+         if( op == e_cascade_op_restrict )
+         {
             next_child_field = "301330c";
             p_class_base = &child_Relationship_Access( );
          }
          break;
 
-         case 5:
+         case 6:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301920";
@@ -2009,7 +2056,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 6:
+         case 7:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301825";
@@ -2017,7 +2064,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 7:
+         case 8:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300634";
@@ -2025,7 +2072,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 8:
+         case 9:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300760";
@@ -2033,7 +2080,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 9:
+         case 10:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301330d";
@@ -2041,7 +2088,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 10:
+         case 11:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301930";
@@ -2049,7 +2096,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 11:
+         case 12:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301830";
@@ -2057,7 +2104,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 12:
+         case 13:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300635";
@@ -2065,7 +2112,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 13:
+         case 14:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301994";
@@ -2073,7 +2120,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 14:
+         case 15:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "300636";
@@ -2081,7 +2128,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 15:
+         case 16:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301995";
@@ -2089,7 +2136,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 16:
+         case 17:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "302135";
@@ -2097,7 +2144,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 17:
+         case 18:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301915";
@@ -2105,7 +2152,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 18:
+         case 19:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301332";
@@ -2113,7 +2160,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 19:
+         case 20:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301331";
@@ -2121,7 +2168,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 20:
+         case 21:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301600";
@@ -2129,7 +2176,7 @@ class_base* Meta_Permission::get_next_foreign_key_child(
          }
          break;
 
-         case 21:
+         case 22:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301499";
@@ -2217,6 +2264,8 @@ class_base& Meta_Permission::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Field_Access( );
    else if( sub_context == "_301993" || sub_context == "child_List_Access" )
       p_class_base = &child_List_Access( );
+   else if( sub_context == "_301120" || sub_context == "child_Procedure_Access" )
+      p_class_base = &child_Procedure_Access( );
    else if( sub_context == "_301330c" || sub_context == "child_Relationship_Access" )
       p_class_base = &child_Relationship_Access( );
    else if( sub_context == "_301920" || sub_context == "child_View_Field_Access" )

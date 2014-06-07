@@ -12656,6 +12656,42 @@
     </specifications>
     <fields/>
      <field/>
+      <id>111104
+      <name>Access_Restriction
+      <type>int
+      <mandatory>true
+      <enum_id>655
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602100
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301120
+      <name>Access_{Permission}
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>201120
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602100
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>111103
       <name>Id
       <type>1050
@@ -26495,6 +26531,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201120
+    <name>Access_{Permission}_{Procedure}
+    <parent_id>116100
+    <child_id>111100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>201330c
     <name>Access_{Permission}_{Relationship}
     <parent_id>116100
@@ -30109,7 +30154,7 @@
      <field_info>124117
      <field_info>124122
      <field_info>124107
-     <field_info>302190:111101!@fkey1:301100+111101
+     <field_info>302190:111101!@fkey1:301100+111101;link
      <field_info>124109
      <field_info>124110
      <field_info>124111
@@ -31733,6 +31778,8 @@
      <field_info>301100:106101;no_edit+link+filename+max_size=30
      <field_info>111101
      <field_info>111103;no_edit+non_new
+     <field_info>111104;enum=655
+     <field_info>301120:116101!@group:301500+116101
     </data>
    </specification>
    <specification/>
