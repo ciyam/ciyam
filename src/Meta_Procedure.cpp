@@ -2260,13 +2260,13 @@ void Meta_Procedure::static_get_class_info( class_info_container& class_info )
 
 void Meta_Procedure::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "301120", "Access_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "111104", "Access_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "301100", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "111103", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "111102", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "111101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "301110", "Source_Procedure", "Meta_Procedure", false ) );
+   all_field_info.push_back( field_info( "301120", "Access_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "111104", "Access_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301100", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "111103", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "111102", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "111101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "301110", "Source_Procedure", "Meta_Procedure", false, "", "" ) );
 }
 
 void Meta_Procedure::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

@@ -1746,11 +1746,11 @@ void Meta_Enum::static_get_class_info( class_info_container& class_info )
 
 void Meta_Enum::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "103104", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "103103", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "103101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "103102", "Primitive", "int", false ) );
-   all_field_info.push_back( field_info( "300300", "Workgroup", "Meta_Workgroup", false ) );
+   all_field_info.push_back( field_info( "103104", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "103103", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "103101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "103102", "Primitive", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "300300", "Workgroup", "Meta_Workgroup", false, "", "" ) );
 }
 
 void Meta_Enum::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

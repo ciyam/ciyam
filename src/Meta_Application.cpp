@@ -4859,39 +4859,39 @@ void Meta_Application::static_get_class_info( class_info_container& class_info )
 
 void Meta_Application::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "127104", "Actions", "string", false ) );
-   all_field_info.push_back( field_info( "127128", "Add_Modules_Automatically", "bool", false ) );
-   all_field_info.push_back( field_info( "127108", "Allow_Duplicate_Logins", "bool", false ) );
-   all_field_info.push_back( field_info( "127109", "Allow_Module_Switching", "bool", false ) );
-   all_field_info.push_back( field_info( "127124", "Auto_Login_Days", "int", false ) );
-   all_field_info.push_back( field_info( "127125", "Create_Database", "bool", false ) );
-   all_field_info.push_back( field_info( "127126", "Created_Database", "bool", false ) );
-   all_field_info.push_back( field_info( "127114", "Default_Image_Height", "int", false ) );
-   all_field_info.push_back( field_info( "127113", "Default_Image_Width", "int", false ) );
-   all_field_info.push_back( field_info( "127118", "Default_List_Print_Row_Limit", "int", false ) );
-   all_field_info.push_back( field_info( "127115", "Default_List_Row_Limit", "int", false ) );
-   all_field_info.push_back( field_info( "127127", "Default_Max_Attached_File_Size", "int", false ) );
-   all_field_info.push_back( field_info( "127123", "Default_Multiline_Max_Rows", "int", false ) );
-   all_field_info.push_back( field_info( "127116", "Default_Multiline_Min_Rows", "int", false ) );
-   all_field_info.push_back( field_info( "127117", "Default_Multiline_Text_Limit", "int", false ) );
-   all_field_info.push_back( field_info( "127119", "Default_Multiline_Text_Trunc", "int", false ) );
-   all_field_info.push_back( field_info( "127130", "Encrypt_Dynamic_Content", "bool", false ) );
-   all_field_info.push_back( field_info( "127106", "Generate_Details", "string", false ) );
-   all_field_info.push_back( field_info( "127105", "Generate_Status", "string", false ) );
-   all_field_info.push_back( field_info( "127120", "Generate_Type", "int", false ) );
-   all_field_info.push_back( field_info( "127129", "Keep_Existing_Data", "bool", false ) );
-   all_field_info.push_back( field_info( "127103", "Module_Prefix", "string", false ) );
-   all_field_info.push_back( field_info( "127101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "127111", "Print_Lists_With_Check_Boxes", "bool", false ) );
-   all_field_info.push_back( field_info( "127112", "Print_Lists_With_Row_Numbers", "bool", false ) );
-   all_field_info.push_back( field_info( "127132", "Registration_Key", "string", false ) );
-   all_field_info.push_back( field_info( "127110", "Show_Inaccessible_Modules", "bool", false ) );
-   all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false ) );
-   all_field_info.push_back( field_info( "127131", "Use_Embedded_Images", "bool", false ) );
-   all_field_info.push_back( field_info( "127107", "Use_URL_Checksum", "bool", false ) );
-   all_field_info.push_back( field_info( "127133", "Use_Vertical_Menu", "bool", false ) );
-   all_field_info.push_back( field_info( "127102", "Version", "string", false ) );
-   all_field_info.push_back( field_info( "302220", "Workgroup", "Meta_Workgroup", true ) );
+   all_field_info.push_back( field_info( "127104", "Actions", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127128", "Add_Modules_Automatically", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127108", "Allow_Duplicate_Logins", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127109", "Allow_Module_Switching", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127124", "Auto_Login_Days", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127125", "Create_Database", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127126", "Created_Database", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127114", "Default_Image_Height", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127113", "Default_Image_Width", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127118", "Default_List_Print_Row_Limit", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127115", "Default_List_Row_Limit", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127127", "Default_Max_Attached_File_Size", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127123", "Default_Multiline_Max_Rows", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127116", "Default_Multiline_Min_Rows", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127117", "Default_Multiline_Text_Limit", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127119", "Default_Multiline_Text_Trunc", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127130", "Encrypt_Dynamic_Content", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127106", "Generate_Details", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127105", "Generate_Status", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127120", "Generate_Type", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "127129", "Keep_Existing_Data", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127103", "Module_Prefix", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127111", "Print_Lists_With_Check_Boxes", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127112", "Print_Lists_With_Row_Numbers", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127132", "Registration_Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "127110", "Show_Inaccessible_Modules", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127121", "Use_Check_Boxes_for_Bools", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127131", "Use_Embedded_Images", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127107", "Use_URL_Checksum", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127133", "Use_Vertical_Menu", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "127102", "Version", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "302220", "Workgroup", "Meta_Workgroup", true, "", "" ) );
 }
 
 void Meta_Application::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

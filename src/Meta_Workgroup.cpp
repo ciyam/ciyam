@@ -2056,13 +2056,13 @@ void Meta_Workgroup::static_get_class_info( class_info_container& class_info )
 
 void Meta_Workgroup::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "101102", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "101101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "101104", "Next_Enum_Id", "string", false ) );
-   all_field_info.push_back( field_info( "101103", "Next_Model_Id", "string", false ) );
-   all_field_info.push_back( field_info( "101106", "Next_Permission_Id", "string", false ) );
-   all_field_info.push_back( field_info( "101105", "Next_Type_Id", "string", false ) );
-   all_field_info.push_back( field_info( "302835", "Standard_Package", "Meta_Package", false ) );
+   all_field_info.push_back( field_info( "101102", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "101101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "101104", "Next_Enum_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "101103", "Next_Model_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "101106", "Next_Permission_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "101105", "Next_Type_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "302835", "Standard_Package", "Meta_Package", false, "", "" ) );
 }
 
 void Meta_Workgroup::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

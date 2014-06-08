@@ -1362,9 +1362,9 @@ void Meta_Initial_Record_Value::static_get_class_info( class_info_container& cla
 
 void Meta_Initial_Record_Value::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "302520", "Field", "Meta_Field", true ) );
-   all_field_info.push_back( field_info( "302510", "Initial_Record", "Meta_Initial_Record", true ) );
-   all_field_info.push_back( field_info( "130101", "Value", "string", false ) );
+   all_field_info.push_back( field_info( "302520", "Field", "Meta_Field", true, "", "" ) );
+   all_field_info.push_back( field_info( "302510", "Initial_Record", "Meta_Initial_Record", true, "", "" ) );
+   all_field_info.push_back( field_info( "130101", "Value", "string", false, "", "" ) );
 }
 
 void Meta_Initial_Record_Value::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

@@ -2532,16 +2532,16 @@ void Meta_Index::static_get_class_info( class_info_container& class_info )
 
 void Meta_Index::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "300800", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "300811", "Field_1", "Meta_Field", true ) );
-   all_field_info.push_back( field_info( "300812", "Field_2", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "300813", "Field_3", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "300814", "Field_4", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "300815", "Field_5", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "108104", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "108103", "Order", "string", false ) );
-   all_field_info.push_back( field_info( "300820", "Source_Index", "Meta_Index", false ) );
-   all_field_info.push_back( field_info( "108102", "Unique", "bool", false ) );
+   all_field_info.push_back( field_info( "300800", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "300811", "Field_1", "Meta_Field", true, "", "" ) );
+   all_field_info.push_back( field_info( "300812", "Field_2", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "300813", "Field_3", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "300814", "Field_4", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "300815", "Field_5", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "108104", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "108103", "Order", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "300820", "Source_Index", "Meta_Index", false, "", "" ) );
+   all_field_info.push_back( field_info( "108102", "Unique", "bool", false, "", "" ) );
 }
 
 void Meta_Index::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

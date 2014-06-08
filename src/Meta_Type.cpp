@@ -3404,27 +3404,27 @@ void Meta_Type::static_get_class_info( class_info_container& class_info )
 
 void Meta_Type::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "102118", "Auto_Round", "bool", false ) );
-   all_field_info.push_back( field_info( "102112", "Date_Precision", "int", false ) );
-   all_field_info.push_back( field_info( "102120", "Default_UOM", "int", false ) );
-   all_field_info.push_back( field_info( "102115", "Fraction_Limit", "int", false ) );
-   all_field_info.push_back( field_info( "102111", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "102116", "Int_Type", "int", false ) );
-   all_field_info.push_back( field_info( "102109", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "102103", "Max_Size", "int", false ) );
-   all_field_info.push_back( field_info( "102105", "Max_Value", "string", false ) );
-   all_field_info.push_back( field_info( "102104", "Min_Value", "string", false ) );
-   all_field_info.push_back( field_info( "102101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "102107", "Numeric_Decimals", "int", false ) );
-   all_field_info.push_back( field_info( "102106", "Numeric_Digits", "int", false ) );
-   all_field_info.push_back( field_info( "102117", "Numeric_Type", "int", false ) );
-   all_field_info.push_back( field_info( "102102", "Primitive", "int", false ) );
-   all_field_info.push_back( field_info( "102119", "Rounding_Method", "int", false ) );
-   all_field_info.push_back( field_info( "102113", "Show_Plus_Sign", "bool", false ) );
-   all_field_info.push_back( field_info( "102108", "String_Domain", "int", false ) );
-   all_field_info.push_back( field_info( "102110", "Time_Precision", "int", false ) );
-   all_field_info.push_back( field_info( "300200", "Workgroup", "Meta_Workgroup", false ) );
-   all_field_info.push_back( field_info( "102114", "Zero_Padding", "int", false ) );
+   all_field_info.push_back( field_info( "102118", "Auto_Round", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "102112", "Date_Precision", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102120", "Default_UOM", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102115", "Fraction_Limit", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102111", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "102116", "Int_Type", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102109", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "102103", "Max_Size", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102105", "Max_Value", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "102104", "Min_Value", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "102101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "102107", "Numeric_Decimals", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102106", "Numeric_Digits", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102117", "Numeric_Type", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102102", "Primitive", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102119", "Rounding_Method", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102113", "Show_Plus_Sign", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "102108", "String_Domain", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "102110", "Time_Precision", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "300200", "Workgroup", "Meta_Workgroup", false, "", "" ) );
+   all_field_info.push_back( field_info( "102114", "Zero_Padding", "int", false, "", "" ) );
 }
 
 void Meta_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

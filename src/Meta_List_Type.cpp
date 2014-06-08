@@ -1596,13 +1596,13 @@ void Meta_List_Type::static_get_class_info( class_info_container& class_info )
 
 void Meta_List_Type::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "121106", "Dummy_0", "bool", false ) );
-   all_field_info.push_back( field_info( "121107", "Is_Admin", "bool", false ) );
-   all_field_info.push_back( field_info( "121103", "Is_Child", "bool", false ) );
-   all_field_info.push_back( field_info( "121104", "Is_Home", "bool", false ) );
-   all_field_info.push_back( field_info( "121105", "Is_Not_Anonymous", "bool", false ) );
-   all_field_info.push_back( field_info( "121102", "List_Name", "string", false ) );
-   all_field_info.push_back( field_info( "121101", "Name", "string", false ) );
+   all_field_info.push_back( field_info( "121106", "Dummy_0", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "121107", "Is_Admin", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "121103", "Is_Child", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "121104", "Is_Home", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "121105", "Is_Not_Anonymous", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "121102", "List_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "121101", "Name", "string", false, "", "" ) );
 }
 
 void Meta_List_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

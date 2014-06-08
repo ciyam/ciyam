@@ -136,8 +136,23 @@ module_class_list_error list_module_classes_impl( const string& module_id_or_nam
    class_registry_const_iterator crci, end;
    for( crci = p_class_registry->begin( ), end = p_class_registry->end( ); crci != end; ++crci )
    {
+      class_info_container class_info;
+      get_class_info_for_module_class( module_id_or_name, crci->first, class_info );
+
+      string restrictions;
+      if( !class_info.empty( ) )
+      {
+         string::size_type pos = class_info[ 0 ].find( ',' );
+         if( pos != string::npos )
+         {
+            restrictions = class_info[ 0 ].substr( pos );
+            replace( restrictions, ",", " " );
+         }
+      }
+
       if( p_os )
-         *p_os << crci->first << ' ' << ( crci->second )->class_name( ) << '\n';
+         *p_os << crci->first << ' ' << ( crci->second )->class_name( ) << restrictions << '\n';
+
       if( p_lst )
          p_lst->push_back( crci->first );
 
@@ -486,7 +501,20 @@ module_class_field_list_error list_module_class_fields(
                   type_name = ( mi->second ).class_names[ type_name.substr( module_name_prefix.length( ) ) ] + ":" + type_name;
             }
 
-            os << fici->id << ' ' << fici->name << ' ' << type_name << '\n';
+            os << fici->id << ' ' << fici->name << ' ' << type_name;
+
+            if( !fici->is_transient )
+               os << " normal";
+            else
+               os << " transient";
+
+            if( !fici->scope.empty( ) )
+               os << ' ' << fici->scope << ' ' << fici->change;
+
+            if( fici->is_owner_fk )
+               os << " *";
+
+            os << '\n';
          }
 
          break;

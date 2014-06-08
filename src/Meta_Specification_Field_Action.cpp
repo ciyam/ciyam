@@ -2295,13 +2295,13 @@ void Meta_Specification_Field_Action::static_get_class_info( class_info_containe
 void Meta_Specification_Field_Action::static_get_field_info( field_info_container& all_field_info )
 {
    parent_class_type::static_get_field_info( all_field_info );
-   all_field_info.push_back( field_info( "128103", "Access_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "128101", "Clone_Key", "string", false ) );
-   all_field_info.push_back( field_info( "128102", "Create_Type", "int", false ) );
-   all_field_info.push_back( field_info( "302300", "New_Record_Class", "Meta_Class", false ) );
-   all_field_info.push_back( field_info( "302310", "New_Record_FK_Field", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "128105", "New_Record_FK_Value", "string", false ) );
-   all_field_info.push_back( field_info( "128104", "Type", "int", false ) );
+   all_field_info.push_back( field_info( "128103", "Access_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "128101", "Clone_Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "128102", "Create_Type", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "302300", "New_Record_Class", "Meta_Class", false, "", "" ) );
+   all_field_info.push_back( field_info( "302310", "New_Record_FK_Field", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "128105", "New_Record_FK_Value", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "128104", "Type", "int", false, "", "" ) );
 }
 
 void Meta_Specification_Field_Action::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

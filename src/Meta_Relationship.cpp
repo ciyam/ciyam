@@ -3846,28 +3846,28 @@ void Meta_Relationship::static_get_class_info( class_info_container& class_info 
 
 void Meta_Relationship::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "301330c", "Access_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "113114", "Access_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "113112", "Access_Scope", "int", false ) );
-   all_field_info.push_back( field_info( "113103", "Cascade_Op", "int", false ) );
-   all_field_info.push_back( field_info( "301330d", "Change_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "113115", "Change_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "113113", "Change_Scope", "int", false ) );
-   all_field_info.push_back( field_info( "301310", "Child_Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "113108", "Child_Class_Name", "string", false ) );
-   all_field_info.push_back( field_info( "113105", "Child_Name", "string", false ) );
-   all_field_info.push_back( field_info( "113104", "Extra", "int", false ) );
-   all_field_info.push_back( field_info( "113106", "Field_Id", "string", false ) );
-   all_field_info.push_back( field_info( "113107", "Field_Key", "string", false ) );
-   all_field_info.push_back( field_info( "113110", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "113102", "Mandatory", "bool", false ) );
-   all_field_info.push_back( field_info( "301300", "Model", "Meta_Model", true ) );
-   all_field_info.push_back( field_info( "113101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "301320", "Parent_Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "301330b", "Parent_Field_For_List", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "301330a", "Parent_Field_For_View", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "301330", "Source_Relationship", "Meta_Relationship", false ) );
-   all_field_info.push_back( field_info( "113111", "Transient", "bool", false ) );
+   all_field_info.push_back( field_info( "301330c", "Access_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "113114", "Access_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "113112", "Access_Scope", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "113103", "Cascade_Op", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301330d", "Change_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "113115", "Change_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "113113", "Change_Scope", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301310", "Child_Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "113108", "Child_Class_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "113105", "Child_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "113104", "Extra", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "113106", "Field_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "113107", "Field_Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "113110", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "113102", "Mandatory", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "301300", "Model", "Meta_Model", true, "", "" ) );
+   all_field_info.push_back( field_info( "113101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "301320", "Parent_Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "301330b", "Parent_Field_For_List", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "301330a", "Parent_Field_For_View", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "301330", "Source_Relationship", "Meta_Relationship", false, "", "" ) );
+   all_field_info.push_back( field_info( "113111", "Transient", "bool", false, "", "" ) );
 }
 
 void Meta_Relationship::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

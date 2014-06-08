@@ -71,20 +71,35 @@ struct field_info
 {
    field_info( ) { }
 
-   field_info( const std::string& id, const std::string& name, const std::string& type_name, bool mandatory )
+   field_info( const std::string& id,
+    const std::string& name, const std::string& type_name,
+    bool mandatory, const char* p_scope = 0, const char* p_change = 0,
+    bool is_owner_fk = false, bool is_transient = false )
     :
     id( id ),
     name( name ),
     type_name( type_name ),
-    mandatory( mandatory )
+    mandatory( mandatory ),
+    is_owner_fk( is_owner_fk ),
+    is_transient( is_transient )
    {
+      if( p_scope )
+         scope = std::string( p_scope );
+
+      if( p_change )
+         change = std::string( p_change );
    }
 
    std::string id;
    std::string name;
    std::string type_name;
 
+   std::string scope;
+   std::string change;
+
    bool mandatory;
+   bool is_owner_fk;
+   bool is_transient;
 };
 
 typedef std::vector< field_info > field_info_container;

@@ -2414,9 +2414,9 @@ void Meta_Permission::static_get_class_info( class_info_container& class_info )
 
 void Meta_Permission::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "116102", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "116101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "301500", "Workgroup", "Meta_Workgroup", true ) );
+   all_field_info.push_back( field_info( "116102", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "116101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "301500", "Workgroup", "Meta_Workgroup", true, "", "" ) );
 }
 
 void Meta_Permission::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

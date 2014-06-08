@@ -8410,25 +8410,25 @@ void Meta_Model::static_get_class_info( class_info_container& class_info )
 
 void Meta_Model::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "105109", "Actions", "string", false ) );
-   all_field_info.push_back( field_info( "105112", "Add_Packages", "int", false ) );
-   all_field_info.push_back( field_info( "105116", "Allow_Anonymous_Access", "bool", false ) );
-   all_field_info.push_back( field_info( "105111", "Commands_File", "string", false ) );
-   all_field_info.push_back( field_info( "105113", "Created", "bool", false ) );
-   all_field_info.push_back( field_info( "105117", "Home_Title", "string", false ) );
-   all_field_info.push_back( field_info( "105104", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "105101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "105105", "Next_Class_Id", "string", false ) );
-   all_field_info.push_back( field_info( "105107", "Next_List_Id", "string", false ) );
-   all_field_info.push_back( field_info( "105106", "Next_Specification_Id", "string", false ) );
-   all_field_info.push_back( field_info( "105108", "Next_View_Id", "string", false ) );
-   all_field_info.push_back( field_info( "301600", "Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "105110", "Source_File", "string", false ) );
-   all_field_info.push_back( field_info( "105114", "Status", "string", false ) );
-   all_field_info.push_back( field_info( "105115", "Use_Package_Demo_Data", "bool", false ) );
-   all_field_info.push_back( field_info( "105102", "Version", "string", false ) );
-   all_field_info.push_back( field_info( "300500", "Workgroup", "Meta_Workgroup", true ) );
-   all_field_info.push_back( field_info( "105103", "Year_Created", "int", false ) );
+   all_field_info.push_back( field_info( "105109", "Actions", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105112", "Add_Packages", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "105116", "Allow_Anonymous_Access", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "105111", "Commands_File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105113", "Created", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "105117", "Home_Title", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105104", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105105", "Next_Class_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105107", "Next_List_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105106", "Next_Specification_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105108", "Next_View_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "301600", "Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "105110", "Source_File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105114", "Status", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "105115", "Use_Package_Demo_Data", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "105102", "Version", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "300500", "Workgroup", "Meta_Workgroup", true, "", "" ) );
+   all_field_info.push_back( field_info( "105103", "Year_Created", "int", false, "", "" ) );
 }
 
 void Meta_Model::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

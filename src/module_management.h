@@ -92,6 +92,9 @@ class_base MODULE_MANAGEMENT_DECL_SPEC*
 void MODULE_MANAGEMENT_DECL_SPEC
  destroy_object( const std::string& module_id_or_name, const std::string& class_id, class_base*& p_cb );
 
+void MODULE_MANAGEMENT_DECL_SPEC get_class_info_for_module_class(
+ const std::string& module_id_or_name, const std::string& class_id, class_info_container& class_info );
+
 std::string MODULE_MANAGEMENT_DECL_SPEC get_module_id_for_id_or_name( const std::string& module_id_or_name );
 std::string MODULE_MANAGEMENT_DECL_SPEC get_module_name_for_id_or_name( const std::string& module_id_or_name );
 

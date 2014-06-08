@@ -1654,10 +1654,10 @@ void Meta_Initial_Record::static_get_class_info( class_info_container& class_inf
 
 void Meta_Initial_Record::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "302410", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "129102", "Comments", "string", false ) );
-   all_field_info.push_back( field_info( "129101", "Key", "string", false ) );
-   all_field_info.push_back( field_info( "129103", "Order", "string", false ) );
+   all_field_info.push_back( field_info( "302410", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "129102", "Comments", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "129101", "Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "129103", "Order", "string", false, "", "" ) );
 }
 
 void Meta_Initial_Record::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

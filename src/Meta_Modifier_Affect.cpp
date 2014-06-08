@@ -2117,14 +2117,14 @@ void Meta_Modifier_Affect::static_get_class_info( class_info_container& class_in
 
 void Meta_Modifier_Affect::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "301010", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "110103", "Extra", "int", false ) );
-   all_field_info.push_back( field_info( "301020", "Field", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "110104", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "301000", "Modifier", "Meta_Modifier", true ) );
-   all_field_info.push_back( field_info( "110101", "Scope", "int", false ) );
-   all_field_info.push_back( field_info( "301030", "Source_Modifier_Affect", "Meta_Modifier_Affect", false ) );
-   all_field_info.push_back( field_info( "110102", "Type", "int", false ) );
+   all_field_info.push_back( field_info( "301010", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "110103", "Extra", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301020", "Field", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "110104", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "301000", "Modifier", "Meta_Modifier", true, "", "" ) );
+   all_field_info.push_back( field_info( "110101", "Scope", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301030", "Source_Modifier_Affect", "Meta_Modifier_Affect", false, "", "" ) );
+   all_field_info.push_back( field_info( "110102", "Type", "int", false, "", "" ) );
 }
 
 void Meta_Modifier_Affect::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

@@ -6823,37 +6823,37 @@ void Meta_Field::static_get_class_info( class_info_container& class_info )
 
 void Meta_Field::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "300750", "Access_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "107121", "Access_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "107123", "Access_Scope", "int", false ) );
-   all_field_info.push_back( field_info( "300760", "Change_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "107122", "Change_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "107124", "Change_Scope", "int", false ) );
-   all_field_info.push_back( field_info( "300700", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "107120", "Create_List_Field", "bool", false ) );
-   all_field_info.push_back( field_info( "107119", "Create_View_Field", "bool", false ) );
-   all_field_info.push_back( field_info( "107115", "Def_Value", "string", false ) );
-   all_field_info.push_back( field_info( "107102", "Default", "string", false ) );
-   all_field_info.push_back( field_info( "107118", "Dummy_1", "bool", false ) );
-   all_field_info.push_back( field_info( "300720", "Enum", "Meta_Enum", false ) );
-   all_field_info.push_back( field_info( "107103", "Extra", "int", false ) );
-   all_field_info.push_back( field_info( "107110", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "107106", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "107108", "Is_Foreign_Key", "bool", false ) );
-   all_field_info.push_back( field_info( "107109", "Is_Text_Type", "bool", false ) );
-   all_field_info.push_back( field_info( "107105", "Mandatory", "bool", false ) );
-   all_field_info.push_back( field_info( "107101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "107114", "Numeric_Decimals", "numeric", false ) );
-   all_field_info.push_back( field_info( "300730", "Parent_Class", "Meta_Class", false ) );
-   all_field_info.push_back( field_info( "107113", "Parent_Class_Name", "string", false ) );
-   all_field_info.push_back( field_info( "107107", "Primitive", "int", false ) );
-   all_field_info.push_back( field_info( "300740", "Source_Field", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "107112", "Transient", "bool", false ) );
-   all_field_info.push_back( field_info( "300710", "Type", "Meta_Type", true ) );
-   all_field_info.push_back( field_info( "107104", "UOM", "int", false ) );
-   all_field_info.push_back( field_info( "107116", "UOM_Name", "string", false ) );
-   all_field_info.push_back( field_info( "107117", "UOM_Symbol", "string", false ) );
-   all_field_info.push_back( field_info( "107111", "Use_In_Text_Search", "bool", false ) );
+   all_field_info.push_back( field_info( "300750", "Access_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "107121", "Access_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "107123", "Access_Scope", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "300760", "Change_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "107122", "Change_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "107124", "Change_Scope", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "300700", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "107120", "Create_List_Field", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107119", "Create_View_Field", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107115", "Def_Value", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107102", "Default", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107118", "Dummy_1", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "300720", "Enum", "Meta_Enum", false, "", "" ) );
+   all_field_info.push_back( field_info( "107103", "Extra", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "107110", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107106", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107108", "Is_Foreign_Key", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107109", "Is_Text_Type", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107105", "Mandatory", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "107101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107114", "Numeric_Decimals", "numeric", false, "", "" ) );
+   all_field_info.push_back( field_info( "300730", "Parent_Class", "Meta_Class", false, "", "" ) );
+   all_field_info.push_back( field_info( "107113", "Parent_Class_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107107", "Primitive", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "300740", "Source_Field", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "107112", "Transient", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "300710", "Type", "Meta_Type", true, "", "" ) );
+   all_field_info.push_back( field_info( "107104", "UOM", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "107116", "UOM_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107117", "UOM_Symbol", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "107111", "Use_In_Text_Search", "bool", false, "", "" ) );
 }
 
 void Meta_Field::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

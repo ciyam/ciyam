@@ -1534,9 +1534,9 @@ void Meta_Module::static_get_class_info( class_info_container& class_info )
 
 void Meta_Module::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "302210", "Application", "Meta_Application", true ) );
-   all_field_info.push_back( field_info( "302200", "Model", "Meta_Model", true ) );
-   all_field_info.push_back( field_info( "126101", "Order", "string", false ) );
+   all_field_info.push_back( field_info( "302210", "Application", "Meta_Application", true, "", "" ) );
+   all_field_info.push_back( field_info( "302200", "Model", "Meta_Model", true, "", "" ) );
+   all_field_info.push_back( field_info( "126101", "Order", "string", false, "", "" ) );
 }
 
 void Meta_Module::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

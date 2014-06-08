@@ -3840,26 +3840,26 @@ void Meta_View::static_get_class_info( class_info_container& class_info )
 
 void Meta_View::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "301825", "Access_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "118102", "Access_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "118113", "Allow_Copy_Action", "bool", false ) );
-   all_field_info.push_back( field_info( "118109", "Allow_Printable_Version", "bool", false ) );
-   all_field_info.push_back( field_info( "118115", "Auto_Back_After_Save", "bool", false ) );
-   all_field_info.push_back( field_info( "301830", "Change_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "118103", "Change_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "301820", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "118117", "File_Links_Always_As_Single", "bool", false ) );
-   all_field_info.push_back( field_info( "118105", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "118116", "Ignore_Unactionable_Records", "bool", false ) );
-   all_field_info.push_back( field_info( "301800", "Model", "Meta_Model", true ) );
-   all_field_info.push_back( field_info( "118101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "118112", "PDF_Font_Type", "int", false ) );
-   all_field_info.push_back( field_info( "118111", "PDF_View_Type", "int", false ) );
-   all_field_info.push_back( field_info( "118106", "Print_Without_Highlight", "bool", false ) );
-   all_field_info.push_back( field_info( "118104", "Title", "string", false ) );
-   all_field_info.push_back( field_info( "301810", "Type", "Meta_View_Type", true ) );
-   all_field_info.push_back( field_info( "118110", "Type_Key", "string", false ) );
-   all_field_info.push_back( field_info( "118114", "Use_First_Row_As_Header", "bool", false ) );
+   all_field_info.push_back( field_info( "301825", "Access_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "118102", "Access_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "118113", "Allow_Copy_Action", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "118109", "Allow_Printable_Version", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "118115", "Auto_Back_After_Save", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "301830", "Change_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "118103", "Change_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301820", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "118117", "File_Links_Always_As_Single", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "118105", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "118116", "Ignore_Unactionable_Records", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "301800", "Model", "Meta_Model", true, "", "" ) );
+   all_field_info.push_back( field_info( "118101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "118112", "PDF_Font_Type", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "118111", "PDF_View_Type", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "118106", "Print_Without_Highlight", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "118104", "Title", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "301810", "Type", "Meta_View_Type", true, "", "" ) );
+   all_field_info.push_back( field_info( "118110", "Type_Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "118114", "Use_First_Row_As_Header", "bool", false, "", "" ) );
 }
 
 void Meta_View::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

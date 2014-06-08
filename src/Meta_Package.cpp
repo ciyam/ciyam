@@ -3493,16 +3493,16 @@ void Meta_Package::static_get_class_info( class_info_container& class_info )
 
 void Meta_Package::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "136102", "Actions", "string", false ) );
-   all_field_info.push_back( field_info( "136104", "Install_Details", "string", false ) );
-   all_field_info.push_back( field_info( "136103", "Installed", "bool", false ) );
-   all_field_info.push_back( field_info( "136105", "Key", "string", false ) );
-   all_field_info.push_back( field_info( "302800", "Model", "Meta_Model", true ) );
-   all_field_info.push_back( field_info( "136101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "302810", "Package_Type", "Meta_Package_Type", true ) );
-   all_field_info.push_back( field_info( "136107", "Plural", "string", false ) );
-   all_field_info.push_back( field_info( "136108", "Type_Name", "string", false ) );
-   all_field_info.push_back( field_info( "136106", "Usage_Count", "int", false ) );
+   all_field_info.push_back( field_info( "136102", "Actions", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "136104", "Install_Details", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "136103", "Installed", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "136105", "Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "302800", "Model", "Meta_Model", true, "", "" ) );
+   all_field_info.push_back( field_info( "136101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "302810", "Package_Type", "Meta_Package_Type", true, "", "" ) );
+   all_field_info.push_back( field_info( "136107", "Plural", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "136108", "Type_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "136106", "Usage_Count", "int", false, "", "" ) );
 }
 
 void Meta_Package::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

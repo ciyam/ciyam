@@ -1225,8 +1225,8 @@ void Meta_View_Field_Type::static_get_class_info( class_info_container& class_in
 
 void Meta_View_Field_Type::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "119101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "119102", "View_Field_Name", "string", false ) );
+   all_field_info.push_back( field_info( "119101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "119102", "View_Field_Name", "string", false, "", "" ) );
 }
 
 void Meta_View_Field_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
