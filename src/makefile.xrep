@@ -65,8 +65,8 @@ CPPFLAGS = -fPIC -ftemplate-depth-30 -felide-constructors -O3 -MMD -D__STDC_CONS
 
 BIND_NORMAL = @echo Binding $@...;$(BIND) -r $@
 
-LINK_NORMAL = @echo Linking $@...;$(LINK) -o $@
-LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -o $@
+LINK_NORMAL = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
+LINK_NORMAL_DYN_USER = @echo Linking $@...;$(LINK) -ldl -Wl,--no-as-needed,-rpath,. -o $@
 
 LINK_DYNAMIC = @echo Linking $@...;$(LINK) -shared -lc -o $@
 
@@ -74,7 +74,7 @@ THREAD_LIBS = -lpthread
 READLINE_LIBS = -lreadline
 #READLINE_LIBS = -lreadline -ltermcap
 
-OPENSSL_LIBS = -L/usr/local/ssl/lib -lssl -lcrypto -ldl
+OPENSSL_LIBS = -L/usr/local/ssl/lib -lssl -lcrypto
 
 LIBFCGI_LIBS = -lfcgi
 
@@ -163,7 +163,7 @@ $(TARGET_\^):: $(TARGET_\^_OBJS)\
 `{`?`$\$_dylk`[`$\$_dylk`, $(TARGET_\\^)`]`}
 	$(LINK_DYNAMIC) $(TARGET_\^_OBJS)\
 `{`(`?`$\$_link`)`[`$\$_link`! \\$`]`}\
-`{`(`?`$\$_dylk`)`[`$\$_dylk`' -ldl -Wl,-rpath,.`' $(TARGET_\\^)`]`}
+`{`(`?`$\$_dylk`)`[`$\$_dylk`, $(TARGET_\\^)`]`}
 `+
 `]`}
 `{`[`$executables`,\
@@ -177,7 +177,7 @@ $(TARGET_\^):: $(TARGET_\^_OBJS)\
 `{`?`$\$_dylk`[`$\$_dylk`, $(TARGET_\\^)`]`}
 	$(LINK_NORMAL`{`(`?`$\$_dyld`)_DYN_USER`}) $(TARGET_\^_OBJS)\
 `{`(`?`$\$_link`)`[`$\$_link`! \\$`]`}\
-`{`(`?`$\$_dylk`)`[`$\$_dylk`' -ldl -Wl,-rpath,.`' $(TARGET_\\^)`]`}\
+`{`(`?`$\$_dylk`)`[`$\$_dylk`, $(TARGET_\\^)`]`}\
 `{`(`?`$\$_gext`)`[`$\$_gext`!
 	@rm -f *.\\$`]`}
 `+
