@@ -2177,13 +2177,13 @@ void Meta_Procedure_Arg::static_get_class_info( class_info_container& class_info
 
 void Meta_Procedure_Arg::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "112104", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "112101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "112105", "Order", "string", false ) );
-   all_field_info.push_back( field_info( "112103", "Primitive", "int", false ) );
-   all_field_info.push_back( field_info( "301200", "Procedure", "Meta_Procedure", true ) );
-   all_field_info.push_back( field_info( "301210", "Source_Procedure_Arg", "Meta_Procedure_Arg", false ) );
-   all_field_info.push_back( field_info( "112102", "Type", "int", false ) );
+   all_field_info.push_back( field_info( "112104", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "112101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "112105", "Order", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "112103", "Primitive", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "301200", "Procedure", "Meta_Procedure", true, "", "" ) );
+   all_field_info.push_back( field_info( "301210", "Source_Procedure_Arg", "Meta_Procedure_Arg", false, "", "" ) );
+   all_field_info.push_back( field_info( "112102", "Type", "int", false, "", "" ) );
 }
 
 void Meta_Procedure_Arg::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

@@ -2355,6 +2355,108 @@ void Meta_Class::impl::impl_Generate( )
    outf << "\x60{\x60$is_alias\x60=\x60'"
     << ( get_obj( ).Source_Class( ).get_key( ).empty( ) ? "false" : "true" ) << "\x60'\x60}\n";
 
+   string instance_create;
+   switch( get_obj( ).Create_Restriction( ) )
+   {
+      case 0: // i.e. none
+      break;
+
+      case 1:
+      instance_create = "owner_only";
+      break;
+
+      case 2:
+      instance_create = "admin_only";
+      break;
+
+      case 3:
+      instance_create = "admin_owner";
+      break;
+
+      case 4:
+      instance_create = "denied_always";
+      break;
+   }
+
+   if( !is_null( get_obj( ).Create_Permission( ) ) )
+   {
+      if( instance_create.empty( ) )
+         instance_create = "denied_always";
+      instance_create += "=!" + get_obj( ).Create_Permission( ).Id( );
+   }
+   else if( instance_create.empty( ) )
+      instance_create = "anyone";
+
+   outf << "\x60{\x60$instance_create\x60=\x60'" << instance_create << "\x60'\x60}\n";
+
+   string instance_update;
+   switch( get_obj( ).Change_Restriction( ) )
+   {
+      case 0: // i.e. none
+      break;
+
+      case 1:
+      instance_update = "owner_only";
+      break;
+
+      case 2:
+      instance_update = "admin_only";
+      break;
+
+      case 3:
+      instance_update = "admin_owner";
+      break;
+
+      case 4:
+      instance_update = "denied_always";
+      break;
+   }
+
+   if( !is_null( get_obj( ).Change_Permission( ) ) )
+   {
+      if( instance_update.empty( ) )
+         instance_update = "denied_always";
+      instance_update += "=!" + get_obj( ).Change_Permission( ).Id( );
+   }
+   else if( instance_update.empty( ) )
+      instance_update = "anyone";
+
+   outf << "\x60{\x60$instance_update\x60=\x60'" << instance_update << "\x60'\x60}\n";
+
+   string instance_destroy;
+   switch( get_obj( ).Destroy_Restriction( ) )
+   {
+      case 0: // i.e. none
+      break;
+
+      case 1:
+      instance_destroy = "owner_only";
+      break;
+
+      case 2:
+      instance_destroy = "admin_only";
+      break;
+
+      case 3:
+      instance_destroy = "admin_owner";
+      break;
+
+      case 4:
+      instance_destroy = "denied_always";
+      break;
+   }
+
+   if( !is_null( get_obj( ).Destroy_Permission( ) ) )
+   {
+      if( instance_destroy.empty( ) )
+         instance_destroy = "denied_always";
+      instance_destroy += "=!" + get_obj( ).Destroy_Permission( ).Id( );
+   }
+   else if( instance_destroy.empty( ) )
+      instance_destroy = "anyone";
+
+   outf << "\x60{\x60$instance_destroy\x60=\x60'" << instance_destroy << "\x60'\x60}\n";
+
    vector< pair< string, string > > default_values;
 
    string order_field;
@@ -2448,7 +2550,66 @@ void Meta_Class::impl::impl_Generate( )
             else
                outf << " \\\n";
 
-            outf << get_obj( ).child_Field( ).Name( ) << ',' << field_type << ',' << get_mapped_id( model_name, get_obj( ).child_Field( ).Id( ) );
+            string field_scope( "both" );
+            if( get_obj( ).child_Field( ).Change_Scope( ) != 0 )
+            {
+               if( get_obj( ).child_Field( ).Change_Scope( ) == 1 ) // i.e. create_only
+                  field_scope = "create";
+               else if( get_obj( ).child_Field( ).Change_Scope( ) == 2 ) // i.e. post_create
+                  field_scope = "update";
+               else if( get_obj( ).child_Field( ).Change_Scope( ) == 3 ) // i.e. editing_only
+                  field_scope = "both";
+               else if( get_obj( ).child_Field( ).Change_Scope( ) == 4 ) // i.e. viewing_only
+                  field_scope = "both";
+               else if( get_obj( ).child_Field( ).Change_Scope( ) == 5 ) // i.e. updating_only
+                  field_scope = "update";
+               else
+                  throw runtime_error( "unexpected change scope #"
+                   + to_string( get_obj( ).child_Field( ).Change_Scope( ) ) + " in Class::Generate" );
+            }
+
+            string field_update;
+            switch( get_obj( ).child_Field( ).Change_Restriction( ) )
+            {
+               case 0: // i.e. none
+               break;
+
+               case 1:
+               field_update = "owner_only";
+               break;
+
+               case 2:
+               field_update = "admin_only";
+               break;
+
+               case 3:
+               field_update = "admin_owner";
+               break;
+
+               case 4:
+               field_update = "denied_always";
+               break;
+            }
+
+            if( !is_null( get_obj( ).child_Field( ).Change_Permission( ) ) )
+            {
+               if( field_update.empty( ) )
+                  field_update = "denied_always";
+               field_update += "=!" + get_obj( ).child_Field( ).Change_Permission( ).Id( );
+            }
+            else if( field_update.empty( ) )
+               field_update = "anyone";
+
+            bool is_owner_fk = false;
+
+            if( get_obj( ).child_Field( ).Extra( ) == -1 ) // i.e. "owning_user"
+               is_owner_fk = true;
+
+            bool is_transient = get_obj( ).child_Field( ).Transient( );
+
+            outf << get_obj( ).child_Field( ).Name( ) << ',' << field_type << ','
+             << get_mapped_id( model_name, get_obj( ).child_Field( ).Id( ) ) << ','
+             << field_scope << ',' << field_update << ',' << is_owner_fk << ',' << is_transient;
 
             if( !get_obj( ).child_Field( ).Default( ).empty( ) )
             {
@@ -7141,34 +7302,34 @@ void Meta_Class::static_get_class_info( class_info_container& class_info )
 
 void Meta_Class::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "300633", "Access_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "106124", "Access_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "300634", "Change_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "106125", "Change_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "106110", "Commands_File", "string", false ) );
-   all_field_info.push_back( field_info( "106123", "Create_List", "bool", false ) );
-   all_field_info.push_back( field_info( "300635", "Create_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "106126", "Create_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "106122", "Create_View", "bool", false ) );
-   all_field_info.push_back( field_info( "300632", "Created_List", "Meta_List", false ) );
-   all_field_info.push_back( field_info( "300631", "Created_View", "Meta_View", false ) );
-   all_field_info.push_back( field_info( "106121", "Delay_Initial_Records", "bool", false ) );
-   all_field_info.push_back( field_info( "300636", "Destroy_Permission", "Meta_Permission", false ) );
-   all_field_info.push_back( field_info( "106127", "Destroy_Restriction", "int", false ) );
-   all_field_info.push_back( field_info( "106103", "Extra", "int", false ) );
-   all_field_info.push_back( field_info( "106109", "Header_File", "string", false ) );
-   all_field_info.push_back( field_info( "106104", "Id", "string", false ) );
-   all_field_info.push_back( field_info( "300600", "Model", "Meta_Model", true ) );
-   all_field_info.push_back( field_info( "106101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "106105", "Next_Field_Id", "string", false ) );
-   all_field_info.push_back( field_info( "106106", "Next_Procedure_Id", "string", false ) );
-   all_field_info.push_back( field_info( "106102", "Plural", "string", false ) );
-   all_field_info.push_back( field_info( "300630", "Quick_Link_Field", "Meta_Field", false ) );
-   all_field_info.push_back( field_info( "300620", "Source_Class", "Meta_Class", false ) );
-   all_field_info.push_back( field_info( "106108", "Source_File", "string", false ) );
-   all_field_info.push_back( field_info( "300610", "Source_Model", "Meta_Model", false ) );
-   all_field_info.push_back( field_info( "106120", "Static_Instance_Key", "string", false ) );
-   all_field_info.push_back( field_info( "106107", "Type", "int", false ) );
+   all_field_info.push_back( field_info( "300633", "Access_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "106124", "Access_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "300634", "Change_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "106125", "Change_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "106110", "Commands_File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106123", "Create_List", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "300635", "Create_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "106126", "Create_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "106122", "Create_View", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "300632", "Created_List", "Meta_List", false, "", "" ) );
+   all_field_info.push_back( field_info( "300631", "Created_View", "Meta_View", false, "", "" ) );
+   all_field_info.push_back( field_info( "106121", "Delay_Initial_Records", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "300636", "Destroy_Permission", "Meta_Permission", false, "", "" ) );
+   all_field_info.push_back( field_info( "106127", "Destroy_Restriction", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "106103", "Extra", "int", false, "", "" ) );
+   all_field_info.push_back( field_info( "106109", "Header_File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106104", "Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "300600", "Model", "Meta_Model", true, "", "" ) );
+   all_field_info.push_back( field_info( "106101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106105", "Next_Field_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106106", "Next_Procedure_Id", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106102", "Plural", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "300630", "Quick_Link_Field", "Meta_Field", false, "", "" ) );
+   all_field_info.push_back( field_info( "300620", "Source_Class", "Meta_Class", false, "", "" ) );
+   all_field_info.push_back( field_info( "106108", "Source_File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "300610", "Source_Model", "Meta_Model", false, "", "" ) );
+   all_field_info.push_back( field_info( "106120", "Static_Instance_Key", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "106107", "Type", "int", false, "", "" ) );
 }
 
 void Meta_Class::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

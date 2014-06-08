@@ -41,24 +41,24 @@
 137100 Package_Option
 
 > module_class_field_list Meta User
-100102 Active bool
-100104 Description string
-100105 Email string
-100103 Password string
-100108 Password_Hash string
-100106 Permissions string
-100107 User_Hash string
-100101 User_Id string
-300100 Workgroup 101100:Meta_Workgroup
+100102 Active bool normal
+100104 Description string normal
+100105 Email string normal
+100103 Password string normal
+100108 Password_Hash string normal
+100106 Permissions string normal
+100107 User_Hash string normal
+100101 User_Id string normal
+300100 Workgroup 101100:Meta_Workgroup normal
 
 > module_class_field_list Meta Workgroup
-101102 Id string
-101101 Name string
-101104 Next_Enum_Id string
-101103 Next_Model_Id string
-101106 Next_Permission_Id string
-101105 Next_Type_Id string
-302835 Standard_Package 136100:Meta_Package
+101102 Id string normal
+101101 Name string normal
+101104 Next_Enum_Id string normal
+101103 Next_Model_Id string normal
+101106 Next_Permission_Id string normal
+101105 Next_Type_Id string normal
+302835 Standard_Package 136100:Meta_Package normal
 
 > module_unload Meta
 

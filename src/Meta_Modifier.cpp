@@ -1949,10 +1949,10 @@ void Meta_Modifier::static_get_class_info( class_info_container& class_info )
 
 void Meta_Modifier::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "300900", "Class", "Meta_Class", true ) );
-   all_field_info.push_back( field_info( "109102", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "109101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "300910", "Source_Modifier", "Meta_Modifier", false ) );
+   all_field_info.push_back( field_info( "300900", "Class", "Meta_Class", true, "", "" ) );
+   all_field_info.push_back( field_info( "109102", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "109101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "300910", "Source_Modifier", "Meta_Modifier", false, "", "" ) );
 }
 
 void Meta_Modifier::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

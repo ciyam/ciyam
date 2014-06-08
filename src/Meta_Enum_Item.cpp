@@ -1921,11 +1921,11 @@ void Meta_Enum_Item::static_get_class_info( class_info_container& class_info )
 
 void Meta_Enum_Item::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "300400", "Enum", "Meta_Enum", true ) );
-   all_field_info.push_back( field_info( "104104", "Internal", "bool", false ) );
-   all_field_info.push_back( field_info( "104101", "Label", "string", false ) );
-   all_field_info.push_back( field_info( "104103", "Order", "string", false ) );
-   all_field_info.push_back( field_info( "104102", "Value", "string", false ) );
+   all_field_info.push_back( field_info( "300400", "Enum", "Meta_Enum", true, "", "" ) );
+   all_field_info.push_back( field_info( "104104", "Internal", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "104101", "Label", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "104103", "Order", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "104102", "Value", "string", false, "", "" ) );
 }
 
 void Meta_Enum_Item::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

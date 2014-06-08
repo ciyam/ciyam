@@ -66,6 +66,13 @@
 `{`$full_class_name`^`'_`'`}
 `{`$full_class_name`^`$class_name`}
 `{`}
+`{`$class_create`=`'`'`}
+`{`(`?`$instance_create`)`$class_create`=`',`{`$instance_create`}`'`}
+`{`$class_update`=`'`'`}
+`{`(`?`$instance_update`)`$class_update`=`',`{`$instance_update`}`'`}
+`{`$class_destroy`=`'`'`}
+`{`(`?`$instance_destroy`)`$class_destroy`=`',`{`$instance_destroy`}`'`}
+`{`}
 `{`(`?`$all_fields`)`|`(`?`$base_fields`)`$all_and_base_fields`=`'`'`}
 `{`(`?`$base_fields`)`[`$base_fields`%,`,\
 `{`$all_and_base_fields`=`$all_and_base_fields`+`'\0`'`}\
@@ -3846,7 +3853,7 @@ void `{`$full_class_name`}::static_get_class_info( class_info_container& class_i
    parent_class_type::static_get_class_info( class_info );\
 `}
 `{`(`?`$all_fields`)\
-   class_info.push_back( "`{`$module_id`}.`{`$class_id`}" );\
+   class_info.push_back( "`{`$module_id`}.`{`$class_id`}`{`$class_create`}`{`$class_update`}`{`$class_destroy`}" );\
 `}
 }
 
@@ -3860,7 +3867,7 @@ void `{`$full_class_name`}::static_get_field_info( field_info_container& all_fie
 `}`}
 `{`?`$all_fields`[`$all_fields`%,`,\
    all_field_info.push_back( field_info( "\2", "\0", "\1", \
-`{`?`$mandatory_parent_fields`&`@in`(`'\0`'`,`$mandatory_parent_fields`)true`,false`} ) );\
+`{`?`$mandatory_parent_fields`&`@in`(`'\0`'`,`$mandatory_parent_fields`)true`,false`}, "\3", "\4"`{`!`@eq`(`'\5`'`,`'`'`), \5, \6`} ) );\
 `+\n`]`}
 }
 

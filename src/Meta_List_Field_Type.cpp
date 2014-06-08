@@ -2574,27 +2574,27 @@ void Meta_List_Field_Type::static_get_class_info( class_info_container& class_in
 
 void Meta_List_Field_Type::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "123113", "Allow_Child_Rel_Select_Specifics", "bool", false ) );
-   all_field_info.push_back( field_info( "123106", "Allow_Exclude_In_Use_FK", "bool", false ) );
-   all_field_info.push_back( field_info( "123121", "Allow_Link_Empty_Restriction", "bool", false ) );
-   all_field_info.push_back( field_info( "123119", "Allow_Link_Permission", "bool", false ) );
-   all_field_info.push_back( field_info( "123112", "Allow_Link_Specifics", "bool", false ) );
-   all_field_info.push_back( field_info( "123107", "Allow_Link_Type", "bool", false ) );
-   all_field_info.push_back( field_info( "123108", "Allow_Procedure", "bool", false ) );
-   all_field_info.push_back( field_info( "123116", "Allow_Restriction_Field", "bool", false ) );
-   all_field_info.push_back( field_info( "123103", "Allow_Restriction_Spec", "bool", false ) );
-   all_field_info.push_back( field_info( "123104", "Allow_Restriction_Value", "bool", false ) );
-   all_field_info.push_back( field_info( "123115", "Allow_Search_Option_Limit", "bool", false ) );
-   all_field_info.push_back( field_info( "123111", "Allow_Select_Specifics", "bool", false ) );
-   all_field_info.push_back( field_info( "123120", "Allow_View_Parent_Extra", "bool", false ) );
-   all_field_info.push_back( field_info( "123118", "Is_Restrict_Search", "bool", false ) );
-   all_field_info.push_back( field_info( "123102", "List_Field_Name", "string", false ) );
-   all_field_info.push_back( field_info( "123101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "123117", "Needs_Restriction_Field", "bool", false ) );
-   all_field_info.push_back( field_info( "123114", "Needs_Source", "bool", false ) );
-   all_field_info.push_back( field_info( "123105", "Needs_Switch_Type", "bool", false ) );
-   all_field_info.push_back( field_info( "123109", "Non_Simple_Field", "bool", false ) );
-   all_field_info.push_back( field_info( "123110", "Trivial_Field_Only", "bool", false ) );
+   all_field_info.push_back( field_info( "123113", "Allow_Child_Rel_Select_Specifics", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123106", "Allow_Exclude_In_Use_FK", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123121", "Allow_Link_Empty_Restriction", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123119", "Allow_Link_Permission", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123112", "Allow_Link_Specifics", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123107", "Allow_Link_Type", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123108", "Allow_Procedure", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123116", "Allow_Restriction_Field", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123103", "Allow_Restriction_Spec", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123104", "Allow_Restriction_Value", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123115", "Allow_Search_Option_Limit", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123111", "Allow_Select_Specifics", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123120", "Allow_View_Parent_Extra", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123118", "Is_Restrict_Search", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123102", "List_Field_Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "123101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "123117", "Needs_Restriction_Field", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123114", "Needs_Source", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123105", "Needs_Switch_Type", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123109", "Non_Simple_Field", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123110", "Trivial_Field_Only", "bool", false, "", "" ) );
 }
 
 void Meta_List_Field_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )

@@ -1980,15 +1980,15 @@ void Meta_Package_Type::static_get_class_info( class_info_container& class_info 
 
 void Meta_Package_Type::static_get_field_info( field_info_container& all_field_info )
 {
-   all_field_info.push_back( field_info( "135105", "Actions", "string", false ) );
-   all_field_info.push_back( field_info( "135107", "Dependencies", "string", false ) );
-   all_field_info.push_back( field_info( "135103", "File", "string", false ) );
-   all_field_info.push_back( field_info( "135106", "Installed", "bool", false ) );
-   all_field_info.push_back( field_info( "135102", "Multi", "bool", false ) );
-   all_field_info.push_back( field_info( "135101", "Name", "string", false ) );
-   all_field_info.push_back( field_info( "135108", "Plural", "string", false ) );
-   all_field_info.push_back( field_info( "135109", "Single", "string", false ) );
-   all_field_info.push_back( field_info( "135104", "Version", "int", false ) );
+   all_field_info.push_back( field_info( "135105", "Actions", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135107", "Dependencies", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135103", "File", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135106", "Installed", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "135102", "Multi", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "135101", "Name", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135108", "Plural", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135109", "Single", "string", false, "", "" ) );
+   all_field_info.push_back( field_info( "135104", "Version", "int", false, "", "" ) );
 }
 
 void Meta_Package_Type::static_get_foreign_key_info( foreign_key_info_container& foreign_key_info )
