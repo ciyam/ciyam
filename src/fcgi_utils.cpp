@@ -20,17 +20,7 @@
 #endif
 
 #ifdef __GNUG__
-#  include <limits.h>
 #  include <unistd.h>
-#  define _chdir chdir
-#  define _mkdir mkdir
-#  define _rmdir rmdir
-#  define _getcwd getcwd
-#  define _MAX_PATH PATH_MAX
-#endif
-
-#ifdef _WIN32
-#  include <direct.h>
 #endif
 
 #include "fcgi_utils.h"
@@ -65,10 +55,6 @@ set< string > g_non_persistent;
 
 map< string, string > g_strings;
 map< string, string > g_extkeys;
-
-#ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU | S_IRWXG;
-#endif
 
 const char* const c_log_file = "ciyam_interface.log";
 const char* const c_str_file = "ciyam_interface.txt";
@@ -934,42 +920,27 @@ void setup_directories( )
 {
    DEBUG_TRACE( "[setup directories]" );
 
-   char buf[ _MAX_PATH ];
-   _getcwd( buf, _MAX_PATH );
+   string cwd( get_cwd( ) );
 
    storage_info& sinfo( get_storage_info( ) );
 
-   if( _chdir( sinfo.web_root.c_str( ) ) != 0 )
-      throw runtime_error( "unable to _chdir to '" + sinfo.web_root + "'" );
+   set_cwd( sinfo.web_root );
 
-   if( _chdir( c_files_directory ) != 0 )
+   bool rc;
+   set_cwd( c_files_directory, &rc );
+   if( !rc )
    {
-#ifdef _WIN32
-      _mkdir( c_files_directory );
-#else
-      int um = umask( 0 );
-      _mkdir( c_files_directory, c_default_directory_perms );
-      umask( um );
-#endif 
-
-      if( _chdir( c_files_directory ) != 0 )
-         throw runtime_error( "unable to _chdir to '" + string( c_files_directory ) + "'" );
+      create_dir( c_files_directory );
+      set_cwd( c_files_directory );
    }
 
    vector< string > dead_sessions;
 
-   if( _chdir( c_tmp_directory ) != 0 )
+   set_cwd( c_tmp_directory, &rc );
+   if( !rc )
    {
-#ifdef _WIN32
-      _mkdir( c_tmp_directory );
-#else
-      int um = umask( 0 );
-      _mkdir( c_tmp_directory, c_default_directory_perms );
-      umask( um );
-#endif
-
-      if( _chdir( c_tmp_directory ) != 0 )
-         throw runtime_error( "unable to _chdir to '" + string( c_tmp_directory ) + "'" );
+      create_dir( c_tmp_directory );
+      set_cwd( c_tmp_directory );
    }
    else
    {
@@ -982,7 +953,7 @@ void setup_directories( )
          dead_sessions.push_back( dfsi.get_name( ) );
    }
 
-   _chdir( ".." );
+   set_cwd( ".." );
 
    for( size_t x = 0; x < dead_sessions.size( ); x++ )
       remove_session_temp_directory( dead_sessions[ x ], ".." );
@@ -1024,18 +995,12 @@ void setup_directories( )
 
       string module_id( ( mici->second )->id );
 
-      if( _chdir( module_id.c_str( ) ) != 0 )
+      bool rc;
+      set_cwd( module_id, &rc );
+      if( !rc )
       {
-         string name( module_id );
-#ifdef _WIN32
-         _mkdir( name.c_str( ) );
-#else
-         int um = umask( 0 );
-         _mkdir( name.c_str( ), c_default_directory_perms );
-         umask( um );
-#endif
-         if( _chdir( name.c_str( ) ) != 0 )
-            throw runtime_error( "unable to _chdir to '" + name + "'" );
+         create_dir( module_id );
+         set_cwd( module_id );
       }
 
       if( !file_exists( ".htaccess" ) )
@@ -1056,34 +1021,26 @@ void setup_directories( )
       {
          string name( *si );
 
-         if( _chdir( name.c_str( ) ) == 0 )
-            _chdir( ".." );
+         bool rc;
+         set_cwd( name, &rc );
+         if( rc )
+            set_cwd( ".." );
          else
          {
-#ifdef _WIN32
-            _mkdir( name.c_str( ) );
-#else
-            int um = umask( 0 );
-            _mkdir( name.c_str( ), c_default_directory_perms );
-            umask( um );
-#endif
-
-            if( _chdir( name.c_str( ) ) != 0 )
-               throw runtime_error( "unable to _chdir to '" + name + "'" );
+            create_dir( name );
+            set_cwd( name );
 
             ofstream outf( "_NOTE_.TXT" );
             outf << "NOTE: The files in this directory are tied to a DB and therefore should not be manually added or removed.";
 
-            _chdir( ".." );
+            set_cwd( ".." );
          }
       }
 
-      _chdir( ".." );
+      set_cwd( ".." );
    }
 
-   // NOTE: Restore the original working directory.
-   if( _chdir( buf ) != 0 )
-      throw runtime_error( "unable to _chdir to '" + string( buf ) + "'" );
+   set_cwd( cwd );
 }
 
 bool has_permission( const string& perm, const session_info& sess_info )

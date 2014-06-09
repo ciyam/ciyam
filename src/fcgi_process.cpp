@@ -2153,7 +2153,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                   string cmd( "gpg --batch --import " );
                   cmd += "x.gpg >x.tmp 2>&1";
 
-                  system( cmd.c_str( ) );
+                  int rc = system( cmd.c_str( ) );
+                  ( void )rc;
 
                   vector< string > lines;
                   buffer_file_lines( "x.tmp", lines );
@@ -2267,7 +2268,8 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
                    + " --encrypt --sign --trust-model always --batch --local-user "
                    + smtp_sender + " --passphrase " + gpg_password + " " + key + ">" + key + ".tmp 2>&1";
 
-                  system( cmd.c_str( ) );
+                  int rc = system( cmd.c_str( ) );
+                  ( void )rc;
 
                   if( !file_exists( key + ".asc" ) )
                   {

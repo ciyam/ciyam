@@ -309,7 +309,8 @@ void get_utxo_information( const string& source_address, const string& file_name
    // FUTURE: The UTXO list should also be able to be obtained via bitcoind locally using "listunspent".
    string cmd( "curl -s http://blockchain.info/unspent?address=" + source_address + " >" + file_name );
 
-   system( cmd.c_str( ) );
+   int rc = system( cmd.c_str( ) );
+   ( void )rc;
 }
 
 uint64_t get_utxos_balance_amt( const string& file_name )

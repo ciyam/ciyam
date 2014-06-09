@@ -28,8 +28,8 @@
 #  endif
 #  ifdef _WIN32
 #     ifdef __BORLANDC__
-#        include <dir.h>
 #        include <cio>
+#        include <dir.h>
 #        include <cfcntl>
 #     endif
 #     ifdef _MSC_VER
@@ -56,6 +56,8 @@ typedef int mode_t;
 #  define _open open
 #  define _chmod chmod
 #  define _close close
+#  define _chdir chdir
+#  define _mkdir mkdir
 #  define _getcwd getcwd
 #  define _MAX_PATH PATH_MAX
 #endif
@@ -74,6 +76,10 @@ const int c_char_size = 256;
 const unsigned char c_space = 0x20;
 const unsigned char c_low_mask = 0x3f;
 const unsigned char c_high_mask = 0xc0;
+
+#ifndef _WIN32
+const int c_default_directory_perms = S_IRWXU | S_IRWXG;
+#endif
 
 }
 
@@ -115,7 +121,8 @@ void uuidgen( unsigned char buf[ ] )
       assert( fd > 0 );
    }
 
-   read( fd, buf, c_uuid_size );
+   if( read( fd, buf, c_uuid_size ) != c_uuid_size )
+      throw runtime_error( "unexpected failure to created uuid" );
 }
 #endif
 
@@ -221,7 +228,9 @@ int vmem_used( )
 string get_cwd( bool change_backslash_to_forwardslash )
 {
    char buf[ _MAX_PATH ];
-   _getcwd( buf, _MAX_PATH );
+
+   if( !_getcwd( buf, _MAX_PATH ) )
+      throw runtime_error( "unexpected error occurred calling _getcwd" );
 
 #ifndef _WIN32
    ( void )change_backslash_to_forwardslash;
@@ -237,6 +246,41 @@ string get_cwd( bool change_backslash_to_forwardslash )
 #endif
 
    return buf;
+}
+
+void set_cwd( const string& path, bool* p_rc )
+{
+   if( _chdir( path.c_str( ) ) != 0 )
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "unable to _chdir to '" + path + "'" );
+   }
+   else if( p_rc )
+      *p_rc = true;
+}
+
+void create_dir( const string& path, bool* p_rc )
+{
+#ifdef _WIN32
+   if( _mkdir( path.c_str( ) ) != 0 )
+#else
+   int um = umask( 0 );
+   if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
+#endif
+   {
+      if( p_rc )
+         *p_rc = false;
+      else
+         throw runtime_error( "unable to create '" + path + "' directory" );
+   }
+#ifndef _WIN32
+   umask( um );
+#endif
+
+   if( p_rc )
+      *p_rc = true;
 }
 
 bool file_exists( const char* p_name, bool check_link_target )

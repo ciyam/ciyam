@@ -19,12 +19,6 @@
 #  include <fstream>
 #  include <iomanip>
 #  include <iostream>
-#  ifdef __BORLANDC__
-#     include <dir.h>
-#  endif
-#  ifdef _MSC_VER
-#     include <direct.h>
-#  endif
 #  ifdef _WIN32
 #     include <ctime>
 #  endif
@@ -64,13 +58,6 @@
 
 #ifdef ICONV_SUPPORT
 #  include <iconv.h>
-#endif
-
-#ifdef __GNUG__
-#  define _chdir chdir
-#  define _mkdir mkdir
-#  define _getcwd getcwd
-#  define _MAX_PATH PATH_MAX
 #endif
 
 using namespace std;
@@ -2610,28 +2597,22 @@ void create_directories_for_file_name( const string& file_name )
       if( !directories.empty( ) )
          sub_directories.push_back( directories );
 
-      char buf[ _MAX_PATH ];
-      _getcwd( buf, _MAX_PATH );
+      string cwd( get_cwd( ) );
 
       for( size_t i = 0; i < sub_directories.size( ); i++ )
       {
-         if( _chdir( sub_directories[ i ].c_str( ) ) != 0 )
-         {
-#ifdef _WIN32
-            if( _mkdir( sub_directories[ i ].c_str( ) ) != 0 )
-#else
-            if( _mkdir( sub_directories[ i ].c_str( ), S_IRWXU | S_IRWXG | S_IRWXO ) != 0 )
-#endif
-               throw runtime_error( "unable to create '" + sub_directories[ i ] + "' directory" );
+         bool rc;
+         set_cwd( sub_directories[ i ], &rc );
 
-            if( _chdir( sub_directories[ i ].c_str( ) ) != 0 )
-               throw runtime_error( "unable to _chdir to '" + sub_directories[ i ] + "'" );
+         if( !rc )
+         {
+            create_dir( sub_directories[ i ] );
+            set_cwd( sub_directories[ i ] );
          }
       }
 
       // NOTE: Restore the original working directory.
-      if( _chdir( buf ) != 0 )
-         throw runtime_error( "unable to _chdir to '" + string( buf ) + "'" );
+      set_cwd( cwd );
    }
 }
 
@@ -2655,7 +2636,8 @@ void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
 
    TRACE_LOG( TRACE_SESSIONS, cmd );
 
-   system( cmd.c_str( ) );
+   int rc = system( cmd.c_str( ) );
+   ( void )rc;
 
    vector< string > lines;
    buffer_file_lines( tmp, lines );
@@ -2677,7 +2659,8 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
 
    TRACE_LOG( TRACE_SESSIONS, cmd );
 
-   system( cmd.c_str( ) );
+   int rc = system( cmd.c_str( ) );
+   ( void )rc;
 
    vector< string > lines;
    buffer_file_lines( tmp, lines );
@@ -2722,7 +2705,8 @@ void install_gpg_key( const string& key_file,
 
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      system( cmd.c_str( ) );
+      int rc = system( cmd.c_str( ) );
+      ( void )rc;
 
       vector< string > lines;
       buffer_file_lines( tmp, lines );
@@ -2806,7 +2790,8 @@ void install_gpg_key( const string& key_file,
 
                               TRACE_LOG( TRACE_SESSIONS, cmd );
 
-                              system( cmd.c_str( ) );
+                              int rc = system( cmd.c_str( ) );
+                              ( void )rc;
 
                               lines.clear( );
                               buffer_file_lines( tmp, lines );
@@ -4271,7 +4256,8 @@ string send_raw_transaction( const string& tx )
    // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
    string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/decode-tx >" + tmp );
 
-   system( cmd.c_str( ) );
+   int rc = system( cmd.c_str( ) );
+   ( void )rc;
 
    s = buffer_file( tmp );
    file_remove( tmp );
@@ -4289,7 +4275,8 @@ string send_raw_transaction( const string& tx )
          s.erase( pos );
 
          string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/pushtx >" + tmp );
-         system( cmd.c_str( ) );
+         int rc = system( cmd.c_str( ) );
+         ( void )rc;
 
          string ss( buffer_file( tmp ) );
          file_remove( tmp );

@@ -46,11 +46,6 @@
 
 #include <fcgiapp.h>
 
-#ifdef __GNUG__
-#  define _chdir chdir
-#  define _mkdir mkdir
-#endif
-
 #include "ciyam_interface.h"
 
 #include "salt.h"
@@ -111,10 +106,6 @@ const char* const c_stop_file = "ciyam_interface.stop";
 
 #ifdef _WIN32
 const char* const c_kill_script = "ciyam_interface.kill.bat";
-#endif
-
-#ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU | S_IRWXG;
 #endif
 
 const char* const c_login_file = "login.htms";
@@ -1478,17 +1469,8 @@ void request_handler::process_request( )
                   path += "/" + string( c_tmp_directory );
                   path += "/" + session_id;
 
-#ifdef _WIN32
-                  if( _mkdir( path.c_str( ) ) != 0 )
-#else
-                  int um = umask( 0 );
-                  if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
-#endif
-                     throw runtime_error( "unable to create '" + path + "' directory" );
+                  create_dir( path );
 
-#ifndef _WIN32
-                  umask( um );
-#endif
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;
 
@@ -2537,7 +2519,7 @@ int main( int argc, char* argv[ ] )
          exe_path.erase( );
 
       if( !exe_path.empty( ) )
-         _chdir( exe_path.c_str( ) );
+         set_cwd( exe_path );
 
       LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
 

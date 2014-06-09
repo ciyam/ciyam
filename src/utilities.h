@@ -244,6 +244,10 @@ int vmem_used( );
 
 std::string get_cwd( bool change_backslash_to_forwardslash = false );
 
+void set_cwd( const std::string& path, bool* p_rc = 0 );
+
+void create_dir( const std::string& path, bool* p_rc = 0 );
+
 bool file_exists( const char* p_name, bool check_link_target = true );
 inline bool file_exists( const std::string& name, bool check_link_target = true ) { return file_exists( name.c_str( ), check_link_target ); }
 

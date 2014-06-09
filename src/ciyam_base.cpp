@@ -8892,7 +8892,8 @@ void transaction_commit( )
       for( size_t i = 0; i < gtp_session->async_system_commands.size( ); i++ )
       {
          TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
-         system( gtp_session->async_system_commands[ i ].c_str( ) );
+         int rc = system( gtp_session->async_system_commands[ i ].c_str( ) );
+         ( void )rc;
       }
 
       gtp_session->async_temp_files.clear( );

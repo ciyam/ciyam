@@ -19,25 +19,13 @@
 
 #include "fcgiapp.h"
 
-#ifdef __BORLANDC__
-#  include <dir.h>
-#endif
-#ifdef _MSC_VER
-#  include <direct.h>
-#endif
 #ifdef __GNUG__
-#  include <limits.h>
 #  include <unistd.h>
 #  include <sys/stat.h>
 #endif
 
 #ifdef _WIN32
-#  define PATH_MAX MAX_PATH
 #  include <windows.h>
-#endif
-
-#ifdef __GNUG__
-#  define _chdir chdir
 #endif
 
 #include "config.h"
@@ -403,7 +391,7 @@ int main( int /*argc*/, char* argv[ ] )
          g_exe_path.erase( );
 
       if( !g_exe_path.empty( ) )
-         _chdir( g_exe_path.c_str( ) );
+         set_cwd( g_exe_path );
 
       // NOTE: Scope for pid handler temporary object.
       {

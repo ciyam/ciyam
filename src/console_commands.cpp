@@ -435,7 +435,9 @@ string console_command_handler::preprocess_command_and_args( const string& cmd_a
          }
          else if( str[ 0 ] == c_system_command_prefix )
          {
-            system( str.c_str( ) + 1 );
+            int rc = system( str.c_str( ) + 1 );
+
+            ( void )rc;
 
             str.erase( );
          }
