@@ -125,7 +125,23 @@ typedef std::vector< key_field_info > key_field_info_container;
 
 typedef key_field_info_container::const_iterator key_field_info_const_iterator;
 
-typedef std::map< std::string, std::string > procedure_info_container;
+struct procedure_info
+{
+   procedure_info( ) { }
+
+   procedure_info( const std::string& name, const char* p_access_info = 0 )
+    :
+    name( name )
+   {
+      if( p_access_info )
+         access_info = std::string( p_access_info );
+   }
+
+   std::string name;
+   std::string access_info;
+};
+
+typedef std::map< std::string, procedure_info > procedure_info_container;
 typedef procedure_info_container::iterator procedure_info_iterator;
 typedef procedure_info_container::const_iterator procedure_info_const_iterator;
 typedef procedure_info_container::value_type procedure_info_value_type;

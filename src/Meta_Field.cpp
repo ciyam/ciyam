@@ -7236,7 +7236,7 @@ procedure_info_container& Meta_Field::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "107410", "Get_Text_Type" ) );
+      procedures.insert( make_pair( "107410", procedure_info( "Get_Text_Type" ) ) );
    }
 
    return procedures;

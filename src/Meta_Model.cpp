@@ -8686,12 +8686,12 @@ procedure_info_container& Meta_Model::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "105420", "Create_Module" ) );
-      procedures.insert( make_pair( "105410", "Generate" ) );
-      procedures.insert( make_pair( "105435", "Generate_File_Links" ) );
-      procedures.insert( make_pair( "105440", "Get_Acyclic_Class_List" ) );
-      procedures.insert( make_pair( "105450", "Remove_All_Packages" ) );
-      procedures.insert( make_pair( "105430", "Remove_Module" ) );
+      procedures.insert( make_pair( "105420", procedure_info( "Create_Module" ) ) );
+      procedures.insert( make_pair( "105410", procedure_info( "Generate" ) ) );
+      procedures.insert( make_pair( "105435", procedure_info( "Generate_File_Links" ) ) );
+      procedures.insert( make_pair( "105440", procedure_info( "Get_Acyclic_Class_List" ) ) );
+      procedures.insert( make_pair( "105450", procedure_info( "Remove_All_Packages" ) ) );
+      procedures.insert( make_pair( "105430", procedure_info( "Remove_Module" ) ) );
    }
 
    return procedures;

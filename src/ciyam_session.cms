@@ -9,6 +9,7 @@ module_load "load an existing module" <val//module>
 module_unload "unload a loaded module" <val//module>
 module_class_list "list available classes for a loaded module" <val//module>
 module_class_field_list "list available fields for a loaded module's class" <val//module><val//class>
+module_class_procedure_list "list available procedures for a loaded module's class" <val//module><val//class>
 module_strings_list "list all module strings" <val//module>
 object_list "list existing object instances"
 object_fetch "fetch a persistent instance" <val//handle>[<val/./context>]<val//key>

@@ -3264,6 +3264,40 @@ void Meta_Class::impl::impl_Generate( )
                all_procedure_info += ' ';
             all_procedure_info += get_obj( ).child_Procedure( ).Id( ) + ',' + get_obj( ).child_Procedure( ).Name( );
 
+            string procedure_access;
+            switch( get_obj( ).child_Procedure( ).Access_Restriction( ) )
+            {
+               case 0: // i.e. none
+               break;
+
+               case 1:
+               procedure_access = "owner_only";
+               break;
+
+               case 2:
+               procedure_access = "admin_only";
+               break;
+
+               case 3:
+               procedure_access = "admin_owner";
+               break;
+
+               case 4:
+               procedure_access = "denied_always";
+               break;
+            }
+
+            if( !is_null( get_obj( ).child_Procedure( ).Access_Permission( ) ) )
+            {
+               if( procedure_access.empty( ) )
+                  procedure_access = "denied_always";
+               procedure_access += "=!" + get_obj( ).child_Procedure( ).Access_Permission( ).Id( );
+            }
+            else if( procedure_access.empty( ) )
+               procedure_access = "anyone";
+
+            all_procedure_info += ',' + procedure_access;
+
             string next_args, next_inputs, next_outputs, next_output_names, next_simple_inputs, next_complex_inputs;
 
             bool has_args = false;
@@ -4459,24 +4493,6 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    // [(finish file_link)] 640038
 
    // [<start for_store>]
-//nyi
-   if( get_obj( ).Create_View( ) )
-   {
-      get_obj( ).Created_View( ).op_create( get_obj( ).get_key( ) + "_V" );
-      get_obj( ).Created_View( ).Class( get_obj( ).get_key( ) );
-      get_obj( ).Created_View( ).Model( get_obj( ).Model( ) );
-      get_obj( ).Created_View( ).op_apply( );
-      get_obj( ).Created_View( get_obj( ).get_key( ) + "_V" );
-   }
-
-   if( get_obj( ).Create_List( ) )
-   {
-      get_obj( ).Created_List( ).op_create( get_obj( ).get_key( ) + "_L" );
-      get_obj( ).Created_List( ).Class( get_obj( ).get_key( ) );
-      get_obj( ).Created_List( ).Model( get_obj( ).Model( ) );
-      get_obj( ).Created_List( ).op_apply( );
-      get_obj( ).Created_List( get_obj( ).get_key( ) + "_L" );
-   }
    // [<finish for_store>]
 }
 
@@ -4606,98 +4622,6 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
    // [(finish clone_children_from_fk)] 630035
 
    // [<start after_store>]
-//nyi
-   if( is_create && !is_null( get_obj( ).Source_Class( ) ) )
-   {
-      map< string, string > all_classes;
-
-      if( get_obj( ).Model( ).child_Class( ).iterate_forwards( ) )
-      {
-         do
-         {
-            all_classes.insert(
-             make_pair( get_obj( ).Model( ).child_Class( ).Id( ), get_obj( ).Model( ).child_Class( ).get_key( ) ) );
-         } while( get_obj( ).Model( ).child_Class( ).iterate_next( ) );
-      }
-
-      if( get_obj( ).Source_Class( ).child_Relationship_Child( ).iterate_forwards( ) )
-      {
-         int child_num = 0;
-         do
-         {
-            if( all_classes.count( get_obj( ).Source_Class( ).child_Relationship_Child( ).Parent_Class( ).Id( ) ) )
-            {
-               string key_info( construct_key_from_int( get_obj( ).get_key( ) + "_C", ++child_num ) );
-               key_info += ' ';
-               key_info += get_obj( ).Source_Class( ).child_Relationship_Child( ).get_key( );
-
-               get_obj( ).Model( ).child_Relationship( ).op_create( key_info );
-
-               get_obj( ).Model( ).child_Relationship( ).Model( get_obj( ).Model( ) );
-
-               get_obj( ).Model( ).child_Relationship( ).Child_Class( get_obj( ).get_key( ) );
-               get_obj( ).Model( ).child_Relationship( ).Parent_Class( all_classes[ get_obj( ).Source_Class( ).child_Relationship_Child( ).Parent_Class( ).Id( ) ] );
-
-               get_obj( ).Model( ).child_Relationship( ).Source_Relationship( get_obj( ).Source_Class( ).child_Relationship_Child( ) );
-
-               get_obj( ).Model( ).child_Relationship( ).op_apply( );
-
-               key_info = FIELD_ID( Meta, Field, Id );
-               key_info += "#1 " + get_obj( ).Model( ).child_Relationship( ).Field_Id( );
-
-               // NOTE: When initially cloned the Field in the Relationship's Child Class has its Parent Class linked to the Class from the source model
-               // so locate the field (via the Id which is stored in the Relationship) and change the Parent Class to link to the correct model here.
-               if( get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).iterate_forwards( key_info, true, 1, e_sql_optimisation_unordered ) )
-               {
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_update( );
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).Parent_Class( get_obj( ).Model( ).child_Relationship( ).Parent_Class( ) );
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_apply( );
-
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).iterate_stop( );
-               }
-            }
-         } while( get_obj( ).Source_Class( ).child_Relationship_Child( ).iterate_next( ) );
-      }
-
-      if( get_obj( ).Source_Class( ).child_Relationship_Parent( ).iterate_forwards( ) )
-      {
-         int child_num = 0;
-         do
-         {
-            if( all_classes.count( get_obj( ).Source_Class( ).child_Relationship_Parent( ).Child_Class( ).Id( ) ) )
-            {
-               string key_info( construct_key_from_int( get_obj( ).get_key( ) + "_P", ++child_num ) );
-               key_info += ' ';
-               key_info += get_obj( ).Source_Class( ).child_Relationship_Parent( ).get_key( );
-
-               get_obj( ).Model( ).child_Relationship( ).op_create( key_info );
-
-               get_obj( ).Model( ).child_Relationship( ).Model( get_obj( ).Model( ) );
-
-               get_obj( ).Model( ).child_Relationship( ).Parent_Class( get_obj( ).get_key( ) );
-               get_obj( ).Model( ).child_Relationship( ).Child_Class( all_classes[ get_obj( ).Source_Class( ).child_Relationship_Parent( ).Child_Class( ).Id( ) ] );
-
-               get_obj( ).Model( ).child_Relationship( ).Source_Relationship( get_obj( ).Source_Class( ).child_Relationship_Parent( ) );
-
-               get_obj( ).Model( ).child_Relationship( ).op_apply( );
-
-               key_info = FIELD_ID( Meta, Field, Id );
-               key_info += "#1 " + get_obj( ).Model( ).child_Relationship( ).Field_Id( );
-
-               // NOTE: When initially cloned the Field in the Relationship's Child Class has its Parent Class linked to the Class from the source model
-               // so locate the field (via the Id which is stored in the Relationship) and change the Parent Class to link to the correct model here.
-               if( get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).iterate_forwards( key_info, true, 1, e_sql_optimisation_unordered ) )
-               {
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_update( );
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).Parent_Class( get_obj( ).Model( ).child_Relationship( ).Parent_Class( ) );
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).child_Field( ).op_apply( );
-
-                  get_obj( ).Model( ).child_Relationship( ).Child_Class( ).iterate_stop( );
-               }
-            }
-         } while( get_obj( ).Source_Class( ).child_Relationship_Parent( ).iterate_next( ) );
-      }
-   }
    // [<finish after_store>]
 }
 
@@ -7685,7 +7609,7 @@ procedure_info_container& Meta_Class::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "106410", "Generate" ) );
+      procedures.insert( make_pair( "106410", procedure_info( "Generate" ) ) );
    }
 
    return procedures;

@@ -1467,7 +1467,7 @@ procedure_info_container& Meta_Auto_Code::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "125410", "Increment" ) );
+      procedures.insert( make_pair( "125410", procedure_info( "Increment" ) ) );
    }
 
    return procedures;

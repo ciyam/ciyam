@@ -2714,8 +2714,8 @@ procedure_info_container& Meta_Index::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "108420", "Move_Down" ) );
-      procedures.insert( make_pair( "108410", "Move_Up" ) );
+      procedures.insert( make_pair( "108420", procedure_info( "Move_Down" ) ) );
+      procedures.insert( make_pair( "108410", procedure_info( "Move_Up" ) ) );
    }
 
    return procedures;

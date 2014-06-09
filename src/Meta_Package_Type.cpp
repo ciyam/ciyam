@@ -2143,7 +2143,7 @@ procedure_info_container& Meta_Package_Type::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "135410", "Install" ) );
+      procedures.insert( make_pair( "135410", procedure_info( "Install" ) ) );
    }
 
    return procedures;

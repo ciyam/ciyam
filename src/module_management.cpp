@@ -527,6 +527,58 @@ module_class_field_list_error list_module_class_fields(
    return e_module_class_field_list_error_none;
 }
 
+module_class_procedure_list_error list_module_class_procedures(
+ const string& module_id_or_name, const string& class_id_or_name, ostream& os )
+{
+   guard g( g_mutex );
+
+   string directory( module_directory( ) );
+   if( !directory.empty( ) )
+      directory += "/";
+
+   module_iterator mi = g_modules.find( directory + module_id_from_id_or_name( module_id_or_name ) );
+   if( mi == g_modules.end( ) )
+      return e_module_class_procedure_list_error_name_unknown;
+
+   fp_obtain_class_registry_func obtain_class_registry_func;
+
+   obtain_class_registry_func
+    = ( fp_obtain_class_registry_func )( mi->second ).p_dynamic_library->bind_to_function( c_obtain_class_registry_func_name );
+
+   const class_registry_container* p_class_registry;
+   ( *obtain_class_registry_func )( p_class_registry );
+
+   bool found = false;
+   class_registry_const_iterator crci, end;
+   for( crci = p_class_registry->begin( ), end = p_class_registry->end( ); crci != end; ++crci )
+   {
+      if( class_id_or_name == ( crci->second )->class_id( ) || class_id_or_name == ( crci->second )->class_name( ) )
+      {
+         found = true;
+
+         const procedure_info_container& procedure_info(
+          get_procedure_info_for_module_class( module_id_or_name, ( crci->second )->class_id( ) ) );
+
+         for( procedure_info_const_iterator pici = procedure_info.begin( ); pici != procedure_info.end( ); ++pici )
+         {
+            os << pici->first << ' ' << pici->second.name;
+
+            if( !pici->second.access_info.empty( ) )
+               os << ' ' << pici->second.access_info;
+
+            os << '\n';
+         }
+
+         break;
+      }
+   }
+
+   if( !found )
+      return e_module_class_procedure_list_error_class_name_unknown;
+
+   return e_module_class_procedure_list_error_none;
+}
+
 string get_module_id( const string& module_name )
 {
    guard g( g_mutex );

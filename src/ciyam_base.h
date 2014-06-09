@@ -319,6 +319,8 @@ void CIYAM_BASE_DECL_SPEC module_class_list( const std::string& module, std::ost
 void CIYAM_BASE_DECL_SPEC module_strings_list( const std::string& module, std::ostream& os );
 void CIYAM_BASE_DECL_SPEC module_class_fields_list(
  const std::string& module, const std::string& class_id_or_name, std::ostream& os );
+void CIYAM_BASE_DECL_SPEC module_class_procedures_list(
+ const std::string& module, const std::string& class_id_or_name, std::ostream& os );
 
 void CIYAM_BASE_DECL_SPEC module_load( const std::string& module_name,
  command_handler& cmd_handler, bool log_tx_comment = false, bool append_to_module_list = true );

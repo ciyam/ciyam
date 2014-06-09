@@ -6330,6 +6330,23 @@ void module_class_fields_list( const string& module, const string& class_id_or_n
       throw runtime_error( "unexpected module class field list error #" + to_string( rc ) );
 }
 
+void module_class_procedures_list( const string& module, const string& class_id_or_name, ostream& os )
+{
+   module_const_iterator mci = gtp_session->modules_by_id.find( module );
+   if( mci == gtp_session->modules_by_id.end( ) )
+   {
+      mci = gtp_session->modules_by_name.find( module );
+
+      if( mci == gtp_session->modules_by_name.end( ) )
+         throw runtime_error( get_string_message( GS( c_str_module_not_loaded ),
+          make_pair( c_str_parm_module_not_loaded_module, module ) ) );
+   }
+
+   module_class_procedure_list_error rc = list_module_class_procedures( module, class_id_or_name, os );
+   if( rc != e_module_class_field_list_error_none )
+      throw runtime_error( "unexpected module class field list error #" + to_string( rc ) );
+}
+
 void module_load( const string& module_name,
  command_handler& cmd_handler, bool log_tx_comment, bool append_to_module_list )
 {

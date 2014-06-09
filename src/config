@@ -13,15 +13,26 @@ fi
 if [ ! -f ciyam_server.sio ]; then
  cp ciyam_server.sio.default ciyam_server.sio
 fi
+
 if [ ! -f xrep ]; then
  if [ ! -f makefile ]; then
   cp makefile.tools makefile
  fi
  make xrep xvars
 fi
+
 if [ ! -f salt.h ]; then
  ./xrep @salt.h.xrep >salt.h
 fi
+
 ./xrep @config.h.xrep >config.h.new
 ./update config.h config.h.new
+
 ./genmake
+
+if [ -f packages.lst ]; then
+ if [ -f ciyam_class.cpp.xrep ]; then
+  ./construct @packages.lst ciyam_class.cpp.xrep
+ fi
+fi
+

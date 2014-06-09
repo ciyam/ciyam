@@ -7482,7 +7482,7 @@ procedure_info_container& Meta_List::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "122430", "Generate_PDF_List" ) );
+      procedures.insert( make_pair( "122430", procedure_info( "Generate_PDF_List" ) ) );
    }
 
    return procedures;
