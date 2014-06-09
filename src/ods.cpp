@@ -708,8 +708,8 @@ class ods_data_cache_buffer : public cache_base< ods_data_entry_buffer >
     write_lock_handle( 0 )
    {
 #ifdef __GNUG__
-      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_data_entry_buffer ) );
-      if( !p_data )
+      int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_data_entry_buffer ) );
+      if( rc != 0 || !p_data )
          throw runtime_error( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -936,8 +936,8 @@ class ods_index_cache_buffer : public cache_base< ods_index_entry_buffer >
     write_index_handle( 0 )
    {
 #ifdef __GNUG__
-      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
-      if( !p_data )
+      int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( ods_index_entry_buffer ) );
+      if( rc != 0 || !p_data )
          throw runtime_error( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -1187,8 +1187,8 @@ class ods_trans_op_cache_buffer : public cache_base< trans_op_buffer >
     has_begun_trans( false )
    {
 #ifdef __GNUG__
-      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_op_buffer ) );
-      if( !p_data )
+      int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_op_buffer ) );
+      if( rc != 0 || !p_data )
          throw runtime_error( "unexpected failure for posix_memalign" );
 #endif
    }
@@ -1335,8 +1335,8 @@ class ods_trans_data_cache_buffer : public cache_base< trans_data_buffer >
     has_begun_trans( false )
    {
 #ifdef __GNUG__
-      posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_data_buffer ) );
-      if( !p_data )
+      int rc = posix_memalign( ( void** )&p_data, getpagesize( ), sizeof( trans_data_buffer ) );
+      if( rc != 0 || !p_data )
          throw runtime_error( "unexpected failure for posix_memalign" );
 #endif
    }

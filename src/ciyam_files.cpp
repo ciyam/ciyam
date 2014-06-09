@@ -15,17 +15,7 @@
 #endif
 
 #ifdef __GNUG__
-#  include <limits.h>
 #  include <unistd.h>
-#  define _chdir chdir
-#  define _mkdir mkdir
-#  define _rmdir rmdir
-#  define _getcwd getcwd
-#  define _MAX_PATH PATH_MAX
-#endif
-
-#ifdef _WIN32
-#  include <direct.h>
 #endif
 
 #define CIYAM_BASE_IMPL
@@ -49,10 +39,6 @@ size_t g_total_files = 0;
 int64_t g_total_bytes = 0;
 
 const char* const c_files_directory = "files";
-
-#ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU | S_IRWXG;
-#endif
 
 }
 
@@ -83,17 +69,13 @@ string get_file_stats( )
 
 void init_files_area( )
 {
-   if( _chdir( c_files_directory ) != 0 )
+   bool rc;
+   set_cwd( c_files_directory, &rc );
+
+   if( !rc )
    {
-#ifdef _WIN32
-      _mkdir( c_files_directory );
-#else
-      int um = umask( 0 );
-      _mkdir( c_files_directory, c_default_directory_perms );
-      umask( um );
-#endif
-      if( _chdir( c_files_directory ) != 0 )
-         throw runtime_error( "unable to _chdir to '" + string( c_files_directory ) + "'" );
+      create_dir( c_files_directory );
+      set_cwd( c_files_directory );
    }
    else
    {
@@ -122,7 +104,7 @@ void init_files_area( )
          file_remove( files_to_delete[ i ] );
    }
 
-   _chdir( ".." );
+   set_cwd( ".." );
 }
 
 void init_file( const string& name, const string& data )

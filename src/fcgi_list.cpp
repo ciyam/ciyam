@@ -3245,7 +3245,8 @@ void output_list_form( ostream& os,
 #ifdef _WIN32
                replace( cmd, "&", "^&" );
 #endif
-               system( cmd.c_str( ) );
+               int rc = system( cmd.c_str( ) );
+               ( void )rc;
 
                bool is_href = false;
                if( !embed_images )

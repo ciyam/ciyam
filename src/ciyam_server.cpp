@@ -39,13 +39,6 @@
 #  endif
 #endif
 
-#ifdef __GNUG__
-#  define _chdir chdir
-#endif
-#ifdef __BORLANDC__
-#  define _chdir chdir
-#endif
-
 //#define USE_MAC_LICENSE
 
 #ifdef USE_MAC_LICENSE
@@ -115,7 +108,7 @@ VOID WINAPI ServiceMain( DWORD argc, LPTSTR* argv )
       string path( szPath );
       string::size_type pos = path.find_last_of( "\\" );
       if( pos != string::npos )
-         _chdir( path.substr( 0, pos ).c_str( ) );
+         set_cwd( path.substr( 0, pos ) );
 
       main( argc, argv );
    }
@@ -289,7 +282,7 @@ class ciyam_server_startup_functor : public command_functor
       {
          string directory( get_parm_val( parameters, c_cmd_parm_chdir_directory ) );
 
-         _chdir( directory.c_str( ) );
+         set_cwd( directory );
       }
       else if( command == c_cmd_trace )
       {
@@ -442,15 +435,14 @@ int main( int argc, char* argv[ ] )
 
          umask( DEFAULT_UMASK );
 
-         // FUTURE: Log file(s) should be opened here and a chdir to "/" is
-         // generally advised (as the current directory could be anything).
+         // FUTURE: A chdir to "/" might be advised (as the current directory could be anything).
 
          pid_t sid = setsid( );
          if( sid < 0 )
             exit( EXIT_FAILURE );
 
-         // FUTURE: Standard error should probably also be closed here (but can be useful for
-         // now to help diagnose problems).
+         // FUTURE: Standard out should probably also be closed here (but can be useful
+         // to help diagnose problems by allowing for simple "cout" style debugging).
          close( STDOUT_FILENO );
          // close( STDERR_FILENO );
       }
