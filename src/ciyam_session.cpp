@@ -290,7 +290,7 @@ string resolve_method_name( const string& module, const string& mclass,
 
    const procedure_info_container& procedure_info( get_procedure_info_for_module_class( module, mclass ) );
    if( procedure_info.count( method_name ) )
-      method_name = procedure_info.find( method_name )->second;
+      method_name = procedure_info.find( method_name )->second.name;
 
    return method_name;
 }
@@ -1088,6 +1088,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string class_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_module_class_field_list_class ) );
 
          module_class_fields_list( module, class_id_or_name, osstr );
+         output_response_lines( socket, osstr.str( ) );
+      }
+      else if( command == c_cmd_ciyam_session_module_class_procedure_list )
+      {
+         string module( get_parm_val( parameters, c_cmd_parm_ciyam_session_module_class_procedure_list_module ) );
+         string class_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_module_class_procedure_list_class ) );
+
+         module_class_procedures_list( module, class_id_or_name, osstr );
          output_response_lines( socket, osstr.str( ) );
       }
       else if( command == c_cmd_ciyam_session_object_list )

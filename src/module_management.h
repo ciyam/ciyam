@@ -56,6 +56,13 @@ enum module_class_field_list_error
    e_module_class_field_list_error_class_name_unknown
 };
 
+enum module_class_procedure_list_error
+{
+   e_module_class_procedure_list_error_none,
+   e_module_class_procedure_list_error_name_unknown,
+   e_module_class_procedure_list_error_class_name_unknown
+};
+
 class dynamic_library;
 
 std::string module_directory( const std::string* p_new_directory = 0 );
@@ -79,6 +86,9 @@ module_string_list_error MODULE_MANAGEMENT_DECL_SPEC
 
 module_class_field_list_error MODULE_MANAGEMENT_DECL_SPEC
  list_module_class_fields( const std::string& module_id_or_name, const std::string& class_id_or_name, std::ostream& os );
+
+module_class_procedure_list_error MODULE_MANAGEMENT_DECL_SPEC
+ list_module_class_procedures( const std::string& module_id_or_name, const std::string& class_id_or_name, std::ostream& os );
 
 std::string MODULE_MANAGEMENT_DECL_SPEC get_module_id( const std::string& module_name );
 

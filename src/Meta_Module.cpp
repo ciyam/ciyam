@@ -1634,8 +1634,8 @@ procedure_info_container& Meta_Module::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "126420", "Move_Down" ) );
-      procedures.insert( make_pair( "126410", "Move_Up" ) );
+      procedures.insert( make_pair( "126420", procedure_info( "Move_Down" ) ) );
+      procedures.insert( make_pair( "126410", procedure_info( "Move_Up" ) ) );
    }
 
    return procedures;

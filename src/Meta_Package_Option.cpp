@@ -6645,9 +6645,9 @@ procedure_info_container& Meta_Package_Option::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "137430", "Clear" ) );
-      procedures.insert( make_pair( "137410", "Edit" ) );
-      procedures.insert( make_pair( "137420", "Select" ) );
+      procedures.insert( make_pair( "137430", procedure_info( "Clear" ) ) );
+      procedures.insert( make_pair( "137410", procedure_info( "Edit" ) ) );
+      procedures.insert( make_pair( "137420", procedure_info( "Select" ) ) );
    }
 
    return procedures;

@@ -36,6 +36,7 @@ git checkout -b task_branch_name
 
 7. Make sure that all targets have been built and then run the basic regression tests.
 
+./config
 make all
 ./dotests
 
@@ -43,7 +44,7 @@ make all
 
 8. Run any more specific regression tests that could potentially be affected by your changes.
 
-(obviously steps 7 and 9 are not applicable if all changes made do not affect the software such as docco)
+(steps 7 and 9 are not applicable if all changes made do not affect the software such as just docco changes)
 
 9. Now commit your changes and push to your branch.
 

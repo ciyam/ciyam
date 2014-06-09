@@ -14735,28 +14735,28 @@ procedure_info_container& Meta_Specification::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "115439", "Add_Arg_1" ) );
-      procedures.insert( make_pair( "115440", "Add_Arg_2" ) );
-      procedures.insert( make_pair( "115432", "Add_Child_Info" ) );
-      procedures.insert( make_pair( "115447", "Add_Destination_Info" ) );
-      procedures.insert( make_pair( "115443", "Add_Extra_Info" ) );
-      procedures.insert( make_pair( "115430", "Add_Field" ) );
-      procedures.insert( make_pair( "115446", "Add_Field_Info" ) );
-      procedures.insert( make_pair( "115431", "Add_Field_Pair" ) );
-      procedures.insert( make_pair( "115438", "Add_Grandchild_Info" ) );
-      procedures.insert( make_pair( "115441", "Add_Info" ) );
-      procedures.insert( make_pair( "115444", "Add_Next" ) );
-      procedures.insert( make_pair( "115442", "Add_Opt_Info" ) );
-      procedures.insert( make_pair( "115445", "Add_Other_Info" ) );
-      procedures.insert( make_pair( "115433", "Add_Secondary" ) );
-      procedures.insert( make_pair( "115437", "Add_Source_Info" ) );
-      procedures.insert( make_pair( "115434", "Add_Stats_1" ) );
-      procedures.insert( make_pair( "115435", "Add_Stats_2" ) );
-      procedures.insert( make_pair( "115436", "Add_Stats_Info" ) );
-      procedures.insert( make_pair( "115510", "Generate_All_Strings" ) );
-      procedures.insert( make_pair( "115500", "Generate_All_Vars" ) );
-      procedures.insert( make_pair( "115420", "Move_Down" ) );
-      procedures.insert( make_pair( "115410", "Move_Up" ) );
+      procedures.insert( make_pair( "115439", procedure_info( "Add_Arg_1" ) ) );
+      procedures.insert( make_pair( "115440", procedure_info( "Add_Arg_2" ) ) );
+      procedures.insert( make_pair( "115432", procedure_info( "Add_Child_Info" ) ) );
+      procedures.insert( make_pair( "115447", procedure_info( "Add_Destination_Info" ) ) );
+      procedures.insert( make_pair( "115443", procedure_info( "Add_Extra_Info" ) ) );
+      procedures.insert( make_pair( "115430", procedure_info( "Add_Field" ) ) );
+      procedures.insert( make_pair( "115446", procedure_info( "Add_Field_Info" ) ) );
+      procedures.insert( make_pair( "115431", procedure_info( "Add_Field_Pair" ) ) );
+      procedures.insert( make_pair( "115438", procedure_info( "Add_Grandchild_Info" ) ) );
+      procedures.insert( make_pair( "115441", procedure_info( "Add_Info" ) ) );
+      procedures.insert( make_pair( "115444", procedure_info( "Add_Next" ) ) );
+      procedures.insert( make_pair( "115442", procedure_info( "Add_Opt_Info" ) ) );
+      procedures.insert( make_pair( "115445", procedure_info( "Add_Other_Info" ) ) );
+      procedures.insert( make_pair( "115433", procedure_info( "Add_Secondary" ) ) );
+      procedures.insert( make_pair( "115437", procedure_info( "Add_Source_Info" ) ) );
+      procedures.insert( make_pair( "115434", procedure_info( "Add_Stats_1" ) ) );
+      procedures.insert( make_pair( "115435", procedure_info( "Add_Stats_2" ) ) );
+      procedures.insert( make_pair( "115436", procedure_info( "Add_Stats_Info" ) ) );
+      procedures.insert( make_pair( "115510", procedure_info( "Generate_All_Strings" ) ) );
+      procedures.insert( make_pair( "115500", procedure_info( "Generate_All_Vars" ) ) );
+      procedures.insert( make_pair( "115420", procedure_info( "Move_Down" ) ) );
+      procedures.insert( make_pair( "115410", procedure_info( "Move_Up" ) ) );
    }
 
    return procedures;

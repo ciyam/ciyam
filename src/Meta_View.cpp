@@ -4130,7 +4130,7 @@ procedure_info_container& Meta_View::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "118410", "Generate_PDF_View" ) );
+      procedures.insert( make_pair( "118410", procedure_info( "Generate_PDF_View" ) ) );
    }
 
    return procedures;

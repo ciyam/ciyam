@@ -8352,8 +8352,8 @@ procedure_info_container& Meta_List_Field::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "124420", "Move_Down" ) );
-      procedures.insert( make_pair( "124410", "Move_Up" ) );
+      procedures.insert( make_pair( "124420", procedure_info( "Move_Down" ) ) );
+      procedures.insert( make_pair( "124410", procedure_info( "Move_Up" ) ) );
    }
 
    return procedures;

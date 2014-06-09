@@ -3670,11 +3670,11 @@ procedure_info_container& Meta_Package::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "136450", "Cancel_Remove" ) );
-      procedures.insert( make_pair( "136430", "Check_Install" ) );
-      procedures.insert( make_pair( "136440", "Complete_Remove" ) );
-      procedures.insert( make_pair( "136410", "Install" ) );
-      procedures.insert( make_pair( "136420", "Remove" ) );
+      procedures.insert( make_pair( "136450", procedure_info( "Cancel_Remove" ) ) );
+      procedures.insert( make_pair( "136430", procedure_info( "Check_Install" ) ) );
+      procedures.insert( make_pair( "136440", procedure_info( "Complete_Remove" ) ) );
+      procedures.insert( make_pair( "136410", procedure_info( "Install" ) ) );
+      procedures.insert( make_pair( "136420", procedure_info( "Remove" ) ) );
    }
 
    return procedures;

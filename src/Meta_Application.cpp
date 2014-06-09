@@ -5288,12 +5288,12 @@ procedure_info_container& Meta_Application::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "127410", "Generate" ) );
-      procedures.insert( make_pair( "127430", "Generate_File_Links" ) );
-      procedures.insert( make_pair( "127420", "Generate_Modules" ) );
-      procedures.insert( make_pair( "127440", "Generate_Upgrade_DDL" ) );
-      procedures.insert( make_pair( "127495", "Test_Proc_1" ) );
-      procedures.insert( make_pair( "127497", "Test_Proc_2" ) );
+      procedures.insert( make_pair( "127410", procedure_info( "Generate" ) ) );
+      procedures.insert( make_pair( "127430", procedure_info( "Generate_File_Links" ) ) );
+      procedures.insert( make_pair( "127420", procedure_info( "Generate_Modules" ) ) );
+      procedures.insert( make_pair( "127440", procedure_info( "Generate_Upgrade_DDL" ) ) );
+      procedures.insert( make_pair( "127495", procedure_info( "Test_Proc_1" ) ) );
+      procedures.insert( make_pair( "127497", procedure_info( "Test_Proc_2" ) ) );
    }
 
    return procedures;

@@ -2462,7 +2462,7 @@ procedure_info_container& Meta_Specification_Field_Action::static_get_procedure_
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "128500", "Generate_All_Vars" ) );
+      procedures.insert( make_pair( "128500", procedure_info( "Generate_All_Vars" ) ) );
    }
 
    return procedures;

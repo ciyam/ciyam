@@ -2321,8 +2321,8 @@ procedure_info_container& Meta_Procedure_Arg::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "112420", "Move_Down" ) );
-      procedures.insert( make_pair( "112410", "Move_Up" ) );
+      procedures.insert( make_pair( "112420", procedure_info( "Move_Down" ) ) );
+      procedures.insert( make_pair( "112410", procedure_info( "Move_Up" ) ) );
    }
 
    return procedures;

@@ -11250,7 +11250,7 @@ procedure_info_container& Meta_Specification_Type::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "114410", "Is_Valid_Field_Type" ) );
+      procedures.insert( make_pair( "114410", procedure_info( "Is_Valid_Field_Type" ) ) );
    }
 
    return procedures;

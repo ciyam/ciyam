@@ -1764,8 +1764,8 @@ procedure_info_container& Meta_Initial_Record::static_get_procedure_info( )
    if( !initialised )
    {
       initialised = true;
-      procedures.insert( make_pair( "130420", "Move_Down" ) );
-      procedures.insert( make_pair( "130410", "Move_Up" ) );
+      procedures.insert( make_pair( "130420", procedure_info( "Move_Down" ) ) );
+      procedures.insert( make_pair( "130410", procedure_info( "Move_Up" ) ) );
    }
 
    return procedures;

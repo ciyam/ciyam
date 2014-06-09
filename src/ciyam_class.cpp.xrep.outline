@@ -3996,7 +3996,7 @@ procedure_info_container& `{`$full_class_name`}::static_get_procedure_info( )
    {
       initialised = true;
 `{`[`$all_procedure_info`%,`,\
-      procedures.insert( make_pair( "\\0", "\\1" ) );\
+      procedures.insert( make_pair( "\\0", procedure_info( "\\1"`{`!`@eq`(`'\\2`'`,`'`'`), "\\2"`} ) ) );\
 `+\n`]`}
    }
 `}
