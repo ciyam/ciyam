@@ -31,6 +31,8 @@ const char* const c_protocol_version = "0.1";
 
 const size_t c_password_hash_rounds = `{`$pwd_rounds`};
 
+const int c_directory_perm_val = `{`@eq`(`$port`,`'12345`'`)1`,2`};
+
 #  ifndef _WIN32
 #     define DEFAULT_UMASK `{`@eq`(`$port`,`'12345`'`)0`,007`}
 #  endif

@@ -2606,7 +2606,7 @@ void create_directories_for_file_name( const string& file_name )
 
          if( !rc )
          {
-            create_dir( sub_directories[ i ] );
+            create_dir( sub_directories[ i ], &rc, ( dir_perms )c_directory_perm_val );
             set_cwd( sub_directories[ i ] );
          }
       }

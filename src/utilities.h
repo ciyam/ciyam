@@ -246,7 +246,15 @@ std::string get_cwd( bool change_backslash_to_forwardslash = false );
 
 void set_cwd( const std::string& path, bool* p_rc = 0 );
 
-void create_dir( const std::string& path, bool* p_rc = 0 );
+enum dir_perms
+{
+   e_dir_perms_default = 0,
+   e_dir_perms_open = 1,
+   e_dir_perms_group = 2,
+   e_dir_perms_private = 3
+};
+
+void create_dir( const std::string& path, bool* p_rc = 0, dir_perms perms = e_dir_perms_default );
 
 bool file_exists( const char* p_name, bool check_link_target = true );
 inline bool file_exists( const std::string& name, bool check_link_target = true ) { return file_exists( name.c_str( ), check_link_target ); }

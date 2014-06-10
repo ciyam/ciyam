@@ -22,6 +22,7 @@
 
 #include "ciyam_files.h"
 
+#include "config.h"
 #include "format.h"
 #include "sockets.h"
 #include "utilities.h"
@@ -74,7 +75,7 @@ void init_files_area( )
 
    if( !rc )
    {
-      create_dir( c_files_directory );
+      create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
       set_cwd( c_files_directory );
    }
    else

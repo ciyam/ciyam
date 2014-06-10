@@ -1469,7 +1469,8 @@ void request_handler::process_request( )
                   path += "/" + string( c_tmp_directory );
                   path += "/" + session_id;
 
-                  create_dir( path );
+                  bool rc;
+                  create_dir( path, &rc, ( dir_perms )c_directory_perm_val );
 
                   if( !is_non_persistent( session_id ) )
                      p_session_info->is_persistent = true;
@@ -2522,6 +2523,8 @@ int main( int argc, char* argv[ ] )
          set_cwd( exe_path );
 
       LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
+
+      DEBUG_TRACE( "cwd = " + get_cwd( ) );
 
       DEBUG_TRACE( "[read strings]" );
 

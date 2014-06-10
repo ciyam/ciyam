@@ -930,7 +930,7 @@ void setup_directories( )
    set_cwd( c_files_directory, &rc );
    if( !rc )
    {
-      create_dir( c_files_directory );
+      create_dir( c_files_directory, &rc, ( dir_perms )c_directory_perm_val );
       set_cwd( c_files_directory );
    }
 
@@ -939,7 +939,7 @@ void setup_directories( )
    set_cwd( c_tmp_directory, &rc );
    if( !rc )
    {
-      create_dir( c_tmp_directory );
+      create_dir( c_tmp_directory, &rc, ( dir_perms )c_directory_perm_val );
       set_cwd( c_tmp_directory );
    }
    else
@@ -999,7 +999,7 @@ void setup_directories( )
       set_cwd( module_id, &rc );
       if( !rc )
       {
-         create_dir( module_id );
+         create_dir( module_id, &rc, ( dir_perms )c_directory_perm_val );
          set_cwd( module_id );
       }
 
@@ -1027,7 +1027,7 @@ void setup_directories( )
             set_cwd( ".." );
          else
          {
-            create_dir( name );
+            create_dir( name, &rc, ( dir_perms )c_directory_perm_val );
             set_cwd( name );
 
             ofstream outf( "_NOTE_.TXT" );
