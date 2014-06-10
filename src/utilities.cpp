@@ -290,7 +290,7 @@ void create_dir( const string& path, bool* p_rc, dir_perms perms )
       break;
    }
 
-   if( _mkdir( path.c_str( ), pv )
+   if( _mkdir( path.c_str( ), pv ) )
 #endif
    {
       if( p_rc )
