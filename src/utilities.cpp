@@ -78,7 +78,11 @@ const unsigned char c_low_mask = 0x3f;
 const unsigned char c_high_mask = 0xc0;
 
 #ifndef _WIN32
-const int c_default_directory_perms = S_IRWXU | S_IRWXG;
+const int c_open_directory_perms = S_IRWXU | S_IRWXG | S_IRWXO;
+const int c_group_directory_perms = S_IRWXU | S_IRWXG;
+const int c_private_directory_perms = S_IRWXU;
+
+const int c_default_directory_perms = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 #endif
 
 }
@@ -261,13 +265,32 @@ void set_cwd( const string& path, bool* p_rc )
       *p_rc = true;
 }
 
-void create_dir( const string& path, bool* p_rc )
+void create_dir( const string& path, bool* p_rc, dir_perms perms )
 {
 #ifdef _WIN32
+   ( void )perms;
+
    if( _mkdir( path.c_str( ) ) != 0 )
 #else
    int um = umask( 0 );
-   if( _mkdir( path.c_str( ), c_default_directory_perms ) != 0 )
+   int pv = c_default_directory_perms;
+
+   swtich( perms )
+   {
+      case e_dir_perms_open:
+      pv = c_open_directory_perms;
+      break;
+
+      case e_dir_perms_group:
+      pv = c_group_directory_perms;
+      break;
+
+      case e_dir_perms_private:
+      pv = c_private_directory_perms;
+      break;
+   }
+
+   if( _mkdir( path.c_str( ), pv )
 #endif
    {
       if( p_rc )

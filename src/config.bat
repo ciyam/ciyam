@@ -20,9 +20,3 @@ call update.bat config.h config.h.new
 
 call genmake.bat
 
-if not exist packages.lst goto end
-if not exist ciyam_class.cpp.xrep goto end
-construct @packages.lst ciyam_class.cpp.xrep
-
-:end
-
