@@ -275,7 +275,7 @@ void create_dir( const string& path, bool* p_rc, dir_perms perms )
    int um = umask( 0 );
    int pv = c_default_directory_perms;
 
-   swtich( perms )
+   switch( perms )
    {
       case e_dir_perms_open:
       pv = c_open_directory_perms;
