@@ -3610,7 +3610,9 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
 
    // [<start for_store>]
 //nyi
-   if( is_create && !is_internal && get_obj( ).Create_View_Field( ) )
+   if( is_create
+    && !is_internal && get_obj( ).Create_View_Field( )
+    && !is_null( get_obj( ).Class( ).Created_View( ) ) )
    {
       get_obj( ).child_View_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
       get_obj( ).child_View_Field_Source( ).Source_Field( get_obj( ).get_key( ) );
@@ -3619,7 +3621,9 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
       get_obj( ).child_View_Field_Source( ).op_apply( );
    }
 
-   if( is_create && !is_internal && get_obj( ).Create_List_Field( ) )
+   if( is_create
+    && !is_internal && get_obj( ).Create_List_Field( )
+    && !is_null( get_obj( ).Class( ).Created_List( ) ) )
    {
       get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_L" );
       get_obj( ).child_List_Field_Source( ).Source_Field( get_obj( ).get_key( ) );
