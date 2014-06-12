@@ -52,20 +52,8 @@ http://www.fastcgi.com/dist/
 
 [Linux]
 
-tar -zxvf fcgi-2.4.0.tar.gz
-cd fcgi-2.4.0
-
-NOTE: The following patch might be necessary for gcc.
-================== include/fcgio.h ==================
-...
- #define FCGIO_H
-
- #include <iostream>
-+#include <stdio.h>
-
- #include "fcgiapp.h"
-...
-=====================================================
+tar -zxvf fcgi-2.4.6.tar.gz
+cd fcgi-2.4.6
 
 ./configure
 make
@@ -82,19 +70,19 @@ copy libfcgi\Release\libfcgi.lib <dest directory>
 
 Haru PDF Library
 ----------------
-http://libharu.org/files
+http://libharu.org
 
 [Linux]
 
-tar -zxvf libharu-2.1.0.tar.gz
-cd libharu-2.1.0
+unzip libharu-RELEASE_2_2_0.zip
+cd libharu-2.2.0
 
 ./configure
 make
 su
 make install
 
-cp /usr/local/lib/libhpdf-2.1.0.so /usr/lib (depending upon distro)
+cp /usr/local/lib/libhpdf-2.2.0.so /usr/lib (depending upon distro)
 
 [Windows]
 
@@ -111,8 +99,8 @@ http://www.openssl.org/
 
 [Linux]
 
-tar xzf openssl-1.0.0a.tar.gz
-cd openssl-1.0.0a
+tar xzf openssl-1.0.1h.tar.gz
+cd openssl-1.0.1h
 
 ./config shared
 make
@@ -120,8 +108,8 @@ make test
 su
 make install
 
-cp /usr/local/ssl/lib/libssl.so.1.0.0 /usr/lib (depending upon distro)
-cp /usr/local/ssl/lib/libcrypto.so.1.0.0 /usr/lib (depending upon distro)
+cp /usr/local/ssl/lib/libssl.so.1.0.1 /usr/lib (depending upon distro)
+cp /usr/local/ssl/lib/libcrypto.so.1.0.1 /usr/lib (depending upon distro)
 
 [Windows]
 

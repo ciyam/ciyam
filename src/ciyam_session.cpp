@@ -139,6 +139,65 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
+void check_instance_op_permission( const string& module, size_t handle, string permission_info )
+{
+   string uid( get_uid( ) );
+
+   if( !permission_info.empty( ) && permission_info != string( c_anyone ) )
+   {
+      string permission;
+      string::size_type pos = permission_info.find( "=!" );
+      if( pos != string::npos )
+      {
+         permission = permission_info.substr( pos + 2 );
+         permission_info.erase( pos );
+      }
+
+      bool okay = false;
+      if( uid == c_admin && ( permission_info == c_admin_only || permission_info == c_admin_owner ) )
+         okay = true;
+
+      if( !okay && ( permission_info == c_owner_only || permission_info == c_admin_owner ) )
+      {
+         string owner( get_instance_owner( handle, "" ) );
+
+         if( uid == owner )
+            okay = true;
+      }
+
+      if( !okay && !permission.empty( ) )
+      {
+         string uclass( get_session_variable( "@" + module + c_user_class_suffix ) );
+         if( !uclass.empty( ) )
+         {
+            size_t uhandle = create_object_instance( module, uclass, 0, false );
+
+            instance_fetch_rc rc;
+            instance_fetch( uhandle, "", uid, &rc );
+
+            if( rc == e_instance_fetch_rc_okay )
+            {
+               string perms( instance_get_variable( uhandle, "", get_special_var_name( e_special_var_permissions ) ) );
+
+               if( !perms.empty( ) )
+               {
+                  set< string > all_perms;
+                  split( perms, all_perms );
+
+                  if( all_perms.count( permission ) )
+                     okay = true;
+               }
+            }
+
+            destroy_object_instance( uhandle );
+         }
+      }
+
+      if( !okay )
+         throw runtime_error( GS( c_str_permission_denied ) );
+   }
+}
+
 #ifndef IS_TRADITIONAL_PLATFORM
 void replace_field_values_to_log( string& next_command, const string& field_values_to_log )
 {
@@ -1902,6 +1961,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                remove_uid_extra_from_log_command( next_command );
 
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
+
 #ifndef IS_TRADITIONAL_PLATFORM
                replace_field_values_to_log( next_command, field_values_to_log );
 #endif
@@ -1923,7 +1985,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                }
 
                destroy_object_instance( handle );
-
             }
             catch( exception& )
             {
@@ -2123,6 +2184,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                remove_uid_extra_from_log_command( next_command );
 
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
+
 #ifndef IS_TRADITIONAL_PLATFORM
                replace_field_values_to_log( next_command, field_values_to_log );
 #endif
@@ -2240,6 +2304,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // exception will be issued (FUTURE - this could be handled more efficiently).
                if( rc != e_op_destroy_rc_okay && ( !quiet || rc != e_op_destroy_rc_not_found ) )
                   op_instance_destroy( handle, "", key, ver_info, false );
+
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
 
                if( rc == e_op_destroy_rc_okay )
                   op_instance_apply( handle, "", false );

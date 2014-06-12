@@ -32,6 +32,7 @@
 #include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
+#include "ciyam_constants.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
@@ -119,6 +120,7 @@ const char* const c_procedure_id_Move_Down = "126420";
 const char* const c_procedure_id_Move_Up = "126410";
 
 string g_order_field_name( "Order" );
+string g_owner_field_name;
 
 set< string > g_derivations;
 
@@ -1191,6 +1193,11 @@ string& Meta_Module::get_order_field_name( ) const
    return g_order_field_name;
 }
 
+string& Meta_Module::get_owner_field_name( ) const
+{
+   return g_owner_field_name;
+}
+
 bool Meta_Module::is_file_field_name( const string& name ) const
 {
    return g_file_field_names.count( name );
@@ -1388,6 +1395,21 @@ string Meta_Module::get_display_name( bool plural ) const
    key += "module";
 
    return get_module_string( key );
+}
+
+string Meta_Module::get_create_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Module::get_update_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Module::get_destroy_instance_info( ) const
+{
+   return "";
 }
 
 bool Meta_Module::get_is_alias( ) const

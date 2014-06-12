@@ -147,6 +147,12 @@ class META_INDEX_DECL_SPEC Meta_Index : public class_base
 
    std::string get_display_name( bool plural = false ) const;
 
+   size_t get_class_type( ) const { return static_class_type( ); }
+
+   std::string get_create_instance_info( ) const;
+   std::string get_update_instance_info( ) const;
+   std::string get_destroy_instance_info( ) const;
+
    bool get_is_alias( ) const;
    void get_alias_base_info( std::pair< std::string, std::string >& alias_base_info ) const;
 
@@ -166,6 +172,7 @@ class META_INDEX_DECL_SPEC Meta_Index : public class_base
    int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const { return static_get_num_fields( p_done, p_class_name ); }
 
    std::string& get_order_field_name( ) const;
+   std::string& get_owner_field_name( ) const;
 
    bool is_file_field_name( const std::string& name ) const;
    void get_file_field_names( std::vector< std::string >& file_field_names ) const;
@@ -213,6 +220,8 @@ class META_INDEX_DECL_SPEC Meta_Index : public class_base
 
    static const char* static_lock_class_id( );
    static const char* static_check_class_name( );
+
+   static size_t static_class_type( ) { return 0; }
 
    static bool static_has_derivations( );
 

@@ -5,40 +5,40 @@
 100 Meta
 
 > module_class_list Meta
-100100 User
-101100 Workgroup
-102100 Type
-103100 Enum
-104100 Enum_Item
-105100 Model
-106100 Class
-107100 Field
-108100 Index
-109100 Modifier
-110100 Modifier_Affect
-111100 Procedure
-112100 Procedure_Arg
-113100 Relationship
-114100 Specification_Type
-115100 Specification
-116100 Permission
-117100 View_Type
-118100 View
-119100 View_Field_Type
-120100 View_Field
-121100 List_Type
-122100 List
-123100 List_Field_Type
-124100 List_Field
-125100 Auto_Code
-126100 Module
-127100 Application
-128100 Specification_Field_Action
-129100 Initial_Record
-130100 Initial_Record_Value
-135100 Package_Type
-136100 Package
-137100 Package_Option
+100100 User 0
+101100 Workgroup 0
+102100 Type 0
+103100 Enum 0
+104100 Enum_Item 0
+105100 Model 0
+106100 Class 0
+107100 Field 0
+108100 Index 0
+109100 Modifier 0
+110100 Modifier_Affect 0
+111100 Procedure 0
+112100 Procedure_Arg 0
+113100 Relationship 0
+114100 Specification_Type 0
+115100 Specification 0
+116100 Permission 0
+117100 View_Type 0
+118100 View 0
+119100 View_Field_Type 0
+120100 View_Field 0
+121100 List_Type 0
+122100 List 0
+123100 List_Field_Type 0
+124100 List_Field 0
+125100 Auto_Code 0
+126100 Module 0
+127100 Application 0
+128100 Specification_Field_Action 0
+129100 Initial_Record 0
+130100 Initial_Record_Value 0
+135100 Package_Type 0
+136100 Package 0
+137100 Package_Option 0
 
 > module_class_field_list Meta User
 100102 Active bool normal

@@ -34,6 +34,7 @@
 #include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
+#include "ciyam_constants.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
@@ -170,6 +171,7 @@ const uint64_t c_modifier_Is_Class = UINT64_C( 0x100 );
 const uint64_t c_modifier_Is_Internal = UINT64_C( 0x200 );
 
 string g_order_field_name;
+string g_owner_field_name;
 
 set< string > g_derivations;
 
@@ -1660,6 +1662,11 @@ string& Meta_Modifier_Affect::get_order_field_name( ) const
    return g_order_field_name;
 }
 
+string& Meta_Modifier_Affect::get_owner_field_name( ) const
+{
+   return g_owner_field_name;
+}
+
 bool Meta_Modifier_Affect::is_file_field_name( const string& name ) const
 {
    return g_file_field_names.count( name );
@@ -1939,6 +1946,21 @@ string Meta_Modifier_Affect::get_display_name( bool plural ) const
    key += "modifier_affect";
 
    return get_module_string( key );
+}
+
+string Meta_Modifier_Affect::get_create_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Modifier_Affect::get_update_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Modifier_Affect::get_destroy_instance_info( ) const
+{
+   return "";
 }
 
 bool Meta_Modifier_Affect::get_is_alias( ) const

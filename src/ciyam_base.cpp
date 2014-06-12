@@ -53,6 +53,7 @@
 #include "crypt_stream.h"
 #include "ciyam_strings.h"
 #include "ciyam_session.h"
+#include "ciyam_constants.h"
 #include "command_handler.h"
 #include "dynamic_library.h"
 #include "module_interface.h"
@@ -182,6 +183,7 @@ const char* const c_special_variable_val_error = "@val_error";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
+const char* const c_special_variable_permissions = "@permissions";
 const char* const c_special_variable_skip_update = "@skip_update";
 const char* const c_special_variable_check_if_changed = "@check_if_changed";
 const char* const c_special_variable_skip_after_fetch = "@skip_after_fetch";
@@ -5042,6 +5044,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_path_prefix );
       break;
 
+      case e_special_var_permissions:
+      s = string( c_special_variable_permissions );
+      break;
+
       case e_special_var_skip_update:
       s = string( c_special_variable_skip_update );
       break;
@@ -6041,16 +6047,22 @@ string gen_key( const char* p_suffix )
 {
    string key;
 
-   // NOTE: Automatically generate a key using the session id and current date/time.
    if( gtp_session )
    {
       date_time dtm( date_time::local( ) );
-      size_t sess_slot( gtp_session->slot );
+
+#ifdef IS_TRADITIONAL_PLATFORM
+      // NOTE: Automatically generate a key using the session id and current date/time.
+      size_t num( gtp_session->slot );
+#else
+      // NOTE: Automatically generate a key using a random number and current date/time.
+      size_t num = rand( ) % 1000;
+#endif
 
       char sss[ ] = "sss";
-      sss[ 0 ] = '0' + ( sess_slot / 100 );
-      sss[ 1 ] = '0' + ( ( sess_slot % 100 ) / 10 );
-      sss[ 2 ] = '0' + ( sess_slot % 10 );
+      sss[ 0 ] = '0' + ( num / 100 );
+      sss[ 1 ] = '0' + ( ( num % 100 ) / 10 );
+      sss[ 2 ] = '0' + ( num % 10 );
 
       key = dtm.as_string( ) + string( sss );
       if( p_suffix )
@@ -6117,27 +6129,22 @@ void set_uid( const string& uid )
 
 bool is_sys_uid( )
 {
-   return get_uid( ) == "sys";
+   return get_uid( ) == c_sys;
 }
 
 bool is_auto_uid( )
 {
-   return get_uid( ) == "auto";
+   return get_uid( ) == c_auto;
 }
 
 bool is_init_uid( )
 {
-   return get_uid( ) == "init";
+   return get_uid( ) == c_init;
 }
 
 bool is_admin_uid( )
 {
-   return get_uid( ) == "admin";
-}
-
-bool is_script_uid( )
-{
-   return get_uid( ) == "auto";
+   return get_uid( ) == c_admin;
 }
 
 bool is_system_uid( )
@@ -6145,7 +6152,7 @@ bool is_system_uid( )
    bool rc = false;
    string uid( get_uid( ) );
 
-   if( uid == "sys" || uid == "auto" || uid == "init" )
+   if( uid == c_sys || uid == c_auto || uid == c_init )
       rc = true;
 
    return rc;
@@ -6153,7 +6160,7 @@ bool is_system_uid( )
 
 bool is_admin_uid_key( const string& key )
 {
-   return key == "admin";
+   return key == c_admin;
 }
 
 bool is_uid_not_self_and_not_in_set( const string& key, const string& key_set )
@@ -6563,8 +6570,19 @@ void module_load( const string& module_name,
       }
    }
 
+   // NOTE: If a "user" class exists for the module then create
+   // two session variables to allow the system to identify it.
    vector< string > class_list;
-   list_module_classes( module_name, class_list );
+   list_module_classes( module_name, class_list, 1 );
+
+   if( !class_list.empty( ) )
+   {
+      gtp_session->variables.insert( make_pair(
+       string( "@" + module_name + c_user_class_suffix ), class_list[ 0 ] ) );
+
+      gtp_session->variables.insert( make_pair(
+       string( "@" + get_module_id( module_name ) + c_user_class_suffix ), class_list[ 0 ] ) );
+   }
 
    gtp_session->modules_by_id.insert( module_value_type( get_module_id( module_name ), module_name ) );
    gtp_session->modules_by_name.insert( module_value_type( module_name, get_module_id( module_name ) ) );
@@ -6830,6 +6848,50 @@ string get_class_display_name( size_t handle, const string& context, bool plural
    class_base& instance( get_class_base_from_handle( handle, context ) );
 
    return instance.get_display_name( plural );
+}
+
+string get_create_instance_info( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_create_instance_info( );
+}
+
+string get_update_instance_info( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_update_instance_info( );
+}
+
+string get_destroy_instance_info( size_t handle, const string& context )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_destroy_instance_info( );
+}
+
+string get_instance_owner( size_t handle, const string& context )
+{
+   string owner;
+
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   if( instance.get_class_type( ) == 1 ) // i.e. user
+      owner = instance.get_key( );
+   else
+   {
+      string owner_field( instance.get_owner_field_name( ) );
+      if( !owner_field.empty( ) )
+      {
+         string method_name_and_args( "get " );
+         method_name_and_args += owner_field;
+
+         owner = instance.execute( method_name_and_args );
+      }
+   }
+
+   return owner;
 }
 
 void get_all_enum_pairs( size_t handle, const string& context, vector< pair< string, string > >& pairs )

@@ -32,6 +32,7 @@
 #include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
+#include "ciyam_constants.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
@@ -654,6 +655,7 @@ domain_string_max_size< 100 > g_Specification_Object_domain;
 domain_string_max_size< 10 > g_View_Id_domain;
 
 string g_order_field_name;
+string g_owner_field_name;
 
 set< string > g_derivations;
 
@@ -8594,6 +8596,11 @@ string& Meta_Specification_Type::get_order_field_name( ) const
    return g_order_field_name;
 }
 
+string& Meta_Specification_Type::get_owner_field_name( ) const
+{
+   return g_owner_field_name;
+}
+
 bool Meta_Specification_Type::is_file_field_name( const string& name ) const
 {
    return g_file_field_names.count( name );
@@ -9595,6 +9602,21 @@ string Meta_Specification_Type::get_display_name( bool plural ) const
    key += "specification_type";
 
    return get_module_string( key );
+}
+
+string Meta_Specification_Type::get_create_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Specification_Type::get_update_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Specification_Type::get_destroy_instance_info( ) const
+{
+   return "";
 }
 
 bool Meta_Specification_Type::get_is_alias( ) const

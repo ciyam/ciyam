@@ -34,6 +34,7 @@ const char* const c_str_parm_cannot_destroy_class = "{@class}";
 const char* const c_str_version_mismatch = "Version mismatch (found {@found} but expected {@expected}).";
 const char* const c_str_parm_version_mismatch_found = "{@found}";
 const char* const c_str_parm_version_mismatch_expected = "{@expected}";
+const char* const c_str_permission_denied = "Permission denied.";
 const char* const c_str_record_constrained = "This record cannot be destroyed as it is being used by one or more {@class} records.";
 const char* const c_str_parm_record_constrained_class = "{@class}";
 const char* const c_str_index_duplicate = "This {@field} [key: {@value}] is already being used by another {@class} record.";
