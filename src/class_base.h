@@ -390,6 +390,12 @@ class CLASS_BASE_DECL_SPEC class_base
 
    virtual std::string get_display_name( bool plural = false ) const = 0;
 
+   virtual size_t get_class_type( ) const = 0;
+
+   virtual std::string get_create_instance_info( ) const = 0;
+   virtual std::string get_update_instance_info( ) const = 0;
+   virtual std::string get_destroy_instance_info( ) const = 0;
+
    virtual bool get_is_alias( ) const = 0;
    virtual void get_alias_base_info( std::pair< std::string, std::string >& alias_base_info ) const = 0;
 
@@ -406,6 +412,7 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual int get_num_fields( bool* p_done = 0, const std::string* p_class_name = 0 ) const = 0;
 
    virtual std::string& get_order_field_name( ) const = 0;
+   virtual std::string& get_owner_field_name( ) const = 0;
 
    virtual bool is_file_field_name( const std::string& name ) const = 0;
    virtual void get_file_field_names( std::vector< std::string >& file_field_names ) const = 0;

@@ -32,6 +32,7 @@
 #include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
+#include "ciyam_constants.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
@@ -118,6 +119,7 @@ const int c_num_transient_fields = 0;
 bool is_transient_field( const string& ) { static bool false_value( false ); return false_value; }
 
 string g_order_field_name;
+string g_owner_field_name;
 
 set< string > g_derivations;
 
@@ -1025,6 +1027,11 @@ string& Meta_Initial_Record_Value::get_order_field_name( ) const
    return g_order_field_name;
 }
 
+string& Meta_Initial_Record_Value::get_owner_field_name( ) const
+{
+   return g_owner_field_name;
+}
+
 bool Meta_Initial_Record_Value::is_file_field_name( const string& name ) const
 {
    return g_file_field_names.count( name );
@@ -1222,6 +1229,21 @@ string Meta_Initial_Record_Value::get_display_name( bool plural ) const
    key += "initial_record_value";
 
    return get_module_string( key );
+}
+
+string Meta_Initial_Record_Value::get_create_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Initial_Record_Value::get_update_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Initial_Record_Value::get_destroy_instance_info( ) const
+{
+   return "";
 }
 
 bool Meta_Initial_Record_Value::get_is_alias( ) const

@@ -73,13 +73,13 @@ module_unload_error MODULE_MANAGEMENT_DECL_SPEC unload_module( const std::string
 void MODULE_MANAGEMENT_DECL_SPEC list_modules( std::ostream& os );
 
 module_class_list_error MODULE_MANAGEMENT_DECL_SPEC
- list_module_classes( const std::string& module_id_or_name, std::ostream& os );
+ list_module_classes( const std::string& module_id_or_name, std::ostream& os, int type = -1 );
 module_class_list_error MODULE_MANAGEMENT_DECL_SPEC
- list_module_classes( const std::string& module_id_or_name, std::vector< std::string >& class_list );
+ list_module_classes( const std::string& module_id_or_name, std::vector< std::string >& class_list, int type = -1 );
 
 module_class_list_error MODULE_MANAGEMENT_DECL_SPEC
  list_module_classes( const std::string& module_id_or_name,
- std::map< std::string, std::string >& class_map, bool key_by_id = false );
+ std::map< std::string, std::string >& class_map, bool key_by_id = false, int type = -1 );
 
 module_string_list_error MODULE_MANAGEMENT_DECL_SPEC
  list_module_strings( const std::string& module_id_or_name, std::ostream& os );

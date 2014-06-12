@@ -281,7 +281,6 @@ bool CIYAM_BASE_DECL_SPEC is_sys_uid( );
 bool CIYAM_BASE_DECL_SPEC is_auto_uid( );
 bool CIYAM_BASE_DECL_SPEC is_init_uid( );
 bool CIYAM_BASE_DECL_SPEC is_admin_uid( );
-bool CIYAM_BASE_DECL_SPEC is_script_uid( );
 
 bool CIYAM_BASE_DECL_SPEC is_system_uid( );
 
@@ -354,6 +353,12 @@ void CIYAM_BASE_DECL_SPEC destroy_all_object_instances( );
 std::string CIYAM_BASE_DECL_SPEC get_class_id( size_t handle, const std::string& context );
 std::string CIYAM_BASE_DECL_SPEC get_class_name( size_t handle, const std::string& context );
 std::string CIYAM_BASE_DECL_SPEC get_class_display_name( size_t handle, const std::string& context, bool plural = false );
+
+std::string CIYAM_BASE_DECL_SPEC get_create_instance_info( size_t handle, const std::string& context );
+std::string CIYAM_BASE_DECL_SPEC get_update_instance_info( size_t handle, const std::string& context );
+std::string CIYAM_BASE_DECL_SPEC get_destroy_instance_info( size_t handle, const std::string& context );
+
+std::string CIYAM_BASE_DECL_SPEC get_instance_owner( size_t handle, const std::string& context );
 
 void CIYAM_BASE_DECL_SPEC get_all_enum_pairs( size_t handle,
  const std::string& context, std::vector< std::pair< std::string, std::string > >& pairs );

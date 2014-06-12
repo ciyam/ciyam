@@ -47,6 +47,7 @@
 #include "ciyam_common.h"
 #include "class_domains.h"
 #include "module_strings.h"
+#include "ciyam_constants.h"
 #include "class_utilities.h"
 #include "command_handler.h"
 #include "module_interface.h"
@@ -346,6 +347,7 @@ aggregate_domain< string,
  domain_string_max_size< 30 > > g_Static_Instance_Key_domain;
 
 string g_order_field_name;
+string g_owner_field_name;
 
 set< string > g_derivations;
 
@@ -2346,6 +2348,7 @@ void Meta_Class::impl::impl_Generate( )
    outf << "\x60{\x60$class_id\x60=\x60'" << get_mapped_id( model_name, get_obj( ).Id( ) ) << "\x60'\x60}\n";
    outf << "\x60{\x60$class_name\x60=\x60'" << get_obj( ).Name( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$plural_name\x60=\x60'" << get_obj( ).Plural( ) << "\x60'\x60}\n";
+   outf << "\x60{\x60$class_type\x60=\x60'" << get_obj( ).Type( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$class_version\x60=\x60'1\x60'\x60}\n";
    outf << "\x60{\x60$module_id\x60=\x60'" << get_obj( ).Model( ).Id( ) << "\x60'\x60}\n";
    outf << "\x60{\x60$module_name\x60=\x60'" << get_obj( ).Model( ).Name( ) << "\x60'\x60}\n";
@@ -2362,30 +2365,30 @@ void Meta_Class::impl::impl_Generate( )
       break;
 
       case 1:
-      instance_create = "owner_only";
+      instance_create = c_owner_only;
       break;
 
       case 2:
-      instance_create = "admin_only";
+      instance_create = c_admin_only;
       break;
 
       case 3:
-      instance_create = "admin_owner";
+      instance_create = c_admin_owner;
       break;
 
       case 4:
-      instance_create = "denied_always";
+      instance_create = c_denied_always;
       break;
    }
 
    if( !is_null( get_obj( ).Create_Permission( ) ) )
    {
       if( instance_create.empty( ) )
-         instance_create = "denied_always";
+         instance_create = c_denied_always;
       instance_create += "=!" + get_obj( ).Create_Permission( ).Id( );
    }
    else if( instance_create.empty( ) )
-      instance_create = "anyone";
+      instance_create = c_anyone;
 
    outf << "\x60{\x60$instance_create\x60=\x60'" << instance_create << "\x60'\x60}\n";
 
@@ -2396,30 +2399,30 @@ void Meta_Class::impl::impl_Generate( )
       break;
 
       case 1:
-      instance_update = "owner_only";
+      instance_update = c_owner_only;
       break;
 
       case 2:
-      instance_update = "admin_only";
+      instance_update = c_admin_only;
       break;
 
       case 3:
-      instance_update = "admin_owner";
+      instance_update = c_admin_owner;
       break;
 
       case 4:
-      instance_update = "denied_always";
+      instance_update = c_denied_always;
       break;
    }
 
    if( !is_null( get_obj( ).Change_Permission( ) ) )
    {
       if( instance_update.empty( ) )
-         instance_update = "denied_always";
+         instance_update = c_denied_always;
       instance_update += "=!" + get_obj( ).Change_Permission( ).Id( );
    }
    else if( instance_update.empty( ) )
-      instance_update = "anyone";
+      instance_update = c_anyone;
 
    outf << "\x60{\x60$instance_update\x60=\x60'" << instance_update << "\x60'\x60}\n";
 
@@ -2430,36 +2433,37 @@ void Meta_Class::impl::impl_Generate( )
       break;
 
       case 1:
-      instance_destroy = "owner_only";
+      instance_destroy = c_owner_only;
       break;
 
       case 2:
-      instance_destroy = "admin_only";
+      instance_destroy = c_admin_only;
       break;
 
       case 3:
-      instance_destroy = "admin_owner";
+      instance_destroy = c_admin_owner;
       break;
 
       case 4:
-      instance_destroy = "denied_always";
+      instance_destroy = c_denied_always;
       break;
    }
 
    if( !is_null( get_obj( ).Destroy_Permission( ) ) )
    {
       if( instance_destroy.empty( ) )
-         instance_destroy = "denied_always";
+         instance_destroy = c_denied_always;
       instance_destroy += "=!" + get_obj( ).Destroy_Permission( ).Id( );
    }
    else if( instance_destroy.empty( ) )
-      instance_destroy = "anyone";
+      instance_destroy = c_anyone;
 
    outf << "\x60{\x60$instance_destroy\x60=\x60'" << instance_destroy << "\x60'\x60}\n";
 
    vector< pair< string, string > > default_values;
 
-   string order_field;
+   string order_field, owner_field, permissions_field;
+
    vector< string > basic_fields;
    vector< string > parent_fields;
    vector< string > complex_fields;
@@ -2575,35 +2579,41 @@ void Meta_Class::impl::impl_Generate( )
                break;
 
                case 1:
-               field_update = "owner_only";
+               field_update = c_owner_only;
                break;
 
                case 2:
-               field_update = "admin_only";
+               field_update = c_admin_only;
                break;
 
                case 3:
-               field_update = "admin_owner";
+               field_update = c_admin_owner;
                break;
 
                case 4:
-               field_update = "denied_always";
+               field_update = c_denied_always;
                break;
             }
 
             if( !is_null( get_obj( ).child_Field( ).Change_Permission( ) ) )
             {
                if( field_update.empty( ) )
-                  field_update = "denied_always";
+                  field_update = c_denied_always;
                field_update += "=!" + get_obj( ).child_Field( ).Change_Permission( ).Id( );
             }
             else if( field_update.empty( ) )
-               field_update = "anyone";
+               field_update = c_anyone;
 
             bool is_owner_fk = false;
 
             if( get_obj( ).child_Field( ).Extra( ) == -1 ) // i.e. "owning_user"
+            {
                is_owner_fk = true;
+               owner_field = get_obj( ).child_Field( ).Name( );
+            }
+
+            if( get_obj( ).child_Field( ).Extra( ) == 12 ) // i.e. "user_perms"
+               permissions_field = get_obj( ).child_Field( ).Name( );
 
             bool is_transient = get_obj( ).child_Field( ).Transient( );
 
@@ -2758,6 +2768,12 @@ void Meta_Class::impl::impl_Generate( )
 
    if( !order_field.empty( ) )
       outf << "\x60{\x60$order_field\x60=\x60'" << order_field << "\x60'\x60}\n";
+
+   if( !owner_field.empty( ) )
+      outf << "\x60{\x60$owner_field\x60=\x60'" << owner_field << "\x60'\x60}\n";
+
+   if( !permissions_field.empty( ) )
+      outf << "\x60{\x60$permissions_field\x60=\x60'" << permissions_field << "\x60'\x60}\n";
 
    if( !basic_fields.empty( ) )
    {
@@ -3271,30 +3287,30 @@ void Meta_Class::impl::impl_Generate( )
                break;
 
                case 1:
-               procedure_access = "owner_only";
+               procedure_access = c_owner_only;
                break;
 
                case 2:
-               procedure_access = "admin_only";
+               procedure_access = c_admin_only;
                break;
 
                case 3:
-               procedure_access = "admin_owner";
+               procedure_access = c_admin_owner;
                break;
 
                case 4:
-               procedure_access = "denied_always";
+               procedure_access = c_denied_always;
                break;
             }
 
             if( !is_null( get_obj( ).child_Procedure( ).Access_Permission( ) ) )
             {
                if( procedure_access.empty( ) )
-                  procedure_access = "denied_always";
+                  procedure_access = c_denied_always;
                procedure_access += "=!" + get_obj( ).child_Procedure( ).Access_Permission( ).Id( );
             }
             else if( procedure_access.empty( ) )
-               procedure_access = "anyone";
+               procedure_access = c_anyone;
 
             all_procedure_info += ',' + procedure_access;
 
@@ -6101,6 +6117,11 @@ string& Meta_Class::get_order_field_name( ) const
    return g_order_field_name;
 }
 
+string& Meta_Class::get_owner_field_name( ) const
+{
+   return g_owner_field_name;
+}
+
 bool Meta_Class::is_file_field_name( const string& name ) const
 {
    return g_file_field_names.count( name );
@@ -6870,6 +6891,21 @@ string Meta_Class::get_display_name( bool plural ) const
    key += "class";
 
    return get_module_string( key );
+}
+
+string Meta_Class::get_create_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Class::get_update_instance_info( ) const
+{
+   return "";
+}
+
+string Meta_Class::get_destroy_instance_info( ) const
+{
+   return "";
 }
 
 bool Meta_Class::get_is_alias( ) const
