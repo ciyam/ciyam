@@ -3651,7 +3651,7 @@ void Meta_Field::impl::for_store( bool is_create, bool is_internal )
 
       if( !parent_field_for_list.empty( ) )
       {
-         get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_V" );
+         get_obj( ).child_List_Field_Source( ).op_create( get_obj( ).get_key( ) + "_L" );
          get_obj( ).child_List_Field_Source( ).Use_Source_Parent( true );
          get_obj( ).child_List_Field_Source( ).Source_Parent( get_obj( ).get_key( ) );
          get_obj( ).child_List_Field_Source( ).Source_Child( parent_field_for_list );
