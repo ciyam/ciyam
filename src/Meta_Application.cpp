@@ -4675,6 +4675,28 @@ string Meta_Application::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Application::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "127410" ) // i.e. Generate
+      retval = "";
+   else if( procedure_id == "127430" ) // i.e. Generate_File_Links
+      retval = "";
+   else if( procedure_id == "127420" ) // i.e. Generate_Modules
+      retval = "";
+   else if( procedure_id == "127440" ) // i.e. Generate_Upgrade_DDL
+      retval = "";
+   else if( procedure_id == "127495" ) // i.e. Test_Proc_1
+      retval = "";
+   else if( procedure_id == "127497" ) // i.e. Test_Proc_2
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Application::get_is_alias( ) const
 {
    return false;

@@ -2023,6 +2023,20 @@ string Meta_Procedure_Arg::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Procedure_Arg::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "112420" ) // i.e. Move_Down
+      retval = "";
+   else if( procedure_id == "112410" ) // i.e. Move_Up
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Procedure_Arg::get_is_alias( ) const
 {
    return false;

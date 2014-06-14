@@ -1771,6 +1771,20 @@ string Meta_Enum_Item::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Enum_Item::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "104420" ) // i.e. Move_Down
+      retval = "";
+   else if( procedure_id == "104410" ) // i.e. Move_Up
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Enum_Item::get_is_alias( ) const
 {
    return false;

@@ -358,6 +358,9 @@ std::string CIYAM_BASE_DECL_SPEC get_create_instance_info( size_t handle, const 
 std::string CIYAM_BASE_DECL_SPEC get_update_instance_info( size_t handle, const std::string& context );
 std::string CIYAM_BASE_DECL_SPEC get_destroy_instance_info( size_t handle, const std::string& context );
 
+std::string CIYAM_BASE_DECL_SPEC get_execute_procedure_info(
+ size_t handle, const std::string& context, const std::string& procedure_id );
+
 std::string CIYAM_BASE_DECL_SPEC get_instance_owner( size_t handle, const std::string& context );
 
 void CIYAM_BASE_DECL_SPEC get_all_enum_pairs( size_t handle,

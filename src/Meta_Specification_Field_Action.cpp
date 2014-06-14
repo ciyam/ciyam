@@ -2093,6 +2093,18 @@ string Meta_Specification_Field_Action::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Specification_Field_Action::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "128500" ) // i.e. Generate_All_Vars
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Specification_Field_Action::get_is_alias( ) const
 {
    return false;

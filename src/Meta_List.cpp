@@ -6457,6 +6457,18 @@ string Meta_List::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_List::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "122430" ) // i.e. Generate_PDF_List
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_List::get_is_alias( ) const
 {
    return false;
