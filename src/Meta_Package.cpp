@@ -3322,6 +3322,26 @@ string Meta_Package::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Package::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "136450" ) // i.e. Cancel_Remove
+      retval = "";
+   else if( procedure_id == "136430" ) // i.e. Check_Install
+      retval = "";
+   else if( procedure_id == "136440" ) // i.e. Complete_Remove
+      retval = "";
+   else if( procedure_id == "136410" ) // i.e. Install
+      retval = "";
+   else if( procedure_id == "136420" ) // i.e. Remove
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Package::get_is_alias( ) const
 {
    return false;

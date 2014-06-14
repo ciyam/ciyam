@@ -561,6 +561,8 @@ class META_SPECIFICATION_TYPE_DECL_SPEC Meta_Specification_Type : public class_b
    std::string get_update_instance_info( ) const;
    std::string get_destroy_instance_info( ) const;
 
+   std::string get_execute_procedure_info( const std::string& procedure_id ) const;
+
    bool get_is_alias( ) const;
    void get_alias_base_info( std::pair< std::string, std::string >& alias_base_info ) const;
 

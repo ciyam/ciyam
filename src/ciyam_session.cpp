@@ -332,6 +332,7 @@ string resolve_field_id(
 string resolve_method_name( const string& module, const string& mclass,
  const string& id_or_name, const map< string, string >* p_transformations = 0, string* p_method_id = 0 )
 {
+   string method( id_or_name );
    string method_name( id_or_name );
 
    if( p_transformations && !p_transformations->empty( ) )
@@ -340,16 +341,29 @@ string resolve_method_name( const string& module, const string& mclass,
       ltf_key += " " + module + " " + mclass + " " + string( c_log_transformation_op_map_method_id ) + " " + id_or_name;
 
       if( p_transformations->count( ltf_key ) )
-         method_name = p_transformations->find( ltf_key )->second;
+         method = p_transformations->find( ltf_key )->second;
    }
 
-   // NOTE: If a rebuild is in progress then this will allow the caller to extract a method id.
-   if( p_method_id )
-      *p_method_id = method_name;
-
    const procedure_info_container& procedure_info( get_procedure_info_for_module_class( module, mclass ) );
-   if( procedure_info.count( method_name ) )
-      method_name = procedure_info.find( method_name )->second.name;
+
+   if( procedure_info.count( method ) )
+   {
+      method_name = procedure_info.find( method )->second.name;
+
+      if( p_method_id )
+         *p_method_id = method;
+   }
+   else if( p_method_id )
+   {
+      for( procedure_info_const_iterator pici = procedure_info.begin( ); pici != procedure_info.end( ); ++pici )
+      {
+         if( pici->second.name == method )
+         {
+            *p_method_id = pici->first;
+            break;
+         }
+      }
+   }
 
    return method_name;
 }
@@ -1191,15 +1205,14 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
       {
          string handle( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_handle ) );
          string context( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_context ) );
-         string method_name_and_args( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_method_name ) );
+         string method( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_method ) );
+         string args( get_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_args ) );
 
-         if( has_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_args ) )
-         {
-            method_name_and_args += ' ';
-            method_name_and_args += get_parm_val( parameters, c_cmd_parm_ciyam_session_object_execute_args );
-         }
+         string method_and_args( method );
+         if( !args.empty( ) )
+            method_and_args += ' ' + args;
 
-         response = execute_object_command( atoi( handle.c_str( ) ), context, method_name_and_args );
+         response = execute_object_command( atoi( handle.c_str( ) ), context, method_and_args );
       }
       else if( command == c_cmd_ciyam_session_object_validate )
       {
@@ -1504,8 +1517,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          if( no_default_values )
             get_field_values( handle, context, field_list, tz_name, true, false, &default_values );
 
-         // NOTE: The purpose of using "extra_vars" is to set instance variables without
-         // also requiring a "prepare" call (thus having no other possible side-effects).
+         // NOTE: The purpose of "extra_vars" is to allow the setting of instance
+         // variables that don't have a '@' prefix.
          if( !extra_vars.empty( ) )
          {
             vector< string > extras;
@@ -1777,7 +1790,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_tz_name ) );
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_key ) );
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_field_values ) );
-         string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_method_name ) );
+         string method( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_create_method ) );
 
 #ifndef IS_TRADITIONAL_PLATFORM
          string field_values_to_log;
@@ -1894,7 +1907,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !skip_create )
          {
-            if( !method_id_or_name.empty( ) )
+            if( !method.empty( ) )
                transaction_start( );
 
             size_t handle = create_object_instance( module, mclass, 0, false );
@@ -1907,6 +1920,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
+
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
@@ -1961,9 +1977,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                remove_uid_extra_from_log_command( next_command );
 
-               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
-                  check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
-
 #ifndef IS_TRADITIONAL_PLATFORM
                replace_field_values_to_log( next_command, field_values_to_log );
 #endif
@@ -1975,12 +1988,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                response = key.substr( 0, key.find( ' ' ) );
 
                // NOTE: If a method name has also been provided then execute it now (omitting the version).
-               if( !method_id_or_name.empty( ) )
+               if( !method.empty( ) )
                {
-                  method_id_or_name = resolve_method_name( module,
-                   mclass, method_id_or_name, &socket_handler.get_transformations( ) );
+                  string method_name = resolve_method_name( module,
+                   mclass, method, &socket_handler.get_transformations( ) );
 
-                  instance_execute( handle, "", key, method_id_or_name );
+                  instance_execute( handle, "", key, method_name );
                   transaction_commit( );
                }
 
@@ -1988,7 +2001,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( exception& )
             {
-               if( !method_id_or_name.empty( ) )
+               if( !method.empty( ) )
                   transaction_rollback( );
 
                possibly_expected_error = true;
@@ -1997,7 +2010,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
-               if( !method_id_or_name.empty( ) )
+               if( !method.empty( ) )
                   transaction_rollback( );
 
                destroy_object_instance( handle );
@@ -2018,7 +2031,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string key( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_key ) );
          string ver_info( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_ver_info ) );
          string field_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_field_values ) );
-         string method_id_or_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_method_name ) );
+         string method( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_method ) );
          string check_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_update_check_values ) );
 
 #ifndef IS_TRADITIONAL_PLATFORM
@@ -2105,7 +2118,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          if( !skip_update )
          {
-            if( !method_id_or_name.empty( ) )
+            if( !method.empty( ) )
                transaction_start( );
 
             size_t handle = create_object_instance( module, mclass,
@@ -2119,6 +2132,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_class( mclass );
                set_module( module );
                set_tz_name( tz_name );
+
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
 
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
@@ -2184,9 +2200,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                remove_uid_extra_from_log_command( next_command );
 
-               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
-                  check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
-
 #ifndef IS_TRADITIONAL_PLATFORM
                replace_field_values_to_log( next_command, field_values_to_log );
 #endif
@@ -2196,12 +2209,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                op_instance_apply( handle, "", false, 0, &fields_set );
 
                // NOTE: If a method name has also been provided then execute it now (omitting the version).
-               if( !method_id_or_name.empty( ) )
+               if( !method.empty( ) )
                {
-                  method_id_or_name = resolve_method_name( module,
-                   mclass, method_id_or_name, &socket_handler.get_transformations( ) );
+                  string method_name = resolve_method_name( module,
+                   mclass, method, &socket_handler.get_transformations( ) );
 
-                  response = instance_execute( handle, "", key, method_id_or_name );
+                  response = instance_execute( handle, "", key, method_name );
                   transaction_commit( );
                }
 
@@ -2209,7 +2222,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( exception& x )
             {
-               if( !method_id_or_name.empty( ) )
+               if( !method.empty( ) )
                   transaction_rollback( );
 
                possibly_expected_error = true;
@@ -2218,7 +2231,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             }
             catch( ... )
             {
-               if( !method_id_or_name.empty( ) )
+               if( !method.empty( ) )
                   transaction_rollback( );
 
                destroy_object_instance( handle );
@@ -2293,6 +2306,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                set_module( module );
                set_tz_name( tz_name );
 
+               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                  check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
+
                if( progress )
                   instance_set_variable( handle, "", get_special_var_name( e_special_var_progress ), "1" );
 
@@ -2304,9 +2320,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                // exception will be issued (FUTURE - this could be handled more efficiently).
                if( rc != e_op_destroy_rc_okay && ( !quiet || rc != e_op_destroy_rc_not_found ) )
                   op_instance_destroy( handle, "", key, ver_info, false );
-
-               if( !is_system_uid( ) && !storage_locked_for_admin( ) )
-                  check_instance_op_permission( module, handle, get_destroy_instance_info( handle, "" ) );
 
                if( rc == e_op_destroy_rc_okay )
                   op_instance_apply( handle, "", false );
@@ -2339,7 +2352,12 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string set_values( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_set_values ) );
          string keys( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_keys ) );
          string vers( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_vers ) );
-         string method_name_and_args( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_method_name ) );
+         string method( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_method ) );
+         string args( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_args ) );
+
+         string method_and_args( method );
+         if( !args.empty( ) )
+            method_and_args += " " + args;
 
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
@@ -2354,19 +2372,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: If a method id/name is prefixed by an underbar then this command is deemed to be
          // a "non-transactional" command and will not be logged (nor will a be transaction used).
-         if( !method_name_and_args.empty( ) && method_name_and_args[ 0 ] == '_' )
+         if( !method_and_args.empty( ) && method_and_args[ 0 ] == '_' )
          {
             skip_transaction = true;
-            method_name_and_args.erase( 0, 1 );
+            method_and_args.erase( 0, 1 );
          }
          else
          {
             // NOTE: If method id/name is prefixed by a minus sign then the command will still be
             // logged but a transaction will not be issued whilst handling the command here.
-            if( !method_name_and_args.empty( ) && method_name_and_args[ 0 ] == '-' )
+            if( !method_and_args.empty( ) && method_and_args[ 0 ] == '-' )
             {
                skip_transaction = true;
-               method_name_and_args.erase( 0, 1 );
+               method_and_args.erase( 0, 1 );
             }
 
             transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
@@ -2392,8 +2410,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string method_id;
 
-            method_name_and_args = resolve_method_name(
-             module, mclass, method_name_and_args, &socket_handler.get_transformations( ), &method_id );
+            method_and_args = resolve_method_name(
+             module, mclass, method_and_args, &socket_handler.get_transformations( ), &method_id );
 
             map< string, string > set_value_items;
             if( !set_values.empty( ) )
@@ -2437,7 +2455,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   }
                }
 
-               method_name_and_args += ' ' + execute_args;
+               method_and_args += ' ' + execute_args;
             }
             else
             {
@@ -2447,8 +2465,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                if( socket_handler.get_transformations( ).count( ltf_key ) )
                {
-                  method_name_and_args += ' ';
-                  method_name_and_args += socket_handler.get_transformations( )[ ltf_key ];
+                  method_and_args += ' ';
+                  method_and_args += socket_handler.get_transformations( )[ ltf_key ];
                }
             }
 
@@ -2522,6 +2540,9 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
                   instance_prepare_execute( handle, "", next_key, next_ver, has_any_set_flds );
 
+                  if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                     check_instance_op_permission( module, handle, get_execute_procedure_info( handle, "", method_id ) );
+
                   for( map< string, string >::iterator j = set_value_items.begin( ), end = set_value_items.end( ); j != end; ++j )
                   {
                      // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -2540,7 +2561,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   if( has_any_set_flds )
                      prepare_object_instance( handle, "", false, false );
 
-                  string next_response( instance_execute( handle, "", next_key, method_name_and_args ) );
+                  string next_response( instance_execute( handle, "", next_key, method_and_args ) );
 
                   // NOTE: For simple executes a special object instance variable can be supplied as the
                   // return value (so a return value is possible even if the procedure does not have any

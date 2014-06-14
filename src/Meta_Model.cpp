@@ -8240,6 +8240,28 @@ string Meta_Model::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Model::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "105420" ) // i.e. Create_Module
+      retval = "";
+   else if( procedure_id == "105410" ) // i.e. Generate
+      retval = "";
+   else if( procedure_id == "105435" ) // i.e. Generate_File_Links
+      retval = "";
+   else if( procedure_id == "105440" ) // i.e. Get_Acyclic_Class_List
+      retval = "";
+   else if( procedure_id == "105450" ) // i.e. Remove_All_Packages
+      retval = "";
+   else if( procedure_id == "105430" ) // i.e. Remove_Module
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Model::get_is_alias( ) const
 {
    return false;

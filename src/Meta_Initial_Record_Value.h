@@ -112,6 +112,8 @@ class META_INITIAL_RECORD_VALUE_DECL_SPEC Meta_Initial_Record_Value : public cla
    std::string get_update_instance_info( ) const;
    std::string get_destroy_instance_info( ) const;
 
+   std::string get_execute_procedure_info( const std::string& procedure_id ) const;
+
    bool get_is_alias( ) const;
    void get_alias_base_info( std::pair< std::string, std::string >& alias_base_info ) const;
 

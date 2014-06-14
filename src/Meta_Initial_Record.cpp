@@ -1528,6 +1528,20 @@ string Meta_Initial_Record::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Initial_Record::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "130420" ) // i.e. Move_Down
+      retval = "";
+   else if( procedure_id == "130410" ) // i.e. Move_Up
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Initial_Record::get_is_alias( ) const
 {
    return false;

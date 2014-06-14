@@ -6871,6 +6871,13 @@ string get_destroy_instance_info( size_t handle, const string& context )
    return instance.get_destroy_instance_info( );
 }
 
+string get_execute_procedure_info( size_t handle, const string& context, const string& procedure_id )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   return instance.get_execute_procedure_info( procedure_id );
+}
+
 string get_instance_owner( size_t handle, const string& context )
 {
    string owner;

@@ -11271,6 +11271,60 @@ string Meta_Specification::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Specification::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "115439" ) // i.e. Add_Arg_1
+      retval = "";
+   else if( procedure_id == "115440" ) // i.e. Add_Arg_2
+      retval = "";
+   else if( procedure_id == "115432" ) // i.e. Add_Child_Info
+      retval = "";
+   else if( procedure_id == "115447" ) // i.e. Add_Destination_Info
+      retval = "";
+   else if( procedure_id == "115443" ) // i.e. Add_Extra_Info
+      retval = "";
+   else if( procedure_id == "115430" ) // i.e. Add_Field
+      retval = "";
+   else if( procedure_id == "115446" ) // i.e. Add_Field_Info
+      retval = "";
+   else if( procedure_id == "115431" ) // i.e. Add_Field_Pair
+      retval = "";
+   else if( procedure_id == "115438" ) // i.e. Add_Grandchild_Info
+      retval = "";
+   else if( procedure_id == "115441" ) // i.e. Add_Info
+      retval = "";
+   else if( procedure_id == "115444" ) // i.e. Add_Next
+      retval = "";
+   else if( procedure_id == "115442" ) // i.e. Add_Opt_Info
+      retval = "";
+   else if( procedure_id == "115445" ) // i.e. Add_Other_Info
+      retval = "";
+   else if( procedure_id == "115433" ) // i.e. Add_Secondary
+      retval = "";
+   else if( procedure_id == "115437" ) // i.e. Add_Source_Info
+      retval = "";
+   else if( procedure_id == "115434" ) // i.e. Add_Stats_1
+      retval = "";
+   else if( procedure_id == "115435" ) // i.e. Add_Stats_2
+      retval = "";
+   else if( procedure_id == "115436" ) // i.e. Add_Stats_Info
+      retval = "";
+   else if( procedure_id == "115510" ) // i.e. Generate_All_Strings
+      retval = "";
+   else if( procedure_id == "115500" ) // i.e. Generate_All_Vars
+      retval = "";
+   else if( procedure_id == "115420" ) // i.e. Move_Down
+      retval = "";
+   else if( procedure_id == "115410" ) // i.e. Move_Up
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Specification::get_is_alias( ) const
 {
    return false;

@@ -1260,6 +1260,18 @@ string Meta_Auto_Code::get_destroy_instance_info( ) const
    return "";
 }
 
+string Meta_Auto_Code::get_execute_procedure_info( const string& procedure_id ) const
+{
+   string retval;
+
+   if( procedure_id.empty( ) )
+      throw runtime_error( "unexpected empty procedure_id for get_execute_procedure_info" );
+   else if( procedure_id == "125410" ) // i.e. Increment
+      retval = "";
+
+   return retval;
+}
+
 bool Meta_Auto_Code::get_is_alias( ) const
 {
    return false;

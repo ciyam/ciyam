@@ -396,6 +396,8 @@ class CLASS_BASE_DECL_SPEC class_base
    virtual std::string get_update_instance_info( ) const = 0;
    virtual std::string get_destroy_instance_info( ) const = 0;
 
+   virtual std::string get_execute_procedure_info( const std::string& procedure_id ) const = 0;
+
    virtual bool get_is_alias( ) const = 0;
    virtual void get_alias_base_info( std::pair< std::string, std::string >& alias_base_info ) const = 0;
 
