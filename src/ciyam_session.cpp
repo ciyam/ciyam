@@ -2355,10 +2355,6 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          string method( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_method ) );
          string args( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_args ) );
 
-         string method_and_args( method );
-         if( !args.empty( ) )
-            method_and_args += " " + args;
-
          if( tz_name.empty( ) )
             tz_name = get_timezone( );
 
@@ -2372,19 +2368,19 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
 
          // NOTE: If a method id/name is prefixed by an underbar then this command is deemed to be
          // a "non-transactional" command and will not be logged (nor will a be transaction used).
-         if( !method_and_args.empty( ) && method_and_args[ 0 ] == '_' )
+         if( !method.empty( ) && method[ 0 ] == '_' )
          {
             skip_transaction = true;
-            method_and_args.erase( 0, 1 );
+            method.erase( 0, 1 );
          }
          else
          {
             // NOTE: If method id/name is prefixed by a minus sign then the command will still be
             // logged but a transaction will not be issued whilst handling the command here.
-            if( !method_and_args.empty( ) && method_and_args[ 0 ] == '-' )
+            if( !method.empty( ) && method[ 0 ] == '-' )
             {
                skip_transaction = true;
-               method_and_args.erase( 0, 1 );
+               method.erase( 0, 1 );
             }
 
             transaction_log_command( remove_uid_extra_from_log_command( next_command ) );
@@ -2410,16 +2406,16 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          {
             string method_id;
 
-            method_and_args = resolve_method_name(
-             module, mclass, method_and_args, &socket_handler.get_transformations( ), &method_id );
+            string method_and_args( resolve_method_name(
+             module, mclass, method, &socket_handler.get_transformations( ), &method_id ) );
 
             map< string, string > set_value_items;
             if( !set_values.empty( ) )
                parse_field_values( module, mclass, set_values, set_value_items, &socket_handler.get_transformations( ) );
 
-            if( has_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_args ) )
+            if( !args.empty( ) )
             {
-               string execute_args( get_parm_val( parameters, c_cmd_parm_ciyam_session_perform_execute_args ) );
+               string execute_args( args );
 
                string ltf_key( c_log_transformation_scope_execute_only );
                ltf_key += " " + module + " " + mclass
