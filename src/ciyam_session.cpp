@@ -139,11 +139,17 @@ inline string convert_local_to_utc( const string& local, const string& tz_name )
    return s;
 }
 
-void check_instance_op_permission( const string& module, size_t handle, string permission_info )
+void check_instance_op_permission( const string& module,
+ size_t handle, string permission_info, bool is_field_perm = false )
 {
    string uid( get_uid( ) );
 
-   if( !permission_info.empty( ) && permission_info != string( c_anyone ) )
+   string perm;
+
+   if( !is_field_perm )
+      perm = instance_get_variable( handle, "", get_special_var_name( e_special_var_permission ) );
+
+   if( !permission_info.empty( ) && ( permission_info != string( c_anyone ) || !perm.empty( ) ) )
    {
       string permission;
       string::size_type pos = permission_info.find( "=!" );
@@ -152,6 +158,10 @@ void check_instance_op_permission( const string& module, size_t handle, string p
          permission = permission_info.substr( pos + 2 );
          permission_info.erase( pos );
       }
+
+      // NOTE: If a "permission" field exists for the record then it will override the default permission.
+      if( !perm.empty( ) )
+         permission = perm;
 
       bool okay = false;
       if( uid == c_admin && ( permission_info == c_admin_only || permission_info == c_admin_owner ) )
@@ -196,6 +206,30 @@ void check_instance_op_permission( const string& module, size_t handle, string p
       if( !okay )
          throw runtime_error( GS( c_str_permission_denied ) );
    }
+}
+
+void check_instance_field_permission( const string& module,
+ size_t handle, bool is_create, const string& scope_and_perm_info )
+{
+   string::size_type pos = scope_and_perm_info.find( ',' );
+   if( pos == string::npos )
+      throw runtime_error( "unexpected scope_and_perm_info '" + scope_and_perm_info + "'" );
+
+   string scope( scope_and_perm_info.substr( 0, pos ) );
+   string perm_info( scope_and_perm_info.substr( pos + 1 ) );
+
+   bool okay = true;
+
+   if( scope == string( c_create ) && !is_create )
+      okay = false;
+   else if( scope == string( c_update ) && is_create )
+      okay = false;
+
+   if( !okay )
+      throw runtime_error( GS( c_str_permission_denied ) );
+
+   if( !perm_info.empty( ) )
+      check_instance_op_permission( module, handle, perm_info, true );
 }
 
 #ifndef IS_TRADITIONAL_PLATFORM
@@ -1924,6 +1958,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_create_instance_info( handle, "" ) );
 
+               map< string, string > field_scope_and_perm_info_by_id;
+               map< string, string > field_scope_and_perm_info_by_name;
+               get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
+               get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
+
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -1944,6 +1983,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         string type_name = get_field_type_name( handle, "", i->first );
                         if( type_name == "date_time" || type_name == "tdatetime" )
                            i->second = convert_local_to_utc( i->second, tz_name );
+                     }
+
+                     if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                     {
+                        string scope_and_perm_info;
+
+                        if( field_scope_and_perm_info_by_id.count( i->first ) )
+                           scope_and_perm_info = field_scope_and_perm_info_by_id[ i->first ];
+                        else
+                           scope_and_perm_info = field_scope_and_perm_info_by_name[ i->first ];
+
+                        check_instance_field_permission( module, handle, true, scope_and_perm_info );
                      }
 
 #ifndef IS_TRADITIONAL_PLATFORM
@@ -2136,6 +2187,11 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                if( !is_system_uid( ) && !storage_locked_for_admin( ) )
                   check_instance_op_permission( module, handle, get_update_instance_info( handle, "" ) );
 
+               map< string, string > field_scope_and_perm_info_by_id;
+               map< string, string > field_scope_and_perm_info_by_name;
+               get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
+               get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
+
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
@@ -2167,6 +2223,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         string type_name = get_field_type_name( handle, "", i->first );
                         if( type_name == "date_time" || type_name == "tdatetime" )
                            i->second = convert_local_to_utc( i->second, tz_name );
+                     }
+
+                     if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                     {
+                        string scope_and_perm_info;
+
+                        if( field_scope_and_perm_info_by_id.count( i->first ) )
+                           scope_and_perm_info = field_scope_and_perm_info_by_id[ i->first ];
+                        else
+                           scope_and_perm_info = field_scope_and_perm_info_by_name[ i->first ];
+
+                        check_instance_field_permission( module, handle, false, scope_and_perm_info );
                      }
 
 #ifndef IS_TRADITIONAL_PLATFORM

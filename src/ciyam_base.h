@@ -369,6 +369,9 @@ void CIYAM_BASE_DECL_SPEC get_all_enum_pairs( size_t handle,
 void CIYAM_BASE_DECL_SPEC get_all_field_names( size_t handle,
  const std::string& context, std::vector< std::string >& fields );
 
+void CIYAM_BASE_DECL_SPEC get_all_field_scope_and_permission_info( size_t handle,
+ const std::string& context, std::map< std::string, std::string >& field_scope_and_perm_info, bool by_name = false );
+
 std::string CIYAM_BASE_DECL_SPEC get_field_name_for_id(
  size_t handle, const std::string& context, const std::string& id, bool no_throw = false );
 
