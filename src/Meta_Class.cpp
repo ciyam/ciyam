@@ -2462,7 +2462,7 @@ void Meta_Class::impl::impl_Generate( )
 
    vector< pair< string, string > > default_values;
 
-   string order_field, owner_field, permissions_field;
+   string order_field, owner_field, user_perms_field, permission_field;
 
    vector< string > basic_fields;
    vector< string > parent_fields;
@@ -2554,19 +2554,19 @@ void Meta_Class::impl::impl_Generate( )
             else
                outf << " \\\n";
 
-            string field_scope( "both" );
+            string field_scope( c_both );
             if( get_obj( ).child_Field( ).Change_Scope( ) != 0 )
             {
                if( get_obj( ).child_Field( ).Change_Scope( ) == 1 ) // i.e. create_only
-                  field_scope = "create";
+                  field_scope = string( c_create );
                else if( get_obj( ).child_Field( ).Change_Scope( ) == 2 ) // i.e. post_create
-                  field_scope = "update";
+                  field_scope = string( c_update );
                else if( get_obj( ).child_Field( ).Change_Scope( ) == 3 ) // i.e. editing_only
-                  field_scope = "both";
+                  field_scope = string( c_both );
                else if( get_obj( ).child_Field( ).Change_Scope( ) == 4 ) // i.e. viewing_only
-                  field_scope = "both";
+                  field_scope = string( c_both );
                else if( get_obj( ).child_Field( ).Change_Scope( ) == 5 ) // i.e. updating_only
-                  field_scope = "update";
+                  field_scope = string( c_update );
                else
                   throw runtime_error( "unexpected change scope #"
                    + to_string( get_obj( ).child_Field( ).Change_Scope( ) ) + " in Class::Generate" );
@@ -2613,7 +2613,10 @@ void Meta_Class::impl::impl_Generate( )
             }
 
             if( get_obj( ).child_Field( ).Extra( ) == 12 ) // i.e. "user_perms"
-               permissions_field = get_obj( ).child_Field( ).Name( );
+               user_perms_field = get_obj( ).child_Field( ).Name( );
+
+            if( get_obj( ).child_Field( ).Extra( ) == 17 ) // i.e. "permission"
+               permission_field = get_obj( ).child_Field( ).Name( );
 
             bool is_transient = get_obj( ).child_Field( ).Transient( );
 
@@ -2772,8 +2775,11 @@ void Meta_Class::impl::impl_Generate( )
    if( !owner_field.empty( ) )
       outf << "\x60{\x60$owner_field\x60=\x60'" << owner_field << "\x60'\x60}\n";
 
-   if( !permissions_field.empty( ) )
-      outf << "\x60{\x60$permissions_field\x60=\x60'" << permissions_field << "\x60'\x60}\n";
+   if( !permission_field.empty( ) )
+      outf << "\x60{\x60$permission_field\x60=\x60'" << permission_field << "\x60'\x60}\n";
+
+   if( !user_perms_field.empty( ) )
+      outf << "\x60{\x60$permissions_field\x60=\x60'" << user_perms_field << "\x60'\x60}\n";
 
    if( !basic_fields.empty( ) )
    {

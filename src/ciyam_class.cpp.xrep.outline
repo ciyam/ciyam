@@ -1737,7 +1737,10 @@ void `{`$full_class_name`}::impl::after_fetch( )
 
 void `{`$full_class_name`}::impl::finalise_fetch( )
 {
-`{`(`?`$permissions_field`)`&`!`@eq`(`$permissions_field`,`'`'`)\
+`{`(`?`$permission_field`)`&`!`@eq`(`$permission_field`,`'`'`)\
+   get_obj( ).set_variable(
+    get_special_var_name( e_special_var_permission ), get_obj( ).`{`$permission_field`}( ) );
+`}`{`(`?`$permissions_field`)`&`!`@eq`(`$permissions_field`,`'`'`)\
    get_obj( ).set_variable(
     get_special_var_name( e_special_var_permissions ), get_obj( ).`{`$permissions_field`}( ) );
 `}`{`?`$all_finalise_fetch_specifications`[`$all_finalise_fetch_specifications`%,`,\

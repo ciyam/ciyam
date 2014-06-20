@@ -16,6 +16,10 @@ const char* const c_auto = "auto";
 const char* const c_init = "init";
 const char* const c_admin = "admin";
 
+const char* const c_both = "both";
+const char* const c_create = "create";
+const char* const c_update = "update";
+
 const char* const c_anyone = "anyone";
 const char* const c_admin_only = "admin_only";
 const char* const c_owner_only = "owner_only";

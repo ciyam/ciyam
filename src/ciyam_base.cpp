@@ -180,6 +180,7 @@ const char* const c_special_variable_executed = "@executed";
 const char* const c_special_variable_progress = "@progress";
 const char* const c_special_variable_image_dir = "@image_dir";
 const char* const c_special_variable_val_error = "@val_error";
+const char* const c_special_variable_permission = "@permission";
 const char* const c_special_variable_allow_async = "@allow_async";
 const char* const c_special_variable_output_file = "@output_file";
 const char* const c_special_variable_path_prefix = "@path_prefix";
@@ -5032,6 +5033,10 @@ string get_special_var_name( special_var var )
       s = string( c_special_variable_val_error );
       break;
 
+      case e_special_var_permission:
+      s = string( c_special_variable_permission );
+      break;
+
       case e_special_var_allow_async:
       s = string( c_special_variable_allow_async );
       break;
@@ -6914,6 +6919,22 @@ void get_all_field_names( size_t handle, const string& context, vector< string >
 
    for( int i = 0; i < instance.get_num_fields( ); i++ )
       fields.push_back( instance.get_field_name( i ) );
+}
+
+void get_all_field_scope_and_permission_info( size_t handle,
+ const string& context, map< string, string >& field_scope_and_perm_info, bool by_name )
+{
+   class_base& instance( get_class_base_from_handle( handle, context ) );
+
+   field_info_container field_info;
+   instance.get_field_info( field_info );
+
+   for( size_t i = 0; i < field_info.size( ); i++ )
+   {
+      field_scope_and_perm_info.insert( make_pair(
+       ( !by_name ) ? field_info[ i ].id : field_info[ i ].name,
+       field_info[ i ].scope + "," + field_info[ i ].change ) );
+   }    
 }
 
 string get_field_name_for_id( size_t handle, const string& context, const string& id, bool no_throw )
