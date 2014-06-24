@@ -8,7 +8,7 @@
 ; <script/>
 ;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @module @class @uid @key `{`$procedure_id`}
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class @key `{`$procedure_id`}
 ; </script>\
 `,\
 ; NOTE: The following needs to be included in 'autoscript.sio':
@@ -20,10 +20,10 @@
 ;  <finish>`{`$finish`}`}`{`!`@eq`(`$exclude`,`'`'`)
 ;  <exclude>`{`$exclude`}`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage `{`$model_id`} `{`$class_id`} auto @none `{`$procedure_id`}
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage auto `{`$model_id`} `{`$class_id`} @none `{`$procedure_id`}
 ; </script>\
 `}
 .storage_init %1
 `{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
-.pe auto @now %2 %3 -v=@uid=%4 "%5" %6
+.pe %2 @now %3 %4 "%5" %6
 .quit
