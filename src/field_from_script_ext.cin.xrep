@@ -7,9 +7,9 @@
 ; <script/>
 ;  <name>`{`$model`}_`{`$class`}_`{`$field`}
 ;  <filename>*script*
-;  <arguments>`{`$model`}_`{`$class`}_`{`$field`}.cin @storage @module @class @key @uid @fields_and_values
+;  <arguments>`{`$model`}_`{`$class`}_`{`$field`}.cin @storage @uid @module @class @key @fields_and_values
 ; </script>
 .storage_init %1
 `{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
-.pu auto @now %2 %3 %4 "@uid=%5,%6"
+.pu %2 @now %3 %4 %5 "%6"
 .quit
