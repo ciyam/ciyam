@@ -1,0 +1,35 @@
+`{`@eq`(`'get_state`'`,`$section`)\
+   // [(start permit_update_always)] `{`$arg_id`}
+   if( get_obj( ).get_is_updating( ) )
+   {
+      string update_fields( get_obj( ).get_variable( get_special_var_name( e_special_var_update_fields ) ) );
+
+      if( !update_fields.empty( ) )
+      {
+         set< string > fields;
+
+         split_string( update_fields, fields );
+
+`{`[`$arg_field_list`,\
+         if( fields.count( c_field_id_\\$ ) )
+            fields.erase( c_field_id_\\$ );
+         else if( fields.count( c_field_name_\\$ ) )
+            fields.erase( c_field_name_\\$ );
+`+\n`]`}
+         if( fields.empty( ) )
+            state |= c_state_ignore_uneditable;
+      }
+   }
+   // [(finish permit_update_always)] `{`$arg_id`}
+`}
+`{`@eq`(`'get_always_required_field_names`'`,`$section`)\
+   // [(start permit_update_always)] `{`$arg_id`}
+`{`[`$arg_field_list`,\
+   dependents.insert( "\\$" );
+
+   if( ( use_transients && is_field_transient( e_field_id_\\$ ) )
+    || ( !use_transients && !is_field_transient( e_field_id_\\$ ) ) )
+      names.insert( "\\$" );
+`+\n`]`}
+   // [(finish permit_update_always)] `{`$arg_id`}
+`}

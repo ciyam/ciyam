@@ -2192,12 +2192,21 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
                get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
 
+               string update_fields;
                for( map< string, string >::iterator i = field_value_items.begin( ), end = field_value_items.end( ); i != end; ++i )
                {
                   // NOTE: If a field to be set starts with @ then it is instead assumed to be a "variable".
                   if( !i->first.empty( ) && i->first[ 0 ] == '@' )
                      instance_set_variable( handle, "", i->first, i->second );
+                  else
+                  {
+                     if( !update_fields.empty( ) )
+                        update_fields += ',';
+                     update_fields += i->first;
+                  }
                }
+
+               instance_set_variable( handle, "", get_special_var_name( e_special_var_update_fields ), update_fields );
 
                op_instance_update( handle, "", key, ver_info, false );
 
