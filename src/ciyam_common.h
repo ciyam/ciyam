@@ -82,6 +82,7 @@ enum special_var
    e_special_var_path_prefix,
    e_special_var_permissions,
    e_special_var_skip_update,
+   e_special_var_update_fields,
    e_special_var_check_if_changed,
    e_special_var_skip_after_fetch,
    e_special_var_fields_and_values,

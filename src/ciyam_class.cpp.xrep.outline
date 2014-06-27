@@ -1081,6 +1081,10 @@ uint64_t `{`$full_class_name`}::impl::get_state( ) const
  arg_id=$specification_\0_id arg_var=$specification_\0_var\
  arg_tfield=$specification_\0_tfield arg_admin_always=$specification_\0_admin_always`}\
 `,\
+`@eq`(`'\1`'`,`'permit_update_always`'`)
+`{`#permit_update_always.spec.xrep section=get_state\
+ arg_id=$specification_\0_id arg_field_list=$specification_\0_field_list`}\
+`,\
 `@eq`(`'\1`'`,`'permit_user_ignore_uneditable`'`)
 `{`#permit_user_ignore_uneditable.spec.xrep section=get_state module_name=$module_name class_name=$class_name\
  arg_id=$specification_\0_id arg_spclass=$specification_\0_spclass arg_scfield=$specification_\0_scfield\
@@ -1433,6 +1437,10 @@ void `{`$full_class_name`}::impl::validate( unsigned state, bool is_internal, va
 `{`#check_matches_regex.spec.xrep section=validate class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_fistexttype=$specification_\0_fistexttype\
  arg_expression=$specification_\0_expression arg_func=$specification_\0_func`}\
+`,\
+`@eq`(`'\1`'`,`'check_no_repeats`'`)
+`{`#check_no_repeats.spec.xrep section=validate class_name=$class_name\
+ arg_id=$specification_\0_id arg_field_list=$specification_\0_field_list arg_skip_nulls=$specification_\0_skip_nulls`}\
 `,\
 `@eq`(`'\1`'`,`'check_parent_fk_match`'`)
 `{`#check_parent_fk_match.spec.xrep section=validate class_name=$class_name\
@@ -3778,6 +3786,10 @@ void `{`$full_class_name`}::get_always_required_field_names(
 `,\
 `@eq`(`'\1`'`,`'permit_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_tfield`)
 `{`#permit_ignore_uneditable.spec.xrep section=get_always_required_field_names arg_id=$specification_\0_id arg_tfield=$specification_\0_tfield`}\
+`,\
+`@eq`(`'\1`'`,`'permit_update_always`'`)
+`{`#permit_update_always.spec.xrep section=get_always_required_field_names\
+ arg_id=$specification_\0_id arg_field_list=$specification_\0_field_list`}\
 `,\
 `@eq`(`'\1`'`,`'permit_user_ignore_uneditable`'`)`&`!`@eq`(`'`'`,`$specification_\0_tpfield`)
 `{`#permit_user_ignore_uneditable.spec.xrep section=get_always_required_field_names class_name=$class_name\
