@@ -7593,7 +7593,7 @@ string exec_bulk_ops( const string& module,
                if( continuation.size( ) && continuation[ continuation.size( ) - 1 ] == '\r' )
                   continuation.erase( continuation.size( ) - 1 );
 
-               continuation_offset = next.size( ) + 2;
+               continuation_offset = next.size( ) + 1;
 
                ++line;
                next += '\n' + continuation;
