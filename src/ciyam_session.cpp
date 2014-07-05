@@ -2487,6 +2487,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
              module, mclass, method, &socket_handler.get_transformations( ), &method_id ) );
 
             map< string, string > set_value_items;
+
             if( !set_values.empty( ) )
                parse_field_values( module, mclass, set_values, set_value_items, &socket_handler.get_transformations( ) );
 
@@ -2556,6 +2557,15 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                   has_any_set_flds = true;
             }
 
+            map< string, string > field_scope_and_perm_info_by_id;
+            map< string, string > field_scope_and_perm_info_by_name;
+
+            if( has_any_set_flds )
+            {
+               get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_id );
+               get_all_field_scope_and_permission_info( handle, "", field_scope_and_perm_info_by_name, true );
+            }
+
             string client_message = instance_get_variable( handle, "", get_special_var_name( e_special_var_message ) );
             if( !client_message.empty( ) )
                handler.output_progress( client_message );
@@ -2623,6 +2633,18 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                         instance_set_variable( handle, "", j->first, j->second );
                      else
                      {
+                        if( !is_system_uid( ) && !storage_locked_for_admin( ) )
+                        {
+                           string scope_and_perm_info;
+
+                           if( field_scope_and_perm_info_by_id.count( j->first ) )
+                              scope_and_perm_info = field_scope_and_perm_info_by_id[ j->first ];
+                           else
+                              scope_and_perm_info = field_scope_and_perm_info_by_name[ j->first ];
+
+                           check_instance_field_permission( module, handle, true, scope_and_perm_info );
+                        }
+
                         string method_name_and_args( "set " );
                         method_name_and_args += j->first + " ";
                         method_name_and_args += "\"" + escaped( j->second, "\"", c_nul ) + "\"";

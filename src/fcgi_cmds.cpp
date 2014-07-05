@@ -275,8 +275,6 @@ bool perform_action( const string& module_name,
 
    if( act == c_act_link )
    {
-      fields_and_values = "@link=1,";
-
       fields_and_values += field;
       fields_and_values += "=";
       fields_and_values += escaped( extra, ",\"" );
