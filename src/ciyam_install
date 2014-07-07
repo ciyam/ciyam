@@ -14,7 +14,7 @@ fi
 
 ps ax | grep ciyamd | awk '{print $1}' | xargs kill 2>/dev/null
 
-cat ../.git/config | grep github.com/ciyam/ciyam.git 2>&1 > /dev/null
+cat ../.git/config | grep ciyam.git 2>&1 > /dev/null
 GITCHECK=$?
 
 if [ "$GITCHECK" != "0" ]
@@ -23,12 +23,12 @@ then
  exit 1
 fi
 
-DESTPATH="/usr/local/src/ciyam"
+DESTPATH="/home/tux/ciyam/src"
 
-mkdir -p "${DESTPATH}"
-cp -R ../src/ "${DESTPATH}"
+ln -s "${DESTPATH}/ciyam_server" "/usr/bin/"
+ln -s "${DESTPATH}/ciyam_base.so" "/usr/lib64/"
 
-ln -s "${DESTPATH}/ciyam/ciyam_server" "/usr/local/bin/"
-ln -s "${DESTPATH}/ciyam/ciyam_base.so" "/usr/local/lib/"
+insserv ciyamd
 
-exit 0
+sed -i "s#.WEBDIR#${WEBDIR}#" ciyam_server.sio
+
