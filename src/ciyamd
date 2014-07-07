@@ -20,9 +20,9 @@
 rc_reset
 
 CIYAMD_BIN=/usr/bin/ciyam_server
-test -x $BAR_BIN ||
+test -x $CIYAMD_BIN ||
 {
- echo "$BAR_BIN not installed";
+ echo "$CIYAMD_BIN not installed";
  if [ "$1" = "stop" ]; then
   exit 0;
  else
@@ -33,7 +33,7 @@ test -x $BAR_BIN ||
 case "$1" in
  start)
   echo -n "Starting ciyam_server "
-  /sbin/startproc $CIYAMD_BIN -daemon -chdir=/home/ian/ciyam
+  /sbin/startproc -u tux -g users $CIYAMD_BIN -daemon -chdir=/home/tux/ciyam/src
   rc_status -v
   ;;
 
