@@ -54,6 +54,8 @@ var hasShownAutoProgress = false;
 var jump_back = false;
 var had_act_error = false;
 
+var separator_digits = 3;
+
 var serverId = '';
 var uniqueId = '';
 
@@ -1768,17 +1770,48 @@ function validate_element( e, is_first )
          {
             if( e.value != '' )
             {
+               var had_separator = false;
+               var number_of_digits_after_separator = 0;
+               var number_of_digits_before_separator = 0;
+
                for( var j = 0; j < e.value.length; j++ )
                {
                   if( j == 0 && ( e.value.charAt( j ) == '+' || e.value.charAt( j ) == '-' ) )
                      continue;
+
+                  if( j != 0 && e.value.charAt( j ) == ',' )
+                  {
+                     if( had_separator && number_of_digits_after_separator != separator_digits )
+                     {
+                        okay = false;
+                        break;
+                     }
+                     else
+                     {
+                        had_separator = true;
+                        number_of_digits_after_separator = 0;
+                        continue;
+                     }
+                  }
 
                   if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
                   {
                      okay = false;
                      break;
                   }
+                  else if( had_separator )
+                     number_of_digits_after_separator++;
+                  else
+                     number_of_digits_before_separator++;
+
+                  if( number_of_digits_after_separator > separator_digits )
+                     break;
                }
+
+               if( had_separator
+                && ( number_of_digits_after_separator != separator_digits
+                || number_of_digits_before_separator > separator_digits ) )
+                  okay = false;
 
                if( !okay && validation_error == '' )
                   validation_error = displayIncorrectIntegerFormat;
@@ -1789,11 +1822,29 @@ function validate_element( e, is_first )
             if( e.value != '' )
             {
                var had_decimal = false;
+               var had_separator = false;
+               var number_of_digits_after_separator = 0;
+               var number_of_digits_before_separator = 0;
 
                for( var j = 0; j < e.value.length; j++ )
                {
                   if( j == 0 && ( e.value.charAt( j ) == '+' || e.value.charAt( j ) == '-' ) )
                      continue;
+
+                  if( !had_decimal && j != 0 && e.value.charAt( j ) == ',' )
+                  {
+                     if( had_separator && number_of_digits_after_separator != separator_digits )
+                     {
+                        okay = false;
+                        break;
+                     }
+                     else
+                     {
+                        had_separator = true;
+                        number_of_digits_after_separator = 0;
+                        continue;
+                     }
+                  }
 
                   if( e.value.charAt( j ) < '0' || e.value.charAt( j ) > '9' )
                   {
@@ -1805,7 +1856,19 @@ function validate_element( e, is_first )
                         break;
                      }
                   }
+                  else if( !had_decimal && had_separator )
+                     number_of_digits_after_separator++;
+                  else if( !had_decimal && !had_separator )
+                     number_of_digits_before_separator++;
+
+                  if( number_of_digits_after_separator > separator_digits )
+                     break;
                }
+
+               if( had_separator
+                && ( number_of_digits_after_separator != separator_digits
+                || number_of_digits_before_separator > separator_digits ) )
+                  okay = false;
 
                if( !okay && validation_error == '' )
                   validation_error = displayIncorrectNumericFormat;

@@ -1653,6 +1653,10 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
             extra_content << "         <div id=\"timeinfo\">" << time_info << "\n         </div>";
          }
 
+         // NOTE: It is being assumed that if "base64" is present then client-crypto is in use.
+         if( input_data.count( c_param_base64 ) )
+            extra_content << "         <div id=\"lockinfo\"></div>\n";
+
          extra_content << "      </div >\n";
          extra_content << "   </div>\n";
 

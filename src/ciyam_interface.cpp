@@ -792,6 +792,9 @@ void request_handler::process_request( )
       if( !p_session_info && atoi( ver.c_str( ) ) < c_ui_script_version )
          throw runtime_error( GDS( c_display_client_script_out_of_date ) );
 
+      bool has_decrypted = false;
+      bool has_failed_to_decrypt = false;
+
       string base64_data( input_data[ c_param_base64 ] );
       if( !base64_data.empty( ) )
       {
@@ -808,9 +811,20 @@ void request_handler::process_request( )
          {
             size_t pos = decoded.find( c_dummy_param_prefix );
             if( pos != string::npos )
+            {
+               has_decrypted = true;
                parse_input( ( char* )decoded.c_str( ), decoded.size( ), input_data, '&', true );
+            }
          }
+
+         if( !has_decrypted )
+            has_failed_to_decrypt = true;
       }
+
+      // NOTE: Erase the base64 data if it wasn't decrypted so that other code can
+      // just check if it's present to know that client-crypto is currently in use.
+      if( !encrypt_data || has_failed_to_decrypt )
+         input_data.erase( c_param_base64 );
 
       string back( input_data[ c_param_back ] );
       string data( input_data[ c_param_data ] );
