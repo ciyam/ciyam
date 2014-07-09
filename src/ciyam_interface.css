@@ -368,6 +368,13 @@ td a
    text-align: right;
 }
 
+#nav #lockinfo
+{
+   height: 30px;
+   text-align: right;
+   background: url(ico_password.png) bottom right no-repeat;
+}
+
 #nav #username
 {
    color: #666;
