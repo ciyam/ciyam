@@ -1,6 +1,7 @@
-`{`@eq`(`'after_fetch`'`,`$section`)\
+`{`@eq`(`'after_fetch`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start transient_field_from_uid)] `{`$arg_id`}
-   if( !is_system_uid( )
+   if( !is_system_uid( )`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && get_obj( ).`{`$arg_tfield`}( )`}
     && ( required_transients.count( "`{`$arg_field`}" )
     || get_obj( ).needs_field_value( "`{`$arg_field`}" ) ) )
       get_obj( ).`{`$arg_field`}( get_uid( ) );

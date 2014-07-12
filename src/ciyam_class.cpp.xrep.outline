@@ -1655,7 +1655,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_key`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_key.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_module_string`'`)
 `{`#transient_field_from_module_string.spec.xrep section=after_fetch class_name=$class_name\
@@ -1673,9 +1673,9 @@ void `{`$full_class_name`}::impl::after_fetch( )
 `{`#transient_field_from_sum.spec.xrep section=after_fetch class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_sfield=$specification_\0_sfield`}\
 `,\
-`@eq`(`'\1`'`,`'transient_field_from_uid`'`)
+`@eq`(`'\1`'`,`'transient_field_from_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_uid.spec.xrep section=after_fetch class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`@eq`(`$specification_\0_post_init`,`'`'`)
 `{`#transient_field_from_variable.spec.xrep section=after_fetch class_name=$class_name\
@@ -1857,12 +1857,16 @@ void `{`$full_class_name`}::impl::post_init( )
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_key`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_key.spec.xrep section=post_init class_name=$class_name\
- arg_id=$specification_\0_id arg_field=$specification_\0_field`}
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_variable`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_variable.spec.xrep section=post_init class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_variable=$specification_\0_variable\
  arg_sfield=$specification_\0_sfield arg_spfield=$specification_\0_spfield arg_session=$specification_\0_session`}
+`,\
+`@eq`(`'\1`'`,`'transient_field_from_uid`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
+`{`#transient_field_from_uid.spec.xrep section=post_init class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_tfield=$specification_\0_tfield`}
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_unary_op`'`)`&`@eq`(`$specification_\0_post_init`,`'true`'`)\
 `{`#transient_field_from_unary_op.spec.xrep section=post_init class_name=$class_name module_name=$module_name\
