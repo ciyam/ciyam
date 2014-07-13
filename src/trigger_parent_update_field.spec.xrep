@@ -1,4 +1,4 @@
-`{`@eq`(`'for_or_after_store`'`,`$section`)\
+`{`@eq`(`'for_or_after_store`'`,`$section`)`|`@eq`(`'for_destroy`'`,`$section`)\
    // [(start trigger_parent_update_field)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
    if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
