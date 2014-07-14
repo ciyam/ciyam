@@ -386,7 +386,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
       {
          // NOTE: In the case where an edit occurs via an action a field assignment may
          // be required via use of the field/extra query string variables.
-         if( act == c_act_edit && data != c_new_record && !field.empty( ) )
+         if( act == c_act_edit && !is_new_record && !field.empty( ) )
          {
             if( !set_field_values.empty( ) )
                set_field_values += ",";
