@@ -53,6 +53,7 @@ const char* const c_attribute_finish = "finish";
 const char* const c_attribute_exclude = "exclude";
 const char* const c_attribute_filename = "filename";
 const char* const c_attribute_arguments = "arguments";
+const char* const c_attribute_timestamp = "timestamp";
 
 const int c_min_cycle_seconds_for_logging = 3600;
 
@@ -76,7 +77,7 @@ enum exclude_type
 
 struct script_info
 {
-   script_info( ) : exclude( e_exclude_type_none ), allow_late_exec( false ) { }
+   script_info( ) : last_mod( 0 ), exclude( e_exclude_type_none ), allow_late_exec( false ) { }
 
    string name;
 
@@ -89,6 +90,10 @@ struct script_info
 
    string filename;
    string arguments;
+
+   time_t last_mod;
+
+   string tsfilename;
 
    exclude_type exclude;
 
@@ -195,6 +200,10 @@ void read_script_info( )
 
          info.filename = reader.read_attribute( c_attribute_filename );
          info.arguments = reader.read_opt_attribute( c_attribute_arguments );
+         info.tsfilename = reader.read_opt_attribute( c_attribute_timestamp );
+
+         if( file_exists( info.tsfilename ) )
+            info.last_mod = last_modification_time( info.tsfilename );
 
          g_scripts.push_back( info );
 
@@ -304,7 +313,14 @@ void output_schedule( ostream& os )
    guard g( g_mutex );
 
    for( script_schedule_const_iterator ssci = g_script_schedule.begin( ); ssci != g_script_schedule.end( ); ++ssci )
-      os << ( ssci->first ).as_string( true, false ) << ' ' << g_scripts[ ssci->second ].name << endl;
+   {
+      os << ( ssci->first ).as_string( true, false ) << ' ' << g_scripts[ ssci->second ].name;
+
+      if( !g_scripts[ ssci->second ].tsfilename.empty( ) )
+         os << " [" << g_scripts[ ssci->second ].tsfilename << "]";
+
+      os << '\n';
+   }
 }
 
 autoscript_session::autoscript_session( )
@@ -367,7 +383,22 @@ void autoscript_session::on_start( )
 
                date_time next( j->first );
 
-               if( !is_excluded( g_scripts[ j->second ], now )
+               bool okay = true;
+
+               // NOTE: If a script is dependent upon file modification then
+               // check whether the file's modificaton time has been changed.
+               string tsfilename( g_scripts[ j->second ].tsfilename );
+               if( !tsfilename.empty( ) && file_exists( tsfilename ) )
+               {
+                  time_t last_mod = last_modification_time( tsfilename );
+
+                  if( last_mod == g_scripts[ j->second ].last_mod )
+                     okay = false;
+                  else
+                     g_scripts[ j->second ].last_mod = last_mod;
+               }
+
+               if( okay && !is_excluded( g_scripts[ j->second ], now )
                 && ( g_scripts[ j->second ].allow_late_exec || ( now - next <= 1.0 ) ) )
                {
                   string filename( g_scripts[ j->second ].filename );
