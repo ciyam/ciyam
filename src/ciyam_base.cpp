@@ -9589,6 +9589,16 @@ void finish_instance_op( class_base& instance, bool apply_changes,
        && handler.get_lock_info( instance_accessor.get_lock_handle( ) ).transaction_level != p_ods->get_transaction_level( ) )
          throw runtime_error( "attempt to perform apply for operation commenced outside the current transaction scope" );
 
+      // NOTE: If a "clone" lock had been obtained when the op was started then release it
+      // now in order to allow "for_store" or "for_destroy" to perform operations with the
+      // clone record itself if required.
+      size_t xlock_handle( instance_accessor.get_xlock_handle( ) );
+      if( xlock_handle )
+      {
+         release_obtained_lock( xlock_handle );
+         instance_accessor.set_xlock_handle( 0 );
+      }
+
       bool executing_sql = false;
       try
       {
