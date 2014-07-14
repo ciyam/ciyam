@@ -410,6 +410,10 @@ void autoscript_session::on_start( )
                   if( !tsfilename.empty( ) )
                   {
                      cycle_seconds = mod_time - g_scripts[ j->second ].last_mod;
+
+                     if( cycle_seconds < 0 )
+                        cycle_seconds *= -1;
+
                      g_scripts[ j->second ].last_mod = mod_time;
                   }
 
