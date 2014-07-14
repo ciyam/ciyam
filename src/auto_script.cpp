@@ -384,18 +384,17 @@ void autoscript_session::on_start( )
                date_time next( j->first );
 
                bool okay = true;
+               time_t mod_time = 0;
 
                // NOTE: If a script is dependent upon file modification then
                // check whether the file's modificaton time has been changed.
                string tsfilename( g_scripts[ j->second ].tsfilename );
                if( !tsfilename.empty( ) && file_exists( tsfilename ) )
                {
-                  time_t last_mod = last_modification_time( tsfilename );
+                  mod_time = last_modification_time( tsfilename );
 
-                  if( last_mod == g_scripts[ j->second ].last_mod )
+                  if( mod_time == g_scripts[ j->second ].last_mod )
                      okay = false;
-                  else
-                     g_scripts[ j->second ].last_mod = last_mod;
                }
 
                if( okay && !is_excluded( g_scripts[ j->second ], now )
@@ -405,6 +404,14 @@ void autoscript_session::on_start( )
                   bool is_script = ( filename == c_script_dummy_filename );
 
                   string arguments( process_script_args( g_scripts[ j->second ].arguments, is_script ) );
+
+                  int cycle_seconds = g_scripts[ j->second ].cycle_seconds;
+
+                  if( !tsfilename.empty( ) )
+                  {
+                     cycle_seconds = mod_time - g_scripts[ j->second ].last_mod;
+                     g_scripts[ j->second ].last_mod = mod_time;
+                  }
 
                   if( is_script )
                   {
@@ -418,7 +425,7 @@ void autoscript_session::on_start( )
                      outf.close( );
 
                      // NOTE: Skip logging for any scripts that cycle too frequently.
-                     if( g_scripts[ j->second ].cycle_seconds >= c_min_cycle_seconds_for_logging )
+                     if( cycle_seconds >= c_min_cycle_seconds_for_logging )
                         script_args += " " + g_scripts[ j->second ].name;
 
 #ifdef _WIN32
@@ -452,6 +459,7 @@ void autoscript_session::on_start( )
                      next = date_time::maximum( );
                      break;
                   }
+
                   next += ( seconds )g_scripts[ j->second ].cycle_seconds;
                }
 
