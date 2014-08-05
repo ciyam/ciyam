@@ -1646,11 +1646,8 @@ bool output_view_form( ostream& os, const string& act,
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
                   is_empty = false;
-                  dt = date_time::standard( );
+                  dt = dt_current;
                }
-
-               if( !is_empty && sess_info.tz_name.empty( ) )
-                  dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
                if( extra_data.count( c_field_extra_time_precision ) )
@@ -2720,10 +2717,7 @@ bool output_view_form( ostream& os, const string& act,
             if( is_new_record )
             {
                if( source.defcurrent_fields.count( source_value_id ) )
-               {
-                  date_time dt( date_time::standard( ) );
-                  cell_data = dt.as_string( );
-               }
+                  cell_data = dt_current.as_string( );
                else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
@@ -2731,9 +2725,6 @@ bool output_view_form( ostream& os, const string& act,
             if( !cell_data.empty( ) )
             {
                date_time dt( cell_data );
-
-               if( sess_info.tz_name.empty( ) )
-                  dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
                if( extra_data.count( c_field_extra_time_precision ) )
