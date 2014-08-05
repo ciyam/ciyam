@@ -296,6 +296,31 @@ string& remove_uid_extra_from_log_command( string& log_command )
       }
    }
 
+#ifndef IS_TRADITIONAL_PLATFORM
+   pos = log_command.find( '"' );
+
+   // NOTE: Remove group and timezone name args for logging if non-traditional.
+   string::size_type gpos = log_command.find( " -g=" );
+   if( gpos != string::npos && ( pos == string::npos || gpos < pos ) )
+   {
+      string::size_type spos = log_command.find( ' ', gpos + 1 );
+      if( spos == string::npos )
+         throw runtime_error( "unexpected group info in: " + log_command );
+      else
+         log_command.erase( gpos, spos - gpos );
+   }
+
+   string::size_type tpos = log_command.find( " -tz=" );
+   if( tpos != string::npos && ( pos == string::npos || tpos < pos ) )
+   {
+      string::size_type spos = log_command.find( ' ', tpos + 1 );
+      if( spos == string::npos )
+         throw runtime_error( "unexpected tz info in: " + log_command );
+      else
+         log_command.erase( tpos, spos - tpos );
+   }
+#endif
+
    return log_command;
 }
 

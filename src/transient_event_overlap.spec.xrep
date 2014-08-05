@@ -37,7 +37,7 @@
              && ( !get_obj( ).get_variable( "event_overlap_all_groups" ).empty( )
              || is_null( get_obj( ).`{`$arg_group`}( ) ) || get_obj( ).`{`$arg_group`}( ) == cp_other->`{`$arg_group`}( ) ) )\
 `}`,\
-`!`@eq`(`$arg_user`,`'`'`)
+`!`@eq`(`$arg_user`,`'`'`)\
             // NOTE: Normally the `{`$arg_user`} must match if not null but if the variable
             // "event_overlap_all_users" is set then this test will be true regardless.
             if( get_obj( ).get_key( ) != cp_other->get_key( )
