@@ -1643,6 +1643,9 @@ bool output_view_form( ostream& os, const string& act,
                   cell_data.erase( );
                }
 
+               if( !is_empty && sess_info.tz_name.empty( ) )
+                  dt += ( seconds )sess_info.gmt_offset;
+
                if( is_empty && source.defcurrent_fields.count( source_value_id ) )
                {
                   is_empty = false;
@@ -2714,10 +2717,15 @@ bool output_view_form( ostream& os, const string& act,
          }
          else if( source.datetime_fields.count( source_value_id ) )
          {
+            bool is_current = false;
+
             if( is_new_record )
             {
                if( source.defcurrent_fields.count( source_value_id ) )
+               {
+                  is_current = true;
                   cell_data = dt_current.as_string( );
+               }   
                else if( !source.protected_fields.count( source_value_id ) )
                   cell_data.erase( );
             }
@@ -2725,6 +2733,9 @@ bool output_view_form( ostream& os, const string& act,
             if( !cell_data.empty( ) )
             {
                date_time dt( cell_data );
+
+               if( !is_current && sess_info.tz_name.empty( ) )
+                  dt += ( seconds )sess_info.gmt_offset;
 
                string time_precision;
                if( extra_data.count( c_field_extra_time_precision ) )
