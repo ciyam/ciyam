@@ -496,7 +496,7 @@
             if (!self._v) {
                 var dateReg = /(\d{4}-\d{2}-\d{2})/;
                 var timeReg = /(\d?\d:\d{2}(?:\:\d{2})?)/;
-                var date;
+                var date = new Date();
                 if (self._o.formatPreset == 1) {
                     var strDate = dateReg.exec(opts.field.value);
                     var strTime = timeReg.exec(opts.field.value);
@@ -505,13 +505,19 @@
                         date = new Date(strDate[0]);
                     }
 
-                    if(strTime != null) {
+                    if(self._o.useTime && strTime != null) {
                         strTime = strTime[0];
-                        date.setHours(strTime.substr(0, 2), strTime.substr(3, 2));
+                        date.setHours(parseInt(strTime.substr(0, 2)), parseInt(strTime.substr(3, 2)));
 
-                        if(strTime.substr(6, 2) != "") {
-                            date.setSeconds(strTime.substr(6, 2));
+                        if(self._o.useSecs && strTime.substr(6, 2) != "") {
+                            date.setSeconds(parseInt(strTime.substr(6, 2)));
                         }
+                        else {
+                            date.setSeconds(0);
+                        }
+                    }
+                    else {
+                     date.setHours( 0, 0, 0 );
                     }
                 }
                 else {
@@ -528,7 +534,12 @@
 
         self._onInputClick = function(e)
         {
-            self.show();
+            if(self._v == false) {
+                self.show();
+            }
+            else {
+                self.hide();
+            }
         };
 
         self._onInputBlur = function(e)     /**************************************************/
@@ -701,28 +712,17 @@
                         }
                     }
                     else if (this._o.formatPreset == 1) {
-                        if (this._d.toISOString) {
-                            string = this._d.toISOString().substr(0,10)
-                	        if (this._o.useTime) {
-                                var hours = ('0' + this._d.getHours()).slice(-2);
-                                var minutes = ('0' + this._d.getMinutes()).slice(-2);
-                	            string += (' ' + hours + ':' + minutes);
-                                if (this._o.useSecs) {
-                                    var seconds = ('0' + this._d.getSeconds()).slice(-2);
-                                    string += (':' + seconds);
-                                }
-                            }
-                        } else {
-                            month = this._d.getMonth() + 1;
-                            day = this._d.getDate();
-                            string = this._d.getFullYear() + '-';
-                            string += (month < 10 ? '0' + month : month)  + '-';
-                            string += (day < 10 ? '0' + day : day);
-                	        if (this._o.useTime) {
-                	            string += (' ' + this._d.toTimeString().substr(0,5));
-                                if (this._o.useSecs) {
-                                    string += this._d.toTimeString().substr(5,3);
-                                }
+                        var year = this._d.getFullYear();
+                        var month = ('0' + (this._d.getMonth() + 1)).slice(-2);
+                        var date = ('0' + this._d.getDate()).slice(-2);
+                        string = year + '-' + month + '-' + date;
+                        if (this._o.useTime) {
+                            var hours = ('0' + this._d.getHours()).slice(-2);
+                            var minutes = ('0' + this._d.getMinutes()).slice(-2);
+                            string += (' ' + hours + ':' + minutes);
+                            if (this._o.useSecs) {
+                                var seconds = ('0' + this._d.getSeconds()).slice(-2);
+                                string += (':' + seconds);
                             }
                         }
                     } else {
@@ -1121,3 +1121,4 @@
     };
 
 })(window, window.document);
+
