@@ -21,23 +21,23 @@ if exist %1_%2.pdf.vars.xrep del %1_%2.pdf.vars.xrep
 
 if exist %1_%2.list.pdf.sio del %1_%2.list.pdf.sio
 if exist %1_%2.list.pdf.vars.xrep del %1_%2.list.pdf.vars.xrep
-for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.list%n.pdf.sio %1_%2.list%n.pdf.vars.xrep
+for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.list%%n.pdf.sio %1_%2.list%%n.pdf.vars.xrep
 
 if exist %1_%2.glist.pdf.sio del %1_%2.glist.pdf.sio
 if exist %1_%2.glist.pdf.vars.xrep del %1_%2.glist.pdf.vars.xrep
-for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.glist%n.pdf.sio %1_%2.glist%n.pdf.vars.xrep
+for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.glist%%n.pdf.sio %1_%2.glist%%n.pdf.vars.xrep
 
 if exist %1_%2.ulist.pdf.sio del %1_%2.ulist.pdf.sio
 if exist %1_%2.ulist.pdf.vars.xrep del %1_%2.ulist.pdf.vars.xrep
-for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.ulist%n.pdf.sio %1_%2.ulist%n.pdf.vars.xrep
+for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.ulist%%n.pdf.sio %1_%2.ulist%%n.pdf.vars.xrep
 
 if exist %1_%2.nglist.pdf.sio del %1_%2.nglist.pdf.sio
 if exist %1_%2.nglist.pdf.vars.xrep del %1_%2.nglist.pdf.vars.xrep
-for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.nglist%n.pdf.sio %1_%2.nglist%n.pdf.vars.xrep
+for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.nglist%%n.pdf.sio %1_%2.nglist%%n.pdf.vars.xrep
 
 if exist %1_%2.nulist.pdf.sio del %1_%2.nulist.pdf.sio
 if exist %1_%2.nulist.pdf.vars.xrep del %1_%2.nulist.pdf.vars.xrep
-for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.nulist%n.pdf.sio %1_%2.nulist%n.pdf.vars.xrep
+for %%n in (1 2 3 4 5 6 7 8 9) do call delifexist %1_%2.nulist%%n.pdf.sio %1_%2.nulist%%n.pdf.vars.xrep
 
 if exist %1_%2.vars.xrep.sav del %1_%2.vars.xrep.sav
 
