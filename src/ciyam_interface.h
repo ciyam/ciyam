@@ -354,6 +354,7 @@ const char* const c_list_type_extra_no_erase = "no_erase";
 const char* const c_list_type_extra_no_limit = "no_limit";
 const char* const c_list_type_extra_no_print = "no_print";
 const char* const c_list_type_extra_admin_new = "admin_new";
+const char* const c_list_type_extra_no_totals = "no_totals";
 const char* const c_list_type_extra_owner_new = "owner_new";
 const char* const c_list_type_extra_quick_link = "quick_link";
 const char* const c_list_type_extra_admin_erase = "admin_erase";

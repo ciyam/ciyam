@@ -5383,6 +5383,23 @@
       </specifications>
      </field>
      <field/>
+      <id>122150
+      <name>Display_Totals
+      <type>bool
+      <mandatory>true
+      <default_value>1
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>122149
       <name>File_Links_Always_As_Single
       <type>bool
@@ -30530,6 +30547,7 @@
      <field_info>122122;force
      <field_info>122116
      <field_info>122110
+     <field_info>122150
      <field_info>122114;force
      <field_info>122115;enum=689
      <field_info>122118

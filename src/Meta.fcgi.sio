@@ -3612,6 +3612,14 @@
      <modifiers>800:relegate,1000:relegate
     </field>
     <field/>
+     <name>field_list_display_totals
+     <field>122150
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_list_allow_text_search
      <field>122114
      <ftype>bool

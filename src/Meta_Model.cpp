@@ -3365,6 +3365,13 @@ void Meta_Model::impl::impl_Generate( )
                   get_obj( ).child_List( ).Generate_PDF_List( variation );
             }
 
+            if( !get_obj( ).child_List( ).Display_Totals( ) )
+            {
+               if( !list_extra.empty( ) )
+                  list_extra += ',';
+               list_extra += "no_totals";
+            }
+
             if( get_obj( ).child_List( ).Print_Restriction( ) != 2 ) // i.e. denied_always
             {
                if( get_obj( ).child_List( ).Print_Without_Highlight( ) )

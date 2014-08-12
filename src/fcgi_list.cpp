@@ -2342,6 +2342,7 @@ void output_list_form( ostream& os,
    int display_offset = 0;
    int orientation_col = 0;
    int total_display_cols = 0;
+
    map< string, string > display_names;
    vector< numeric > print_total_values;
    vector< size_t > print_total_col_nums;
@@ -2350,6 +2351,7 @@ void output_list_form( ostream& os,
    vector< string > print_summary_value_ids;
    vector< string > print_total_col_value_ids;
    vector< numeric > print_summary_sub_totals;
+
    for( size_t i = 0; i < source.field_ids.size( ); i++ )
    {
       if( source.field_ids[ i ] == source.filename_field )
@@ -3487,57 +3489,60 @@ void output_list_form( ostream& os,
 
       os << "<tfoot>\n";
 
-      os << "<tr class=\"footer\">\n";
-
-      if( display_list_checks )
-         os << "  <td>&nbsp;</td>\n";
-
       int extra = 0;
       if( print_list_opts.count( c_list_print_opt_show_numbers ) )
          extra++;
 
-      if( print_total_values.empty( ) )
-         os << "  <td colspan=\"" << ( total_display_cols + extra )
-          << "\"><b>" << GDS( c_display_total ) << "</b>&nbsp;&nbsp;"
-           << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
-      else
+      if( !extras.count( c_list_type_extra_no_totals ) )
       {
-         int next_total = 0;
+         os << "<tr class=\"footer\">\n";
 
-         if( !print_total_col_nums.empty( ) )
-            os << "  <td><b>" << GDS( c_display_total ) << "</b>&nbsp;&nbsp;"
-             << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
-
-         if( extra )
+         if( display_list_checks )
             os << "  <td>&nbsp;</td>\n";
 
-         for( int i = 1; i < total_display_cols; i++ )
+         if( print_total_values.empty( ) )
+            os << "  <td colspan=\"" << ( total_display_cols + extra )
+             << "\"><b>" << GDS( c_display_total ) << "</b>&nbsp;&nbsp;"
+              << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
+         else
          {
-            if( next_total >= print_total_col_nums.size( ) || print_total_col_nums.at( next_total ) != i )
+            int next_total = 0;
+
+            if( !print_total_col_nums.empty( ) )
+               os << "  <td><b>" << GDS( c_display_total ) << "</b>&nbsp;&nbsp;"
+                << source.row_data.size( ) << " " << GDS( c_display_records ) << "</td>\n";
+
+            if( extra )
                os << "  <td>&nbsp;</td>\n";
-            else
+
+            for( int i = 1; i < total_display_cols; i++ )
             {
-               string class_tag( "list" );
-               if( source.force_right_fields.count( print_total_col_value_ids.at( next_total ) ) )
-                  class_tag += " right";
-               else if( source.force_center_fields.count( print_total_col_value_ids.at( next_total ) ) )
-                  class_tag += " center";
-               else if( source.force_justify_fields.count( print_total_col_value_ids.at( next_total ) ) )
-                  class_tag += " justify";
+               if( next_total >= print_total_col_nums.size( ) || print_total_col_nums.at( next_total ) != i )
+                  os << "  <td>&nbsp;</td>\n";
+               else
+               {
+                  string class_tag( "list" );
+                  if( source.force_right_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                     class_tag += " right";
+                  else if( source.force_center_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                     class_tag += " center";
+                  else if( source.force_justify_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                     class_tag += " justify";
 
-               numeric total = print_total_values.at( next_total );
+                  numeric total = print_total_values.at( next_total );
 
-               string total_string( total.as_string( ) );
+                  string total_string( total.as_string( ) );
 
-               if( source.pmask_fields.count( print_total_col_value_ids.at( next_total ) ) )
-                  total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
+                  if( source.pmask_fields.count( print_total_col_value_ids.at( next_total ) ) )
+                     total_string = format_numeric_value( total, source.pmask_fields.find( print_total_col_value_ids[ next_total ] )->second );
 
-               ++next_total;
-               os << "  <td class=\"" << class_tag << "\">" << total_string << "</td>\n";
+                  ++next_total;
+                  os << "  <td class=\"" << class_tag << "\">" << total_string << "</td>\n";
+               }
             }
          }
+         os << "</tr>\n";
       }
-      os << "</tr>\n";
 
       if( source.print_limited )
       {
