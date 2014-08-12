@@ -618,6 +618,7 @@ field_add -id=122146 List Is_Not_Anonymous bool mand -def=0
 field_add -id=122147 List Is_Admin bool mand -def=0
 field_add -id=122148 List Ignore_State_For_Display bool mand -def=0
 field_add -id=122149 List File_Links_Always_As_Single bool mand -def=0
+field_add -id=122150 List Display_Totals bool mand -def=1
 procedure_add -id=122430 List Generate_PDF_List
 procedure_arg_add -id=122431 List Generate_PDF_List Variation_Num int in
 class_add -id=123100 List_Field_Type List_Field_Types
@@ -2042,7 +2043,7 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name,Allow_Anonymous_Access\
 ,@tab:Basic_UI_Options\
 ,Allow_Quick_Link,Search_Option_Limit,Direction,Display_Row_Limit;force,Sort_Rows_In_UI;force\
-,Limit_Scroll_And_New,Is_Variation,Allow_Text_Search;force,Text_Match_Highlight\
+,Limit_Scroll_And_New,Is_Variation,Display_Totals,Allow_Text_Search;force,Text_Match_Highlight\
 ,Print_Without_Highlight,Multiline_Truncate_For_Print,PDF_List_Type;force,PDF_Font_Type,Number_Multiple_Pages\
 ,@tab:Advanced_UI_Options\
 ,Ignore_User_Id_Filter,Ignore_Implicit_Ordering,Ignore_Uneditable_Parent,Ignore_State_For_Display,Ignore_Unactionable_Records\

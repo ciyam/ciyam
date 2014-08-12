@@ -66,6 +66,7 @@
    <rows>1
    <extra>repeats
   </group>
+`{`@eq`(`$display_totals`,`'1`'`)\
   <group/>
    <pos>+0,+10
    <name>totals
@@ -74,7 +75,8 @@
    <extra>forced
    <groupd>data
    <groupr>data:left,bottom
-  </group>
+  </group>\
+`}
  </groups>
  <fields/>
   <field/>
@@ -131,6 +133,7 @@
    <suffix>`{`$\$_suffix`}`}
   </field>\
 `+\n`]`}
+`{`@eq`(`$display_totals`,`'1`'`)\
   <field/>
    <pos>+0,+0
    <name>@total
@@ -155,25 +158,25 @@
    <data>@@count_data
    <dtype>numeric
    <suffix>@records
-  </field>
-`{`(`?`$tfields`)`[`$tfields`,\
-  <field/>
-   <pos>`{`$\$_pos`}
-   <name>`{`$\$_name`}`{`(`?`$\$_perm`)
-   <perm>`{`$\$_perm`}`}`{`(`?`$\$_size`)
-   <size>`{`$\$_size`}`}
-   <group>`{`$\$_group`}`{`(`?`$\$_font`)
-   <font>`{`$\$_font`}`}`{`(`?`$\$_mask`)
-   <mask>`{`$\$_mask`}`}`{`(`?`$\$_color`)
-   <color>`{`$\$_color`}`}
-   <width>`{`$\$_width`}
-   <height>`{`$\$_height`}`{`(`?`$\$_padding`)
-   <padding>`{`$\$_padding`}`}`{`(`?`$\$_special`)
-   <special>`{`$\$_special`}`}`{`(`?`$\$_alignment`)
-   <alignment>`{`$\$_alignment`}`}
-   <data>`{`$\$_data`}`{`(`?`$\$_dtype`)
-   <dtype>`{`$\$_dtype`}`}
   </field>\
-`+\n`]`}
+`{`(`?`$tfields`)`[`$tfields`,
+  <field/>
+   <pos>`{`$\\\$_pos`}
+   <name>`{`$\\\$_name`}`{`(`?`$\\\$_perm`)
+   <perm>`{`$\\\$_perm`}`}`{`(`?`$\\\$_size`)
+   <size>`{`$\\\$_size`}`}
+   <group>`{`$\\\$_group`}`{`(`?`$\\\$_font`)
+   <font>`{`$\\\$_font`}`}`{`(`?`$\\\$_mask`)
+   <mask>`{`$\\\$_mask`}`}`{`(`?`$\\\$_color`)
+   <color>`{`$\\\$_color`}`}
+   <width>`{`$\\\$_width`}
+   <height>`{`$\\\$_height`}`{`(`?`$\\\$_padding`)
+   <padding>`{`$\\\$_padding`}`}`{`(`?`$\\\$_special`)
+   <special>`{`$\\\$_special`}`}`{`(`?`$\\\$_alignment`)
+   <alignment>`{`$\\\$_alignment`}`}
+   <data>`{`$\\\$_data`}`{`(`?`$\\\$_dtype`)
+   <dtype>`{`$\\\$_dtype`}`}
+  </field>\
+`+\n`]`}`}
  </fields>
 </sio>
