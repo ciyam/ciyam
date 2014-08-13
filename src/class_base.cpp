@@ -3150,6 +3150,45 @@ string value_rightpart( const string& s )
       return s.substr( pos + 1 );
 }
 
+string increment_numbers( const string& s )
+{
+   string rc;
+   string tmp( s );
+
+   while( !tmp.empty( ) )
+   {
+      regex expr( "[0-9]+" );
+
+      string::size_type len;
+      string::size_type pos = expr.search( tmp, &len );
+
+      if( pos != string::npos )
+      {
+         if( pos > 0 )
+            rc += tmp.substr( 0, pos );
+
+         int value = atoi( tmp.substr( pos, len ).c_str( ) );
+
+         // NOTE: If leading zeros were used then prefix to the same length.
+         string new_value( to_string( ++value ) );
+
+         while( new_value.length( ) < len )
+            new_value = '0' + new_value;
+
+         rc += new_value;
+      }
+      else
+      {
+         rc += tmp;
+         break;
+      }
+
+      tmp.erase( 0, len + pos );
+   }
+
+   return rc;
+}
+
 string auto_int_increment( const string& current )
 {
    string new_auto_int;
