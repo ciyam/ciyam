@@ -216,6 +216,15 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_altfield`} ) ) )
          names.insert( "`{`$arg_altfield`}" );
 `}\
+`{`!`@eq`(`$arg_ufield`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`|`!`@eq`(`$arg_altfield`,`'`'`)
+`}\
+`{`!`@eq`(`$arg_vfield`,`'`'`)\
+      dependents.insert( "`{`$arg_vfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_vfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_vfield`} ) ) )
+         names.insert( "`{`$arg_vfield`}" );
+`}\
    }
    // [(finish transient_field_action)] `{`$arg_id`}
 `}

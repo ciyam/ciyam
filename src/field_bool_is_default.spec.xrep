@@ -1,9 +1,18 @@
 `{`@eq`(`'to_or_for_store`'`,`$section`)`|`@eq`(`'post_init`'`,`$section`)\
    // [(start field_bool_is_default)] `{`$arg_id`}
-   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )
-      get_obj( ).`{`$arg_field`}( true );
-   else
-      get_obj( ).`{`$arg_field`}( false );
+`{`$i`=`'`'`}\
+`{`@eq`(`$arg_create_only`,`'true`'`)\
+`{`$i`=`'   `'`}\
+   if( is_create )
+   {
+`}\
+`{`$i`}   if( get_obj( ).`{`$arg_sfield`}( ) `{`@eq`(`$arg_is_neq`,`'`'`)==`,!=`} g_default_`{`$arg_sfield`} )
+`{`$i`}      get_obj( ).`{`$arg_field`}( true );
+`{`$i`}   else
+`{`$i`}      get_obj( ).`{`$arg_field`}( false );
+`{`@eq`(`$arg_create_only`,`'true`'`)\
+   }
+`}\
    // [(finish field_bool_is_default)] `{`$arg_id`}
 `}
 `{`@eq`(`'get_required_field_names`'`,`$section`)\

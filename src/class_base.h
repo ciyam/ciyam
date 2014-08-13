@@ -1063,6 +1063,8 @@ std::string CLASS_BASE_DECL_SPEC value_label( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC value_leftpart( const std::string& s );
 std::string CLASS_BASE_DECL_SPEC value_rightpart( const std::string& s );
 
+std::string CLASS_BASE_DECL_SPEC increment_numbers( const std::string& s );
+
 std::string CLASS_BASE_DECL_SPEC auto_int_increment( const std::string& current );
 
 struct daylight_info
