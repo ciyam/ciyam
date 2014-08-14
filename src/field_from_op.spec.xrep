@@ -18,6 +18,10 @@
 `{`@eq`(`$op`,`'bitor`'`)`$op`=`'|`'`}\
 `{`@eq`(`$op`,`'bitsleft`'`)`$op`=`'<<`'`}\
 `{`@eq`(`$op`,`'bitsright`'`)`$op`=`'>>`'`}\
+`{`!`@eq`(`$arg_type`,`'`'`)`&`!`@eq`(`$arg_vtype`,`'`'`)`$arg_value`^`' `'`}\
+`{`!`@eq`(`$arg_type`,`'`'`)`&`!`@eq`(`$arg_vtype`,`'`'`)`$arg_value`^`$arg_vtype`}\
+`{`@eq`(`$arg_type`,`'`'`)`&`!`@eq`(`$arg_vtype`,`'`'`)`$arg_type`=`$arg_vtype`}\
+`{`@eq`(`$arg_type`,`'@none`'`)`$arg_type`=`'`'`}\
 `{`$type`=`$arg_type`}\
 `{`@eq`(`$type`,`'second`'`)`$type`=`'seconds`'`}\
 `{`@eq`(`$type`,`'minute`'`)`$type`=`'minutes`'`}\
