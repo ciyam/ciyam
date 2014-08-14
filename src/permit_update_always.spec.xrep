@@ -29,7 +29,7 @@
 
    if( ( use_transients && is_field_transient( e_field_id_\\$ ) )
     || ( !use_transients && !is_field_transient( e_field_id_\\$ ) ) )
-      names.insert( "\\$" );
+      names.insert( "\\$" );\
 `+\n`]`}
    // [(finish permit_update_always)] `{`$arg_id`}
 `}
