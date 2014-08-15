@@ -38,8 +38,11 @@
             }
 `}
             get_obj( ).child_`{`$arg_child`}( ).op_create( child_key );
+
             get_obj( ).child_`{`$arg_child`}( ).`{`$arg_pfield`}( get_obj( ).get_key( ) );
-`{`@eq`(`$arg_copy_files`,`'true`'`)
+`{`!`@eq`(`$arg_cpfield`,`'`'`)\
+            get_obj( ).child_`{`$arg_child`}( ).`{`$arg_cpfield`}( cp_source->child_`{`$arg_child`}( ).get_key( ) );
+`}`{`@eq`(`$arg_copy_files`,`'true`'`)
             copy_class_files_for_clone( file_field_name_and_values, get_obj( ).child_`{`$arg_child`}( ) );
 `}
             get_obj( ).child_`{`$arg_child`}( ).op_apply( );
