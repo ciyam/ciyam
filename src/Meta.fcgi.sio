@@ -4447,7 +4447,7 @@
    <cid>110100
    <name>602010_name
    <type>standard
-   <extra>auto_back
+   <extra>
    <modifiers>200:lowlight
    <class>Modifier_Affect
    <bclass>
