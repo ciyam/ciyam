@@ -1,0 +1,31 @@
+`{`@eq`(`'procedure`'`,`$section`)\
+   // [(start field_from_gen_pdf)] `{`$arg_id`}
+`{`$i`=`'`'`}`{`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
+   if( get_obj( ).`{`$arg_tfield`}( ) )
+`}\
+`{`$i`}   get_obj( ).op_update( );
+
+`{`$i`}   string name( get_obj( ).get_key( ) + '.' + string( "`{`$arg_file`}.pdf" ) );
+`{`$i`}   get_obj( ).`{`$arg_file`}( name );
+
+`{`$i`}   get_obj( ).op_apply( );
+
+`{`$i`}   if( !storage_locked_for_admin( ) )
+`{`$i`}   {
+`{`$i`}      string pdf_file( get_obj( ).get_attached_file_path( name ) );
+
+`{`$i`}      set_session_variable( get_special_var_name( e_special_var_key ), get_obj( ).get_key( ) );
+
+`{`$i`}      set_session_variable( get_special_var_name( e_special_var_file ), pdf_file );
+`{`$i`}      set_session_variable( get_special_var_name( e_special_var_title ), get_obj( ).`{`$arg_title`}( ) );
+
+`{`$i`}      run_script( "`{`$module_name`}_`{`$class_name`}_`{`$arg_procedure`}", false );
+`{`$i`}   }
+
+`{`$i`}   `{`$arg_output`} = "Generated PDF..."; // FUTURE: This should be a module string.
+
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+   }\
+`}\
+   // [(finish field_from_gen_pdf)] `{`$arg_id`}
+`}

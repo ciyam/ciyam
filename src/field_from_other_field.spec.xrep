@@ -16,21 +16,24 @@
 `{`!`@eq`(`$arg_chk_null`,`'`'`)`$needs_if_test`=`'true`'`}\
 `{`!`@eq`(`$arg_new_only`,`'`'`)`$needs_if_test`=`'true`'`}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)`$needs_if_test`=`'true`'`}\
-`{`$create_or_non_trigger_or_chk_or_new_or_tfield`=`'`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_non_trigger`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_new_only`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`$create_or_chk_or_new_or_tfield`=`'`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_new_only`,`'`'`)`$create_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_or_chk_or_new_or_tfield`=`'true`'`}\
-`{`$both_null_and_test`=`'`'`}\
-`{`!`@eq`(`$arg_chk_null`,`'`'`)`&`!`@eq`(`$arg_tfield`,`'`'`)`$both_null_and_test`=`'true`'`}\
-`{`$not_null_and_other`=`'`'`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$not_null_and_other`=`'true`'`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`$needs_if_test`=`'true`'`}\
+`{`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_non_trigger`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_new_only`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`$create_or_chk_or_new_or_mod_or_tfield`=`'`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`$create_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_chk_null`,`'`'`)`$create_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_new_only`,`'`'`)`$create_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`$create_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$create_or_chk_or_new_or_mod_or_tfield`=`'true`'`}\
+`{`$both_null_and_mod_or_test`=`'`'`}\
+`{`!`@eq`(`$arg_chk_null`,`'`'`)`&`(`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$both_null_and_mod_or_test`=`'true`'`}\
+`{`$create_and_null_or_mod_or_test`=`'`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`&`(`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`)`$create_and_null_or_mod_or_test`=`'true`'`}\
 `{`$lit1`=`$arg_func_arg1`/@qt`/"`/@sp`/ `/@cl`/:`/@sc`/;`/@cm`/,`}\
 `{`$lit2`=`$arg_func_arg2`/@qt`/"`/@sp`/ `/@cl`/:`/@sc`/;`/@cm`/,`}\
    // [(start field_from_other_field)] `{`$arg_id`}
@@ -46,13 +49,15 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
    get_obj( ).op_apply( );\
 `}\
 `,\
-   if( `{`!`@eq`(`$arg_internal_only`,`'`'`)is_internal`{`!`@eq`(`$create_or_non_trigger_or_chk_or_new_or_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_non_trigger`,`'`'`)`{`!`@eq`(`$arg_internal_only`,`'`'`)
-    `}is_null( get_obj( ).get_variable( get_special_var_name( e_special_var_trigger ) ) )`{`!`@eq`(`$create_or_chk_or_new_or_tfield`,`'`'`)
+   if( `{`!`@eq`(`$arg_internal_only`,`'`'`)is_internal\
+`{`!`@eq`(`$create_or_non_trigger_or_chk_or_new_or_mod_or_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_non_trigger`,`'`'`)`{`!`@eq`(`$arg_internal_only`,`'`'`)
+    `}is_null( get_obj( ).get_variable( get_special_var_name( e_special_var_trigger ) ) )`{`!`@eq`(`$create_or_chk_or_new_or_mod_or_tfield`,`'`'`)
     && `}`}\
-`{`!`@eq`(`$arg_create_only`,`'`'`)is_create`{`!`@eq`(`$arg_include_clones`,`'true`'`) && get_obj( ).get_clone_key( ).empty( )`}`}`{`!`@eq`(`$not_null_and_other`,`'`'`) && `}\
-`{`!`@eq`(`$arg_new_only`,`'`'`)is_null( get_obj( ).get_key( ) )`{`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)is_create`{`!`@eq`(`$arg_include_clones`,`'true`'`) && get_obj( ).get_clone_key( ).empty( )`}`}`{`!`@eq`(`$create_and_null_or_mod_or_test`,`'`'`) && `}\
+`{`!`@eq`(`$arg_new_only`,`'`'`)is_null( get_obj( ).get_key( ) )`{`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
-`{`!`@eq`(`$both_null_and_test`,`'`'`) && `}`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`!`@eq`(`$both_null_and_mod_or_test`,`'`'`) && `}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`}`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
 `{`@eq`(`$test_field_is_text_type`,`'true`'`)!is_null( `}get_obj( ).\
 `{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )`{`@eq`(`$test_field_is_text_type`,`'true`'`) )`}\

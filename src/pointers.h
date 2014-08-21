@@ -41,14 +41,8 @@ template< class T > struct remove_pointer< T* >
 
 template< typename T > class ref_count_ptr
 {
-   class bool_test
-   {
-      public:
-      bool_test( ) { }
-
-      private:
-      void operator delete( void* );
-   };
+   typedef void ( ref_count_ptr< T >::*bool_type )( ) const;
+   void this_type_does_not_support_comparisons( ) const { }
 
    public:
    ref_count_ptr( )
@@ -115,17 +109,13 @@ template< typename T > class ref_count_ptr
       }
    }
 
-#  ifdef __BORLANDC__
-   operator bool_test*( ) const;
-#  else
-   operator bool_test*( ) const
+   operator bool_type( ) const
    {
       if( !p_instance )
          return 0;
-      static bool_test test;
-      return &test;
+      else
+         return &ref_count_ptr< T >::this_type_does_not_support_comparisons;
    }
-#  endif
 
    T& operator *( ) const { return *p_instance; }
    T* operator ->( ) const { return p_instance; }
@@ -145,17 +135,6 @@ template< typename T > class ref_count_ptr
    T* p_instance;
    int* p_ref_count;
 };
-
-#  ifdef __BORLANDC__
-template< typename T >
- ref_count_ptr< T >::operator bool_test*( ) const
-{
-   if( !p_instance )
-      return 0;
-   static bool_test test;
-   return &test;
-}
-#  endif
 
 template< typename T, typename U >
  inline bool operator ==( const ref_count_ptr< T >& lhs, const ref_count_ptr< U >& rhs )

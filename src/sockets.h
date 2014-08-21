@@ -54,6 +54,9 @@ class ip_address : public sockaddr_in
 
 class tcp_socket
 {
+   typedef void ( tcp_socket::*bool_type )( ) const;
+   void this_type_does_not_support_comparisons( ) const { }
+
    public:
    tcp_socket( );
    tcp_socket( SOCKET socket );
@@ -94,7 +97,14 @@ class tcp_socket
    bool had_blank_line( ) const { return blank_line; }
 
    bool okay( ) const { return socket != INVALID_SOCKET; }
-   operator const void*( ) const { return socket != INVALID_SOCKET ? this : 0; }
+
+   operator bool_type( ) const
+   {
+      if( socket == INVALID_SOCKET )
+         return 0;
+      else
+         return &tcp_socket::this_type_does_not_support_comparisons;
+   }
 
    private:
    bool blank_line;

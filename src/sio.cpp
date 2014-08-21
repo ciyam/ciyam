@@ -88,13 +88,12 @@ sio_reader::sio_reader( istream& is, bool include_comments )
    }
 }
 
-sio_reader::operator sio_reader::bool_test*( ) const
+sio_reader::operator sio_reader::bool_type( ) const
 {
    if( !is || is.eof( ) )
       return 0;
-
-   static bool_test test;
-   return &test;
+   else
+      return &sio_reader::this_type_does_not_support_comparisons;
 }
 
 void sio_reader::start_section( const string& name )
