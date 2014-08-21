@@ -32,14 +32,8 @@ class write_stream;
 
 class NUMERIC_DECL_SPEC numeric
 {
-   class bool_test
-   {
-      public:
-      bool_test( ) { }
-
-      private:
-      void operator delete( void* );
-   };
+   typedef void ( numeric::*bool_type )( ) const;
+   void this_type_does_not_support_comparisons( ) const { }
 
    public:
    enum
@@ -79,17 +73,13 @@ class NUMERIC_DECL_SPEC numeric
    double frac( ) const;
    uint64_t trunc( ) const;
 
-#  ifdef __BORLANDC__
-   operator bool_test*( ) const;
-#  else
-   operator bool_test*( ) const
+   operator bool_type( ) const
    {
       if( !mantissa )
          return 0;
-      static bool_test test;
-      return &test;
+      else
+         return &numeric::this_type_does_not_support_comparisons;
    }
-#  endif
 
    numeric& operator ++( );
    numeric operator ++( int );
@@ -149,16 +139,6 @@ class NUMERIC_DECL_SPEC numeric
 
    friend void level_decimals( numeric& n1, numeric& n2 );
 };
-
-#  ifdef __BORLANDC__
-numeric::operator bool_test*( ) const
-{
-  if( !mantissa )
-     return 0;
-  static bool_test test;
-  return &test;
-}
-#  endif
 
 inline numeric& numeric::operator ++( )
 {

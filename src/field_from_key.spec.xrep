@@ -1,0 +1,11 @@
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start field_from_key)] `{`$arg_id`}
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish field_from_key)] `{`$arg_id`}
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
+   // [(start field_from_key)] `{`$arg_id`}
+   get_obj( ).`{`$arg_field`}( get_obj( ).get_key( ) );
+   // [(finish field_from_key)] `{`$arg_id`}
+`}

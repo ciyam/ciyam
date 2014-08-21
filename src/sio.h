@@ -22,19 +22,13 @@ class sio_reader
 {
    friend class sio_writer;
 
-   class bool_test
-   {
-      public:
-      bool_test( ) { }
-
-      private:
-      void operator delete( void* );
-   };
+   typedef void ( sio_reader::*bool_type )( ) const;
+   void this_type_does_not_support_comparisons( ) const { }
 
    public:
    sio_reader( std::istream& is, bool include_comments = false );
 
-   operator bool_test*( ) const;
+   operator bool_type( ) const;
 
    void start_section( const std::string& name );
    void finish_section( const std::string& name );

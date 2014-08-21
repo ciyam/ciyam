@@ -859,6 +859,9 @@ struct class_pointer_base
 
 template< typename CBD > class class_pointer : class_pointer_base
 {
+   typedef void ( class_pointer< CBD >::*bool_type )( ) const;
+   void this_type_does_not_support_comparisons( ) const { }
+
    public:
    class_pointer( )
     :
@@ -904,7 +907,13 @@ template< typename CBD > class class_pointer : class_pointer_base
       p_ct = 0;
    }
 
-   operator const void*( ) const { return p_ct; }
+   operator bool_type( ) const
+   {
+      if( !p_ct )
+         return 0;
+      else
+         return &class_pointer< CBD >::this_type_does_not_support_comparisons;
+   }
 
    typename CBD::class_type& operator *( ) const { return *dynamic_cast< CBD* >( p_ct->get_dynamic_instance( ) ); }
    typename CBD::class_type* operator ->( ) const { return dynamic_cast< CBD* >( p_ct->get_dynamic_instance( ) ); }

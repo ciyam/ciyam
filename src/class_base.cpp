@@ -3126,6 +3126,10 @@ string value_label( const string& s )
       }
       else if( s[ i ] == '=' )
          rs += "_eq_";
+      else if( s[ i ] == '+' )
+         rs += "_plus_";
+      else if( s[ i ] == '-' )
+         rs += "_minus_";
       else if( s[ i ] == '_' || ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
        || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
          rs += s[ i ];
