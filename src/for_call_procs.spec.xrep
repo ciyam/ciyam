@@ -17,8 +17,7 @@
 `{`$i`}   `{`$arg_output_arg`} = get_module_string( "`{`$arg_id`}_message" );
 `,\
       // FUTURE: The return message itself should be a module string.
-`{`$i`}   `{`$arg_output_arg`} = get_obj( ).get_display_name( ) + " "
-`{`$i`}    + get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
+`{`$i`}   `{`$arg_output_arg`} = get_module_string( "procedure_" + string( c_procedure_id_`{`$arg_procedure`} ) ) + " completed.";
 `}`}\
 `{`@eq`(`$arg_no_trans`,`'`'`)\
    }
