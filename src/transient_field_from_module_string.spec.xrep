@@ -3,8 +3,11 @@
 `{`@eq`(`$arg_tfield`,`'`'`)\
    get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
 `,\
+`{`@eq`(`$arg_value`,`'@tfield`'`)\
+   get_obj( ).`{`$arg_field`}( get_module_string( c_field_display_name_`{`$arg_tfield`} ) );
+`,\
    if( get_obj( ).`{`$arg_tfield`}( ) )
       get_obj( ).`{`$arg_field`}( get_module_string( "`{`$arg_id`}_string" ) );
-`}\
+`}`}\
    // [(finish transient_field_from_module_string)] `{`$arg_id`}
 `}
