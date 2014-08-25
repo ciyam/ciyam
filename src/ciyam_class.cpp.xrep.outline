@@ -2513,7 +2513,7 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 `{`#clone_children.spec.xrep section=after_store full_class_name=$full_class_name\
  arg_id=$specification_\0_id arg_child=$specification_\0_child arg_pfield=$specification_\0_pfield\
  arg_cpfield=$specification_\0_cpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue\
- arg_not_eq=$specification_\0_not_eq arg_copy_files=$specification_\0_copy_files`}\
+ arg_tfistexttype=$specification_\0_tfistexttype arg_copy_files=$specification_\0_copy_files`}\
 `,\
 `@eq`(`'\1`'`,`'clone_children_for_create`'`)
 `{`#clone_children_for_create.spec.xrep section=after_store full_class_name=$full_class_name\

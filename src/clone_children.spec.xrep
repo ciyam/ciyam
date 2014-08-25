@@ -17,7 +17,11 @@
          {
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
-            if( `{`@eq`(`$arg_not_eq`,`'`'`)!`}is_null( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) ) )
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
+            if( !cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) )
+`,\
+            if( is_null( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) ) )
+`}\
                continue;
 `,
             if( cp_source->child_`{`$arg_child`}( ).`{`$arg_tfield`}( ) `{`@eq`(`$arg_not_eq`,`'`'`)!=`,==`} `{`$arg_tvalue`} )
