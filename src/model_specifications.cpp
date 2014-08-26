@@ -1735,11 +1735,11 @@ void clone_children_specification::add_specification_data( model& m, specificati
    spec_data.data_pairs.push_back( make_pair( c_data_child, cclass_name ) ); // KLUDGE: Assumes class name is the child name.
    spec_data.data_pairs.push_back( make_pair( c_data_pfield, pfield_name ) );
 
-   spec_data.data_pairs.push_back( make_pair( c_data_ffield, "" ) );
+   spec_data.data_pairs.push_back( make_pair( "copy_files", "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tfield, "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_tvalue, "" ) );
-   spec_data.data_pairs.push_back( make_pair( c_data_not_eq, "" ) );
-   spec_data.data_pairs.push_back( make_pair( "copy_files", "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_cpfield, "" ) );
+   spec_data.data_pairs.push_back( make_pair( c_data_tfistexttype, "" ) );
 }
 
 string clone_children_specification::static_class_name( ) { return "clone_children"; }
@@ -4763,6 +4763,7 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_nvalue, null_value ) );
 
    spec_data.data_pairs.push_back( make_pair( "update", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );
    spec_data.data_pairs.push_back( make_pair( "new_only", "" ) );
    spec_data.data_pairs.push_back( make_pair( "procedure", "" ) );
    spec_data.data_pairs.push_back( make_pair( "func_arg1", "" ) );

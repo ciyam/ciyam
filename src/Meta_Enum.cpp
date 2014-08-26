@@ -886,6 +886,7 @@ void Meta_Enum::impl::after_store( bool is_create, bool is_internal )
             child_key += cp_source->child_Enum_Item( ).get_key( );
 
             get_obj( ).child_Enum_Item( ).op_create( child_key );
+
             get_obj( ).child_Enum_Item( ).Enum( get_obj( ).get_key( ) );
 
             get_obj( ).child_Enum_Item( ).op_apply( );
