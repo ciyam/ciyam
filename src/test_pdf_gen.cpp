@@ -227,7 +227,13 @@ int main( int argc, char* argv[ ] )
          cout << application_title( e_app_info_request_title_and_version ) << endl;
 
       if( !g_variables_file.empty( ) )
+      {
+         g_string_variables.clear( );
          read_strings( g_variables_file, g_string_variables );
+
+         g_string_variables.insert( make_pair( c_true_variable, "True" ) );
+         g_string_variables.insert( make_pair( c_false_variable, "False" ) );
+      }   
 
       if( !g_output_file.empty( ) )
       {

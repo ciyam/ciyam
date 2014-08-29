@@ -12,8 +12,11 @@
 #     include <string>
 #  endif
 
-void generate_pdf_doc( const std::string& format_filename,
- const std::string& output_filename, const std::map< std::string, std::string >& variables );
+struct progress;
+
+void generate_pdf_doc(
+ const std::string& format_filename, const std::string& output_filename,
+ const std::map< std::string, std::string >& variables, progress* p_progress = 0 );
 
 #endif
 

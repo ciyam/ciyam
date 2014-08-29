@@ -26,6 +26,11 @@
    <encoding>`{`$font_encoding`}
   </font>
   <font/>
+   <name>label_small
+   <details>`{`$font_bname`},12
+   <encoding>`{`$font_encoding`}
+  </font>
+  <font/>
    <name>value
    <details>`{`$font_name`},14
    <encoding>`{`$font_encoding`}
@@ -182,11 +187,11 @@
   </field>\
 `+\n`]`}
   <field/>
-   <pos>-5,+0
+   <pos>-7,+0
    <name>@subtotal
    <size>growable
    <group>subtotals
-   <font>label
+   <font>label_small
    <width>60
    <height>1
    <alignment>left

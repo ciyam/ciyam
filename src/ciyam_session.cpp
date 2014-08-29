@@ -68,6 +68,8 @@ mutex g_mutex;
 
 #include "ciyam_session.cmh"
 
+#include "trace_progress.cpp"
+
 const size_t c_request_timeout = 500;
 
 const int c_pdf_default_limit = 5000;
@@ -1804,14 +1806,20 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
                       field_list, summaries, pdf_gen_variables, tz_name, num_limit == 1, 0, false );
                   }
 
+                  progress* p_progress = 0;
+                  trace_progress progress( TRACE_PDF_VALS );
+
+                  if( get_trace_flags( ) & TRACE_PDF_VALS )
+                     p_progress = &progress;
+
                   if( summaries.empty( ) )
-                     generate_pdf_doc( format_file, output_file, pdf_gen_variables );
+                     generate_pdf_doc( format_file, output_file, pdf_gen_variables, p_progress );
                   else
                   {
                      map< string, string > pdf_final_variables;
                      add_final_pdf_variables( pdf_gen_variables, summaries, pdf_final_variables );
 
-                     generate_pdf_doc( format_file, output_file, pdf_final_variables );
+                     generate_pdf_doc( format_file, output_file, pdf_final_variables, p_progress );
                   }
 #endif
                }
