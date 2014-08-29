@@ -3701,6 +3701,7 @@ void list_trace_flags( vector< string >& flag_names )
    flag_names.push_back( "ctr_dtrs" ); // TRACE_CTR_DTRS
    flag_names.push_back( "sessions" ); // TRACE_SESSIONS
    flag_names.push_back( "mail_ops" ); // TRACE_MAIL_OPS
+   flag_names.push_back( "pdf_vals" ); // TRACE_PDF_VALS
 }
 
 void log_trace_message( int flag, const string& message )
@@ -3748,6 +3749,10 @@ void log_trace_message( int flag, const string& message )
 
       case TRACE_MAIL_OPS:
       type = "mail_op";
+      break;
+
+      case TRACE_PDF_VALS:
+      type = "pdf_val";
       break;
 
       case TRACE_ANYTHING:

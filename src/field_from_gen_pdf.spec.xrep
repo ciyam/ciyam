@@ -5,7 +5,7 @@
 `}\
 `{`$i`}   get_obj( ).op_update( );
 
-`{`$i`}   string name( get_obj( ).get_key( ) + '.' + string( "`{`$arg_file`}.pdf" ) );
+`{`$i`}   string name( get_obj( ).get_key( ) + '.' + get_module_string( c_field_display_name_`{`$arg_file`} ) + ".pdf" );
 `{`$i`}   get_obj( ).`{`$arg_file`}( name );
 
 `{`$i`}   get_obj( ).op_apply( );

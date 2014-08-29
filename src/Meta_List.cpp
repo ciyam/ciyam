@@ -2305,7 +2305,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                else if( p_type_field->Type( ).Primitive( ) == 6 ) // i.e. bool
                   narrow_fields.insert( name );
                else if( p_type_field->Type( ).Primitive( ) >= 1 // i.e. datetime
-                || p_type_field->Type( ).Primitive( ) <= 5 ) // i.e. int
+                && p_type_field->Type( ).Primitive( ) <= 5 ) // i.e. int
                {
                   string domain_mask, tmask;
 
@@ -2331,7 +2331,8 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                   else if( uom != 0 )
                      uom_fields.insert( make_pair( name, meta_field_uom( uom ) ) );
 
-                  if( p_type_field->Type( ).Primitive( ) != 1 ) // i.e. datetime
+                  if( p_type_field->Type( ).Primitive( ) != 1 // i.e. datetime
+                   && domain_mask.size( ) <= 10 && is_null( p_type_field->Enum( ) ) )
                      narrow_fields.insert( name );
 
                   if( p_type_field->Type( ).Primitive( ) == 1 ) // i.e. datetime
@@ -2485,6 +2486,32 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             qfields += query_fields[ i ];
          }
 
+         string rfields;
+         set< string > summaries;
+         set< string > summaries_used;
+         for( size_t i = 0; i < summary_fields.size( ); i++ )
+            summaries.insert( summary_fields[ i ] );
+
+         for( size_t i = 0; i < query_fields.size( ); i++ )
+         {
+            if( !rfields.empty( ) )
+               rfields += ',';
+
+            string name( query_fields[ i ] );
+            string::size_type pos = name.find( '.' );
+            if( pos != string::npos )
+               name[ pos ] = '_';
+
+            if( summaries.count( name )
+             && !summaries_used.count( name ) )
+            {
+               rfields += '!';
+               summaries_used.insert( name );
+            }
+
+            rfields += query_fields[ i ];
+         }
+
          int page_width;
          if( get_obj( ).PDF_List_Type( ) == c_enum_list_pdf_list_type_Standard_Columnar )
             page_width = 800; // i.e. assumes A4 landscape reserving 50 for side padding
@@ -2495,11 +2522,11 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          for( size_t i = 0; i < field_names.size( ); i++ )
          {
             if( narrow_fields.count( field_names[ i ] ) )
-               total_units += 1;
+               total_units += 3;
             else if( wide_fields.count( field_names[ i ] ) )
-               total_units += 4;
+               total_units += 5;
             else
-               total_units += 2;
+               total_units += 4;
          }
 
          int unit_size = page_width / total_units;
@@ -2599,6 +2626,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          varsf << "\x60{\x60}\n";
          varsf << "\x60{\x60$fields\x60=\x60'" << fields << "\x60'\x60}\n";
          varsf << "\x60{\x60$qfields\x60=\x60'" << qfields << "\x60'\x60}\n";
+         varsf << "\x60{\x60$rfields\x60=\x60'" << rfields << "\x60'\x60}\n";
          if( !tfields.empty( ) )
             varsf << "\x60{\x60$tfields\x60=\x60'" << tfields << "\x60'\x60}\n";
 
@@ -2683,6 +2711,10 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                varsf << "\x60{\x60$sf" << to_string( i + 1 )
                 << "_assign\x60=\x60'@summary" << ( i + 1 ) << "\x60'\x60}\n";
 
+            if( prefixes.count( next_field ) )
+               varsf << "\x60{\x60$sf" << to_string( i + 1 )
+                << "_prefix\x60=\x60'" << prefixes[ next_field ] << "\x60'\x60}\n";
+
             if( !hidden_fields.count( next_field ) )
                shpos += 10;
          }
@@ -2716,11 +2748,11 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                if( !hidden_fields.count( next_field ) )
                {
                   if( narrow_fields.count( next_field ) )
-                     width = unit_size;
+                     width = unit_size * 3;
                   else if( wide_fields.count( next_field ) )
-                     width = unit_size * 4;
+                     width = unit_size * 5;
                   else
-                     width = unit_size * 2;
+                     width = unit_size * 4;
 
                   hpos += width;
                   width -= 10; // i.e. make sure there is some gap between fields
@@ -2786,11 +2818,11 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
             if( !hidden_fields.count( next_field ) )
             {
                if( narrow_fields.count( next_field ) )
-                  width = unit_size;
+                  width = unit_size * 3;
                else if( wide_fields.count( next_field ) )
-                  width = unit_size * 4;
+                  width = unit_size * 5;
                else
-                  width = unit_size * 2;
+                  width = unit_size * 4;
 
                hpos += width;
                width -= 10; // i.e. make sure there is some gap between fields

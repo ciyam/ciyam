@@ -41,6 +41,7 @@
 #include "format.h"
 #include "numeric.h"
 #include "pointers.h"
+#include "progress.h"
 #include "date_time.h"
 #include "utilities.h"
 
@@ -2846,6 +2847,17 @@ bool process_group(
                prefix = dynamic_variables.find( prefix )->second;
 
             data = prefix + data;
+
+            // NOTE: If the prefix begins with @ then it is being
+            // assumed that the prefix and data concatenated will
+            // be another variable name (for enumerated types).
+            if( prefix[ 0 ] == '@' )
+            {
+               if( variables.count( data ) )
+                  data = variables.find( data )->second;
+               else if( dynamic_variables.count( data ) )
+                  data = dynamic_variables.find( data )->second;
+            }
          }
 
          if( !format.fields[ j ].suffix.empty( ) )
@@ -6259,8 +6271,14 @@ void generate_pdf_output( pdf_doc& doc, pdf_gen_format& format,
 }
 
 void generate_pdf_doc( const string& format_filename,
- const string& output_filename, const map< string, string >& variables )
+ const string& output_filename, const map< string, string >& variables, progress* p_progress )
 {
+   if( p_progress )
+   {
+      for( map< string, string >::const_iterator ci = variables.begin( ); ci != variables.end( ); ++ci )
+         p_progress->output_progress( ci->first + " \"" + ci->second + "\"" );
+   }
+
    pdf_gen_format format;
    read_pdf_gen_format( format_filename, format );
 
