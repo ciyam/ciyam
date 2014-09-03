@@ -3,16 +3,21 @@
 `{`@eq`(`$arg_create_only`,`'`'`)\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( get_obj( ).`{`$arg_tfield`}( ) )
+   if( get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$arg_modifier`,`'`'`) && get_state( ) & c_modifier_`{`$arg_modifier`}`} )
 `,\
-   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) ) )
+   if( !is_null( get_obj( ).`{`$arg_tfield`}( ) )`{`!`@eq`(`$arg_modifier`,`'`'`) && get_state( ) & c_modifier_`{`$arg_modifier`}`} )
 `}`,\
+`{`@eq`(`$arg_modifier`,`'`'`)\
    // NOTE: Empty code block for scope purposes.
-`}`,\
-`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
-   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && get_obj( ).`{`$arg_tfield`}( )`} )
 `,\
-   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`) && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`} )
+   if( get_state( ) & c_modifier_`{`$arg_modifier`} )
+`}`}`,\
+`{`@eq`(`$arg_tfistexttype`,`'0`'`)\
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && get_state( ) & c_modifier_`{`$arg_modifier`}`} )
+`,\
+   if( is_create`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && !is_null( get_obj( ).`{`$arg_tfield`}( ) )`}`{`!`@eq`(`$arg_modifier`,`'`'`) && get_state( ) & c_modifier_`{`$arg_modifier`}`} )
 `}`}\
    {
 `{`@eq`(`$arg_key_suffix`,`'`'`)\

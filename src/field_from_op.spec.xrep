@@ -34,27 +34,30 @@
 `{`@eq`(`$arg_sfistexttype`,`'1`'`)`&`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `{`@eq`(`$arg_scfistexttype`,`'1`'`)`&`!`@eq`(`$arg_spfield`,`'`'`)`$value`=`'"`{`$arg_value`}"`'`}\
 `}\
+`{`$new_or_create_only`=`'`'`}\
+`{`!`@eq`(`$arg_new_only`,`'`'`)`$new_or_create_only`=`'true`'`}\
+`{`!`@eq`(`$arg_create_only`,`'`'`)`$new_or_create_only`=`'true`'`}\
    // [(start field_from_op)] `{`$arg_id`}
 `{`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_check`,`'`'`)\
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
-`{`@eq`(`$arg_new_only`,`'`'`)\
+`{`@eq`(`$new_or_create_only`,`'`'`)\
 `{`@eq`(`$arg_modifier`,`'`'`)\
    get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `,\
    if( get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `}`,\
-   if( is_null( get_obj( ).get_key( ) )`{`!`@eq`(`$arg_modifier`,`'`'`)
+   if( `{`@eq`(`$arg_new_only`,`'`'`)is_create`,is_null( get_obj( ).get_key( ) )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`}`} )
       get_obj( ).`{`$arg_field`}( get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`{`$arg_spfield`}( ).`}`{`$arg_sfield`}( ) `{`$op`} `{`!`@eq`(`$type`,`'`'`)( `{`$type`} )`}\
 `}`{`@eq`(`$arg_ofield`,`'`'`)`$value`,get_obj( ).`{`$arg_ofield`}( )`} );`{`!`@eq`(`$arg_evalue`,`'`'`) // i.e. `{`$arg_evalue`}`}
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_apply( );
 `}`,\
-   if( `{`!`@eq`(`$arg_new_only`,`'`'`)is_null( get_obj( ).get_key( ) )
+   if( `{`!`@eq`(`$new_or_create_only`,`'`'`)`{`@eq`(`$arg_new_only`,`'`'`)is_create`,is_null( get_obj( ).get_key( ) )`}
     && `}get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( ) \
 `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`}`} )
@@ -68,7 +71,7 @@
       get_obj( ).op_apply( );
    }
 `}`}`,\
-   if( `{`!`@eq`(`$arg_new_only`,`'`'`)is_null( get_obj( ).get_key( ) )
+   if( `{`!`@eq`(`$new_or_create_only`,`'`'`)`{`@eq`(`$arg_new_only`,`'`'`)is_create`,is_null( get_obj( ).get_key( ) )`}
     && `}`{`@eq`(`$arg_tfistexttype`,`'1`'`)!is_null( `}get_obj( ).`{`$arg_tfield`}( )`{`@eq`(`$arg_tfistexttype`,`'1`'`) )`}`{`!`@eq`(`$arg_check`,`'`'`) && get_obj( ).`{`!`@eq`(`$arg_spfield`,`'`'`)`$arg_spfield`,`$arg_sfield`}( )\
  `{`@eq`(`$arg_check`,`'default`'`)==`,!=`} g_default_`{`$arg_sfield`}`}`{`!`@eq`(`$arg_modifier`,`'`'`)
     && get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`}`} )

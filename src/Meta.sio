@@ -2650,6 +2650,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600055a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600055b
+      <item>class
+     </specification>
+     <specification/>
       <id>600056
       <item>class
      </specification>
@@ -2799,6 +2807,10 @@
      </specification>
      <specification/>
       <id>620065
+      <item>class
+     </specification>
+     <specification/>
+      <id>630058
       <item>class
      </specification>
      <specification/>
@@ -3319,6 +3331,14 @@
         <item>tfield
        </specification>
        <specification/>
+        <id>600055a
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600055b
+        <item>tfield
+       </specification>
+       <specification/>
         <id>600056
         <item>tfield
        </specification>
@@ -3540,6 +3560,10 @@
        </specification>
        <specification/>
         <id>620058
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>630058
         <item>tfield
        </specification>
       </specifications>
@@ -9743,6 +9767,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600075a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600075b
+      <item>class
+     </specification>
+     <specification/>
       <id>600076
       <item>class
      </specification>
@@ -9833,6 +9865,14 @@
       <specifications/>
        <specification/>
         <id>600075
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600075a
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600075b
         <item>tfield
        </specification>
        <specification/>
@@ -12467,6 +12507,14 @@
       <item>class
      </specification>
      <specification/>
+      <id>600298a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600298b
+      <item>class
+     </specification>
+     <specification/>
       <id>602250
       <item>class
      </specification>
@@ -12559,6 +12607,14 @@
         <item>tfield
        </specification>
        <specification/>
+        <id>600298a
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600298b
+        <item>tfield
+       </specification>
+       <specification/>
         <id>602250
         <item>field
        </specification>
@@ -12620,6 +12676,14 @@
     <specifications/>
      <specification/>
       <id>600085
+      <item>class
+     </specification>
+     <specification/>
+      <id>600085a
+      <item>class
+     </specification>
+     <specification/>
+      <id>600085b
       <item>class
      </specification>
      <specification/>
@@ -12789,6 +12853,14 @@
       <specifications/>
        <specification/>
         <id>600085
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600085a
+        <item>tfield
+       </specification>
+       <specification/>
+        <id>600085b
         <item>tfield
        </specification>
        <specification/>
@@ -14108,6 +14180,14 @@
       <item>cclass
      </specification>
      <specification/>
+      <id>600055a
+      <item>cclass
+     </specification>
+     <specification/>
+      <id>600055b
+      <item>cclass
+     </specification>
+     <specification/>
       <id>600056
       <item>cclass
      </specification>
@@ -14136,7 +14216,23 @@
       <item>cclass
      </specification>
      <specification/>
+      <id>600075a
+      <item>cclass
+     </specification>
+     <specification/>
+      <id>600075b
+      <item>cclass
+     </specification>
+     <specification/>
       <id>600085
+      <item>cclass
+     </specification>
+     <specification/>
+      <id>600085a
+      <item>cclass
+     </specification>
+     <specification/>
+      <id>600085b
       <item>cclass
      </specification>
      <specification/>
@@ -14700,6 +14796,14 @@
       <item>cclass
      </specification>
      <specification/>
+      <id>600298a
+      <item>cclass
+     </specification>
+     <specification/>
+      <id>600298b
+      <item>cclass
+     </specification>
+     <specification/>
       <id>602500
       <item>class
      </specification>
@@ -14810,6 +14914,10 @@
      <specification/>
       <id>620194
       <item>class
+     </specification>
+     <specification/>
+      <id>630058
+      <item>cclass
      </specification>
      <specification/>
       <id>630114
@@ -15635,6 +15743,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600055a
+        <item>cfield
+       </specification>
+       <specification/>
         <id>600204
         <item>field
        </specification>
@@ -15673,6 +15785,10 @@
       </modifiers>
       <specifications/>
        <specification/>
+        <id>600055b
+        <item>cfield
+       </specification>
+       <specification/>
         <id>600204
         <item>field
        </specification>
@@ -15690,6 +15806,234 @@
        </specification>
        <specification/>
         <id>620131
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301441
+      <name>Other_Modifier
+      <type>@class
+      <mandatory>false
+      <class_id>109100
+      <relationship_id>201441
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500631
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600075a
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301442
+      <name>Other_Modifier_2
+      <type>@class
+      <mandatory>false
+      <class_id>109100
+      <relationship_id>201442
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500632
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600075b
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301331
+      <name>Other_Permission
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>201331
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500686a
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600298a
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301332
+      <name>Other_Permission_2
+      <type>@class
+      <mandatory>false
+      <class_id>116100
+      <relationship_id>201332
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500686b
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600298b
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301451
+      <name>Other_Procedure
+      <type>@class
+      <mandatory>false
+      <class_id>111100
+      <relationship_id>201451
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500626
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600085a
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>600133c
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301452
+      <name>Other_Procedure_2
+      <type>@class
+      <mandatory>false
+      <class_id>111100
+      <relationship_id>201452
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500627
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600085b
+        <item>cfield
+       </specification>
+       <specification/>
+        <id>600133d
+        <item>field
+       </specification>
+       <specification/>
+        <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>602500
         <item>field
        </specification>
       </specifications>
@@ -15782,210 +16126,6 @@
        </specification>
        <specification/>
         <id>620164
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>301441
-      <name>Other_{Modifier}
-      <type>@class
-      <mandatory>false
-      <class_id>109100
-      <relationship_id>201441
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500631
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>301442
-      <name>Other_{Modifier}_2
-      <type>@class
-      <mandatory>false
-      <class_id>109100
-      <relationship_id>201442
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500632
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>301331
-      <name>Other_{Permission}
-      <type>@class
-      <mandatory>false
-      <class_id>116100
-      <relationship_id>201331
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500686a
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>301332
-      <name>Other_{Permission}_2
-      <type>@class
-      <mandatory>false
-      <class_id>116100
-      <relationship_id>201332
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500686b
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>301451
-      <name>Other_{Procedure}
-      <type>@class
-      <mandatory>false
-      <class_id>111100
-      <relationship_id>201451
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500626
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600133c
-        <item>field
-       </specification>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
-        <item>field
-       </specification>
-      </specifications>
-     </field>
-     <field/>
-      <id>301452
-      <name>Other_{Procedure}_2
-      <type>@class
-      <mandatory>false
-      <class_id>111100
-      <relationship_id>201452
-      <indexes/>
-      </indexes>
-      <modifiers/>
-       <modifier/>
-        <id>500627
-        <affect>relegate
-       </modifier>
-      </modifiers>
-      <specifications/>
-       <specification/>
-        <id>600133d
-        <item>field
-       </specification>
-       <specification/>
-        <id>600204
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>600207
-        <item>field
-       </specification>
-       <specification/>
-        <id>602500
         <item>field
        </specification>
       </specifications>
@@ -16552,6 +16692,10 @@
        <specification/>
         <id>602500
         <item>field
+       </specification>
+       <specification/>
+        <id>630058
+        <item>cfield
        </specification>
       </specifications>
      </field>
@@ -26962,11 +27106,65 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201442
+    <name>Other_Modifier_2_{Specification}
+    <parent_id>109100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201441
+    <name>Other_Modifier_{Specification}
+    <parent_id>109100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>202830
     <name>Other_Package_{Package_Option}
     <parent_id>136100
     <child_id>137100
     <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201332
+    <name>Other_Permission_2_{Specification}
+    <parent_id>116100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201331
+    <name>Other_Permission_{Specification}
+    <parent_id>116100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201452
+    <name>Other_Procedure_2_{Specification}
+    <parent_id>111100
+    <child_id>115100
+    <cascade_op>restrict
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201451
+    <name>Other_Procedure_{Specification}
+    <parent_id>111100
+    <child_id>115100
+    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -26994,60 +27192,6 @@
     <parent_id>107100
     <child_id>137100
     <cascade_op>unlink
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201442
-    <name>Other_{Modifier}_2_{Specification}
-    <parent_id>109100
-    <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201441
-    <name>Other_{Modifier}_{Specification}
-    <parent_id>109100
-    <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201332
-    <name>Other_{Permission}_2_{Specification}
-    <parent_id>116100
-    <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201331
-    <name>Other_{Permission}_{Specification}
-    <parent_id>116100
-    <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201452
-    <name>Other_{Procedure}_2_{Specification}
-    <parent_id>111100
-    <child_id>115100
-    <cascade_op>restrict
-    <specifications/>
-    </specifications>
-   </relationship>
-   <relationship/>
-    <id>201451
-    <name>Other_{Procedure}_{Specification}
-    <parent_id>111100
-    <child_id>115100
-    <cascade_op>restrict
     <specifications/>
     </specifications>
    </relationship>
@@ -29098,6 +29242,28 @@
     </data>
    </specification>
    <specification/>
+    <id>600055b
+    <name>{Field}_{Specification}_Other_Field_2_update_children
+    <type>update_children
+    <data/>
+     <class_id>107100
+     <cclass_id>115100
+     <cfield_id>301436
+     <tfield_id>107101
+    </data>
+   </specification>
+   <specification/>
+    <id>600055a
+    <name>{Field}_{Specification}_Other_Field_update_children
+    <type>update_children
+    <data/>
+     <class_id>107100
+     <cclass_id>115100
+     <cfield_id>301435
+     <tfield_id>107101
+    </data>
+   </specification>
+   <specification/>
     <id>620058
     <name>{Field}_{Specification}_Other_Source_Child_2_update_children
     <type>update_children
@@ -29138,6 +29304,17 @@
      <class_id>107100
      <cclass_id>115100
      <cfield_id>301481
+     <tfield_id>107101
+    </data>
+   </specification>
+   <specification/>
+    <id>630058
+    <name>{Field}_{Specification}_Source_Grandchild_update_children
+    <type>update_children
+    <data/>
+     <class_id>107100
+     <cclass_id>115100
+     <cfield_id>301476
      <tfield_id>107101
     </data>
    </specification>
@@ -30953,6 +31130,28 @@
     </data>
    </specification>
    <specification/>
+    <id>600075b
+    <name>{Modifier}_{Specification}_Other_Modifier_2_update_children
+    <type>update_children
+    <data/>
+     <class_id>109100
+     <cclass_id>115100
+     <cfield_id>301442
+     <tfield_id>109101
+    </data>
+   </specification>
+   <specification/>
+    <id>600075a
+    <name>{Modifier}_{Specification}_Other_Modifier_update_children
+    <type>update_children
+    <data/>
+     <class_id>109100
+     <cclass_id>115100
+     <cfield_id>301441
+     <tfield_id>109101
+    </data>
+   </specification>
+   <specification/>
     <id>600075
     <name>{Modifier}_{Specification}_update_children
     <type>update_children
@@ -31564,6 +31763,28 @@
     </data>
    </specification>
    <specification/>
+    <id>600298b
+    <name>{Permission}_{Specification}_Other_Permission_2_update_children
+    <type>update_children
+    <data/>
+     <class_id>116100
+     <cclass_id>115100
+     <cfield_id>301332
+     <tfield_id>116101
+    </data>
+   </specification>
+   <specification/>
+    <id>600298a
+    <name>{Permission}_{Specification}_Other_Permission_update_children
+    <type>update_children
+    <data/>
+     <class_id>116100
+     <cclass_id>115100
+     <cfield_id>301331
+     <tfield_id>116101
+    </data>
+   </specification>
+   <specification/>
     <id>600298
     <name>{Permission}_{Specification}_update_children
     <type>update_children
@@ -31797,6 +32018,28 @@
      <field_info>111103;no_edit+non_new
      <field_info>111104;enum=655
      <field_info>301120:116101!@group:301500+116101
+    </data>
+   </specification>
+   <specification/>
+    <id>600085b
+    <name>{Procedure}_{Specification}_Other_Procdure_2_update_children
+    <type>update_children
+    <data/>
+     <class_id>111100
+     <cclass_id>115100
+     <cfield_id>301452
+     <tfield_id>111101
+    </data>
+   </specification>
+   <specification/>
+    <id>600085a
+    <name>{Procedure}_{Specification}_Other_Procdure_update_children
+    <type>update_children
+    <data/>
+     <class_id>111100
+     <cclass_id>115100
+     <cfield_id>301451
+     <tfield_id>111101
     </data>
    </specification>
    <specification/>

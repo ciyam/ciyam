@@ -47,8 +47,7 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
 `{`@eq`(`$arg_not_pedit`,`'`'`)\
    if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
-`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$check_both`,`'`'`) )`}
-`{`!`@eq`(`$check_either`,`'`'`)\
+`{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$check_both`,`'`'`) )`}`{`!`@eq`(`$check_either`,`'`'`)
     && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
     && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) ) )`} )
 `,\

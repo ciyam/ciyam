@@ -1238,6 +1238,38 @@ void Meta_Permission::impl::after_store( bool is_create, bool is_internal )
    }
    // [(finish update_children)] 600298
 
+   // [(start update_children)] 600298a
+   if( !is_create
+    && get_obj( ).has_field_changed( c_field_id_Name )
+    && get_obj( ).child_Specification_Other( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Other( ) ) )
+         {
+            get_obj( ).child_Specification_Other( ).op_update( );
+            get_obj( ).child_Specification_Other( ).op_apply( );
+         }
+      } while( get_obj( ).child_Specification_Other( ).iterate_next( ) );
+   }
+   // [(finish update_children)] 600298a
+
+   // [(start update_children)] 600298b
+   if( !is_create
+    && get_obj( ).has_field_changed( c_field_id_Name )
+    && get_obj( ).child_Specification_Other_Permission_2( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Other_Permission_2( ) ) )
+         {
+            get_obj( ).child_Specification_Other_Permission_2( ).op_update( );
+            get_obj( ).child_Specification_Other_Permission_2( ).op_apply( );
+         }
+      } while( get_obj( ).child_Specification_Other_Permission_2( ).iterate_next( ) );
+   }
+   // [(finish update_children)] 600298b
+
    // [<start after_store>]
    // [<finish after_store>]
 }
