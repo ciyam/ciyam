@@ -1,10 +1,14 @@
 `{`@eq`(`'for_or_after_store`'`,`$section`)`|`@eq`(`'for_destroy`'`,`$section`)\
    // [(start trigger_parent_update_field)] `{`$arg_id`}
-`{`@eq`(`$arg_tfield`,`'`'`)\
+`{`$tfield_or_modifier`=`'`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$tfield_or_modifier`=`'true`'`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`$tfield_or_modifier`=`'true`'`}\
+`{`@eq`(`$tfield_or_modifier`,`'`'`)\
    if( `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
 `,\
-   if( get_obj( ).`{`$arg_tfield`}( )
-    && `{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`} )
+    && `}`{`@eq`(`$arg_create_only`,`'true`'`)is_create && `}!is_null( get_obj( ).`{`$arg_spfield`}( ) )
 `}\
     `{`@eq`(`'for_destroy`'`,`$section`)&& !get_obj( ).get_is_being_cascaded( ) `}&& ( !get_obj( ).get_graph_parent( )
     || get_obj( ).get_graph_parent( )->get_variable( get_special_var_name( e_special_var_skip_update ) ).empty( ) ) )

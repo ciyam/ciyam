@@ -123,15 +123,15 @@
 `}
 `{`@eq`(`'for_or_after_destroy`'`,`$section`)\
    // [(start total_child_field_in_parent)] `{`$arg_id`}
-   if( !get_obj( ).get_is_being_cascaded( )
+   if( !is_null( get_obj( ).`{`$arg_pfield`}( ) )
+    && !is_destroy_locked_by_own_session( get_obj( ).`{`$arg_pfield`}( ) )
 `{`!`@eq`(`$arg_sfield`,`'`'`)\
     && get_obj( ).`{`$arg_sfield`}( )
 `}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)\
     && is_null( get_obj( ).`{`$arg_tfield`}( ) )
 `}\
-    && get_obj( ).get_variable( get_special_var_name( e_special_var_total_child_field_in_parent ) ).empty( )
-    && !is_null( get_obj( ).`{`$arg_pfield`}( ) ) )
+    && get_obj( ).get_variable( get_special_var_name( e_special_var_total_child_field_in_parent ) ).empty( ) )
    {
       get_obj( ).`{`$arg_pfield`}( ).op_update( );
       get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( get_obj( ).`{`$arg_pfield`}( ).`{`$arg_pnfield`}( ) - get_obj( ).`{`$arg_nfield`}( ) );

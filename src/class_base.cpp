@@ -3092,47 +3092,67 @@ string value_label( const string& s )
    string rs;
    for( size_t i = 0; i < s.size( ); i++ )
    {
+      bool special = false;
+
       if( s[ i ] == ' ' || s[ i ] == '.' )
          rs += '_';
       else if( s[ i ] == '>' )
       {
          if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
          {
-            rs += "_gteq_";
+            rs += "gteq";
             ++i;
          }
          else
-            rs += "_gt_";
+            rs += "gt";
+
+         special = true;
       }
       else if( s[ i ] == '<' )
       {
          if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
          {
-            rs += "_lteq_";
+            rs += "lteq";
             ++i;
          }
          else
-            rs += "_lt_";
+            rs += "lt";
+
+         special = true;
       }
       else if( s[ i ] == '!' )
       {
          if( i < s.size( ) - 1 && s[ i + 1 ] == '=' )
          {
-            rs += "_not_eq_";
+            rs += "not_eq";
             ++i;
          }
          else
-            rs += "_not_";
+            rs += "not";
+
+         special = true;
       }
       else if( s[ i ] == '=' )
-         rs += "_eq_";
+      {
+         rs += "eq";
+         special = true;
+      }
       else if( s[ i ] == '+' )
-         rs += "_plus_";
+      {
+         rs += "plus";
+         special = true;
+      }
       else if( s[ i ] == '-' )
-         rs += "_minus_";
+      {
+         rs += "minus";
+         special = true;
+      }
       else if( s[ i ] == '_' || ( s[ i ] >= 'A' && s[ i ] <= 'Z' )
        || ( s[ i ] >= 'a' && s[ i ] <= 'z' ) || s[ i ] >= '0' && s[ i ] <= '9' )
          rs += s[ i ];
+
+      if( special && i < s.size( ) - 1 && s[ i + 1 ] != ' ' )
+         rs += '_';
    }
 
    return rs;

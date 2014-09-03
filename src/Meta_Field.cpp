@@ -3721,6 +3721,38 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
    }
    // [(finish update_children)] 600055
 
+   // [(start update_children)] 600055a
+   if( !is_create
+    && get_obj( ).has_field_changed( c_field_id_Name )
+    && get_obj( ).child_Specification_Other( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Other( ) ) )
+         {
+            get_obj( ).child_Specification_Other( ).op_update( );
+            get_obj( ).child_Specification_Other( ).op_apply( );
+         }
+      } while( get_obj( ).child_Specification_Other( ).iterate_next( ) );
+   }
+   // [(finish update_children)] 600055a
+
+   // [(start update_children)] 600055b
+   if( !is_create
+    && get_obj( ).has_field_changed( c_field_id_Name )
+    && get_obj( ).child_Specification_Other_Field_2( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Other_Field_2( ) ) )
+         {
+            get_obj( ).child_Specification_Other_Field_2( ).op_update( );
+            get_obj( ).child_Specification_Other_Field_2( ).op_apply( );
+         }
+      } while( get_obj( ).child_Specification_Other_Field_2( ).iterate_next( ) );
+   }
+   // [(finish update_children)] 600055b
+
    // [(start update_children)] 600056
    if( !is_create
     && get_obj( ).has_field_changed( c_field_id_Name )
@@ -3889,6 +3921,22 @@ void Meta_Field::impl::after_store( bool is_create, bool is_internal )
       } while( get_obj( ).child_Specification_Other_Source_Child_2( ).iterate_next( ) );
    }
    // [(finish update_children)] 620058
+
+   // [(start update_children)] 630058
+   if( !is_create
+    && get_obj( ).has_field_changed( c_field_id_Name )
+    && get_obj( ).child_Specification_Source_Grandchild( ).iterate_forwards( ) )
+   {
+      do
+      {
+         if( !is_update_or_destroy_locked_by_own_session( get_obj( ).child_Specification_Source_Grandchild( ) ) )
+         {
+            get_obj( ).child_Specification_Source_Grandchild( ).op_update( );
+            get_obj( ).child_Specification_Source_Grandchild( ).op_apply( );
+         }
+      } while( get_obj( ).child_Specification_Source_Grandchild( ).iterate_next( ) );
+   }
+   // [(finish update_children)] 630058
 
    // [(start clone_children_for_create)] 630065
    if( is_create
