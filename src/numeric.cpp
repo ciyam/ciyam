@@ -520,7 +520,7 @@ numeric& numeric::operator *=( numeric n )
 numeric& numeric::operator /=( numeric n )
 {
    if( n.mantissa == c_zero )
-      throw runtime_error( "attempt to divide by zero" );
+      throw runtime_error( "attempt to divide numeric by zero" );
 
    uint8_t negative_flag = decimals & c_negative_flag;
    uint8_t d( decimals & c_decimals_mask );
