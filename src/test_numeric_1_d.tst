@@ -12,7 +12,7 @@
 100000
 
 > div 0
-error: attempt to divide by zero
+error: attempt to divide numeric by zero
 
 > mul 0.12345
 12345
