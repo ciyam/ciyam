@@ -1487,9 +1487,13 @@ void output_list_form( ostream& os,
                string checksum_values;
                string new_checksum_value;
 
+               string act( c_act_del );
+               if( extras.count( c_list_type_extra_reverse_del ) )
+                  act = c_act_rdel;
+
                if( use_url_checksum )
                {
-                  checksum_values = string( c_act_del )
+                  checksum_values = act
                    + ( is_child_list ? string( c_cmd_view ) : string( c_cmd_list ) ) + parent_key
                    + ( pident.empty( ) ? oident : pident ) + user_select_key + to_string( sess_info.checksum_serial );
 
@@ -1502,7 +1506,7 @@ void output_list_form( ostream& os,
                os << "<input type=\"button\" class=\"button\" value=\"" << GDS( c_display_delete )
                 << "\" onclick=\"confirm_delete( document." << source.id << " )"
                 " && list_action( document." << source.id << ", '" << source.cid
-                << "', '" << c_act_del << "', '" << source.id;
+                << "', '" << act << "', '" << source.id;
 
                if( use_url_checksum )
                   os << "', '" << c_param_chksum << "', '" << new_checksum_value;

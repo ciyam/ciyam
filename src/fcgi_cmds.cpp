@@ -340,11 +340,15 @@ bool perform_action( const string& module_name,
    }
 
    // NOTE: If the method name has (also) been prefixed with a '^' then instance execution order will be reversed.
+   bool is_reversed = false;
    if( !exec_info.empty( ) && exec_info[ 0 ] == '^' )
    {
+      is_reversed = true;
       exec_info.erase( 0, 1 );
-      reverse( code_and_versions.begin( ), code_and_versions.end( ) );
    }
+
+   if( is_reversed || act == c_act_rdel )
+      reverse( code_and_versions.begin( ), code_and_versions.end( ) );
 
    string key_list;
    string ver_list;
@@ -392,7 +396,7 @@ bool perform_action( const string& module_name,
 
       if( act == c_act_link )
          act_cmd = "pu";
-      else if( act == c_act_del )
+      else if( act == c_act_del || act == c_act_rdel )
          act_cmd = "pd";
       else if( act == c_act_exec )
          act_cmd = "pe";
