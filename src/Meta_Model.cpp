@@ -3298,6 +3298,13 @@ void Meta_Model::impl::impl_Generate( )
                list_extra += "text_search";
             }
 
+            if( get_obj( ).child_List( ).Delete_Direction( ) == 1 )
+            {
+               if( !list_extra.empty( ) )
+                  list_extra += ',';
+               list_extra += "reverse_del";
+            }
+
             switch( get_obj( ).child_List( ).Text_Match_Highlight( ) )
             {
                case 0:

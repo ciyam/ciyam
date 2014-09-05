@@ -5244,6 +5244,24 @@
       </specifications>
      </field>
      <field/>
+      <id>122151
+      <name>Delete_Direction
+      <type>int
+      <mandatory>true
+      <enum_id>688
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>122142
       <name>Destroy_Only_If_Default_Other
       <type>bool
@@ -30720,6 +30738,7 @@
      <field_info>122119
      <field_info>122117;enum=686
      <field_info>122112;enum=688
+     <field_info>122151;enum=688
      <field_info>122113;force+enum=687
      <field_info>122122;force
      <field_info>122116

@@ -3580,6 +3580,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_list_delete_direction
+     <field>122151
+     <ftype>int
+     <extra>enum=688
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_list_display_row_limit
      <field>122113
      <ftype>int

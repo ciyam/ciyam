@@ -2085,7 +2085,7 @@ void request_handler::process_request( )
                   act = c_act_edit;
                   was_invalid = true;
                }
-               else if( act == c_act_del || act == c_act_link || act == c_act_exec )
+               else if( act == c_act_del || act == c_act_rdel || act == c_act_link || act == c_act_exec )
                {
                   if( act == c_act_exec )
                   {
