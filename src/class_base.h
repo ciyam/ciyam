@@ -1283,16 +1283,18 @@ void CLASS_BASE_DECL_SPEC execute_command( date_time& n, const std::string& cmd_
 void CLASS_BASE_DECL_SPEC meta_relationship_child_name( std::string& name,
  const std::string& child_name, const std::string& parent_name, const std::string& separator );
 
-const int c_sql_std_char_size = 128;
-const int c_sql_small_char_size = 32;
+const int c_sql_std_char_size = 100;
+const int c_sql_large_char_size = 200;
+const int c_sql_small_char_size = 30;
 
 enum sql_char_type
 {
    e_sql_char_type_std,
-   e_sql_char_type_small,
    e_sql_char_type_large,
+   e_sql_char_type_small,
    e_sql_char_type_security,
-   e_sql_char_type_foreign_key,
+   e_sql_char_type_very_large,
+   e_sql_char_type_foreign_key
 };
 
 std::string CLASS_BASE_DECL_SPEC meta_sql_type(

@@ -2681,26 +2681,24 @@ void Meta_Field::impl::impl_Get_Text_Type( int& Result )
 {
    // [<start Get_Text_Type_impl>]
 //nyi
-   Result = e_sql_char_type_std;
+   Result = e_sql_char_type_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_html )
-      Result = e_sql_char_type_large;
+      Result = e_sql_char_type_very_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_text )
-      Result = e_sql_char_type_large;
+      Result = e_sql_char_type_very_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_notes )
-      Result = e_sql_char_type_large;
+      Result = e_sql_char_type_very_large;
+
+   if( get_obj( ).Type( ).Max_Size( )
+    && get_obj( ).Type( ).Max_Size( ) <= c_sql_std_char_size )
+      Result = e_sql_char_type_std;
 
    if( get_obj( ).Type( ).Max_Size( )
     && get_obj( ).Type( ).Max_Size( ) <= c_sql_small_char_size )
       Result = e_sql_char_type_small;
-
-   if( get_obj( ).Type( ).Max_Size( ) > c_sql_std_char_size )
-      Result = e_sql_char_type_large;
-
-   if( get_obj( ).Extra( ) == c_enum_field_extra_user_perms )
-      Result = e_sql_char_type_large;
 
    if( get_obj( ).Extra( ) == c_enum_field_extra_security_level )
       Result = e_sql_char_type_security;
