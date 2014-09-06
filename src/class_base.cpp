@@ -4391,9 +4391,11 @@ string meta_sql_type( const string& field_type, bool is_mandatory, sql_char_type
       else if( char_type == e_sql_char_type_small )
          sql_type = "VARCHAR(" + to_string( c_sql_small_char_size ) + ")";
       else if( char_type == e_sql_char_type_large )
-         sql_type = "LONGTEXT";
+         sql_type = "VARCHAR(" + to_string( c_sql_large_char_size ) + ")";
       else if( char_type == e_sql_char_type_security )
          sql_type = "VARCHAR(10)";
+      else if( char_type == e_sql_char_type_very_large )
+         sql_type = "LONGTEXT";
       else if( char_type == e_sql_char_type_foreign_key )
          sql_type = "VARCHAR(" + to_string( c_max_key_length ) + ")";
       else
