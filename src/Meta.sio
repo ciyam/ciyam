@@ -6446,6 +6446,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>600481b
+      <item>class
+     </specification>
+     <specification/>
       <id>600482
       <item>class
      </specification>
@@ -7540,6 +7544,27 @@
       </specifications>
      </field>
      <field/>
+      <id>124135
+      <name>Sort_Manually
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500881b
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602850
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>302160
       <name>Source_Child
       <type>@class
@@ -7929,6 +7954,10 @@
        </specification>
        <specification/>
         <id>600481a
+        <item>field
+       </specification>
+       <specification/>
+        <id>600481b
         <item>field
        </specification>
        <specification/>
@@ -8372,6 +8401,10 @@
       <name>Hide_Select_Specifics
      </modifier>
      <modifier/>
+      <id>500881b
+      <name>Hide_Sort_Manually
+     </modifier>
+     <modifier/>
       <id>500872
       <name>Hide_Switch_Type
      </modifier>
@@ -8539,6 +8572,10 @@
      </specification>
      <specification/>
       <id>600481a
+      <item>pclass
+     </specification>
+     <specification/>
+      <id>600481b
       <item>pclass
      </specification>
      <specification/>
@@ -8795,6 +8832,23 @@
       <specifications/>
        <specification/>
         <id>600480
+        <item>pfield
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>123122
+      <name>Allow_Sort_Manually
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600481b
         <item>pfield
        </specification>
       </specifications>
@@ -29991,6 +30045,19 @@
     </data>
    </specification>
    <specification/>
+    <id>600481b
+    <name>{List_Field}_Hide_Sort_Manually
+    <type>modifier_field_value
+    <data/>
+     <class_id>124100
+     <pclass_id>123100
+     <modifier_id>500881b
+     <field_id>302120
+     <pfield_id>123122
+     <field_value>false
+    </data>
+   </specification>
+   <specification/>
     <id>600471
     <name>{List_Field}_Hide_Switch_Type
     <type>modifier_field_value
@@ -30357,6 +30424,7 @@
      <field_info>302197:106101;hidden+fkey5+filename+max_size=30
      <field_info>302198:107101!@fkey5:300700+107108=0+107101;link
      <field_info>302180:115101!@fkey2:301420+301410=restriction;link
+     <field_info>124135
      <field_info>124105;enum=695
      <field_info>302185:107101!@fkey1:300700+107101;link
      <field_info>124106

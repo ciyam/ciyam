@@ -2933,9 +2933,6 @@ void Meta_Model::impl::impl_Generate( )
                            } while( p_field->Class( ).child_Field( ).iterate_next( ) );
                         }
 
-                        // FUTURE: This should be able to be automatically determined as the
-                        // "Sort Manually" option is only really applicable when the display
-                        // field is transient.
                         if( get_obj( ).child_View( ).child_View_Field( ).Sort_Manually( ) )
                         {
                            if( !field_extra.empty( ) )
@@ -4653,6 +4650,13 @@ void Meta_Model::impl::impl_Generate( )
 
                      string pextras( get_obj( ).child_List( ).child_List_Field( ).Restriction_Spec( ).Restrict_Values( ) );
                      bool is_restricted( !pextras.empty( ) );
+
+                     if( get_obj( ).child_List( ).child_List_Field( ).Sort_Manually( ) )
+                     {
+                        if( !pextras.empty( ) )
+                           pextras += '+';
+                        pextras += "@sort";
+                     }
 
                      set< string > pextra_items;
                      split_string( pextras, pextra_items, '+' );

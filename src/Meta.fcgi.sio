@@ -3831,7 +3831,7 @@
      <ftype>bool
      <extra>force
      <mandatory>true
-     <modifiers>200000:relegate,2000:relegate,4000:relegate,8000:relegate,400000000:relegate
+     <modifiers>200000:relegate,2000:relegate,4000:relegate,8000:relegate,800000000:relegate
     </field>
     <field/>
      <name>field_list_field_source_parent_class
@@ -3998,12 +3998,20 @@
      <pextra>@fkey2:301420+301410=restriction
     </field>
     <field/>
+     <name>field_list_field_sort_manually
+     <field>124135
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>20000000:relegate
+    </field>
+    <field/>
      <name>field_list_field_switch_type
      <field>124105
      <ftype>int
      <extra>enum=695
      <mandatory>true
-     <modifiers>20000000:relegate
+     <modifiers>40000000:relegate
     </field>
     <field/>
      <name>field_list_field_restriction_field
@@ -4039,7 +4047,7 @@
      <ftype>int
      <extra>enum=700
      <mandatory>true
-     <modifiers>40000000:relegate
+     <modifiers>80000000:relegate
     </field>
     <field/>
      <name>field_list_field_search_option_limit
@@ -4099,7 +4107,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,2000:relegate,80000000:relegate
+     <modifiers>800000:relegate,2000:relegate,100000000:relegate
     </field>
     <field/>
      <name>field_list_field_reverse_order
@@ -4107,7 +4115,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>800000:relegate,2000:relegate,80000000:relegate
+     <modifiers>800000:relegate,2000:relegate,100000000:relegate
     </field>
     <field/>
      <name>field_list_field_retain_selected_rows
@@ -4207,7 +4215,7 @@
      <ftype>bool
      <extra>
      <mandatory>true
-     <modifiers>100000000:relegate
+     <modifiers>200000000:relegate
     </field>
     <field/>
      <name>field_list_field_link_type
@@ -4243,7 +4251,7 @@
      <ftype>int
      <extra>enum=690
      <mandatory>true
-     <modifiers>800000000:protect
+     <modifiers>1000000000:protect
     </field>
     <field/>
      <name>field_list_field_access_permission
@@ -4251,7 +4259,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>800000000:protect
+     <modifiers>1000000000:protect
      <pclass>116100
      <pfield>116101
      <pfname>field_permission_name
@@ -4272,7 +4280,7 @@
      <ftype>@class
      <extra>
      <mandatory>false
-     <modifiers>200000000:relegate
+     <modifiers>400000000:relegate
      <pclass>109100
      <pfield>109101
      <pfname>field_modifier_name

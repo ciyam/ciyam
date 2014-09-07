@@ -87,20 +87,21 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
       e_field_id_Reverse_Order = 38,
       e_field_id_Search_Option_Limit = 39,
       e_field_id_Select_Key_Exclusions = 40,
-      e_field_id_Source_Child = 41,
-      e_field_id_Source_Child_Class = 42,
-      e_field_id_Source_Field = 43,
-      e_field_id_Source_Grandchild = 44,
-      e_field_id_Source_Parent = 45,
-      e_field_id_Source_Parent_Class = 46,
-      e_field_id_Switch_Type = 47,
-      e_field_id_Trigger_Option = 48,
-      e_field_id_Type = 49,
-      e_field_id_Use_Child_Rel_Source_Parent = 50,
-      e_field_id_Use_In_Text_Search_Title = 51,
-      e_field_id_Use_Source_Parent = 52,
-      e_field_id_Use_Type_Field = 53,
-      e_field_id_View_Parent_Extra = 54
+      e_field_id_Sort_Manually = 41,
+      e_field_id_Source_Child = 42,
+      e_field_id_Source_Child_Class = 43,
+      e_field_id_Source_Field = 44,
+      e_field_id_Source_Grandchild = 45,
+      e_field_id_Source_Parent = 46,
+      e_field_id_Source_Parent_Class = 47,
+      e_field_id_Switch_Type = 48,
+      e_field_id_Trigger_Option = 49,
+      e_field_id_Type = 50,
+      e_field_id_Use_Child_Rel_Source_Parent = 51,
+      e_field_id_Use_In_Text_Search_Title = 52,
+      e_field_id_Use_Source_Parent = 53,
+      e_field_id_Use_Type_Field = 54,
+      e_field_id_View_Parent_Extra = 55
    };
 
    Meta_List_Field( );
@@ -180,6 +181,9 @@ class META_LIST_FIELD_DECL_SPEC Meta_List_Field : public class_base
 
    const std::string& Select_Key_Exclusions( ) const;
    void Select_Key_Exclusions( const std::string& Select_Key_Exclusions );
+
+   bool Sort_Manually( ) const;
+   void Sort_Manually( bool Sort_Manually );
 
    int Switch_Type( ) const;
    void Switch_Type( int Switch_Type );
