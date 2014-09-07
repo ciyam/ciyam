@@ -611,9 +611,12 @@ bool output_view_form( ostream& os, const string& act,
 
    if( !source.orientation_field.empty( ) )
    {
-      int is_portrait = atoi( source.field_values.find( source.orientation_field )->second.c_str( ) );
-      if( is_portrait )
+      int orientation = atoi( source.field_values.find( source.orientation_field )->second.c_str( ) );
+
+      if( orientation == 1 ) // i.e. Portrait
          swap( image_height, image_width );
+      else if( orientation == 2 ) // i.e. Neither
+         image_height = image_width;
    }
 
    string enter_action = "null";
