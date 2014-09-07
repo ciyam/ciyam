@@ -3157,9 +3157,12 @@ void output_list_form( ostream& os,
                string height( image_height );
                if( !source.orientation_field.empty( ) )
                {
-                  int is_portrait = atoi( columns[ orientation_col ].c_str( ) );
-                  if( is_portrait )
+                  int orientation = atoi( columns[ orientation_col ].c_str( ) );
+
+                  if( orientation == 1 ) // i.e. Portrait
                      swap( height, width );
+                  else if( orientation == 2 ) // i.e. Neither
+                     height = width;
                }
 
                if( file_exists( file_name ) )
@@ -3199,16 +3202,21 @@ void output_list_form( ostream& os,
                   else
                      create_tmp_file_link( tmp_link_path, file_name, file_full_ext, link_file_name );
 
-                  if( !is_href && !is_printable && !embed_images )
+                  if( !is_href && !is_printable
+                   && ( !embed_images || source.file_fields.count( source_value_id ) ) )
                   {
                      is_href = true;
                      os << "<a href=\"" << tmp_link_path << "\" target=\"_blank\">";
                   }
 
+                  was_output = true;
+
                   if( source.file_fields.count( source_value_id ) )
                      os << file_full_ext;
                   else
                   {
+                     is_image = true;
+
                      string image_src( tmp_link_path );
                      if( embed_images )
                      {
@@ -3220,8 +3228,6 @@ void output_list_form( ostream& os,
                       << "\" width=\"" << width << "\" height=\""
                       << height << "\" border=\"0\" alt=\"" << GDS( c_display_image ) << "\">";
                   }
-
-                  is_image = true;
                }
             }
 
