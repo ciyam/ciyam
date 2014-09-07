@@ -67,6 +67,7 @@ const char* const c_field_id_Allow_Restriction_Spec = "123103";
 const char* const c_field_id_Allow_Restriction_Value = "123104";
 const char* const c_field_id_Allow_Search_Option_Limit = "123115";
 const char* const c_field_id_Allow_Select_Specifics = "123111";
+const char* const c_field_id_Allow_Sort_Manually = "123122";
 const char* const c_field_id_Allow_View_Parent_Extra = "123120";
 const char* const c_field_id_Is_Restrict_Search = "123118";
 const char* const c_field_id_List_Field_Name = "123102";
@@ -89,6 +90,7 @@ const char* const c_field_name_Allow_Restriction_Spec = "Allow_Restriction_Spec"
 const char* const c_field_name_Allow_Restriction_Value = "Allow_Restriction_Value";
 const char* const c_field_name_Allow_Search_Option_Limit = "Allow_Search_Option_Limit";
 const char* const c_field_name_Allow_Select_Specifics = "Allow_Select_Specifics";
+const char* const c_field_name_Allow_Sort_Manually = "Allow_Sort_Manually";
 const char* const c_field_name_Allow_View_Parent_Extra = "Allow_View_Parent_Extra";
 const char* const c_field_name_Is_Restrict_Search = "Is_Restrict_Search";
 const char* const c_field_name_List_Field_Name = "List_Field_Name";
@@ -111,6 +113,7 @@ const char* const c_field_display_name_Allow_Restriction_Spec = "field_list_fiel
 const char* const c_field_display_name_Allow_Restriction_Value = "field_list_field_type_allow_restriction_value";
 const char* const c_field_display_name_Allow_Search_Option_Limit = "field_list_field_type_allow_search_option_limit";
 const char* const c_field_display_name_Allow_Select_Specifics = "field_list_field_type_allow_select_specifics";
+const char* const c_field_display_name_Allow_Sort_Manually = "field_list_field_type_allow_sort_manually";
 const char* const c_field_display_name_Allow_View_Parent_Extra = "field_list_field_type_allow_view_parent_extra";
 const char* const c_field_display_name_Is_Restrict_Search = "field_list_field_type_is_restrict_search";
 const char* const c_field_display_name_List_Field_Name = "field_list_field_type_list_field_name";
@@ -121,7 +124,7 @@ const char* const c_field_display_name_Needs_Switch_Type = "field_list_field_typ
 const char* const c_field_display_name_Non_Simple_Field = "field_list_field_type_non_simple_field";
 const char* const c_field_display_name_Trivial_Field_Only = "field_list_field_type_trivial_field_only";
 
-const int c_num_fields = 21;
+const int c_num_fields = 22;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -145,7 +148,8 @@ const char* const c_all_sorted_field_ids[ ] =
    "123118",
    "123119",
    "123120",
-   "123121"
+   "123121",
+   "123122"
 };
 
 const char* const c_all_sorted_field_names[ ] =
@@ -162,6 +166,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Allow_Restriction_Value",
    "Allow_Search_Option_Limit",
    "Allow_Select_Specifics",
+   "Allow_Sort_Manually",
    "Allow_View_Parent_Extra",
    "Is_Restrict_Search",
    "List_Field_Name",
@@ -217,6 +222,7 @@ bool g_default_Allow_Restriction_Spec = bool( 0 );
 bool g_default_Allow_Restriction_Value = bool( 0 );
 bool g_default_Allow_Search_Option_Limit = bool( 0 );
 bool g_default_Allow_Select_Specifics = bool( 0 );
+bool g_default_Allow_Sort_Manually = bool( 0 );
 bool g_default_Allow_View_Parent_Extra = bool( 0 );
 bool g_default_Is_Restrict_Search = bool( 0 );
 string g_default_List_Field_Name = string( );
@@ -380,6 +386,12 @@ void Meta_List_Field_Type_command_functor::operator ( )( const string& command, 
          string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Select_Specifics( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Allow_Sort_Manually || field_name == c_field_name_Allow_Sort_Manually )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_List_Field_Type->Allow_Sort_Manually( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Allow_View_Parent_Extra || field_name == c_field_name_Allow_View_Parent_Extra )
       {
          handled = true;
@@ -530,6 +542,13 @@ void Meta_List_Field_Type_command_functor::operator ( )( const string& command, 
           *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Select_Specifics, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Allow_Sort_Manually || field_name == c_field_name_Allow_Sort_Manually )
+      {
+         handled = true;
+         func_string_setter< Meta_List_Field_Type, bool >(
+          *cmd_handler.p_Meta_List_Field_Type, &Meta_List_Field_Type::Allow_Sort_Manually, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Allow_View_Parent_Extra || field_name == c_field_name_Allow_View_Parent_Extra )
       {
          handled = true;
@@ -667,6 +686,9 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
    bool impl_Allow_Select_Specifics( ) const { return lazy_fetch( p_obj ), v_Allow_Select_Specifics; }
    void impl_Allow_Select_Specifics( bool Allow_Select_Specifics ) { v_Allow_Select_Specifics = Allow_Select_Specifics; }
 
+   bool impl_Allow_Sort_Manually( ) const { return lazy_fetch( p_obj ), v_Allow_Sort_Manually; }
+   void impl_Allow_Sort_Manually( bool Allow_Sort_Manually ) { v_Allow_Sort_Manually = Allow_Sort_Manually; }
+
    bool impl_Allow_View_Parent_Extra( ) const { return lazy_fetch( p_obj ), v_Allow_View_Parent_Extra; }
    void impl_Allow_View_Parent_Extra( bool Allow_View_Parent_Extra ) { v_Allow_View_Parent_Extra = Allow_View_Parent_Extra; }
 
@@ -783,6 +805,7 @@ struct Meta_List_Field_Type::impl : public Meta_List_Field_Type_command_handler
    bool v_Allow_Restriction_Value;
    bool v_Allow_Search_Option_Limit;
    bool v_Allow_Select_Specifics;
+   bool v_Allow_Sort_Manually;
    bool v_Allow_View_Parent_Extra;
    bool v_Is_Restrict_Search;
    string v_List_Field_Name;
@@ -851,38 +874,42 @@ string Meta_List_Field_Type::impl::get_field_value( int field ) const
       break;
 
       case 12:
-      retval = to_string( impl_Allow_View_Parent_Extra( ) );
+      retval = to_string( impl_Allow_Sort_Manually( ) );
       break;
 
       case 13:
-      retval = to_string( impl_Is_Restrict_Search( ) );
+      retval = to_string( impl_Allow_View_Parent_Extra( ) );
       break;
 
       case 14:
-      retval = to_string( impl_List_Field_Name( ) );
+      retval = to_string( impl_Is_Restrict_Search( ) );
       break;
 
       case 15:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_List_Field_Name( ) );
       break;
 
       case 16:
-      retval = to_string( impl_Needs_Restriction_Field( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 17:
-      retval = to_string( impl_Needs_Source( ) );
+      retval = to_string( impl_Needs_Restriction_Field( ) );
       break;
 
       case 18:
-      retval = to_string( impl_Needs_Switch_Type( ) );
+      retval = to_string( impl_Needs_Source( ) );
       break;
 
       case 19:
-      retval = to_string( impl_Non_Simple_Field( ) );
+      retval = to_string( impl_Needs_Switch_Type( ) );
       break;
 
       case 20:
+      retval = to_string( impl_Non_Simple_Field( ) );
+      break;
+
+      case 21:
       retval = to_string( impl_Trivial_Field_Only( ) );
       break;
 
@@ -946,38 +973,42 @@ void Meta_List_Field_Type::impl::set_field_value( int field, const string& value
       break;
 
       case 12:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_View_Parent_Extra, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_Sort_Manually, value );
       break;
 
       case 13:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Is_Restrict_Search, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Allow_View_Parent_Extra, value );
       break;
 
       case 14:
-      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_List_Field_Name, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Is_Restrict_Search, value );
       break;
 
       case 15:
-      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_Name, value );
+      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_List_Field_Name, value );
       break;
 
       case 16:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Restriction_Field, value );
+      func_string_setter< Meta_List_Field_Type::impl, string >( *this, &Meta_List_Field_Type::impl::impl_Name, value );
       break;
 
       case 17:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Source, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Restriction_Field, value );
       break;
 
       case 18:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Switch_Type, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Source, value );
       break;
 
       case 19:
-      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Non_Simple_Field, value );
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Needs_Switch_Type, value );
       break;
 
       case 20:
+      func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Non_Simple_Field, value );
+      break;
+
+      case 21:
       func_string_setter< Meta_List_Field_Type::impl, bool >( *this, &Meta_List_Field_Type::impl::impl_Trivial_Field_Only, value );
       break;
 
@@ -1061,6 +1092,7 @@ void Meta_List_Field_Type::impl::clear( )
    v_Allow_Restriction_Value = g_default_Allow_Restriction_Value;
    v_Allow_Search_Option_Limit = g_default_Allow_Search_Option_Limit;
    v_Allow_Select_Specifics = g_default_Allow_Select_Specifics;
+   v_Allow_Sort_Manually = g_default_Allow_Sort_Manually;
    v_Allow_View_Parent_Extra = g_default_Allow_View_Parent_Extra;
    v_Is_Restrict_Search = g_default_Is_Restrict_Search;
    v_List_Field_Name = g_default_List_Field_Name;
@@ -1409,6 +1441,16 @@ bool Meta_List_Field_Type::Allow_Select_Specifics( ) const
 void Meta_List_Field_Type::Allow_Select_Specifics( bool Allow_Select_Specifics )
 {
    p_impl->impl_Allow_Select_Specifics( Allow_Select_Specifics );
+}
+
+bool Meta_List_Field_Type::Allow_Sort_Manually( ) const
+{
+   return p_impl->impl_Allow_Sort_Manually( );
+}
+
+void Meta_List_Field_Type::Allow_Sort_Manually( bool Allow_Sort_Manually )
+{
+   p_impl->impl_Allow_Sort_Manually( Allow_Sort_Manually );
 }
 
 bool Meta_List_Field_Type::Allow_View_Parent_Extra( ) const
@@ -1762,6 +1804,16 @@ const char* Meta_List_Field_Type::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Allow_Sort_Manually )
+   {
+      p_id = c_field_id_Allow_Sort_Manually;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Allow_View_Parent_Extra )
    {
       p_id = c_field_id_Allow_View_Parent_Extra;
@@ -1983,6 +2035,16 @@ const char* Meta_List_Field_Type::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Allow_Sort_Manually )
+   {
+      p_name = c_field_name_Allow_Sort_Manually;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Allow_View_Parent_Extra )
    {
       p_name = c_field_name_Allow_View_Parent_Extra;
@@ -2167,6 +2229,11 @@ string Meta_List_Field_Type::get_field_uom_symbol( const string& id_or_name ) co
       name = string( c_field_display_name_Allow_Select_Specifics );
       get_module_string( c_field_display_name_Allow_Select_Specifics, &next );
    }
+   else if( id_or_name == c_field_id_Allow_Sort_Manually || id_or_name == c_field_name_Allow_Sort_Manually )
+   {
+      name = string( c_field_display_name_Allow_Sort_Manually );
+      get_module_string( c_field_display_name_Allow_Sort_Manually, &next );
+   }
    else if( id_or_name == c_field_id_Allow_View_Parent_Extra || id_or_name == c_field_name_Allow_View_Parent_Extra )
    {
       name = string( c_field_display_name_Allow_View_Parent_Extra );
@@ -2251,6 +2318,8 @@ string Meta_List_Field_Type::get_field_display_name( const string& id_or_name ) 
       display_name = get_module_string( c_field_display_name_Allow_Search_Option_Limit );
    else if( id_or_name == c_field_id_Allow_Select_Specifics || id_or_name == c_field_name_Allow_Select_Specifics )
       display_name = get_module_string( c_field_display_name_Allow_Select_Specifics );
+   else if( id_or_name == c_field_id_Allow_Sort_Manually || id_or_name == c_field_name_Allow_Sort_Manually )
+      display_name = get_module_string( c_field_display_name_Allow_Sort_Manually );
    else if( id_or_name == c_field_id_Allow_View_Parent_Extra || id_or_name == c_field_name_Allow_View_Parent_Extra )
       display_name = get_module_string( c_field_display_name_Allow_View_Parent_Extra );
    else if( id_or_name == c_field_id_Is_Restrict_Search || id_or_name == c_field_name_Is_Restrict_Search )
@@ -2490,6 +2559,7 @@ void Meta_List_Field_Type::get_sql_column_names(
    names.push_back( "C_Allow_Restriction_Value" );
    names.push_back( "C_Allow_Search_Option_Limit" );
    names.push_back( "C_Allow_Select_Specifics" );
+   names.push_back( "C_Allow_Sort_Manually" );
    names.push_back( "C_Allow_View_Parent_Extra" );
    names.push_back( "C_Is_Restrict_Search" );
    names.push_back( "C_List_Field_Name" );
@@ -2522,6 +2592,7 @@ void Meta_List_Field_Type::get_sql_column_values(
    values.push_back( to_string( Allow_Restriction_Value( ) ) );
    values.push_back( to_string( Allow_Search_Option_Limit( ) ) );
    values.push_back( to_string( Allow_Select_Specifics( ) ) );
+   values.push_back( to_string( Allow_Sort_Manually( ) ) );
    values.push_back( to_string( Allow_View_Parent_Extra( ) ) );
    values.push_back( to_string( Is_Restrict_Search( ) ) );
    values.push_back( sql_quote( to_string( List_Field_Name( ) ) ) );
@@ -2618,6 +2689,7 @@ void Meta_List_Field_Type::static_get_field_info( field_info_container& all_fiel
    all_field_info.push_back( field_info( "123104", "Allow_Restriction_Value", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "123115", "Allow_Search_Option_Limit", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "123111", "Allow_Select_Specifics", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "123122", "Allow_Sort_Manually", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "123120", "Allow_View_Parent_Extra", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "123118", "Is_Restrict_Search", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "123102", "List_Field_Name", "string", false, "", "" ) );
@@ -2702,38 +2774,42 @@ const char* Meta_List_Field_Type::static_get_field_id( field_id id )
       break;
 
       case 13:
-      p_id = "123120";
+      p_id = "123122";
       break;
 
       case 14:
-      p_id = "123118";
+      p_id = "123120";
       break;
 
       case 15:
-      p_id = "123102";
+      p_id = "123118";
       break;
 
       case 16:
-      p_id = "123101";
+      p_id = "123102";
       break;
 
       case 17:
-      p_id = "123117";
+      p_id = "123101";
       break;
 
       case 18:
-      p_id = "123114";
+      p_id = "123117";
       break;
 
       case 19:
-      p_id = "123105";
+      p_id = "123114";
       break;
 
       case 20:
-      p_id = "123109";
+      p_id = "123105";
       break;
 
       case 21:
+      p_id = "123109";
+      break;
+
+      case 22:
       p_id = "123110";
       break;
    }
@@ -2799,38 +2875,42 @@ const char* Meta_List_Field_Type::static_get_field_name( field_id id )
       break;
 
       case 13:
-      p_id = "Allow_View_Parent_Extra";
+      p_id = "Allow_Sort_Manually";
       break;
 
       case 14:
-      p_id = "Is_Restrict_Search";
+      p_id = "Allow_View_Parent_Extra";
       break;
 
       case 15:
-      p_id = "List_Field_Name";
+      p_id = "Is_Restrict_Search";
       break;
 
       case 16:
-      p_id = "Name";
+      p_id = "List_Field_Name";
       break;
 
       case 17:
-      p_id = "Needs_Restriction_Field";
+      p_id = "Name";
       break;
 
       case 18:
-      p_id = "Needs_Source";
+      p_id = "Needs_Restriction_Field";
       break;
 
       case 19:
-      p_id = "Needs_Switch_Type";
+      p_id = "Needs_Source";
       break;
 
       case 20:
-      p_id = "Non_Simple_Field";
+      p_id = "Needs_Switch_Type";
       break;
 
       case 21:
+      p_id = "Non_Simple_Field";
+      break;
+
+      case 22:
       p_id = "Trivial_Field_Only";
       break;
    }
@@ -2871,24 +2951,26 @@ int Meta_List_Field_Type::static_get_field_num( const string& field )
       rc += 11;
    else if( field == c_field_id_Allow_Select_Specifics || field == c_field_name_Allow_Select_Specifics )
       rc += 12;
-   else if( field == c_field_id_Allow_View_Parent_Extra || field == c_field_name_Allow_View_Parent_Extra )
+   else if( field == c_field_id_Allow_Sort_Manually || field == c_field_name_Allow_Sort_Manually )
       rc += 13;
-   else if( field == c_field_id_Is_Restrict_Search || field == c_field_name_Is_Restrict_Search )
+   else if( field == c_field_id_Allow_View_Parent_Extra || field == c_field_name_Allow_View_Parent_Extra )
       rc += 14;
-   else if( field == c_field_id_List_Field_Name || field == c_field_name_List_Field_Name )
+   else if( field == c_field_id_Is_Restrict_Search || field == c_field_name_Is_Restrict_Search )
       rc += 15;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_List_Field_Name || field == c_field_name_List_Field_Name )
       rc += 16;
-   else if( field == c_field_id_Needs_Restriction_Field || field == c_field_name_Needs_Restriction_Field )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 17;
-   else if( field == c_field_id_Needs_Source || field == c_field_name_Needs_Source )
+   else if( field == c_field_id_Needs_Restriction_Field || field == c_field_name_Needs_Restriction_Field )
       rc += 18;
-   else if( field == c_field_id_Needs_Switch_Type || field == c_field_name_Needs_Switch_Type )
+   else if( field == c_field_id_Needs_Source || field == c_field_name_Needs_Source )
       rc += 19;
-   else if( field == c_field_id_Non_Simple_Field || field == c_field_name_Non_Simple_Field )
+   else if( field == c_field_id_Needs_Switch_Type || field == c_field_name_Needs_Switch_Type )
       rc += 20;
-   else if( field == c_field_id_Trivial_Field_Only || field == c_field_name_Trivial_Field_Only )
+   else if( field == c_field_id_Non_Simple_Field || field == c_field_name_Non_Simple_Field )
       rc += 21;
+   else if( field == c_field_id_Trivial_Field_Only || field == c_field_name_Trivial_Field_Only )
+      rc += 22;
 
    return rc - 1;
 }
@@ -2921,6 +3003,7 @@ string Meta_List_Field_Type::static_get_sql_columns( )
     "C_Allow_Restriction_Value INTEGER NOT NULL,"
     "C_Allow_Search_Option_Limit INTEGER NOT NULL,"
     "C_Allow_Select_Specifics INTEGER NOT NULL,"
+    "C_Allow_Sort_Manually INTEGER NOT NULL,"
     "C_Allow_View_Parent_Extra INTEGER NOT NULL,"
     "C_Is_Restrict_Search INTEGER NOT NULL,"
     "C_List_Field_Name VARCHAR(200) NOT NULL,"

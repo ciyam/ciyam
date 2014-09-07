@@ -43,15 +43,16 @@ class META_LIST_FIELD_TYPE_DECL_SPEC Meta_List_Field_Type : public class_base
       e_field_id_Allow_Restriction_Value = 10,
       e_field_id_Allow_Search_Option_Limit = 11,
       e_field_id_Allow_Select_Specifics = 12,
-      e_field_id_Allow_View_Parent_Extra = 13,
-      e_field_id_Is_Restrict_Search = 14,
-      e_field_id_List_Field_Name = 15,
-      e_field_id_Name = 16,
-      e_field_id_Needs_Restriction_Field = 17,
-      e_field_id_Needs_Source = 18,
-      e_field_id_Needs_Switch_Type = 19,
-      e_field_id_Non_Simple_Field = 20,
-      e_field_id_Trivial_Field_Only = 21
+      e_field_id_Allow_Sort_Manually = 13,
+      e_field_id_Allow_View_Parent_Extra = 14,
+      e_field_id_Is_Restrict_Search = 15,
+      e_field_id_List_Field_Name = 16,
+      e_field_id_Name = 17,
+      e_field_id_Needs_Restriction_Field = 18,
+      e_field_id_Needs_Source = 19,
+      e_field_id_Needs_Switch_Type = 20,
+      e_field_id_Non_Simple_Field = 21,
+      e_field_id_Trivial_Field_Only = 22
    };
 
    Meta_List_Field_Type( );
@@ -92,6 +93,9 @@ class META_LIST_FIELD_TYPE_DECL_SPEC Meta_List_Field_Type : public class_base
 
    bool Allow_Select_Specifics( ) const;
    void Allow_Select_Specifics( bool Allow_Select_Specifics );
+
+   bool Allow_Sort_Manually( ) const;
+   void Allow_Sort_Manually( bool Allow_Sort_Manually );
 
    bool Allow_View_Parent_Extra( ) const;
    void Allow_View_Parent_Extra( bool Allow_View_Parent_Extra );
