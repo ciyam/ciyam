@@ -7857,12 +7857,14 @@ void Meta_Class::static_get_all_enum_pairs( vector< pair< string, string > >& pa
 
 void Meta_Class::static_get_sql_indexes( vector< string >& indexes )
 {
+   indexes.push_back( "C_Model,C_Delay_Initial_Records,C_Name" );
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Name" );
 }
 
 void Meta_Class::static_get_sql_unique_indexes( vector< string >& indexes )
 {
+   indexes.push_back( "C_Model,C_Delay_Initial_Records,C_Name" );
    indexes.push_back( "C_Model,C_Id" );
    indexes.push_back( "C_Model,C_Name" );
 }

@@ -1015,6 +1015,7 @@ index_add -id=400410 Enum_Item {Enum},Value unique
 index_add -id=400500 Model {Workgroup},Name unique
 index_add -id=400501 Model {Workgroup},Id unique
 index_add -id=400600 Class {Model},Name unique
+index_add -id=400605 Class {Model},Delay_Initial_Records,Name unique
 index_add -id=400610 Class {Model},Id unique
 index_add -id=400700 Field {Class},Name unique
 index_add -id=400710 Field {Class},Id unique

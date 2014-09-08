@@ -1311,6 +1311,10 @@
       <mandatory>true
       <default_value>0
       <indexes/>
+       <index/>
+        <id>400605
+        <num>1
+       </index>
       </indexes>
       <modifiers/>
        <modifier/>
@@ -1482,6 +1486,10 @@
        <index/>
         <id>400600
         <num>1
+       </index>
+       <index/>
+        <id>400605
+        <num>2
        </index>
       </indexes>
       <modifiers/>
@@ -1979,6 +1987,10 @@
         <num>0
        </index>
        <index/>
+        <id>400605
+        <num>0
+       </index>
+       <index/>
         <id>400610
         <num>0
        </index>
@@ -2002,6 +2014,11 @@
      </field>
     </fields>
     <indexes/>
+     <index/>
+      <id>400605
+      <name>[{Model}],[Delay_Initial_Records],[Name]
+      <unique>true
+     </index>
      <index/>
       <id>400610
       <name>[{Model}],[Id]
