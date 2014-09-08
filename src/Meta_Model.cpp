@@ -5807,7 +5807,13 @@ void Meta_Model::impl::impl_Get_Acyclic_Class_List( string& Acyclic_Class_Keys, 
    {
       size_t last_count( class_names.size( ) );
 
-      string class_key_info( to_string( Meta_Class::static_get_field_id( Meta_Class::e_field_id_Name ) ) + ' ' );
+      // NOTE: Even within a pass always process those classes that do not have Delay_Initial_Records
+      // set before those that do (in the future an integer value rather than a boolean might need to
+      // used to better control this behaviour).
+      string class_key_info(
+       to_string( Meta_Class::static_get_field_id( Meta_Class::e_field_id_Delay_Initial_Records ) )
+       + ',' + to_string( Meta_Class::static_get_field_id( Meta_Class::e_field_id_Name ) ) + ' ' );
+
       if( get_obj( ).child_Class( ).iterate_forwards( class_key_info ) )
       {
          do
