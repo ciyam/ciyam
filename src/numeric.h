@@ -81,6 +81,18 @@ class NUMERIC_DECL_SPEC numeric
          return &numeric::this_type_does_not_support_comparisons;
    }
 
+   template< typename T > bool operator ==( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
+   template< typename T > bool operator !=( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
    numeric& operator ++( );
    numeric operator ++( int );
 

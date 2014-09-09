@@ -106,6 +106,18 @@ class tcp_socket
          return &tcp_socket::this_type_does_not_support_comparisons;
    }
 
+   template< typename T > bool operator ==( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
+   template< typename T > bool operator !=( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
    private:
    bool blank_line;
 
