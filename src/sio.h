@@ -30,6 +30,18 @@ class sio_reader
 
    operator bool_type( ) const;
 
+   template< typename T > bool operator ==( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
+   template< typename T > bool operator !=( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
    void start_section( const std::string& name );
    void finish_section( const std::string& name );
 

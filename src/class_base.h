@@ -915,6 +915,18 @@ template< typename CBD > class class_pointer : class_pointer_base
          return &class_pointer< CBD >::this_type_does_not_support_comparisons;
    }
 
+   template< typename T > bool operator ==( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
+   template< typename T > bool operator !=( const T& rhs ) const
+   {
+      this_type_does_not_support_comparisons( );
+      return false;
+   }
+
    typename CBD::class_type& operator *( ) const { return *dynamic_cast< CBD* >( p_ct->get_dynamic_instance( ) ); }
    typename CBD::class_type* operator ->( ) const { return dynamic_cast< CBD* >( p_ct->get_dynamic_instance( ) ); }
 
