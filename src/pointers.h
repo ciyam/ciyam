@@ -117,13 +117,13 @@ template< typename T > class ref_count_ptr
          return &ref_count_ptr< T >::this_type_does_not_support_comparisons;
    }
 
-   template< typename T > bool operator ==( const T& rhs ) const
+   template< typename TT > bool operator ==( const TT& rhs ) const
    {
       this_type_does_not_support_comparisons( );
       return false;
    }
 
-   template< typename T > bool operator !=( const T& rhs ) const
+   template< typename TT > bool operator !=( const TT& rhs ) const
    {
       this_type_does_not_support_comparisons( );
       return false;
