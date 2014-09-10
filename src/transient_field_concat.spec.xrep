@@ -4,6 +4,12 @@
 `{`@eq`(`$arg_top_level`,`'true`'`)\
     && !get_obj( ).get_graph_parent( )
 `}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+    && ( state & c_modifier_`{`$arg_modifier`} )
+`}\
     && ( get_obj( ).needs_field_value( "`{`$arg_dfield`}" )
     || required_transients.count( "`{`$arg_dfield`}" ) ) )
    {
@@ -120,5 +126,15 @@
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_field3`} ) ) )
          names.insert( "`{`$arg_field3`}" );
    }
+`{`!`@eq`(`$arg_tfield`,`'`'`)
+   if( needs_field_value( "`{`$arg_dfield`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_tfield`}" );
+
+       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_tfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_tfield`} ) ) )
+         names.insert( "`{`$arg_tfield`}" );
+   }\
+`}
    // [(finish transient_field_concat)] `{`$arg_id`}
 `}
