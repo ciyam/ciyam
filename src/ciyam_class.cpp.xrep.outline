@@ -1658,7 +1658,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2\
  arg_field3=$specification_\0_field3 arg_cfield=$specification_\0_cfield arg_separator=$specification_\0_separator\
  arg_rfield=$specification_\0_rfield arg_reverse=$specification_\0_reverse arg_non_empty=$specification_\0_non_empty\
- arg_top_level=$specification_\0_top_level`}\
+ arg_modifier=$specification_\0_modifier arg_tfield=$specification_\0_tfield arg_top_level=$specification_\0_top_level`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_dtm`'`)
 `{`#transient_field_from_dtm.spec.xrep section=after_fetch class_name=$class_name\
@@ -3730,7 +3730,7 @@ void `{`$full_class_name`}::get_required_field_names(
 `@eq`(`'\1`'`,`'transient_field_concat`'`)
 `{`#transient_field_concat.spec.xrep section=get_required_field_names\
  arg_id=$specification_\0_id arg_dfield=$specification_\0_dfield arg_field1=$specification_\0_field1\
- arg_field2=$specification_\0_field2 arg_field3=$specification_\0_field3`}\
+ arg_field2=$specification_\0_field2 arg_field3=$specification_\0_field3 arg_tfield=$specification_\0_tfield`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_op`'`)
 `{`#transient_field_from_op.spec.xrep section=get_required_field_names\

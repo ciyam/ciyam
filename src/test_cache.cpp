@@ -67,9 +67,8 @@ int store_throw_count;
 const unsigned c_test_item_size = 1024;
 
 //#define USE_NON_POD
-#ifndef USE_NON_POD
-#  pragma message ( "Compiling testbed for cache containing POD." )
-#else
+
+#ifdef USE_NON_POD
 #  pragma message ( "Compiling testbed for cache containing UDT." )
 #endif
 
