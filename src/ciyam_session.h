@@ -25,7 +25,7 @@ class ciyam_session : public thread
    ciyam_session( std::auto_ptr< ssl_socket >& ap_socket );
 #  else
    ciyam_session( std::auto_ptr< tcp_socket >& ap_socket );
-#endif
+#  endif
 
    ~ciyam_session( );
 
