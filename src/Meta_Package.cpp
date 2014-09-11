@@ -906,6 +906,18 @@ void Meta_Package::impl::impl_Install( )
       get_obj( ).Model( ).Workgroup( ).Standard_Package( ).op_apply( );
 
       get_obj( ).op_apply( );
+
+      string install_log( get_obj( ).get_key( ) + ".install.log" );
+
+      ofstream outl( install_log.c_str( ) );
+      if( !outl )
+         throw runtime_error( "unable to open '" + install_log + "' for output" );
+
+      outl << "Linked to existing Standard package..."; // FUTURE: Should be a module string...
+
+      string model_key( "Meta_Model_" + get_obj( ).Model( ).get_key( ) );
+      if( get_system_variable( "@" + model_key ).empty( ) )
+         set_system_variable( model_key, "" );
    }
    else if( !storage_locked_for_admin( ) )
    {
@@ -1296,6 +1308,18 @@ void Meta_Package::impl::impl_Remove( )
 
       get_obj( ).Actions( "136410" );
       get_obj( ).Installed( false );
+
+      string install_log( get_obj( ).get_key( ) + ".install.log" );
+      string install_details( load_file( install_log, true ) );
+
+      ofstream outl( install_log.c_str( ) );
+      if( !outl )
+         throw runtime_error( "unable to open '" + install_log + "' for output" );
+
+      if( !install_details.empty( ) )
+         outl << install_details << "\n\n";
+
+      outl << "Unlinked from existing Standard package...";  // FUTURE: Should be a module string...
 
       get_obj( ).op_apply( );
    }
