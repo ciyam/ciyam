@@ -2223,8 +2223,6 @@ void request_handler::process_request( )
                      if( error_message.empty( ) )
                         throw runtime_error( "unexpected server error occurred." );
                   }
-                  else
-                     p_session_info->user_pwd_hash = new_user_pwd_hash;
                }
             }
             else if( !persistent.empty( ) )
