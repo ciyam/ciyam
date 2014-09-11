@@ -33,7 +33,7 @@ class write_stream;
 class NUMERIC_DECL_SPEC numeric
 {
    typedef void ( numeric::*bool_type )( ) const;
-   void this_type_does_not_support_comparisons( ) const { }
+   void dummy_function_for_bool_type( ) const { }
 
    public:
    enum
@@ -78,19 +78,17 @@ class NUMERIC_DECL_SPEC numeric
       if( !mantissa )
          return 0;
       else
-         return &numeric::this_type_does_not_support_comparisons;
+         return &numeric::dummy_function_for_bool_type;
    }
 
    template< typename T > bool operator ==( const T& rhs ) const
    {
-      this_type_does_not_support_comparisons( );
-      return false;
+      return *this == numeric( rhs );
    }
 
    template< typename T > bool operator !=( const T& rhs ) const
    {
-      this_type_does_not_support_comparisons( );
-      return false;
+      return *this != numeric( rhs );
    }
 
    numeric& operator ++( );
