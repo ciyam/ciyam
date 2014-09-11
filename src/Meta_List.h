@@ -63,37 +63,38 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Display_Only_If_Default_Other = 16,
       e_field_id_Display_Row_Limit = 17,
       e_field_id_Display_Security_Level = 18,
-      e_field_id_Display_Totals = 19,
-      e_field_id_File_Links_Always_As_Single = 20,
-      e_field_id_Id = 21,
-      e_field_id_Ignore_Implicit_Ordering = 22,
-      e_field_id_Ignore_State_For_Display = 23,
-      e_field_id_Ignore_Unactionable_Records = 24,
-      e_field_id_Ignore_Uneditable_Parent = 25,
-      e_field_id_Ignore_User_Id_Filter = 26,
-      e_field_id_Is_Admin = 27,
-      e_field_id_Is_Child = 28,
-      e_field_id_Is_Home = 29,
-      e_field_id_Is_Not_Anonymous = 30,
-      e_field_id_Is_Variation = 31,
-      e_field_id_Limit_Scroll_And_New = 32,
-      e_field_id_Model = 33,
-      e_field_id_Multiline_Truncate_For_Print = 34,
-      e_field_id_Name = 35,
-      e_field_id_Number_Multiple_Pages = 36,
-      e_field_id_PDF_Font_Type = 37,
-      e_field_id_PDF_List_Type = 38,
-      e_field_id_Parent_Class = 39,
-      e_field_id_Parent_Field = 40,
-      e_field_id_Print_Restriction = 41,
-      e_field_id_Print_Without_Highlight = 42,
-      e_field_id_Search_Option_Limit = 43,
-      e_field_id_Sort_Rows_In_UI = 44,
-      e_field_id_Style = 45,
-      e_field_id_Text_Match_Highlight = 46,
-      e_field_id_Title = 47,
-      e_field_id_Type = 48,
-      e_field_id_Variation_Name = 49
+      e_field_id_Display_Sub_Totals = 19,
+      e_field_id_Display_Totals = 20,
+      e_field_id_File_Links_Always_As_Single = 21,
+      e_field_id_Id = 22,
+      e_field_id_Ignore_Implicit_Ordering = 23,
+      e_field_id_Ignore_State_For_Display = 24,
+      e_field_id_Ignore_Unactionable_Records = 25,
+      e_field_id_Ignore_Uneditable_Parent = 26,
+      e_field_id_Ignore_User_Id_Filter = 27,
+      e_field_id_Is_Admin = 28,
+      e_field_id_Is_Child = 29,
+      e_field_id_Is_Home = 30,
+      e_field_id_Is_Not_Anonymous = 31,
+      e_field_id_Is_Variation = 32,
+      e_field_id_Limit_Scroll_And_New = 33,
+      e_field_id_Model = 34,
+      e_field_id_Multiline_Truncate_For_Print = 35,
+      e_field_id_Name = 36,
+      e_field_id_Number_Multiple_Pages = 37,
+      e_field_id_PDF_Font_Type = 38,
+      e_field_id_PDF_List_Type = 39,
+      e_field_id_Parent_Class = 40,
+      e_field_id_Parent_Field = 41,
+      e_field_id_Print_Restriction = 42,
+      e_field_id_Print_Without_Highlight = 43,
+      e_field_id_Search_Option_Limit = 44,
+      e_field_id_Sort_Rows_In_UI = 45,
+      e_field_id_Style = 46,
+      e_field_id_Text_Match_Highlight = 47,
+      e_field_id_Title = 48,
+      e_field_id_Type = 49,
+      e_field_id_Variation_Name = 50
    };
 
    Meta_List( );
@@ -137,6 +138,9 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
 
    bool Display_Security_Level( ) const;
    void Display_Security_Level( bool Display_Security_Level );
+
+   bool Display_Sub_Totals( ) const;
+   void Display_Sub_Totals( bool Display_Sub_Totals );
 
    bool Display_Totals( ) const;
    void Display_Totals( bool Display_Totals );

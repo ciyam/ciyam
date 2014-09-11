@@ -27,7 +27,7 @@
   </font>
   <font/>
    <name>label_small
-   <details>`{`$font_bname`},12
+   <details>`{`$font_bname`},13
    <encoding>`{`$font_encoding`}
   </font>
   <font/>
@@ -81,6 +81,7 @@
    <groupp>summary
    <groupr>summary:left,bottom
   </group>
+`{`@eq`(`$display_sub_totals`,`'1`'`)\
   <group/>
    <pos>+0,+5
    <name>subtotals
@@ -88,7 +89,8 @@
    <rows>1
    <groupd>data
    <groupr>data:left,bottom
-  </group>
+  </group>\
+`}
 `{`@eq`(`$display_totals`,`'1`'`)\
   <group/>
    <pos>+0,+10
@@ -186,6 +188,7 @@
    <suffix>`{`$\$_suffix`}`}
   </field>\
 `+\n`]`}
+`{`@eq`(`$display_sub_totals`,`'1`'`)\
   <field/>
    <pos>-7,+0
    <name>@subtotal
@@ -214,24 +217,24 @@
   </field>
 `{`(`?`$stfields`)`[`$stfields`,\
   <field/>
-   <pos>`{`$\$_pos`}
-   <name>`{`$\$_name`}`{`(`?`$\$_perm`)
-   <perm>`{`$\$_perm`}`}`{`(`?`$\$_size`)
-   <size>`{`$\$_size`}`}
-   <group>`{`$\$_group`}`{`(`?`$\$_font`)
-   <font>`{`$\$_font`}`}`{`(`?`$\$_mask`)
-   <mask>`{`$\$_mask`}`}`{`(`?`$\$_color`)
-   <color>`{`$\$_color`}`}
-   <width>`{`$\$_width`}
-   <height>`{`$\$_height`}`{`(`?`$\$_padding`)
-   <padding>`{`$\$_padding`}`}`{`(`?`$\$_alignment`)
-   <alignment>`{`$\$_alignment`}`}
-   <data>`{`$\$_data`}`{`(`?`$\$_dtype`)
-   <dtype>`{`$\$_dtype`}`}`{`(`?`$\$_clear`)
-   <clear>`{`$\$_clear`}`}`{`(`?`$\$_assign`)
-   <assign>`{`$\$_assign`}`}
+   <pos>`{`$\\\$_pos`}
+   <name>`{`$\\\$_name`}`{`(`?`$\\\$_perm`)
+   <perm>`{`$\\\$_perm`}`}`{`(`?`$\\\$_size`)
+   <size>`{`$\\\$_size`}`}
+   <group>`{`$\\\$_group`}`{`(`?`$\\\$_font`)
+   <font>`{`$\\\$_font`}`}`{`(`?`$\\\$_mask`)
+   <mask>`{`$\\\$_mask`}`}`{`(`?`$\\\$_color`)
+   <color>`{`$\\\$_color`}`}
+   <width>`{`$\\\$_width`}
+   <height>`{`$\\\$_height`}`{`(`?`$\\\$_padding`)
+   <padding>`{`$\\\$_padding`}`}`{`(`?`$\\\$_alignment`)
+   <alignment>`{`$\\\$_alignment`}`}
+   <data>`{`$\\\$_data`}`{`(`?`$\\\$_dtype`)
+   <dtype>`{`$\\\$_dtype`}`}`{`(`?`$\\\$_clear`)
+   <clear>`{`$\\\$_clear`}`}`{`(`?`$\\\$_assign`)
+   <assign>`{`$\\\$_assign`}`}
   </field>\
-`+\n`]`}
+`+\n`]`}`}
 `{`@eq`(`$display_totals`,`'1`'`)\
   <field/>
    <pos>+0,+0
