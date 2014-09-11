@@ -2703,7 +2703,8 @@ void output_list_form( ostream& os,
 
                   ostringstream osxs;
 
-                  if( i > 0 && !print_total_col_nums.empty( ) )
+                  if( i > 0 && !print_total_col_nums.empty( )
+                   && !extras.count( c_list_type_extra_no_sub_totals ) )
                   {
                      int next_total = 0;
 

@@ -363,6 +363,7 @@ const char* const c_list_type_extra_admin_print = "admin_print";
 const char* const c_list_type_extra_owner_erase = "owner_erase";
 const char* const c_list_type_extra_reverse_del = "reverse_del";
 const char* const c_list_type_extra_text_search = "text_search";
+const char* const c_list_type_extra_no_sub_totals = "no_sub_totals";
 const char* const c_list_type_extra_show_security = "show_security";
 const char* const c_list_type_extra_sort_no_limit = "sort_no_limit";
 const char* const c_list_type_extra_print_no_trunc = "print_no_trunc";

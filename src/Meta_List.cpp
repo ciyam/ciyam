@@ -145,6 +145,7 @@ const char* const c_field_id_Direction = "122112";
 const char* const c_field_id_Display_Only_If_Default_Other = "122141";
 const char* const c_field_id_Display_Row_Limit = "122113";
 const char* const c_field_id_Display_Security_Level = "122139";
+const char* const c_field_id_Display_Sub_Totals = "122152";
 const char* const c_field_id_Display_Totals = "122150";
 const char* const c_field_id_File_Links_Always_As_Single = "122149";
 const char* const c_field_id_Id = "122111";
@@ -195,6 +196,7 @@ const char* const c_field_name_Direction = "Direction";
 const char* const c_field_name_Display_Only_If_Default_Other = "Display_Only_If_Default_Other";
 const char* const c_field_name_Display_Row_Limit = "Display_Row_Limit";
 const char* const c_field_name_Display_Security_Level = "Display_Security_Level";
+const char* const c_field_name_Display_Sub_Totals = "Display_Sub_Totals";
 const char* const c_field_name_Display_Totals = "Display_Totals";
 const char* const c_field_name_File_Links_Always_As_Single = "File_Links_Always_As_Single";
 const char* const c_field_name_Id = "Id";
@@ -245,6 +247,7 @@ const char* const c_field_display_name_Direction = "field_list_direction";
 const char* const c_field_display_name_Display_Only_If_Default_Other = "field_list_display_only_if_default_other";
 const char* const c_field_display_name_Display_Row_Limit = "field_list_display_row_limit";
 const char* const c_field_display_name_Display_Security_Level = "field_list_display_security_level";
+const char* const c_field_display_name_Display_Sub_Totals = "field_list_display_sub_totals";
 const char* const c_field_display_name_Display_Totals = "field_list_display_totals";
 const char* const c_field_display_name_File_Links_Always_As_Single = "field_list_file_links_always_as_single";
 const char* const c_field_display_name_Id = "field_list_id";
@@ -277,7 +280,7 @@ const char* const c_field_display_name_Title = "field_list_title";
 const char* const c_field_display_name_Type = "field_list_type";
 const char* const c_field_display_name_Variation_Name = "field_list_variation_name";
 
-const int c_num_fields = 49;
+const int c_num_fields = 50;
 
 const char* const c_all_sorted_field_ids[ ] =
 {
@@ -321,6 +324,7 @@ const char* const c_all_sorted_field_ids[ ] =
    "122149",
    "122150",
    "122151",
+   "122152",
    "301990",
    "301991",
    "301992",
@@ -352,6 +356,7 @@ const char* const c_all_sorted_field_names[ ] =
    "Display_Only_If_Default_Other",
    "Display_Row_Limit",
    "Display_Security_Level",
+   "Display_Sub_Totals",
    "Display_Totals",
    "File_Links_Always_As_Single",
    "Id",
@@ -474,6 +479,7 @@ int g_default_Direction = int( 0 );
 bool g_default_Display_Only_If_Default_Other = bool( 0 );
 int g_default_Display_Row_Limit = int( 0 );
 bool g_default_Display_Security_Level = bool( 0 );
+bool g_default_Display_Sub_Totals = bool( 1 );
 bool g_default_Display_Totals = bool( 1 );
 bool g_default_File_Links_Always_As_Single = bool( 0 );
 string g_default_Id = string( );
@@ -984,6 +990,12 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
          string_getter< bool >( cmd_handler.p_Meta_List->Display_Security_Level( ), cmd_handler.retval );
       }
 
+      if( !handled && field_name == c_field_id_Display_Sub_Totals || field_name == c_field_name_Display_Sub_Totals )
+      {
+         handled = true;
+         string_getter< bool >( cmd_handler.p_Meta_List->Display_Sub_Totals( ), cmd_handler.retval );
+      }
+
       if( !handled && field_name == c_field_id_Display_Totals || field_name == c_field_name_Display_Totals )
       {
          handled = true;
@@ -1308,6 +1320,13 @@ void Meta_List_command_functor::operator ( )( const string& command, const param
           *cmd_handler.p_Meta_List, &Meta_List::Display_Security_Level, field_value );
       }
 
+      if( !handled && field_name == c_field_id_Display_Sub_Totals || field_name == c_field_name_Display_Sub_Totals )
+      {
+         handled = true;
+         func_string_setter< Meta_List, bool >(
+          *cmd_handler.p_Meta_List, &Meta_List::Display_Sub_Totals, field_value );
+      }
+
       if( !handled && field_name == c_field_id_Display_Totals || field_name == c_field_name_Display_Totals )
       {
          handled = true;
@@ -1626,6 +1645,9 @@ struct Meta_List::impl : public Meta_List_command_handler
 
    bool impl_Display_Security_Level( ) const { return lazy_fetch( p_obj ), v_Display_Security_Level; }
    void impl_Display_Security_Level( bool Display_Security_Level ) { v_Display_Security_Level = Display_Security_Level; }
+
+   bool impl_Display_Sub_Totals( ) const { return lazy_fetch( p_obj ), v_Display_Sub_Totals; }
+   void impl_Display_Sub_Totals( bool Display_Sub_Totals ) { v_Display_Sub_Totals = Display_Sub_Totals; }
 
    bool impl_Display_Totals( ) const { return lazy_fetch( p_obj ), v_Display_Totals; }
    void impl_Display_Totals( bool Display_Totals ) { v_Display_Totals = Display_Totals; }
@@ -2114,6 +2136,7 @@ struct Meta_List::impl : public Meta_List_command_handler
    bool v_Display_Only_If_Default_Other;
    int v_Display_Row_Limit;
    bool v_Display_Security_Level;
+   bool v_Display_Sub_Totals;
    bool v_Display_Totals;
    bool v_File_Links_Always_As_Single;
    string v_Id;
@@ -2434,17 +2457,20 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
                   tfields += "tf" + to_string( ++num_tfields );
                }
 
-               if( !stfields.empty( ) )
-                  stfields += " ";
-               stfields += "stf" + to_string( ++num_stfields );
+               if( get_obj( ).Display_Sub_Totals( ) )
+               {
+                  if( !stfields.empty( ) )
+                     stfields += " ";
+                  stfields += "stf" + to_string( ++num_stfields );
 
-               if( !st1fields.empty( ) )
-                  st1fields += " ";
-               st1fields += "st1f" + to_string( ++num_st1fields );
+                  if( !st1fields.empty( ) )
+                     st1fields += " ";
+                  st1fields += "st1f" + to_string( ++num_st1fields );
 
-               if( !st2fields.empty( ) )
-                  st2fields += " ";
-               st2fields += "st2f" + to_string( ++num_st2fields );
+                  if( !st2fields.empty( ) )
+                     st2fields += " ";
+                  st2fields += "st2f" + to_string( ++num_st2fields );
+               }
             }
 
             switch( get_obj( ).child_List_Field( ).Font_Size( ) )
@@ -2645,6 +2671,7 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          varsf << "\x60{\x60$page_count\x60=\x60'" << page_count << "\x60'\x60}\n";
 
          varsf << "\x60{\x60$display_totals\x60=\x60'" << get_obj( ).Display_Totals( ) << "\x60'\x60}\n";
+         varsf << "\x60{\x60$display_sub_totals\x60=\x60'" << get_obj( ).Display_Sub_Totals( ) << "\x60'\x60}\n";
 
          varsf << "\x60{\x60}\n";
          varsf << "\x60{\x60$fields\x60=\x60'" << fields << "\x60'\x60}\n";
@@ -2656,15 +2683,19 @@ void Meta_List::impl::impl_Generate_PDF_List( int Variation_Num )
          if( !sfields.empty( ) )
          {
             varsf << "\x60{\x60$sfields\x60=\x60'" << sfields << "\x60'\x60}\n";
-            if( summary_fields.size( ) < 2 )
+
+            if( get_obj( ).Display_Sub_Totals( ) )
             {
-               if( !stfields.empty( ) )
-                  varsf << "\x60{\x60$stfields\x60=\x60'" << stfields << "\x60'\x60}\n";
-            }
-            else
-            {
-               varsf << "\x60{\x60$st1fields\x60=\x60'" << st1fields << "\x60'\x60}\n";
-               varsf << "\x60{\x60$st2fields\x60=\x60'" << st2fields << "\x60'\x60}\n";
+               if( summary_fields.size( ) < 2 )
+               {
+                  if( !stfields.empty( ) )
+                     varsf << "\x60{\x60$stfields\x60=\x60'" << stfields << "\x60'\x60}\n";
+               }
+               else
+               {
+                  varsf << "\x60{\x60$st1fields\x60=\x60'" << st1fields << "\x60'\x60}\n";
+                  varsf << "\x60{\x60$st2fields\x60=\x60'" << st2fields << "\x60'\x60}\n";
+               }
             }
          }
 
@@ -3203,126 +3234,130 @@ string Meta_List::impl::get_field_value( int field ) const
       break;
 
       case 18:
-      retval = to_string( impl_Display_Totals( ) );
+      retval = to_string( impl_Display_Sub_Totals( ) );
       break;
 
       case 19:
-      retval = to_string( impl_File_Links_Always_As_Single( ) );
+      retval = to_string( impl_Display_Totals( ) );
       break;
 
       case 20:
-      retval = to_string( impl_Id( ) );
+      retval = to_string( impl_File_Links_Always_As_Single( ) );
       break;
 
       case 21:
-      retval = to_string( impl_Ignore_Implicit_Ordering( ) );
+      retval = to_string( impl_Id( ) );
       break;
 
       case 22:
-      retval = to_string( impl_Ignore_State_For_Display( ) );
+      retval = to_string( impl_Ignore_Implicit_Ordering( ) );
       break;
 
       case 23:
-      retval = to_string( impl_Ignore_Unactionable_Records( ) );
+      retval = to_string( impl_Ignore_State_For_Display( ) );
       break;
 
       case 24:
-      retval = to_string( impl_Ignore_Uneditable_Parent( ) );
+      retval = to_string( impl_Ignore_Unactionable_Records( ) );
       break;
 
       case 25:
-      retval = to_string( impl_Ignore_User_Id_Filter( ) );
+      retval = to_string( impl_Ignore_Uneditable_Parent( ) );
       break;
 
       case 26:
-      retval = to_string( impl_Is_Admin( ) );
+      retval = to_string( impl_Ignore_User_Id_Filter( ) );
       break;
 
       case 27:
-      retval = to_string( impl_Is_Child( ) );
+      retval = to_string( impl_Is_Admin( ) );
       break;
 
       case 28:
-      retval = to_string( impl_Is_Home( ) );
+      retval = to_string( impl_Is_Child( ) );
       break;
 
       case 29:
-      retval = to_string( impl_Is_Not_Anonymous( ) );
+      retval = to_string( impl_Is_Home( ) );
       break;
 
       case 30:
-      retval = to_string( impl_Is_Variation( ) );
+      retval = to_string( impl_Is_Not_Anonymous( ) );
       break;
 
       case 31:
-      retval = to_string( impl_Limit_Scroll_And_New( ) );
+      retval = to_string( impl_Is_Variation( ) );
       break;
 
       case 32:
-      retval = to_string( impl_Model( ) );
+      retval = to_string( impl_Limit_Scroll_And_New( ) );
       break;
 
       case 33:
-      retval = to_string( impl_Multiline_Truncate_For_Print( ) );
+      retval = to_string( impl_Model( ) );
       break;
 
       case 34:
-      retval = to_string( impl_Name( ) );
+      retval = to_string( impl_Multiline_Truncate_For_Print( ) );
       break;
 
       case 35:
-      retval = to_string( impl_Number_Multiple_Pages( ) );
+      retval = to_string( impl_Name( ) );
       break;
 
       case 36:
-      retval = to_string( impl_PDF_Font_Type( ) );
+      retval = to_string( impl_Number_Multiple_Pages( ) );
       break;
 
       case 37:
-      retval = to_string( impl_PDF_List_Type( ) );
+      retval = to_string( impl_PDF_Font_Type( ) );
       break;
 
       case 38:
-      retval = to_string( impl_Parent_Class( ) );
+      retval = to_string( impl_PDF_List_Type( ) );
       break;
 
       case 39:
-      retval = to_string( impl_Parent_Field( ) );
+      retval = to_string( impl_Parent_Class( ) );
       break;
 
       case 40:
-      retval = to_string( impl_Print_Restriction( ) );
+      retval = to_string( impl_Parent_Field( ) );
       break;
 
       case 41:
-      retval = to_string( impl_Print_Without_Highlight( ) );
+      retval = to_string( impl_Print_Restriction( ) );
       break;
 
       case 42:
-      retval = to_string( impl_Search_Option_Limit( ) );
+      retval = to_string( impl_Print_Without_Highlight( ) );
       break;
 
       case 43:
-      retval = to_string( impl_Sort_Rows_In_UI( ) );
+      retval = to_string( impl_Search_Option_Limit( ) );
       break;
 
       case 44:
-      retval = to_string( impl_Style( ) );
+      retval = to_string( impl_Sort_Rows_In_UI( ) );
       break;
 
       case 45:
-      retval = to_string( impl_Text_Match_Highlight( ) );
+      retval = to_string( impl_Style( ) );
       break;
 
       case 46:
-      retval = to_string( impl_Title( ) );
+      retval = to_string( impl_Text_Match_Highlight( ) );
       break;
 
       case 47:
-      retval = to_string( impl_Type( ) );
+      retval = to_string( impl_Title( ) );
       break;
 
       case 48:
+      retval = to_string( impl_Type( ) );
+      break;
+
+      case 49:
       retval = to_string( impl_Variation_Name( ) );
       break;
 
@@ -3410,126 +3445,130 @@ void Meta_List::impl::set_field_value( int field, const string& value )
       break;
 
       case 18:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Totals, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Sub_Totals, value );
       break;
 
       case 19:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_File_Links_Always_As_Single, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Display_Totals, value );
       break;
 
       case 20:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Id, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_File_Links_Always_As_Single, value );
       break;
 
       case 21:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Implicit_Ordering, value );
+      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Id, value );
       break;
 
       case 22:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_State_For_Display, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Implicit_Ordering, value );
       break;
 
       case 23:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Unactionable_Records, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_State_For_Display, value );
       break;
 
       case 24:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Uneditable_Parent, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Unactionable_Records, value );
       break;
 
       case 25:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_User_Id_Filter, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_Uneditable_Parent, value );
       break;
 
       case 26:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Admin, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Ignore_User_Id_Filter, value );
       break;
 
       case 27:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Child, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Admin, value );
       break;
 
       case 28:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Home, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Child, value );
       break;
 
       case 29:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Not_Anonymous, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Home, value );
       break;
 
       case 30:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Variation, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Not_Anonymous, value );
       break;
 
       case 31:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Limit_Scroll_And_New, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Is_Variation, value );
       break;
 
       case 32:
-      func_string_setter< Meta_List::impl, Meta_Model >( *this, &Meta_List::impl::impl_Model, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Limit_Scroll_And_New, value );
       break;
 
       case 33:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Multiline_Truncate_For_Print, value );
+      func_string_setter< Meta_List::impl, Meta_Model >( *this, &Meta_List::impl::impl_Model, value );
       break;
 
       case 34:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Name, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Multiline_Truncate_For_Print, value );
       break;
 
       case 35:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Number_Multiple_Pages, value );
+      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Name, value );
       break;
 
       case 36:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_Font_Type, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Number_Multiple_Pages, value );
       break;
 
       case 37:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_List_Type, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_Font_Type, value );
       break;
 
       case 38:
-      func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Parent_Class, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_PDF_List_Type, value );
       break;
 
       case 39:
-      func_string_setter< Meta_List::impl, Meta_Field >( *this, &Meta_List::impl::impl_Parent_Field, value );
+      func_string_setter< Meta_List::impl, Meta_Class >( *this, &Meta_List::impl::impl_Parent_Class, value );
       break;
 
       case 40:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Print_Restriction, value );
+      func_string_setter< Meta_List::impl, Meta_Field >( *this, &Meta_List::impl::impl_Parent_Field, value );
       break;
 
       case 41:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Print_Without_Highlight, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Print_Restriction, value );
       break;
 
       case 42:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Search_Option_Limit, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Print_Without_Highlight, value );
       break;
 
       case 43:
-      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Sort_Rows_In_UI, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Search_Option_Limit, value );
       break;
 
       case 44:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Style, value );
+      func_string_setter< Meta_List::impl, bool >( *this, &Meta_List::impl::impl_Sort_Rows_In_UI, value );
       break;
 
       case 45:
-      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Text_Match_Highlight, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Style, value );
       break;
 
       case 46:
-      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Title, value );
+      func_string_setter< Meta_List::impl, int >( *this, &Meta_List::impl::impl_Text_Match_Highlight, value );
       break;
 
       case 47:
-      func_string_setter< Meta_List::impl, Meta_List_Type >( *this, &Meta_List::impl::impl_Type, value );
+      func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Title, value );
       break;
 
       case 48:
+      func_string_setter< Meta_List::impl, Meta_List_Type >( *this, &Meta_List::impl::impl_Type, value );
+      break;
+
+      case 49:
       func_string_setter< Meta_List::impl, string >( *this, &Meta_List::impl::impl_Variation_Name, value );
       break;
 
@@ -3753,6 +3792,7 @@ void Meta_List::impl::clear( )
    v_Display_Only_If_Default_Other = g_default_Display_Only_If_Default_Other;
    v_Display_Row_Limit = g_default_Display_Row_Limit;
    v_Display_Security_Level = g_default_Display_Security_Level;
+   v_Display_Sub_Totals = g_default_Display_Sub_Totals;
    v_Display_Totals = g_default_Display_Totals;
    v_File_Links_Always_As_Single = g_default_File_Links_Always_As_Single;
    v_Id = g_default_Id;
@@ -4424,6 +4464,16 @@ bool Meta_List::Display_Security_Level( ) const
 void Meta_List::Display_Security_Level( bool Display_Security_Level )
 {
    p_impl->impl_Display_Security_Level( Display_Security_Level );
+}
+
+bool Meta_List::Display_Sub_Totals( ) const
+{
+   return p_impl->impl_Display_Sub_Totals( );
+}
+
+void Meta_List::Display_Sub_Totals( bool Display_Sub_Totals )
+{
+   p_impl->impl_Display_Sub_Totals( Display_Sub_Totals );
 }
 
 bool Meta_List::Display_Totals( ) const
@@ -5177,6 +5227,16 @@ const char* Meta_List::get_field_id(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( name == c_field_name_Display_Sub_Totals )
+   {
+      p_id = c_field_id_Display_Sub_Totals;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( name == c_field_name_Display_Totals )
    {
       p_id = c_field_id_Display_Totals;
@@ -5678,6 +5738,16 @@ const char* Meta_List::get_field_name(
       if( p_sql_numeric )
          *p_sql_numeric = true;
    }
+   else if( id == c_field_id_Display_Sub_Totals )
+   {
+      p_name = c_field_name_Display_Sub_Totals;
+
+      if( p_type_name )
+         *p_type_name = "bool";
+
+      if( p_sql_numeric )
+         *p_sql_numeric = true;
+   }
    else if( id == c_field_id_Display_Totals )
    {
       p_name = c_field_name_Display_Totals;
@@ -6112,6 +6182,11 @@ string Meta_List::get_field_uom_symbol( const string& id_or_name ) const
       name = string( c_field_display_name_Display_Security_Level );
       get_module_string( c_field_display_name_Display_Security_Level, &next );
    }
+   else if( id_or_name == c_field_id_Display_Sub_Totals || id_or_name == c_field_name_Display_Sub_Totals )
+   {
+      name = string( c_field_display_name_Display_Sub_Totals );
+      get_module_string( c_field_display_name_Display_Sub_Totals, &next );
+   }
    else if( id_or_name == c_field_id_Display_Totals || id_or_name == c_field_name_Display_Totals )
    {
       name = string( c_field_display_name_Display_Totals );
@@ -6318,6 +6393,8 @@ string Meta_List::get_field_display_name( const string& id_or_name ) const
       display_name = get_module_string( c_field_display_name_Display_Row_Limit );
    else if( id_or_name == c_field_id_Display_Security_Level || id_or_name == c_field_name_Display_Security_Level )
       display_name = get_module_string( c_field_display_name_Display_Security_Level );
+   else if( id_or_name == c_field_id_Display_Sub_Totals || id_or_name == c_field_name_Display_Sub_Totals )
+      display_name = get_module_string( c_field_display_name_Display_Sub_Totals );
    else if( id_or_name == c_field_id_Display_Totals || id_or_name == c_field_name_Display_Totals )
       display_name = get_module_string( c_field_display_name_Display_Totals );
    else if( id_or_name == c_field_id_File_Links_Always_As_Single || id_or_name == c_field_name_File_Links_Always_As_Single )
@@ -6729,6 +6806,7 @@ void Meta_List::get_sql_column_names(
    names.push_back( "C_Display_Only_If_Default_Other" );
    names.push_back( "C_Display_Row_Limit" );
    names.push_back( "C_Display_Security_Level" );
+   names.push_back( "C_Display_Sub_Totals" );
    names.push_back( "C_Display_Totals" );
    names.push_back( "C_File_Links_Always_As_Single" );
    names.push_back( "C_Id" );
@@ -6788,6 +6866,7 @@ void Meta_List::get_sql_column_values(
    values.push_back( to_string( Display_Only_If_Default_Other( ) ) );
    values.push_back( to_string( Display_Row_Limit( ) ) );
    values.push_back( to_string( Display_Security_Level( ) ) );
+   values.push_back( to_string( Display_Sub_Totals( ) ) );
    values.push_back( to_string( Display_Totals( ) ) );
    values.push_back( to_string( File_Links_Always_As_Single( ) ) );
    values.push_back( sql_quote( to_string( Id( ) ) ) );
@@ -7125,6 +7204,7 @@ void Meta_List::static_get_field_info( field_info_container& all_field_info )
    all_field_info.push_back( field_info( "122141", "Display_Only_If_Default_Other", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "122113", "Display_Row_Limit", "int", false, "", "" ) );
    all_field_info.push_back( field_info( "122139", "Display_Security_Level", "bool", false, "", "" ) );
+   all_field_info.push_back( field_info( "122152", "Display_Sub_Totals", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "122150", "Display_Totals", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "122149", "File_Links_Always_As_Single", "bool", false, "", "" ) );
    all_field_info.push_back( field_info( "122111", "Id", "string", false, "", "" ) );
@@ -7265,126 +7345,130 @@ const char* Meta_List::static_get_field_id( field_id id )
       break;
 
       case 19:
-      p_id = "122150";
+      p_id = "122152";
       break;
 
       case 20:
-      p_id = "122149";
+      p_id = "122150";
       break;
 
       case 21:
-      p_id = "122111";
+      p_id = "122149";
       break;
 
       case 22:
-      p_id = "122135";
+      p_id = "122111";
       break;
 
       case 23:
-      p_id = "122148";
+      p_id = "122135";
       break;
 
       case 24:
-      p_id = "122120";
+      p_id = "122148";
       break;
 
       case 25:
-      p_id = "122138";
+      p_id = "122120";
       break;
 
       case 26:
-      p_id = "122124";
+      p_id = "122138";
       break;
 
       case 27:
-      p_id = "122147";
+      p_id = "122124";
       break;
 
       case 28:
-      p_id = "122102";
+      p_id = "122147";
       break;
 
       case 29:
-      p_id = "122121";
+      p_id = "122102";
       break;
 
       case 30:
-      p_id = "122146";
+      p_id = "122121";
       break;
 
       case 31:
-      p_id = "122110";
+      p_id = "122146";
       break;
 
       case 32:
-      p_id = "122116";
+      p_id = "122110";
       break;
 
       case 33:
-      p_id = "301990";
+      p_id = "122116";
       break;
 
       case 34:
-      p_id = "122143";
+      p_id = "301990";
       break;
 
       case 35:
-      p_id = "122101";
+      p_id = "122143";
       break;
 
       case 36:
-      p_id = "122144";
+      p_id = "122101";
       break;
 
       case 37:
-      p_id = "122137";
+      p_id = "122144";
       break;
 
       case 38:
-      p_id = "122136";
+      p_id = "122137";
       break;
 
       case 39:
-      p_id = "301997";
+      p_id = "122136";
       break;
 
       case 40:
-      p_id = "301996";
+      p_id = "301997";
       break;
 
       case 41:
-      p_id = "122123";
+      p_id = "301996";
       break;
 
       case 42:
-      p_id = "122118";
+      p_id = "122123";
       break;
 
       case 43:
-      p_id = "122117";
+      p_id = "122118";
       break;
 
       case 44:
-      p_id = "122122";
+      p_id = "122117";
       break;
 
       case 45:
-      p_id = "122107";
+      p_id = "122122";
       break;
 
       case 46:
-      p_id = "122115";
+      p_id = "122107";
       break;
 
       case 47:
-      p_id = "122106";
+      p_id = "122115";
       break;
 
       case 48:
-      p_id = "301991";
+      p_id = "122106";
       break;
 
       case 49:
+      p_id = "301991";
+      break;
+
+      case 50:
       p_id = "122109";
       break;
    }
@@ -7474,126 +7558,130 @@ const char* Meta_List::static_get_field_name( field_id id )
       break;
 
       case 19:
-      p_id = "Display_Totals";
+      p_id = "Display_Sub_Totals";
       break;
 
       case 20:
-      p_id = "File_Links_Always_As_Single";
+      p_id = "Display_Totals";
       break;
 
       case 21:
-      p_id = "Id";
+      p_id = "File_Links_Always_As_Single";
       break;
 
       case 22:
-      p_id = "Ignore_Implicit_Ordering";
+      p_id = "Id";
       break;
 
       case 23:
-      p_id = "Ignore_State_For_Display";
+      p_id = "Ignore_Implicit_Ordering";
       break;
 
       case 24:
-      p_id = "Ignore_Unactionable_Records";
+      p_id = "Ignore_State_For_Display";
       break;
 
       case 25:
-      p_id = "Ignore_Uneditable_Parent";
+      p_id = "Ignore_Unactionable_Records";
       break;
 
       case 26:
-      p_id = "Ignore_User_Id_Filter";
+      p_id = "Ignore_Uneditable_Parent";
       break;
 
       case 27:
-      p_id = "Is_Admin";
+      p_id = "Ignore_User_Id_Filter";
       break;
 
       case 28:
-      p_id = "Is_Child";
+      p_id = "Is_Admin";
       break;
 
       case 29:
-      p_id = "Is_Home";
+      p_id = "Is_Child";
       break;
 
       case 30:
-      p_id = "Is_Not_Anonymous";
+      p_id = "Is_Home";
       break;
 
       case 31:
-      p_id = "Is_Variation";
+      p_id = "Is_Not_Anonymous";
       break;
 
       case 32:
-      p_id = "Limit_Scroll_And_New";
+      p_id = "Is_Variation";
       break;
 
       case 33:
-      p_id = "Model";
+      p_id = "Limit_Scroll_And_New";
       break;
 
       case 34:
-      p_id = "Multiline_Truncate_For_Print";
+      p_id = "Model";
       break;
 
       case 35:
-      p_id = "Name";
+      p_id = "Multiline_Truncate_For_Print";
       break;
 
       case 36:
-      p_id = "Number_Multiple_Pages";
+      p_id = "Name";
       break;
 
       case 37:
-      p_id = "PDF_Font_Type";
+      p_id = "Number_Multiple_Pages";
       break;
 
       case 38:
-      p_id = "PDF_List_Type";
+      p_id = "PDF_Font_Type";
       break;
 
       case 39:
-      p_id = "Parent_Class";
+      p_id = "PDF_List_Type";
       break;
 
       case 40:
-      p_id = "Parent_Field";
+      p_id = "Parent_Class";
       break;
 
       case 41:
-      p_id = "Print_Restriction";
+      p_id = "Parent_Field";
       break;
 
       case 42:
-      p_id = "Print_Without_Highlight";
+      p_id = "Print_Restriction";
       break;
 
       case 43:
-      p_id = "Search_Option_Limit";
+      p_id = "Print_Without_Highlight";
       break;
 
       case 44:
-      p_id = "Sort_Rows_In_UI";
+      p_id = "Search_Option_Limit";
       break;
 
       case 45:
-      p_id = "Style";
+      p_id = "Sort_Rows_In_UI";
       break;
 
       case 46:
-      p_id = "Text_Match_Highlight";
+      p_id = "Style";
       break;
 
       case 47:
-      p_id = "Title";
+      p_id = "Text_Match_Highlight";
       break;
 
       case 48:
-      p_id = "Type";
+      p_id = "Title";
       break;
 
       case 49:
+      p_id = "Type";
+      break;
+
+      case 50:
       p_id = "Variation_Name";
       break;
    }
@@ -7646,68 +7734,70 @@ int Meta_List::static_get_field_num( const string& field )
       rc += 17;
    else if( field == c_field_id_Display_Security_Level || field == c_field_name_Display_Security_Level )
       rc += 18;
-   else if( field == c_field_id_Display_Totals || field == c_field_name_Display_Totals )
+   else if( field == c_field_id_Display_Sub_Totals || field == c_field_name_Display_Sub_Totals )
       rc += 19;
-   else if( field == c_field_id_File_Links_Always_As_Single || field == c_field_name_File_Links_Always_As_Single )
+   else if( field == c_field_id_Display_Totals || field == c_field_name_Display_Totals )
       rc += 20;
-   else if( field == c_field_id_Id || field == c_field_name_Id )
+   else if( field == c_field_id_File_Links_Always_As_Single || field == c_field_name_File_Links_Always_As_Single )
       rc += 21;
-   else if( field == c_field_id_Ignore_Implicit_Ordering || field == c_field_name_Ignore_Implicit_Ordering )
+   else if( field == c_field_id_Id || field == c_field_name_Id )
       rc += 22;
-   else if( field == c_field_id_Ignore_State_For_Display || field == c_field_name_Ignore_State_For_Display )
+   else if( field == c_field_id_Ignore_Implicit_Ordering || field == c_field_name_Ignore_Implicit_Ordering )
       rc += 23;
-   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
+   else if( field == c_field_id_Ignore_State_For_Display || field == c_field_name_Ignore_State_For_Display )
       rc += 24;
-   else if( field == c_field_id_Ignore_Uneditable_Parent || field == c_field_name_Ignore_Uneditable_Parent )
+   else if( field == c_field_id_Ignore_Unactionable_Records || field == c_field_name_Ignore_Unactionable_Records )
       rc += 25;
-   else if( field == c_field_id_Ignore_User_Id_Filter || field == c_field_name_Ignore_User_Id_Filter )
+   else if( field == c_field_id_Ignore_Uneditable_Parent || field == c_field_name_Ignore_Uneditable_Parent )
       rc += 26;
-   else if( field == c_field_id_Is_Admin || field == c_field_name_Is_Admin )
+   else if( field == c_field_id_Ignore_User_Id_Filter || field == c_field_name_Ignore_User_Id_Filter )
       rc += 27;
-   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
+   else if( field == c_field_id_Is_Admin || field == c_field_name_Is_Admin )
       rc += 28;
-   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
+   else if( field == c_field_id_Is_Child || field == c_field_name_Is_Child )
       rc += 29;
-   else if( field == c_field_id_Is_Not_Anonymous || field == c_field_name_Is_Not_Anonymous )
+   else if( field == c_field_id_Is_Home || field == c_field_name_Is_Home )
       rc += 30;
-   else if( field == c_field_id_Is_Variation || field == c_field_name_Is_Variation )
+   else if( field == c_field_id_Is_Not_Anonymous || field == c_field_name_Is_Not_Anonymous )
       rc += 31;
-   else if( field == c_field_id_Limit_Scroll_And_New || field == c_field_name_Limit_Scroll_And_New )
+   else if( field == c_field_id_Is_Variation || field == c_field_name_Is_Variation )
       rc += 32;
-   else if( field == c_field_id_Model || field == c_field_name_Model )
+   else if( field == c_field_id_Limit_Scroll_And_New || field == c_field_name_Limit_Scroll_And_New )
       rc += 33;
-   else if( field == c_field_id_Multiline_Truncate_For_Print || field == c_field_name_Multiline_Truncate_For_Print )
+   else if( field == c_field_id_Model || field == c_field_name_Model )
       rc += 34;
-   else if( field == c_field_id_Name || field == c_field_name_Name )
+   else if( field == c_field_id_Multiline_Truncate_For_Print || field == c_field_name_Multiline_Truncate_For_Print )
       rc += 35;
-   else if( field == c_field_id_Number_Multiple_Pages || field == c_field_name_Number_Multiple_Pages )
+   else if( field == c_field_id_Name || field == c_field_name_Name )
       rc += 36;
-   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
+   else if( field == c_field_id_Number_Multiple_Pages || field == c_field_name_Number_Multiple_Pages )
       rc += 37;
-   else if( field == c_field_id_PDF_List_Type || field == c_field_name_PDF_List_Type )
+   else if( field == c_field_id_PDF_Font_Type || field == c_field_name_PDF_Font_Type )
       rc += 38;
-   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
+   else if( field == c_field_id_PDF_List_Type || field == c_field_name_PDF_List_Type )
       rc += 39;
-   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
+   else if( field == c_field_id_Parent_Class || field == c_field_name_Parent_Class )
       rc += 40;
-   else if( field == c_field_id_Print_Restriction || field == c_field_name_Print_Restriction )
+   else if( field == c_field_id_Parent_Field || field == c_field_name_Parent_Field )
       rc += 41;
-   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
+   else if( field == c_field_id_Print_Restriction || field == c_field_name_Print_Restriction )
       rc += 42;
-   else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
+   else if( field == c_field_id_Print_Without_Highlight || field == c_field_name_Print_Without_Highlight )
       rc += 43;
-   else if( field == c_field_id_Sort_Rows_In_UI || field == c_field_name_Sort_Rows_In_UI )
+   else if( field == c_field_id_Search_Option_Limit || field == c_field_name_Search_Option_Limit )
       rc += 44;
-   else if( field == c_field_id_Style || field == c_field_name_Style )
+   else if( field == c_field_id_Sort_Rows_In_UI || field == c_field_name_Sort_Rows_In_UI )
       rc += 45;
-   else if( field == c_field_id_Text_Match_Highlight || field == c_field_name_Text_Match_Highlight )
+   else if( field == c_field_id_Style || field == c_field_name_Style )
       rc += 46;
-   else if( field == c_field_id_Title || field == c_field_name_Title )
+   else if( field == c_field_id_Text_Match_Highlight || field == c_field_name_Text_Match_Highlight )
       rc += 47;
-   else if( field == c_field_id_Type || field == c_field_name_Type )
+   else if( field == c_field_id_Title || field == c_field_name_Title )
       rc += 48;
-   else if( field == c_field_id_Variation_Name || field == c_field_name_Variation_Name )
+   else if( field == c_field_id_Type || field == c_field_name_Type )
       rc += 49;
+   else if( field == c_field_id_Variation_Name || field == c_field_name_Variation_Name )
+      rc += 50;
 
    return rc - 1;
 }
@@ -7753,6 +7843,7 @@ string Meta_List::static_get_sql_columns( )
     "C_Display_Only_If_Default_Other INTEGER NOT NULL,"
     "C_Display_Row_Limit INTEGER NOT NULL,"
     "C_Display_Security_Level INTEGER NOT NULL,"
+    "C_Display_Sub_Totals INTEGER NOT NULL,"
     "C_Display_Totals INTEGER NOT NULL,"
     "C_File_Links_Always_As_Single INTEGER NOT NULL,"
     "C_Id VARCHAR(200) NOT NULL,"
