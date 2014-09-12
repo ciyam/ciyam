@@ -1277,6 +1277,10 @@ bool `{`$full_class_name`}::impl::value_will_be_provided( const string& field_na
 `{`#default_to_field.spec.xrep section=value_will_be_provided class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
 `,\
+`@eq`(`'\1`'`,`'default_to_global`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#default_to_global.spec.xrep section=value_will_be_provided class_name=$class_name\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
+`,\
 `@eq`(`'\1`'`,`'default_to_grp`'`)`&`@eq`(`$specification_\0_fmandatory`,`'1`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_grp.spec.xrep section=value_will_be_provided class_name=$class_name\
  arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
@@ -1925,8 +1929,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_cvt_func=$specification_\0_cvt_func\
  arg_fistexttype=$specification_\0_fistexttype arg_inc_clones=$specification_\0_inc_clones`}\
 `,\
-`@eq`(`'\1`'`,`'default_to_global`'`)
-`{`#default_to_global.spec.xrep section=to_store\
+`@eq`(`'\1`'`,`'default_to_global`'`)`&`@eq`(`$specification_\0_for_store`,`'`'`)
+`{`#default_to_global.spec.xrep section=to_or_for_store\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_cfield=$specification_\0_cfield\
  arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist arg_value=$specification_\0_value\
  arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue`}\
@@ -2234,6 +2238,12 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue\
  arg_append=$specification_\0_append arg_not_dflt=$specification_\0_not_dflt arg_cvt_func=$specification_\0_cvt_func\
  arg_fistexttype=$specification_\0_fistexttype arg_inc_clones=$specification_\0_inc_clones`}\
+`,\
+`@eq`(`'\1`'`,`'default_to_global`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
+`{`#default_to_global.spec.xrep section=to_or_for_store\
+ arg_id=$specification_\0_id arg_field=$specification_\0_field arg_cfield=$specification_\0_cfield\
+ arg_dflt_only=$specification_\0_dflt_only arg_inc_exist=$specification_\0_inc_exist arg_value=$specification_\0_value\
+ arg_tpfield=$specification_\0_tpfield arg_tfield=$specification_\0_tfield arg_tvalue=$specification_\0_tvalue`}\
 `,\
 `@eq`(`'\1`'`,`'default_to_grp`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#default_to_grp.spec.xrep section=to_or_for_store class_name=$class_name\

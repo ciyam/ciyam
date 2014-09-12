@@ -1,4 +1,10 @@
-`{`@eq`(`'to_store`'`,`$section`)\
+`{`@eq`(`'value_will_be_provided`'`,`$section`)\
+   // [(start default_to_global)] `{`$arg_id`}
+   if( field_name == "`{`$arg_field`}" )
+      return true;
+   // [(finish default_to_global)] `{`$arg_id`}
+`}
+`{`@eq`(`'to_or_for_store`'`,`$section`)\
    // [(start default_to_global)] `{`$arg_id`}
 `{`$cond`=`'`'`}\
 `{`@eq`(`$arg_inc_exist`,`'`'`)`$cond`=`'is_create`'`}\

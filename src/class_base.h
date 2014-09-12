@@ -1279,13 +1279,16 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
 
-void CLASS_BASE_DECL_SPEC load_utxo_information( const std::string& source_address, const std::string& file_name );
+void CLASS_BASE_DECL_SPEC load_utxo_information(
+ const std::string& ext_key, const std::string& source_address, const std::string& file_name );
 
 uint64_t CLASS_BASE_DECL_SPEC determine_utxo_balance( const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  const std::string& source_address, const std::string& destination_address,
  uint64_t amount, quote_style qs, uint64_t& fee, std::string& sign_tx_template, const std::string& file_name );
+
+std::string CLASS_BASE_DECL_SPEC create_raw_transaction( const std::string& ext_key, const std::string& raw_tx_cmd );
 
 std::string CLASS_BASE_DECL_SPEC send_raw_transaction( const std::string& tx );
 
