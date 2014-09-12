@@ -104,6 +104,7 @@ const char* const c_section_mbox = "mbox";
 const char* const c_section_pop3 = "pop3";
 const char* const c_section_smtp = "smtp";
 const char* const c_section_email = "email";
+
 const char* const c_attribute_path = "path";
 const char* const c_attribute_domain = "domain";
 const char* const c_attribute_server = "server";
@@ -132,6 +133,14 @@ const char* const c_attribute_max_attached_data = "max_attached_data";
 const char* const c_attribute_max_storage_handlers = "max_storage_handlers";
 const char* const c_attribute_files_area_item_max_num = "files_area_item_max_num";
 const char* const c_attribute_files_area_item_max_size = "files_area_item_max_size";
+
+const char* const c_section_client = "client";
+const char* const c_section_extern = "extern";
+
+const char* const c_attribute_port = "port";
+const char* const c_attribute_label = "label";
+const char* const c_attribute_protocol = "protocol";
+const char* const c_attribute_script_name = "script_name";
 
 const char* const c_default_web_root = "%root%/%store%";
 
@@ -3054,6 +3063,13 @@ string g_smtp_security;
 int g_smtp_max_send_attempts = 1;
 int64_t g_smtp_max_attached_data = INT64_C( 0 );
 
+typedef map< string, external_client > external_client_container;
+typedef external_client_container::iterator external_client_iterator;
+typedef external_client_container::const_iterator external_client_const_iterator;
+typedef external_client_container::value_type external_client_value_type;
+
+external_client_container g_external_client_info;
+
 #include "sid.enc"
 
 // NOTE: For added security this function should be customised.
@@ -3239,6 +3255,26 @@ void read_server_configuration( )
       }
 
       reader.finish_section( c_section_email );
+
+      if( reader.has_started_section( c_section_extern ) )
+      {
+         while( reader.has_started_section( c_section_client ) )
+         {
+            external_client client;
+
+            client.port = atoi( reader.read_opt_attribute( c_attribute_port, "0" ).c_str( ) );
+
+            string key = reader.read_attribute( c_attribute_label );
+            client.protocol = reader.read_attribute( c_attribute_protocol );
+            client.script_name = reader.read_opt_attribute( c_attribute_script_name );
+
+            reader.finish_section( c_section_client );
+
+            g_external_client_info.insert( external_client_value_type( key, client ) );
+         }
+
+         reader.finish_section( c_section_extern );
+      }
 
       reader.verify_finished_sections( );
    }
@@ -4113,6 +4149,30 @@ int get_smtp_max_send_attempts( )
 int64_t get_smtp_max_attached_data( )
 {
    return g_smtp_max_attached_data;
+}
+
+string list_externals( )
+{
+   string s;
+
+   for( external_client_iterator eci = g_external_client_info.begin( ); eci != g_external_client_info.end( ); ++eci )
+   {
+      if( !s.empty( ) )
+         s += '\n';
+
+      s += eci->first;
+      s += " (" + eci->second.protocol + ")";
+   }
+
+   return s;
+}
+
+void get_external_client_info( const string& key, external_client& info )
+{
+   if( !g_external_client_info.count( key ) )
+      throw runtime_error( "unknown external client key '" + key + "'" );
+
+   info = g_external_client_info[ key ];
 }
 
 string encrypt_password( const string& password, bool no_ssl, bool no_salt, bool hash_only )

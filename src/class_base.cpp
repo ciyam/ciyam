@@ -74,6 +74,9 @@ const size_t c_cascade_progress_seconds = 10;
 
 const char* const c_files_directory = "files";
 
+const char* const c_protocol_bitcoin = "bitcoin";
+const char* const c_protocol_blockchain = "blockchain";
+
 const char* const c_email_subject_script_marker = "[CIYAM]";
 
 const char* const c_special_regex_for_email_address = "@email_address";
@@ -4292,9 +4295,37 @@ string create_html_embedded_image( const string& source_file )
    return s;
 }
 
-void load_utxo_information( const string& source_address, const string& file_name )
+void load_utxo_information( const string& ext_key, const string& source_address, const string& file_name )
 {
-   get_utxo_information( source_address, file_name );
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+
+   if( client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name );
+
+      if( source_address.empty( ) || source_address == "*" )
+         cmd += " listunspent";
+      else
+#ifndef _WIN32
+      cmd += " listunspent 1 999999999 [\"" + source_address + "\"]";
+#else
+      cmd += " listunspent 1 999999999 [\\\"" + source_address + "\\\"]";
+#endif
+
+      cmd += " >" + file_name + " 2>&1";
+   }
+   else if( client_info.protocol == c_protocol_blockchain )
+      cmd = "curl -s http://blockchain.info/unspent?address=" + source_address + " >" + file_name + " 2>&1";
+
+   if( !cmd.empty( ) )
+   {
+      int rc = system( cmd.c_str( ) );
+
+      ( void )rc;
+   }
 }
 
 uint64_t determine_utxo_balance( const string& file_name )
@@ -4308,6 +4339,36 @@ string construct_raw_transaction(
 {
    return create_raw_transaction( source_address,
     destination_address, amount, qs, fee, sign_tx_template, &file_name );
+}
+
+string create_raw_transaction( const string& ext_key, const string& raw_tx_cmd )
+{
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd, retval;
+   string tmp( "~" + uuid( ).as_string( ) );
+
+   if( client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name );
+      cmd += " " + raw_tx_cmd + " >" + tmp;
+   }
+
+   if( !cmd.empty( ) )
+   {
+      int rc = system( cmd.c_str( ) );
+
+      ( void )rc;
+
+      if( file_exists( tmp ) )
+      {
+         retval = buffer_file( tmp );
+         file_remove( tmp );
+      }
+   }
+
+   return retval;
 }
 
 string send_raw_transaction( const string& tx )

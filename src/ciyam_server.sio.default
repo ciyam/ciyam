@@ -38,4 +38,10 @@
 #   <max_attached_data>100K
 #  </smtp>
  </email>
+ <extern/>
+  <client/>
+   <label>XBT
+   <protocol>blockchain
+  </client>
+ </extern>
 </sio>

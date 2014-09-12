@@ -123,6 +123,19 @@ std::string CIYAM_BASE_DECL_SPEC get_smtp_security( );
 int CIYAM_BASE_DECL_SPEC get_smtp_max_send_attempts( );
 int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
 
+struct external_client
+{
+   external_client( ) : port( 0 ) { }
+
+   int port;
+   std::string protocol;
+   std::string script_name;
+};
+
+std::string CIYAM_BASE_DECL_SPEC list_externals( );
+
+void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, external_client& info );
+
 std::string CIYAM_BASE_DECL_SPEC encrypt_password(
  const std::string& password, bool no_ssl = false, bool no_salt = false, bool hash_only = false );
 

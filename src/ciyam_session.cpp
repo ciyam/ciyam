@@ -3796,6 +3796,8 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
          handler.output_progress( ";checkmail..." );
          response = check_email_headers( email_headers, create_script );
       }
+      else if( command == c_cmd_ciyam_session_externals )
+         response = list_externals( );
       else if( command == c_cmd_ciyam_session_runscript )
       {
          string script_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_runscript_script_name ) );
@@ -3812,9 +3814,7 @@ void ciyam_session_command_functor::operator ( )( const string& command, const p
             replace( response, own_tz + ' ', "*" + own_tz + ' ' );
       }
       else if( command == c_cmd_ciyam_session_utc_now )
-      {
          response = date_time::standard( ).as_string( true, false );
-      }
       else if( command == c_cmd_ciyam_session_utc_offset )
       {
          string tz_name( get_parm_val( parameters, c_cmd_parm_ciyam_session_utc_offset_tz_name ) );
