@@ -27,6 +27,7 @@
 #     include <sys/stat.h>
 #     include <sys/time.h>
 #  endif
+#  include <algorithm>
 #endif
 
 #define CIYAM_BASE_IMPL
@@ -2445,6 +2446,11 @@ string load_file( const string& filename, bool is_optional )
    return buffer_file( filename );
 }
 
+void save_file( const string& filename, const string& data )
+{
+   write_file( filename, data );
+}
+
 void read_file_lines( const string& filename, set< string >& lines )
 {
    buffer_file_lines( filename, lines );
@@ -2639,8 +2645,8 @@ void remove_gpg_key( const string& gpg_key_id, bool ignore_error )
 
    TRACE_LOG( TRACE_SESSIONS, cmd );
 
-   int rc = system( cmd.c_str( ) );
-   ( void )rc;
+   if( system( cmd.c_str( ) ) != 0 )
+      throw runtime_error( "unexpected system failure for remove_gpg_key" );
 
    vector< string > lines;
    buffer_file_lines( tmp, lines );
@@ -2662,8 +2668,8 @@ void locate_gpg_key( const string& email, string& gpg_key_id, string& gpg_finger
 
    TRACE_LOG( TRACE_SESSIONS, cmd );
 
-   int rc = system( cmd.c_str( ) );
-   ( void )rc;
+   if( system( cmd.c_str( ) ) != 0 )
+      throw runtime_error( "unexpected system failure for locate_gpg_key" );
 
    vector< string > lines;
    buffer_file_lines( tmp, lines );
@@ -2708,8 +2714,8 @@ void install_gpg_key( const string& key_file,
 
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      int rc = system( cmd.c_str( ) );
-      ( void )rc;
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for install_gpg_key" );
 
       vector< string > lines;
       buffer_file_lines( tmp, lines );
@@ -2793,8 +2799,8 @@ void install_gpg_key( const string& key_file,
 
                               TRACE_LOG( TRACE_SESSIONS, cmd );
 
-                              int rc = system( cmd.c_str( ) );
-                              ( void )rc;
+                              if( system( cmd.c_str( ) ) != 0 )
+                                 throw runtime_error( "unexpected system failure for install_gpg_key" );
 
                               lines.clear( );
                               buffer_file_lines( tmp, lines );
@@ -4307,7 +4313,7 @@ void load_utxo_information( const string& ext_key, const string& source_address,
       cmd = escaped( client_info.script_name );
 
       if( source_address.empty( ) || source_address == "*" )
-         cmd += " listunspent";
+         cmd += " listunspent 1";
       else
 #ifndef _WIN32
       cmd += " listunspent 1 999999999 [\"" + source_address + "\"]";
@@ -4322,9 +4328,31 @@ void load_utxo_information( const string& ext_key, const string& source_address,
 
    if( !cmd.empty( ) )
    {
-      int rc = system( cmd.c_str( ) );
+      TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      ( void )rc;
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for load_utxo_information" );
+   }
+
+   if( file_exists( file_name ) )
+   {
+      string error, content( buffer_file( file_name ) );
+
+      if( content.empty( ) )
+         error = "unexpected emtpy response from 'listunspent'";
+      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         error = content;
+
+      // NOTE: The minimum expected JSON output should be at least ten lines so if less
+      // than this was returned then assume it was due to no UTXO records being found.
+      if( error.empty( ) && count( content.begin( ), content.end( ), '\n' ) < 10 )
+         error = "No UTXO information was found.";
+
+      if( !error.empty( ) )
+      {
+         file_remove( file_name );
+         throw runtime_error( error );
+      }
    }
 }
 
@@ -4341,10 +4369,15 @@ string construct_raw_transaction(
     destination_address, amount, qs, fee, sign_tx_template, &file_name );
 }
 
-string create_raw_transaction( const string& ext_key, const string& raw_tx_cmd )
+string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd, bool throw_on_error )
 {
    external_client client_info;
    get_external_client_info( ext_key, client_info );
+
+   bool is_sign_raw_tx = false;
+   string::size_type pos = raw_tx_cmd.find( "signrawtransaction" );
+   if( pos == 0 )
+      is_sign_raw_tx = true;
 
    string cmd, retval;
    string tmp( "~" + uuid( ).as_string( ) );
@@ -4352,19 +4385,27 @@ string create_raw_transaction( const string& ext_key, const string& raw_tx_cmd )
    if( client_info.protocol == c_protocol_bitcoin )
    {
       cmd = escaped( client_info.script_name );
-      cmd += " " + raw_tx_cmd + " >" + tmp;
+      cmd += " " + raw_tx_cmd + " >" + tmp + " 2>&1";;
    }
 
    if( !cmd.empty( ) )
    {
-      int rc = system( cmd.c_str( ) );
+      TRACE_LOG( TRACE_SESSIONS, cmd );
 
-      ( void )rc;
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for create_raw_transaction" );
 
       if( file_exists( tmp ) )
       {
          retval = buffer_file( tmp );
+
          file_remove( tmp );
+
+         if( throw_on_error && retval.find( "error:" ) != string::npos )
+            throw runtime_error( retval );
+
+         if( !is_sign_raw_tx )
+            retval = trim( retval );
       }
    }
 
@@ -4379,6 +4420,8 @@ string send_raw_transaction( const string& tx )
 
    // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
    string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/decode-tx >" + tmp );
+
+   TRACE_LOG( TRACE_SESSIONS, cmd );
 
    int rc = system( cmd.c_str( ) );
    ( void )rc;
@@ -4399,6 +4442,9 @@ string send_raw_transaction( const string& tx )
          s.erase( pos );
 
          string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/pushtx >" + tmp );
+
+         TRACE_LOG( TRACE_SESSIONS, cmd );
+
          int rc = system( cmd.c_str( ) );
          ( void )rc;
 
