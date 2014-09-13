@@ -13,8 +13,6 @@
 #  include "ptypes.h"
 #  include "ciyam_common.h"
 
-void get_utxo_information( const std::string& source_address, const std::string& file_name );
-
 uint64_t get_utxos_balance_amt( const std::string& file_name );
 
 std::string create_raw_transaction(

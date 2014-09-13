@@ -989,6 +989,8 @@ int64_t CLASS_BASE_DECL_SPEC last_mod_time( const std::string& filename );
 void CLASS_BASE_DECL_SPEC copy_file( const std::string& source, const std::string& destination );
 std::string CLASS_BASE_DECL_SPEC load_file( const std::string& filename, bool is_optional = false );
 
+void CLASS_BASE_DECL_SPEC save_file( const std::string& filename, const std::string& data );
+
 void CLASS_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::set< std::string >& lines );
 void CLASS_BASE_DECL_SPEC read_file_lines( const std::string& filename, std::vector< std::string >& lines );
 
@@ -1288,7 +1290,8 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  const std::string& source_address, const std::string& destination_address,
  uint64_t amount, quote_style qs, uint64_t& fee, std::string& sign_tx_template, const std::string& file_name );
 
-std::string CLASS_BASE_DECL_SPEC create_raw_transaction( const std::string& ext_key, const std::string& raw_tx_cmd );
+std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
+ const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true );
 
 std::string CLASS_BASE_DECL_SPEC send_raw_transaction( const std::string& tx );
 

@@ -22,6 +22,7 @@ struct utxo_info
    string tx_id;
    int vout;
    string script;
+   string address;
 };
 
 const uint64_t c_min_fee = 10000;
@@ -46,20 +47,20 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
    utxo_info utxo;
 
    bool found = false;
-   bool from_listunspent = false;
+   bool from_standard = false;
 
    while( getline( is, str ) )
    {
       string::size_type pos = str.find( "\"tx_hash\"" );
       if( pos != string::npos )
-         from_listunspent = false;
+         from_standard = false;
       else
       {
          pos = str.find( "\"txid\"" );
 
          if( pos != string::npos )
          {
-            from_listunspent = true;
+            from_standard = true;
             pos = str.find( "txid" );
          }
       }
@@ -81,7 +82,7 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
                   utxo.tx_id = str.substr( pos + 1, epos - pos - 1 );
 
                   // NOTE: The "tx_hash" from "blockchain.info" needs to be reversed (as hex bytes).
-                  if( !from_listunspent )
+                  if( !from_standard )
                   {
                      string input( utxo.tx_id );
                      utxo.tx_id.erase( );
@@ -104,15 +105,15 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
       }
       else if( found )
       {
-         if( from_listunspent )
+         if( from_standard )
             pos = str.find( "\"vout\"" );
          else
             pos = str.find( "\"tx_output_n\"" );
 
-         if( pos != string::npos )
+         if( pos != string::npos && pos != str.length( ) - 1 )
          {
             bool okay = false;
-            pos = str.find( ':' );
+            pos = str.find( ':', pos + 1 );
             if( pos != string::npos )
             {
                okay = true;
@@ -124,7 +125,26 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
          }
          else
          {
-            if( from_listunspent )
+            if( from_standard )
+            {
+               pos = str.find( "\"address\"" );
+               if( pos != string::npos )
+               {
+                  pos = str.find( ':', pos + 1 );
+                  if( pos != string::npos )
+                  {
+                     pos = str.find( "\"", pos + 1 );
+                     if( pos != string::npos )
+                     {
+                        string::size_type epos = str.find( "\"", pos + 1 );
+                        if( epos != string::npos )
+                           utxo.address = str.substr( pos + 1, epos - pos - 1 );
+                     }
+                  }
+               }
+            }
+
+            if( from_standard )
                pos = str.find( "\"scriptPubKey\"" );
             else
                pos = str.find( "\"script\"" );
@@ -152,7 +172,7 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
             }
             else
             {
-               if( from_listunspent )
+               if( from_standard )
                   pos = str.find( "\"amount\"" );
                else
                   pos = str.find( "\"value\"" );
@@ -213,6 +233,7 @@ uint64_t select_utxos_for_transaction(
  const string& file_name, uint64_t amount, vector< utxo_info >& utxos_used, uint64_t& fee )
 {
    uint64_t change = 0;
+   uint64_t original_fee( fee );
 
    ifstream inpf( file_name.c_str( ) );
    if( !inpf )
@@ -258,9 +279,9 @@ uint64_t select_utxos_for_transaction(
             {
                total += i->first;
 
-               // NOTE: Increment the fee by the minimum amount for every 5 UTXO's.
+               // NOTE: Increment the fee by the minimum amount for every 10 UTXO's.
                // FUTURE: The fee should be calculated more accurately and take "age" into account.
-               if( ++num % 5 == 0 )
+               if( ++num % 10 == 0 )
                   fee += c_min_fee;
 
                utxos_used.push_back( i->second );
@@ -287,8 +308,14 @@ uint64_t select_utxos_for_transaction(
          change = 0;
       }
 
+      // FUTURE: These error messages should be module strings.
       if( total != ( amount + fee + change ) )
-         throw runtime_error( "insufficient funds available" );
+      {
+         if( fee != original_fee )
+            throw runtime_error( "fee should be at least: " + to_string( fee ) );
+         else
+            throw runtime_error( "insufficient funds available" );
+      }
 
 #ifdef DEBUG
       cout << "amount: " << amount << endl;
@@ -304,14 +331,15 @@ uint64_t select_utxos_for_transaction(
 
 }
 
+#ifdef TESTBED
 void get_utxo_information( const string& source_address, const string& file_name )
 {
-   // FUTURE: The UTXO list should also be able to be obtained via bitcoind locally using "listunspent".
    string cmd( "curl -s http://blockchain.info/unspent?address=" + source_address + " >" + file_name );
 
    int rc = system( cmd.c_str( ) );
    ( void )rc;
 }
+#endif
 
 uint64_t get_utxos_balance_amt( const string& file_name )
 {
@@ -331,15 +359,15 @@ string create_raw_transaction( const string& source_address,
       change = select_utxos_for_transaction( *p_file_name, amount, utxos_used, fee );
    else
    {
+#ifndef TESTBED
+      throw runtime_error( "unexpected missing utxo information" );
+#else
       string file_name( "~" + source_address + ".txt" );
 
       get_utxo_information( source_address, file_name );
 
       change = select_utxos_for_transaction( file_name, amount, utxos_used, fee );
 
-#ifndef TESTBED
-      file_remove( file_name );
-#else
       _unlink( file_name.c_str( ) );
 #endif
    }
@@ -383,6 +411,15 @@ string create_raw_transaction( const string& source_address,
       quote2 = '"';
    }
 
+   string change_address;
+   if( source_address != "*" )
+   {
+      change_address = source_address;
+      string::size_type pos = change_address.find_first_of( " ,;:" );
+      if( pos != string::npos )
+         change_address.erase( pos );
+   }
+
    for( size_t i = 0; i < utxos_used.size( ); i++ )
    {
       if( i > 0 )
@@ -390,6 +427,9 @@ string create_raw_transaction( const string& source_address,
          raw_transaction += ',';
          sign_tx_template += ',';
       }
+
+      if( change_address.empty( ) )
+         change_address = utxos_used[ i ].address;
 
       raw_transaction += '{';
       sign_tx_template += '{';
@@ -429,13 +469,13 @@ string create_raw_transaction( const string& source_address,
    double d = ( amount / 100000000.0 );
    add_json_pair( raw_transaction, destination_address, to_string( d ), quote1, false );
 
-   // NOTE: If there is change then send it back to the source address.
+   // NOTE: If there is change then send it back to the change address.
    if( change > 0 )
    {
       raw_transaction += ',';
 
       double d = ( change / 100000000.0 );
-      add_json_pair( raw_transaction, source_address, to_string( d ), quote1, false );
+      add_json_pair( raw_transaction, change_address, to_string( d ), quote1, false );
    }
 
    raw_transaction += "}";
