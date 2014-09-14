@@ -738,6 +738,9 @@ typedef string_container::value_type string_value_type;
 void uudecode( std::ostream& outs, const char* p_input, int num_bytes );
 void uuencode( const char* p_data, int num_bytes, std::ostream& outs );
 
+std::string hex_decode( const std::string& data );
+std::string hex_encode( const std::string& data, int max_chars_per_line = 0 );
+
 std::string decode_quoted_printable( const std::string& data );
 std::string encode_quoted_printable( const std::string& data, int max_chars_per_line );
 

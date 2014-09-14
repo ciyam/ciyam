@@ -34,6 +34,7 @@
 
 #include "class_base.h"
 
+#include "md5.h"
 #include "sio.h"
 #include "pop3.h"
 #include "mime.h"
@@ -4301,7 +4302,7 @@ string create_html_embedded_image( const string& source_file )
    return s;
 }
 
-void load_utxo_information( const string& ext_key, const string& source_address, const string& file_name )
+void load_utxo_information( const string& ext_key, const string& source_addresses, const string& file_name )
 {
    external_client client_info;
    get_external_client_info( ext_key, client_info );
@@ -4310,21 +4311,39 @@ void load_utxo_information( const string& ext_key, const string& source_address,
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name );
+      cmd = escaped( client_info.script_name ) + " ";
 
-      if( source_address.empty( ) || source_address == "*" )
-         cmd += " listunspent 1";
+      string comma_sep_addresses( replaced( source_addresses, " ", ",", "|", "," ) );
+
+      vector< string > addresses;
+      split( comma_sep_addresses, addresses );
+
+      if( source_addresses.empty( ) || source_addresses == "*" )
+         cmd += "listunspent 1";
       else
+      {
+         cmd += "listunspent 1 999999999 [";
+
+         for( size_t i = 0; i < addresses.size( ); i++ )
+         {
+            if( i > 0 )
+               cmd += ",";
+
 #ifndef _WIN32
-      cmd += " listunspent 1 999999999 [\"" + source_address + "\"]";
+            cmd += "\"" + addresses[ i ] + "\"";
 #else
-      cmd += " listunspent 1 999999999 [\\\"" + source_address + "\\\"]";
+            cmd += "\\\"" + addresses[ i ] + "\\\"";
 #endif
+         }
+
+         cmd += "]";
+      }
 
       cmd += " >" + file_name + " 2>&1";
    }
    else if( client_info.protocol == c_protocol_blockchain )
-      cmd = "curl -s http://blockchain.info/unspent?address=" + source_address + " >" + file_name + " 2>&1";
+      cmd = "curl -s \"http://blockchain.info/unspent?active="
+       + replaced( source_addresses, " ", "|", ",", "|" ) + "\" >" + file_name + " 2>&1";
 
    if( !cmd.empty( ) )
    {
@@ -4362,10 +4381,10 @@ uint64_t determine_utxo_balance( const string& file_name )
 }
 
 string construct_raw_transaction(
- const string& source_address, const string& destination_address,
+ const string& source_addresses, const string& destination_address,
  uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template, const string& file_name )
 {
-   return create_raw_transaction( source_address,
+   return create_raw_transaction( source_addresses,
     destination_address, amount, qs, fee, sign_tx_template, &file_name );
 }
 
@@ -4384,8 +4403,11 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
-      cmd = escaped( client_info.script_name );
-      cmd += " " + raw_tx_cmd + " >" + tmp + " 2>&1";;
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += raw_tx_cmd;
+
+      cmd += " >" + tmp + " 2>&1";;
    }
 
    if( !cmd.empty( ) )
@@ -4397,8 +4419,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
       if( file_exists( tmp ) )
       {
-         retval = buffer_file( tmp );
-
+         retval = trim( buffer_file( tmp ) );
          file_remove( tmp );
 
          if( throw_on_error && retval.find( "error:" ) != string::npos )
@@ -4412,52 +4433,99 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
    return retval;
 }
 
-string send_raw_transaction( const string& tx )
+string send_raw_transaction( const string& ext_key, const string& tx )
 {
    string s;
 
-   string tmp( "~" + uuid( ).as_string( ) );
-
-   // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
-   string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/decode-tx >" + tmp );
-
-   TRACE_LOG( TRACE_SESSIONS, cmd );
-
-   int rc = system( cmd.c_str( ) );
-   ( void )rc;
-
-   s = buffer_file( tmp );
-   file_remove( tmp );
-
-   string marker( "&#034;hash&#034;:&#034;" );
-
-   string::size_type pos = s.rfind( marker );
-   if( pos != string::npos )
+   if( storage_locked_for_admin( ) )
    {
-      s.erase( 0, pos + marker.length( ) );
+      string data( hex_decode( tx ) );
+      sha256 hash( ( const unsigned char* )data.c_str( ), data.length( ) );
 
-      pos = s.find( '&' );
-      if( pos != string::npos )
+      unsigned char buf[ 32 ];
+      hash.copy_digest_to_buffer( buf );
+
+      hash.update( buf, 32 );
+      string input( lower( hash.get_digest_as_string( ) ) );
+
+      for( int i = input.length( ) - 1; i >= 0; i -= 2 )
       {
-         s.erase( pos );
+         if( i - 1 >= 0 )
+         {
+            s += input[ i - 1 ];
+            s += input[ i ];
+         }
+      }
+   }
+   else
+   {
+      external_client client_info;
+      get_external_client_info( ext_key, client_info );
 
-         string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/pushtx >" + tmp );
+      if( client_info.protocol == c_protocol_bitcoin )
+      {
+         string tmp( "~" + uuid( ).as_string( ) );
+         string cmd( escaped( client_info.script_name ) + " " );
+
+         cmd += "sendrawtransaction " + tx;
+
+         cmd += " >" + tmp + " 2>&1";
 
          TRACE_LOG( TRACE_SESSIONS, cmd );
 
-         int rc = system( cmd.c_str( ) );
-         ( void )rc;
+         if( system( cmd.c_str( ) ) != 0 )
+            throw runtime_error( "unexpected system failure for send_raw_transaction" );
 
-         string ss( buffer_file( tmp ) );
+         s = trim( buffer_file( tmp ) );
          file_remove( tmp );
 
-         // NOTE: If we don't find an 'error' token then assume that the tx push worked.
-         if( ss.find( "error" ) != string::npos || ss.find( "Error" ) != string::npos )
+         if( s.find( "error:" ) != string::npos )
+            throw runtime_error( s );
+      }
+      else if( client_info.protocol == c_protocol_blockchain )
+      {
+         string tmp( "~" + uuid( ).as_string( ) );
+
+         // NOTE: In order to get the transaction id need to use "decode-tx" (do this first).
+         string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/decode-tx >" + tmp + " 2>&1" );
+
+         TRACE_LOG( TRACE_SESSIONS, cmd );
+
+         if( system( cmd.c_str( ) ) != 0 )
+            throw runtime_error( "unexpected system failure for send_raw_transaction" );
+
+         s = trim( buffer_file( tmp ) );
+         file_remove( tmp );
+
+         if( s.find( "error" ) != string::npos || s.find( "Error" ) != string::npos )
+            throw runtime_error( s );
+
+         string marker( "&#034;hash&#034;:&#034;" );
+
+         string::size_type pos = s.rfind( marker );
+         if( pos != string::npos )
          {
-            s = ss;
-            pos = s.find( '\n' );
+            s.erase( 0, pos + marker.length( ) );
+
+            pos = s.find( '&' );
             if( pos != string::npos )
+            {
                s.erase( pos );
+
+               string cmd( "curl -s --data tx=" + tx + " http://blockchain.info/pushtx >" + tmp + " 2>&1" );
+
+               TRACE_LOG( TRACE_SESSIONS, cmd );
+
+               if( system( cmd.c_str( ) ) != 0 )
+                  throw runtime_error( "unexpected system failure for send_raw_transaction" );
+
+               string ss( trim( buffer_file( tmp ) ) );
+               file_remove( tmp );
+
+               // NOTE: If we don't find an 'error' token then assume that the tx push worked.
+               if( ss.find( "error" ) != string::npos || ss.find( "Error" ) != string::npos )
+                  throw runtime_error( s );
+            }
          }
       }
    }

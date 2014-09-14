@@ -491,8 +491,9 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
          set_field_values += "@executed=" + procedure_id;
       }
 
-      if( !fetch_item_info( view.module_id, mod_info, view.cid, item_key,
-       view.field_list, set_field_values, "", *p_session_info, item_info, 0, 0, 0, 0, 0, &view_extra_vars ) )
+      if( !fetch_item_info( view.module_id,
+       mod_info, view.cid, item_key, view.field_list, set_field_values,
+       "", *p_session_info, item_info, 0, 0, 0, 0, 0, &view_extra_vars ) )
          had_send_or_recv_error = true;
       else
       {

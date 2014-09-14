@@ -261,10 +261,10 @@ void CIYAM_BASE_DECL_SPEC slice_storage_log( command_handler& cmd_handler,
 void CIYAM_BASE_DECL_SPEC splice_storage_log( command_handler& cmd_handler,
  const std::string& name, const std::vector< std::string >& module_list );
 
-bool CIYAM_BASE_DECL_SPEC storage_is_dead_key( const std::string& cid, const std::string& key );
+bool CIYAM_BASE_DECL_SPEC storage_is_dead_key(
+ const std::string& cid, const std::string& key, std::string* p_key_found = 0 );
 
-void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid,
- const std::string& key, bool is_prefix = false );
+void CIYAM_BASE_DECL_SPEC storage_add_dead_key( const std::string& cid, const std::string& key );
 
 struct CIYAM_BASE_DECL_SPEC storage_bulk_write_pause
 {

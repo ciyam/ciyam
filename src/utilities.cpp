@@ -1705,6 +1705,48 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
    }
 }
 
+string hex_decode( const string& data )
+{
+   string s;
+
+   if( data.length( ) % 2 != 0 )
+      throw runtime_error( "incorrect hex for decoding (add a trailing zero?)" );
+
+   for( size_t i = 0; i < data.size( ); i += 2 )
+   {
+      unsigned char val = hex_nibble( data[ i ] );
+      val <<= 4;
+
+      val |= hex_nibble( data[ i + 1 ] );
+
+      s += val;
+   }
+
+   return s;
+}
+
+string hex_encode( const string& data, int max_chars_per_line )
+{
+   string s;
+   int num_chars = 0;
+
+   for( size_t i = 0; i < data.size( ); i++ )
+   {
+      s += ascii_digit( data[ i ] & 0xf0 >> 4 );
+      s += ascii_digit( data[ i ] & 0x0f );
+
+      num_chars += 2;
+
+      if( max_chars_per_line && num_chars >= max_chars_per_line && i != data.size( ) - 1 )
+      {
+         s += '\n';
+         num_chars = 0;
+      }
+   }
+
+   return s;
+}
+
 string decode_quoted_printable( const string& data )
 {
    string s;
