@@ -26,6 +26,7 @@ struct utxo_info
 };
 
 const uint64_t c_min_fee = 10000;
+const uint64_t c_dust_amount = 1000;
 
 void add_json_pair( string& s, const string& name, const string& value, const string& quote, bool quote_value )
 {
@@ -222,7 +223,8 @@ uint64_t utxos_balance( const string& file_name )
 
       for( multimap< uint64_t, utxo_info >::iterator i = utxos.begin( ); i!= utxos.end( ); ++i )
       {
-         balance += i->first;
+         if( i->first > c_dust_amount )
+            balance += i->first;
       }
    }
 
@@ -250,8 +252,11 @@ uint64_t select_utxos_for_transaction(
          throw runtime_error( "no utxo information found" );
 
       bool done = false;
-      for( multimap< uint64_t, utxo_info >::iterator i = utxos.begin( ); i!= utxos.end( ); ++i )
+      for( multimap< uint64_t, utxo_info >::iterator i = utxos.begin( ); i != utxos.end( ); ++i )
       {
+         if( i->first <= c_dust_amount )
+            continue;
+
          // NOTE: Prefer a single UTXO rather than multiple in order to keep the tx size to a minimum.
          if( i->first >= amount + fee )
          {
@@ -332,9 +337,10 @@ uint64_t select_utxos_for_transaction(
 }
 
 #ifdef TESTBED
-void get_utxo_information( const string& source_address, const string& file_name )
+void get_utxo_information( const string& source_addresses, const string& file_name )
 {
-   string cmd( "curl -s http://blockchain.info/unspent?address=" + source_address + " >" + file_name );
+   string cmd( "curl -s \"http://blockchain.info/unspent?active="
+    + replaced( source_addresses, " ", "|", ",", "|" ) + "\" >" + file_name );
 
    int rc = system( cmd.c_str( ) );
    ( void )rc;
@@ -346,7 +352,7 @@ uint64_t get_utxos_balance_amt( const string& file_name )
    return utxos_balance( file_name );
 }
 
-string create_raw_transaction( const string& source_address,
+string create_raw_transaction( const string& source_addresses,
  const string& destination_address, uint64_t amount, quote_style qs,
  uint64_t& fee, string& sign_tx_template, const string* p_file_name )
 {
@@ -362,9 +368,9 @@ string create_raw_transaction( const string& source_address,
 #ifndef TESTBED
       throw runtime_error( "unexpected missing utxo information" );
 #else
-      string file_name( "~" + source_address + ".txt" );
+      string file_name( "~" + destination_address + ".txt" );
 
-      get_utxo_information( source_address, file_name );
+      get_utxo_information( source_addresses, file_name );
 
       change = select_utxos_for_transaction( file_name, amount, utxos_used, fee );
 
@@ -412,10 +418,10 @@ string create_raw_transaction( const string& source_address,
    }
 
    string change_address;
-   if( source_address != "*" )
+   if( source_addresses != "*" )
    {
-      change_address = source_address;
-      string::size_type pos = change_address.find_first_of( " ,;:" );
+      change_address = source_addresses;
+      string::size_type pos = change_address.find_first_of( " ,|" );
       if( pos != string::npos )
          change_address.erase( pos );
    }
@@ -499,10 +505,10 @@ int main( int argc, char* argv[ ] )
    try
    {
       if( argc < 4 )
-         cout << "usage: tx_create <source_address> <destination_address> <amount_in_satoshis> [<min_fee_in_satoshis>]" << endl;
+         cout << "usage: tx_create <source_addresses> <destination_address> <amount_in_satoshis> [<min_fee_in_satoshis>]" << endl;
       else
       {
-         string source_address( argv[ 1 ] );
+         string source_addresses( argv[ 1 ] );
          string destination_address( argv[ 2 ] );
          string amount_in_satoshis( argv[ 3 ] );
 
@@ -537,7 +543,9 @@ int main( int argc, char* argv[ ] )
          quote_style qs( e_quote_style_both_windows );
 
          string sign_tx_template;
-         string create_raw_tx( create_raw_transaction( source_address, destination_address, amount, qs, min_fee, sign_tx_template ) );
+
+         string create_raw_tx( create_raw_transaction(
+          source_addresses, destination_address, amount, qs, min_fee, sign_tx_template ) );
 
          cout << create_raw_tx << "\n\n";
          cout << sign_tx_template << endl;

@@ -857,7 +857,8 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_mfunc=$specification_\\0_mfunc arg_nvalue=$specification_\\0_nvalue arg_update=$specification_\\0_update\
  arg_tfistexttype=$specification_\\0_tfistexttype arg_tcfistexttype=$specification_\\0_tcfistexttype\
  arg_internal_only=$specification_\\0_internal_only arg_include_clones=$specification_\\0_include_clones\
- arg_new_only=$specification_\\0_new_only arg_non_trigger=$specification_\\0_non_trigger`}\
+ arg_new_only=$specification_\\0_new_only arg_non_trigger=$specification_\\0_non_trigger\
+ arg_field1=$specification_\\0_field1 arg_field2=$specification_\\0_field2`}\
 `,\
 `@eq`(`'\\1`'`,`'field_from_script`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#field_from_script.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
@@ -2070,7 +2071,8 @@ void `{`$full_class_name`}::impl::to_store( bool is_create, bool is_internal )
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
  arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype\
  arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones\
- arg_new_only=$specification_\0_new_only arg_non_trigger=$specification_\0_non_trigger`}\
+ arg_new_only=$specification_\0_new_only arg_non_trigger=$specification_\0_non_trigger\
+ arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_procedure_call`'`)`&`@eq`(`$specification_\0_transient`,`'`'`)
 `{`#field_from_procedure_call.spec.xrep section=to_store class_name=$class_name module_name=$module_name\
@@ -2375,7 +2377,8 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
  arg_mfunc=$specification_\0_mfunc arg_nvalue=$specification_\0_nvalue arg_update=$specification_\0_update\
  arg_tfistexttype=$specification_\0_tfistexttype arg_tcfistexttype=$specification_\0_tcfistexttype\
  arg_internal_only=$specification_\0_internal_only arg_include_clones=$specification_\0_include_clones\
- arg_new_only=$specification_\0_new_only arg_non_trigger=$specification_\0_non_trigger`}\
+ arg_new_only=$specification_\0_new_only arg_non_trigger=$specification_\0_non_trigger\
+ arg_field1=$specification_\0_field1 arg_field2=$specification_\0_field2`}\
 `,\
 `@eq`(`'\1`'`,`'field_from_uid`'`)`&`@eq`(`$specification_\0_for_store`,`'true`'`)
 `{`#field_from_uid.spec.xrep section=to_or_for_store class_name=$class_name module_name=$module_name\

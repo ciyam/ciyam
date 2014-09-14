@@ -5935,7 +5935,7 @@ void splice_storage_log( command_handler& cmd_handler, const string& name, const
    term_storage( cmd_handler );
 }
 
-bool storage_is_dead_key( const string& cid, const string& key )
+bool storage_is_dead_key( const string& cid, const string& key, string* p_key_found )
 {
    guard g( g_mutex );
 
@@ -5957,19 +5957,19 @@ bool storage_is_dead_key( const string& cid, const string& key )
          --ci;
          found = wildcard_match( *ci, dead_key );
       }
+
+      if( found && p_key_found )
+         *p_key_found = *ci;
    }
 
    return found;
 }
 
-void storage_add_dead_key( const string& cid, const string& key, bool is_prefix )
+void storage_add_dead_key( const string& cid, const string& key )
 {
    guard g( g_mutex );
 
    string dead_key( cid + ':' + key );
-
-   if( is_prefix )
-      dead_key += '*';
 
    string dead_keys_file( gtp_session->p_storage_handler->get_name( ) + c_dead_keys_ext );
 

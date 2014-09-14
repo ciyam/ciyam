@@ -41,7 +41,8 @@
 `{`@eq`(`$arg_update`,`'true`'`)`&`@eq`(`'procedure`'`,`$section`)\
    get_obj( ).op_update( );
 `}\
-   get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}\
+   get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( \
+`{`!`@eq`(`$arg_field1`,`'`'`)get_obj( ).`{`$arg_field1`}( ), `}`{`!`@eq`(`$arg_field2`,`'`'`)get_obj( ).`{`$arg_field2`}( ), `}`}\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )\
 `{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`)\
 `{`!`@eq`(`$lit1`,`'`'`), `{`$lit1`}`}`{`!`@eq`(`$lit2`,`'`'`), `{`$lit2`}`} )`} );\
@@ -68,7 +69,8 @@ get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`
    {
       get_obj( ).op_update( );
 `}\
-      get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( `}\
+      get_obj( ).`{`$arg_dfield`}( `{`!`@eq`(`$arg_func`,`'`'`)`{`$arg_func`}( \
+`{`!`@eq`(`$arg_field1`,`'`'`)get_obj( ).`{`$arg_field1`}( ), `}`{`!`@eq`(`$arg_field2`,`'`'`)get_obj( ).`{`$arg_field2`}( ), `}`}\
 get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}( )\
 `{`!`@eq`(`$arg_mfunc`,`'`'`).`{`$arg_mfunc`}( )`}`{`!`@eq`(`$arg_func`,`'`'`)\
 `{`!`@eq`(`$lit1`,`'`'`), `{`$lit1`}`}`{`!`@eq`(`$lit2`,`'`'`), `{`$lit2`}`} )`} );\
