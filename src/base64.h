@@ -14,8 +14,23 @@
 class base64
 {
    public:
-   static std::string encode( const std::string& input );
-   static std::string decode( const std::string& input );
+   static std::string encode( const unsigned char* p_dat, size_t length );
+
+   inline static std::string encode( const std::string& input )
+   {
+      return encode( ( const unsigned char* )input.c_str( ), input.length( ) );
+   }
+
+   static size_t decode_size( const std::string& input );
+
+   static size_t decode( const std::string& input, unsigned char* p_data, size_t length );
+
+   inline static std::string decode( const std::string& input )
+   {
+      std::string s( decode_size( input ), '\0' );
+      decode( input, ( unsigned char* )s.c_str( ), s.length( ) );
+      return s;
+   }
 };
 
 #endif

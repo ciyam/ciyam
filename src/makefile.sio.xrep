@@ -17,6 +17,9 @@
      <filename>command_parser.cpp
      <filename>command_handler.cpp
      <filename>command_processor.cpp
+`{`(`?`$use_ssl`)`&`(`@eq`(`$use_ssl`,`'1`'`)`|`@eq`(`$use_ssl`,`'true`'`)`)\
+     <filename>crypto_keys.cpp\
+`}
      <filename>crypt_stream.cpp
      <filename>date_time.cpp
      <filename>dynamic_library.cpp
@@ -445,6 +448,29 @@
      <filename>test_cache.cms
     </cms_files>
    </executable>
+`{`(`?`$use_ssl`)`&`(`@eq`(`$use_ssl`,`'1`'`)`|`@eq`(`$use_ssl`,`'true`'`)`)\
+   <executable/>
+    <name>test_crypto_keys
+    <gen_ext>
+    <threads>false
+    <sockets>false
+    <openssl>true
+    <libfcgi>false
+    <libharu>false
+    <libicnv>false
+    <mysqldb>false
+    <zlibuse>false
+    <dynamic>false
+    <readline>false
+    <link_libs>base
+    <dlink_libs>
+    <cpp_files/>
+     <filename>test_crypto_keys.cpp
+    </cpp_files>
+    <cms_files/>
+    </cms_files>
+   </executable>\
+`}
    <executable/>
     <name>test_fcgi
     <gen_ext>

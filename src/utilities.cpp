@@ -1705,13 +1705,18 @@ void uuencode( const char* p_data, int num_bytes, ostream& outs )
    }
 }
 
-string hex_decode( const string& data )
+void hex_decode( const string& data, unsigned char* p_data, size_t len )
 {
-   string s;
-
    if( data.length( ) % 2 != 0 )
       throw runtime_error( "incorrect hex for decoding (add a trailing zero?)" );
 
+   if( len < data.length( ) / 2 )
+      throw runtime_error( "data buffer is " + to_string( len )
+       + " bytes but hex_decode requires at least " + to_string( data.length( ) / 2 ) );
+
+   memset( p_data, len, 0 );
+   
+   size_t n = 0;
    for( size_t i = 0; i < data.size( ); i += 2 )
    {
       unsigned char val = hex_nibble( data[ i ] );
@@ -1719,25 +1724,23 @@ string hex_decode( const string& data )
 
       val |= hex_nibble( data[ i + 1 ] );
 
-      s += val;
+      p_data[ n++ ] = val;
    }
-
-   return s;
 }
 
-string hex_encode( const string& data, int max_chars_per_line )
+string hex_encode( const unsigned char* p_data, size_t len, int max_chars_per_line )
 {
    string s;
    int num_chars = 0;
 
-   for( size_t i = 0; i < data.size( ); i++ )
+   for( size_t i = 0; i < len; i++ )
    {
-      s += ascii_digit( data[ i ] & 0xf0 >> 4 );
-      s += ascii_digit( data[ i ] & 0x0f );
+      s += ascii_digit( ( p_data[ i ] & 0xf0 ) >> 4 );
+      s += ascii_digit( p_data[ i ] & 0x0f );
 
       num_chars += 2;
 
-      if( max_chars_per_line && num_chars >= max_chars_per_line && i != data.size( ) - 1 )
+      if( max_chars_per_line && num_chars >= max_chars_per_line && i != len - 1 )
       {
          s += '\n';
          num_chars = 0;
