@@ -9,6 +9,10 @@
 #endif
 #pragma hdrstop
 
+#ifndef HAS_PRECOMPILED_STD_HEADERS
+#  include <stdexcept>
+#endif
+
 #include "base64.h"
 
 #include "utilities.h"
