@@ -27,6 +27,7 @@
 `{`!`@eq`(`$arg_not_null`,`'`'`)`{`!`@eq`(`$check_either`,`'`'`)
     && `}!( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`}\
 `{`!`@eq`(`$check_either`,`'`'`)`|`!`@eq`(`$arg_not_null`,`'`'`)
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) ) )
 `,\
    if( ( !get_obj( ).get_graph_parent( )
@@ -36,7 +37,8 @@
     && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
 get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$arg_not_null`,`'`'`)
-    && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`}
+    && `{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && `}!( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_sfield`}( ) ) )`}
     && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_sfield`}( ) ) )
 `}\
       p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
@@ -48,6 +50,7 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
    if( `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}\
 `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$check_both`,`'`'`) )`}`{`!`@eq`(`$check_either`,`'`'`)
+    && `}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
     && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
     && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) ) )`} )
 `,\
@@ -60,7 +63,8 @@ get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}`}`{`!`@eq`(`$ar
     && `{`!`@eq`(`$check_both`,`'`'`)( `}`{`!`@eq`(`$check_create`,`'`'`)get_obj( ).get_is_creating( )`}\
 `{`!`@eq`(`$create_also`,`'`'`) || `}`{`!`@eq`(`$create_only`,`'`'`) && `}get_obj( ).`{`$arg_tfield`}( )`{`!`@eq`(`$check_both`,`'`'`) )`}
 `}\
-    && !( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
+    && `{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && `}!( get_obj( ).`{`$arg_field`}( ) `{`$op`} get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) )`{`!`@eq`(`$arg_not_null`,`'`'`)
     && !( is_null( get_obj( ).`{`$arg_field`}( ) ) || is_null( get_obj( ).`{`$arg_spfield`}( ).`{`$arg_sfield`}( ) ) )`} )
 `}\
       p_validation_errors->insert( validation_error_value_type( c_field_name_`{`$arg_field`},
