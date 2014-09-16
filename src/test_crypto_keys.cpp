@@ -50,6 +50,24 @@ int main( )
       private_key priv_key( secret );
       cout << "\npriv_key.verify_signature( \"This is a test\", signature ) = " << priv_key.verify_signature( "This is a test", signature ) << endl;
       cout << "priv_key.verify_signature( \"This is a test.\", signature ) = " << priv_key.verify_signature( "This is a test.", signature ) << endl;
+
+      private_key priv_key1( "710e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939" );
+      private_key priv_key2( "720e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939" );
+
+      public_key pub_key1( priv_key1.get_public( ) );
+      public_key pub_key2( priv_key2.get_public( ) );
+
+      cout << "\npriv_key1.construct_shared( pub_key2 ) = " << priv_key1.construct_shared( pub_key2 ) << endl;
+      cout << "priv_key2.construct_shared( pub_key1 ) = " << priv_key2.construct_shared( pub_key1 ) << endl;
+
+      string message( "This is a test for encryption using an OTP derived from a shared secret." );
+      string encrypted( priv_key1.encrypt_message( pub_key2, message ) );
+
+      cout << "\npriv_key1.encrypt_message( pub_key2, \"" << message << "\" )" << endl;
+      cout << encrypted << endl;
+
+      cout << "\npriv_key2.decrypt_message( pub_key1, \""
+       << encrypted.substr( 0, 52 ) << "...\" )\n" << priv_key2.decrypt_message( pub_key1, encrypted ) << endl;
    }
    catch( exception& x )
    {

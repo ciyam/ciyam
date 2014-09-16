@@ -15,9 +15,10 @@
 #endif
 
 #include <openssl/bn.h>
+#include <openssl/ecdh.h>
+#include <openssl/rand.h>
 #include <openssl/ecdsa.h>
 #include <openssl/obj_mac.h>
-#include <openssl/rand.h>
 
 #include "crypto_keys.h"
 
@@ -26,8 +27,6 @@
 #include "utilities.h"
 
 using namespace std;
-
-// NOTE: Some of these functions were sourced from Bitcoin.
 
 namespace
 {
@@ -205,7 +204,7 @@ struct private_key::impl
    {
       const BIGNUM* p_bn = EC_KEY_get0_private_key( p_pub_impl->p_key );
       if( !p_bn )
-         throw runtime_error( "unable to allocate BIGNUM in get_secret_bytes" );
+         throw runtime_error( "unexpected EC_KEY_get0_private_key failure in get_secret_bytes" );
 
       int num_bytes = BN_num_bytes( p_bn );
       int num = BN_bn2bin( p_bn, &bytes[ c_num_secret_bytes - num_bytes ] );
@@ -249,6 +248,14 @@ struct private_key::impl
 
       ECDSA_SIG_free( p_sig );
    }
+
+   void get_shared_secret( unsigned char bytes[ c_num_secret_bytes ], const EC_KEY* p_key )
+   {
+      const EC_POINT* p_pub = EC_KEY_get0_public_key( p_key );
+      const BIGNUM* p_priv = EC_KEY_get0_private_key( p_pub_impl->p_key );
+
+      ECDH_compute_key( &bytes[ 0 ], c_num_secret_bytes, p_pub, p_pub_impl->p_key, 0 );
+   }
 };
 
 private_key::private_key( )
@@ -286,6 +293,82 @@ string private_key::get_secret( ) const
    p_impl->get_secret_bytes( buf );
 
    return hex_encode( buf, c_num_secret_bytes );
+}
+
+string private_key::decrypt_message( const public_key& pub, const string& base64, const char* p_id )
+{
+   unsigned char buf[ c_num_secret_bytes ];
+   p_impl->get_shared_secret( buf, pub.p_impl->p_key );
+
+   string decoded( base64::decode( base64 ) );
+
+   if( p_id )
+   {
+      sha256 hash( p_id );
+      unsigned char buf2[ c_num_secret_bytes ];
+
+      hash.copy_digest_to_buffer( buf2 );
+
+      for( size_t i = 0; i < c_num_secret_bytes; i++ )
+         buf[ i ] ^= buf2[ i ];
+   }
+
+   int n = 0;
+   for( size_t i = 0; i < decoded.size( ); i++ )
+   {
+      decoded[ i ] = ( unsigned char )decoded[ i ] ^ buf[ n++ ];
+
+      if( n == c_num_secret_bytes )
+      {
+         n = 0;
+         sha256 hash( buf, sizeof( buf ) );
+         hash.copy_digest_to_buffer( buf );
+      }
+   }
+
+   return decoded;
+}
+
+string private_key::encrypt_message( const public_key& pub, const string& message, const char* p_id )
+{
+   unsigned char buf[ c_num_secret_bytes ];
+   p_impl->get_shared_secret( buf, pub.p_impl->p_key );
+
+   string encrypted_message( message );
+
+   if( p_id )
+   {
+      sha256 hash( p_id );
+      unsigned char buf2[ c_num_secret_bytes ];
+
+      hash.copy_digest_to_buffer( buf2 );
+
+      for( size_t i = 0; i < c_num_secret_bytes; i++ )
+         buf[ i ] ^= buf2[ i ];
+   }
+
+   int n = 0;
+   for( size_t i = 0; i < message.size( ); i++ )
+   {
+      encrypted_message[ i ] = ( unsigned char )message[ i ] ^ buf[ n++ ];
+
+      if( n == c_num_secret_bytes )
+      {
+         n = 0;
+         sha256 hash( buf, sizeof( buf ) );
+         hash.copy_digest_to_buffer( buf );
+      }
+   }
+
+   return base64::encode( encrypted_message );
+}
+
+string private_key::construct_shared( const public_key& pub )
+{
+   unsigned char buf[ c_num_secret_bytes ];
+   p_impl->get_shared_secret( buf, pub.p_impl->p_key );
+
+   return hex_encode( buf, sizeof( buf ) );
 }
 
 string private_key::construct_signature( const string& msg ) const
