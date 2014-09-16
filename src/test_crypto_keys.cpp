@@ -60,7 +60,7 @@ int main( )
       cout << "\npriv_key1.construct_shared( pub_key2 ) = " << priv_key1.construct_shared( pub_key2 ) << endl;
       cout << "priv_key2.construct_shared( pub_key1 ) = " << priv_key2.construct_shared( pub_key1 ) << endl;
 
-      string message( "This is a test for encryption using an OTP derived from a shared secret." );
+      string message( "This is a test for encryption using a password derived from a shared secret." );
       string encrypted( priv_key1.encrypt_message( pub_key2, message ) );
 
       cout << "\npriv_key1.encrypt_message( pub_key2, \"" << message << "\" )" << endl;

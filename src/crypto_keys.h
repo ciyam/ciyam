@@ -46,8 +46,11 @@ class private_key : public public_key
 
    std::string get_secret( ) const;
 
-   std::string decrypt_message( const public_key& pub, const std::string& base64, const char* p_id = 0 );
-   std::string encrypt_message( const public_key& pub, const std::string& message, const char* p_id = 0 );
+   std::string decrypt_message( const public_key& pub,
+    const std::string& base64, const char* p_id = 0 );
+
+   std::string encrypt_message( const public_key& pub,
+    const std::string& message, const char* p_id = 0, bool add_salt = false );
 
    std::string construct_shared( const public_key& pub );
 
