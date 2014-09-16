@@ -25,6 +25,7 @@
 #include "base64.h"
 #include "sha256.h"
 #include "utilities.h"
+#include "crypt_stream.h"
 
 using namespace std;
 
@@ -313,23 +314,11 @@ string private_key::decrypt_message( const public_key& pub, const string& base64
          buf[ i ] ^= buf2[ i ];
    }
 
-   int n = 0;
-   for( size_t i = 0; i < decoded.size( ); i++ )
-   {
-      decoded[ i ] = ( unsigned char )decoded[ i ] ^ buf[ n++ ];
-
-      if( n == c_num_secret_bytes )
-      {
-         n = 0;
-         sha256 hash( buf, sizeof( buf ) );
-         hash.copy_digest_to_buffer( buf );
-      }
-   }
-
-   return decoded;
+   return password_decrypt( base64, hex_encode( buf, c_num_secret_bytes ), true );
 }
 
-string private_key::encrypt_message( const public_key& pub, const string& message, const char* p_id )
+string private_key::encrypt_message(
+ const public_key& pub, const string& message, const char* p_id, bool add_salt )
 {
    unsigned char buf[ c_num_secret_bytes ];
    p_impl->get_shared_secret( buf, pub.p_impl->p_key );
@@ -347,20 +336,7 @@ string private_key::encrypt_message( const public_key& pub, const string& messag
          buf[ i ] ^= buf2[ i ];
    }
 
-   int n = 0;
-   for( size_t i = 0; i < message.size( ); i++ )
-   {
-      encrypted_message[ i ] = ( unsigned char )message[ i ] ^ buf[ n++ ];
-
-      if( n == c_num_secret_bytes )
-      {
-         n = 0;
-         sha256 hash( buf, sizeof( buf ) );
-         hash.copy_digest_to_buffer( buf );
-      }
-   }
-
-   return base64::encode( encrypted_message );
+   return password_encrypt( message, hex_encode( buf, c_num_secret_bytes ), true, add_salt );
 }
 
 string private_key::construct_shared( const public_key& pub )

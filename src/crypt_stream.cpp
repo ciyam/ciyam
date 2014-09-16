@@ -209,10 +209,75 @@ string get_totp_secret( const string& user_unique, const string& system_unique )
    return base32::encode( sha256( user_unique + system_unique ).get_digest_as_string( ).substr( 0, 20 ) );
 }
 
-string password_encrypt( const string& password, const string& key, bool use_ssl, bool add_salt )
+string password_decrypt( const string& dat, const string& key, bool use_ssl )
 {
-   string s( password );
-   if( password.empty( ) )
+   string s;
+   if( dat.empty( ) )
+      return s;
+
+   string salt;
+   string::size_type pos = dat.find( ':' );
+
+   if( pos == string::npos )
+      pos = 0;
+   else
+      salt = dat.substr( 0, ++pos );
+
+   // NOTE: For compatability with older 128 bit AES encrypted
+   // passwords the 256 bit ones are prefixed with an asterisk.
+   bool use_256 = false;
+   if( dat[ pos ] == '*' )
+   {
+      ++pos;
+      use_256 = true;
+   }
+   else
+   {
+      if( !salt.empty( ) && salt[ 0 ] == '*' )
+      {
+         use_256 = true;
+         salt.erase( 0, 1 );
+      }
+   }
+
+   stringstream ss( base64::decode( dat.substr( pos ) ) );
+
+#ifndef SSL_SUPPORT
+   use_ssl = false;
+#endif
+
+   string salted_key( key + salt );
+
+   if( !salt.empty( ) )
+   {
+      sha256 hash;
+      for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
+      {
+         hash.update( salted_key + key );
+         hash.get_digest_as_string( salted_key );
+      }
+   }
+   
+   auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
+
+   if( !use_ssl )
+   {
+      crypt_stream( ss, ap_digest.get( ), 32 );
+      s = ss.str( );
+   }
+
+#ifdef SSL_SUPPORT
+   if( use_ssl )
+      s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
+#endif
+
+   return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
+}
+
+string password_encrypt( const string& dat, const string& key, bool use_ssl, bool add_salt )
+{
+   string s( dat );
+   if( dat.empty( ) )
       return s;
 
 #ifndef SSL_SUPPORT
@@ -265,70 +330,5 @@ string password_encrypt( const string& password, const string& key, bool use_ssl
 #endif
 
    return s;
-}
-
-string password_decrypt( const string& password, const string& key, bool use_ssl )
-{
-   string s;
-   if( password.empty( ) )
-      return s;
-
-   string salt;
-   string::size_type pos = password.find( ':' );
-
-   if( pos == string::npos )
-      pos = 0;
-   else
-      salt = password.substr( 0, ++pos );
-
-   // NOTE: For compatability with older 128 bit AES encrypted
-   // passwords the 256 bit ones are prefixed with an asterisk.
-   bool use_256 = false;
-   if( password[ pos ] == '*' )
-   {
-      ++pos;
-      use_256 = true;
-   }
-   else
-   {
-      if( !salt.empty( ) && salt[ 0 ] == '*' )
-      {
-         use_256 = true;
-         salt.erase( 0, 1 );
-      }
-   }
-
-   stringstream ss( base64::decode( password.substr( pos ) ) );
-
-#ifndef SSL_SUPPORT
-   use_ssl = false;
-#endif
-
-   string salted_key( key + salt );
-
-   if( !salt.empty( ) )
-   {
-      sha256 hash;
-      for( size_t i = 0; i < c_password_hash_rounds * c_password_rounds_multiplier; i++ )
-      {
-         hash.update( salted_key + key );
-         hash.get_digest_as_string( salted_key );
-      }
-   }
-   
-   auto_ptr< char > ap_digest( MD5( ( unsigned char* )salted_key.c_str( ) ).hex_digest( ) );
-
-   if( !use_ssl )
-   {
-      crypt_stream( ss, ap_digest.get( ), 32 );
-      s = ss.str( );
-   }
-
-#ifdef SSL_SUPPORT
-   if( use_ssl )
-      s = aes_crypt( ss.str( ), ap_digest.get( ), 32, e_crypt_op_decrypt, use_256 );
-#endif
-
-   return s.c_str( ); // NOTE: Remove any trailing padding from encryption.
 }
 
