@@ -4302,6 +4302,14 @@ string create_html_embedded_image( const string& source_file )
    return s;
 }
 
+bool can_create_address( const string& ext_key )
+{
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   return !client_info.script_name.empty( );
+}
+
 void load_utxo_information( const string& ext_key, const string& source_addresses, const string& file_name )
 {
    external_client client_info;
@@ -4381,11 +4389,11 @@ uint64_t determine_utxo_balance( const string& file_name )
 }
 
 string construct_raw_transaction(
- const string& source_addresses, const string& destination_address,
+ const string& source_addresses, const string& destination_address, const string& changes_address,
  uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template, const string& file_name )
 {
    return create_raw_transaction( source_addresses,
-    destination_address, amount, qs, fee, sign_tx_template, &file_name );
+    destination_address, changes_address, amount, qs, fee, sign_tx_template, &file_name );
 }
 
 string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd, bool throw_on_error )
