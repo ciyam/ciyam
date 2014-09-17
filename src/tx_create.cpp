@@ -351,8 +351,14 @@ uint64_t select_utxos_for_transaction(
 #ifdef TESTBED
 void get_utxo_information( const string& source_addresses, const string& file_name )
 {
-   string cmd( "curl -s \"http://blockchain.info/unspent?active="
-    + replaced( source_addresses, " ", "|", ",", "|" ) + "\" >" + file_name );
+   string pipe_separated( source_addresses );
+   for( size_t i = 0; i < pipe_separated.size( ); i++ )
+   {
+      if( pipe_separated[ i ] == ' ' || pipe_separated[ i ] == ',' )
+         pipe_separated[ i ] = '|';
+   }
+
+   string cmd( "curl -s \"http://blockchain.info/unspent?active=" + pipe_separated + "\" >" + file_name );
 
    int rc = system( cmd.c_str( ) );
    ( void )rc;
@@ -365,8 +371,9 @@ uint64_t get_utxos_balance_amt( const string& file_name )
 }
 
 string create_raw_transaction( const string& source_addresses,
- const string& destination_address, uint64_t amount, quote_style qs,
- uint64_t& fee, string& sign_tx_template, const string* p_file_name )
+ const string& destination_address, const string& change_address,
+ uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template,
+ const string* p_file_name )
 {
    string raw_transaction;
    vector< utxo_info > utxos_used;
@@ -380,7 +387,7 @@ string create_raw_transaction( const string& source_addresses,
 #ifndef TESTBED
       throw runtime_error( "unexpected missing utxo information" );
 #else
-      string file_name( "~" + destination_address + ".txt" );
+      string file_name( "~tx_create.txt" );
 
       get_utxo_information( source_addresses, file_name );
 
@@ -429,13 +436,13 @@ string create_raw_transaction( const string& source_addresses,
       quote2 = '"';
    }
 
-   string change_address;
-   if( source_addresses != "*" )
+   string return_address( change_address );
+   if( return_address.empty( ) && source_addresses != "*" )
    {
-      change_address = source_addresses;
-      string::size_type pos = change_address.find_first_of( " ,|" );
+      return_address = source_addresses;
+      string::size_type pos = return_address.find_first_of( " ,|" );
       if( pos != string::npos )
-         change_address.erase( pos );
+         return_address.erase( pos );
    }
 
    for( size_t i = 0; i < utxos_used.size( ); i++ )
@@ -446,8 +453,8 @@ string create_raw_transaction( const string& source_addresses,
          sign_tx_template += ',';
       }
 
-      if( change_address.empty( ) )
-         change_address = utxos_used[ i ].address;
+      if( return_address.empty( ) )
+         return_address = utxos_used[ i ].address;
 
       raw_transaction += '{';
       sign_tx_template += '{';
@@ -493,7 +500,7 @@ string create_raw_transaction( const string& source_addresses,
       raw_transaction += ',';
 
       double d = ( change / 100000000.0 );
-      add_json_pair( raw_transaction, change_address, to_string( d ), quote1, false );
+      add_json_pair( raw_transaction, return_address, to_string( d ), quote1, false );
    }
 
    raw_transaction += "}";
@@ -517,16 +524,20 @@ int main( int argc, char* argv[ ] )
    try
    {
       if( argc < 4 )
-         cout << "usage: tx_create <source_addresses> <destination_address> <amount_in_satoshis> [<min_fee_in_satoshis>]" << endl;
+         cout << "usage: tx_create <source_addresses> <destination_address> <amount_in_satoshis> [<change_address> [<min_fee_in_satoshis>]]" << endl;
       else
       {
          string source_addresses( argv[ 1 ] );
          string destination_address( argv[ 2 ] );
          string amount_in_satoshis( argv[ 3 ] );
 
-         string min_fee_in_satoshis;
+         string change_address;
          if( argc > 4 )
-            min_fee_in_satoshis = string( argv[ 4 ] );
+            change_address = string( argv[ 4 ] );
+
+         string min_fee_in_satoshis;
+         if( argc > 5 )
+            min_fee_in_satoshis = string( argv[ 5 ] );
 
          uint64_t amount = 0;
 
@@ -557,7 +568,7 @@ int main( int argc, char* argv[ ] )
          string sign_tx_template;
 
          string create_raw_tx( create_raw_transaction(
-          source_addresses, destination_address, amount, qs, min_fee, sign_tx_template ) );
+          source_addresses, destination_address, change_address, amount, qs, min_fee, sign_tx_template ) );
 
          cout << create_raw_tx << "\n\n";
          cout << sign_tx_template << endl;
