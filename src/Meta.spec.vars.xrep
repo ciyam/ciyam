@@ -2327,7 +2327,7 @@
 `{`$specification_Modifier_Affect_view_fmand003`=`'true`'`}
 `{`$specification_Modifier_Affect_view_field004`=`'301020`'`}
 `{`$specification_Modifier_Affect_view_ftype004`=`'@class`'`}
-`{`$specification_Modifier_Affect_view_extra004`=`'`'`}
+`{`$specification_Modifier_Affect_view_extra004`=`'link`'`}
 `{`$specification_Modifier_Affect_view_fmods004`=`'100:relegate`'`}
 `{`$specification_Modifier_Affect_view_fname004`=`'field_modifier_affect_field`'`}
 `{`$specification_Modifier_Affect_view_fmand004`=`'false`'`}

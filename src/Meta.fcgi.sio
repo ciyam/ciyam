@@ -4517,7 +4517,7 @@
      <name>field_modifier_affect_field
      <field>301020
      <ftype>@class
-     <extra>
+     <extra>link
      <mandatory>false
      <modifiers>100:relegate
      <pclass>107100

@@ -4388,12 +4388,59 @@ uint64_t determine_utxo_balance( const string& file_name )
    return get_utxos_balance_amt( file_name );
 }
 
-string construct_raw_transaction(
- const string& source_addresses, const string& destination_address, const string& changes_address,
+string construct_raw_transaction( const string& ext_key, bool change_type_is_automatic,
+ const string& source_addresses, const string& destination_address, string& change_address,
  uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template, const string& file_name )
 {
-   return create_raw_transaction( source_addresses,
-    destination_address, changes_address, amount, qs, fee, sign_tx_template, &file_name );
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   bool needs_new_address_for_change = false;
+   if( change_type_is_automatic && change_address.empty( ) && client_info.protocol == c_protocol_bitcoin )
+      needs_new_address_for_change = true;
+
+   string raw_tx_request( create_raw_transaction_command( source_addresses,
+    destination_address, change_address, amount, qs, fee, sign_tx_template, &file_name ) );
+
+   if( !change_address.empty( ) && needs_new_address_for_change )
+   {
+      string cmd, tmp( "~" + uuid( ).as_string( ) );
+
+      if( client_info.protocol == c_protocol_bitcoin )
+      {
+         cmd = escaped( client_info.script_name ) + " ";
+
+         cmd += "getnewaddress";
+
+         cmd += " >" + tmp + " 2>&1";;
+      }
+
+      if( !cmd.empty( ) )
+      {
+         TRACE_LOG( TRACE_SESSIONS, cmd );
+
+         if( system( cmd.c_str( ) ) != 0 )
+            throw runtime_error( "unexpected system failure in construct_raw_transaction" );
+
+         if( file_exists( tmp ) )
+         {
+            string new_change_address = trim( buffer_file( tmp ) );
+            file_remove( tmp );
+
+            if( new_change_address.find( "error:" ) != string::npos )
+               throw runtime_error( new_change_address );
+
+            string::size_type pos = raw_tx_request.rfind( change_address );
+            if( pos == string::npos )
+               throw runtime_error( "unexpected failure to find change address in raw_tx_request output" );
+
+            raw_tx_request.erase( pos, change_address.length( ) );
+            raw_tx_request.insert( pos, new_change_address );
+         }
+      }
+   }
+
+   return raw_tx_request;
 }
 
 string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd, bool throw_on_error )
@@ -4423,7 +4470,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
       TRACE_LOG( TRACE_SESSIONS, cmd );
 
       if( system( cmd.c_str( ) ) != 0 )
-         throw runtime_error( "unexpected system failure for create_raw_transaction" );
+         throw runtime_error( "unexpected system failure in create_or_sign_raw_transaction" );
 
       if( file_exists( tmp ) )
       {
@@ -4432,9 +4479,6 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
          if( throw_on_error && retval.find( "error:" ) != string::npos )
             throw runtime_error( retval );
-
-         if( !is_sign_raw_tx )
-            retval = trim( retval );
       }
    }
 

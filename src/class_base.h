@@ -1289,8 +1289,9 @@ void CLASS_BASE_DECL_SPEC load_utxo_information(
 uint64_t CLASS_BASE_DECL_SPEC determine_utxo_balance( const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
+ const std::string& ext_key, bool change_type_is_automatic,
  const std::string& source_addresses, const std::string& destination_address,
- const std::string& changes_address, uint64_t amount, quote_style qs, uint64_t& fee,
+ std::string& changes_address, uint64_t amount, quote_style qs, uint64_t& fee,
  std::string& sign_tx_template, const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
