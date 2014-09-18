@@ -31138,7 +31138,7 @@
      <field_info>110101;no_edit+enum=540
      <field_info>110102;enum=550
      <field_info>110103;enum=560
-     <field_info>301020:107101!@fkey1:300700+107101
+     <field_info>301020:107101!@fkey1:300700+107101;link
      <field_info>301010;fkey1+hidden
     </data>
    </specification>

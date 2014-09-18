@@ -370,10 +370,9 @@ uint64_t get_utxos_balance_amt( const string& file_name )
    return utxos_balance( file_name );
 }
 
-string create_raw_transaction( const string& source_addresses,
- const string& destination_address, const string& change_address,
- uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template,
- const string* p_file_name )
+string create_raw_transaction_command( const string& source_addresses,
+ const string& destination_address, string& change_address, uint64_t amount,
+ quote_style qs, uint64_t& fee, string& sign_tx_template, const string* p_file_name )
 {
    string raw_transaction;
    vector< utxo_info > utxos_used;
@@ -436,13 +435,12 @@ string create_raw_transaction( const string& source_addresses,
       quote2 = '"';
    }
 
-   string return_address( change_address );
-   if( return_address.empty( ) && source_addresses != "*" )
+   if( change_address.empty( ) && source_addresses != "*" )
    {
-      return_address = source_addresses;
-      string::size_type pos = return_address.find_first_of( " ,|" );
+      change_address = source_addresses;
+      string::size_type pos = change_address.find_first_of( " ,|" );
       if( pos != string::npos )
-         return_address.erase( pos );
+         change_address.erase( pos );
    }
 
    for( size_t i = 0; i < utxos_used.size( ); i++ )
@@ -453,8 +451,8 @@ string create_raw_transaction( const string& source_addresses,
          sign_tx_template += ',';
       }
 
-      if( return_address.empty( ) )
-         return_address = utxos_used[ i ].address;
+      if( change_address.empty( ) )
+         change_address = utxos_used[ i ].address;
 
       raw_transaction += '{';
       sign_tx_template += '{';
@@ -500,8 +498,10 @@ string create_raw_transaction( const string& source_addresses,
       raw_transaction += ',';
 
       double d = ( change / 100000000.0 );
-      add_json_pair( raw_transaction, return_address, to_string( d ), quote1, false );
+      add_json_pair( raw_transaction, change_address, to_string( d ), quote1, false );
    }
+   else
+      change_address.erase( );
 
    raw_transaction += "}";
 
@@ -567,7 +567,7 @@ int main( int argc, char* argv[ ] )
 
          string sign_tx_template;
 
-         string create_raw_tx( create_raw_transaction(
+         string create_raw_tx( create_raw_transaction_command(
           source_addresses, destination_address, change_address, amount, qs, min_fee, sign_tx_template ) );
 
          cout << create_raw_tx << "\n\n";

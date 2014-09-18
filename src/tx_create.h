@@ -15,9 +15,9 @@
 
 uint64_t get_utxos_balance_amt( const std::string& file_name );
 
-std::string create_raw_transaction(
+std::string create_raw_transaction_command(
  const std::string& source_address, const std::string& destination_address,
- const std::string& change_address, uint64_t amount, quote_style qs, uint64_t& fee,
+ std::string& change_address, uint64_t amount, quote_style qs, uint64_t& fee,
  std::string& sign_tx_template, const std::string* p_file_name = 0 );
 
 #endif
