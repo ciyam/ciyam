@@ -58,6 +58,7 @@ if not exist "%install_path%\libeay32.dll" copy libeay32.dll "%install_path%" >n
 
 :skip_eay
 if not exist "%install_path%\upload.fcgi" copy upload.exe "%install_path%\upload.fcgi" >nul
+if not exist "%install_path%\ciyam_interface.pem" copy ciyam_client.pem "%install_path%\ciyam_interface.pem" >nul
 if not exist "%install_path%\ciyam_interface.fcgi" copy ciyam_interface.exe "%install_path%\ciyam_interface.fcgi" >nul
 
 xrep @footer.htms.xrep >footer.htms

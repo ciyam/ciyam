@@ -55,6 +55,10 @@ else
   {
    cp upload $WEBDIR/$2/upload.fcgi
   }
+  [ -f $WEBDIR/$2/ciyam_interface.pem ] ||
+  {
+   cp ciyam_client.pem $WEBDIR/$2/ciyam_interface.pem
+  }
   [ -f $WEBDIR/$2/ciyam_interface.fcgi ] ||
   {
    cp ciyam_interface $WEBDIR/$2/ciyam_interface.fcgi
