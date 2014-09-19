@@ -2570,6 +2570,11 @@ int main( int argc, char* argv[ ] )
 
       LOG_TRACE( "[started at: " + date_time::local( ).as_string( true, false ) + "]" );
 
+#ifdef SSL_SUPPORT
+      if( file_exists( "ciyam_interface.pem" ) )
+         init_ssl( "ciyam_interface.pem", "password" );
+#endif
+
       DEBUG_TRACE( "cwd = " + get_cwd( ) );
 
       DEBUG_TRACE( "[read strings]" );
