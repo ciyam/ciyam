@@ -733,6 +733,7 @@ field_add -id=127130 Application Encrypt_Dynamic_Content bool mand -def=1
 field_add -id=127131 Application Use_Embedded_Images bool mand -def=1
 field_add -id=127132 Application Registration_Key str100 opt
 field_add -id=127133 Application Use_Vertical_Menu bool mand -def=0
+field_add -id=127134 Application Use_TLS_Sessions bool mand -def=0
 procedure_add -id=127410 Application Generate
 procedure_add -id=127420 Application Generate_Modules
 procedure_add -id=127430 Application Generate_File_Links
@@ -2094,8 +2095,8 @@ specification_add -id=602910 {Application}_view view "? standard:can_copy Applic
 ,Use_Vertical_Menu,Use_Check_Boxes_for_Bools,Print_Lists_With_Check_Boxes,Print_Lists_With_Row_Numbers\
 ,Default_Image_Width,Default_Image_Height,Default_List_Row_Limit,Default_Multiline_Min_Rows,Default_Multiline_Max_Rows\
 ,Default_Multiline_Text_Limit,Default_Multiline_Text_Trunc,Default_List_Print_Row_Limit,Default_Max_Attached_File_Size\
-,@tab:Other_Settings,Module_Prefix,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content,Auto_Login_Days,Allow_Duplicate_Logins,Registration_Key\
-,Actions"
+,@tab:Other_Settings,Module_Prefix,Use_TLS_Sessions,Use_URL_Checksum,Use_Embedded_Images,Encrypt_Dynamic_Content\
+,Auto_Login_Days,Allow_Duplicate_Logins,Registration_Key,Actions"
 specification_add -id=602950 {Module}_child_list0 list "@602950_* child:no_limit Module {Model}:Name;link\
  -act=+!126410+@rfields+@rvalues,+!^126420+@rfields+@rvalues {Application}"
 specification_add -id=602960 {Module}_view view "? standard:no_edit Module {Application}:Name;no_edit+link,{Model}:Name!@group:{Workgroup}+Name;link"

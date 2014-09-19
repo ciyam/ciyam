@@ -21,6 +21,9 @@
 
 #include "sio.h"
 #include "sockets.h"
+#ifdef SSL_SUPPORT
+#  include "ssl_socket.h"
+#endif
 #include "utilities.h"
 #include "fcgi_utils.h"
 #include "ciyam_interface.h"
@@ -98,6 +101,7 @@ const char* const c_attribute_actions = "actions";
 const char* const c_attribute_filters = "filters";
 const char* const c_attribute_indexed = "indexed";
 const char* const c_attribute_reg_key = "reg_key";
+const char* const c_attribute_use_tls = "use_tls";
 const char* const c_attribute_pdf_spec = "pdf_spec";
 const char* const c_attribute_sys_info = "sys_info";
 const char* const c_attribute_url_opts = "url_opts";
@@ -245,6 +249,7 @@ const string& module_info::get_string( const string& key ) const
 
 storage_info::storage_info( )
  :
+ use_tls( c_default_use_tls ),
  row_limit( c_default_row_limit ),
  login_days( c_default_login_days ),
  notes_rmin( c_default_notes_rmin ),
@@ -264,6 +269,7 @@ storage_info::storage_info( )
 
 void storage_info::clear( )
 {
+   use_tls = c_default_use_tls;
    row_limit = c_default_row_limit;
    notes_rmin = c_default_notes_rmin;
    notes_rmax = c_default_notes_rmax;
@@ -392,6 +398,10 @@ void read_storage_info( storage_info& info, vector< string > log_messages )
       sio_reader reader( inpf );
 
       info.reg_key = reader.read_opt_attribute( c_attribute_reg_key );
+
+      string use_tls = reader.read_opt_attribute( c_attribute_use_tls );
+      if( use_tls == "1" || use_tls == c_true )
+         info.use_tls = true;
 
       info.url_opts = reader.read_opt_attribute( c_attribute_url_opts );
 

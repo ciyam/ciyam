@@ -577,6 +577,23 @@
       </specifications>
      </field>
      <field/>
+      <id>127134
+      <name>Use_TLS_Sessions
+      <type>bool
+      <mandatory>true
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602910
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>127107
       <name>Use_URL_Checksum
       <type>bool
@@ -28382,6 +28399,7 @@
      <field_info>127127
      <field_info>@tab:Other_Settings
      <field_info>127103
+     <field_info>127134
      <field_info>127107
      <field_info>127131
      <field_info>127130
