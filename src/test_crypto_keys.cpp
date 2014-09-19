@@ -26,12 +26,18 @@ int main( )
 {
    try
    {
-      private_key skey( "700e7b873ca568c965b4d5de2e5f82359d625e8e4b258bae422903bd5aa8f939" );
+      private_key skey( "18E14A7B6A307F426A94F8114701E7C8E774E7F9A47E2C2035DB29A206321725" );
 
       string key( skey.get_public( ) );
       string secret( skey.get_secret( ) );
-      cout << "skey.get_public( )\n" << key << endl;
-      cout << "\nskey.get_secret( )\n" << secret << endl;
+      cout << "skey.get_public( ) = " << key << endl;
+      cout << "\nskey.get_secret( ) = " << secret << endl;
+
+      cout << "\nskey.get_address( true ) = " << skey.get_address( true ) << endl;
+      cout << "skey.get_address( false ) = " << skey.get_address( false ) << endl;
+
+      cout << "\nskey.get_wif_secret( true ) = " << skey.get_wif_secret( true ) << endl;
+      cout << "skey.get_wif_secret( false ) = " << skey.get_wif_secret( false ) << endl;
 
       string signature( skey.construct_signature( "This is a test." ) );
 #ifndef DEBUG

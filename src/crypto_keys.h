@@ -21,7 +21,9 @@ class public_key
 
    ~public_key( );
 
-   std::string get_public( ) const;
+   std::string get_public( bool compressed = true ) const;
+
+   std::string get_address( bool compressed = true, bool is_testnet = false ) const;
 
    bool verify_signature( const std::string& msg, const std::string& sig ) const;
 
@@ -40,19 +42,21 @@ class private_key : public public_key
 {
    public:
    private_key( );
-   private_key( const std::string& secret );
+   private_key( const std::string& secret, bool is_wif_format = false );
 
    ~private_key( );
 
    std::string get_secret( ) const;
 
+   std::string get_wif_secret( bool compressed = true, bool is_testnet = false ) const;
+
    std::string decrypt_message( const public_key& pub,
-    const std::string& base64, const char* p_id = 0 );
+    const std::string& base64, const char* p_id = 0 ) const;
 
    std::string encrypt_message( const public_key& pub,
-    const std::string& message, const char* p_id = 0, bool add_salt = false );
+    const std::string& message, const char* p_id = 0, bool add_salt = false ) const;
 
-   std::string construct_shared( const public_key& pub );
+   std::string construct_shared( const public_key& pub ) const;
 
    std::string construct_signature( const std::string& msg ) const;
 
