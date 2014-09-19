@@ -58,6 +58,12 @@
 #include "sha256.h"
 #include "numeric.h"
 #include "sockets.h"
+#ifdef SSL_SUPPORT
+#  include "ssl_socket.h"
+#  ifdef _WIN32
+#     include <openssl/applink.c>
+#  endif
+#endif
 #include "threads.h"
 #include "date_time.h"
 #include "utilities.h"
@@ -159,7 +165,11 @@ const char* const c_user_other_none = "~";
 // NOTE: When not using multiple request handlers a global socket is being used to access the
 // application server in order to permit testing without any possible concurrency issues arising.
 #ifndef USE_MULTIPLE_REQUEST_HANDLERS
+#  ifdef SSL_SUPPORT
+ssl_socket g_socket;
+#  else
 tcp_socket g_socket;
+#  endif
 #endif
 
 bool g_has_connected = false;
@@ -195,14 +205,27 @@ string g_display_change_password;
 string g_display_sign_up_for_an_account;
 
 #ifdef USE_MULTIPLE_REQUEST_HANDLERS
+#  ifdef SSL_SUPPORT
+vector< pair< bool, ssl_socket* > > g_sockets;
+#  else
 vector< pair< bool, tcp_socket* > > g_sockets;
+#  endif
+
 mutex g_socket_mutex;
 
+#  ifdef SSL_SUPPORT
+ssl_socket* get_tcp_socket( )
+#  else
 tcp_socket* get_tcp_socket( )
+#  endif
 {
    guard g( g_socket_mutex );
 
+#  ifdef SSL_SUPPORT
+   ssl_socket* p_socket = 0;
+#  else
    tcp_socket* p_socket = 0;
+#endif
 
    if( g_sockets.empty( ) )
       g_sockets.resize( c_num_handlers );
@@ -214,8 +237,11 @@ tcp_socket* get_tcp_socket( )
          g_sockets[ i ].first = true;
 
          if( !g_sockets[ i ].second )
+#  ifdef SSL_SUPPORT
+            g_sockets[ i ].second = new ssl_socket;
+#  else
             g_sockets[ i ].second = new tcp_socket;
-
+#  endif
          p_socket = g_sockets[ i ].second;
          break;
       }
@@ -1149,6 +1175,14 @@ void request_handler::process_request( )
                      if( !check_version_info( ver_info, c_protocol_major_version, c_protocol_minor_version, &is_older ) )
                         throw runtime_error( "incompatible protocol version "
                          + ver_info.ver + " (expecting " + string( c_protocol_version ) + ")" );
+
+#ifdef SSL_SUPPORT
+                     if( get_storage_info( ).use_tls )
+                     {
+                        p_session_info->p_socket->write_line( "starttls" );
+                        p_session_info->p_socket->ssl_connect( );
+                     }
+#endif
 
                      string identity_info;
                      if( !simple_command( *p_session_info, "identity", &identity_info ) )

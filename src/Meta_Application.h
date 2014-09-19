@@ -62,10 +62,11 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
       e_field_id_Show_Inaccessible_Modules = 27,
       e_field_id_Use_Check_Boxes_for_Bools = 28,
       e_field_id_Use_Embedded_Images = 29,
-      e_field_id_Use_URL_Checksum = 30,
-      e_field_id_Use_Vertical_Menu = 31,
-      e_field_id_Version = 32,
-      e_field_id_Workgroup = 33
+      e_field_id_Use_TLS_Sessions = 30,
+      e_field_id_Use_URL_Checksum = 31,
+      e_field_id_Use_Vertical_Menu = 32,
+      e_field_id_Version = 33,
+      e_field_id_Workgroup = 34
    };
 
    Meta_Application( );
@@ -157,6 +158,9 @@ class META_APPLICATION_DECL_SPEC Meta_Application : public class_base
 
    bool Use_Embedded_Images( ) const;
    void Use_Embedded_Images( bool Use_Embedded_Images );
+
+   bool Use_TLS_Sessions( ) const;
+   void Use_TLS_Sessions( bool Use_TLS_Sessions );
 
    bool Use_URL_Checksum( ) const;
    void Use_URL_Checksum( bool Use_URL_Checksum );

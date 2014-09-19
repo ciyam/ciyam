@@ -2579,6 +2579,14 @@
      <modifiers>
     </field>
     <field/>
+     <name>field_application_use_tls_sessions
+     <field>127134
+     <ftype>bool
+     <extra>
+     <mandatory>true
+     <modifiers>
+    </field>
+    <field/>
      <name>field_application_use_url_checksum
      <field>127107
      <ftype>bool

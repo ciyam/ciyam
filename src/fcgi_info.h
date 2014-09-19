@@ -18,11 +18,15 @@
 #     include <utility>
 #  endif
 
-class tcp_socket;
-
 #  include "ptypes.h"
 #  include "threads.h"
 #  include "ciyam_common.h"
+
+#  ifdef SSL_SUPPORT
+class ssl_socket;
+#  else
+class tcp_socket;
+#  endif
 
 const uint64_t c_state_modifier_00 = UINT64_C( 0x0000000000000100 );
 const uint64_t c_state_modifier_01 = UINT64_C( 0x0000000000000200 );
@@ -442,6 +446,7 @@ struct storage_info
    int image_width;
    int image_height;
 
+   bool use_tls;
    bool embed_images;
    bool encrypt_data;
    bool checkbox_bools;
@@ -494,7 +499,11 @@ struct session_info
    bool logged_in;
    bool needs_pin;
 
+#  ifdef SSL_SUPPORT
+   ssl_socket* p_socket;
+#  else
    tcp_socket* p_socket;
+#endif
 
    std::string ip_addr;
 
