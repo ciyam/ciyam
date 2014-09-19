@@ -19,6 +19,9 @@
 #include "format.h"
 #include "sha256.h"
 #include "sockets.h"
+#ifdef SSL_SUPPORT
+#  include "ssl_socket.h"
+#endif
 #include "date_time.h"
 #include "utilities.h"
 #include "fcgi_utils.h"
@@ -141,6 +144,11 @@ bool simple_command( session_info& sess_info, const string& cmd, string* p_respo
       DEBUG_TRACE( "socket write failure" );
       return false;
    }
+
+#ifdef SSL_SUPPORT
+   if( cmd == "starttls" )
+      sess_info.p_socket->ssl_connect( );
+#endif
 
    string response;
    if( sess_info.p_socket->read_line( response, c_initial_response_timeout ) <= 0 )
