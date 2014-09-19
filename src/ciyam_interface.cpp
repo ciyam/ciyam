@@ -1179,14 +1179,14 @@ void request_handler::process_request( )
 #ifdef SSL_SUPPORT
                      if( get_storage_info( ).use_tls )
                      {
-                        p_session_info->p_socket->write_line( "starttls" );
-                        p_session_info->p_socket->ssl_connect( );
+                        if( !simple_command( *p_session_info, "starttls" ) )
+                           throw runtime_error( "unable to starttls" );
                      }
 #endif
 
                      string identity_info;
                      if( !simple_command( *p_session_info, "identity", &identity_info ) )
-                        throw runtime_error( "Unable to determine identity information." );
+                        throw runtime_error( "unable to determine identity information" );
 
                      string::size_type pos = identity_info.find( ':' );
                      if( pos == string::npos )

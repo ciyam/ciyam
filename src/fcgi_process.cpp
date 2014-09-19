@@ -21,6 +21,9 @@
 #include "regex.h"
 #include "format.h"
 #include "sockets.h"
+#ifdef SSL_SUPPORT
+#  include "ssl_socket.h"
+#endif
 #include "threads.h"
 #include "fcgi_cmds.h"
 #include "fcgi_info.h"

@@ -18,6 +18,7 @@
 #     include <utility>
 #  endif
 
+#  include "config.h"
 #  include "ptypes.h"
 #  include "threads.h"
 #  include "ciyam_common.h"
@@ -503,7 +504,7 @@ struct session_info
    ssl_socket* p_socket;
 #  else
    tcp_socket* p_socket;
-#endif
+#  endif
 
    std::string ip_addr;
 
