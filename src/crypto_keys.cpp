@@ -10,7 +10,8 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstring>
-#  include <vector>
+#  include <iomanip>
+#  include <sstream>
 #  include <stdexcept>
 #endif
 
@@ -36,6 +37,12 @@ namespace
 const int c_num_hash_bytes = 32;
 const int c_num_secret_bytes = 32;
 const int c_max_public_key_bytes = 65;
+
+const char* const c_sequence_bytes = "ffffffff";
+const char* const c_zero_lock_time = "00000000";
+
+const char* const c_empty_sig_script = "00";
+const char* const c_hash_code_type_all = "01000000";
 
 // NOTE: This function was sourced from the Bitcoin project.
 bool check_secret( const unsigned char buf[ c_num_secret_bytes ] )
@@ -245,6 +252,21 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
    BN_CTX_free( p_ctx );
 }
 
+inline uint32_t endian_swap( uint32_t x )
+{
+   return ( ( ( x & 0x000000ff ) << 24 ) | ( ( x & 0x0000ff00 ) << 8 )
+    | ( ( x & 0x00ff0000 ) >> 8 ) | ( ( x & 0xff000000 ) >> 24 ) );
+}
+
+inline uint64_t endian_swap( uint64_t x )
+{
+   x = ( x & 0x00000000ffffffff ) << 32 | ( x & 0xffffffff00000000 ) >> 32;
+   x = ( x & 0x0000ffff0000ffff ) << 16 | ( x & 0xffff0000ffff0000 ) >> 16;
+   x = ( x & 0x00ff00ff00ff00ff ) << 8 | ( x & 0xff00ff00ff00ff00 ) >> 8;
+
+   return x;
+}
+
 }
 
 struct public_key::impl
@@ -283,7 +305,7 @@ struct public_key::impl
    {
       bool okay = false;
 
-      if( ECDSA_verify( 0, &hash[ 0 ], sizeof( hash ), &signature[ 0 ], signature.size( ), p_key ) == 1 )
+      if( ECDSA_verify( 0, &hash[ 0 ], c_num_hash_bytes, &signature[ 0 ], signature.size( ), p_key ) == 1 )
          okay = true;
 
       return okay;
@@ -295,12 +317,20 @@ public_key::public_key( )
    p_impl = new impl;
 }
 
-public_key::public_key( const string& base64_key )
+public_key::public_key( const string& encoded, bool use_base64 )
 {
    p_impl = new impl;
 
    unsigned char buf[ c_max_public_key_bytes ];
-   size_t size = base64::decode( base64_key, buf, c_max_public_key_bytes );
+
+   size_t size;
+   if( use_base64 )
+      size = base64::decode( encoded, buf, c_max_public_key_bytes );
+   else
+   {
+      size = encoded.size( ) / 2;
+      hex_decode( encoded, buf, c_max_public_key_bytes );
+   }
 
    const unsigned char* pbegin = &buf[ 0 ];
 
@@ -312,13 +342,31 @@ public_key::~public_key( )
    delete p_impl;
 }
 
-string public_key::get_public( bool compressed ) const
+string public_key::get_public( bool compressed, bool use_base64 ) const
 {
    unsigned char buf[ c_max_public_key_bytes ];
 
    int len = p_impl->get_public_key( buf, compressed );
 
-   return base64::encode( buf, len );
+   if( !use_base64 )
+      return hex_encode( buf, len );
+   else
+      return base64::encode( buf, len );
+}
+
+string public_key::get_hash160( bool compressed ) const
+{
+   unsigned char buf1[ c_max_public_key_bytes ];
+
+   int len = p_impl->get_public_key( buf1, compressed );
+
+   sha256 hash1( buf1, len );
+   hash1.copy_digest_to_buffer( buf1 );
+
+   unsigned char buf2[ RIPEMD160_DIGEST_LENGTH ];
+   RIPEMD160( buf1, c_num_hash_bytes, buf2 );
+
+   return hex_encode( buf2, RIPEMD160_DIGEST_LENGTH );
 }
 
 string public_key::get_address( bool compressed, bool is_testnet ) const
@@ -331,18 +379,18 @@ string public_key::get_address( bool compressed, bool is_testnet ) const
    hash1.copy_digest_to_buffer( buf1 );
 
    unsigned char buf2[ RIPEMD160_DIGEST_LENGTH + 5 ];
-   RIPEMD160( buf1, c_num_secret_bytes, buf2 + 1 );
+   RIPEMD160( buf1, c_num_hash_bytes, buf2 + 1 );
 
    if( !is_testnet )
       buf2[ 0 ] = 0x00;
    else
       buf2[ 0 ] = 0x6F;
 
-   unsigned char buf3[ c_num_secret_bytes ];
+   unsigned char buf3[ c_num_hash_bytes ];
    sha256 hash2( buf2, RIPEMD160_DIGEST_LENGTH + 1 );
    hash2.copy_digest_to_buffer( buf3 );
 
-   hash2.update( buf3, c_num_secret_bytes );
+   hash2.update( buf3, c_num_hash_bytes );
    hash2.copy_digest_to_buffer( buf3 );
 
    memcpy( &buf2[ RIPEMD160_DIGEST_LENGTH + 1 ], buf3, 4 );
@@ -363,6 +411,27 @@ bool public_key::verify_signature( const string& msg, const string& sig ) const
    base64::decode( sig, &signature[ 0 ], signature.size( ) );
 
    return p_impl->verify_signature( buf, signature );
+}
+
+bool public_key::verify_signature( const unsigned char* p_data, const string& sig ) const
+{
+   vector< unsigned char > signature;
+   signature.resize( sig.size( ) / 2 );
+
+   hex_decode( sig, &signature[ 0 ], signature.size( ) );
+
+   return p_impl->verify_signature( p_data, signature );
+}
+
+string public_key::address_to_hash160( const string& address )
+{
+   if( address.size( ) < 33 )
+      throw runtime_error( "invalid address '" + address + "'" );
+
+   vector< unsigned char > dbuf;
+   base58_decode( address, dbuf );
+
+   return hex_encode( &dbuf[ 1 ], dbuf.size( ) - 5 );
 }
 
 struct private_key::impl
@@ -405,7 +474,7 @@ struct private_key::impl
 
    void sign_message( const unsigned char hash[ c_num_hash_bytes ], vector< unsigned char >& signature )
    {
-      ECDSA_SIG* p_sig = ECDSA_do_sign( &hash[ 0 ], sizeof( hash ), p_pub_impl->p_key );
+      ECDSA_SIG* p_sig = ECDSA_do_sign( &hash[ 0 ], c_num_hash_bytes, p_pub_impl->p_key );
       if( !p_sig )
          throw runtime_error( "unexpected failure for ECDSA_do_sign in sign_message" );
 
@@ -504,12 +573,12 @@ string private_key::get_wif_secret( bool compressed, bool is_testnet ) const
    if( compressed )
       buf[ c_num_secret_bytes + 1 ] = 0x01;
 
-   unsigned char buf2[ c_num_secret_bytes ];
+   unsigned char buf2[ c_num_hash_bytes ];
 
    sha256 hash( buf, compressed ? c_num_secret_bytes + 2 : c_num_secret_bytes + 1 );
    hash.copy_digest_to_buffer( buf2 );
 
-   hash.update( buf2, c_num_secret_bytes );
+   hash.update( buf2, c_num_hash_bytes );
    hash.copy_digest_to_buffer( buf2 );
 
    memcpy( buf + ( compressed ? c_num_secret_bytes + 2 : c_num_secret_bytes + 1 ), buf2, 4 );
@@ -527,11 +596,11 @@ string private_key::decrypt_message( const public_key& pub, const string& base64
    if( p_id )
    {
       sha256 hash( p_id );
-      unsigned char buf2[ c_num_secret_bytes ];
+      unsigned char buf2[ c_num_hash_bytes ];
 
       hash.copy_digest_to_buffer( buf2 );
 
-      for( size_t i = 0; i < c_num_secret_bytes; i++ )
+      for( size_t i = 0; i < c_num_hash_bytes; i++ )
          buf[ i ] ^= buf2[ i ];
    }
 
@@ -549,11 +618,11 @@ string private_key::encrypt_message(
    if( p_id )
    {
       sha256 hash( p_id );
-      unsigned char buf2[ c_num_secret_bytes ];
+      unsigned char buf2[ c_num_hash_bytes ];
 
       hash.copy_digest_to_buffer( buf2 );
 
-      for( size_t i = 0; i < c_num_secret_bytes; i++ )
+      for( size_t i = 0; i < c_num_hash_bytes; i++ )
          buf[ i ] ^= buf2[ i ];
    }
 
@@ -568,6 +637,14 @@ string private_key::construct_shared( const public_key& pub ) const
    return hex_encode( buf, sizeof( buf ) );
 }
 
+string private_key::construct_signature( const unsigned char* p_digest ) const
+{
+   vector< unsigned char > signature;
+   p_impl->sign_message( p_digest, signature );
+
+   return hex_encode( &signature[ 0 ], signature.size( ) );
+}
+
 string private_key::construct_signature( const string& msg ) const
 {
    unsigned char buf[ c_num_hash_bytes ];
@@ -579,5 +656,124 @@ string private_key::construct_signature( const string& msg ) const
    p_impl->sign_message( buf, signature );
 
    return base64::encode( &signature[ 0 ], signature.size( ) );
+}
+
+string construct_raw_transaction(
+ const vector< utxo_information >& inputs,
+ const vector< output_information >& outputs )
+{
+   string raw_transaction( "01000000" ); // i.e. version
+
+   unsigned char size = ( unsigned char )inputs.size( );
+   raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
+
+   string signing_information( raw_transaction );
+
+   for( size_t i = 0; i < inputs.size( ); i++ )
+   {
+      ostringstream outs;
+      outs << hex << setw( 8 ) << setfill( '0' ) << endian_swap( inputs[ i ].index );
+
+      raw_transaction += inputs[ i ].reversed_txid + outs.str( );
+      signing_information += inputs[ i ].reversed_txid + outs.str( );
+
+      if( !inputs[ i ].original_script.empty( ) )
+      {
+         size = inputs[ i ].original_script.length( ) / 2;
+         signing_information += hex_encode( &size, sizeof( unsigned char ) );
+         signing_information += inputs[ i ].original_script;
+      }
+      else
+         signing_information += c_empty_sig_script;
+
+      raw_transaction += c_empty_sig_script;
+
+      raw_transaction += c_sequence_bytes;
+      signing_information += c_sequence_bytes;
+   }
+
+   size = ( unsigned char )outputs.size( );
+
+   raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
+   signing_information += hex_encode( &size, sizeof( unsigned char ) );
+
+   for( size_t i = 0; i < outputs.size( ); i++ )
+   {
+      ostringstream outs;
+      outs << hex << setw( 16 ) << setfill( '0' ) << endian_swap( outputs[ i ].amount );
+
+      raw_transaction += outs.str( );
+      signing_information += outs.str( );
+
+      string script_pub_key( "76a9" ); // i.e. OP_DUP OP_HASH160
+
+      string hash160( public_key::address_to_hash160( outputs[ i ].address ) );
+
+      size = ( unsigned char )hash160.size( ) / 2;
+      script_pub_key += hex_encode( &size, sizeof( unsigned char ) );
+
+      script_pub_key += hash160;
+      script_pub_key += "88ac"; // i.e. OP_EQUALVERIFY OP_CHECKSIG
+
+      size = ( unsigned char )script_pub_key.size( ) / 2;
+
+      raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
+      signing_information += hex_encode( &size, sizeof( unsigned char ) );
+
+      raw_transaction += script_pub_key;
+      signing_information += script_pub_key;
+   }
+
+   raw_transaction += c_zero_lock_time;
+   signing_information += c_zero_lock_time;
+
+   signing_information += c_hash_code_type_all;
+
+   vector< unsigned char > buffer( signing_information.size( ) / 2, 0 );
+   hex_decode( signing_information, &buffer[ 0 ], buffer.size( ) );
+
+   sha256 hash( &buffer[ 0 ], buffer.size( ) );
+
+   unsigned char buf[ c_num_hash_bytes ];
+   hash.copy_digest_to_buffer( buf );
+
+   hash.update( buf, c_num_hash_bytes );
+   hash.copy_digest_to_buffer( buf );
+
+   for( size_t i = 0; i < inputs.size( ); i++ )
+   {
+      if( inputs[ i ].rp_private_key )
+      {
+         string sig( inputs[ i ].rp_private_key->construct_signature( &buf[ 0 ] ) );
+
+         size = ( ( unsigned char )sig.size( ) / 2 ) + 1;
+         string scriptSig( hex_encode( &size, sizeof( unsigned char ) ) );
+         scriptSig += sig;
+
+         scriptSig += "01"; // i.e. SIGHASH_ALL
+
+         string pub( inputs[ i ].rp_private_key->get_public( ) );
+
+         size = ( unsigned char )pub.size( ) / 2;
+         scriptSig += hex_encode( &size, sizeof( unsigned char ) );
+         scriptSig += pub;
+
+         string sequence( "00" );
+         sequence += c_sequence_bytes;
+
+         string::size_type pos = raw_transaction.find( sequence );
+
+         if( pos != string::npos )
+         {
+            raw_transaction.erase( pos, 2 );
+            size = ( unsigned char )scriptSig.size( ) / 2;
+
+            raw_transaction.insert( pos, hex_encode( &size, sizeof( unsigned char ) ) );
+            raw_transaction.insert( pos + 2, scriptSig );
+         }
+      }
+   }
+
+   return raw_transaction;
 }
 

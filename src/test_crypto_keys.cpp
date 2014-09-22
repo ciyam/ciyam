@@ -31,6 +31,10 @@ int main( )
       string key( skey.get_public( ) );
       string secret( skey.get_secret( ) );
       cout << "skey.get_public( ) = " << key << endl;
+
+      cout << "\nskey.get_hash160( true ) = " << skey.get_hash160( true ) << endl;
+      cout << "skey.get_hash160( false ) = " << skey.get_hash160( false ) << endl;
+
       cout << "\nskey.get_secret( ) = " << secret << endl;
 
       cout << "\nskey.get_address( true ) = " << skey.get_address( true ) << endl;
@@ -74,6 +78,19 @@ int main( )
 
       cout << "\npriv_key2.decrypt_message( pub_key1, \""
        << encrypted.substr( 0, 52 ) << "...\" )\n" << priv_key2.decrypt_message( pub_key1, encrypted ) << endl;
+
+      vector< utxo_information > inputs;
+#ifndef DEBUG
+      inputs.push_back( utxo_information( 0, "3c9eab4935d1b8fe2bad3af1c443c2c61ab8212c3f45c2ba59ff4a2e93c481e2" ) );
+#else
+      inputs.push_back( utxo_information( 0, "3c9eab4935d1b8fe2bad3af1c443c2c61ab8212c3f45c2ba59ff4a2e93c481e2",
+       "76a9143a89c372f5308cb58828979bb624f7e8822672ed88ac", new private_key( priv_key2.get_wif_secret( ), true ) ) );
+#endif
+
+      vector< output_information > outputs;
+      outputs.push_back( output_information( 20000, "1ciyam3htJit1feGa26p2wQ4aw6KFTejU" ) );
+
+      cout << "\n" << construct_raw_transaction( inputs, outputs ) << endl;
    }
    catch( exception& x )
    {
