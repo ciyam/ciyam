@@ -371,7 +371,7 @@ uint64_t get_utxos_balance_amt( const string& file_name )
 }
 
 string create_raw_transaction_command( const string& source_addresses,
- const string& destination_address, string& change_address, uint64_t amount,
+ const string& destination_addresses, string& change_address, uint64_t amount,
  quote_style qs, uint64_t& fee, string& sign_tx_template, const string* p_file_name )
 {
    string raw_transaction;
@@ -490,7 +490,38 @@ string create_raw_transaction_command( const string& source_addresses,
    raw_transaction += '{';
 
    double d = ( amount / 100000000.0 );
-   add_json_pair( raw_transaction, destination_address, to_string( d ), quote1, false );
+
+   int num_destinations = 1;
+   string comma_separated( destination_addresses );
+   for( size_t i = 0; i < comma_separated.size( ); i++ )
+   {
+      if( comma_separated[ i ] == ' ' || comma_separated[ i ] == '|' )
+         comma_separated[ i ] = ',';
+
+      if( comma_separated[ i ] == ',' )
+         ++num_destinations;
+   }
+
+   d /= num_destinations;
+
+   bool is_first = true;;
+   while( true )
+   {
+      if( is_first )
+         is_first = false;
+      else
+         raw_transaction += ',';
+
+      string::size_type pos = comma_separated.find( ',' );
+      string destination_address( comma_separated.substr( 0, pos ) );
+
+      add_json_pair( raw_transaction, destination_address, to_string( d ), quote1, false );
+
+      if( pos == string::npos )
+         break;
+
+      comma_separated.erase( 0, pos + 1 );
+   }
 
    // NOTE: If there is change then send it back to the change address.
    if( change > 0 )
@@ -524,11 +555,11 @@ int main( int argc, char* argv[ ] )
    try
    {
       if( argc < 4 )
-         cout << "usage: tx_create <source_addresses> <destination_address> <amount_in_satoshis> [<change_address> [<min_fee_in_satoshis>]]" << endl;
+         cout << "usage: tx_create <source_addresses> <destination_addresses> <amount_in_satoshis> [<change_address> [<min_fee_in_satoshis>]]" << endl;
       else
       {
          string source_addresses( argv[ 1 ] );
-         string destination_address( argv[ 2 ] );
+         string destination_addresses( argv[ 2 ] );
          string amount_in_satoshis( argv[ 3 ] );
 
          string change_address;
@@ -568,7 +599,7 @@ int main( int argc, char* argv[ ] )
          string sign_tx_template;
 
          string create_raw_tx( create_raw_transaction_command(
-          source_addresses, destination_address, change_address, amount, qs, min_fee, sign_tx_template ) );
+          source_addresses, destination_addresses, change_address, amount, qs, min_fee, sign_tx_template ) );
 
          cout << create_raw_tx << "\n\n";
          cout << sign_tx_template << endl;
