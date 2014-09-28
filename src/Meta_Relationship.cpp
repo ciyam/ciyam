@@ -2051,6 +2051,9 @@ void Meta_Relationship::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [(start meta_relationship_field)] 600095
    if( is_null( get_obj( ).Source_Relationship( ) ) )
    {
@@ -2093,6 +2096,9 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start update_children)] 600097
    if( !is_create
@@ -2193,7 +2199,8 @@ void Meta_Relationship::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_Relationship::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -2204,6 +2211,9 @@ bool Meta_Relationship::impl::can_destroy( bool is_internal )
 void Meta_Relationship::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start meta_relationship_field)] 600095
    if( !get_obj( ).get_is_being_cascaded( ) && is_null( get_obj( ).Source_Relationship( ) ) )
@@ -2223,6 +2233,9 @@ void Meta_Relationship::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start after_destroy>]
    // [<finish after_destroy>]
 }
@@ -2234,6 +2247,9 @@ void Meta_Relationship::impl::set_default_values( )
 
 bool Meta_Relationship::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 

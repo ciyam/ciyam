@@ -58,7 +58,7 @@ get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}( ).`}`{`$arg_sfield`}(
 `{`!`@eq`(`$arg_new_only`,`'`'`)is_null( get_obj( ).get_key( ) )`{`!`@eq`(`$arg_chk_null`,`'`'`)`|`!`@eq`(`$arg_modifier`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
 `{`!`@eq`(`$arg_chk_null`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_pfield`,`'`'`)`{`$arg_pfield`}`,`{`$arg_sfield`}`}( ) )`}\
 `{`!`@eq`(`$both_null_and_mod_or_test`,`'`'`) && `}\
-`{`!`@eq`(`$arg_modifier`,`'`'`)get_obj( ).get_state( ) & c_modifier_`{`$arg_modifier`}`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
+`{`!`@eq`(`$arg_modifier`,`'`'`)state & c_modifier_`{`$arg_modifier`}`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}`{`!`@eq`(`$arg_tfield`,`'`'`)\
 `{`@eq`(`$arg_tvalue`,`'`'`)\
 `{`@eq`(`$test_field_is_text_type`,`'true`'`)!is_null( `}get_obj( ).\
 `{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( )`{`@eq`(`$test_field_is_text_type`,`'true`'`) )`}\

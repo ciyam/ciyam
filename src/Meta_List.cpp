@@ -4194,6 +4194,9 @@ void Meta_List::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [(start parent_auto_int_inc)] 600418
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
@@ -4220,6 +4223,9 @@ void Meta_List::impl::after_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_store>]
 //nyi
@@ -4253,7 +4259,8 @@ void Meta_List::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_List::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -4265,6 +4272,9 @@ void Meta_List::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start for_destroy>]
    // [<finish for_destroy>]
 }
@@ -4272,6 +4282,9 @@ void Meta_List::impl::for_destroy( bool is_internal )
 void Meta_List::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_destroy>]
    // [<finish after_destroy>]
@@ -4284,6 +4297,9 @@ void Meta_List::impl::set_default_values( )
 
 bool Meta_List::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 

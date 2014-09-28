@@ -1104,6 +1104,9 @@ void Meta_Modifier_Affect::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start for_store>]
    // [<finish for_store>]
 }
@@ -1112,6 +1115,9 @@ void Meta_Modifier_Affect::impl::after_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start clone_children_for_create)] 610084
    if( is_create
@@ -1158,7 +1164,8 @@ void Meta_Modifier_Affect::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_Modifier_Affect::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1170,6 +1177,9 @@ void Meta_Modifier_Affect::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start for_destroy>]
    // [<finish for_destroy>]
 }
@@ -1177,6 +1187,9 @@ void Meta_Modifier_Affect::impl::for_destroy( bool is_internal )
 void Meta_Modifier_Affect::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_destroy>]
    // [<finish after_destroy>]
@@ -1189,6 +1202,9 @@ void Meta_Modifier_Affect::impl::set_default_values( )
 
 bool Meta_Modifier_Affect::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
