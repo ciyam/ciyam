@@ -1014,6 +1014,9 @@ void Meta_Workgroup::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [(start for_auto_code_user)] 600004
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
@@ -1041,6 +1044,9 @@ void Meta_Workgroup::impl::after_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start clone_default_group_children)] 600002
    if( is_create && get_obj( ).get_clone_key( ).empty( ) )
@@ -1092,7 +1098,8 @@ void Meta_Workgroup::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_Workgroup::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -1104,6 +1111,9 @@ void Meta_Workgroup::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start for_destroy>]
    // [<finish for_destroy>]
 }
@@ -1111,6 +1121,9 @@ void Meta_Workgroup::impl::for_destroy( bool is_internal )
 void Meta_Workgroup::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start after_destroy>]
    // [<finish after_destroy>]
@@ -1123,6 +1136,9 @@ void Meta_Workgroup::impl::set_default_values( )
 
 bool Meta_Workgroup::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 

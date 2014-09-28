@@ -3343,11 +3343,16 @@ void default_to_global_specification::write_data( sio_writer& writer ) const
 void default_to_global_specification::add_specification_data( model& m, specification_data& spec_data ) const
 {
    string class_name = get_class_name_for_id( m, class_id );
-   string field_name = get_field_name_for_id( m, class_name, field_id );
+
+   bool is_mandatory;
+   string field_type;
+   string field_name = get_field_name_for_id( m, class_name, field_id, &field_type, false, false, &is_mandatory );
 
    spec_data.data_pairs.push_back( make_pair( c_data_class, class_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_field, field_name ) );
    spec_data.data_pairs.push_back( make_pair( c_data_value, field_value ) );
+
+   spec_data.data_pairs.push_back( make_pair( c_data_fmandatory, is_mandatory ? "1" : "0" ) );
 
    string cfield_name;
    if( !cfield_id.empty( ) )
@@ -3371,6 +3376,7 @@ void default_to_global_specification::add_specification_data( model& m, specific
 
    spec_data.data_pairs.push_back( make_pair( string( c_data_dflt_only ), default_only ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( "inc_exist", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "for_store", "" ) );
 }
 
 string default_to_global_specification::static_class_name( ) { return "default_to_global"; }
@@ -4762,6 +4768,8 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_mfunc, mem_func ) );
    spec_data.data_pairs.push_back( make_pair( c_data_nvalue, null_value ) );
 
+   spec_data.data_pairs.push_back( make_pair( "field1", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "field2", "" ) );
    spec_data.data_pairs.push_back( make_pair( "update", "" ) );
    spec_data.data_pairs.push_back( make_pair( "modifier", "" ) );
    spec_data.data_pairs.push_back( make_pair( "new_only", "" ) );

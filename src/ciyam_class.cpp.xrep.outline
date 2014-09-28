@@ -2199,6 +2199,9 @@ void `{`$full_class_name`}::impl::for_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 `{`?`$all_for_store_specifications`[`$all_for_store_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'audit_fields`'`)
 `{`#audit_fields.spec.xrep section=for_store class_name=$class_name module_name=$module_name\
@@ -2524,6 +2527,9 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 `{`?`$all_after_store_specifications`[`$all_after_store_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'child_field_cascade`'`)`&`@eq`(`$specification_\0_after_self`,`'true`'`)
 `{`#child_field_cascade.spec.xrep section=for_or_after_store class_name=$class_name module_name=$module_name\
@@ -2655,7 +2661,8 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
 
 bool `{`$full_class_name`}::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 `{`?`$all_can_destroy_specifications`[`$all_can_destroy_specifications`%,`,`{`@eq`(`'\1`'`,`'destroy_restrict`'`)
 `{`#destroy_restrict.spec.xrep section=can_destroy\
  arg_id=$specification_\0_id arg_field=$specification_\0_field arg_pfield=$specification_\0_pfield\
@@ -2672,6 +2679,9 @@ bool `{`$full_class_name`}::impl::can_destroy( bool is_internal )
 void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 `{`?`$all_for_destroy_specifications`[`$all_for_destroy_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'file_attachment`'`)
 `{`#file_attachment.spec.xrep section=for_destroy arg_id=$specification_\0_id arg_field=$specification_\0_field`}\
@@ -2708,6 +2718,9 @@ void `{`$full_class_name`}::impl::for_destroy( bool is_internal )
 void `{`$full_class_name`}::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 `{`?`$all_after_destroy_specifications`[`$all_after_destroy_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'field_from_child_concat`'`)`&`!`?`$specification_\0_class\
 `&`?`$specification_\0_cclass`&`@eq`(`$class_name`,`$specification_\0_cclass`)
@@ -2744,6 +2757,9 @@ void `{`$full_class_name`}::impl::set_default_values( )
 
 bool `{`$full_class_name`}::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
 `{`?`$all_is_filtered_specifications`[`$all_is_filtered_specifications`%,`,\
 `{`@eq`(`'\1`'`,`'filter_field_value`'`)\
 `{`#filter_field_value.spec.xrep section=is_filtered arg_name=\0\

@@ -4347,6 +4347,9 @@ void Meta_Class::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [(start child_field_change_cascade)] 600029
    if( !is_create )
    {
@@ -4540,6 +4543,9 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start update_children)] 600027
    if( !is_create
@@ -4761,7 +4767,8 @@ void Meta_Class::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_Class::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -4772,6 +4779,9 @@ bool Meta_Class::impl::can_destroy( bool is_internal )
 void Meta_Class::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start file_link)] 620038
    if( !get_obj( ).Source_File( ).empty( ) )
@@ -4796,6 +4806,9 @@ void Meta_Class::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start after_destroy>]
    // [<finish after_destroy>]
 }
@@ -4807,6 +4820,9 @@ void Meta_Class::impl::set_default_values( )
 
 bool Meta_Class::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 

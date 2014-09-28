@@ -2858,6 +2858,9 @@ void Meta_Application::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start for_store>]
 //nyi
    if( is_create && !storage_locked_for_admin( ) && get_obj( ).Create_Database( ) )
@@ -2924,6 +2927,9 @@ void Meta_Application::impl::after_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start after_store>]
 //nyi
    if( is_create && get_obj( ).Add_Modules_Automatically( ) )
@@ -2965,7 +2971,8 @@ void Meta_Application::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_Application::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [<start can_destroy>]
    // [<finish can_destroy>]
@@ -2976,6 +2983,9 @@ bool Meta_Application::impl::can_destroy( bool is_internal )
 void Meta_Application::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [<start for_destroy>]
 //nyi
@@ -3023,6 +3033,9 @@ void Meta_Application::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start after_destroy>]
    // [<finish after_destroy>]
 }
@@ -3034,6 +3047,9 @@ void Meta_Application::impl::set_default_values( )
 
 bool Meta_Application::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 

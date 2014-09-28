@@ -7271,6 +7271,9 @@ void Meta_Specification::impl::for_store( bool is_create, bool is_internal )
    ( void )is_create;
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [(start parent_auto_int_inc)] 610194
    if( is_create && is_null( get_obj( ).Id( ) ) )
    {
@@ -7312,6 +7315,9 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
 {
    ( void )is_create;
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start copy_child_links_from_fk)] 600170
    if( is_create
@@ -7434,7 +7440,8 @@ void Meta_Specification::impl::after_store( bool is_create, bool is_internal )
 
 bool Meta_Specification::impl::can_destroy( bool is_internal )
 {
-   bool retval = is_internal || !( get_state( ) & c_state_undeletable );
+   uint64_t state = p_obj->get_state( );
+   bool retval = is_internal || !( state & c_state_undeletable );
 
    // [(start destroy_restrict)] 600180
    if( !is_internal && get_obj( ).Specification_Type( ).Is_System( ) == true )
@@ -7451,6 +7458,9 @@ void Meta_Specification::impl::for_destroy( bool is_internal )
 {
    ( void )is_internal;
 
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start for_destroy>]
    // [<finish for_destroy>]
 }
@@ -7458,6 +7468,9 @@ void Meta_Specification::impl::for_destroy( bool is_internal )
 void Meta_Specification::impl::after_destroy( bool is_internal )
 {
    ( void )is_internal;
+
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
 
    // [(start update_parent_cascade)] 620194
    if( !get_obj( ).get_is_being_cascaded( ) && get_obj( ).Specification_Type( ).get_key( ) == "field" )
@@ -7561,6 +7574,9 @@ void Meta_Specification::impl::set_default_values( )
 
 bool Meta_Specification::impl::is_filtered( ) const
 {
+   uint64_t state = p_obj->get_state( );
+   ( void )state;
+
    // [<start is_filtered>]
    // [<finish is_filtered>]
 
