@@ -124,6 +124,7 @@ is_mandatory - Use this option to determine with each item "must be in a folder"
 no_top_level_maint - Use this option to prevent normal maintenance of the "top level folder(s)".
 
 use_folder_status - Use this option to add "folder status" class support (so folders can be set "inactive").
+use_transient_paths - Use this option for a "transient" path implementation (faster writes but slower reads).
 
 user_package - If is provided and folder_item_class.Source_Field has not been then will result in permissions
 being added for folder assignment and maintenance to the User. If folder_item_class.Source_Field is not empty

@@ -8,13 +8,9 @@
 `{`@eq`(`$arg_embed_links`,`'`'`)`$arg_ext_field`=`'`'`}\
 `{`!`@eq`(`$arg_ext_field`,`'`'`)`$arg_external`=`'`'`}\
    // [(start field_from_acyclic_path)] `{`$arg_id`}
-`{`@eq`(`$arg_ftransient`,`'1`'`)\
-   if( !get_obj( ).get_key( ).empty( )
-    && ( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" )
-    || required_transients.count( "`{`$arg_dest_field`}" ) ) )
-`,\
-   // NOTE: Empty code block for scope purposes.
-`}\
+   if( ( !get_obj( ).get_graph_parent( )
+    || !get_obj( ).get_graph_parent( )->get_is_fetching( ) )`{`@eq`(`$arg_ftransient`,`'1`'`)`&`@eq`(`$arg_ext_field`,`'`'`)
+    && ( get_obj( ).needs_field_value( "`{`$arg_dest_field`}" ) || required_transients.count( "`{`$arg_dest_field`}" ) )`} )
    {
 `{`@eq`(`$arg_ext_field`,`'`'`)\
       string s;
@@ -91,6 +87,26 @@
       if( ( use_transients && is_field_transient( e_field_id_`{`$arg_src_field`} ) )
        || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_src_field`} ) ) )
          names.insert( "`{`$arg_src_field`}" );
+   }\
+`{`!`@eq`(`$arg_ext_field`,`'`'`)
+
+   if( needs_field_value( "`{`$arg_ext_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_pfield`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_pfield`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_pfield`} ) ) )
+         names.insert( "`{`$arg_pfield`}" );
    }
+
+   if( needs_field_value( "`{`$arg_ext_field`}", dependents ) )
+   {
+      dependents.insert( "`{`$arg_src_field`}" );
+
+      if( ( use_transients && is_field_transient( e_field_id_`{`$arg_src_field`} ) )
+       || ( !use_transients && !is_field_transient( e_field_id_`{`$arg_src_field`} ) ) )
+         names.insert( "`{`$arg_src_field`}" );
+   }\
+`}
    // [(finish field_from_acyclic_path)] `{`$arg_id`}
 `}

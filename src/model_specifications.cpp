@@ -4768,6 +4768,8 @@ void field_from_other_field_specification::add_specification_data( model& m, spe
    spec_data.data_pairs.push_back( make_pair( c_data_mfunc, mem_func ) );
    spec_data.data_pairs.push_back( make_pair( c_data_nvalue, null_value ) );
 
+   spec_data.data_pairs.push_back( make_pair( "check", "" ) );
+   spec_data.data_pairs.push_back( make_pair( "append", "" ) );
    spec_data.data_pairs.push_back( make_pair( "field1", "" ) );
    spec_data.data_pairs.push_back( make_pair( "field2", "" ) );
    spec_data.data_pairs.push_back( make_pair( "update", "" ) );
