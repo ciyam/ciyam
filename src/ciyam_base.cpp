@@ -7887,7 +7887,18 @@ string exec_bulk_ops( const string& module,
                if( rc == e_op_apply_rc_locked )
                   outf << "Error: Processing line #" << line << " - record was locked." << endl;
                else if( rc == e_op_apply_rc_invalid )
-                  outf << "Error: Processing line #" << line << " - record was invalid." << endl;
+               {
+                  class_base& instance( get_class_base_from_handle( handle, "" ) );
+
+                  instance.is_valid( false );
+                  string validation_error( instance.get_validation_errors( class_base::e_validation_errors_type_first_only ) );
+
+                  outf << "Error: Processing line #" << line << " - record was invalid.";
+                  if( !validation_error.empty( ) )
+                     outf << ' ' << validation_error;
+
+                  outf << endl;
+               }
                else
                   throw runtime_error( "unexpected op_apply rc #" + to_string( rc ) );
 
