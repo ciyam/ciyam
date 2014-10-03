@@ -1071,6 +1071,10 @@
       <item>pclass
      </specification>
      <specification/>
+      <id>620096
+      <item>sclass
+     </specification>
+     <specification/>
       <id>630026
       <item>class
      </specification>
@@ -1490,6 +1494,10 @@
        <specification/>
         <id>610038
         <item>src_field
+       </specification>
+       <specification/>
+        <id>620096
+        <item>scfield
        </specification>
       </specifications>
      </field>
@@ -13580,6 +13588,10 @@
       <item>class
      </specification>
      <specification/>
+      <id>620096
+      <item>class
+     </specification>
+     <specification/>
       <id>620100
       <item>class
      </specification>
@@ -13828,11 +13840,36 @@
         <item>sfield
        </specification>
        <specification/>
+        <id>620096
+        <item>sfield
+       </specification>
+       <specification/>
         <id>640101
         <item>field
        </specification>
        <specification/>
         <id>640102
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>113116
+      <name>Child_Class_Id
+      <type>1050
+      <mandatory>false
+      <transient>true
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>600207
+        <item>field
+       </specification>
+       <specification/>
+        <id>620096
         <item>field
        </specification>
       </specifications>
@@ -15265,6 +15302,10 @@
        </specification>
        <specification/>
         <id>600204
+        <item>field
+       </specification>
+       <specification/>
+        <id>600207
         <item>field
        </specification>
        <specification/>
@@ -32204,6 +32245,18 @@
     </data>
    </specification>
    <specification/>
+    <id>620096
+    <name>{Relationship}_Child_Class_Id
+    <type>transient_field_alias
+    <data/>
+     <class_id>113100
+     <sclass_id>106100
+     <field_id>113116
+     <sfield_id>301310
+     <scfield_id>106104
+    </data>
+   </specification>
+   <specification/>
     <id>610096
     <name>{Relationship}_Child_Class_Name
     <type>transient_field_alias
@@ -34847,6 +34900,7 @@
      <field_info>301475:113101;113100={cname}
      <field_info>301475:113105;113100={child}
      <field_info>301475:113108;113100={cclass}
+     <field_info>301475:113116;113100={cclass_id}
      <field_info>301430:107107;107100={primitive}
      <field_info>301460:103101;103100={enum}
      <field_info>301470:104101;104100={enum_item}

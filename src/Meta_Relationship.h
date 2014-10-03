@@ -50,20 +50,21 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
       e_field_id_Change_Restriction = 6,
       e_field_id_Change_Scope = 7,
       e_field_id_Child_Class = 8,
-      e_field_id_Child_Class_Name = 9,
-      e_field_id_Child_Name = 10,
-      e_field_id_Extra = 11,
-      e_field_id_Field_Id = 12,
-      e_field_id_Field_Key = 13,
-      e_field_id_Internal = 14,
-      e_field_id_Mandatory = 15,
-      e_field_id_Model = 16,
-      e_field_id_Name = 17,
-      e_field_id_Parent_Class = 18,
-      e_field_id_Parent_Field_For_List = 19,
-      e_field_id_Parent_Field_For_View = 20,
-      e_field_id_Source_Relationship = 21,
-      e_field_id_Transient = 22
+      e_field_id_Child_Class_Id = 9,
+      e_field_id_Child_Class_Name = 10,
+      e_field_id_Child_Name = 11,
+      e_field_id_Extra = 12,
+      e_field_id_Field_Id = 13,
+      e_field_id_Field_Key = 14,
+      e_field_id_Internal = 15,
+      e_field_id_Mandatory = 16,
+      e_field_id_Model = 17,
+      e_field_id_Name = 18,
+      e_field_id_Parent_Class = 19,
+      e_field_id_Parent_Field_For_List = 20,
+      e_field_id_Parent_Field_For_View = 21,
+      e_field_id_Source_Relationship = 22,
+      e_field_id_Transient = 23
    };
 
    Meta_Relationship( );
@@ -83,6 +84,9 @@ class META_RELATIONSHIP_DECL_SPEC Meta_Relationship : public class_base
 
    int Change_Scope( ) const;
    void Change_Scope( int Change_Scope );
+
+   const std::string& Child_Class_Id( ) const;
+   void Child_Class_Id( const std::string& Child_Class_Id );
 
    const std::string& Child_Class_Name( ) const;
    void Child_Class_Name( const std::string& Child_Class_Name );

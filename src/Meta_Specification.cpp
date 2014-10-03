@@ -6469,6 +6469,7 @@ void Meta_Specification::impl::after_fetch( )
       get_obj( ).add_search_replacement( "Vars", "{cname}", to_rep_string( get_obj( ).Child_Relationship( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{child}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{cclass}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Class_Name( ) ) );
+      get_obj( ).add_search_replacement( "Vars", "{cclass_id}", to_rep_string( get_obj( ).Child_Relationship( ).Child_Class_Id( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{primitive}", to_rep_string( get_obj( ).Field( ).Primitive( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{enum}", to_rep_string( get_obj( ).Enum( ).Name( ) ) );
       get_obj( ).add_search_replacement( "Vars", "{enum_item}", to_rep_string( get_obj( ).Enum_Item( ).Label( ) ) );
@@ -12834,6 +12835,15 @@ void Meta_Specification::get_required_field_names(
       if( ( use_transients && is_field_transient( e_field_id_Other_Procedure_2 ) )
        || ( !use_transients && !is_field_transient( e_field_id_Other_Procedure_2 ) ) )
          names.insert( "Other_Procedure_2" );
+   }
+
+   if( needs_field_value( "Vars", dependents ) )
+   {
+      dependents.insert( "Child_Relationship" );
+
+      if( ( use_transients && is_field_transient( e_field_id_Child_Relationship ) )
+       || ( !use_transients && !is_field_transient( e_field_id_Child_Relationship ) ) )
+         names.insert( "Child_Relationship" );
    }
 
    if( needs_field_value( "Vars", dependents ) )

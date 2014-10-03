@@ -1,4 +1,4 @@
-`{`@eq`(`'for_or_after_store`'`,`$section`)\
+`{`@eq`(`'for_or_after_store`'`,`$section`)`|`@eq`(`'procedure`'`,`$section`)\
    // [(start trigger_execute)] `{`$arg_id`}
 `{`$i`=`'`'`}`{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)`{`$i`=`'   `'`}\
    if( `{`!`@eq`(`$arg_skip_restore`,`'`'`)!storage_locked_for_admin( )`{`!`@eq`(`$arg_tfield`,`'`'`) && `}`}\
@@ -9,7 +9,9 @@
 `}\
 `{`$i`}   temporary_session_variable tmp_session_key_var( "@key", get_obj( ).get_key( ) );
 `{`$i`}   temporary_session_variable tmp_session_class_var( "@class", get_obj( ).get_class_id( ) );
-
+`{`!`@eq`(`$arg_field`,`'`'`)\
+`{`$i`}   temporary_session_variable tmp_session_fields_and_values_var( "@fields_and_values", get_obj( ).`{`$arg_field`}( ) );
+`}
 `{`$i`}   run_script( "`{`$arg_script`}", `{`@eq`(`$arg_async`,`'`'`)false`,true`} );
 `{`!`@eq`(`$arg_skip_restore`,`'`'`)`|`!`@eq`(`$arg_tfield`,`'`'`)\
    }

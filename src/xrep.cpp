@@ -30,6 +30,7 @@
 #endif
 
 #include "macros.h"
+#include "console.h"
 #include "pointers.h"
 #include "utilities.h"
 
@@ -245,7 +246,8 @@ const char* const c_padding_info_variable_name = "#";
 string c_true = string( 1, ( char )( 27 ) ); // i.e. ASCII ESC
 string c_false;
 
-bool is_include_exception = false;
+bool g_exec_system = false;
+bool g_is_include_exception = false;
 
 #ifdef DEBUG
 int function_call_depth = -1;
@@ -553,6 +555,20 @@ string xrep_info::get_variable( const string& identifier )
 
    if( has_variable( identifier ) )
       retval = variables[ identifier ];
+   else if( identifier == "i" )
+   {
+      string prompt( "Input: " );
+      if( has_variable( "ip" ) && !variables[ "ip" ].empty( ) )
+         prompt = variables[ "ip" ];
+      retval = get_line( prompt );
+   }
+   else if( identifier == "p" )
+   {
+      string prompt( "Password: " );
+      if( has_variable( "pp" ) && !variables[ "pp" ].empty( ) )
+         prompt = variables[ "pp" ];
+      retval = get_password( prompt );
+   }
    else if( !optional_variables )
       throw runtime_error( "variable '" + identifier + "' has not been assigned" );
 
@@ -1021,7 +1037,7 @@ cout << "evaluate include_expression" << endl;
       }
       catch( exception& x )
       {
-         is_include_exception = true;
+         g_is_include_exception = true;
 
          string xx( "(" );
          xx += filename;
@@ -3319,9 +3335,9 @@ string process_expression( const string& input, xrep_info& xi, int line_number )
    }
    catch( exception& x )
    {
-      if( is_include_exception )
+      if( g_is_include_exception )
       {
-         is_include_exception = false;
+         g_is_include_exception = false;
          throw;
       }
       else
@@ -3499,7 +3515,8 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
 
          if( last.empty( ) )
          {
-            os << '\n';
+            if( !g_exec_system )
+               os << '\n';
             ++line_number;
          }
          else
@@ -3554,12 +3571,17 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
          {
             if( !result.empty( ) )
             {
-               if( had_output )
+               if( had_output && !g_exec_system )
                   os << '\n';
 
                had_output = true;
                if( result != c_true )
-                  os << result;
+               {
+                  if( !g_exec_system )
+                     os << result;
+                  else
+                     system( result.c_str( ) );
+               }
 
                // NOTE: If there is a partial expression outstanding or if the result consists
                // only of content that was injected by an "include" expression then prevent the
@@ -3591,7 +3613,7 @@ void process_input( istream& is, xrep_info& xi, ostream& os, bool append_final_l
    if( !is.eof( ) )
       throw runtime_error( "unexpected error occurred whilst reading from input stream" );
 
-   if( append_final_lf )
+   if( append_final_lf && !g_exec_system )
       os << '\n';
 }
 
@@ -3617,18 +3639,25 @@ int main( int argc, char* argv[ ] )
          {
             if( arg == string( "?" ) || arg == string( "-?" ) || arg == string( "/?" ) )
             {
-               cout << "xrep v0.1r\n";
-               cout << "Usage: xrep [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
+               cout << "xrep v0.1s\n";
+               cout << "Usage: xrep [-x] [@<filename>] [var1=<value> [var2=<value> [...]]]\n\n";
                cout << "Notes: If the @<filename> is not provided then input is read from std::cin.\n";
+               cout << "       If the -x option is used then each line is executed as a system command.\n";
                cout << "       Each <value> can also be expressed as @<filename> (useful for large values).\n";
                return 0;
             }
+         }
 
-            if( arg[ 0 ] == '@' )
-            {
-               input_filename = arg.substr( 1 );
-               continue;
-            }
+         if( input_filename.empty( ) && !arg.empty( ) && arg[ 0 ] == '@' )
+         {
+            input_filename = arg.substr( 1 );
+            continue;
+         }
+
+         if( !g_exec_system && arg == "-x" )
+         {
+            g_exec_system = true;
+            continue;
          }
 
          string::size_type pos = arg.find( '=' );

@@ -392,6 +392,10 @@ This package provides the ability to help users to construct "raw transactions" 
 can also be used in conjunction with the Project package to help in creating transactions for moving external
 funds between a Project and its Project Areas and Project Tasks.
 
+Package Options:
+
+user_package - Optional "user" package to tie transactions to users.
+
 -------------------------------------------------------------------------------------------------------------
 User (default)
 -------------------------------------------------------------------------------------------------------------

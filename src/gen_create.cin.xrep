@@ -1,0 +1,15 @@
+; Copyright (c) 2014 CIYAM Developers
+;
+; Distributed under the MIT/X11 software license, please refer to the file license.txt
+; in the root project directory or http://www.opensource.org/licenses/mit-license.php.
+;
+; NOTE: The following needs to be included in 'manuscript.sio':
+; <script/>
+;  <name>`{`$model`}_`{`$class`}_`{`$procedure`}
+;  <filename>*script*
+;  <arguments>`{`$model`}_`{`$class`}_`{`$procedure`}.cin @storage @uid @module @class @key @fields_and_values
+; </script>
+.storage_init %1
+`{`!`@eq`(`$comment`,`'`'`)#`{`$comment`}`}
+.pc %2 @now %3 %4 %5 "%6"
+.quit
