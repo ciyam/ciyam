@@ -677,7 +677,7 @@
     <mysqldb>false
     <zlibuse>false
     <dynamic>false
-    <readline>false
+    <readline>true
     <link_libs>base
     <dlink_libs>
     <cpp_files/>
