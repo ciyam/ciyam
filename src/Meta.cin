@@ -324,6 +324,7 @@ field_add -id=113112 Relationship Access_Scope int mand -def=0 -e=view_field_acc
 field_add -id=113113 Relationship Change_Scope int mand -def=0 -e=view_field_change_scope
 field_add -id=113114 Relationship Access_Restriction int mand -def=0 -e=view_access_restrict
 field_add -id=113115 Relationship Change_Restriction int mand -def=0 -e=view_change_restrict
+field_add -id=113116 Relationship Child_Class_Id identifier opt -transient
 modifier_add -id=113310 Relationship Is_Transient Cascade_Op:relegate,Extra:relegate,@class:lowlight1
 class_add -id=114100 Specification_Type Specification_Types
 field_add -id=114101 Specification_Type Name str100 mand
@@ -1426,6 +1427,7 @@ specification_add -id=600095 {Relationship}_{Field}_meta meta_relationship_field
 ,Access_Restriction,Change_Restriction,Access_{Permission},Change_{Permission} {Type} Extra Internal Field_Id:Id Field_Key"
 specification_add -id=600096 {Relationship}_Child_Name_meta meta_relationship_child_name "Relationship Child_Name Name Child_Class:Name Parent_Class:Name"
 specification_add -id=610096 {Relationship}_Child_Class_Name transient_field_alias "Relationship Child_Class_Name Child_Class:Name"
+specification_add -id=620096 {Relationship}_Child_Class_Id transient_field_alias "Relationship Child_Class_Id Child_Class:Id"
 specification_add -id=600097 {Relationship}_{Specification}_update_children update_children "Relationship Specification:Child_Relationship Name"
 specification_add -id=600098 {Relationship}_{Type}_default_1 default_to_global "Relationship Extra 1 -test=Parent_Class:Type=1 -default_only"
 specification_add -id=600099 {Relationship}_{Type}_default_2 default_to_global "Relationship Extra 2 -test=Parent_Class:Type=2 -default_only"
@@ -1672,7 +1674,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,Procedure_Arg_2:Name={procedure_arg2},Procedure_Arg_3:Name={procedure_arg3}\
 ,Other_Procedure:Name={oprocedure},Other_Procedure:Id={oprocedure_id}\
 ,Other_Procedure_2:Name={o2procedure},Other_Procedure_2:Id={o2procedure_id},Child_Relationship:Name={cname}\
-,Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass}\
+,Child_Relationship:Child_Name={child},Child_Relationship:Child_Class_Name={cclass},Child_Relationship:Child_Class_Id={cclass_id}\
 ,{Field}:Primitive={primitive},{Enum}:Name={enum},{Enum_Item}:Label={enum_item},{Enum_Item}:Value={enum_value}\
 ,Enum_Item_2:Label={enum2_item},Enum_Item_2:Value={enum2_value},Enum_Item_3:Label={enum3_item},Enum_Item_3:Value={enum3_value}\
 ,Enum_Item_4:Label={enum4_item},Enum_Item_4:Value={enum4_value},Enum_Item_5:Label={enum5_item},Enum_Item_5:Value={enum5_value}\

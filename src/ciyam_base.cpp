@@ -84,6 +84,9 @@ const int c_lock_attempt_sleep_time = 100;
 
 const int c_loop_variable_digits = 8;
 
+const char* const c_true = "true";
+const char* const c_false = "false";
+
 const char* const c_server_sid_file = "ciyam_server.sid";
 const char* const c_server_config_file = "ciyam_server.sio";
 
@@ -139,6 +142,7 @@ const char* const c_section_extern = "extern";
 
 const char* const c_attribute_port = "port";
 const char* const c_attribute_label = "label";
+const char* const c_attribute_is_local = "is_local";
 const char* const c_attribute_protocol = "protocol";
 const char* const c_attribute_script_name = "script_name";
 
@@ -1296,10 +1300,10 @@ void perform_storage_op( storage_op op,
    if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
    {
       if( op == e_storage_op_create )
-         throw runtime_error( "storage '" + name + "' cannot be created as its already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be created as it's already in use" );
 
       if( lock_for_admin )
-         throw runtime_error( "storage '" + name + "' cannot be administered as its already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
 
       p_new_handler = g_storage_handlers[ g_storage_handler_index[ name ] ];
    }
@@ -1319,7 +1323,7 @@ void perform_storage_op( storage_op op,
          gtp_session->ap_storage_name_lock.reset( );
 
       if( name == g_storage_name_lock )
-         throw runtime_error( "storage '" + name + "' cannot be administered as its already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
 
       ods::open_mode open_mode;
 
@@ -1549,7 +1553,7 @@ bool fetch_instance_from_cache( class_base& instance, const string& key, bool sy
 
          string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-         if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+         if( skip_after_fetch_var == "1" || skip_after_fetch_var == c_true )
             ; // i.e. do nothing
          else
             instance_accessor.perform_after_fetch( );
@@ -1704,7 +1708,7 @@ bool fetch_instance_from_db( class_base& instance,
 
             string skip_after_fetch_var( instance.get_variable( get_special_var_name( e_special_var_skip_after_fetch ) ) );
 
-            if( skip_after_fetch_var == "1" || skip_after_fetch_var == "true" )
+            if( skip_after_fetch_var == "1" || skip_after_fetch_var == c_true )
                ; // i.e. do nothing
             else
                instance_accessor.perform_after_fetch( is_minimal_fetch );
@@ -3185,7 +3189,7 @@ void read_server_configuration( )
          set_trace_flags( get_trace_flags( ) | trace_flags );
       }
 
-      g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, "false" ) ) == "true" );
+      g_use_https = ( lower( reader.read_opt_attribute( c_attribute_use_https, c_false ) ) == c_true );
 
       g_max_sessions = atoi( reader.read_opt_attribute(
        c_attribute_max_sessions, to_string( c_max_sessions_default ) ).c_str( ) );
@@ -3197,7 +3201,7 @@ void read_server_configuration( )
       g_default_storage = reader.read_opt_attribute( c_attribute_default_storage );
       g_variables.insert( make_pair( c_special_variable_storage, g_default_storage ) );
 
-      g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, "false" ) ) == "true" );
+      g_script_reconfig = ( lower( reader.read_opt_attribute( c_attribute_script_reconfig, c_false ) ) == c_true );
 
       g_session_timeout = atoi( reader.read_opt_attribute( c_attribute_session_timeout, "0" ).c_str( ) );
 
@@ -3265,6 +3269,8 @@ void read_server_configuration( )
             client.port = atoi( reader.read_opt_attribute( c_attribute_port, "0" ).c_str( ) );
 
             string key = reader.read_attribute( c_attribute_label );
+            client.is_local = ( lower( reader.read_opt_attribute( c_attribute_is_local, c_false ) ) == c_true );
+
             client.protocol = reader.read_attribute( c_attribute_protocol );
             client.script_name = reader.read_opt_attribute( c_attribute_script_name );
 
@@ -4167,6 +4173,14 @@ string list_externals( )
    return s;
 }
 
+bool is_local_external_client( const string& key )
+{
+   if( !g_external_client_info.count( key ) )
+      throw runtime_error( "unknown external client key '" + key + "'" );
+
+   return g_external_client_info[ key ].is_local;
+}
+
 void get_external_client_info( const string& key, external_client& info )
 {
    if( !g_external_client_info.count( key ) )
@@ -4214,7 +4228,7 @@ int exec_system( const string& cmd, bool async )
    string async_var( get_session_variable( c_special_variable_allow_async ) );
 
    // NOTE: The session variable @allow_async can be used to force non-async execution.
-   if( async_var == "0" || async_var == "false" )
+   if( async_var == "0" || async_var == c_false )
       async = false;
 
    if( async )
@@ -5544,7 +5558,7 @@ void storage_admin_name_lock( const string& name )
    if( gtp_session )
    {
       if( g_storage_handler_index.find( name ) != g_storage_handler_index.end( ) )
-         throw runtime_error( "storage '" + name + "' cannot be administered as its already in use" );
+         throw runtime_error( "storage '" + name + "' cannot be administered as it's already in use" );
 
       if( gtp_session->ap_storage_name_lock.get( ) )
          gtp_session->ap_storage_name_lock.reset( );

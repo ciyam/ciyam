@@ -125,14 +125,17 @@ int64_t CIYAM_BASE_DECL_SPEC get_smtp_max_attached_data( );
 
 struct external_client
 {
-   external_client( ) : port( 0 ) { }
+   external_client( ) : port( 0 ), is_local( false ) { }
 
    int port;
+   bool is_local;
    std::string protocol;
    std::string script_name;
 };
 
 std::string CIYAM_BASE_DECL_SPEC list_externals( );
+
+bool CIYAM_BASE_DECL_SPEC is_local_external_client( const std::string& key );
 
 void CIYAM_BASE_DECL_SPEC get_external_client_info( const std::string& key, external_client& info );
 
