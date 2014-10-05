@@ -10,10 +10,9 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <map>
-#  include <string>
-#  include <vector>
 #  include <fstream>
 #  include <iostream>
+#  include <algorithm>
 #  include <stdexcept>
 #endif
 
@@ -28,14 +27,6 @@ using namespace std;
 
 namespace
 {
-
-struct utxo_info
-{
-   string tx_id;
-   int vout;
-   string script;
-   string address;
-};
 
 const uint64_t c_min_fee = 10000;
 const uint64_t c_dust_amount = 1000;
@@ -54,7 +45,157 @@ void add_json_pair( string& s, const string& name, const string& value, const st
       s += quote;
 }
 
-void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
+uint64_t utxos_balance( const string& file_name )
+{
+   uint64_t balance = 0;
+
+   ifstream inpf( file_name.c_str( ) );
+   if( !inpf )
+      throw runtime_error( "unable to open '" + file_name + "' for input." );
+   else
+   {
+      vector< utxo_info > utxos;
+      parse_utxo_info( inpf, utxos );
+
+      if( utxos.empty( ) )
+         throw runtime_error( "no utxo information found" );
+
+      for( size_t i = 0; i < utxos.size( ); i++ )
+      {
+         if( utxos[ i ].amount > c_dust_amount )
+            balance += utxos[ i ].amount;
+      }
+   }
+
+   return balance;
+}
+
+uint64_t select_utxos_for_transaction(
+ const string& file_name, uint64_t amount, vector< utxo_info >& utxos_used, uint64_t& fee )
+{
+   uint64_t change = 0;
+   uint64_t original_fee( fee );
+
+   ifstream inpf( file_name.c_str( ) );
+   if( !inpf )
+      throw runtime_error( "unable to open '" + file_name + "' for input." );
+   else
+   {
+      uint64_t total = 0;
+
+      vector< utxo_info > utxos;
+      parse_utxo_info( inpf, utxos );
+
+      if( utxos.empty( ) )
+         throw runtime_error( "no utxo information found" );
+
+      multimap< uint64_t, utxo_info > mapped_utxos;
+      for( size_t i = 0; i < utxos.size( ); i++ )
+         mapped_utxos.insert( make_pair( utxos[ i ].amount, utxos[ i ] ) );
+
+      bool done = false;
+      for( multimap< uint64_t, utxo_info >::iterator i = mapped_utxos.begin( ); i != mapped_utxos.end( ); ++i )
+      {
+         if( i->first <= c_dust_amount )
+            continue;
+
+         // NOTE: Prefer a single UTXO rather than multiple in order to keep the tx size to a minimum.
+         if( i->first >= amount + fee )
+         {
+            done = true;
+            total += i->first;
+            change = total - amount - fee;
+
+            utxos_used.push_back( i->second );
+
+#ifdef DEBUG
+            cout << ( i->second ).tx_id << ':' << ( i->second ).vout << ' ' << ( i->second ).script << ' ' << i->first << '\n';
+#endif
+            break;
+         }
+      }
+
+      if( !done )
+      {
+         int num = 0;
+         multimap< uint64_t, utxo_info >::iterator i = mapped_utxos.end( );
+         while( true )
+         {
+            --i;
+            if( i->first > fee )
+            {
+               total += i->first;
+
+               // NOTE: Increment the fee by the minimum amount for every 10 UTXO's.
+               // FUTURE: The fee should be calculated more accurately and take "age" into account.
+               if( ++num % 10 == 0 )
+                  fee += c_min_fee;
+
+               utxos_used.push_back( i->second );
+#ifdef DEBUG
+               cout << ( i->second ).tx_id << ':' << ( i->second ).vout << ' ' << ( i->second ).script << ' ' << i->first << '\n';
+#endif
+
+               if( total > amount + fee )
+               {
+                  change = total - amount - fee;
+                  break;
+               }
+            }
+
+            if( i == mapped_utxos.begin( ) )
+               break;
+         }
+      }
+
+      // NOTE: Rather than accumulate "dust" UTXOs just add any tiny change amount to the fee.
+      if( change < c_min_fee )
+      {
+         fee += change;
+         change = 0;
+      }
+
+      // FUTURE: These error messages should be module strings.
+      if( total != ( amount + fee + change ) )
+      {
+         if( fee != original_fee )
+            throw runtime_error( "fee should be at least: " + to_string( fee ) );
+         else
+            throw runtime_error( "insufficient funds available" );
+      }
+
+#ifdef DEBUG
+      cout << "amount: " << amount << endl;
+      cout << "fee: " << fee << endl;
+      cout << "change: " << change << endl;
+      cout << "total: " << total << endl;
+      cout << "added: " << ( amount + fee + change ) << endl;
+#endif
+   }
+
+   return change;
+}
+
+}
+
+#ifdef TESTBED
+void get_utxo_information( const string& source_addresses, const string& file_name )
+{
+   string pipe_separated( source_addresses );
+   for( size_t i = 0; i < pipe_separated.size( ); i++ )
+   {
+      if( pipe_separated[ i ] == ' ' || pipe_separated[ i ] == ',' )
+         pipe_separated[ i ] = '|';
+   }
+
+   string cmd( "curl -s \"http://blockchain.info/unspent?active=" + pipe_separated + "\" >" + file_name );
+
+   int rc = system( cmd.c_str( ) );
+   ( void )rc;
+}
+#endif
+
+void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
 {
    string str;
    utxo_info utxo;
@@ -82,6 +223,7 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
       {
          found = true;
          bool okay = false;
+
          pos = str.find( ':' );
          if( pos != string::npos )
          {
@@ -94,21 +236,21 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
                   okay = true;
                   utxo.tx_id = str.substr( pos + 1, epos - pos - 1 );
 
-                  // NOTE: The "tx_hash" from "blockchain.info" needs to be reversed (as hex bytes).
-                  if( !from_standard )
-                  {
-                     string input( utxo.tx_id );
-                     utxo.tx_id.erase( );
+                  string input( utxo.tx_id );
+                  utxo.tx_id_rev.clear( );
 
-                     for( int i = input.length( ) - 1; i >= 0; i -= 2 )
+                  for( int i = input.length( ) - 1; i >= 0; i -= 2 )
+                  {
+                     if( i - 1 >= 0 )
                      {
-                        if( i - 1 >= 0 )
-                        {
-                           utxo.tx_id += input[ i - 1 ];
-                           utxo.tx_id += input[ i ];
-                        }
+                        utxo.tx_id_rev += input[ i - 1 ];
+                        utxo.tx_id_rev += input[ i ];
                      }
                   }
+
+                  // NOTE: The "tx_hash" from "blockchain.info" was initially in reverse order.
+                  if( !from_standard )
+                     swap( utxo.tx_id, utxo.tx_id_rev );
                }
             }
          }
@@ -192,7 +334,6 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
 
                if( pos != string::npos )
                {
-                  bool okay = false;
                   pos = str.find( ':' );
                   if( pos != string::npos )
                   {
@@ -206,164 +347,44 @@ void process_utxo_info( istream& is, multimap< uint64_t, utxo_info >& utxos )
                         }
                      }
 
-                     utxos.insert( make_pair( value, utxo ) );
+                     utxo.amount = value;
                   }
-
-                  found = false;
+                  else
+                     throw runtime_error( "unexpected format for '" + str + "'" );
                }
-            }
-         }
-      }
-   }
-}
-
-uint64_t utxos_balance( const string& file_name )
-{
-   uint64_t balance = 0;
-
-   ifstream inpf( file_name.c_str( ) );
-   if( !inpf )
-      throw runtime_error( "unable to open '" + file_name + "' for input." );
-   else
-   {
-      multimap< uint64_t, utxo_info > utxos;
-
-      process_utxo_info( inpf, utxos );
-
-      if( utxos.empty( ) )
-         throw runtime_error( "no utxo information found" );
-
-      for( multimap< uint64_t, utxo_info >::iterator i = utxos.begin( ); i!= utxos.end( ); ++i )
-      {
-         if( i->first > c_dust_amount )
-            balance += i->first;
-      }
-   }
-
-   return balance;
-}
-
-uint64_t select_utxos_for_transaction(
- const string& file_name, uint64_t amount, vector< utxo_info >& utxos_used, uint64_t& fee )
-{
-   uint64_t change = 0;
-   uint64_t original_fee( fee );
-
-   ifstream inpf( file_name.c_str( ) );
-   if( !inpf )
-      throw runtime_error( "unable to open '" + file_name + "' for input." );
-   else
-   {
-      uint64_t total = 0;
-
-      multimap< uint64_t, utxo_info > utxos;
-
-      process_utxo_info( inpf, utxos );
-
-      if( utxos.empty( ) )
-         throw runtime_error( "no utxo information found" );
-
-      bool done = false;
-      for( multimap< uint64_t, utxo_info >::iterator i = utxos.begin( ); i != utxos.end( ); ++i )
-      {
-         if( i->first <= c_dust_amount )
-            continue;
-
-         // NOTE: Prefer a single UTXO rather than multiple in order to keep the tx size to a minimum.
-         if( i->first >= amount + fee )
-         {
-            done = true;
-            total += i->first;
-            change = total - amount - fee;
-
-            utxos_used.push_back( i->second );
-
-#ifdef DEBUG
-            cout << ( i->second ).tx_id << ':' << ( i->second ).vout << ' ' << ( i->second ).script << ' ' << i->first << '\n';
-#endif
-            break;
-         }
-      }
-
-      if( !done )
-      {
-         int num = 0;
-         multimap< uint64_t, utxo_info >::iterator i = utxos.end( );
-         while( true )
-         {
-            --i;
-            if( i->first > fee )
-            {
-               total += i->first;
-
-               // NOTE: Increment the fee by the minimum amount for every 10 UTXO's.
-               // FUTURE: The fee should be calculated more accurately and take "age" into account.
-               if( ++num % 10 == 0 )
-                  fee += c_min_fee;
-
-               utxos_used.push_back( i->second );
-#ifdef DEBUG
-               cout << ( i->second ).tx_id << ':' << ( i->second ).vout << ' ' << ( i->second ).script << ' ' << i->first << '\n';
-#endif
-
-               if( total > amount + fee )
+               else
                {
-                  change = total - amount - fee;
-                  break;
+                  pos = str.find( "\"confirmations\"" );
+
+                  if( pos != string::npos )
+                  {
+                     pos = str.find( ':' );
+                     if( pos != string::npos )
+                     {
+                        uint64_t value = 0;
+                        for( size_t i = pos + 1; i < str.length( ); i++ )
+                        {
+                           if( str[ i ] >= '0' && str[ i ] <= '9' )
+                           {
+                              value *= 10;
+                              value += str[ i ] - '0';
+                           }
+                        }
+
+                        utxo.confirmations = value;
+
+                        found = false;
+                        utxos.push_back( utxo );
+                     }
+                     else
+                        throw runtime_error( "unexpected format for '" + str + "'" );
+                  }
                }
             }
-
-            if( i == utxos.begin( ) )
-               break;
          }
       }
-
-      // NOTE: Rather than accumulate "dust" UTXOs just add any tiny change amount to the fee.
-      if( change < c_min_fee )
-      {
-         fee += change;
-         change = 0;
-      }
-
-      // FUTURE: These error messages should be module strings.
-      if( total != ( amount + fee + change ) )
-      {
-         if( fee != original_fee )
-            throw runtime_error( "fee should be at least: " + to_string( fee ) );
-         else
-            throw runtime_error( "insufficient funds available" );
-      }
-
-#ifdef DEBUG
-      cout << "amount: " << amount << endl;
-      cout << "fee: " << fee << endl;
-      cout << "change: " << change << endl;
-      cout << "total: " << total << endl;
-      cout << "added: " << ( amount + fee + change ) << endl;
-#endif
    }
-
-   return change;
 }
-
-}
-
-#ifdef TESTBED
-void get_utxo_information( const string& source_addresses, const string& file_name )
-{
-   string pipe_separated( source_addresses );
-   for( size_t i = 0; i < pipe_separated.size( ); i++ )
-   {
-      if( pipe_separated[ i ] == ' ' || pipe_separated[ i ] == ',' )
-         pipe_separated[ i ] = '|';
-   }
-
-   string cmd( "curl -s \"http://blockchain.info/unspent?active=" + pipe_separated + "\" >" + file_name );
-
-   int rc = system( cmd.c_str( ) );
-   ( void )rc;
-}
-#endif
 
 uint64_t get_utxos_balance_amt( const string& file_name )
 {

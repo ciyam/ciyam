@@ -7,11 +7,16 @@
 #  define TX_CREATE_H
 
 #  ifndef HAS_PRECOMPILED_STD_HEADERS
+#     include <iosfwd>
 #     include <string>
+#     include <vector>
 #  endif
 
 #  include "ptypes.h"
+#  include "class_base.h"
 #  include "ciyam_common.h"
+
+void parse_utxo_info( std::istream& is, std::vector< utxo_info >& utxos );
 
 uint64_t get_utxos_balance_amt( const std::string& file_name );
 

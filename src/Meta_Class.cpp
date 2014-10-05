@@ -3441,7 +3441,8 @@ void Meta_Class::impl::impl_Generate( )
             bool is_gen_script_object = false;
             bool is_gen_script_object_only = false;
 
-            if( specification_object == "gen_create"
+            if( specification_object == "gen_bulk"
+             || specification_object == "gen_create"
              || specification_object == "gen_script"
              || specification_object == "gen_ext_script"
              || specification_object == "field_from_script" )

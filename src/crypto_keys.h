@@ -33,6 +33,7 @@ class public_key
    bool verify_signature( const unsigned char* p_data, const std::string& sig ) const;
 
    static std::string address_to_hash160( const std::string& address );
+   static std::string hash160_to_address( const std::string& hash160, bool is_testnet = false );
 
    private:
    public_key( const public_key& );
@@ -78,9 +79,8 @@ class private_key : public public_key
 
 struct utxo_information
 {
-   utxo_information( size_t index,
-    const std::string& reversed_txid,
-    const char* p_script = 0, private_key* p_private_key = 0 )
+   utxo_information( unsigned int index,
+    const std::string& reversed_txid, const char* p_script = 0, private_key* p_private_key = 0 )
     :
     index( index ),
     reversed_txid( reversed_txid ),
@@ -89,7 +89,7 @@ struct utxo_information
    {
    }
 
-   size_t index;
+   unsigned int index;
    std::string reversed_txid;
 
    std::string original_script;

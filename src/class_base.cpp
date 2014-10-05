@@ -52,6 +52,9 @@
 #include "tx_create.h"
 #include "file_utils.h"
 #include "ciyam_base.h"
+#ifdef SSL_SUPPORT
+#  include "crypto_keys.h"
+#endif
 #include "mail_source.h"
 #include "oid_pointer.h"
 #include "ciyam_common.h"
@@ -2341,10 +2344,10 @@ string int_to_comparable_string( int i, bool prefix_with_sign, int max_digits )
    return retval;
 }
 
-string construct_key_from_int( const string& prefix, int num )
+string construct_key_from_int( const string& prefix, int num, int num_digits )
 {
    string retval( prefix );
-   retval += int_to_comparable_string( num, false, 5 );
+   retval += int_to_comparable_string( num, false, num_digits );
    return retval;
 }
 
@@ -4383,9 +4386,29 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
    }
 }
 
+void parse_utxo_information( const string& file_name, vector< utxo_info >& utxos )
+{
+   ifstream inpf( file_name.c_str( ) );
+   if( !inpf )
+      throw runtime_error( "unable to open '" + file_name + "' for input in parse_utxo_information" );
+
+   parse_utxo_info( inpf, utxos );
+}
+
 uint64_t determine_utxo_balance( const string& file_name )
 {
    return get_utxos_balance_amt( file_name );
+}
+
+string convert_hash160_to_address( const string& ext_key, const string& hash160 )
+{
+   ( void )ext_key;
+
+#ifdef SSL_SUPPORT
+   return public_key::hash160_to_address( hash160 );
+#else
+   throw runtime_error( "SSL support is needed in order to use convert_hash160_to_address" );
+#endif
 }
 
 string construct_raw_transaction( const string& ext_key, bool change_type_is_automatic,

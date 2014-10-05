@@ -4212,7 +4212,7 @@ string totp_secret_key( const string& unique )
    return get_totp_secret( unique, sid_hash( ) );
 }
 
-int exec_system( const string& cmd, bool async )
+int exec_system( const string& cmd, bool async, bool sync_at_commit )
 {
    string s( cmd );
 
@@ -4233,6 +4233,7 @@ int exec_system( const string& cmd, bool async )
 
    if( async )
    {
+      string os( s );
 #ifdef _WIN32
       s = "start /min " + s;
 #else
@@ -4241,10 +4242,12 @@ int exec_system( const string& cmd, bool async )
 
       // NOTE: It is expected that synchronous system calls are needed as a part
       // of the transaction itself, however, for async calls they will only ever
-      // be issued after the transaction is successfully committed.
+      // be issued after the transaction is successfully committed. If one wants
+      // to not issue the scripts until the commit itself but actually want them
+      // to be issued synchronously then use "async" with "sync_at_commit".
       if( gtp_session && !gtp_session->transactions.empty( ) )
       {
-         gtp_session->async_system_commands.push_back( s );
+         gtp_session->async_system_commands.push_back( sync_at_commit ? os : s );
 
          if( !gtp_session->async_temp_file.empty( ) )
             gtp_session->async_temp_files.push_back( gtp_session->async_temp_file );
@@ -4258,7 +4261,7 @@ int exec_system( const string& cmd, bool async )
    return system( s.c_str( ) );
 }
 
-int run_script( const string& script_name, bool async )
+int run_script( const string& script_name, bool async, bool sync_at_commit )
 {
    int rc = -1;
 
@@ -4306,9 +4309,9 @@ int run_script( const string& script_name, bool async )
          script_args += " " + script_name;
 
 #ifdef _WIN32
-      rc = exec_system( "script " + script_args, async );
+      rc = exec_system( "script " + script_args, async, sync_at_commit );
 #else
-      rc = exec_system( "./script " + script_args, async );
+      rc = exec_system( "./script " + script_args, async, sync_at_commit );
 #endif
    }
    else
@@ -4322,7 +4325,7 @@ int run_script( const string& script_name, bool async )
       if( !arguments.empty( ) )
          cmd_and_args += " " + arguments;
 
-      rc = exec_system( cmd_and_args, async );
+      rc = exec_system( cmd_and_args, async, sync_at_commit );
    }
 
    return rc;
