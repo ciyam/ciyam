@@ -960,7 +960,7 @@ void CLASS_BASE_DECL_SPEC from_string( class_base& cb, const std::string& s );
 
 std::string CLASS_BASE_DECL_SPEC int_to_comparable_string( int i, bool prefix_with_sign = true, int max_digits = 0 );
 
-std::string CLASS_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num );
+std::string CLASS_BASE_DECL_SPEC construct_key_from_int( const std::string& prefix, int num, int num_digits = 5 );
 
 template< typename T > inline int to_integer( const T& t ) { return t; }
 
@@ -1283,10 +1283,29 @@ std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& 
 
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
+struct utxo_info
+{
+   std::string tx_id;
+   std::string tx_id_rev;
+
+   unsigned int vout;
+
+   std::string script;
+   std::string address;
+
+   uint64_t amount;
+   unsigned int confirmations;
+};
+
 void CLASS_BASE_DECL_SPEC load_utxo_information(
  const std::string& ext_key, const std::string& source_addresses, const std::string& file_name );
 
+void CLASS_BASE_DECL_SPEC parse_utxo_information(
+ const std::string& file_name, std::vector< utxo_info >& utxos );
+
 uint64_t CLASS_BASE_DECL_SPEC determine_utxo_balance( const std::string& file_name );
+
+std::string CLASS_BASE_DECL_SPEC convert_hash160_to_address( const std::string& ext_key, const std::string& hash160 );
 
 std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  const std::string& ext_key, bool change_type_is_automatic,

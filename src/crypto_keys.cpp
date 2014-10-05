@@ -425,13 +425,38 @@ bool public_key::verify_signature( const unsigned char* p_data, const string& si
 
 string public_key::address_to_hash160( const string& address )
 {
-   if( address.size( ) < 33 )
+   if( address.length( ) < 33 )
       throw runtime_error( "invalid address '" + address + "'" );
 
    vector< unsigned char > dbuf;
    base58_decode( address, dbuf );
 
    return hex_encode( &dbuf[ 1 ], dbuf.size( ) - 5 );
+}
+
+string public_key::hash160_to_address( const string& hash160, bool is_testnet )
+{
+   if( hash160.length( ) != RIPEMD160_DIGEST_LENGTH * 2 )
+      throw runtime_error( "invalid hash160 '" + hash160 + "'" );
+
+   unsigned char buf[ RIPEMD160_DIGEST_LENGTH + 5 ];
+   hex_decode( hash160, buf + 1, RIPEMD160_DIGEST_LENGTH );
+
+   if( !is_testnet )
+      buf[ 0 ] = 0x00;
+   else
+      buf[ 0 ] = 0x6F;
+
+   unsigned char buf2[ c_num_hash_bytes ];
+   sha256 hash2( buf, RIPEMD160_DIGEST_LENGTH + 1 );
+   hash2.copy_digest_to_buffer( buf2 );
+
+   hash2.update( buf2, c_num_hash_bytes );
+   hash2.copy_digest_to_buffer( buf2 );
+
+   memcpy( &buf[ RIPEMD160_DIGEST_LENGTH + 1 ], buf2, 4 );
+
+   return base58_encode( buf, RIPEMD160_DIGEST_LENGTH + 5 );
 }
 
 struct private_key::impl

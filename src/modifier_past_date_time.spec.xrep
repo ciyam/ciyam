@@ -13,9 +13,10 @@
 `{`}\
    // [(start modifier_past_date_time)] `{`$arg_id`}
    if(`{`!`@eq`(`$arg_tfield`,`'`'`) get_obj( ).`{`$arg_tfield`}( )\
-`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} &&`} get_obj( ).`{`$arg_dfield`}( )\
-`{`!`@eq`(`$arg_future`,`'`'`) >`, <`} `{`$dftype`}::standard( )\
-`{`!`@eq`(`$add_amt`,`'`'`) + `{`!`@eq`(`$add_typ`,`'`'`)( `{`$add_typ`} )`}`{`$add_amt`}`} )
+`{`!`@eq`(`$arg_tvalue`,`'`'`) == `{`$arg_tvalue`}`} &&`} is_null( get_obj( ).`{`$arg_dfield`}( ) )
+    || ( get_obj( ).`{`$arg_dfield`}( ) \
+`{`!`@eq`(`$arg_future`,`'`'`)`{`@eq`(`$add_amt`,`'`'`)>`,>=`}`,`{`@eq`(`$add_amt`,`'`'`)<`,<=`}`} `{`$dftype`}::standard( )\
+`{`!`@eq`(`$add_amt`,`'`'`) `{`!`@eq`(`$arg_future`,`'`'`)+`,-`} `{`!`@eq`(`$add_typ`,`'`'`)( `{`$add_typ`} )`}`{`$add_amt`}`} ) )
       state |= c_modifier_`{`$arg_modifier`};
    // [(finish modifier_past_date_time)] `{`$arg_id`}
 `}
