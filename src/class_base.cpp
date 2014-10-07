@@ -4313,6 +4313,119 @@ bool can_create_address( const string& ext_key )
    return !client_info.script_name.empty( );
 }
 
+void load_address_information( const string& ext_key, const string& file_name )
+{
+   string s;
+
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   string cmd;
+
+   if( client_info.protocol == c_protocol_bitcoin )
+   {
+      cmd = escaped( client_info.script_name ) + " ";
+
+      cmd += "listaddressgroupings";
+
+      cmd += " >" + file_name + " 2>&1";
+   }
+
+   if( !cmd.empty( ) )
+   {
+      TRACE_LOG( TRACE_SESSIONS, cmd );
+
+      if( system( cmd.c_str( ) ) != 0 )
+         throw runtime_error( "unexpected system failure for load_address_information" );
+   }
+
+   if( file_exists( file_name ) )
+   {
+      string error, content( buffer_file( file_name ) );
+
+      if( content.empty( ) )
+         error = "unexpected emtpy response from 'listaddressgroupings'";
+      else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
+         error = content;
+
+      // NOTE: The minimum expected JSON output should be at least eight lines so if less
+      // than this was returned then assume it was due to no address records being found.
+      if( error.empty( ) && count( content.begin( ), content.end( ), '\n' ) < 8 )
+         error = "no address information was found"; // FUTURE: This should be a module string.
+
+      if( !error.empty( ) )
+      {
+         file_remove( file_name );
+         throw runtime_error( error );
+      }
+   }
+}
+
+void parse_address_information( const string& file_name, vector< address_info >& addresses )
+{
+   ifstream inpf( file_name.c_str( ) );
+
+   if( !inpf )
+      throw runtime_error( "unable to open '" + file_name + "' for input in parse_address_information" );
+
+   double amount;
+   string label, address;
+
+   bool had_amount = false;
+   bool had_address = false;
+   bool had_left_bracket = false;
+
+   string next;
+
+   while( getline( inpf, next ) )
+   {
+      if( next.find( '[' ) != string::npos )
+         had_left_bracket = true;
+      else if( next.find( ']' ) != string::npos )
+      {
+         if( had_amount && had_address )
+            addresses.push_back( address_info( address, label, amount ) );
+
+         label.erase( );
+         address.erase( );
+
+         had_amount = false;
+         had_address = false;
+         had_left_bracket = false;
+      }
+      else if( had_left_bracket )
+      {
+         string::size_type pos = next.find( '"' );
+         if( !had_address && pos != string::npos )
+         {
+            string::size_type epos = next.find( '"', pos + 1 );
+            if( epos != string::npos )
+            {
+               had_address = true;
+               address = next.substr( pos + 1, epos - pos - 1 );
+            }
+         }
+         else if( had_address )
+         {
+            if( !had_amount && next.find( '.' ) != string::npos )
+            {
+               had_amount = true;
+               amount = atof( next.c_str( ) );
+            }
+            else if( had_amount )
+            {
+               if( pos != string::npos )
+               {
+                  string::size_type epos = next.find( '"', pos + 1 );
+                  if( epos != string::npos )
+                     label = next.substr( pos + 1, epos - pos - 1 );
+               }
+            }
+         }
+      }
+   }
+}
+
 void load_utxo_information( const string& ext_key, const string& source_addresses, const string& file_name )
 {
    external_client client_info;
@@ -4376,7 +4489,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
       // NOTE: The minimum expected JSON output should be at least ten lines so if less
       // than this was returned then assume it was due to no UTXO records being found.
       if( error.empty( ) && count( content.begin( ), content.end( ), '\n' ) < 10 )
-         error = "No UTXO information was found.";
+         error = "no UTXO information was found";  // FUTURE: This should be a module string.
 
       if( !error.empty( ) )
       {

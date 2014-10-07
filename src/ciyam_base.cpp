@@ -9099,7 +9099,7 @@ void transaction_commit( )
          // NOTE: Sleep a little between each system to try and ensure that
          // the order of execution will be the same even if they are async.
          if( i > 0 )
-            msleep( 100 );
+            msleep( 250 );
 
          TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
          int rc = system( gtp_session->async_system_commands[ i ].c_str( ) );
@@ -10108,20 +10108,11 @@ bool perform_instance_iterate( class_base& instance,
          string extra_key_info;
          string final_key_info;
 
-         size_t pos = keys.find( '#' );
+         size_t pos = keys.find_first_of( " #" );
          if( pos != string::npos )
          {
             extra_key_info = keys.substr( pos );
             keys.erase( pos );
-         }
-         else
-         {
-            pos = keys.find( ' ' );
-            if( pos != string::npos )
-            {
-               extra_key_info = keys.substr( pos );
-               keys.erase( pos );
-            }
          }
 
          if( pos == string::npos )
@@ -10142,6 +10133,10 @@ bool perform_instance_iterate( class_base& instance,
                   extra_key_info.erase( pos + 1 );
                }
             }
+
+            // NOTE: If we have one more extra key value then assume it is that of the primary key.
+            if( extra_key_values.size( ) == all_keys.size( ) + 1 )
+               all_keys.push_back( c_special_variable_key );
 
             bool first_extra = true;
             vector< string > final_keys;
