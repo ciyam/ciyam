@@ -282,6 +282,22 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
          {
             if( from_standard )
             {
+               pos = str.find( "\"account\"" );
+               if( pos != string::npos )
+               {
+                  pos = str.find( ':', pos + 1 );
+                  if( pos != string::npos )
+                  {
+                     pos = str.find( "\"", pos + 1 );
+                     if( pos != string::npos )
+                     {
+                        string::size_type epos = str.find( "\"", pos + 1 );
+                        if( epos != string::npos )
+                           utxo.account = str.substr( pos + 1, epos - pos - 1 );
+                     }
+                  }
+               }
+
                pos = str.find( "\"address\"" );
                if( pos != string::npos )
                {
@@ -374,7 +390,13 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
                         utxo.confirmations = value;
 
                         found = false;
-                        utxos.push_back( utxo );
+
+                        // NOTE: Don't bother including UTXOs with amounts
+                        // that are smaller than the minimum fee amount.
+                        if( utxo.amount >= c_min_fee )
+                           utxos.push_back( utxo );
+
+                        utxo.clear( );
                      }
                      else
                         throw runtime_error( "unexpected format for '" + str + "'" );

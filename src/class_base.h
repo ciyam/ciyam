@@ -1285,12 +1285,38 @@ bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
 struct utxo_info
 {
+   utxo_info( )
+    :
+    vout( 0 ),
+    amount( 0 ),
+    confirmations( 0 )
+   {
+   }
+
+   void clear( )
+   {
+      tx_id.erase( );
+      tx_id_rev.erase( );
+
+      vout = 0;
+
+      script.erase( );
+      account.erase( );
+
+      address.erase( );
+
+      amount = 0;
+      confirmations = 0;
+   }
+
    std::string tx_id;
    std::string tx_id_rev;
 
    unsigned int vout;
 
    std::string script;
+   std::string account;
+
    std::string address;
 
    uint64_t amount;

@@ -53,48 +53,50 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
       e_field_id_Allow_Text_Search = 6,
       e_field_id_Class = 7,
       e_field_id_Create_Only_If_Default_Other = 8,
-      e_field_id_Create_Permission = 9,
-      e_field_id_Create_Restriction = 10,
-      e_field_id_Delete_Direction = 11,
-      e_field_id_Destroy_Only_If_Default_Other = 12,
-      e_field_id_Destroy_Permission = 13,
-      e_field_id_Destroy_Restriction = 14,
-      e_field_id_Direction = 15,
-      e_field_id_Display_Only_If_Default_Other = 16,
-      e_field_id_Display_Row_Limit = 17,
-      e_field_id_Display_Security_Level = 18,
-      e_field_id_Display_Sub_Totals = 19,
-      e_field_id_Display_Totals = 20,
-      e_field_id_File_Links_Always_As_Single = 21,
-      e_field_id_Id = 22,
-      e_field_id_Ignore_Implicit_Ordering = 23,
-      e_field_id_Ignore_State_For_Display = 24,
-      e_field_id_Ignore_Unactionable_Records = 25,
-      e_field_id_Ignore_Uneditable_Parent = 26,
-      e_field_id_Ignore_User_Id_Filter = 27,
-      e_field_id_Is_Admin = 28,
-      e_field_id_Is_Child = 29,
-      e_field_id_Is_Home = 30,
-      e_field_id_Is_Not_Anonymous = 31,
-      e_field_id_Is_Variation = 32,
-      e_field_id_Limit_Scroll_And_New = 33,
-      e_field_id_Model = 34,
-      e_field_id_Multiline_Truncate_For_Print = 35,
-      e_field_id_Name = 36,
-      e_field_id_Number_Multiple_Pages = 37,
-      e_field_id_PDF_Font_Type = 38,
-      e_field_id_PDF_List_Type = 39,
-      e_field_id_Parent_Class = 40,
-      e_field_id_Parent_Field = 41,
-      e_field_id_Print_Restriction = 42,
-      e_field_id_Print_Without_Highlight = 43,
-      e_field_id_Search_Option_Limit = 44,
-      e_field_id_Sort_Rows_In_UI = 45,
-      e_field_id_Style = 46,
-      e_field_id_Text_Match_Highlight = 47,
-      e_field_id_Title = 48,
-      e_field_id_Type = 49,
-      e_field_id_Variation_Name = 50
+      e_field_id_Create_Parent_Modifier = 9,
+      e_field_id_Create_Permission = 10,
+      e_field_id_Create_Restriction = 11,
+      e_field_id_Delete_Direction = 12,
+      e_field_id_Destroy_Only_If_Default_Other = 13,
+      e_field_id_Destroy_Parent_Modifier = 14,
+      e_field_id_Destroy_Permission = 15,
+      e_field_id_Destroy_Restriction = 16,
+      e_field_id_Direction = 17,
+      e_field_id_Display_Only_If_Default_Other = 18,
+      e_field_id_Display_Row_Limit = 19,
+      e_field_id_Display_Security_Level = 20,
+      e_field_id_Display_Sub_Totals = 21,
+      e_field_id_Display_Totals = 22,
+      e_field_id_File_Links_Always_As_Single = 23,
+      e_field_id_Id = 24,
+      e_field_id_Ignore_Implicit_Ordering = 25,
+      e_field_id_Ignore_State_For_Display = 26,
+      e_field_id_Ignore_Unactionable_Records = 27,
+      e_field_id_Ignore_Uneditable_Parent = 28,
+      e_field_id_Ignore_User_Id_Filter = 29,
+      e_field_id_Is_Admin = 30,
+      e_field_id_Is_Child = 31,
+      e_field_id_Is_Home = 32,
+      e_field_id_Is_Not_Anonymous = 33,
+      e_field_id_Is_Variation = 34,
+      e_field_id_Limit_Scroll_And_New = 35,
+      e_field_id_Model = 36,
+      e_field_id_Multiline_Truncate_For_Print = 37,
+      e_field_id_Name = 38,
+      e_field_id_Number_Multiple_Pages = 39,
+      e_field_id_PDF_Font_Type = 40,
+      e_field_id_PDF_List_Type = 41,
+      e_field_id_Parent_Class = 42,
+      e_field_id_Parent_Field = 43,
+      e_field_id_Print_Restriction = 44,
+      e_field_id_Print_Without_Highlight = 45,
+      e_field_id_Search_Option_Limit = 46,
+      e_field_id_Sort_Rows_In_UI = 47,
+      e_field_id_Style = 48,
+      e_field_id_Text_Match_Highlight = 49,
+      e_field_id_Title = 50,
+      e_field_id_Type = 51,
+      e_field_id_Variation_Name = 52
    };
 
    Meta_List( );
@@ -235,9 +237,17 @@ class META_LIST_DECL_SPEC Meta_List : public class_base
    const Meta_Class& Class( ) const;
    void Class( const std::string& key );
 
+   Meta_Modifier& Create_Parent_Modifier( );
+   const Meta_Modifier& Create_Parent_Modifier( ) const;
+   void Create_Parent_Modifier( const std::string& key );
+
    Meta_Permission& Create_Permission( );
    const Meta_Permission& Create_Permission( ) const;
    void Create_Permission( const std::string& key );
+
+   Meta_Modifier& Destroy_Parent_Modifier( );
+   const Meta_Modifier& Destroy_Parent_Modifier( ) const;
+   void Destroy_Parent_Modifier( const std::string& key );
 
    Meta_Permission& Destroy_Permission( );
    const Meta_Permission& Destroy_Permission( ) const;

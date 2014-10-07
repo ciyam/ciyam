@@ -9096,6 +9096,11 @@ void transaction_commit( )
    {
       for( size_t i = 0; i < gtp_session->async_system_commands.size( ); i++ )
       {
+         // NOTE: Sleep a little between each system to try and ensure that
+         // the order of execution will be the same even if they are async.
+         if( i > 0 )
+            msleep( 100 );
+
          TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
          int rc = system( gtp_session->async_system_commands[ i ].c_str( ) );
          ( void )rc;

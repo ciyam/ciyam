@@ -3528,6 +3528,18 @@
      <pextra>@group:301500+116101
     </field>
     <field/>
+     <name>field_list_create_parent_modifier
+     <field>301998a
+     <ftype>@class
+     <extra>force
+     <mandatory>false
+     <modifiers>2000:relegate
+     <pclass>109100
+     <pfield>109101
+     <pfname>field_modifier_name
+     <pextra>@fkey3:300900+109101
+    </field>
+    <field/>
      <name>field_list_destroy_restriction
      <field>122105
      <ftype>int
@@ -3546,6 +3558,18 @@
      <pfield>116101
      <pfname>field_permission_name
      <pextra>@group:301500+116101
+    </field>
+    <field/>
+     <name>field_list_destroy_parent_modifier
+     <field>301998b
+     <ftype>@class
+     <extra>force
+     <mandatory>false
+     <modifiers>2000:relegate
+     <pclass>109100
+     <pfield>109101
+     <pfname>field_modifier_name
+     <pextra>@fkey3:300900+109101
     </field>
     <field/>
      <name>field_list_allow_anonymous_access
