@@ -958,6 +958,8 @@ relationship_add -id=201995 -fid=301995 List Destroy_{Permission} Permission opt
 relationship_add -id=201996 -fid=301996 List Parent_Field Field opt restrict
 relationship_add -id=201997 -fid=301997 List Parent_Class Class opt destroy
 relationship_add -id=201998 -fid=301998 List Access_Parent_Modifier Modifier opt destroy
+relationship_add -id=201998a -fid=301998a List Create_Parent_Modifier Modifier opt destroy
+relationship_add -id=201998b -fid=301998b List Destroy_Parent_Modifier Modifier opt destroy
 relationship_add -id=202100 -fid=302100 List_Field {List} List mand destroy
 relationship_add -id=202110 -fid=302110 List_Field {Class} Class mand destroy
 relationship_add -id=202115 -fid=302115 List_Field Parent_Class Class opt destroy
@@ -1157,7 +1159,8 @@ modifier_add -id=500740 View_Field Is_Not_Enum Enum_Starts_At:relegate,Enum_Fini
 modifier_add -id=500741 View_Field Proect_Access Access_Scope:protect,Access_Restriction:protect,Access_{Permission}:protect
 modifier_add -id=500742 View_Field Proect_Change Change_Scope:protect,Change_Restriction:protect,Change_{Permission}:protect
 modifier_add -id=500800 List Is_Child Is_Variation:relegate
-modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Access_Parent_Modifier:relegate,Ignore_Uneditable_Parent:relegate
+modifier_add -id=500810 List Is_Not_Child Parent_Field:relegate,Access_Parent_Modifier:relegate\
+,Create_Parent_Modifier:relegate,Ignore_Uneditable_Parent:relegate,Destroy_Parent_Modifier:relegate
 modifier_add -id=500812 List Is_Not_Unlimited Sort_Rows_In_UI:relegate
 modifier_add -id=500815 List Is_Not_Search_Style Allow_Quick_Link:relegate,Search_Option_Limit:relegate
 modifier_add -id=500820 List Cannot_Text_Search Text_Match_Highlight:relegate
@@ -2058,8 +2061,8 @@ specification_add -id=602800 {List}_view view "? standard List {Model}:Name;no_e
 ,Parent_Field:Name!@fkey2:{Class}+Is_Foreign_Key=1+Name;link+force,Parent_Class;hidden+fkey3,Title,Style;force\
 ,@tab:Security_Options\
 ,Print_Restriction,Access_Restriction;force,Access_{Permission}:Name!@group:{Workgroup}+Name;force,Access_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
-,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name\
-,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name,Allow_Anonymous_Access\
+,Create_Restriction,Create_{Permission}:Name!@group:{Workgroup}+Name,Create_Parent_Modifier:Name!@fkey3:{Class}+Name;force\
+,Destroy_Restriction,Destroy_{Permission}:Name!@group:{Workgroup}+Name,Destroy_Parent_Modifier:Name!@fkey3:{Class}+Name;force,Allow_Anonymous_Access\
 ,@tab:Basic_UI_Options\
 ,Allow_Quick_Link,Search_Option_Limit,Direction,Delete_Direction,Display_Row_Limit;force,Sort_Rows_In_UI;force\
 ,Limit_Scroll_And_New,Is_Variation,Display_Totals,Display_Sub_Totals,Allow_Text_Search;force,Text_Match_Highlight\

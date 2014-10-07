@@ -455,6 +455,50 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
       return *cp_child_List_Access_Parent;
    }
 
+   Meta_List& impl_child_List_Create_Parent( )
+   {
+      if( !cp_child_List_Create_Parent )
+      {
+         cp_child_List_Create_Parent.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Create_Parent, "301998a" );
+      }
+      return *cp_child_List_Create_Parent;
+   }
+
+   const Meta_List& impl_child_List_Create_Parent( ) const
+   {
+      if( !cp_child_List_Create_Parent )
+      {
+         cp_child_List_Create_Parent.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Create_Parent, "301998a" );
+      }
+      return *cp_child_List_Create_Parent;
+   }
+
+   Meta_List& impl_child_List_Destroy_Parent( )
+   {
+      if( !cp_child_List_Destroy_Parent )
+      {
+         cp_child_List_Destroy_Parent.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Destroy_Parent, "301998b" );
+      }
+      return *cp_child_List_Destroy_Parent;
+   }
+
+   const Meta_List& impl_child_List_Destroy_Parent( ) const
+   {
+      if( !cp_child_List_Destroy_Parent )
+      {
+         cp_child_List_Destroy_Parent.init( );
+
+         p_obj->setup_graph_parent( *cp_child_List_Destroy_Parent, "301998b" );
+      }
+      return *cp_child_List_Destroy_Parent;
+   }
+
    Meta_Specification& impl_child_Specification_Other_Modifier_2( )
    {
       if( !cp_child_Specification_Other_Modifier_2 )
@@ -653,6 +697,8 @@ struct Meta_Modifier::impl : public Meta_Modifier_command_handler
 
    mutable class_pointer< Meta_List_Field > cp_child_List_Field_Access_Parent;
    mutable class_pointer< Meta_List > cp_child_List_Access_Parent;
+   mutable class_pointer< Meta_List > cp_child_List_Create_Parent;
+   mutable class_pointer< Meta_List > cp_child_List_Destroy_Parent;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other_Modifier_2;
    mutable class_pointer< Meta_Specification > cp_child_Specification_Other;
    mutable class_pointer< Meta_Modifier > cp_child_Modifier_Source;
@@ -1228,6 +1274,26 @@ const Meta_List& Meta_Modifier::child_List_Access_Parent( ) const
    return p_impl->impl_child_List_Access_Parent( );
 }
 
+Meta_List& Meta_Modifier::child_List_Create_Parent( )
+{
+   return p_impl->impl_child_List_Create_Parent( );
+}
+
+const Meta_List& Meta_Modifier::child_List_Create_Parent( ) const
+{
+   return p_impl->impl_child_List_Create_Parent( );
+}
+
+Meta_List& Meta_Modifier::child_List_Destroy_Parent( )
+{
+   return p_impl->impl_child_List_Destroy_Parent( );
+}
+
+const Meta_List& Meta_Modifier::child_List_Destroy_Parent( ) const
+{
+   return p_impl->impl_child_List_Destroy_Parent( );
+}
+
 Meta_Specification& Meta_Modifier::child_Specification_Other_Modifier_2( )
 {
    return p_impl->impl_child_Specification_Other_Modifier_2( );
@@ -1677,7 +1743,7 @@ void Meta_Modifier::set_total_child_relationships( size_t new_total_child_relati
 
 size_t Meta_Modifier::get_num_foreign_key_children( bool is_internal ) const
 {
-   size_t rc = 8;
+   size_t rc = 10;
 
    if( !is_internal )
    {
@@ -1710,7 +1776,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
 {
    class_base* p_class_base = 0;
 
-   if( child_num >= 8 )
+   if( child_num >= 10 )
    {
       external_aliases_lookup_const_iterator ealci = g_external_aliases_lookup.lower_bound( child_num );
       if( ealci == g_external_aliases_lookup.end( ) || ealci->first > child_num )
@@ -1739,6 +1805,22 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          break;
 
          case 2:
+         if( op == e_cascade_op_destroy )
+         {
+            next_child_field = "301998a";
+            p_class_base = &child_List_Create_Parent( );
+         }
+         break;
+
+         case 3:
+         if( op == e_cascade_op_destroy )
+         {
+            next_child_field = "301998b";
+            p_class_base = &child_List_Destroy_Parent( );
+         }
+         break;
+
+         case 4:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301442";
@@ -1746,7 +1828,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 3:
+         case 5:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301441";
@@ -1754,7 +1836,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 4:
+         case 6:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "300910";
@@ -1762,7 +1844,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 5:
+         case 7:
          if( op == e_cascade_op_destroy )
          {
             next_child_field = "301000";
@@ -1770,7 +1852,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 6:
+         case 8:
          if( op == e_cascade_op_unlink )
          {
             next_child_field = "302832";
@@ -1778,7 +1860,7 @@ class_base* Meta_Modifier::get_next_foreign_key_child(
          }
          break;
 
-         case 7:
+         case 9:
          if( op == e_cascade_op_restrict )
          {
             next_child_field = "301440";
@@ -1887,6 +1969,10 @@ class_base& Meta_Modifier::get_or_create_graph_child( const string& context )
       p_class_base = &child_List_Field_Access_Parent( );
    else if( sub_context == "_301998" || sub_context == "child_List_Access_Parent" )
       p_class_base = &child_List_Access_Parent( );
+   else if( sub_context == "_301998a" || sub_context == "child_List_Create_Parent" )
+      p_class_base = &child_List_Create_Parent( );
+   else if( sub_context == "_301998b" || sub_context == "child_List_Destroy_Parent" )
+      p_class_base = &child_List_Destroy_Parent( );
    else if( sub_context == "_301442" || sub_context == "child_Specification_Other_Modifier_2" )
       p_class_base = &child_Specification_Other_Modifier_2( );
    else if( sub_context == "_301441" || sub_context == "child_Specification_Other" )

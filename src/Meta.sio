@@ -5226,6 +5226,28 @@
       </specifications>
      </field>
      <field/>
+      <id>301998a
+      <name>Create_Parent_Modifier
+      <type>@class
+      <mandatory>false
+      <class_id>109100
+      <relationship_id>201998a
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500810
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>122104
       <name>Create_Restriction
       <type>int
@@ -5314,6 +5336,28 @@
       <modifiers/>
        <modifier/>
         <id>500830
+        <affect>relegate
+       </modifier>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602800
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
+      <id>301998b
+      <name>Destroy_Parent_Modifier
+      <type>@class
+      <mandatory>false
+      <class_id>109100
+      <relationship_id>201998b
+      <indexes/>
+      </indexes>
+      <modifiers/>
+       <modifier/>
+        <id>500810
         <affect>relegate
        </modifier>
       </modifiers>
@@ -27036,6 +27080,15 @@
     </specifications>
    </relationship>
    <relationship/>
+    <id>201998a
+    <name>Create_Parent_Modifier_{List}
+    <parent_id>109100
+    <child_id>122100
+    <cascade_op>destroy
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
     <id>200635
     <name>Create_{Permission}_{Class}
     <parent_id>116100
@@ -27068,6 +27121,15 @@
     <parent_id>118100
     <child_id>106100
     <cascade_op>unlink
+    <specifications/>
+    </specifications>
+   </relationship>
+   <relationship/>
+    <id>201998b
+    <name>Destroy_Parent_Modifier_{List}
+    <parent_id>109100
+    <child_id>122100
+    <cascade_op>destroy
     <specifications/>
     </specifications>
    </relationship>
@@ -30892,8 +30954,10 @@
      <field_info>301998:109101!@fkey3:300900+109101;force
      <field_info>122104;enum=680
      <field_info>301994:116101!@group:301500+116101
+     <field_info>301998a:109101!@fkey3:300900+109101;force
      <field_info>122105;enum=680
      <field_info>301995:116101!@group:301500+116101
+     <field_info>301998b:109101!@fkey3:300900+109101;force
      <field_info>122145
      <field_info>@tab:Basic_UI_Options
      <field_info>122119

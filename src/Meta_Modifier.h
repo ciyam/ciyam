@@ -71,6 +71,12 @@ class META_MODIFIER_DECL_SPEC Meta_Modifier : public class_base
    Meta_List& child_List_Access_Parent( );
    const Meta_List& child_List_Access_Parent( ) const;
 
+   Meta_List& child_List_Create_Parent( );
+   const Meta_List& child_List_Create_Parent( ) const;
+
+   Meta_List& child_List_Destroy_Parent( );
+   const Meta_List& child_List_Destroy_Parent( ) const;
+
    Meta_Specification& child_Specification_Other_Modifier_2( );
    const Meta_Specification& child_Specification_Other_Modifier_2( ) const;
 

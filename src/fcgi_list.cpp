@@ -577,6 +577,17 @@ void output_list_form( ostream& os,
     || ( is_admin_owner_new && !( has_owner_parent || sess_info.is_admin_user ) ) )
       allow_new_record = false;
 
+   if( extras.count( c_list_type_extra_cpstate ) )
+   {
+      istringstream isstr( extras.find( c_list_type_extra_cpstate )->second );
+
+      uint64_t flag;
+      isstr >> hex >> flag;
+
+      if( !( parent_state & flag ) )
+         allow_new_record = false;
+   }
+
    string image_width( to_string( sess_info.image_width ) );
    string image_height( to_string( sess_info.image_height ) );
 
@@ -1471,6 +1482,17 @@ void output_list_form( ostream& os,
          if( !( parent_state & c_state_uneditable )
           || ( ignore_parent_state && ( parent_state & c_state_ignore_uneditable ) ) )
          {
+            if( extras.count( c_list_type_extra_dpstate ) )
+            {
+               istringstream isstr( extras.find( c_list_type_extra_dpstate )->second );
+
+               uint64_t flag;
+               isstr >> hex >> flag;
+
+               if( !( parent_state & flag ) )
+                  is_no_erase = true;
+            }
+
             if( ( source.lici->second )->extras.count( c_list_type_extra_erase_if_default_other ) )
             {
                if( !sess_info.is_admin_user )

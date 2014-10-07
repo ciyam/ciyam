@@ -988,7 +988,7 @@ void `{`$full_class_name`}::impl::impl_\$(`{`?`$\$_all_args`[`$\$_all_args`%,`,\
  arg_dn_fields=$specification_\\0_dn_fields arg_dn_values=$specification_\\0_dn_values\
  arg_minimal=$specification_\\0_minimal arg_update_parent=$specification_\\0_update_parent`}\
 `,\
-`@eq`(`'\\1`'`,`'trigger_execute`'`)`&`@eq`(`$specification_\\0_in_procedure`,`'true`'`)
+`@eq`(`'\\1`'`,`'trigger_execute`'`)`&`@eq`(`$specification_\\0_in_procedure`,`'true`'`)`&`@eq`(`'\$`'`,`$specification_\\0_procedure`)
 `{`#trigger_execute.spec.xrep section=procedure class_name=$class_name module_name=$module_name\
  arg_id=$specification_\\0_id arg_field=$specification_\\0_field arg_tfield=$specification_\\0_tfield\
  arg_script=$specification_\\0_script arg_async=$specification_\\0_async arg_skip_restore=$specification_\\0_skip_restore`}\
