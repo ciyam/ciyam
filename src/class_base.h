@@ -1283,6 +1283,27 @@ std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& 
 
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
+void CLASS_BASE_DECL_SPEC load_address_information( const std::string& ext_key, const std::string& file_name );
+
+struct address_info
+{
+   address_info( const std::string& addr, const std::string& label, double amount )
+    :
+    addr( addr ),
+    label( label ),
+    amount( amount )
+   {
+   }
+
+   std::string addr;
+   std::string label;
+
+   double amount;
+};
+
+void CLASS_BASE_DECL_SPEC parse_address_information(
+ const std::string& file_name, std::vector< address_info >& addresses );
+
 struct utxo_info
 {
    utxo_info( )
