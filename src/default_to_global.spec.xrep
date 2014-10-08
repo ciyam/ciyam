@@ -18,6 +18,9 @@
     && `'`}`{`$cond`^`'`{`@eq`(`$arg_tvalue`,`'`'`)!is_null( get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) )\
 `,get_obj( ).`{`!`@eq`(`$arg_tpfield`,`'`'`)`{`$arg_tpfield`}( ).`}`{`$arg_tfield`}( ) == `{`$arg_tvalue`}`}`'`}`}\
    if( `{`$cond`}
+`{`!`@eq`(`$arg_modifier`,`'`'`)\
+    && ( state & c_modifier_`{`$arg_modifier`} )
+`}\
     && get_obj( ).`{`$arg_field`}( ) == g_default_`{`$arg_field`} )
 `{`$test`=`$arg_value`/@`/ `}`{`@eq`(`$test`,`$arg_value`)\
       get_obj( ).`{`$arg_field`}( `{`$arg_value`} );\
