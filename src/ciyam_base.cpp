@@ -351,10 +351,10 @@ struct session
    set< string > tx_key_info;
    stack< ods::transaction* > transactions;
 
-   string async_temp_file;
+   string async_or_delayed_temp_file;
 
-   vector< string > async_temp_files;
-   vector< string > async_system_commands;
+   vector< string > async_or_delayed_temp_files;
+   vector< string > async_or_delayed_system_commands;
 
    set< size_t > release_sessions;
    map< size_t, date_time > condemned_sessions;
@@ -4212,7 +4212,7 @@ string totp_secret_key( const string& unique )
    return get_totp_secret( unique, sid_hash( ) );
 }
 
-int exec_system( const string& cmd, bool async, bool sync_at_commit )
+int exec_system( const string& cmd, bool async, bool delay )
 {
    string s( cmd );
 
@@ -4231,7 +4231,7 @@ int exec_system( const string& cmd, bool async, bool sync_at_commit )
    if( async_var == "0" || async_var == c_false )
       async = false;
 
-   if( async )
+   if( async || delay )
    {
       string os( s );
 #ifdef _WIN32
@@ -4244,13 +4244,13 @@ int exec_system( const string& cmd, bool async, bool sync_at_commit )
       // of the transaction itself, however, for async calls they will only ever
       // be issued after the transaction is successfully committed. If one wants
       // to not issue the scripts until the commit itself but actually want them
-      // to be issued synchronously then use "async" with "sync_at_commit".
+      // to be issued synchronously then use "delay".
       if( gtp_session && !gtp_session->transactions.empty( ) )
       {
-         gtp_session->async_system_commands.push_back( sync_at_commit ? os : s );
+         gtp_session->async_or_delayed_system_commands.push_back( delay ? os : s );
 
-         if( !gtp_session->async_temp_file.empty( ) )
-            gtp_session->async_temp_files.push_back( gtp_session->async_temp_file );
+         if( !gtp_session->async_or_delayed_temp_file.empty( ) )
+            gtp_session->async_or_delayed_temp_files.push_back( gtp_session->async_or_delayed_temp_file );
 
          return 0;
       }
@@ -4261,7 +4261,7 @@ int exec_system( const string& cmd, bool async, bool sync_at_commit )
    return system( s.c_str( ) );
 }
 
-int run_script( const string& script_name, bool async, bool sync_at_commit )
+int run_script( const string& script_name, bool async, bool delay )
 {
    int rc = -1;
 
@@ -4282,7 +4282,7 @@ int run_script( const string& script_name, bool async, bool sync_at_commit )
    auto_ptr< restorable< bool > > ap_running_script;
    if( gtp_session )
    {
-      gtp_session->async_temp_file.erase( );
+      gtp_session->async_or_delayed_temp_file.erase( );
       ap_running_script.reset( new restorable< bool >( gtp_session->running_script, true ) );
    }
 
@@ -4298,7 +4298,7 @@ int run_script( const string& script_name, bool async, bool sync_at_commit )
       outf.close( );
 
       if( gtp_session )
-         gtp_session->async_temp_file = script_args;
+         gtp_session->async_or_delayed_temp_file = script_args;
 
       string is_quiet( get_session_variable( c_special_variable_quiet ) );
 
@@ -4309,9 +4309,9 @@ int run_script( const string& script_name, bool async, bool sync_at_commit )
          script_args += " " + script_name;
 
 #ifdef _WIN32
-      rc = exec_system( "script " + script_args, async, sync_at_commit );
+      rc = exec_system( "script " + script_args, async, delay );
 #else
-      rc = exec_system( "./script " + script_args, async, sync_at_commit );
+      rc = exec_system( "./script " + script_args, async, delay );
 #endif
    }
    else
@@ -4325,7 +4325,7 @@ int run_script( const string& script_name, bool async, bool sync_at_commit )
       if( !arguments.empty( ) )
          cmd_and_args += " " + arguments;
 
-      rc = exec_system( cmd_and_args, async, sync_at_commit );
+      rc = exec_system( cmd_and_args, async, delay );
    }
 
    return rc;
@@ -9094,20 +9094,15 @@ void transaction_commit( )
 
    if( gtp_session->transactions.empty( ) )
    {
-      for( size_t i = 0; i < gtp_session->async_system_commands.size( ); i++ )
+      for( size_t i = 0; i < gtp_session->async_or_delayed_system_commands.size( ); i++ )
       {
-         // NOTE: Sleep a little between each system to try and ensure that
-         // the order of execution will be the same even if they are async.
-         if( i > 0 )
-            msleep( 250 );
-
-         TRACE_LOG( TRACE_SESSIONS, gtp_session->async_system_commands[ i ] );
-         int rc = system( gtp_session->async_system_commands[ i ].c_str( ) );
+         TRACE_LOG( TRACE_SESSIONS, gtp_session->async_or_delayed_system_commands[ i ] );
+         int rc = system( gtp_session->async_or_delayed_system_commands[ i ].c_str( ) );
          ( void )rc;
       }
 
-      gtp_session->async_temp_files.clear( );
-      gtp_session->async_system_commands.clear( );
+      gtp_session->async_or_delayed_temp_files.clear( );
+      gtp_session->async_or_delayed_system_commands.clear( );
    }
 }
 
@@ -9134,14 +9129,14 @@ void transaction_rollback( )
       gtp_session->tx_key_info.clear( );
       gtp_session->p_storage_handler->release_locks_for_rollback( gtp_session );
 
-      for( size_t i = 0; i < gtp_session->async_temp_files.size( ); i++ )
+      for( size_t i = 0; i < gtp_session->async_or_delayed_temp_files.size( ); i++ )
       {
-         if( file_exists( gtp_session->async_temp_files[ i ] ) )
-            file_remove( gtp_session->async_temp_files[ i ] );
+         if( file_exists( gtp_session->async_or_delayed_temp_files[ i ] ) )
+            file_remove( gtp_session->async_or_delayed_temp_files[ i ] );
       }
 
-      gtp_session->async_temp_files.clear( );
-      gtp_session->async_system_commands.clear( );
+      gtp_session->async_or_delayed_temp_files.clear( );
+      gtp_session->async_or_delayed_system_commands.clear( );
    }
 }
 

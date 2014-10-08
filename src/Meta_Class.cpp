@@ -3435,15 +3435,14 @@ void Meta_Class::impl::impl_Generate( )
             if( spos != string::npos )
                specification_name.erase( spos );
 
+            string specification_type( get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) );
             string specification_object( get_obj( ).child_Specification( ).Specification_Type( ).Specification_Object( ) );
 
             string gen_xrep, gen_extra;
             bool is_gen_script_object = false;
             bool is_gen_script_object_only = false;
 
-            if( specification_object == "gen_bulk"
-             || specification_object == "gen_create"
-             || specification_object == "gen_script"
+            if( specification_object == "gen_script"
              || specification_object == "gen_ext_script"
              || specification_object == "field_from_script" )
             {
@@ -3455,14 +3454,14 @@ void Meta_Class::impl::impl_Generate( )
                if( specification_object == "gen_ext_script" )
                {
 #ifndef _WIN32
-                  gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".xrep";
+                  gen_xrep += "@" + specification_type + ".xrep";
 #else
                   gen_extra = ".bat";
-                  gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".bat.xrep";
+                  gen_xrep += "@" + specification_type + ".bat.xrep";
 #endif
                }
                else
-                  gen_xrep += "@" + get_obj( ).child_Specification( ).Specification_Type( ).get_key( ) + ".cin.xrep";
+                  gen_xrep += "@" + specification_type + ".cin.xrep";
 
                is_gen_script_object = true;
 
@@ -3540,6 +3539,27 @@ void Meta_Class::impl::impl_Generate( )
 
                if( old_extras.count( gen_script + gen_extra ) )
                   old_extras.erase( gen_script + gen_extra );
+
+               if( specification_type == "gen_bulk" )
+               {
+                  string csv_name( search_replace( gen_script, ".cin", ".csv" ) );
+
+                  if( csv_name != gen_script )
+                  {
+                     outl << csv_name << '\n';
+                     if( old_extras.count( csv_name ) )
+                        old_extras.erase( csv_name );
+                  }
+
+                  string log_name( search_replace( gen_script, ".cin", ".log" ) );
+
+                  if( log_name != gen_script )
+                  {
+                     outl << log_name << '\n';
+                     if( old_extras.count( log_name ) )
+                        old_extras.erase( log_name );
+                  }
+               }
 
                outl.flush( );
                if( !outl.good( ) )
