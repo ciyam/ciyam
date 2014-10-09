@@ -851,7 +851,7 @@ function dyn_load( f, extra, clearContext )
          if( extra != '' )
             extra += '&';
          extra += 'extrafields=' + extra_fields;
-         extra += '&extravalues=' + extra_values;
+         extra += '&extravalues=' + encodeURIComponent( extra_values );
       }
 
       qsFurther = extra;

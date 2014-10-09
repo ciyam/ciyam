@@ -1,9 +1,14 @@
 `{`@eq`(`'after_fetch`'`,`$section`)\
 `{`$value`=`$arg_value`}\
+`{`$has_tfield_or_modifier`=`'`'`}\
+`{`!`@eq`(`$arg_tfield`,`'`'`)`$has_tfield_or_modifier`=`'true`'`}\
+`{`!`@eq`(`$arg_modifier`,`'`'`)`$has_tfield_or_modifier`=`'true`'`}\
 `{`@eq`(`$arg_fistexttype`,`'1`'`)`$value`=`'"`{`$arg_value`}"`'`}\
    // [(start transient_field_to_value)] `{`$arg_id`}
-   if( required_transients.count( "`{`$arg_field`}" )
-    || get_obj( ).needs_field_value( "`{`$arg_field`}" ) )
+   if( `{`!`@eq`(`$arg_tfield`,`'`'`)get_obj( ).`{`$arg_tfield`}( )
+    && `{`@eq`(`$arg_modifier`,`'`')( `}`}`{`!`@eq`(`$arg_modifier`,`'`'`)( state & c_modifier_`{`$arg_modifier`} )
+    && ( `}required_transients.count( "`{`$arg_field`}" )
+    || get_obj( ).needs_field_value( "`{`$arg_field`}" ) )`{`@eq`(`$has_tfield_or_modifier`,`'true`'`) )`}
       get_obj( ).`{`$arg_field`}( `{`$value`} );
    // [(finish transient_field_to_value)] `{`$arg_id`}
 `}

@@ -4305,6 +4305,18 @@ string create_html_embedded_image( const string& source_file )
    return s;
 }
 
+string create_address_key_pair( string& pub_key, string& priv_key )
+{
+#ifdef SSL_SUPPORT
+   private_key new_key;
+   pub_key = new_key.get_public( );
+   priv_key = new_key.get_secret( );
+   return new_key.get_address( );
+#else
+   throw runtime_error( "SSL support is needed in order to use create_new_key_pair" );
+#endif
+}
+
 bool can_create_address( const string& ext_key )
 {
    external_client client_info;
@@ -4347,11 +4359,6 @@ void load_address_information( const string& ext_key, const string& file_name )
          error = "unexpected emtpy response from 'listaddressgroupings'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
-
-      // NOTE: The minimum expected JSON output should be at least eight lines so if less
-      // than this was returned then assume it was due to no address records being found.
-      if( error.empty( ) && count( content.begin( ), content.end( ), '\n' ) < 8 )
-         error = "no address information was found"; // FUTURE: This should be a module string.
 
       if( !error.empty( ) )
       {
@@ -4487,11 +4494,6 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
          error = "unexpected emtpy response from 'listunspent'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
          error = trim( replace( content, "error:", "", "Exception:", "" ) );
-
-      // NOTE: The minimum expected JSON output should be at least ten lines so if less
-      // than this was returned then assume it was due to no UTXO records being found.
-      if( error.empty( ) && count( content.begin( ), content.end( ), '\n' ) < 10 )
-         error = "no UTXO information was found";  // FUTURE: This should be a module string.
 
       if( !error.empty( ) )
       {
