@@ -4346,7 +4346,7 @@ void load_address_information( const string& ext_key, const string& file_name )
       if( content.empty( ) )
          error = "unexpected emtpy response from 'listaddressgroupings'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
-         error = content;
+         error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
       // NOTE: The minimum expected JSON output should be at least eight lines so if less
       // than this was returned then assume it was due to no address records being found.
@@ -4355,8 +4355,10 @@ void load_address_information( const string& ext_key, const string& file_name )
 
       if( !error.empty( ) )
       {
+         string::size_type pos = error.find_first_of( "\r\n" );
+
          file_remove( file_name );
-         throw runtime_error( error );
+         throw runtime_error( error.substr( 0, pos ) );
       }
    }
 }
@@ -4484,7 +4486,7 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
       if( content.empty( ) )
          error = "unexpected emtpy response from 'listunspent'";
       else if( content.find( "error:" ) != string::npos || content.find( "Exception:" ) != string::npos )
-         error = content;
+         error = trim( replace( content, "error:", "", "Exception:", "" ) );
 
       // NOTE: The minimum expected JSON output should be at least ten lines so if less
       // than this was returned then assume it was due to no UTXO records being found.
@@ -4493,8 +4495,10 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
 
       if( !error.empty( ) )
       {
+         string::size_type pos = error.find_first_of( "\r\n" );
+
          file_remove( file_name );
-         throw runtime_error( error );
+         throw runtime_error( error.substr( 0, pos ) );
       }
    }
 }
