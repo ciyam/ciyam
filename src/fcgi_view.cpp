@@ -143,6 +143,23 @@ void output_view_tabs( ostream& os, const view_source& source,
    os << "</tr>\n";
 }
 
+bool is_not_accessible( bool is_in_edit, bool is_new_record,
+ const map< string, string >& extra_data, const session_info& sess_info )
+{
+   return ( !is_in_edit
+    && has_perm_extra( c_view_field_extra_non_view, extra_data, sess_info ) )
+    || ( is_in_edit
+    && has_perm_extra( c_view_field_extra_view_only, extra_data, sess_info ) )
+    || ( !is_new_record
+    && has_perm_extra( c_view_field_extra_new_only, extra_data, sess_info ) )
+    || ( is_new_record
+    && has_perm_extra( c_view_field_extra_non_new, extra_data, sess_info ) )
+    || ( ( is_new_record || !is_in_edit )
+    && has_perm_extra( c_view_field_extra_edit_only, extra_data, sess_info ) )
+    || ( !sess_info.is_admin_user
+    && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) );
+}
+
 }
 
 void setup_view_fields( view_source& view,
@@ -233,18 +250,7 @@ void setup_view_fields( view_source& view,
 
          if( extra_data.count( c_view_field_extra_actions )
           || has_perm_extra( c_field_extra_hidden, extra_data, sess_info )
-          || ( !is_in_edit
-          && has_perm_extra( c_view_field_extra_non_view, extra_data, sess_info ) )
-          || ( is_in_edit
-          && has_perm_extra( c_view_field_extra_view_only, extra_data, sess_info ) )
-          || ( !is_new_record
-          && has_perm_extra( c_view_field_extra_new_only, extra_data, sess_info ) )
-          || ( is_new_record
-          && has_perm_extra( c_view_field_extra_non_new, extra_data, sess_info ) )
-          || ( ( is_new_record || !is_in_edit )
-          && has_perm_extra( c_view_field_extra_edit_only, extra_data, sess_info ) )
-          || ( !sess_info.is_admin_user
-          && has_perm_extra( c_field_extra_admin_only, extra_data, sess_info ) ) )
+          || is_not_accessible( is_in_edit, is_new_record, extra_data, sess_info ) )
             view.hidden_fields.insert( value_id );
 
          if( has_perm_extra( c_field_extra_link, extra_data, sess_info ) )
@@ -1085,7 +1091,8 @@ bool output_view_form( ostream& os, const string& act,
 
       if( source.hidden_fields.count( source_value_id ) )
       {
-         if( extra_data.count( c_view_field_extra_force ) )
+         if( extra_data.count( c_view_field_extra_force )
+          && !is_not_accessible( is_in_edit, is_new_record, extra_data, sess_info ) )
          {
             if( !extra_fields.empty( ) )
             {
@@ -1220,6 +1227,7 @@ bool output_view_form( ostream& os, const string& act,
 
          if( source.field_values.count( source_value_id )
           && extra_data.count( c_view_field_extra_force )
+          && !is_not_accessible( is_in_edit, is_new_record, extra_data, sess_info )
           && ( ( is_protected && extra_data.count( c_view_field_extra_trigger_protected ) )
           || ( ( is_relegated || is_protected ) && extra_data.count( c_view_field_extra_trigger_relegated ) ) ) )
          {

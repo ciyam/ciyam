@@ -2657,7 +2657,8 @@ void save_record( const string& module_id,
       for( i = extra_field_info.begin( ); i != extra_field_info.end( ); ++i )
       {
          field_values += ',';
-         field_values += i->first + '=' + escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
+         field_values += i->first + '=';
+         field_values += escaped( escaped( i->second, "," ), ",\"", c_nul, "rn\r\n" );
       }
    }
 

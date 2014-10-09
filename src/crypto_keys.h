@@ -54,7 +54,7 @@ class private_key : public public_key
 
    ~private_key( );
 
-   std::string get_secret( ) const;
+   std::string get_secret( bool use_base64 = false ) const;
 
    std::string get_wif_secret( bool compressed = true, bool is_testnet = false ) const;
 

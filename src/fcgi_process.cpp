@@ -539,6 +539,7 @@ void process_fcgi_request( module_info& mod_info, session_info* p_session_info, 
 
                // NOTE: Password fields that are < 20 characters are assumed to not have been encrypted.
                if( item_values[ field_num ].length( ) >= 20
+                && !view.hidden_fields.count( view.field_ids[ i ] )
                 && ( view.password_fields.count( view.field_ids[ i ] )
                 || view.encrypted_fields.count( view.field_ids[ i ] )
                 || view.hpassword_fields.count( view.field_ids[ i ] ) ) )

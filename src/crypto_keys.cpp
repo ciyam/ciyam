@@ -576,12 +576,12 @@ private_key::~private_key( )
    delete p_impl;
 }
 
-string private_key::get_secret( ) const
+string private_key::get_secret( bool use_base64 ) const
 {
    unsigned char buf[ c_num_secret_bytes ];
    p_impl->get_secret_bytes( buf );
 
-   return hex_encode( buf, c_num_secret_bytes );
+   return use_base64 ? base64::encode( buf, c_num_secret_bytes ) : hex_encode( buf, c_num_secret_bytes );
 }
 
 string private_key::get_wif_secret( bool compressed, bool is_testnet ) const
