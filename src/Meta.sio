@@ -6713,7 +6713,7 @@
       <name>Alignment
       <type>int
       <mandatory>true
-      <enum_id>691
+      <enum_id>522
       <default_value>0
       <indexes/>
       </indexes>
@@ -25079,6 +25079,24 @@
       </specifications>
      </field>
      <field/>
+      <id>120131
+      <name>Alignment
+      <type>int
+      <mandatory>true
+      <enum_id>522
+      <default_value>0
+      <indexes/>
+      </indexes>
+      <modifiers/>
+      </modifiers>
+      <specifications/>
+       <specification/>
+        <id>602710
+        <item>field
+       </specification>
+      </specifications>
+     </field>
+     <field/>
       <id>120129
       <name>Allow_Anonymous_Access
       <type>bool
@@ -30596,7 +30614,7 @@
      <field_info>124126
      <field_info>124127;force
      <field_info>124130;enum=635
-     <field_info>124119;enum=691
+     <field_info>124119;enum=522
      <field_info>124125;enum=697
      <field_info>124115;enum=696
      <field_info>302176:107101!@fkey1:300700+107108=0+107101;link
@@ -35976,6 +35994,7 @@
      <field_info>120127;enum=664
      <field_info>120118;enum=678
      <field_info>120125;enum=635
+     <field_info>120131;enum=522
      <field_info>120121
      <field_info>120130
      <field_info>120126
@@ -36354,6 +36373,12 @@
     <key_values>0=create\_record,1=procedure\_call
    </user_defined_enum>
    <user_defined_enum/>
+    <id>522
+    <name>field_alignment
+    <type>int
+    <key_values>0=default,1=left,2=right,3=center,4=justify
+   </user_defined_enum>
+   <user_defined_enum/>
     <id>530
     <name>field_extra
     <type>int
@@ -36394,12 +36419,6 @@
     <name>list_display_row_limit
     <type>int
     <key_values>0=default,1=1,2=2,3=3,4=4,5=5,6=6,7=7,8=8,9=9,10=10,12=12,15=15,20=20,25=25,30=30,40=40,50=50,75=75,100=100,200=200,500=500,999=unlimited
-   </user_defined_enum>
-   <user_defined_enum/>
-    <id>691
-    <name>list_field_alignment
-    <type>int
-    <key_values>0=default,1=left,2=right,3=center,4=justify
    </user_defined_enum>
    <user_defined_enum/>
     <id>699

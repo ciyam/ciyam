@@ -238,6 +238,15 @@ void setup_view_fields( view_source& view,
          else if( fld.ftype == c_field_type_numeric )
             view.numeric_fields.insert( value_id );
 
+         if( extra_data.count( c_field_extra_left ) )
+            view.force_left_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_center ) )
+            view.force_center_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_justify ) )
+            view.force_justify_fields.insert( value_id );
+         else if( extra_data.count( c_field_extra_right ) )
+            view.force_right_fields.insert( value_id );
+
          if( extra_data.count( c_field_extra_html ) )
             view.html_fields.insert( value_id );
          else if( extra_data.count( c_field_extra_text ) )
@@ -1380,6 +1389,13 @@ bool output_view_form( ostream& os, const string& act,
       if( !extra_effect.empty( ) )
          class_extra += " " + extra_effect;
 
+      if( source.force_right_fields.count( source_value_id ) )
+         class_extra += " right";
+      else if( source.force_center_fields.count( source_value_id ) )
+         class_extra += " center";
+      else if( source.force_justify_fields.count( source_value_id ) )
+         class_extra += " justify";
+
       if( source.large_fields.count( source_value_id ) )
          class_extra += " large";
       else if( source.larger_fields.count( source_value_id ) )
@@ -2348,10 +2364,9 @@ bool output_view_form( ostream& os, const string& act,
 
                string cmd( "qrencode -o " + temp_file_name
                 + " -s " + to_string( qr_pixels ) + " \"" + cell_data + "\"" );
-#ifdef _WIN32
-               replace( cmd, "&", "^&" );
-#endif
-               system( cmd.c_str( ) );
+
+               int rc = system( escaped_shell_cmd( cmd ).c_str( ) );
+               ( void )rc;
 
                bool is_href = false;
                if( !embed_images )

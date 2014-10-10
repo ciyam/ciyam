@@ -64,6 +64,9 @@
 #ifdef ICONV_SUPPORT
 #  include <iconv.h>
 #endif
+#ifdef SSL_SUPPORT
+#  include <openssl/rand.h>
+#endif
 
 using namespace std;
 
@@ -450,6 +453,12 @@ string escape_sep_if_quoted( const string& s, char sep )
    }
 
    return str;
+}
+
+void validate_addresses( const string& addresses )
+{
+   if( addresses.find_first_not_of( "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz " ) != string::npos )
+      throw runtime_error( "invalid addresses: " + addresses );
 }
 
 #include "trace_progress.cpp"
@@ -2359,6 +2368,19 @@ void wait( unsigned long ms )
 string get_uuid( )
 {
    return uuid( ).as_string( );
+}
+
+string get_random_hash( )
+{
+#ifdef SSL_SUPPORT
+   unsigned char buf[ 32 ];
+   RAND_bytes( buf, 32 );
+
+   sha256 hash( buf, sizeof( buf ) );
+#else
+   sha256 hash( uuid( ).as_string( ) );
+#endif
+   return lower( hash.get_digest_as_string( ) );
 }
 
 string get_ext( const string& filename )
@@ -4309,11 +4331,28 @@ string create_address_key_pair( string& pub_key, string& priv_key )
 {
 #ifdef SSL_SUPPORT
    private_key new_key;
+
    pub_key = new_key.get_public( );
    priv_key = new_key.get_secret( );
+
    return new_key.get_address( );
 #else
-   throw runtime_error( "SSL support is needed in order to use create_new_key_pair" );
+   throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
+#endif
+}
+
+string create_address_key_pair( string& pub_key, string& priv_key, const string& seed_info )
+{
+#ifdef SSL_SUPPORT
+   sha256 hash( seed_info );
+   private_key new_key( lower( hash.get_digest_as_string( ) ) );
+
+   pub_key = new_key.get_public( );
+   priv_key = new_key.get_secret( );
+
+   return new_key.get_address( );
+#else
+   throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
 }
 
@@ -4442,6 +4481,8 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
 
    string cmd;
 
+   validate_addresses( source_addresses );
+
    if( client_info.protocol == c_protocol_bitcoin )
    {
       cmd = escaped( client_info.script_name ) + " ";
@@ -4531,18 +4572,21 @@ string convert_hash160_to_address( const string& ext_key, const string& hash160 
 }
 
 string construct_raw_transaction( const string& ext_key, bool change_type_is_automatic,
- const string& source_addresses, const string& destination_address, string& change_address,
+ const string& source_addresses, const string& destination_addresses, string& change_address,
  uint64_t amount, quote_style qs, uint64_t& fee, string& sign_tx_template, const string& file_name )
 {
    external_client client_info;
    get_external_client_info( ext_key, client_info );
+
+   validate_addresses( source_addresses );
+   validate_addresses( destination_addresses );
 
    bool needs_new_address_for_change = false;
    if( change_type_is_automatic && change_address.empty( ) && client_info.protocol == c_protocol_bitcoin )
       needs_new_address_for_change = true;
 
    string raw_tx_request( create_raw_transaction_command( source_addresses,
-    destination_address, change_address, amount, qs, fee, sign_tx_template, &file_name ) );
+    destination_addresses, change_address, amount, qs, fee, sign_tx_template, &file_name ) );
 
    if( !change_address.empty( ) && needs_new_address_for_change )
    {

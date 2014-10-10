@@ -5,7 +5,7 @@
 # in the root project directory or http://www.opensource.org/licenses/mit-license.php.
 
 if [ $# -lt 1 ]; then
- echo Usage: script [script args file] [[script name]]
+ echo Usage: script [script and args file] [[script name]]
 else
  if [ $# -gt 1 ]; then
   echo $(date) [$2] >>$1.log

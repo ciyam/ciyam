@@ -2996,6 +2996,41 @@ void Meta_Model::impl::impl_Generate( )
                          + " in Model::Generate" );
                      }
 
+                     switch( get_obj( ).child_View( ).child_View_Field( ).Alignment( ) )
+                     {
+                        case 0: // i.e. default
+                        break;
+
+                        case 1:
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "left";
+                        break;
+
+                        case 2:
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "right";
+                        break;
+
+                        case 3:
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "center";
+                        break;
+
+                        case 4:
+                        if( !extras.empty( ) )
+                           extras += '+';
+                        extras += "justify";
+                        break;
+
+                        default:
+                        throw runtime_error( "unexpected Alignment value #"
+                         + to_string( get_obj( ).child_View( ).child_View_Field( ).Alignment( ) )
+                         + " in Model::Generate" );
+                     }
+
                      if( get_obj( ).child_View( ).child_View_Field( ).Use_Full_Width( ) )
                      {
                         if( !extras.empty( ) )

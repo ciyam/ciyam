@@ -618,6 +618,9 @@ inline std::string& unescape( std::string& s, const char* p_specials = 0, char e
    return s;
 }
 
+std::string escaped_shell_arg( const std::string& arg );
+std::string escaped_shell_cmd( const std::string& cmd );
+
 #  ifdef NEW_BORLAND_VERSION
 #     pragma option push -w-8027
 #  endif

@@ -18,6 +18,7 @@
 #  include <cstring>
 #  include <fstream>
 #  include <iostream>
+#  include <algorithm>
 #  include <stdexcept>
 #  include <sys/stat.h>
 #  ifdef __GNUG__
@@ -900,6 +901,80 @@ string unescaped( const char* p_start, size_t len, const char* p_specials, char 
 
    if( n < len )
       s.erase( n, len - n );
+
+   return s;
+}
+
+string escaped_shell_arg( const string& arg )
+{
+   string s( arg );
+
+   if( !s.empty( ) )
+   {
+#ifndef _WIN32
+      replace( s, "'", "\\'" );
+      s = "'" + s + "'";
+#else
+      replace( s, "\"", "\\\"" );
+      s = '"' + s + '"';
+#endif
+   }
+
+   return s;
+}
+
+string escaped_shell_cmd( const string& cmd )
+{
+   string s( cmd );
+
+   if( !s.empty( ) )
+   {
+#ifdef _WIN32
+      replace( s, "^", "^^" );
+#else
+      replace( s, "\\", "\\\\" );
+#endif
+
+      size_t nsq = count( s.begin( ), s.end( ), '\'' );
+      size_t ndq = count( s.begin( ), s.end( ), '\"' );
+
+      string::size_type nsq_pos = string::npos;
+      string::size_type ndq_pos = string::npos;
+
+      if( nsq % 2 == 1 )
+         nsq_pos = s.rfind( '\'' );
+
+      if( ndq % 2 == 1 )
+         ndq_pos = s.rfind( '\"' );
+
+      if( nsq_pos != string::npos )
+         s.insert( nsq_pos, "\\" );
+
+      if( ndq_pos != string::npos )
+      {
+         if( nsq_pos != string::npos && nsq_pos < ndq_pos )
+            ++ndq_pos;
+
+         s.insert( ndq_pos, "\\" );
+      }
+
+#ifdef _WIN32
+      replace( s, ",", "^,", "%", "^%" );
+      replace( s, "&", "^&", "|", "^|" );
+      replace( s, "<", "^<", ">", "^>" );
+      replace( s, "!", "^^!", ".", "^." );
+#else
+      replace( s, "&", "\\&", "|", "\\|" );
+      replace( s, "<", "\\<", ">", "\\>" );
+      replace( s, "`", "\\`", "%", "\\%" );
+      replace( s, "*", "\\*", "?", "\\?" );
+      replace( s, "#", "\\#", "~", "\\~" );
+      replace( s, "[", "\\[", "]", "\\]" );
+      replace( s, "(", "\\(", ")", "\\)" );
+      replace( s, ",", "\\,", ";", "\\;" );
+      replace( s, "0x0a", "\\0x0a", "0xff", "\\0xff" );
+#endif
+   }
 
    return s;
 }

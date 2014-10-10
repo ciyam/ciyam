@@ -19,5 +19,5 @@ del %1.log
 exit
 
 :usage
-echo Usage: script [script args file] [[script name]]
+echo Usage: script [script and args file] [[script name]]
 
