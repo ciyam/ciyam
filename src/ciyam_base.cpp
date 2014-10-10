@@ -4347,18 +4347,14 @@ string process_script_args( const string& raw_args, bool is_script_arg )
          if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
             next_arg = get_session_variable( next_arg );
 
+         if( !is_script_arg && !next_arg.empty( ) )
+            next_arg = escaped_shell_arg( next_arg );
+
          if( !retval.empty( ) )
             retval += " ";
 
          if( next_arg.empty( ) )
             next_arg = is_script_arg ? "\\\"\\\"" : "\"\"";
-         else if( next_arg.find_first_of( "\" *?" ) != string::npos )
-         {
-            if( is_script_arg )
-               escape( next_arg, "\"" );
-
-            next_arg = "\"" + escaped( next_arg, "\"" ) + "\"";
-         }
 
          retval += next_arg;
       }

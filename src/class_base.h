@@ -976,6 +976,8 @@ void CLASS_BASE_DECL_SPEC wait( unsigned long ms );
 
 std::string CLASS_BASE_DECL_SPEC get_uuid( );
 
+std::string CLASS_BASE_DECL_SPEC get_random_hash( );
+
 std::string CLASS_BASE_DECL_SPEC get_ext( const std::string& filename );
 std::string CLASS_BASE_DECL_SPEC get_path( const std::string& filename );
 
@@ -1283,6 +1285,9 @@ std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& 
 
 std::string CLASS_BASE_DECL_SPEC create_address_key_pair( std::string& pub_key, std::string& priv_key );
 
+std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
+ std::string& pub_key, std::string& priv_key, const std::string& seed_info );
+
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 
 void CLASS_BASE_DECL_SPEC load_address_information( const std::string& ext_key, const std::string& file_name );
@@ -1358,7 +1363,7 @@ std::string CLASS_BASE_DECL_SPEC convert_hash160_to_address( const std::string& 
 
 std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  const std::string& ext_key, bool change_type_is_automatic,
- const std::string& source_addresses, const std::string& destination_address,
+ const std::string& source_addresses, const std::string& destination_addresses,
  std::string& changes_address, uint64_t amount, quote_style qs, uint64_t& fee,
  std::string& sign_tx_template, const std::string& file_name );
 

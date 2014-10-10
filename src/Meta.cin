@@ -16,6 +16,7 @@ user_defined_enum_add -id=513 zero_padding int 0=none,1=decimals,2=all\\_digits
 user_defined_enum_add -id=514 fraction_limit int 0=none,2=halves,4=quarters
 user_defined_enum_add -id=515 class_type int 0=normal,1=user,4=system,2=user_group,3=user_other
 user_defined_enum_add -id=520 class_extra int 0=none,1=ordered
+user_defined_enum_add -id=522 field_alignment int 0=default,1=left,2=right,3=center,4=justify
 user_defined_enum_add -id=530 field_extra int 0=none,1=file,2=href,9=html,23=text,4=notes,5=order,6=active\
 ,3=image,7=mailto,21=file\\_link,8=actions,29=qr\\_code,22=filename,10=password,25=encrypted,11=defcurrent,17=permission\
 ,24=orientation,26=hpassword,13=manual\\_link,12=user\\_perms,14=current\\_year,18=security\\_level,27=hpassword\\_salt\
@@ -73,7 +74,6 @@ user_defined_enum_add -id=687 list_display_row_limit int 0=default,1=1,2=2,3=3,4
 user_defined_enum_add -id=688 list_direction int 0=forward,1=reverse
 user_defined_enum_add -id=689 list_text_match_highlight int 0=none,1=highlight,2=highlight1
 user_defined_enum_add -id=690 list_field_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
-user_defined_enum_add -id=691 list_field_alignment int 0=default,1=left,2=right,3=center,4=justify
 user_defined_enum_add -id=692 list_field_link_restrict int 0=none,1=owner\\_only,2=admin\\_only,3=admin\\_owner,4=denied\\_always
 user_defined_enum_add -id=693 list_field_label_source int 0=field,1=list,2=omit_label
 user_defined_enum_add -id=694 list_field_trigger_option int 0=none,1=skey1,2=skey2,3=skey3,4=skey4,5=skey5,6=skey6,7=skey7,8=skey8,9=skey9,10=skey0
@@ -565,6 +565,7 @@ field_add -id=120127 View_Field Child_List_Extra_Option int mand -def=0 -e=view_
 field_add -id=120128 View_Field Label_Without_Prefix bool mand -def=0
 field_add -id=120129 View_Field Allow_Anonymous_Access bool mand -def=1
 field_add -id=120130 View_Field Use_Full_Height bool mand -def=0
+field_add -id=120131 View_Field Alignment int mand -def=0 -e=field_alignment
 procedure_add -id=120410 View_Field Move_Up
 procedure_arg_add -id=120411 View_Field Move_Up Restrict_Fields string in
 procedure_arg_add -id=120412 View_Field Move_Up Restrict_Values string in
@@ -664,7 +665,7 @@ field_add -id=124115 List_Field Print_Type int mand -def=0 -e=list_field_print_t
 field_add -id=124116 List_Field Use_In_Text_Search_Title bool mand -def=0
 field_add -id=124117 List_Field Select_Key_Exclusions str100 opt
 field_add -id=124118 List_Field Link_Type int mand -def=0 -e=list_field_link_type
-field_add -id=124119 List_Field Alignment int mand -def=0 -e=list_field_alignment
+field_add -id=124119 List_Field Alignment int mand -def=0 -e=field_alignment
 field_add -id=124120 List_Field Label_Source int mand -def=0 -e=list_field_label_source
 field_add -id=124121 List_Field Trigger_Option int mand -def=0 -e=list_field_trigger_option
 field_add -id=124122 List_Field Include_Key_Additions str100 opt
@@ -2050,7 +2051,7 @@ specification_add -id=602710 {View_Field}_view view "? standard View_Field {View
 ,Source_Edit_Child:Name!@fkey2:{Class}+Is_Foreign_Key=0+Name;link\
 ,Sort_Manually,Restriction_Spec:Name!@fkey2:{Class}+{Specification_Type}=restriction;link,New_Source;force\
 ,New_Value,Enum_Starts_At,Enum_Finishes_At,Trigger_Option,Trigger_Behaviour,Trigger_For_State,FK_Trigger_Option,FK_Trigger_Behaviour\
-,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Use_Full_Width,Use_Full_Height,Ignore_Manual_Links\
+,Mandatory_Option,Child_List_Extra_Option,Date_Precision_Option,Font_Size,Alignment,Use_Full_Width,Use_Full_Height,Ignore_Manual_Links\
 ,Label_Without_Prefix,Show_Hide_Start_Point,Link_Restriction,Link_{Permission}:Name!@group:{Workgroup}+Name\
 ,Access_Scope,Access_Restriction,Access_{Permission}:Name!@group:{Workgroup}+Name\
 ,Change_Scope,Change_Restriction,Change_{Permission}:Name!@group:{Workgroup}+Name,Tab_Name,Allow_Anonymous_Access"

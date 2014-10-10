@@ -584,7 +584,7 @@ string g_default_Use_Type_Field = string( );
 int g_default_View_Parent_Extra = int( 0 );
 
 set< int > g_list_field_restrict_enum;
-set< int > g_list_field_alignment_enum;
+set< int > g_field_alignment_enum;
 set< int > g_font_size_enum;
 set< int > g_list_field_label_class_enum;
 set< int > g_list_field_label_source_enum;
@@ -625,30 +625,30 @@ string get_enum_string_list_field_restrict( int val )
    return get_module_string( lower( string_name ) );
 }
 
-const int c_enum_list_field_alignment_default( 0 );
-const int c_enum_list_field_alignment_left( 1 );
-const int c_enum_list_field_alignment_right( 2 );
-const int c_enum_list_field_alignment_center( 3 );
-const int c_enum_list_field_alignment_justify( 4 );
+const int c_enum_field_alignment_default( 0 );
+const int c_enum_field_alignment_left( 1 );
+const int c_enum_field_alignment_right( 2 );
+const int c_enum_field_alignment_center( 3 );
+const int c_enum_field_alignment_justify( 4 );
 
-string get_enum_string_list_field_alignment( int val )
+string get_enum_string_field_alignment( int val )
 {
    string string_name;
 
    if( to_string( val ) == "" )
-      throw runtime_error( "unexpected empty enum value for list_field_alignment" );
+      throw runtime_error( "unexpected empty enum value for field_alignment" );
    else if( to_string( val ) == to_string( "0" ) )
-      string_name = "enum_list_field_alignment_default";
+      string_name = "enum_field_alignment_default";
    else if( to_string( val ) == to_string( "1" ) )
-      string_name = "enum_list_field_alignment_left";
+      string_name = "enum_field_alignment_left";
    else if( to_string( val ) == to_string( "2" ) )
-      string_name = "enum_list_field_alignment_right";
+      string_name = "enum_field_alignment_right";
    else if( to_string( val ) == to_string( "3" ) )
-      string_name = "enum_list_field_alignment_center";
+      string_name = "enum_field_alignment_center";
    else if( to_string( val ) == to_string( "4" ) )
-      string_name = "enum_list_field_alignment_justify";
+      string_name = "enum_field_alignment_justify";
    else
-      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for list_field_alignment" );
+      throw runtime_error( "unexpected enum value '" + to_string( val ) + "' for field_alignment" );
 
    return get_module_string( lower( string_name ) );
 }
@@ -4017,7 +4017,7 @@ void Meta_List_Field::impl::validate( unsigned state, bool is_internal, validati
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Access_Restriction ) ) ) ) );
 
-   if( !g_list_field_alignment_enum.count( v_Alignment ) )
+   if( !g_field_alignment_enum.count( v_Alignment ) )
       p_validation_errors->insert( validation_error_value_type( c_field_name_Alignment,
        get_string_message( GS( c_str_field_has_invalid_value ), make_pair(
        c_str_parm_field_has_invalid_value_field, get_module_string( c_field_display_name_Alignment ) ) ) ) );
@@ -8588,11 +8588,11 @@ void Meta_List_Field::static_get_all_enum_pairs( vector< pair< string, string > 
    pairs.push_back( make_pair( "enum_list_field_restrict_3", get_enum_string_list_field_restrict( 3 ) ) );
    pairs.push_back( make_pair( "enum_list_field_restrict_4", get_enum_string_list_field_restrict( 4 ) ) );
 
-   pairs.push_back( make_pair( "enum_list_field_alignment_0", get_enum_string_list_field_alignment( 0 ) ) );
-   pairs.push_back( make_pair( "enum_list_field_alignment_1", get_enum_string_list_field_alignment( 1 ) ) );
-   pairs.push_back( make_pair( "enum_list_field_alignment_2", get_enum_string_list_field_alignment( 2 ) ) );
-   pairs.push_back( make_pair( "enum_list_field_alignment_3", get_enum_string_list_field_alignment( 3 ) ) );
-   pairs.push_back( make_pair( "enum_list_field_alignment_4", get_enum_string_list_field_alignment( 4 ) ) );
+   pairs.push_back( make_pair( "enum_field_alignment_0", get_enum_string_field_alignment( 0 ) ) );
+   pairs.push_back( make_pair( "enum_field_alignment_1", get_enum_string_field_alignment( 1 ) ) );
+   pairs.push_back( make_pair( "enum_field_alignment_2", get_enum_string_field_alignment( 2 ) ) );
+   pairs.push_back( make_pair( "enum_field_alignment_3", get_enum_string_field_alignment( 3 ) ) );
+   pairs.push_back( make_pair( "enum_field_alignment_4", get_enum_string_field_alignment( 4 ) ) );
 
    pairs.push_back( make_pair( "enum_font_size_0", get_enum_string_font_size( 0 ) ) );
    pairs.push_back( make_pair( "enum_font_size_1", get_enum_string_font_size( 1 ) ) );
@@ -8717,11 +8717,11 @@ void Meta_List_Field::static_class_init( const char* p_module_name )
    g_list_field_restrict_enum.insert( 3 );
    g_list_field_restrict_enum.insert( 4 );
 
-   g_list_field_alignment_enum.insert( 0 );
-   g_list_field_alignment_enum.insert( 1 );
-   g_list_field_alignment_enum.insert( 2 );
-   g_list_field_alignment_enum.insert( 3 );
-   g_list_field_alignment_enum.insert( 4 );
+   g_field_alignment_enum.insert( 0 );
+   g_field_alignment_enum.insert( 1 );
+   g_field_alignment_enum.insert( 2 );
+   g_field_alignment_enum.insert( 3 );
+   g_field_alignment_enum.insert( 4 );
 
    g_font_size_enum.insert( 0 );
    g_font_size_enum.insert( 1 );

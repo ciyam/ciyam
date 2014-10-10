@@ -447,13 +447,13 @@ void setup_list_fields( list_source& list,
          if( extra_data.count( c_field_extra_print_total ) )
             list.print_total_fields.insert( value_id );
 
-         if( extra_data.count( c_list_field_extra_left ) )
+         if( extra_data.count( c_field_extra_left ) )
             list.force_left_fields.insert( value_id );
-         else if( extra_data.count( c_list_field_extra_center ) )
+         else if( extra_data.count( c_field_extra_center ) )
             list.force_center_fields.insert( value_id );
-         else if( extra_data.count( c_list_field_extra_justify ) )
+         else if( extra_data.count( c_field_extra_justify ) )
             list.force_justify_fields.insert( value_id );
-         else if( extra_data.count( c_list_field_extra_right )
+         else if( extra_data.count( c_field_extra_right )
           || ( ( fld.ftype == c_field_type_int || fld.ftype == c_field_type_numeric )
           && !extra_data.count( c_field_extra_enum ) ) )
             list.force_right_fields.insert( value_id );
@@ -3277,10 +3277,8 @@ void output_list_form( ostream& os,
 
                string cmd( "qrencode -o " + temp_file_name
                 + " -s " + to_string( qr_pixels ) + " \"" + cell_data + "\"" );
-#ifdef _WIN32
-               replace( cmd, "&", "^&" );
-#endif
-               int rc = system( cmd.c_str( ) );
+
+               int rc = system( escaped_shell_cmd( cmd ).c_str( ) );
                ( void )rc;
 
                bool is_href = false;

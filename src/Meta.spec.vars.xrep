@@ -5,7 +5,7 @@
 `{`$model_version`=`'0.1`'`}
 `{`$year_created`=`'2008`'`}
 `{`}
-`{`$all_enums`=`'575,add_packages 906,app_auto_days 905,app_generate_type 900,app_list_row_limit 903,app_print_row_limit 902,app_text_limit 901,app_text_rows 904,app_text_trunc_limit 570,arg_type 580,cascade_op 520,class_extra 515,class_type 511,date_precision 801,field_action_create_access_restriction 800,field_action_create_type 802,field_action_type 530,field_extra 600,field_type 635,font_size 514,fraction_limit 505,int_type 688,list_direction 687,list_display_row_limit 691,list_field_alignment 699,list_field_label_class 693,list_field_label_source 692,list_field_link_restrict 698,list_field_link_type 697,list_field_notes_truncation 696,list_field_print_type 690,list_field_restrict 695,list_field_switch_type 694,list_field_trigger_option 700,list_field_view_parent_extra 682,list_pdf_list_type 681,list_print_restrict 680,list_restrict 686,list_search_opt_limit 685,list_style 689,list_text_match_highlight 560,modifier_affect_extra 540,modifier_affect_scope 550,modifier_affect_type 506,numeric_type 654,pdf_font_type 500,primitive 650,procedure_arg_primitive 640,procedure_arg_type 585,relationship_extra 507,round_type 610,source_parent_type 620,source_type 510,string_domain 630,test_field_type 512,time_precision 535,uom 655,view_access_restrict 657,view_change_restrict 661,view_field_access_scope 662,view_field_change_scope 664,view_field_child_list_extra_option 678,view_field_date_precision_option 674,view_field_enum_at 679,view_field_enum_option 676,view_field_fk_trigger_behaviour 675,view_field_fk_trigger_option 663,view_field_link_restrict 677,view_field_mandatory_option 670,view_field_new_source 660,view_field_restrict 672,view_field_trigger_behaviour 673,view_field_trigger_for_state 671,view_field_trigger_option 658,view_pdf_view_type 513,zero_padding`'`}
+`{`$all_enums`=`'575,add_packages 906,app_auto_days 905,app_generate_type 900,app_list_row_limit 903,app_print_row_limit 902,app_text_limit 901,app_text_rows 904,app_text_trunc_limit 570,arg_type 580,cascade_op 520,class_extra 515,class_type 511,date_precision 801,field_action_create_access_restriction 800,field_action_create_type 802,field_action_type 522,field_alignment 530,field_extra 600,field_type 635,font_size 514,fraction_limit 505,int_type 688,list_direction 687,list_display_row_limit 699,list_field_label_class 693,list_field_label_source 692,list_field_link_restrict 698,list_field_link_type 697,list_field_notes_truncation 696,list_field_print_type 690,list_field_restrict 695,list_field_switch_type 694,list_field_trigger_option 700,list_field_view_parent_extra 682,list_pdf_list_type 681,list_print_restrict 680,list_restrict 686,list_search_opt_limit 685,list_style 689,list_text_match_highlight 560,modifier_affect_extra 540,modifier_affect_scope 550,modifier_affect_type 506,numeric_type 654,pdf_font_type 500,primitive 650,procedure_arg_primitive 640,procedure_arg_type 585,relationship_extra 507,round_type 610,source_parent_type 620,source_type 510,string_domain 630,test_field_type 512,time_precision 535,uom 655,view_access_restrict 657,view_change_restrict 661,view_field_access_scope 662,view_field_change_scope 664,view_field_child_list_extra_option 678,view_field_date_precision_option 674,view_field_enum_at 679,view_field_enum_option 676,view_field_fk_trigger_behaviour 675,view_field_fk_trigger_option 663,view_field_link_restrict 677,view_field_mandatory_option 670,view_field_new_source 660,view_field_restrict 672,view_field_trigger_behaviour 673,view_field_trigger_for_state 671,view_field_trigger_option 658,view_pdf_view_type 513,zero_padding`'`}
 `{`}
 `{`$enum_add_packages`=`'0=none 1=Standard 2=Standard_User 3=Standard_User_Group`'`}
 `{`$enum_app_auto_days`=`'0=0 1=1 2=2 3=3 7=7 10=10 20=20 30=30 60=60 90=90 180=180 365=365`'`}
@@ -23,6 +23,7 @@
 `{`$enum_field_action_create_access_restriction`=`'0=none 1=owner 2=admin 3=non_admin`'`}
 `{`$enum_field_action_create_type`=`'0=standard 1=confirmation 2=edit_and_save`'`}
 `{`$enum_field_action_type`=`'0=create_record 1=procedure_call`'`}
+`{`$enum_field_alignment`=`'0=default 1=left 2=right 3=center 4=justify`'`}
 `{`$enum_field_extra`=`'0=none 1=file 2=href 9=html 23=text 4=notes 5=order 6=active 3=image 7=mailto 21=file_link 8=actions 29=qr_code 22=filename 10=password 25=encrypted 11=defcurrent 17=permission 24=orientation 26=hpassword 13=manual_link 12=user_perms 14=current_year 18=security_level 27=hpassword_salt 15=create_datetime 16=modify_datetime 28=is_effective_owner 19=replace_underbars 20=enforce_uppercase -2=user_group -3=user_other -1=owning_user -4=create_user_key -5=modify_user_key`'`}
 `{`$enum_field_type`=`'0=string 1=datetime 2=date 3=time 4=numeric 5=int 6=bool 20=Any_Text_Type 30=Any_Scalar_Type 31=Any_Math_Type 39=Any_Non_Text_Type 40=Date_Or_Time 41=Calendar_Type 45=Any_Date_Or_Time_Type 49=Any_Primitive 50=Any_Relationship 51=Self_Relationship 52=Non_Self_Relationship 99=Any_Type`'`}
 `{`$enum_font_size`=`'0=default 1=large 2=larger 5=small 6=smaller`'`}
@@ -30,7 +31,6 @@
 `{`$enum_int_type`=`'0=normal 3=bytes 1=duration_dhm 2=duration_hms`'`}
 `{`$enum_list_direction`=`'0=forward 1=reverse`'`}
 `{`$enum_list_display_row_limit`=`'0=default 1=1 2=2 3=3 4=4 5=5 6=6 7=7 8=8 9=9 10=10 12=12 15=15 20=20 25=25 30=30 40=40 50=50 75=75 100=100 200=200 500=500 999=unlimited`'`}
-`{`$enum_list_field_alignment`=`'0=default 1=left 2=right 3=center 4=justify`'`}
 `{`$enum_list_field_label_class`=`'0=child 1=parent`'`}
 `{`$enum_list_field_label_source`=`'0=field 1=list 2=omit_label`'`}
 `{`$enum_list_field_link_restrict`=`'0=none 1=owner_only 2=admin_only 3=admin_owner 4=denied_always`'`}
@@ -1981,7 +1981,7 @@
 `{`$specification_List_Field_view_fmand035`=`'true`'`}
 `{`$specification_List_Field_view_field036`=`'124119`'`}
 `{`$specification_List_Field_view_ftype036`=`'int`'`}
-`{`$specification_List_Field_view_extra036`=`'enum=691`'`}
+`{`$specification_List_Field_view_extra036`=`'enum=522`'`}
 `{`$specification_List_Field_view_fmods036`=`'400000:relegate`'`}
 `{`$specification_List_Field_view_fname036`=`'field_list_field_alignment`'`}
 `{`$specification_List_Field_view_fmand036`=`'true`'`}
@@ -5665,7 +5665,7 @@
 `{`$specification_View_Field_view_extra`=`'`'`}
 `{`$specification_View_Field_view_mods`=`'`'`}
 `{`$specification_View_Field_view_binfo`=`'`'`}
-`{`$specification_View_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033 034 035 036 037 038 039`'`}
+`{`$specification_View_Field_view_fnums`=`'000 001 002 003 004 005 006 007 008 009 010 011 012 013 014 015 016 017 018 019 020 021 022 023 024 025 026 027 028 029 030 031 032 033 034 035 036 037 038 039 040`'`}
 `{`$specification_View_Field_view_field000`=`'301900`'`}
 `{`$specification_View_Field_view_ftype000`=`'@class`'`}
 `{`$specification_View_Field_view_extra000`=`'no_edit+link+max_size=100`'`}
@@ -5865,114 +5865,120 @@
 `{`$specification_View_Field_view_fmods024`=`'10000:relegate,1000:relegate`'`}
 `{`$specification_View_Field_view_fname024`=`'field_view_field_font_size`'`}
 `{`$specification_View_Field_view_fmand024`=`'true`'`}
-`{`$specification_View_Field_view_field025`=`'120121`'`}
-`{`$specification_View_Field_view_ftype025`=`'bool`'`}
-`{`$specification_View_Field_view_extra025`=`'`'`}
-`{`$specification_View_Field_view_fmods025`=`'10000:relegate,1000:relegate`'`}
-`{`$specification_View_Field_view_fname025`=`'field_view_field_use_full_width`'`}
+`{`$specification_View_Field_view_field025`=`'120131`'`}
+`{`$specification_View_Field_view_ftype025`=`'int`'`}
+`{`$specification_View_Field_view_extra025`=`'enum=522`'`}
+`{`$specification_View_Field_view_fmods025`=`'`'`}
+`{`$specification_View_Field_view_fname025`=`'field_view_field_alignment`'`}
 `{`$specification_View_Field_view_fmand025`=`'true`'`}
-`{`$specification_View_Field_view_field026`=`'120130`'`}
+`{`$specification_View_Field_view_field026`=`'120121`'`}
 `{`$specification_View_Field_view_ftype026`=`'bool`'`}
 `{`$specification_View_Field_view_extra026`=`'`'`}
 `{`$specification_View_Field_view_fmods026`=`'10000:relegate,1000:relegate`'`}
-`{`$specification_View_Field_view_fname026`=`'field_view_field_use_full_height`'`}
+`{`$specification_View_Field_view_fname026`=`'field_view_field_use_full_width`'`}
 `{`$specification_View_Field_view_fmand026`=`'true`'`}
-`{`$specification_View_Field_view_field027`=`'120126`'`}
+`{`$specification_View_Field_view_field027`=`'120130`'`}
 `{`$specification_View_Field_view_ftype027`=`'bool`'`}
 `{`$specification_View_Field_view_extra027`=`'`'`}
-`{`$specification_View_Field_view_fmods027`=`'8000:relegate,10000:relegate,1000:relegate`'`}
-`{`$specification_View_Field_view_fname027`=`'field_view_field_ignore_manual_links`'`}
+`{`$specification_View_Field_view_fmods027`=`'10000:relegate,1000:relegate`'`}
+`{`$specification_View_Field_view_fname027`=`'field_view_field_use_full_height`'`}
 `{`$specification_View_Field_view_fmand027`=`'true`'`}
-`{`$specification_View_Field_view_field028`=`'120128`'`}
+`{`$specification_View_Field_view_field028`=`'120126`'`}
 `{`$specification_View_Field_view_ftype028`=`'bool`'`}
 `{`$specification_View_Field_view_extra028`=`'`'`}
-`{`$specification_View_Field_view_fmods028`=`'10000:relegate,1000:relegate`'`}
-`{`$specification_View_Field_view_fname028`=`'field_view_field_label_without_prefix`'`}
+`{`$specification_View_Field_view_fmods028`=`'8000:relegate,10000:relegate,1000:relegate`'`}
+`{`$specification_View_Field_view_fname028`=`'field_view_field_ignore_manual_links`'`}
 `{`$specification_View_Field_view_fmand028`=`'true`'`}
-`{`$specification_View_Field_view_field029`=`'120116`'`}
+`{`$specification_View_Field_view_field029`=`'120128`'`}
 `{`$specification_View_Field_view_ftype029`=`'bool`'`}
 `{`$specification_View_Field_view_extra029`=`'`'`}
-`{`$specification_View_Field_view_fmods029`=`'8000:relegate,10000:relegate,1000:relegate`'`}
-`{`$specification_View_Field_view_fname029`=`'field_view_field_show_hide_start_point`'`}
+`{`$specification_View_Field_view_fmods029`=`'10000:relegate,1000:relegate`'`}
+`{`$specification_View_Field_view_fname029`=`'field_view_field_label_without_prefix`'`}
 `{`$specification_View_Field_view_fmand029`=`'true`'`}
-`{`$specification_View_Field_view_field030`=`'120108`'`}
-`{`$specification_View_Field_view_ftype030`=`'int`'`}
-`{`$specification_View_Field_view_extra030`=`'enum=663`'`}
-`{`$specification_View_Field_view_fmods030`=`'8000:relegate,10000:relegate,1000:relegate,100:relegate`'`}
-`{`$specification_View_Field_view_fname030`=`'field_view_field_link_restriction`'`}
+`{`$specification_View_Field_view_field030`=`'120116`'`}
+`{`$specification_View_Field_view_ftype030`=`'bool`'`}
+`{`$specification_View_Field_view_extra030`=`'`'`}
+`{`$specification_View_Field_view_fmods030`=`'8000:relegate,10000:relegate,1000:relegate`'`}
+`{`$specification_View_Field_view_fname030`=`'field_view_field_show_hide_start_point`'`}
 `{`$specification_View_Field_view_fmand030`=`'true`'`}
-`{`$specification_View_Field_view_field031`=`'301915`'`}
-`{`$specification_View_Field_view_ftype031`=`'@class`'`}
-`{`$specification_View_Field_view_extra031`=`'`'`}
+`{`$specification_View_Field_view_field031`=`'120108`'`}
+`{`$specification_View_Field_view_ftype031`=`'int`'`}
+`{`$specification_View_Field_view_extra031`=`'enum=663`'`}
 `{`$specification_View_Field_view_fmods031`=`'8000:relegate,10000:relegate,1000:relegate,100:relegate`'`}
-`{`$specification_View_Field_view_fname031`=`'field_view_field_link_permission`'`}
-`{`$specification_View_Field_view_fmand031`=`'false`'`}
-`{`$specification_View_Field_view_prcls031`=`'116100`'`}
-`{`$specification_View_Field_view_prcnm031`=`'Permission`'`}
-`{`$specification_View_Field_view_prfld031`=`'116101`'`}
-`{`$specification_View_Field_view_prfnm031`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr031`=`'@group:301500+116101`'`}
-`{`$specification_View_Field_view_pridx031`=`'false`'`}
-`{`$specification_View_Field_view_field032`=`'120119`'`}
-`{`$specification_View_Field_view_ftype032`=`'int`'`}
-`{`$specification_View_Field_view_extra032`=`'enum=661`'`}
-`{`$specification_View_Field_view_fmods032`=`'8000:relegate,10000:relegate,1000:relegate,20000:protect`'`}
-`{`$specification_View_Field_view_fname032`=`'field_view_field_access_scope`'`}
-`{`$specification_View_Field_view_fmand032`=`'true`'`}
-`{`$specification_View_Field_view_field033`=`'120105`'`}
+`{`$specification_View_Field_view_fname031`=`'field_view_field_link_restriction`'`}
+`{`$specification_View_Field_view_fmand031`=`'true`'`}
+`{`$specification_View_Field_view_field032`=`'301915`'`}
+`{`$specification_View_Field_view_ftype032`=`'@class`'`}
+`{`$specification_View_Field_view_extra032`=`'`'`}
+`{`$specification_View_Field_view_fmods032`=`'8000:relegate,10000:relegate,1000:relegate,100:relegate`'`}
+`{`$specification_View_Field_view_fname032`=`'field_view_field_link_permission`'`}
+`{`$specification_View_Field_view_fmand032`=`'false`'`}
+`{`$specification_View_Field_view_prcls032`=`'116100`'`}
+`{`$specification_View_Field_view_prcnm032`=`'Permission`'`}
+`{`$specification_View_Field_view_prfld032`=`'116101`'`}
+`{`$specification_View_Field_view_prfnm032`=`'Name`'`}
+`{`$specification_View_Field_view_prxtr032`=`'@group:301500+116101`'`}
+`{`$specification_View_Field_view_pridx032`=`'false`'`}
+`{`$specification_View_Field_view_field033`=`'120119`'`}
 `{`$specification_View_Field_view_ftype033`=`'int`'`}
-`{`$specification_View_Field_view_extra033`=`'enum=660`'`}
-`{`$specification_View_Field_view_fmods033`=`'1000:relegate,20000:protect`'`}
-`{`$specification_View_Field_view_fname033`=`'field_view_field_access_restriction`'`}
+`{`$specification_View_Field_view_extra033`=`'enum=661`'`}
+`{`$specification_View_Field_view_fmods033`=`'8000:relegate,10000:relegate,1000:relegate,20000:protect`'`}
+`{`$specification_View_Field_view_fname033`=`'field_view_field_access_scope`'`}
 `{`$specification_View_Field_view_fmand033`=`'true`'`}
-`{`$specification_View_Field_view_field034`=`'301920`'`}
-`{`$specification_View_Field_view_ftype034`=`'@class`'`}
-`{`$specification_View_Field_view_extra034`=`'`'`}
+`{`$specification_View_Field_view_field034`=`'120105`'`}
+`{`$specification_View_Field_view_ftype034`=`'int`'`}
+`{`$specification_View_Field_view_extra034`=`'enum=660`'`}
 `{`$specification_View_Field_view_fmods034`=`'1000:relegate,20000:protect`'`}
-`{`$specification_View_Field_view_fname034`=`'field_view_field_access_permission`'`}
-`{`$specification_View_Field_view_fmand034`=`'false`'`}
-`{`$specification_View_Field_view_prcls034`=`'116100`'`}
-`{`$specification_View_Field_view_prcnm034`=`'Permission`'`}
-`{`$specification_View_Field_view_prfld034`=`'116101`'`}
-`{`$specification_View_Field_view_prfnm034`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr034`=`'@group:301500+116101`'`}
-`{`$specification_View_Field_view_pridx034`=`'false`'`}
-`{`$specification_View_Field_view_field035`=`'120120`'`}
-`{`$specification_View_Field_view_ftype035`=`'int`'`}
-`{`$specification_View_Field_view_extra035`=`'enum=662`'`}
-`{`$specification_View_Field_view_fmods035`=`'8000:relegate,10000:relegate,1000:relegate,40000:protect`'`}
-`{`$specification_View_Field_view_fname035`=`'field_view_field_change_scope`'`}
-`{`$specification_View_Field_view_fmand035`=`'true`'`}
-`{`$specification_View_Field_view_field036`=`'120106`'`}
+`{`$specification_View_Field_view_fname034`=`'field_view_field_access_restriction`'`}
+`{`$specification_View_Field_view_fmand034`=`'true`'`}
+`{`$specification_View_Field_view_field035`=`'301920`'`}
+`{`$specification_View_Field_view_ftype035`=`'@class`'`}
+`{`$specification_View_Field_view_extra035`=`'`'`}
+`{`$specification_View_Field_view_fmods035`=`'1000:relegate,20000:protect`'`}
+`{`$specification_View_Field_view_fname035`=`'field_view_field_access_permission`'`}
+`{`$specification_View_Field_view_fmand035`=`'false`'`}
+`{`$specification_View_Field_view_prcls035`=`'116100`'`}
+`{`$specification_View_Field_view_prcnm035`=`'Permission`'`}
+`{`$specification_View_Field_view_prfld035`=`'116101`'`}
+`{`$specification_View_Field_view_prfnm035`=`'Name`'`}
+`{`$specification_View_Field_view_prxtr035`=`'@group:301500+116101`'`}
+`{`$specification_View_Field_view_pridx035`=`'false`'`}
+`{`$specification_View_Field_view_field036`=`'120120`'`}
 `{`$specification_View_Field_view_ftype036`=`'int`'`}
-`{`$specification_View_Field_view_extra036`=`'enum=660`'`}
+`{`$specification_View_Field_view_extra036`=`'enum=662`'`}
 `{`$specification_View_Field_view_fmods036`=`'8000:relegate,10000:relegate,1000:relegate,40000:protect`'`}
-`{`$specification_View_Field_view_fname036`=`'field_view_field_change_restriction`'`}
+`{`$specification_View_Field_view_fname036`=`'field_view_field_change_scope`'`}
 `{`$specification_View_Field_view_fmand036`=`'true`'`}
-`{`$specification_View_Field_view_field037`=`'301930`'`}
-`{`$specification_View_Field_view_ftype037`=`'@class`'`}
-`{`$specification_View_Field_view_extra037`=`'`'`}
+`{`$specification_View_Field_view_field037`=`'120106`'`}
+`{`$specification_View_Field_view_ftype037`=`'int`'`}
+`{`$specification_View_Field_view_extra037`=`'enum=660`'`}
 `{`$specification_View_Field_view_fmods037`=`'8000:relegate,10000:relegate,1000:relegate,40000:protect`'`}
-`{`$specification_View_Field_view_fname037`=`'field_view_field_change_permission`'`}
-`{`$specification_View_Field_view_fmand037`=`'false`'`}
-`{`$specification_View_Field_view_prcls037`=`'116100`'`}
-`{`$specification_View_Field_view_prcnm037`=`'Permission`'`}
-`{`$specification_View_Field_view_prfld037`=`'116101`'`}
-`{`$specification_View_Field_view_prfnm037`=`'Name`'`}
-`{`$specification_View_Field_view_prxtr037`=`'@group:301500+116101`'`}
-`{`$specification_View_Field_view_pridx037`=`'false`'`}
-`{`$specification_View_Field_view_field038`=`'120103`'`}
-`{`$specification_View_Field_view_ftype038`=`'string`'`}
-`{`$specification_View_Field_view_extra038`=`'max_size=100`'`}
-`{`$specification_View_Field_view_fmods038`=`'800:relegate,1000:relegate`'`}
-`{`$specification_View_Field_view_fname038`=`'field_view_field_tab_name`'`}
+`{`$specification_View_Field_view_fname037`=`'field_view_field_change_restriction`'`}
+`{`$specification_View_Field_view_fmand037`=`'true`'`}
+`{`$specification_View_Field_view_field038`=`'301930`'`}
+`{`$specification_View_Field_view_ftype038`=`'@class`'`}
+`{`$specification_View_Field_view_extra038`=`'`'`}
+`{`$specification_View_Field_view_fmods038`=`'8000:relegate,10000:relegate,1000:relegate,40000:protect`'`}
+`{`$specification_View_Field_view_fname038`=`'field_view_field_change_permission`'`}
 `{`$specification_View_Field_view_fmand038`=`'false`'`}
-`{`$specification_View_Field_view_field039`=`'120129`'`}
-`{`$specification_View_Field_view_ftype039`=`'bool`'`}
-`{`$specification_View_Field_view_extra039`=`'`'`}
-`{`$specification_View_Field_view_fmods039`=`'`'`}
-`{`$specification_View_Field_view_fname039`=`'field_view_field_allow_anonymous_access`'`}
-`{`$specification_View_Field_view_fmand039`=`'true`'`}
+`{`$specification_View_Field_view_prcls038`=`'116100`'`}
+`{`$specification_View_Field_view_prcnm038`=`'Permission`'`}
+`{`$specification_View_Field_view_prfld038`=`'116101`'`}
+`{`$specification_View_Field_view_prfnm038`=`'Name`'`}
+`{`$specification_View_Field_view_prxtr038`=`'@group:301500+116101`'`}
+`{`$specification_View_Field_view_pridx038`=`'false`'`}
+`{`$specification_View_Field_view_field039`=`'120103`'`}
+`{`$specification_View_Field_view_ftype039`=`'string`'`}
+`{`$specification_View_Field_view_extra039`=`'max_size=100`'`}
+`{`$specification_View_Field_view_fmods039`=`'800:relegate,1000:relegate`'`}
+`{`$specification_View_Field_view_fname039`=`'field_view_field_tab_name`'`}
+`{`$specification_View_Field_view_fmand039`=`'false`'`}
+`{`$specification_View_Field_view_field040`=`'120129`'`}
+`{`$specification_View_Field_view_ftype040`=`'bool`'`}
+`{`$specification_View_Field_view_extra040`=`'`'`}
+`{`$specification_View_Field_view_fmods040`=`'`'`}
+`{`$specification_View_Field_view_fname040`=`'field_view_field_allow_anonymous_access`'`}
+`{`$specification_View_Field_view_fmand040`=`'true`'`}
 `{`}
 `{`$specification_View_Field_child_list0_id`=`'602720`'`}
 `{`$specification_View_Field_child_list0_cid`=`'120100`'`}
