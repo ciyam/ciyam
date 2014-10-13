@@ -911,13 +911,8 @@ string escaped_shell_arg( const string& arg )
 
    if( !s.empty( ) )
    {
-#ifndef _WIN32
-      replace( s, "'", "\\'" );
-      s = "'" + s + "'";
-#else
       replace( s, "\"", "\\\"" );
       s = '"' + s + '"';
-#endif
    }
 
    return s;
@@ -1486,11 +1481,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
          had_escape = true;
          ++p_finish;
       }
-#ifdef _WIN32
       else if( *p_finish == '"' )
-#else
-      else if( *p_finish == '\'' )
-#endif
       {
          in_quotes = !in_quotes;
          if( !in_quotes && !began_without_quotes )
