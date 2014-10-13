@@ -20,7 +20,11 @@
                   if( !str.empty( ) )
                      str += " ";
 
-`{`@eq`(`$arg_tvalue`,`'field_svlist`'`)\
+`{`@eq`(`$arg_tvalue`,`'field_ocpair_list`'`)\
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Field( ).Name( );
+                  str += ",";
+                  str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Other_Class_Field( ).Name( );
+`,`{`@eq`(`$arg_tvalue`,`'field_svlist`'`)\
                   str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Parent( ).Name( );
                   str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Source_Field( ).Name( );
 
@@ -42,7 +46,7 @@
 `}
                   str += ",";
                   str += get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).Field( ).Parent_Class_Name( );
-`}
+`}`}
                } while( get_obj( ).child_`{`$arg_child`}( ).child_`{`$arg_child`}( ).iterate_next( ) );
             }
 

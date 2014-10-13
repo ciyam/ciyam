@@ -435,6 +435,11 @@ field_add -id=114206 Specification_Type Needs_Other_Source_Child_2 bool mand -de
 field_add -id=114207 Specification_Type Use_Source_Field_Enum bool mand -def=0
 field_add -id=114208 Specification_Type Allow_Other_Procedure bool mand -def=0
 field_add -id=114209 Specification_Type Allow_Other_Procedure_2 bool mand -def=0
+field_add -id=114210 Specification_Type Use_Parent_Child_Rel_For_Other_Class bool mand -def=0
+field_add -id=114211 Specification_Type Use_Parent_Other_Class bool mand -def=0
+field_add -id=114212 Specification_Type Allow_Other_Class_Field bool mand -def=0
+field_add -id=114213 Specification_Type Needs_Other_Class_Field bool mand -def=0
+field_add -id=114214 Specification_Type Protect_Other_Class_From_Edit bool mand -def=0
 procedure_add -id=114410 Specification_Type Is_Valid_Field_Type
 procedure_arg_add -id=114411 Specification_Type Is_Valid_Field_Type Primitive int in
 procedure_arg_add -id=114412 Specification_Type Is_Valid_Field_Type Class string in
@@ -894,6 +899,7 @@ relationship_add -id=201421 -fid=301421 Specification Other_Class Class opt rest
 relationship_add -id=201430 -fid=301430 Specification {Field} Field opt restrict
 relationship_add -id=201435 -fid=301435 Specification Other_Field Field opt restrict
 relationship_add -id=201436 -fid=301436 Specification Other_Field_2 Field opt restrict
+relationship_add -id=201437 -fid=301437 Specification Other_Class_Field Field opt restrict
 relationship_add -id=201440 -fid=301440 Specification {Modifier} Modifier opt restrict
 relationship_add -id=201441 -fid=301441 Specification Other_Modifier Modifier opt restrict
 relationship_add -id=201442 -fid=301442 Specification Other_Modifier_2 Modifier opt restrict
@@ -1081,6 +1087,7 @@ modifier_add -id=500604 Specification Hide_Source_Grandchild Source_Grandchild:r
 modifier_add -id=500605 Specification Hide_Other_Class Other_Class:relegate
 modifier_add -id=500610 Specification Hide_Other_Field Other_Field:relegate
 modifier_add -id=500611 Specification Hide_Other_Field_2 Other_Field_2:relegate
+modifier_add -id=500612 Specification Hide_Other_Class_Field Other_Class_Field:relegate
 modifier_add -id=500620 Specification Hide_Procedure {Procedure}:relegate
 modifier_add -id=500625 Specification Hide_Procedure_Arg {Procedure_Arg}:relegate
 modifier_add -id=500626 Specification Hide_Other_Procedure Other_Procedure:relegate
@@ -1112,6 +1119,7 @@ modifier_add -id=500686b Specification Hide_Other_Permission_2 Other_Permission_
 modifier_add -id=500687 Specification Protect_Source_Parent Source_Parent:protect
 modifier_add -id=500688 Specification Hide_Child_Relationship Child_Relationship:relegate
 modifier_add -id=500689 Specification Protect_Class {Class}:protect
+modifier_add -id=500689a Specification Protect_Other_Class Other_Class:protect
 modifier_add -id=500690 Specification Hide_Use_Test_Parent_Child\
  Use_Test_Parent_Child:relegate,Test_Parent:relegate,Test_Child:relegate
 modifier_add -id=500691 Specification Hide_Test_Parent Test_Parent:relegate
@@ -1362,6 +1370,7 @@ specification_add -id=600054a {Field}_Def_Value transient_field_alias "Field Def
 specification_add -id=600055 {Field}_{Specification}_update_children update_children "Field Specification Name"
 specification_add -id=600055a {Field}_{Specification}_Other_Field_update_children update_children "Field Specification:Other_Field Name"
 specification_add -id=600055b {Field}_{Specification}_Other_Field_2_update_children update_children "Field Specification:Other_Field_2 Name"
+specification_add -id=600055c {Field}_{Specification}_Other_Class_Field_update_children update_children "Field Specification:Other_Class_Field Name"
 specification_add -id=600056 {Field}_{Specification}_Source_Field_update_children update_children "Field Specification:Source_Field Name"
 specification_add -id=600057 {Field}_{Specification}_Source_Parent_update_children update_children "Field Specification:Source_Parent Name"
 specification_add -id=600058 {Field}_{Specification}_Source_Child_update_children update_children "Field Specification:Source_Child Name"
@@ -1448,6 +1457,7 @@ specification_add -id=600101a {Specification}_Hide_Other_Class modifier_field_va
 specification_add -id=600101b {Specification}_Hide_Field modifier_field_value "Specification Hide_Field {Specification_Type}:Allow_Field false"
 specification_add -id=600102a {Specification}_Hide_Other_Field modifier_field_value "Specification Hide_Other_Field {Specification_Type}:Allow_Other_Field false"
 specification_add -id=610102b {Specification}_Hide_Other_Field_2 modifier_field_value "Specification Hide_Other_Field_2 {Specification_Type}:Allow_Other_Field_2 false"
+specification_add -id=600102c {Specification}_Hide_Other_Class_Field modifier_field_value "Specification Hide_Other_Class_Field {Specification_Type}:Allow_Other_Class_Field false"
 specification_add -id=600103 {Specification}_Hide_Procedure modifier_field_value "Specification Hide_Procedure {Specification_Type}:Allow_Procedure false"
 specification_add -id=600104 {Specification}_Hide_Procedure_Arg modifier_field_value "Specification Hide_Procedure_Arg {Specification_Type}:Allow_Procedure_Arg false"
 specification_add -id=600104a {Specification}_Hide_Procedure_Arg_2 modifier_field_value "Specification Hide_Procedure_Arg_2 {Specification_Type}:Needs_Procedure_Arg_2 false"
@@ -1496,11 +1506,13 @@ specification_add -id=610128 {Specification}_Protect_Child_Relationship_from_edi
 specification_add -id=620128 {Specification}_Protect_Class_from_edit modifier_field_value "Specification Protect_Class {Specification_Type}:Protect_Class_From_Edit true"
 specification_add -id=630128 {Specification}_Protect_Enum_from_edit_1 modifier_field_value "Specification Protect_Enum {Specification_Type}:Use_Field_Enum true"
 specification_add -id=630128a {Specification}_Protect_Enum_from_edit_2 modifier_field_value "Specification Protect_Enum {Specification_Type}:Use_Source_Field_Enum true"
+specification_add -id=630129 {Specification}_Protect_Other_Class_From_Edit modifier_field_value "Specification Protect_Other_Class {Specification_Type}:Protect_Other_Class_From_Edit true"
 specification_add -id=600130 {Specification}_Needs_Class_cond_check check_cond_non_null "Specification {Class} {Specification_Type}:Needs_Class"
 specification_add -id=600130a {Specification}_Needs_Needs_Other_Class_cond_check check_cond_non_null "Specification Other_Class {Specification_Type}:Needs_Other_Class"
 specification_add -id=600131 {Specification}_Needs_Field_cond_check check_cond_non_null "Specification {Field} {Specification_Type}:Needs_Field"
 specification_add -id=610131 {Specification}_Needs_Other_Field_cond_check check_cond_non_null "Specification Other_Field {Specification_Type}:Needs_Other_Field"
 specification_add -id=620131 {Specification}_Needs_Other_Field_2_cond_check check_cond_non_null "Specification Other_Field_2 {Specification_Type}:Needs_Other_Field_2"
+specification_add -id=630131 {Specification}_Needs_Other_Class_Field_cond_check check_cond_non_null "Specification Other_Class_Field {Specification_Type}:Needs_Other_Class_Field"
 specification_add -id=600132 {Specification}_Needs_Procedure_cond_check check_cond_non_null "Specification {Procedure} {Specification_Type}:Needs_Procedure"
 specification_add -id=600133 {Specification}_Needs_Procedure_Arg_cond_check check_cond_non_null "Specification {Procedure_Arg} {Specification_Type}:Needs_Procedure_Arg"
 specification_add -id=600133a {Specification}_Needs_Procedure_Arg_2_cond_check check_cond_non_null "Specification Procedure_Arg_2 {Specification_Type}:Needs_Procedure_Arg_2"
@@ -1540,15 +1552,19 @@ specification_add -id=600149 {Specification}_{Specification_Type}_default defaul
  "Specification {Specification_Type} Parent_{Specification}:Child_{Specification_Type} -test=Parent_{Specification}"
 specification_add -id=600150 {Specification}_{Class}_default_1 default_to_field\
  "Specification {Class} Parent_{Specification}:{Class} -test={Specification_Type}:Use_Parent_Class=true"
-specification_add -id=600151 {Specification}_{Class}_default_2 default_to_field\
+specification_add -id=600150a {Specification}_{Class}_default_2 default_to_field\
+ "Specification Other_Class Parent_{Specification}:Other_Class -test={Specification_Type}:Use_Parent_Other_Class=true"
+specification_add -id=600151 {Specification}_{Class}_default_3 default_to_field\
  "Specification {Class} Parent_{Specification}:Source_Parent_Class -test={Specification_Type}:Use_Parent_Source_Parent_For_Class=true"
-specification_add -id=600152 {Specification}_{Class}_default_3 default_to_field\
+specification_add -id=600152 {Specification}_{Class}_default_4 default_to_field\
  "Specification {Class} Parent_{Specification}:Child_Rel_Child_Class -test={Specification_Type}:Use_Parent_Child_Rel_For_Class=true"
-specification_add -id=600153 {Specification}_{Class}_default_4 default_to_field\
+specification_add -id=600152a {Specification}_{Class}_default_5 default_to_field\
+ "Specification Other_Class Parent_{Specification}:Child_Rel_Child_Class -test={Specification_Type}:Use_Parent_Child_Rel_For_Other_Class=true"
+specification_add -id=600153 {Specification}_{Class}_default_6 default_to_field\
  "Specification {Class} Parent_{Specification}:Field_Class -test={Specification_Type}:Use_Parent_Field_For_Class=true"
-specification_add -id=600153a {Specification}_{Class}_default_5 default_to_field\
+specification_add -id=600153a {Specification}_{Class}_default_7 default_to_field\
  "Specification {Class} Parent_{Specification}:Source_Field_Class -test={Specification_Type}:Use_Parent_Source_Field_For_Class=true"
-specification_add -id=600153b {Specification}_{Class}_default_6 default_to_field\
+specification_add -id=600153b {Specification}_{Class}_default_8 default_to_field\
  "Specification {Class} Parent_{Specification}:Other_Class -test={Specification_Type}:Use_Parent_Other_Class_For_Class=true"
 specification_add -id=600154 {Specification}_Source_Parent_default_1 default_to_field\
  "Specification Source_Parent Parent_{Specification}:Source_Parent -test={Specification_Type}:Use_Parent_Source_Parent=true"
@@ -1629,6 +1645,7 @@ specification_add -id=650194 {Specification}_Parent_{Specification}_update_3 upd
 specification_add -id=660194 {Specification}_Parent_{Specification}_update_4 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_restrict -grand_parent"
 specification_add -id=670194 {Specification}_Parent_{Specification}_update_5 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_source_and_value -grand_parent"
 specification_add -id=680194 {Specification}_Parent_{Specification}_update_6 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=home_message_stats_info"
+specification_add -id=690194 {Specification}_Parent_{Specification}_update_7 update_parent_cascade "Specification Parent_{Specification} {Specification_Type}=field_ocpair -grand_parent"
 specification_add -id=600197 {Specification}_Field_Values_meta meta_spec_field_values "Specification\
  Field_Values Restrict_Values Order Specification:Parent_{Specification} {Specification_Type}=restriction_field_list Name"
 specification_add -id=600198 {Specification}_Fields_clear field_clear "Specification Fields"
@@ -1643,9 +1660,12 @@ specification_add -id=600202 {Specification}_Field_Pairs_meta2 meta_spec_field_p
  Field_Pairs Order Specification:Parent_{Specification} Name=field_pair2_list"
 specification_add -id=600203 {Specification}_Field_Pairs_meta3 meta_spec_field_pairs "Specification\
  Field_Pairs Order Specification:Parent_{Specification} Name=field_pair_g_list"
+specification_add -id=600203a {Specification}_Field_Pairs_meta4 meta_spec_field_pairs "Specification\
+ Field_Pairs Order Specification:Parent_{Specification} Name=field_ocpair_list"
 specification_add -id=600204 {Specification}_Name_from_search_replace field_from_search_replace "Specification Name\
  {Specification_Type}:Specification_Name {Model}:Name={model},{Class}:Name={class},{Field}:Name={field},Other_Field:Name={ofield}\
 ,Other_Field_2:Name={o2field},{Modifier}:Name={modifier},Other_Modifier:Name={omodifier},Other_Modifier_2:Name={o2modifier}\
+,Other_Class:Name={oclass},Other_Class_Field:Name={ocfield},Other_Class_Field:Id={ocfield_id}\
 ,Source_Class:Name={sclass},Source_Parent:Name={spfield},Source_Parent_Class:Name={spclass}\
 ,Source_Child:Name={scfield},Other_Source_Child:Name={oscfield},Other_Source_Child_2:Name={o2scfield}\
 ,Source_Field:Name={sfield},Source_Grandchild:Name={sgcfield}\
@@ -1664,6 +1684,7 @@ specification_add -id=600207 {Specification}_Vars_from_search_replace field_from
 ,{Field}:Transient={ftransient},{Field}:Numeric_Decimals={fdecimals},{Field}:Is_Foreign_Key={fisfk}\
 ,{Field}:Is_Text_Type={fistexttype},{Field}:Parent_Class_Name={fpclass}\
 ,Other_Field:Name={ofield},Other_Field:Id={ofield_id},Other_Field_2:Name={o2field},Other_Field_2:Id={o2field_id}\
+,Other_Class_Field:Name={ocfield},Other_Class_Field:Id={ocfield_id}\
 ,{Modifier}:Name={modifier},Other_Modifier:Name={omodifier},Other_Modifier_2:Name={o2modifier}\
 ,Source_Parent_Class:Name={spclass},Source_Parent:Name={spfield},Source_Parent:Id={spfield_id},Source_Child_Class:Name={scclass}\
 ,Source_Child:Name={scfield},Source_Child:Id={scfield_id},Other_Source_Child:Name={oscfield},Other_Source_Child:Id={oscfield_id}\
@@ -1982,7 +2003,7 @@ specification_add -id=602321 {Relationship}_child_list1 list "@602321_Child_* ch
 specification_add -id=602400 {Specification_Type}_view view "? standard:admin_edit Specification_Type\
  Name,Notes,Specification_Name,Specification_Vars,Default_Child_Vars,Specification_Strings,Specification_Object\
 ,@tab:Basic_Fields,Needs_Class,Allow_Other_Class,Needs_Other_Class,Allow_Field,Needs_Field,Field_type,Allow_Other_Field,Needs_Other_Field\
-,Allow_Other_Field_2,Needs_Other_Field_2,Allow_Modifier,Needs_Modifier\
+,Allow_Other_Field_2,Needs_Other_Field_2,Allow_Other_Class_Field,Needs_Other_Class_Field,Allow_Modifier,Needs_Modifier\
 ,Allow_Enum,Needs_Enum,Allow_Enum_Item,Needs_Enum_Item,Needs_Enum_Item_2,Needs_Enum_Item_3,Needs_Enum_Item_4,Needs_Enum_Item_5\
 ,Allow_Value,Needs_Value,Allow_Test_Field,Needs_Test_Field,Test_Field_type,Allow_Test_Value,Needs_Test_Value\
 ,@tab:Extra_Fields,Allow_Procedure,Needs_Procedure,Allow_Procedure_Arg,Needs_Procedure_Arg,Procedure_Arg_type,Procedure_Arg_primitive\
@@ -1990,16 +2011,17 @@ specification_add -id=602400 {Specification_Type}_view view "? standard:admin_ed
 ,Allow_Source_Field,Needs_Source_Field,Source_type,Allow_Source_Parent\
 ,Needs_Source_Parent,Source_Parent_type,Allow_Source_Child,Needs_Source_Child,Allow_Other_Source_Child,Needs_Other_Source_Child\
 ,Allow_Other_Source_Child_2,Needs_Other_Source_Child_2,Allow_Source_Grandchild\
-,Allow_Child_Relationship,Needs_Child_Relationship,Allow_Options,Allow_Permission,Needs_Permission,Needs_Other_Permission,Needs_Other_Permission_2\
+,Allow_Child_Relationship,Needs_Child_Relationship,Allow_Options\
+,Allow_Permission,Needs_Permission,Needs_Other_Permission,Needs_Other_Permission_2\
 ,@tab:Basic_Options,Source_Field_Type_Match,Allow_FK_Source_Field_Choice\
 ,Child_Relationship_Class_Match,Child_Rel_Parent_Match,Child_Rel_Grandparent_Match\
 ,Needs_Source_Field_Or_Child,Test_Field_Type_Match,Allow_FK_Test_Field_Choice\
-,Is_System,Is_Child_Only,Child_Prefix,Protect_Class_From_Edit,Is_Required_For_UI_Gen\
-,@tab:Advanced_Options,Use_Field_Enum,Use_Source_Field_Enum,Use_Parent_Class\
+,Is_System,Is_Child_Only,Child_Prefix,Protect_Class_From_Edit,Protect_Other_Class_From_Edit,Is_Required_For_UI_Gen\
+,@tab:Advanced_Options,Use_Field_Enum,Use_Source_Field_Enum,Use_Parent_Class,Use_Parent_Other_Class\
 ,Use_Parent_Other_Class_For_Class,Use_Parent_Field_For_Class,Use_Parent_Source_Field_For_Class\
 ,Use_Parent_Source_Class,Use_Parent_Source_Parent,Use_Parent_Source_Parent_For_Class,Use_Class_As_Source_Parent_Class\
-,Use_Parent_Child_Rel_For_Class,Use_Parent_Child_Rel_As_Source_Parent,Use_Parent_Procedure,Set_Field_To_Source_Field_Or_Child\
-,Protect_Class_From_Update,Protect_Procedure_From_Edit,Protect_Child_Rel_From_Update\
+,Use_Parent_Child_Rel_For_Class,Use_Parent_Child_Rel_For_Other_Class,Use_Parent_Child_Rel_As_Source_Parent,Use_Parent_Procedure\
+,Set_Field_To_Source_Field_Or_Child,Protect_Class_From_Update,Protect_Procedure_From_Edit,Protect_Child_Rel_From_Update\
 ,Specification_Actions,Child_{Specification_Type}:Name;link,Has_Next_Specification_Info\
 ,Next_Protect_Procedure,Next_Protect_Source_Parent,Next_Protect_Child_Rel\
 ,Next_Specification_Actions,Next_Child_{Specification_Type}:Name;link"
@@ -2010,8 +2032,9 @@ specification_add -id=602420 {Specification_Type}_child_list0 list "@602420_Chil
 specification_add -id=602500 {Specification}_view view "? standard Specification\
  {Model}:Name;no_edit+link+fkey1,Name;no_edit,Id;no_edit,Comments\
 ,{Specification_Type}:Name;no_edit+link,{Specification_Type}:Notes;no_edit+full_height\
-,{Class}:Name!@fkey1:{Model}+Name;link+fkey2+force,Other_Class:Name!@fkey1:{Model}+Name;link,{Field}:Name!@fkey2:{Class}+Name;link+force\
+,{Class}:Name!@fkey1:{Model}+Name;link+fkey2+force,{Field}:Name!@fkey2:{Class}+Name;link+force\
 ,Other_Field:Name!@fkey2:{Class}+Name,Other_Field_2:Name!@fkey2:{Class}+Name,Value\
+,Other_Class:Name!@fkey1:{Model}+Name;link+fkey9,Other_Class_Field:Name!@fkey9:{Class}+Name\
 ,{Modifier}:Name!@fkey2:{Class}+Name;link,Other_Modifier:Name!@fkey2:{Class}+Name;link,Other_Modifier_2:Name!@fkey2:{Class}+Name;link\
 ,{Procedure}:Name!@fkey2:{Class}+Name;link+fkey5,{Procedure_Arg}:Name!@fkey5:{Procedure}+Name\
 ,Procedure_Arg_2:Name!@fkey5:{Procedure}+Name,Procedure_Arg_3:Name!@fkey5:{Procedure}+Name\

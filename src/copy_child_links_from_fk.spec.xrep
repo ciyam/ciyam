@@ -31,10 +31,13 @@
 `}`{`!`@eq`(`$arg_fk_from_child`,`'`'`)\
          get_obj( ).child_`{`$child_name`}( ).`{`$arg_fk_from_child`}( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).get_key( ) );
 `}
-`{`?`$arg_field_list`[`$arg_field_list`%,`,\
+`{`?`$arg_fields`[`$arg_fields`%,`,\
          copy_field_or_file_and_field( get_obj( ).child_`{`$child_name`}( ), child_key,
+`{`@eq`(`$module_name`,`'Meta`'`)\
           "\\0", get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ), "\\1", storage_locked_for_admin( ) );
-`]`}
+`,\
+          "\\1", get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ), "\\0", storage_locked_for_admin( ) );
+`}`]`}
          get_obj( ).child_`{`$child_name`}( ).op_apply( );
 
       } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$fk_child_name`}( ).iterate_next( ) );
