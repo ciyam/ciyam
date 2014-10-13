@@ -4347,14 +4347,18 @@ string process_script_args( const string& raw_args, bool is_script_arg )
          if( !next_arg.empty( ) && next_arg[ 0 ] == '@' )
             next_arg = get_session_variable( next_arg );
 
-         if( !is_script_arg && !next_arg.empty( ) )
+         if( !next_arg.empty( ) )
             next_arg = escaped_shell_arg( next_arg );
 
          if( !retval.empty( ) )
             retval += " ";
 
          if( next_arg.empty( ) )
+#ifndef _WIN32
+            next_arg = "''";
+#else
             next_arg = is_script_arg ? "\\\"\\\"" : "\"\"";
+#endif
 
          retval += next_arg;
       }
@@ -9093,6 +9097,7 @@ void transaction_commit( )
       for( size_t i = 0; i < gtp_session->async_or_delayed_system_commands.size( ); i++ )
       {
          TRACE_LOG( TRACE_SESSIONS, gtp_session->async_or_delayed_system_commands[ i ] );
+
          int rc = system( gtp_session->async_or_delayed_system_commands[ i ].c_str( ) );
          ( void )rc;
       }

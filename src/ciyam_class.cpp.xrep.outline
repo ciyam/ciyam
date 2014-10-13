@@ -1695,7 +1695,7 @@ void `{`$full_class_name`}::impl::after_fetch( )
  arg_tfistexttype=$specification_\0_tfistexttype arg_value=$specification_\0_value\
  arg_ofield=$specification_\0_ofield arg_sfistexttype=$specification_\0_sfistexttype\
  arg_scfistexttype=$specification_\0_scfistexttype arg_op=$specification_\0_op\
- arg_type=$specification_\0_type arg_check=$specification_\0_check`}\
+ arg_type=$specification_\0_type arg_check=$specification_\0_check arg_not_pedit=$specification_\0_not_pedit`}\
 `,\
 `@eq`(`'\1`'`,`'transient_field_from_sum`'`)
 `{`#transient_field_from_sum.spec.xrep section=after_fetch class_name=$class_name\
@@ -2587,10 +2587,10 @@ void `{`$full_class_name`}::impl::after_store( bool is_create, bool is_internal 
  arg_id=$specification_\0_id arg_cclass=$specification_\0_cclass arg_child=$specification_\0_child arg_gfield=$specification_\0_gfield`}\
 `,\
 `@eq`(`'\1`'`,`'copy_child_links_from_fk`'`)
-`{`#copy_child_links_from_fk.spec.xrep section=after_store class_name=$class_name\
+`{`#copy_child_links_from_fk.spec.xrep section=after_store class_name=$class_name module_name=$module_name\
  arg_id=$specification_\0_id arg_cclass=$specification_\0_cclass arg_fkclass=$specification_\0_fkclass arg_fkfield=$specification_\0_fkfield\
  arg_fkcclass=$specification_\0_fkcclass arg_fkcfield=$specification_\0_fkcfield\
- arg_field_list=$specification_\0_field_list arg_combine_keys=$specification_\0_combine_keys\
+ arg_fields=$specification_\0_fields arg_combine_keys=$specification_\0_combine_keys\
  arg_cfield=$specification_\0_cfield arg_cpfield=$specification_\0_cpfield\
  arg_fk_from_child=$specification_\0_fk_from_child`}\
 `,\

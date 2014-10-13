@@ -338,6 +338,7 @@ const char* const c_data_efield = "efield";
 const char* const c_data_ffield = "ffield";
 const char* const c_data_field1 = "field1";
 const char* const c_data_field2 = "field2";
+const char* const c_data_fields = "fields";
 const char* const c_data_future = "future";
 const char* const c_data_gfield = "gfield";
 const char* const c_data_ifield = "ifield";
@@ -2637,7 +2638,7 @@ void copy_child_links_from_fk_specification::add_specification_data( model& m, s
       field_list += cfield_name + "," + fkcfield_name;
    }
 
-   spec_data.data_pairs.push_back( make_pair( string( c_data_field_list ), field_list ) );
+   spec_data.data_pairs.push_back( make_pair( string( c_data_fields ), field_list ) );
 
    spec_data.data_pairs.push_back( make_pair( c_data_self_child, self_child ? c_true : "" ) );
    spec_data.data_pairs.push_back( make_pair( c_data_combine_keys, combine_keys ? c_true : "" ) );

@@ -1459,7 +1459,7 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
 {
    arguments.clear( );
 
-   assert( esc != '"' && esc != '\0' && !isspace( static_cast< unsigned char >( esc ) ) );
+   assert( esc != '\'' && esc != '"' && esc != '\0' && !isspace( static_cast< unsigned char >( esc ) ) );
 
    const char* p_start( p_input );
    const char* p_finish( p_input );
@@ -1486,7 +1486,11 @@ size_t setup_arguments( const char* p_input, vector< string >& arguments, char e
          had_escape = true;
          ++p_finish;
       }
+#ifdef _WIN32
       else if( *p_finish == '"' )
+#else
+      else if( *p_finish == '\'' )
+#endif
       {
          in_quotes = !in_quotes;
          if( !in_quotes && !began_without_quotes )

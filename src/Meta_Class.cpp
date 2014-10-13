@@ -581,6 +581,22 @@ string expand_arg( const string& arg )
 
    return s;
 }
+
+void get_customised_types_for_class( Meta_Class& obj, set< string >& customised_types )
+{
+   if( obj.child_Field( ).iterate_forwards( ) )
+   {
+      do
+      {
+         bool is_custom = false;
+         string field_type( meta_field_type_name( obj.child_Field( ).Primitive( ),
+          obj.child_Field( ).Mandatory( ), obj.child_Field( ).Parent_Class( ).Name( ), obj.Model( ).Name( ), &is_custom ) );
+
+         if( is_custom )
+            customised_types.insert( field_type );
+      } while( obj.child_Field( ).iterate_next( ) );
+   }
+}
 // [<finish anonymous>]
 
 }
@@ -2542,6 +2558,11 @@ void Meta_Class::impl::impl_Generate( )
             if( is_custom )
                customised_types.insert( field_type );
 
+            // NOTE: As it is likely that one or more specifications will involve fields that belong to a
+            // parent class any customised types that are used by that parent class are added also.
+            if( !get_obj( ).child_Field( ).Parent_Class( ).Name( ).empty( ) )
+               get_customised_types_for_class( get_obj( ).child_Field( ).Parent_Class( ), customised_types );
+
             int text_type;
             get_obj( ).child_Field( ).Get_Text_Type( text_type );
 
@@ -2964,6 +2985,10 @@ void Meta_Class::impl::impl_Generate( )
          string sort_name(
           get_obj( ).child_Relationship_Parent( ).Child_Class( ).Name( )
           + ' ' + get_obj( ).child_Relationship_Parent( ).Name( ) );
+
+         // NOTE: As it is likely that one or more specifications will involve fields that belong to a
+         // child class any customised types that are used by that child class are added also.
+         get_customised_types_for_class( get_obj( ).child_Relationship_Parent( ).Child_Class( ), customised_types );
 
          string cascade_op;
          switch( get_obj( ).child_Relationship_Parent( ).Cascade_Op( ) )
