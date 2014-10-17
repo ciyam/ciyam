@@ -1294,6 +1294,12 @@ void CLASS_BASE_DECL_SPEC load_address_information( const std::string& ext_key, 
 
 struct address_info
 {
+   address_info( )
+    :
+    amount( 0.0 )
+   {
+   }
+
    address_info( const std::string& addr, const std::string& label, double amount )
     :
     addr( addr ),
@@ -1345,6 +1351,7 @@ struct utxo_info
    std::string script;
    std::string account;
 
+   std::string secret;
    std::string address;
 
    uint64_t amount;
@@ -1368,7 +1375,8 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
  std::string& sign_tx_template, const std::string& file_name );
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
- const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true );
+ const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
+ std::vector< utxo_info >* p_utxos = 0, std::vector< address_info >* p_outputs = 0 );
 
 std::string CLASS_BASE_DECL_SPEC send_raw_transaction( const std::string& ext_key, const std::string& tx );
 

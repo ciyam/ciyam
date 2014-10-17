@@ -4481,7 +4481,8 @@ void load_utxo_information( const string& ext_key, const string& source_addresse
 
    string cmd;
 
-   validate_addresses( source_addresses );
+   if( source_addresses != "*" )
+      validate_addresses( source_addresses );
 
    if( client_info.protocol == c_protocol_bitcoin )
    {
@@ -4629,8 +4630,12 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
    return raw_tx_request;
 }
 
-string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd, bool throw_on_error )
+string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd,
+ bool throw_on_error, vector< utxo_info >* p_utxos, vector< address_info >* p_outputs )
 {
+   ( void )p_utxos;
+   ( void )p_outputs;
+
    external_client client_info;
    get_external_client_info( ext_key, client_info );
 
@@ -4638,6 +4643,57 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
    string::size_type pos = raw_tx_cmd.find( "signrawtransaction" );
    if( pos == 0 )
       is_sign_raw_tx = true;
+
+#ifdef SSL_SUPPORT
+   if( p_utxos && p_outputs )
+   {
+      vector< utxo_information > all_inputs;
+      vector< output_information > all_outputs;
+
+      for( size_t i = 0; i < p_utxos->size( ); i++ )
+      {
+         utxo_information utxo;
+
+         string tx_id( ( *p_utxos )[ i ].tx_id );
+         string tx_id_rev( ( *p_utxos )[ i ].tx_id );
+
+         if( !tx_id_rev.empty( ) )
+            utxo.reversed_txid = tx_id_rev;
+         else
+         {
+            for( int x = tx_id.length( ) - 1; x >= 0; x -= 2 )
+            {
+               if( x - 1 >= 0 )
+               {
+                  utxo.reversed_txid += tx_id[ x - 1 ];
+                  utxo.reversed_txid += tx_id[ x ];
+               }
+            }
+         }
+
+         utxo.index = ( *p_utxos )[ i ].vout;
+
+         utxo.original_script = ( *p_utxos )[ i ].script;
+
+         if( is_sign_raw_tx && !( *p_utxos )[ i ].secret.empty( ) )
+            utxo.rp_private_key = new private_key( decrypt( ( *p_utxos )[ i ].secret ) );
+
+         all_inputs.push_back( utxo );
+      }
+
+      for( size_t i = 0; i < p_outputs->size( ); i++ )
+      {
+         output_information output;
+
+         output.amount = ( *p_outputs )[ i ].amount;
+         output.address = ( *p_outputs )[ i ].addr;
+
+         all_outputs.push_back( output );
+      }
+
+      return construct_raw_transaction( all_inputs, all_outputs );
+   }
+#endif
 
    string cmd, retval;
    string tmp( "~" + uuid( ).as_string( ) );

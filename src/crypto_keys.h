@@ -79,6 +79,8 @@ class private_key : public public_key
 
 struct utxo_information
 {
+   utxo_information( ) : index ( 0 ) { }
+
    utxo_information( unsigned int index,
     const std::string& reversed_txid, const char* p_script = 0, private_key* p_private_key = 0 )
     :
@@ -98,6 +100,8 @@ struct utxo_information
 
 struct output_information
 {
+   output_information( ) : amount( 0 ) { }
+
    output_information( uint64_t amount, const std::string& address )
     :
     amount( amount ),

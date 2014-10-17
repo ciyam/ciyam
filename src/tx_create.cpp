@@ -122,7 +122,7 @@ uint64_t select_utxos_for_transaction(
          while( true )
          {
             --i;
-            if( i->first > fee )
+            if( i->first >= fee )
             {
                total += i->first;
 
@@ -136,7 +136,7 @@ uint64_t select_utxos_for_transaction(
                cout << ( i->second ).tx_id << ':' << ( i->second ).vout << ' ' << ( i->second ).script << ' ' << i->first << '\n';
 #endif
 
-               if( total > amount + fee )
+               if( total >= amount + fee )
                {
                   change = total - amount - fee;
                   break;
@@ -343,6 +343,30 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
             }
             else
             {
+               if( from_standard )
+               {
+                  pos = str.find( "\"privKeySecret\"" );
+
+                  bool okay = false;
+                  pos = str.find( ':' );
+                  if( pos != string::npos )
+                  {
+                     pos = str.find( "\"", pos + 1 );
+                     if( pos != string::npos )
+                     {
+                        string::size_type epos = str.find( "\"", pos + 1 );
+                        if( epos != string::npos )
+                        {
+                           okay = true;
+                           utxo.secret = str.substr( pos + 1, epos - pos - 1 );
+                        }
+                     }
+                  }
+
+                  if( !okay )
+                     throw runtime_error( "unexpected format for '" + str + "'" );
+               }
+
                if( from_standard )
                   pos = str.find( "\"amount\"" );
                else
