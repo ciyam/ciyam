@@ -4040,7 +4040,7 @@ void ciyam_session::on_start( )
    }
    catch( ... )
    {
-      issue_error( "unexpected exception occurred" );
+      issue_error( "unexpected unknown exception occurred" );
 
       ap_socket->write_line( string( c_response_error_prefix ) + "unexpected exception occurred" );
       ap_socket->close( );

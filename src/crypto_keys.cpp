@@ -536,7 +536,7 @@ private_key::private_key( )
    p_impl->set_secret_bytes( buf );
 }
 
-private_key::private_key( const string& secret, bool is_wif_format )
+private_key::private_key( const string& secret, bool is_wif_format, bool* p_is_compressed )
 {
    unsigned char buf[ c_num_secret_bytes ];
 
@@ -545,27 +545,35 @@ private_key::private_key( const string& secret, bool is_wif_format )
    else
    {
       // NOTE: If the first encoded byte is K, L or c then is compressed.
+      if( p_is_compressed && !secret.empty( ) )
+      {
+         if( secret[ 0 ] == 'K' || secret[ 0 ] == 'L' || secret[ 0 ] == 'c' )
+            *p_is_compressed = true;
+         else
+            *p_is_compressed = false;
+      }
+
       vector< unsigned char > dbuf;
 
       base58_decode( secret, dbuf );
 
       if( dbuf.size( ) < c_num_secret_bytes + 5 )
-         throw runtime_error( "invalid WIF format for private_key ctor" );
+         throw runtime_error( "invalid WIF '" + secret + "' in private_key ctor" );
 
       sha256 hash( &dbuf[ 0 ], dbuf.size( ) - 4 );
       hash.copy_digest_to_buffer( buf );
 
-      hash.update( buf, c_num_secret_bytes );
+      hash.update( buf, c_num_hash_bytes );
       hash.copy_digest_to_buffer( buf );
 
       if( memcmp( buf, &dbuf[ dbuf.size( ) - 4 ], 4 ) != 0 )
-         throw runtime_error( "invalid WIF format checksum for private_key ctor" );
+         throw runtime_error( "invalid WIF checksum for '" + secret + "' in private_key ctor" );
 
       memcpy( buf, &dbuf[ 1 ], c_num_secret_bytes );
    }
 
    if( !check_secret( buf ) )
-      throw runtime_error( "unexpected invalid secret key" );
+      throw runtime_error( "unexpected invalid secret in private_key ctor" );
 
    p_impl = new impl( public_key::p_impl );
    p_impl->set_secret_bytes( buf );
