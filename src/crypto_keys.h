@@ -50,7 +50,7 @@ class private_key : public public_key
 {
    public:
    private_key( );
-   private_key( const std::string& secret, bool is_wif_format = false );
+   private_key( const std::string& secret, bool is_wif_format = false, bool* p_is_compressed = 0 );
 
    ~private_key( );
 

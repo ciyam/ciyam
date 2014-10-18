@@ -1286,7 +1286,7 @@ std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& 
 std::string CLASS_BASE_DECL_SPEC create_address_key_pair( std::string& pub_key, std::string& priv_key );
 
 std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
- std::string& pub_key, std::string& priv_key, const std::string& seed_info );
+ std::string& pub_key, std::string& priv_key, const std::string& priv_info, bool is_seed = true );
 
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
 

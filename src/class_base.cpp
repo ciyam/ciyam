@@ -4341,16 +4341,25 @@ string create_address_key_pair( string& pub_key, string& priv_key )
 #endif
 }
 
-string create_address_key_pair( string& pub_key, string& priv_key, const string& seed_info )
+string create_address_key_pair( string& pub_key, string& priv_key, const string& priv_info, bool is_seed )
 {
 #ifdef SSL_SUPPORT
-   sha256 hash( seed_info );
-   private_key new_key( lower( hash.get_digest_as_string( ) ) );
+   auto_ptr< private_key > ap_new_key;
 
-   pub_key = new_key.get_public( );
-   priv_key = new_key.get_secret( );
+   bool is_compressed = true;
 
-   return new_key.get_address( );
+   if( !is_seed )
+      ap_new_key.reset( new private_key( priv_info, true, &is_compressed ) );
+   else
+   {
+      sha256 hash( priv_info );
+      ap_new_key.reset( new private_key( lower( hash.get_digest_as_string( ) ) ) );
+   }
+
+   pub_key = ap_new_key->get_public( is_compressed );
+   priv_key = ap_new_key->get_secret( );
+
+   return ap_new_key->get_address( is_compressed );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
