@@ -115,7 +115,7 @@ struct output_information
 
 std::string construct_raw_transaction(
  const std::vector< utxo_information >& inputs,
- const std::vector< output_information >& outputs );
+ const std::vector< output_information >& outputs, bool randomly_order_outputs = true );
 
 #endif
 

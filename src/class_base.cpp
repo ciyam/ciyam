@@ -4664,7 +4664,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
          utxo_information utxo;
 
          string tx_id( ( *p_utxos )[ i ].tx_id );
-         string tx_id_rev( ( *p_utxos )[ i ].tx_id );
+         string tx_id_rev( ( *p_utxos )[ i ].tx_id_rev );
 
          if( !tx_id_rev.empty( ) )
             utxo.reversed_txid = tx_id_rev;
@@ -4734,6 +4734,41 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
    }
 
    return retval;
+}
+
+bool raw_transaction_was_signed( const string& tx_info, string& raw_tx )
+{
+   bool okay = false;
+
+   // NOTE: It is expected that "tx_info" is either the JSON response to a
+   // "signrawtransaction" command or is just the actual raw transaction.
+   if( !tx_info.empty( ) )
+   {
+      string::size_type pos = tx_info.find( "\"hex\"" );
+      if( pos != string::npos )
+      {
+         pos = tx_info.find( '"', pos + 5 );
+         if( pos != string::npos && pos != tx_info.length( ) - 1 )
+         {
+            string::size_type epos = tx_info.find( "\"", ++pos );
+            if( epos != string::npos )
+            {
+               if( tx_info.find( "true" ) != string::npos )
+               {
+                  okay = true;
+                  raw_tx = tx_info.substr( pos, epos - pos );
+               }
+            }
+         }
+      }
+      else if( tx_info.find_first_not_of( "0123456789abcdef" ) == string::npos )
+      {
+         okay = true;
+         raw_tx = tx_info;
+      }
+   }
+
+   return okay;
 }
 
 string send_raw_transaction( const string& ext_key, const string& tx )
@@ -4825,9 +4860,8 @@ string send_raw_transaction( const string& ext_key, const string& tx )
                string ss( trim( buffer_file( tmp ) ) );
                file_remove( tmp );
 
-               // NOTE: If we don't find an 'error' token then assume that the tx push worked.
-               if( ss.find( "error" ) != string::npos || ss.find( "Error" ) != string::npos )
-                  throw runtime_error( s );
+               if( ss != "transaction submitted" && ss != "Transaction Submitted"  )
+                  throw runtime_error( ss );
             }
          }
       }

@@ -347,24 +347,20 @@ void parse_utxo_info( istream& is, vector< utxo_info >& utxos )
                {
                   pos = str.find( "\"privKeySecret\"" );
 
-                  bool okay = false;
-                  pos = str.find( ':' );
                   if( pos != string::npos )
                   {
-                     pos = str.find( "\"", pos + 1 );
+                     pos = str.find( ':' );
                      if( pos != string::npos )
                      {
-                        string::size_type epos = str.find( "\"", pos + 1 );
-                        if( epos != string::npos )
+                        pos = str.find( "\"", pos + 1 );
+                        if( pos != string::npos )
                         {
-                           okay = true;
-                           utxo.secret = str.substr( pos + 1, epos - pos - 1 );
+                           string::size_type epos = str.find( "\"", pos + 1 );
+                           if( epos != string::npos )
+                              utxo.secret = str.substr( pos + 1, epos - pos - 1 );
                         }
                      }
-                  }
-
-                  if( !okay )
-                     throw runtime_error( "unexpected format for '" + str + "'" );
+                  }   
                }
 
                if( from_standard )

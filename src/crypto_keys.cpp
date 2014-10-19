@@ -10,6 +10,7 @@
 
 #ifndef HAS_PRECOMPILED_STD_HEADERS
 #  include <cstring>
+#  include <map>
 #  include <iomanip>
 #  include <sstream>
 #  include <stdexcept>
@@ -42,6 +43,7 @@ const char* const c_sequence_bytes = "ffffffff";
 const char* const c_zero_lock_time = "00000000";
 
 const char* const c_empty_sig_script = "00";
+const char* const c_sig_script_marker = "XX";
 const char* const c_hash_code_type_all = "01000000";
 
 // NOTE: This function was sourced from the Bitcoin project.
@@ -693,54 +695,85 @@ string private_key::construct_signature( const string& msg ) const
 
 string construct_raw_transaction(
  const vector< utxo_information >& inputs,
- const vector< output_information >& outputs )
+ const vector< output_information >& outputs, bool randomly_order_outputs )
 {
    string raw_transaction( "01000000" ); // i.e. version
 
    unsigned char size = ( unsigned char )inputs.size( );
    raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
 
-   string signing_information( raw_transaction );
+   string signing_info_prefix( raw_transaction );
+
+   vector< string > empty_input_sig_info;
+   vector< string > signing_input_sig_info;
 
    for( size_t i = 0; i < inputs.size( ); i++ )
    {
+      string next_empty_sig_info, next_input_sig_info;
+
       ostringstream outs;
       outs << hex << setw( 8 ) << setfill( '0' ) << endian_swap( inputs[ i ].index );
 
       raw_transaction += inputs[ i ].reversed_txid + outs.str( );
-      signing_information += inputs[ i ].reversed_txid + outs.str( );
+      next_empty_sig_info += inputs[ i ].reversed_txid + outs.str( );
+      next_input_sig_info += inputs[ i ].reversed_txid + outs.str( );
+
+      next_empty_sig_info += c_empty_sig_script;
 
       if( !inputs[ i ].original_script.empty( ) )
       {
          size = inputs[ i ].original_script.length( ) / 2;
-         signing_information += hex_encode( &size, sizeof( unsigned char ) );
-         signing_information += inputs[ i ].original_script;
+         next_input_sig_info += hex_encode( &size, sizeof( unsigned char ) );
+         next_input_sig_info += inputs[ i ].original_script;
       }
       else
-         signing_information += c_empty_sig_script;
+         next_input_sig_info += c_empty_sig_script;
 
-      raw_transaction += c_empty_sig_script;
+      raw_transaction += c_sig_script_marker;
 
       raw_transaction += c_sequence_bytes;
-      signing_information += c_sequence_bytes;
+      next_empty_sig_info += c_sequence_bytes;
+      next_input_sig_info += c_sequence_bytes;
+
+      empty_input_sig_info.push_back( next_empty_sig_info );
+      signing_input_sig_info.push_back( next_input_sig_info );
    }
 
    size = ( unsigned char )outputs.size( );
 
    raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
-   signing_information += hex_encode( &size, sizeof( unsigned char ) );
+   string signing_info_suffix( hex_encode( &size, sizeof( unsigned char ) ) );
 
+   map< string, int > ordering;
+
+   // NOTE: In order to make sure that the "change address" isn't always found at the end
+   // the outputs will be processed in a random order unless it is specifically requested
+   // that this should not occur.
    for( size_t i = 0; i < outputs.size( ); i++ )
    {
+      if( randomly_order_outputs )
+         ordering.insert( make_pair( uuid( ).as_string( ), i ) );
+      else
+      {
+         string s( to_string( i ) );
+         if( s.length( ) < 6 )
+            s = string( 6 - s.length( ), '0' ) + s;
+
+         ordering.insert( make_pair( s, i ) );
+      }
+   }
+
+   for( map< string, int >::iterator i = ordering.begin( ); i != ordering.end( ); ++i )
+   {
       ostringstream outs;
-      outs << hex << setw( 16 ) << setfill( '0' ) << endian_swap( outputs[ i ].amount );
+      outs << hex << setw( 16 ) << setfill( '0' ) << endian_swap( outputs[ i->second ].amount );
 
       raw_transaction += outs.str( );
-      signing_information += outs.str( );
+      signing_info_suffix += outs.str( );
 
       string script_pub_key( "76a9" ); // i.e. OP_DUP OP_HASH160
 
-      string hash160( public_key::address_to_hash160( outputs[ i ].address ) );
+      string hash160( public_key::address_to_hash160( outputs[ i->second ].address ) );
 
       size = ( unsigned char )hash160.size( ) / 2;
       script_pub_key += hex_encode( &size, sizeof( unsigned char ) );
@@ -751,32 +784,46 @@ string construct_raw_transaction(
       size = ( unsigned char )script_pub_key.size( ) / 2;
 
       raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
-      signing_information += hex_encode( &size, sizeof( unsigned char ) );
+      signing_info_suffix += hex_encode( &size, sizeof( unsigned char ) );
 
       raw_transaction += script_pub_key;
-      signing_information += script_pub_key;
+      signing_info_suffix += script_pub_key;
    }
 
    raw_transaction += c_zero_lock_time;
-   signing_information += c_zero_lock_time;
+   signing_info_suffix += c_zero_lock_time;
 
-   signing_information += c_hash_code_type_all;
-
-   vector< unsigned char > buffer( signing_information.size( ) / 2, 0 );
-   hex_decode( signing_information, &buffer[ 0 ], buffer.size( ) );
-
-   sha256 hash( &buffer[ 0 ], buffer.size( ) );
-
-   unsigned char buf[ c_num_hash_bytes ];
-   hash.copy_digest_to_buffer( buf );
-
-   hash.update( buf, c_num_hash_bytes );
-   hash.copy_digest_to_buffer( buf );
+   signing_info_suffix += c_hash_code_type_all;
 
    for( size_t i = 0; i < inputs.size( ); i++ )
    {
       if( inputs[ i ].rp_private_key )
       {
+         string signing_information( signing_info_prefix );
+
+         // NOTE: For inputs other than the one being signed an empty
+         // sig needs to be used.
+         for( size_t j = 0; j < signing_input_sig_info.size( ); j++ )
+         {
+            if( j != i )
+               signing_information += empty_input_sig_info[ j ];
+            else
+               signing_information += signing_input_sig_info[ j ];
+         }
+
+         signing_information += signing_info_suffix;
+
+         vector< unsigned char > buffer( signing_information.size( ) / 2, 0 );
+         hex_decode( signing_information, &buffer[ 0 ], buffer.size( ) );
+
+         sha256 hash( &buffer[ 0 ], buffer.size( ) );
+
+         unsigned char buf[ c_num_hash_bytes ];
+         hash.copy_digest_to_buffer( buf );
+
+         hash.update( buf, c_num_hash_bytes );
+         hash.copy_digest_to_buffer( buf );
+
          string sig( inputs[ i ].rp_private_key->construct_signature( &buf[ 0 ] ) );
 
          size = ( ( unsigned char )sig.size( ) / 2 ) + 1;
@@ -791,7 +838,7 @@ string construct_raw_transaction(
          scriptSig += hex_encode( &size, sizeof( unsigned char ) );
          scriptSig += pub;
 
-         string sequence( "00" );
+         string sequence( c_sig_script_marker );
          sequence += c_sequence_bytes;
 
          string::size_type pos = raw_transaction.find( sequence );
