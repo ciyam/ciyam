@@ -1378,6 +1378,8 @@ std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
  std::vector< utxo_info >* p_utxos = 0, std::vector< address_info >* p_outputs = 0 );
 
+bool CLASS_BASE_DECL_SPEC raw_transaction_was_signed( const std::string& tx_info, std::string& raw_tx );
+
 std::string CLASS_BASE_DECL_SPEC send_raw_transaction( const std::string& ext_key, const std::string& tx );
 
 void CLASS_BASE_DECL_SPEC execute_command( numeric& n, const std::string& cmd_and_args, std::string& retval );

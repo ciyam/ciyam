@@ -2363,9 +2363,9 @@ bool output_view_form( ostream& os, const string& act,
                   qr_pixels -= 2;
 
                string cmd( "qrencode -o " + temp_file_name
-                + " -s " + to_string( qr_pixels ) + " \"" + cell_data + "\"" );
+                + " -s " + to_string( qr_pixels ) + " \"" + escaped( cell_data, "\"" ) + "\"" );
 
-               int rc = system( escaped_shell_cmd( cmd ).c_str( ) );
+               int rc = system( cmd.c_str( ) );
                ( void )rc;
 
                bool is_href = false;
