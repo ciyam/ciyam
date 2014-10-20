@@ -4640,7 +4640,7 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
 }
 
 string create_or_sign_raw_transaction( const string& ext_key, const string& raw_tx_cmd,
- bool throw_on_error, vector< utxo_info >* p_utxos, vector< address_info >* p_outputs )
+ bool throw_on_error, bool* p_is_complete, vector< utxo_info >* p_utxos, vector< address_info >* p_outputs )
 {
    ( void )p_utxos;
    ( void )p_outputs;
@@ -4700,7 +4700,7 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
          all_outputs.push_back( output );
       }
 
-      return construct_raw_transaction( all_inputs, all_outputs );
+      return construct_raw_transaction( all_inputs, all_outputs, p_is_complete );
    }
 #endif
 
@@ -4773,30 +4773,30 @@ bool raw_transaction_was_signed( const string& tx_info, string& raw_tx )
 
 string send_raw_transaction( const string& ext_key, const string& tx )
 {
-   string s;
+   string txid;
 
-   if( storage_locked_for_admin( ) )
+   string data( hex_decode( tx ) );
+   sha256 hash( ( const unsigned char* )data.c_str( ), data.length( ) );
+
+   unsigned char buf[ 32 ];
+   hash.copy_digest_to_buffer( buf );
+
+   hash.update( buf, 32 );
+   string input( lower( hash.get_digest_as_string( ) ) );
+
+   for( int i = input.length( ) - 1; i >= 0; i -= 2 )
    {
-      string data( hex_decode( tx ) );
-      sha256 hash( ( const unsigned char* )data.c_str( ), data.length( ) );
-
-      unsigned char buf[ 32 ];
-      hash.copy_digest_to_buffer( buf );
-
-      hash.update( buf, 32 );
-      string input( lower( hash.get_digest_as_string( ) ) );
-
-      for( int i = input.length( ) - 1; i >= 0; i -= 2 )
+      if( i - 1 >= 0 )
       {
-         if( i - 1 >= 0 )
-         {
-            s += input[ i - 1 ];
-            s += input[ i ];
-         }
+         txid += input[ i - 1 ];
+         txid += input[ i ];
       }
    }
-   else
+
+   if( !storage_locked_for_admin( ) )
    {
+      string s;
+
       external_client client_info;
       get_external_client_info( ext_key, client_info );
 
@@ -4860,14 +4860,19 @@ string send_raw_transaction( const string& ext_key, const string& tx )
                string ss( trim( buffer_file( tmp ) ) );
                file_remove( tmp );
 
-               if( ss != "transaction submitted" && ss != "Transaction Submitted"  )
+               if( ss != "transaction submitted" && ss != "Transaction Submitted" )
                   throw runtime_error( ss );
             }
          }
+         else
+            throw runtime_error( s.substr( 0, s.find( "\n" ) ) );
       }
+
+      if( s != txid )
+         throw runtime_error( "unexpected txid '" + s + "' (was expecting '" + txid + "'" );
    }
 
-   return s;
+   return txid;
 }
 
 void meta_relationship_child_name( string& name,

@@ -30,6 +30,8 @@
 #include "utilities.h"
 #include "crypt_stream.h"
 
+#include <stdio.h>
+
 using namespace std;
 
 namespace
@@ -41,6 +43,8 @@ const int c_max_public_key_bytes = 65;
 
 const char* const c_sequence_bytes = "ffffffff";
 const char* const c_zero_lock_time = "00000000";
+
+const char* const c_zero_amount = "0000000000000000";
 
 const char* const c_empty_sig_script = "00";
 const char* const c_sig_script_marker = "XX";
@@ -254,18 +258,23 @@ void base58_decode( const string& encoded, vector< unsigned char >& buf )
    BN_CTX_free( p_ctx );
 }
 
-inline uint32_t endian_swap( uint32_t x )
+inline uint32_t as_big_endian( uint32_t x )
 {
+#ifdef BIG_ENDIAN
+   return x;
+#else
    return ( ( ( x & 0x000000ff ) << 24 ) | ( ( x & 0x0000ff00 ) << 8 )
     | ( ( x & 0x00ff0000 ) >> 8 ) | ( ( x & 0xff000000 ) >> 24 ) );
+#endif
 }
 
-inline uint64_t endian_swap( uint64_t x )
+inline uint64_t as_big_endian( uint64_t x )
 {
+#ifdef LITTLE_ENDIAN
    x = ( x & 0x00000000ffffffff ) << 32 | ( x & 0xffffffff00000000 ) >> 32;
    x = ( x & 0x0000ffff0000ffff ) << 16 | ( x & 0xffff0000ffff0000 ) >> 16;
    x = ( x & 0x00ff00ff00ff00ff ) << 8 | ( x & 0xff00ff00ff00ff00 ) >> 8;
-
+#endif
    return x;
 }
 
@@ -695,7 +704,8 @@ string private_key::construct_signature( const string& msg ) const
 
 string construct_raw_transaction(
  const vector< utxo_information >& inputs,
- const vector< output_information >& outputs, bool randomly_order_outputs )
+ const vector< output_information >& outputs,
+ bool* p_is_complete, bool randomly_order_outputs, const char* p_message )
 {
    string raw_transaction( "01000000" ); // i.e. version
 
@@ -712,7 +722,7 @@ string construct_raw_transaction(
       string next_empty_sig_info, next_input_sig_info;
 
       ostringstream outs;
-      outs << hex << setw( 8 ) << setfill( '0' ) << endian_swap( inputs[ i ].index );
+      outs << hex << setw( 8 ) << setfill( '0' ) << as_big_endian( inputs[ i ].index );
 
       raw_transaction += inputs[ i ].reversed_txid + outs.str( );
       next_empty_sig_info += inputs[ i ].reversed_txid + outs.str( );
@@ -741,6 +751,14 @@ string construct_raw_transaction(
 
    size = ( unsigned char )outputs.size( );
 
+   size_t msg_len = p_message ? strlen( p_message ) : 0;
+
+   if( p_message && msg_len > 40 )
+      throw runtime_error( "max. message size is 40 bytes per transaction" );
+
+   if( p_message && msg_len )
+      ++size;
+
    raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
    string signing_info_suffix( hex_encode( &size, sizeof( unsigned char ) ) );
 
@@ -766,7 +784,7 @@ string construct_raw_transaction(
    for( map< string, int >::iterator i = ordering.begin( ); i != ordering.end( ); ++i )
    {
       ostringstream outs;
-      outs << hex << setw( 16 ) << setfill( '0' ) << endian_swap( outputs[ i->second ].amount );
+      outs << hex << setw( 16 ) << setfill( '0' ) << as_big_endian( outputs[ i->second ].amount );
 
       raw_transaction += outs.str( );
       signing_info_suffix += outs.str( );
@@ -788,6 +806,27 @@ string construct_raw_transaction(
 
       raw_transaction += script_pub_key;
       signing_info_suffix += script_pub_key;
+   }
+
+   if( p_message && msg_len )
+   {
+      raw_transaction += c_zero_amount;
+      signing_info_suffix += c_zero_amount;
+
+      string script_return( "6a" ); // i.e. OP_RETURN
+
+      size = msg_len;
+      script_return += hex_encode( &size, sizeof( unsigned char ) );
+
+      script_return += hex_encode( ( const unsigned char* )p_message, msg_len );
+
+      size = ( unsigned char )script_return.size( ) / 2;
+
+      raw_transaction += hex_encode( &size, sizeof( unsigned char ) );
+      signing_info_suffix += hex_encode( &size, sizeof( unsigned char ) );
+
+      raw_transaction += script_return;
+      signing_info_suffix += script_return;
    }
 
    raw_transaction += c_zero_lock_time;
@@ -854,6 +893,9 @@ string construct_raw_transaction(
       }
    }
 
-   return raw_transaction;
+   if( p_is_complete )
+      *p_is_complete = raw_transaction.find( c_sig_script_marker ) == string::npos;
+
+   return replaced( raw_transaction, c_sig_script_marker, c_empty_sig_script );
 }
 

@@ -91,7 +91,7 @@ struct utxo_information
    {
    }
 
-   unsigned int index;
+   uint32_t index;
    std::string reversed_txid;
 
    std::string original_script;
@@ -115,7 +115,8 @@ struct output_information
 
 std::string construct_raw_transaction(
  const std::vector< utxo_information >& inputs,
- const std::vector< output_information >& outputs, bool randomly_order_outputs = true );
+ const std::vector< output_information >& outputs,
+ bool* p_is_complete = 0, bool randomly_order_outputs = true, const char* p_message = 0 );
 
 #endif
 

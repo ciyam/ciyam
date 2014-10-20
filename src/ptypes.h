@@ -16,6 +16,11 @@
 #        include <cfloat>
 #     endif
 #     include <limits>
+#     include <sys/types.h>
+#  endif
+
+#  ifdef _WIN32
+#     define LITTLE_ENDIAN
 #  endif
 
 #  ifdef _WIN32
