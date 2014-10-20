@@ -1311,7 +1311,7 @@ struct address_info
    std::string addr;
    std::string label;
 
-   double amount;
+   uint64_t amount;
 };
 
 void CLASS_BASE_DECL_SPEC parse_address_information(
@@ -1376,7 +1376,7 @@ std::string CLASS_BASE_DECL_SPEC construct_raw_transaction(
 
 std::string CLASS_BASE_DECL_SPEC create_or_sign_raw_transaction(
  const std::string& ext_key, const std::string& raw_tx_cmd, bool throw_on_error = true,
- std::vector< utxo_info >* p_utxos = 0, std::vector< address_info >* p_outputs = 0 );
+ bool* p_is_complete = 0, std::vector< utxo_info >* p_utxos = 0, std::vector< address_info >* p_outputs = 0 );
 
 bool CLASS_BASE_DECL_SPEC raw_transaction_was_signed( const std::string& tx_info, std::string& raw_tx );
 

@@ -32,10 +32,6 @@ namespace
 
 const unsigned int c_buffer_size = 4096;
 
-#ifdef _WIN32
-#  define LITTLE_ENDIAN
-#endif
-
 /*
 SHA-1 in C
 By Steve Reid <steve@edmweb.com>
