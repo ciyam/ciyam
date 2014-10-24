@@ -4,7 +4,9 @@
    // [(start field_bool_has_changed)] `{`$arg_id`}
    if( get_obj( ).has_field_changed( c_field_id_`{`$arg_sfield`} )`{`@eq`(`$arg_not_null`,`'true`'`)
     && !is_null( get_obj( ).`{`$arg_sfield`}( ) )`}`{`!`@eq`(`$arg_value`,`'`'`)
-    && get_obj( ).`{`$arg_sfield`}( ) == `{`$value`}`} )
+    && get_obj( ).`{`$arg_sfield`}( ) == `{`$value`}`}`{`!`@eq`(`$arg_tfield`,`'`'`)
+    && get_obj( ).`{`$arg_tfield`}( )`}`{`!`@eq`(`$arg_modifier`,`'`'`)
+    && ( state & c_modifier_`{`$arg_modifier`} )`} )
 `{`!`@eq`(`$arg_var`,`'`'`)\
    {
 `}\

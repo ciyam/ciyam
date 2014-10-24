@@ -4327,39 +4327,56 @@ string create_html_embedded_image( const string& source_file )
    return s;
 }
 
-string create_address_key_pair( string& pub_key, string& priv_key )
+string create_address_key_pair( const string& ext_key, string& pub_key, string& priv_key )
 {
 #ifdef SSL_SUPPORT
    private_key new_key;
 
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   bool compressed = true;
+   bool is_testnet = false;
+
+   if( client_info.extra_info == "testnet" )
+      is_testnet = true;
+
    pub_key = new_key.get_public( );
    priv_key = new_key.get_secret( );
 
-   return new_key.get_address( );
+   return new_key.get_address( compressed, is_testnet );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
 }
 
-string create_address_key_pair( string& pub_key, string& priv_key, const string& priv_info, bool is_seed )
+string create_address_key_pair( const string& ext_key,
+ string& pub_key, string& priv_key, const string& priv_info, bool is_seed )
 {
 #ifdef SSL_SUPPORT
    auto_ptr< private_key > ap_new_key;
 
-   bool is_compressed = true;
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   bool compressed = true;
+   bool is_testnet = false;
+
+   if( client_info.extra_info == "testnet" )
+      is_testnet = true;
 
    if( !is_seed )
-      ap_new_key.reset( new private_key( priv_info, true, &is_compressed ) );
+      ap_new_key.reset( new private_key( priv_info, true, &compressed ) );
    else
    {
       sha256 hash( priv_info );
       ap_new_key.reset( new private_key( lower( hash.get_digest_as_string( ) ) ) );
    }
 
-   pub_key = ap_new_key->get_public( is_compressed );
+   pub_key = ap_new_key->get_public( compressed );
    priv_key = ap_new_key->get_secret( );
 
-   return ap_new_key->get_address( is_compressed );
+   return ap_new_key->get_address( compressed, is_testnet );
 #else
    throw runtime_error( "SSL support is needed in order to use create_address_key_pair" );
 #endif
@@ -4572,10 +4589,16 @@ uint64_t determine_utxo_balance( const string& file_name )
 
 string convert_hash160_to_address( const string& ext_key, const string& hash160 )
 {
-   ( void )ext_key;
-
 #ifdef SSL_SUPPORT
-   return public_key::hash160_to_address( hash160 );
+   external_client client_info;
+   get_external_client_info( ext_key, client_info );
+
+   bool is_testnet = false;
+
+   if( client_info.extra_info == "testnet" )
+      is_testnet = true;
+
+   return public_key::hash160_to_address( hash160, is_testnet );
 #else
    throw runtime_error( "SSL support is needed in order to use convert_hash160_to_address" );
 #endif
@@ -4630,6 +4653,8 @@ string construct_raw_transaction( const string& ext_key, bool change_type_is_aut
             if( pos == string::npos )
                throw runtime_error( "unexpected failure to find change address in raw_tx_request output" );
 
+            change_address = new_change_address;
+
             raw_tx_request.erase( pos, change_address.length( ) );
             raw_tx_request.insert( pos, new_change_address );
          }
@@ -4647,6 +4672,11 @@ string create_or_sign_raw_transaction( const string& ext_key, const string& raw_
 
    external_client client_info;
    get_external_client_info( ext_key, client_info );
+
+   bool is_testnet = false;
+
+   if( client_info.extra_info == "testnet" )
+      is_testnet = true;
 
    bool is_sign_raw_tx = false;
    string::size_type pos = raw_tx_cmd.find( "signrawtransaction" );

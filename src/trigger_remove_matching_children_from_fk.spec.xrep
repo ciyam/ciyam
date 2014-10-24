@@ -1,0 +1,48 @@
+`{`@eq`(`'includes`'`,`$section`)\
+// [(start trigger_remove_matching_children_from_fk)] `{`$arg_id`}
+#include "`{`$module_name`}_`{`$arg_fkcclass`}.h"
+// [(finish trigger_remove_matching_children_from_fk)] `{`$arg_id`}
+`}
+`{`@eq`(`'after_store`'`,`$section`)\
+   // [(start trigger_remove_matching_children_from_fk)] `{`$arg_id`}
+   if( !is_create
+`{`!`@eq`(`$arg_tfield`,`'`'`)\
+    && get_obj( ).`{`$arg_tfield`}( )
+`}\
+    && !is_null( get_obj( ).`{`$arg_fkfield`}( ) )
+    && get_obj( ).child_`{`$arg_cfield`}( ).iterate_forwards( ) )
+   {
+      set< string > matching;
+      do
+      {
+         string next;
+
+`{`?`$arg_fields`[`$arg_fields`%,`,\
+         next += to_string( get_obj( ).child_`{`$arg_cfield`}( ).\\0( ) );
+`]`}
+         matching.insert( next );
+
+      } while( get_obj( ).child_`{`$arg_cfield`}( ).iterate_next( ) );
+
+      if( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).iterate_forwards( ) )
+      {
+         do
+         {
+            string next;
+
+`{`?`$arg_fields`[`$arg_fields`%,`,\
+            next += to_string( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).\\1( ) );
+`]`}
+            if( matching.count( next ) )
+            {
+               get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).op_destroy( );
+               get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).op_apply( );
+            }
+         } while( get_obj( ).`{`$arg_fkfield`}( ).child_`{`$arg_fkcfield`}( ).iterate_next( ) );
+      }
+`{`!`@eq`(`$arg_fkproc`,`'`'`)
+      get_obj( ).`{`$arg_fkfield`}( ).`{`$arg_fkproc`}( );
+`}\
+   }
+   // [(finish trigger_remove_matching_children_from_fk)] `{`$arg_id`}
+`}

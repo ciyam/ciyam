@@ -1283,9 +1283,10 @@ std::string CLASS_BASE_DECL_SPEC convert_html_to_text( const std::string& html )
 
 std::string CLASS_BASE_DECL_SPEC create_html_embedded_image( const std::string& source_file );
 
-std::string CLASS_BASE_DECL_SPEC create_address_key_pair( std::string& pub_key, std::string& priv_key );
-
 std::string CLASS_BASE_DECL_SPEC create_address_key_pair(
+ const std::string& ext_key, std::string& pub_key, std::string& priv_key );
+
+std::string CLASS_BASE_DECL_SPEC create_address_key_pair( const std::string& ext_key,
  std::string& pub_key, std::string& priv_key, const std::string& priv_info, bool is_seed = true );
 
 bool CLASS_BASE_DECL_SPEC can_create_address( const std::string& ext_key );
@@ -1296,21 +1297,33 @@ struct address_info
 {
    address_info( )
     :
-    amount( 0.0 )
+    amount( 0 ),
+    amount_d( 0.0 )
    {
    }
 
-   address_info( const std::string& addr, const std::string& label, double amount )
+   address_info( const std::string& addr, const std::string& label, double amount_d )
+    :
+    addr( addr ),
+    label( label ),
+    amount_d( amount_d )
+   {
+      amount = 0;
+   }
+
+   address_info( const std::string& addr, const std::string& label, uint64_t amount )
     :
     addr( addr ),
     label( label ),
     amount( amount )
    {
+      amount_d = 0.0;
    }
 
    std::string addr;
    std::string label;
 
+   double amount_d;
    uint64_t amount;
 };
 
