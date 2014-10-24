@@ -144,6 +144,7 @@ const char* const c_attribute_port = "port";
 const char* const c_attribute_label = "label";
 const char* const c_attribute_is_local = "is_local";
 const char* const c_attribute_protocol = "protocol";
+const char* const c_attribute_extra_info = "extra_info";
 const char* const c_attribute_script_name = "script_name";
 
 const char* const c_default_web_root = "%root%/%store%";
@@ -3272,6 +3273,7 @@ void read_server_configuration( )
             client.is_local = ( lower( reader.read_opt_attribute( c_attribute_is_local, c_false ) ) == c_true );
 
             client.protocol = reader.read_attribute( c_attribute_protocol );
+            client.extra_info = reader.read_opt_attribute( c_attribute_extra_info );
             client.script_name = reader.read_opt_attribute( c_attribute_script_name );
 
             reader.finish_section( c_section_client );

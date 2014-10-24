@@ -5,6 +5,7 @@
 `}
 `{`@eq`(`'after_store`'`,`$section`)\
 `{`@eq`(`$class_name`,`$arg_cclass`)`$self_child`=`'true`'`,`$self_child`=`'`'`}\
+`{`;NOTE: The following are due to legacy usage with model_specifications.cpp...`}\
 `{`@eq`(`$arg_cfield`,`'`'`)`$child_name`=`$arg_cclass`,`$child_name`=`$arg_cfield`}\
 `{`@eq`(`$arg_cpfield`,`'`'`)`$parent_name`=`$class_name`,`$parent_name`=`$arg_cpfield`}\
 `{`@eq`(`$arg_fkcfield`,`'`'`)`$fk_child_name`=`$arg_fkcclass`,`$fk_child_name`=`$arg_fkcfield`}\

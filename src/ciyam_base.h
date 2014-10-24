@@ -130,6 +130,7 @@ struct external_client
    int port;
    bool is_local;
    std::string protocol;
+   std::string extra_info;
    std::string script_name;
 };
 
